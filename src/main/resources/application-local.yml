@@ -1,0 +1,16 @@
+---
+micronaut:
+   environment: local
+
+---
+postgres:
+   reactive:
+      client:
+         host: localhost
+         user: postgres
+         password: password
+
+flyway:
+   url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
+   user: "${postgres.reactive.client.user}"
+   password: "${postgres.reactive.client.password}"

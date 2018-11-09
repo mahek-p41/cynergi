@@ -1,0 +1,8 @@
+---
+micronaut:
+   environment: prod
+
+---
+postgres:
+   reactive:
+      client:
