@@ -1,7 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE address(
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+  id                     BIGSERIAL                             NOT NULL RIMARY KEY,
+  UUID                   UUID DEFAULT uuid_generate_v1()       NOT NULL,
   date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   address1               VARCHAR (150)                         NOT NULL,
@@ -12,19 +13,19 @@ CREATE TABLE address(
   phone                  VARCHAR (20)                          NOT NULL,
   fax                    VARCHAR (20)                          NOT NULL
 );
-CREATE TABLE company(
+CREATE TABLE business(
   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID                   UUID      DEFAULT uuid_generate_v1()  NOT NULL,
   date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  UUID                   UUID      DEFAULT uuid_generate_v1()  NOT NULL,
   name                   VARCHAR(150)                          NOT NULL
 );
 CREATE TABLE store(
   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID                   UUID DEFAULT uuid_generate_v1()       NOT NULL,
   date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  UUID                   UUID DEFAULT uuid_generate_v1()       NOT NULL,
   name                   VARCHAR(150)                          NOT NULL,
   address_id             BIGINT REFERENCES address (id)        NOT NULL,
-  company_id             BIGINT REFERENCES company (id)        NOT NULL
+  business_id            BIGINT REFERENCES business (id)       NOT NULL
 );
