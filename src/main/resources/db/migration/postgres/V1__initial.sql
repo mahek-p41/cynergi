@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE address(
-  id                     BIGSERIAL                             NOT NULL RIMARY KEY,
+  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
   UUID                   UUID DEFAULT uuid_generate_v1()       NOT NULL,
   date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
