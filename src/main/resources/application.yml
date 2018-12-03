@@ -1,8 +1,6 @@
-
 micronaut:
    application:
       name: cynergi-middleware
-
 postgres:
    reactive:
       client:
@@ -12,6 +10,8 @@ postgres:
 datasources:
    default:
       driverClassName: org.postgresql.Driver
+      connectionInitSql: SELECT 1
+      maximumPoolSize: 2
 flyway:
    url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
    user: "${postgres.reactive.client.user}"

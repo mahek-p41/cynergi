@@ -4,7 +4,6 @@ postgres:
    reactive:
       client:
          port: 6432
-         database: cynergidbtest
          host: localhost
          user: postgres
          password: password
