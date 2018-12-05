@@ -1,71 +1,117 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE address(
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
-  UUID                   UUID DEFAULT uuid_generate_v1()       NOT NULL,
-  date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  address1               VARCHAR (150)                         NOT NULL,
-  address2               VARCHAR (150)                         NOT NULL,
-  city                   VARCHAR (150)                         NOT NULL,
-  state                  VARCHAR (2)                           NOT NULL,
-  postal_code            VARCHAR (20)                          NOT NULL,
-  phone                  VARCHAR (20)                          NOT NULL,
-  fax                    VARCHAR (20)                          NOT NULL,
-  work_phone             VARCHAR (20)                          NOT NULL,
-  work_phone_ext         VARCHAR (10)                          NOT NULL,
-  map_cd                 VARCHAR (20)                          NOT NULL
+CREATE FUNCTION last_updated_column_fn()
+  RETURNS TRIGGER AS $$
+BEGIN
+  new.last_updated := current_timestamp;
+
+  return new;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TABLE address (
+  id                 BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID               UUID DEFAULT uuid_generate_v1()       NOT NULL,
+  date_created       TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  last_updated       TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  address1           VARCHAR(150)                          NOT NULL,
+  address2           VARCHAR(150),
+  city               VARCHAR(150)                          NOT NULL,
+  state              VARCHAR(2)                            NOT NULL,
+  postal_code        VARCHAR(20)                           NOT NULL,
+  zip_plus_four      VARCHAR(10),
+  country            VARCHAR(150)                          NOT NULL,
+  phone1             VARCHAR(20)                           NOT NULL,
+  phone1_description VARCHAR(20)                           NOT NULL,
+  phone2             VARCHAR(20),
+  phone2_description VARCHAR(20),
+  phone3             VARCHAR(20),
+  phone3_description VARCHAR(20),
+  phone4             VARCHAR(20),
+  phone4_description VARCHAR(20),
+  work_phone         VARCHAR(20)                           NOT NULL,
+  work_phone_ext     VARCHAR(10)                           NOT NULL,
+  fax                VARCHAR(20),
+  map_cd             VARCHAR(20)                           NOT NULL,
+  email_address      VARCHAR(200)                          NOT NULL
 );
-CREATE TABLE business(
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
-  UUID                   UUID      DEFAULT uuid_generate_v1()  NOT NULL,
-  date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  name                   VARCHAR(150)                          NOT NULL
+CREATE TRIGGER update_address_trg
+  BEFORE UPDATE
+  ON address
+  FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
+
+CREATE TABLE business (
+  id           BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID         UUID DEFAULT uuid_generate_v1()       NOT NULL,
+  date_created TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  last_updated TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  name         VARCHAR(150)                          NOT NULL
 );
-CREATE TABLE store(
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
-  UUID                   UUID DEFAULT uuid_generate_v1()       NOT NULL,
-  date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  name                   VARCHAR(150)                          NOT NULL,
-  address_id             BIGINT REFERENCES address (id)        NOT NULL,
-  business_id            BIGINT REFERENCES business (id)       NOT NULL
+CREATE TRIGGER update_business_trg
+  BEFORE UPDATE
+  ON business
+  FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
+
+CREATE TABLE store (
+  id           BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID         UUID DEFAULT uuid_generate_v1()       NOT NULL,
+  date_created TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  last_updated TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  name         VARCHAR(150)                          NOT NULL,
+  num          VARCHAR(150)                          NOT NULL,
+  address_id   BIGINT REFERENCES address (id)        NOT NULL,
+  business_id  BIGINT REFERENCES business (id)       NOT NULL
+);
+CREATE TRIGGER update_store_trg
+  BEFORE UPDATE
+  ON store
+  FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
+
+CREATE TABLE customer (-- customers
+  id                  BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID                UUID DEFAULT uuid_generate_v1()       NOT NULL,
+  date_created        TIMESTAMP DEFAULT current_timestamp   NOT NULL, -- created_at
+  last_updated        TIMESTAMP DEFAULT current_timestamp   NOT NULL, -- updated_at
+  account             VARCHAR(150)                          NOT NULL, -- custacct
+  last_name           VARCHAR(150)                          NOT NULL, -- name1_first
+  first_name          VARCHAR(150)                          NOT NULL, -- name1_last
+  contact_name        VARCHAR(150)                          NOT NULL, -- contact_name
+  address_id          BIGINT REFERENCES address (id)        NOT NULL, -- addr1, addr2, etc
+  date_of_birth       DATE                                  NOT NULL, -- dob
+  taxable             BOOLEAN DEFAULT TRUE                  NOT NULL, -- tax_nbr
+  tax_number          VARCHAR(150),
+  status_flag         VARCHAR(20)                           NOT NULL, -- status_flag
+  allow_olp           BOOLEAN DEFAULT FALSE                 NOT NULL, -- allow_olp
+  allow_recur         BOOLEAN DEFAULT FALSE                 NOT NULL, -- allow_recur
+  bttc                VARCHAR(150)                          NOT NULL, -- bttc
+  customer_receivable VARCHAR(150)                          NOT NULL, -- custreceivable
+  store_id            BIGINT REFERENCES store (id)          NOT NULL, -- store_num
+  cell_opt_in         BOOLEAN DEFAULT FALSE                 NOT NULL, -- cell_optin
+  cell_pin            VARCHAR(10),
+  customer_vectors    TSVECTOR                              NOT NULL
+  -- ssan                binary
+  -- ssan_salt           binary
+  -- driver_lic_nbr      binary
+  -- driver_lic_nbr_salt binary
 );
 
-CREATE TABLE customer(
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
-  UUID                   UUID      DEFAULT uuid_generate_v1()  NOT NULL,
-  date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_name              VARCHAR(150) NOT NULL,
-  first_name             VARCHAR(150) NOT NULL,
-  address                BIGINT REFERENCES address (id)        NOT NULL
-);
+CREATE INDEX customer_search_idx
+  ON customer
+  USING gin (customer_vectors);
 
-CREATE TABLE automobile ( -- care_infos
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
-  UUID                   UUID      DEFAULT uuid_generate_v1()  NOT NULL,
-  date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  license                VARCHAR(50)                           NOT NULL,
-  year                   NUMBER(4)                             NOT NULL,
-  make                   VARCHAR(50)                           NOT NULL,
-  model                  VARCHAR(50)                           NOT NULL,
-  description_color      VARCHAR(50)                           NOT NULL,
-  vin                    VARCHAR (150)                         NOT NULL,
-  lien_holder            VARCHAR (150),
-  lien_phone             VARCHAR(20),
-  payment_amount         NUMBER(19, 2),
-  payment_frequency      VARCHAR(150),
-  purchase_date          DATE                                  NOT NULL,
-  customer_id            BIGINT REFERENCES customer (id)       NOT NULL
-);
+CREATE FUNCTION generate_customer_search_fn()
+  RETURNS TRIGGER AS $$
+BEGIN
+  new.customer_vectors := to_tsvector(new.last_name) || to_tsvector(new.first_name) || to_tsvector(contact_name);
+  new.last_updated := current_timestamp;
 
-CREATE TABLE customer_collections (
-  id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
-  UUID                   UUID      DEFAULT uuid_generate_v1()  NOT NULL,
-  date_created           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  last_updated           TIMESTAMP DEFAULT current_timestamp   NOT NULL,
-  customer_account_id    BIGINT REFERENCES customer (id)       NOT NULL
-)
+  return new;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER update_customer_search_trg
+  BEFORE INSERT OR UPDATE
+  ON customer
+  FOR EACH ROW EXECUTE PROCEDURE generate_customer_search_fn();
