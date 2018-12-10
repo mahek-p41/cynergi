@@ -1,16 +1,10 @@
 micronaut:
    environment: local
-postgres:
-   reactive:
-      client:
-         host: localhost
-         user: postgres
-         password: password
 datasources:
    default:
-      url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
-      username: "${postgres.reactive.client.user}"
-      password: "${postgres.reactive.client.password}"
+      url: "jdbc:postgresql://localhost:5434/cynergidb"
+      username: postgres
+      password: password
 flyway:
    datasources:
       default:

@@ -1,5 +1,8 @@
 micronaut:
    environment: prod
-postgres:
-   reactive:
-      client:
+datasources:
+   default:
+      url: "jdbc:postgresql://localhost:5434/cynergidb"
+      username: postgres
+      password: password
+      maximumPoolSize: 10
