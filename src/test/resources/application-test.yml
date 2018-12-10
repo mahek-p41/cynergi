@@ -1,8 +1,8 @@
 micronaut:
-   environment: local
+   environment: test
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:5432/cynergidb"
+      url: "jdbc:postgresql://localhost:6432/cynergidbtest"
       username: postgres
       password: password
 flyway:
