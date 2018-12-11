@@ -19,22 +19,7 @@ CREATE TABLE address (
   address2           VARCHAR(150),
   city               VARCHAR(150)                          NOT NULL,
   state              VARCHAR(2)                            NOT NULL,
-  postal_code        VARCHAR(20)                           NOT NULL,
-  zip_plus_four      VARCHAR(10),
-  country            VARCHAR(150)                          NOT NULL,
-  phone1             VARCHAR(20)                           NOT NULL,
-  phone1_description VARCHAR(20)                           NOT NULL,
-  phone2             VARCHAR(20),
-  phone2_description VARCHAR(20),
-  phone3             VARCHAR(20),
-  phone3_description VARCHAR(20),
-  phone4             VARCHAR(20),
-  phone4_description VARCHAR(20),
-  work_phone         VARCHAR(20)                           NOT NULL,
-  work_phone_ext     VARCHAR(10)                           NOT NULL,
-  fax                VARCHAR(20),
-  map_cd             VARCHAR(20)                           NOT NULL,
-  email_address      VARCHAR(200)                          NOT NULL
+  postal_code        VARCHAR(20)                           NOT NULL
 );
 CREATE TRIGGER update_address_trg
   BEFORE UPDATE
@@ -89,11 +74,11 @@ CREATE TABLE customer (-- customers
   store_id            BIGINT REFERENCES store (id)          NOT NULL, -- store_num
   cell_opt_in         BOOLEAN DEFAULT FALSE                 NOT NULL, -- cell_optin
   cell_pin            VARCHAR(10),
-  customer_vectors    TSVECTOR                              NOT NULL
   -- ssan                binary
   -- ssan_salt           binary
   -- driver_lic_nbr      binary
   -- driver_lic_nbr_salt binary
+  customer_vectors    TSVECTOR                              NOT NULL
 );
 
 CREATE INDEX customer_search_idx

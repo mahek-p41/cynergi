@@ -5,8 +5,4 @@ datasources:
       url: "jdbc:postgresql://localhost:5432/cynergidb"
       username: postgres
       password: password
-flyway:
-   datasources:
-      default:
-         locations: classpath:db/migration/postgres
 
