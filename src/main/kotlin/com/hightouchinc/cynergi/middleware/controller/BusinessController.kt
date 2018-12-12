@@ -1,21 +1,23 @@
 package com.hightouchinc.cynergi.middleware.controller
 
-import com.hightouchinc.cynergi.middleware.data.access.BusinessDataAccessObject
 import com.hightouchinc.cynergi.middleware.data.transfer.Business
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
+import com.hightouchinc.cynergi.middleware.service.BusinessService
 import io.micronaut.context.annotation.Parameter
+import io.micronaut.http.MediaType
+import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 
 @Controller("/api/v1/businesses")
 class BusinessController(
-   private val businessDataAccessObject: BusinessDataAccessObject
+   private val businessService: BusinessService
 ) {
 
-   @Get("/{id}")
+   @Get(value = "/{id}", processes = [APPLICATION_JSON])
    fun fetchOne(
-      @Parameter("id") id: Long
+      id: Long
    ): Business {
-      return businessDataAccessObject.fetchOne(id = id) ?: throw NotFoundException(id)
+      return businessService.findById(id = id) ?: throw NotFoundException(id)
    }
 }

@@ -2,13 +2,14 @@ package com.hightouchinc.cynergi.middleware.service
 
 import io.micronaut.context.annotation.Requires
 import io.micronaut.spring.tx.annotation.Transactional
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.inject.Singleton
 
 @Singleton
 @Requires(env = ["test"])
 class TruncateDatabaseService(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: JdbcTemplate
 ) {
 
    @Transactional
@@ -22,8 +23,8 @@ class TruncateDatabaseService(
          rs.getString("tableName")
       }
 
-      tables.forEach {tableName ->
-         jdbc.update("TRUNCATE TABLE :tableName CASCADE", mapOf("tableName" to tableName ))
-      }
+      tables
+         .filter { !it.contains("flyway") }
+         .forEach { jdbc.update("TRUNCATE TABLE $it CASCADE") }
    }
 }

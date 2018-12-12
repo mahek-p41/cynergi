@@ -12,11 +12,11 @@ import spock.lang.Specification
 class BusinessControllerTests extends Specification {
     @Shared @AutoCleanup EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
     @Shared @AutoCleanup HttpClient client = HttpClient.create(embeddedServer.URL)
-    /*@Shared truncateDatabaseService = embeddedServer.applicationContext.getBean(TruncateDatabaseService)
+    @Shared truncateDatabaseService = embeddedServer.applicationContext.getBean(TruncateDatabaseService)
 
     def cleanupSpec() {
         truncateDatabaseService.truncate()
-    }*/
+    }
 
     def "test loading of a business" () {
         client.toBlocking().retrieve(HttpRequest.GET("/api/v1/businesses/1")) == ""
