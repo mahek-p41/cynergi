@@ -9,4 +9,5 @@ flyway:
    datasources:
       default:
          locations: classpath:db/migration/postgres
+         clean-disabled: false
 
