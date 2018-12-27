@@ -19,23 +19,31 @@ CREATE TABLE address (
   address2           VARCHAR(150),
   city               VARCHAR(150)                          NOT NULL,
   state              VARCHAR(2)                            NOT NULL,
-  postal_code        VARCHAR(20)                           NOT NULL
+  postal_code        VARCHAR(20)                           NOT NULL,
+  zip_plus_four      VARCHAR(10),
+  country            VARCHAR(150)                          NOT NULL,
+  phone1             VARCHAR(20)                           NOT NULL,
+  phone1_description VARCHAR(20)                           NOT NULL,
+  phone2             VARCHAR(20),
+  phone2_description VARCHAR(20),
+  fax                VARCHAR(20),
+  email_address      VARCHAR(200)                          NOT NULL
 );
 CREATE TRIGGER update_address_trg
   BEFORE UPDATE
   ON address
   FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
 
-CREATE TABLE business (
+CREATE TABLE company (
   id           BIGSERIAL                             NOT NULL PRIMARY KEY,
   UUID         UUID DEFAULT uuid_generate_v1()       NOT NULL,
   date_created TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   last_updated TIMESTAMP DEFAULT current_timestamp   NOT NULL,
   name         VARCHAR(150)                          NOT NULL
 );
-CREATE TRIGGER update_business_trg
+CREATE TRIGGER update_company_trg
   BEFORE UPDATE
-  ON business
+  ON company
   FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE store (
@@ -46,12 +54,23 @@ CREATE TABLE store (
   name         VARCHAR(150)                          NOT NULL,
   num          VARCHAR(150)                          NOT NULL,
   address_id   BIGINT REFERENCES address (id)        NOT NULL,
-  business_id  BIGINT REFERENCES business (id)       NOT NULL
+  company_id   BIGINT REFERENCES company (id)        NOT NULL
 );
 CREATE TRIGGER update_store_trg
   BEFORE UPDATE
   ON store
   FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
+
+CREATE TABLE employee (
+  id           BIGSERIAL                             NOT NULL PRIMARY KEY,
+  UUID         UUID DEFAULT uuid_generate_v1()       NOT NULL,
+  date_created TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  last_updated TIMESTAMP DEFAULT current_timestamp   NOT NULL,
+  first_name   VARCHAR (150)                         NOT NULL,
+  last_name    VARCHAR (150)                         NOT NULL,
+  address_id   BIGINT REFERENCES address (id)        NOT NULL,
+  company_id   BIGINT REFERENCES company (id)        NOT NULL
+);
 
 CREATE TABLE customer (-- customers
   id                  BIGSERIAL                             NOT NULL PRIMARY KEY,
@@ -74,11 +93,11 @@ CREATE TABLE customer (-- customers
   store_id            BIGINT REFERENCES store (id)          NOT NULL, -- store_num
   cell_opt_in         BOOLEAN DEFAULT FALSE                 NOT NULL, -- cell_optin
   cell_pin            VARCHAR(10),
+  customer_vectors    TSVECTOR                              NOT NULL
   -- ssan                binary
   -- ssan_salt           binary
   -- driver_lic_nbr      binary
   -- driver_lic_nbr_salt binary
-  customer_vectors    TSVECTOR                              NOT NULL
 );
 
 CREATE INDEX customer_search_idx

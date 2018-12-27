@@ -2,12 +2,13 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.service.TruncateDatabaseService
 import io.micronaut.context.ApplicationContext
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.client.HttpClient
 import io.micronaut.runtime.server.EmbeddedServer
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+
+import static io.micronaut.http.HttpRequest.GET
 
 class BusinessControllerTests extends Specification {
     @Shared @AutoCleanup EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
@@ -18,7 +19,8 @@ class BusinessControllerTests extends Specification {
         truncateDatabaseService.truncate()
     }
 
-    def "test loading of a business" () {
-        client.toBlocking().retrieve(HttpRequest.GET("/api/v1/businesses/1")) == ""
+    void "test loading of a business" () {
+        expect:
+            client.toBlocking().retrieve(GET("/api/v1/businesses/1")) == ""
     }
 }
