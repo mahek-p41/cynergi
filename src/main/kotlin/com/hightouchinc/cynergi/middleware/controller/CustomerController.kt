@@ -14,7 +14,7 @@ class CustomerController(
 ) {
 
    @Get("/search/{searchString}")
-   fun search(@Parameter("searchString") searchString: String, pageRequest: PageRequest): Page<Customer> {
+   fun search(@Parameter("searchString") searchString: String): Page<Customer> {
       return customerDao.searchForCustomers(searchString)
    }
 }

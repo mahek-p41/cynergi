@@ -8,3 +8,11 @@ fun <T> NamedParameterJdbcOperations.findFirstOrNull(query: String, params: Map<
 
    return resultList.firstOrNull()
 }
+
+fun NamedParameterJdbcOperations.nextval(tableName: String): Long {
+   return this.queryForObject(
+      "SELECT nextval(:name)",
+      mapOf<String, String>("name" to "${tableName}_id_seq"),
+      Long::class.java
+   )!!
+}
