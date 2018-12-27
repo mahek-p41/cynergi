@@ -5,8 +5,8 @@ datasources:
    default:
       driverClassName: org.postgresql.Driver
       connectionInitSql: SELECT 1
-      maximumPoolSize: 1
 flyway:
    datasources:
       default:
          locations: classpath:db/migration/postgres
+         clean-disabled: true

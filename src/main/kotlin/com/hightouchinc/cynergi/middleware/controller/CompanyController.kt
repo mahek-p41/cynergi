@@ -9,8 +9,8 @@ import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 
-@Controller("/api/v1/businesses")
-class BusinessController(
+@Controller("/api/v1/companies")
+class CompanyController(
    private val businessService: BusinessService
 ) {
 

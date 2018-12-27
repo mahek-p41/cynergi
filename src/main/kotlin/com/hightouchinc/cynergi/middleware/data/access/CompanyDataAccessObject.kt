@@ -8,17 +8,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class BusinessDataAccessObject @Inject constructor(
+class CompanyDataAccessObject @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private companion object {
 
-      @Language("GenericSQL")
+      @Language("PostgreSQL")
       val FETCH_BUSINESS_BY_ID = """
            SELECT
                b.id AS id,
                b.name AS name
-            FROM Business b
+            FROM Company b
        """.trimIndent()
    }
 

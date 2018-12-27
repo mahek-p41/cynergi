@@ -5,9 +5,11 @@ datasources:
       url: "jdbc:postgresql://localhost:6432/cynergidbtest"
       username: postgres
       password: password
+      maximumPoolSize: 1
 flyway:
    datasources:
       default:
          locations: classpath:db/migration/postgres
+         clean-on-validation-error: true
          clean-disabled: false
 
