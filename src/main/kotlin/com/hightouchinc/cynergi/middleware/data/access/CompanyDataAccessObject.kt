@@ -20,12 +20,12 @@ class CompanyDataAccessObject @Inject constructor(
 
       @Language("PostgreSQL")
       val FETCH_COMPANY_BY_ID = """
-           SELECT
-              c.id AS id,
-              c.name AS name
-            FROM Company c
-            WHERE id = :id
-       """.trimIndent()
+          SELECT
+             c.id AS id,
+             c.name AS name
+           FROM Company c
+           WHERE c.id = :id
+      """.trimIndent()
 
       @Language("PostgreSQL")
       val CREATE_NEW_COMPANY = """
@@ -44,9 +44,9 @@ class CompanyDataAccessObject @Inject constructor(
    }
 
    @Transactional
-   override fun save(company: Company): Company {
-      val id: Long = save(parameters = mapOf("name" to company), query = CREATE_NEW_COMPANY)
+   override fun save(t: Company): Company {
+      val id: Long = save(parameters = mapOf("name" to t.name), query = CREATE_NEW_COMPANY)
 
-      return company.copy(id = id)
+      return t.copy(id = id)
    }
 }

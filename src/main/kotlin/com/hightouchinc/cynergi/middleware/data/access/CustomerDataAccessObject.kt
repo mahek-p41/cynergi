@@ -34,13 +34,13 @@ class CustomerDataAccessObject @Inject constructor(
             c.cell_opt_in AS cellOptIn,
             c.cell_pin AS cellPin
          FROM Customer c
-         WHERE id = :id
+         WHERE c.id = :id
       """.trimIndent()
 
       @Language("PostgreSQL")
       val CREATE_NEW_CUSTOMER = """
-         INSERT INTO Customer(account, last_name, first_name, contact_name, date_of_birth, tax_number, allow_olp, allow_recur, cell_opt_in, cell_pin)
-         VALUES (:account, :lastName, :firstName, :contactName, :dateOfBirth, :taxNumber, :allowOlp, :allowRecur, :cellOptIn, :cellPin)
+         INSERT INTO Customer(id, account, last_name, first_name, contact_name, date_of_birth, tax_number, allow_olp, allow_recur, cell_opt_in, cell_pin)
+         VALUES (:id, :account, :lastName, :firstName, :contactName, :dateOfBirth, :taxNumber, :allowOlp, :allowRecur, :cellOptIn, :cellPin)
       """.trimIndent()
    }
 
@@ -72,7 +72,8 @@ class CustomerDataAccessObject @Inject constructor(
          "taxNumber" to t.taxNumber,
          "allowOlp" to t.allowOlp,
          "allowRecur" to t.allowRecur,
-         "cellOptIn" to t.cellOptIn
+         "cellOptIn" to t.cellOptIn,
+         "cellPin" to t.cellPin
       ), CREATE_NEW_CUSTOMER)
 
       return t.copy(id = id)

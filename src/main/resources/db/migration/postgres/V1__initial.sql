@@ -107,7 +107,7 @@ CREATE INDEX customer_search_idx
 CREATE FUNCTION generate_customer_search_fn()
   RETURNS TRIGGER AS $$
 BEGIN
-  new.customer_vectors := to_tsvector(new.last_name) || to_tsvector(new.first_name) || to_tsvector(contact_name);
+  new.customer_vectors := to_tsvector(new.last_name) || to_tsvector(new.first_name) || to_tsvector(new.contact_name);
   new.last_updated := current_timestamp;
 
   return new;

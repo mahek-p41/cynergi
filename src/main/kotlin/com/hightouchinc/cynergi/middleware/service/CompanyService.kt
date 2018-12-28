@@ -13,5 +13,5 @@ class CompanyService(
       companyDataAccessObject.fetchOne(id = id)
 
    fun save(company: Company): Company =
-      companyDataAccessObject.save(company = company)
+      companyDataAccessObject.save(t = company)
 }

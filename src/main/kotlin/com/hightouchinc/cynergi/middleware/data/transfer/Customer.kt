@@ -2,7 +2,6 @@ package com.hightouchinc.cynergi.middleware.data.transfer
 
 import com.hightouchinc.cynergi.middleware.data.domain.DataTransferObject
 import java.time.LocalDate
-import javax.validation.constraints.NotNull
 
 @DataTransferObject
 data class Customer(
@@ -25,7 +24,9 @@ data class Customer(
 
    val allowRecur: Boolean = false,
 
-   val cellOptIn: Boolean = false
+   val cellOptIn: Boolean = false,
+
+   val cellPin: String? = null
 ) {
    constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: LocalDate, taxNumber: String, allowOlp: Boolean, allowRecur: Boolean, cellOptIn: Boolean):
       this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth, taxNumber = taxNumber, allowOlp = allowOlp, allowRecur = allowRecur, cellOptIn = cellOptIn)

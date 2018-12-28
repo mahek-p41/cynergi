@@ -1,30 +1,15 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
 import com.hightouchinc.cynergi.middleware.data.transfer.Company
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
-import com.hightouchinc.cynergi.middleware.service.TruncateDatabaseService
 import com.hightouchinc.cynergi.test.data.loader.CompanyTestDataLoaderService
-import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.client.HttpClient
-import io.micronaut.runtime.server.EmbeddedServer
-import spock.lang.AutoCleanup
-import spock.lang.Shared
-import spock.lang.Specification
 
-class CompanyControllerTests extends Specification {
-    @Shared @AutoCleanup EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
-    @Shared @AutoCleanup HttpClient client = HttpClient.create(embeddedServer.URL)
-    @Shared truncateDatabaseService = embeddedServer.applicationContext.getBean(TruncateDatabaseService)
-    @Shared ac = embeddedServer.applicationContext
+class CompanyControllerTests extends ControllerTestsBase {
+    def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
 
-    def companyTestDataLoaderService = ac.getBean(CompanyTestDataLoaderService)
-
-    void cleanupSpec() {
-        truncateDatabaseService.truncate()
-    }
-
-    void "test loading of a company" () {
+    void "fetch one company" () {
         when:
            def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new NotFoundException("Unable to create Company") }
         then:
