@@ -6,42 +6,38 @@ import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import io.micronaut.spring.tx.annotation.Transactional
 import org.intellij.lang.annotations.Language
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CustomerDataAccessObject @Inject constructor(
-   jdbc: NamedParameterJdbcTemplate
-): DataAccessObjectBase (
-   tableName = "customer",
-   jdbc = jdbc
-), DataAccessObject<Customer> {
-   
+   private val jdbc: NamedParameterJdbcTemplate
+): DataAccessObject<Customer> {
+
    private companion object {
 
+      val CUSTOMER_COLUMNS = """
+         id AS id,
+         uuid AS uuid,
+         date_created AS dateCreated,
+         last_updated AS lastUpdated,
+         account AS account,
+         first_name AS firstName,
+         last_name AS lastName,
+         contact_name AS contactName,
+         date_of_birth AS dateOfBirth
+      """.trimIndent()
+
       @Language("PostgreSQL")
-      val FETCH_CUSTOMER_BY_ID = """
+      val FETCH_CUSTOMER_BASE = """
          SELECT
-            c.id AS id,
-            c.account AS account,
-            c.first_name AS firstName,
-            c.last_name AS lastName,
-            c.contact_name AS contactName,
-            c.date_of_birth AS dateOfBirth
+            $CUSTOMER_COLUMNS
          FROM Customer c
-         WHERE c.id = :id
       """.trimIndent()
 
-      @Language("PostgreSQL")
-      val CREATE_NEW_CUSTOMER = """
-         INSERT INTO Customer(id, account, last_name, first_name, contact_name, date_of_birth)
-         VALUES (:id, :account, :lastName, :firstName, :contactName, :dateOfBirth)
-      """.trimIndent()
-   }
-
-   override fun fetchOne(id: Long): Customer? {
-      return jdbc.findFirstOrNull(FETCH_CUSTOMER_BY_ID, mapOf("id" to id)) { rs, _ ->
+      val CUSTOMER_ROW_MAPPER = { rs: ResultSet, _: Int ->
          Customer(
             id = rs.getLong("id"),
             account = rs.getString("account"),
@@ -51,26 +47,52 @@ class CustomerDataAccessObject @Inject constructor(
             dateOfBirth = rs.getObject("dateOfBirth", LocalDate::class.java)
          )
       }
+
+      @Language("PostgreSQL")
+      val FETCH_CUSTOMER_BY_ID = """
+         $FETCH_CUSTOMER_BASE
+         WHERE c.id = :id
+      """.trimIndent()
+
+      @Language("PostgreSQL")
+      val CREATE_NEW_CUSTOMER = """
+         INSERT INTO Customer (account, last_name, first_name, contact_name, date_of_birth)
+         VALUES (:account, :lastName, :firstName, :contactName, :dateOfBirth)
+         RETURNING $CUSTOMER_COLUMNS
+      """.trimIndent()
+
+      @Language("PostgreSQL")
+      val SEARCH_CUSTOMERS = """
+         $FETCH_CUSTOMER_BASE
+         WHERE customer_vectors @@ to_tsquery(:customerSearchString)
+      """.trimIndent()
+   }
+
+   override fun fetchOne(id: Long): Customer? {
+      return jdbc.findFirstOrNull(FETCH_CUSTOMER_BY_ID, mapOf("id" to id), CUSTOMER_ROW_MAPPER)
    }
 
    @Transactional
    override fun save(t: Customer): Customer {
-      val id = save(mapOf(
+      return jdbc.queryForObject(CREATE_NEW_CUSTOMER, mapOf(
          "account"     to t.account,
          "firstName"   to t.firstName,
          "lastName"    to t.lastName,
          "contactName" to t.contactName,
          "dateOfBirth" to t.dateOfBirth
-      ), CREATE_NEW_CUSTOMER)
+      ), CUSTOMER_ROW_MAPPER)!!
+   }
 
-      return t.copy(id = id)
+   @Transactional // convience method mostly for testing
+   fun save(customers: Collection<Customer>): Collection<Customer> {
+      return customers.map {
+         save(t = it)
+      }
    }
 
    fun searchForCustomers(customerSearchString: String): Page<Customer> {
-      /*val content = jdbcTemplate.query("") { rs: ResultSet ->
+      val content: List<Customer> = jdbc.query(SEARCH_CUSTOMERS, mapOf("customerSearchString" to "$customerSearchString:*"), CUSTOMER_ROW_MAPPER)
 
-      }*/
-
-      return Page(listOf(), 0, 1, false, false)
+      return Page(content, content.size, 1, true, false)
    }
 }

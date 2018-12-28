@@ -6,7 +6,6 @@ import com.hightouchinc.cynergi.middleware.service.CustomerService
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
-import java.time.ZoneId
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -25,7 +24,7 @@ class CustomerTestDataLoader {
             name.firstName(),
             name.lastName(),
             name.username(),
-            dates.birthday(18, 85).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            dates.birthday(18, 85)
          )
       }
    }

@@ -1,8 +1,11 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
+import com.hightouchinc.cynergi.middleware.data.domain.Page
 import com.hightouchinc.cynergi.middleware.data.transfer.Customer
 import com.hightouchinc.cynergi.middleware.exception.NotFound
+import com.hightouchinc.cynergi.middleware.service.CustomerService
 import com.hightouchinc.cynergi.test.data.loader.CustomerTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
@@ -12,10 +15,11 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class CustomerControllerTests extends ControllerTestsBase {
    final def url = "/api/v1/customers"
    def customerTestDataLoaderService = applicationContext.getBean(CustomerTestDataLoaderService)
+   def customerService = applicationContext.getBean(CustomerService)
 
    def "fetch one customer"() {
       when:
-      def customer = customerTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Customer")}
+      final def customer = customerTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Customer")}
 
       then:
       client.toBlocking().retrieve(GET("$url/${customer.id}"), Customer) == customer
@@ -29,5 +33,47 @@ class CustomerControllerTests extends ControllerTestsBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(NotFound.class).orElse(null) == new NotFound("0")
+   }
+
+   def "search for customer John" () {
+      given:
+      final def faker = new Faker()
+      final def number = faker.number()
+      final def birthDateFaker = faker.date()
+      final def customers = customerService.save([
+         new Customer(
+            number.digits(10),
+            "Johnny",
+            "Begood",
+            "J",
+            birthDateFaker.birthday(18, 55)
+         ),
+         new Customer(
+            number.digits(10),
+            "Homer",
+            "Simpson",
+            "The Big H",
+            birthDateFaker.birthday(18, 55)
+         ),
+         new Customer(
+            number.digits(10),
+            "Johnathan",
+            "Simpson",
+            "The Big J",
+            birthDateFaker.birthday(18, 55)
+         )
+      ])
+
+      when:
+      def johns = client.toBlocking().retrieve(GET("$url/search/john"), Page)
+
+      then:
+      johns.content.size() == 2
+
+      johns.content[0].id == customers[0].id
+      johns.content[0].firstName == customers[0].firstName
+
+      johns.content[1].id == customers[2].id
+      johns.content[1].firstName == customers[2].firstName
    }
 }

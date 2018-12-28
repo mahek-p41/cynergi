@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.data.domain.Page
 import com.hightouchinc.cynergi.middleware.data.transfer.Customer
 import com.hightouchinc.cynergi.middleware.service.CustomerService
 import io.micronaut.context.annotation.Parameter
+import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 
@@ -14,7 +15,7 @@ class CustomerController(
 ): CrudControllerBase<Customer>(
    identityService = customerService
 ) {
-   @Get("/search/{searchString}")
+   @Get("/search/{searchString}", produces = [APPLICATION_JSON])
    fun search(
       @Parameter("searchString") searchString: String
    ): Page<Customer> {

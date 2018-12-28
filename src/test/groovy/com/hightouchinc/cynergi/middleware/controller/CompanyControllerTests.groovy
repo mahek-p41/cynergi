@@ -15,7 +15,7 @@ class CompanyControllerTests extends ControllerTestsBase {
 
    void "fetch one company"() {
       when:
-      def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Company")}
+      final def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Company")}
 
       then:
       client.toBlocking().retrieve(GET("$url/${savedCompany.id}"), Company) == savedCompany

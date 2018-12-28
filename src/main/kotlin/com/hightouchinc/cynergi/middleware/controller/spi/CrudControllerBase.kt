@@ -9,7 +9,7 @@ abstract class CrudControllerBase<T> (
    private val identityService: IdentityService<T>
 ) {
 
-   @Get(value = "/{id}", processes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
+   @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       id: Long
    ): T {
