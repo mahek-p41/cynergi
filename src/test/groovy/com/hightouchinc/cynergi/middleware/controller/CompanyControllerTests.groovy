@@ -14,6 +14,6 @@ class CompanyControllerTests extends ControllerTestsBase {
         when:
            def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new NotFoundException("Unable to create Company") }
         then:
-            client.toBlocking().retrieve(GET("/api/v1/companies/${savedCompany.id}"), Company) == savedCompany
+           client.toBlocking().retrieve(GET("/api/v1/companies/${savedCompany.id}"), Company) == savedCompany
     }
 }

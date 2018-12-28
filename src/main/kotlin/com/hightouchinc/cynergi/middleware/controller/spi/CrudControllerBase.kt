@@ -1,4 +1,4 @@
-package com.hightouchinc.cynergi.middleware.controller
+package com.hightouchinc.cynergi.middleware.controller.spi
 
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.service.IdentityService

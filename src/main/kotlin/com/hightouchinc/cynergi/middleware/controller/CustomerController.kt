@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.hightouchinc.cynergi.middleware.controller.spi.CrudControllerBase
 import com.hightouchinc.cynergi.middleware.data.domain.Page
 import com.hightouchinc.cynergi.middleware.data.transfer.Customer
 import com.hightouchinc.cynergi.middleware.service.CustomerService
@@ -14,7 +15,9 @@ class CustomerController(
    identityService = customerService
 ) {
    @Get("/search/{searchString}")
-   fun search(@Parameter("searchString") searchString: String): Page<Customer> {
+   fun search(
+      @Parameter("searchString") searchString: String
+   ): Page<Customer> {
       return customerService.searchForCustomers(customerSearchString = searchString)
    }
 }
