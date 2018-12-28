@@ -14,7 +14,7 @@ class CompanyDataAccessObject @Inject constructor(
 ): DataAccessObjectBase(
    tableName = "company",
    jdbc = jdbc
-), IdentityDataAccess<Company> {
+), DataAccessObject<Company> {
 
    private companion object {
 
@@ -44,7 +44,7 @@ class CompanyDataAccessObject @Inject constructor(
    }
 
    @Transactional
-   fun save(company: Company): Company {
+   override fun save(company: Company): Company {
       val id: Long = save(parameters = mapOf("name" to company), query = CREATE_NEW_COMPANY)
 
       return company.copy(id = id)

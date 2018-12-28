@@ -9,13 +9,7 @@ import io.micronaut.http.annotation.Get
 
 @Controller("/api/v1/companies")
 class CompanyController(
-   private val companyService: CompanyService
-) {
-
-   @Get(value = "/{id}", processes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
-   fun fetchOne(
-      id: Long
-   ): Company {
-      return companyService.findById(id = id) ?: throw NotFoundException(id)
-   }
-}
+   companyService: CompanyService
+): CrudControllerBase<Company>(
+   identityService = companyService
+)

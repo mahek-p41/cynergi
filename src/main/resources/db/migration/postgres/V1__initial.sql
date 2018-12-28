@@ -81,16 +81,16 @@ CREATE TABLE customer (-- customers
   last_name           VARCHAR(150)                          NOT NULL, -- name1_first
   first_name          VARCHAR(150)                          NOT NULL, -- name1_last
   contact_name        VARCHAR(150)                          NOT NULL, -- contact_name
-  address_id          BIGINT REFERENCES address (id)        NOT NULL, -- addr1, addr2, etc
+  --address_id          BIGINT REFERENCES address (id)        NOT NULL, -- addr1, addr2, etc
   date_of_birth       DATE                                  NOT NULL, -- dob
-  taxable             BOOLEAN DEFAULT TRUE                  NOT NULL, -- tax_nbr
+  --taxable             BOOLEAN DEFAULT TRUE                  NOT NULL, -- tax_nbr
   tax_number          VARCHAR(150),
-  status_flag         VARCHAR(20)                           NOT NULL, -- status_flag
+  --status_flag         VARCHAR(20)                           NOT NULL, -- status_flag
   allow_olp           BOOLEAN DEFAULT FALSE                 NOT NULL, -- allow_olp
   allow_recur         BOOLEAN DEFAULT FALSE                 NOT NULL, -- allow_recur
-  bttc                VARCHAR(150)                          NOT NULL, -- bttc
-  customer_receivable VARCHAR(150)                          NOT NULL, -- custreceivable
-  store_id            BIGINT REFERENCES store (id)          NOT NULL, -- store_num
+  --bttc                VARCHAR(150)                          NOT NULL, -- bttc
+  --customer_receivable VARCHAR(150)                          NOT NULL, -- custreceivable
+  --store_id            BIGINT REFERENCES store (id)          NOT NULL, -- store_num
   cell_opt_in         BOOLEAN DEFAULT FALSE                 NOT NULL, -- cell_optin
   cell_pin            VARCHAR(10),
   customer_vectors    TSVECTOR                              NOT NULL
