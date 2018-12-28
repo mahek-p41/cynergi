@@ -4,7 +4,8 @@ import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
 import com.hightouchinc.cynergi.middleware.data.transfer.Company
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.test.data.loader.CompanyTestDataLoaderService
-import io.micronaut.http.HttpRequest
+
+import static io.micronaut.http.HttpRequest.GET
 
 class CompanyControllerTests extends ControllerTestsBase {
     def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
@@ -13,6 +14,6 @@ class CompanyControllerTests extends ControllerTestsBase {
         when:
            def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new NotFoundException("Unable to create Company") }
         then:
-            client.toBlocking().retrieve(HttpRequest.GET("/api/v1/companies/${savedCompany.id}"), Company) == savedCompany
+            client.toBlocking().retrieve(GET("/api/v1/companies/${savedCompany.id}"), Company) == savedCompany
     }
 }
