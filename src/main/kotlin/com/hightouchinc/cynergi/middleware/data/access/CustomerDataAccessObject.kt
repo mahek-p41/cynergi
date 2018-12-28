@@ -17,6 +17,7 @@ class CustomerDataAccessObject @Inject constructor(
    tableName = "customer",
    jdbc = jdbc
 ), DataAccessObject<Customer> {
+   
    private companion object {
 
       @Language("PostgreSQL")
@@ -27,20 +28,15 @@ class CustomerDataAccessObject @Inject constructor(
             c.first_name AS firstName,
             c.last_name AS lastName,
             c.contact_name AS contactName,
-            c.date_of_birth AS dateOfBirth,
-            c.tax_number AS taxNumber,
-            c.allow_olp AS allowOlp,
-            c.allow_recur AS allowRecur,
-            c.cell_opt_in AS cellOptIn,
-            c.cell_pin AS cellPin
+            c.date_of_birth AS dateOfBirth
          FROM Customer c
          WHERE c.id = :id
       """.trimIndent()
 
       @Language("PostgreSQL")
       val CREATE_NEW_CUSTOMER = """
-         INSERT INTO Customer(id, account, last_name, first_name, contact_name, date_of_birth, tax_number, allow_olp, allow_recur, cell_opt_in, cell_pin)
-         VALUES (:id, :account, :lastName, :firstName, :contactName, :dateOfBirth, :taxNumber, :allowOlp, :allowRecur, :cellOptIn, :cellPin)
+         INSERT INTO Customer(id, account, last_name, first_name, contact_name, date_of_birth)
+         VALUES (:id, :account, :lastName, :firstName, :contactName, :dateOfBirth)
       """.trimIndent()
    }
 
@@ -52,11 +48,7 @@ class CustomerDataAccessObject @Inject constructor(
             firstName = rs.getString("firstName"),
             lastName = rs.getString("lastName"),
             contactName = rs.getString("contactName"),
-            dateOfBirth = rs.getObject("dateOfBirth", LocalDate::class.java),
-            taxNumber = rs.getString("taxNumber"),
-            allowOlp = rs.getBoolean("allowOlp"),
-            allowRecur = rs.getBoolean("allowRecur"),
-            cellOptIn = rs.getBoolean("cellOptIn")
+            dateOfBirth = rs.getObject("dateOfBirth", LocalDate::class.java)
          )
       }
    }
@@ -64,16 +56,11 @@ class CustomerDataAccessObject @Inject constructor(
    @Transactional
    override fun save(t: Customer): Customer {
       val id = save(mapOf(
-         "account" to t.account,
-         "firstName" to t.firstName,
-         "lastName" to t.lastName,
+         "account"     to t.account,
+         "firstName"   to t.firstName,
+         "lastName"    to t.lastName,
          "contactName" to t.contactName,
-         "dateOfBirth" to t.dateOfBirth,
-         "taxNumber" to t.taxNumber,
-         "allowOlp" to t.allowOlp,
-         "allowRecur" to t.allowRecur,
-         "cellOptIn" to t.cellOptIn,
-         "cellPin" to t.cellPin
+         "dateOfBirth" to t.dateOfBirth
       ), CREATE_NEW_CUSTOMER)
 
       return t.copy(id = id)

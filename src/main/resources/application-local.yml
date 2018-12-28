@@ -1,5 +1,10 @@
 micronaut:
    environment: local
+   router:
+      static-resources:
+         swagger:
+            paths: classpath:META-INF/swagger
+            mappings: /swagger/**
 datasources:
    default:
       url: "jdbc:postgresql://localhost:5432/cynergidb"

@@ -2,18 +2,32 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
 import com.hightouchinc.cynergi.middleware.data.transfer.Company
-import com.hightouchinc.cynergi.middleware.exception.NotFoundException
+import com.hightouchinc.cynergi.middleware.exception.NotFound
 import com.hightouchinc.cynergi.test.data.loader.CompanyTestDataLoaderService
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 
 import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 class CompanyControllerTests extends ControllerTestsBase {
-    def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
+   final def url = "/api/v1/companies"
+   def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
 
-    void "fetch one company" () {
-        when:
-           def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new NotFoundException("Unable to create Company") }
-        then:
-           client.toBlocking().retrieve(GET("/api/v1/companies/${savedCompany.id}"), Company) == savedCompany
-    }
+   void "fetch one company"() {
+      when:
+      def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Company")}
+
+      then:
+      client.toBlocking().retrieve(GET("$url/${savedCompany.id}"), Company) == savedCompany
+   }
+
+   void "fetch one company not found"() {
+      when:
+      client.toBlocking().exchange(GET("$url/0"))
+
+      then:
+      final HttpClientResponseException exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      exception.response.getBody(NotFound.class).orElse(null) == new NotFound("0")
+   }
 }

@@ -16,18 +16,8 @@ data class Customer(
 
    val contactName: String,
 
-   val dateOfBirth: LocalDate,
-
-   val taxNumber: String,
-
-   val allowOlp: Boolean = false,
-
-   val allowRecur: Boolean = false,
-
-   val cellOptIn: Boolean = false,
-
-   val cellPin: String? = null
+   val dateOfBirth: LocalDate
 ) {
-   constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: LocalDate, taxNumber: String, allowOlp: Boolean, allowRecur: Boolean, cellOptIn: Boolean):
-      this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth, taxNumber = taxNumber, allowOlp = allowOlp, allowRecur = allowRecur, cellOptIn = cellOptIn)
+   constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: LocalDate):
+      this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth)
 }

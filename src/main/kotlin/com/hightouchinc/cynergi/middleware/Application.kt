@@ -6,7 +6,9 @@ import io.swagger.v3.oas.annotations.info.Info
 
 @OpenAPIDefinition(
    info = Info (
-      title = "Cynergi Middleware"
+      title = "Cynergi Middleware",
+      version = "r1",
+      description = "Cynergi Middleware API"
    )
 )
 object Application {
