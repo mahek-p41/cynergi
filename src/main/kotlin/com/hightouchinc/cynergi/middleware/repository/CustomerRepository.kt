@@ -2,8 +2,11 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.domain.Page
 import com.hightouchinc.cynergi.middleware.entity.Customer
+import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
 import io.micronaut.spring.tx.annotation.Transactional
+import org.eclipse.collections.api.map.MutableMap
+import org.eclipse.collections.impl.factory.Maps
 import org.intellij.lang.annotations.Language
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -16,10 +19,12 @@ import javax.inject.Singleton
 class CustomerRepository @Inject constructor(
    jdbc: NamedParameterJdbcTemplate
 ): RepositoryBase<Customer>(
+   tableName = TABLE_NAME,
    jdbc = jdbc,
    entityRowMapper = CUSTOMER_ROW_MAPPER,
    fetchOneQuery = FETCH_CUSTOMER_BY_ID,
-   saveOneQuery = CREATE_NEW_CUSTOMER
+   saveOneQuery = CREATE_CUSTOMER,
+   updateOneQuery = UPDATE_CUSTOMER
 ) {
    private companion object {
       val CUSTOMER_COLUMNS = """
@@ -34,11 +39,13 @@ class CustomerRepository @Inject constructor(
          date_of_birth AS dateOfBirth
       """.trimIndent()
 
+      const val TABLE_NAME = "Customer"
+
       @Language("PostgreSQL")
       val FETCH_CUSTOMER_BASE = """
          SELECT
             $CUSTOMER_COLUMNS
-         FROM Customer c
+         FROM $TABLE_NAME c
       """.trimIndent()
 
       val CUSTOMER_ROW_MAPPER = RowMapper { rs: ResultSet, _: Int ->
@@ -59,10 +66,22 @@ class CustomerRepository @Inject constructor(
       """.trimIndent()
 
       @Language("PostgreSQL")
-      val CREATE_NEW_CUSTOMER = """
-         INSERT INTO Customer (account, last_name, first_name, contact_name, date_of_birth)
-         VALUES (:account, :lastName, :firstName, :contactName, :dateOfBirth)
+      val CREATE_CUSTOMER = """
+         INSERT INTO $TABLE_NAME (account, first_name, last_name, contact_name, date_of_birth)
+         VALUES (:account, :firstName, :lastName, :contactName, :dateOfBirth)
          RETURNING $CUSTOMER_COLUMNS
+      """.trimIndent()
+
+      @Language("PostgreSQL")
+      val UPDATE_CUSTOMER = """
+         UPDATE $TABLE_NAME
+         SET account = :account,
+             first_name = :firstName,
+             last_name = :lastName,
+             contact_name = :contactName,
+             date_of_birth = :dateOfBirth
+          WHERE id = :id
+          RETURNING $CUSTOMER_COLUMNS
       """.trimIndent()
 
       @Language("PostgreSQL")
@@ -72,8 +91,8 @@ class CustomerRepository @Inject constructor(
       """.trimIndent()
    }
 
-   override fun mapOfSaveParameters(entity: Customer): Map<String, Any?> {
-      return mapOf(
+   override fun mapOfSaveParameters(entity: Customer): MutableMap<String, Any?> {
+      return Maps.mutable.ofPairs(
          "account"     to entity.account,
          "firstName"   to entity.firstName,
          "lastName"    to entity.lastName,

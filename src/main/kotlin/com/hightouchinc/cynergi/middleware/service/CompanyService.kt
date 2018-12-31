@@ -6,12 +6,15 @@ import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
 import javax.inject.Singleton
 
 @Singleton
-class CompanyCrudService(
+class CompanyService(
    private val companyRepository: CompanyRepository
 ): CrudService<CompanyDto> {
 
    override fun findById(id: Long): CompanyDto? =
       companyRepository.fetchOne(id = id)?.let { CompanyDto(it) }
+
+   override fun exists(id: Long): Boolean =
+      companyRepository.exists(id = id)
 
    override fun save(dto: CompanyDto): CompanyDto {
       return CompanyDto(
@@ -20,6 +23,9 @@ class CompanyCrudService(
    }
 
    override fun update(dto: CompanyDto): CompanyDto {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      return CompanyDto(
+         companyRepository.update(entity = Company(dto = dto))
+      )
    }
+
 }

@@ -2,15 +2,37 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.CrudControllerBase
 import com.hightouchinc.cynergi.middleware.entity.CompanyDto
-import com.hightouchinc.cynergi.middleware.service.CompanyCrudService
+import com.hightouchinc.cynergi.middleware.service.CompanyService
 import com.hightouchinc.cynergi.middleware.validator.CompanyValidator
+import io.micronaut.http.MediaType
+import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
+import javax.validation.Valid
 
 @Controller("/api/v1/companies")
 class CompanyController(
-   companyService: CompanyCrudService,
-   companyValidator: CompanyValidator
+   private val companyService: CompanyService,
+   private val companyValidator: CompanyValidator
 ): CrudControllerBase<CompanyDto>(
-   crudService = companyService,
-   validator = companyValidator
-)
+   crudService = companyService
+) {
+   @Post(processes = [MediaType.APPLICATION_JSON])
+   override fun save(
+      @Valid @Body dto: CompanyDto
+   ): CompanyDto {
+      companyValidator.validateSave(dto = dto)
+
+      return companyService.save(dto = dto)
+   }
+
+   @Put(processes = [MediaType.APPLICATION_JSON])
+   override fun update(
+      @Valid @Body dto: CompanyDto
+   ): CompanyDto {
+      companyValidator.validateUpdate(dto = dto)
+
+      return companyService.update(dto = dto)
+   }
+}

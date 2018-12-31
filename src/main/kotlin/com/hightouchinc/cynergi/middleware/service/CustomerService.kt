@@ -8,9 +8,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CustomerCrudService @Inject constructor(
+class CustomerService @Inject constructor(
    private val customerRepository: CustomerRepository
 ): CrudService<CustomerDto> {
+   override fun exists(id: Long): Boolean  =
+      customerRepository.exists(id = id)
+
    override fun findById(id: Long): CustomerDto? =
       customerRepository.fetchOne(id = id)?.let { CustomerDto(customer = it) }
 
@@ -18,7 +21,7 @@ class CustomerCrudService @Inject constructor(
       CustomerDto(customerRepository.save(entity = Customer(dto = dto)))
 
    override fun update(dto: CustomerDto): CustomerDto {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      TODO("not implemented") //To change body ofPairs created functions use File | Settings | File Templates.
    }
 
    fun save(customers: Collection<Customer>): Collection<Customer> =

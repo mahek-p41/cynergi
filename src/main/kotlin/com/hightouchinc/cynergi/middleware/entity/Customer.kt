@@ -18,12 +18,14 @@ data class Customer(
    val contactName: String,
 
    val dateOfBirth: LocalDate
-) {
+): IdentifieableEntity {
    constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: Date):
       this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
 
    constructor(dto: CustomerDto) :
       this(id = dto.id, account = dto.account!!, firstName = dto.firstName!!, lastName = dto.lastName!!, contactName = dto.contactName!!, dateOfBirth = dto.dateOfBirth!!)
+
+   override fun entityId(): Long? = id
 }
 
 @DataTransferObject
