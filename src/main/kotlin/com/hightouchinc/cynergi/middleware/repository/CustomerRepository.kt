@@ -1,10 +1,11 @@
-package com.hightouchinc.cynergi.middleware.data.access
+package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.data.domain.Page
 import com.hightouchinc.cynergi.middleware.data.transfer.Customer
-import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
 import io.micronaut.spring.tx.annotation.Transactional
 import org.intellij.lang.annotations.Language
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -12,20 +13,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CustomerDataAccessObject @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
-): DataAccessObject<Customer> {
-
+class CustomerRepository @Inject constructor(
+   jdbc: NamedParameterJdbcTemplate
+): RepositoryBase<Customer>(
+   jdbc = jdbc,
+   entityRowMapper = CUSTOMER_ROW_MAPPER,
+   fetchOneQuery = FETCH_CUSTOMER_BY_ID,
+   saveOneQuery = CREATE_NEW_CUSTOMER
+) {
    private companion object {
       val CUSTOMER_COLUMNS = """
-         id AS id,
-         uuid AS uuid,
-         date_created AS dateCreated,
-         last_updated AS lastUpdated,
-         account AS account,
-         first_name AS firstName,
-         last_name AS lastName,
-         contact_name AS contactName,
+         id            AS id,
+         uuid          AS uuid,
+         date_created  AS dateCreated,
+         last_updated  AS lastUpdated,
+         account       AS account,
+         first_name    AS firstName,
+         last_name     AS lastName,
+         contact_name  AS contactName,
          date_of_birth AS dateOfBirth
       """.trimIndent()
 
@@ -36,7 +41,7 @@ class CustomerDataAccessObject @Inject constructor(
          FROM Customer c
       """.trimIndent()
 
-      val CUSTOMER_ROW_MAPPER = { rs: ResultSet, _: Int ->
+      val CUSTOMER_ROW_MAPPER = RowMapper { rs: ResultSet, _: Int ->
          Customer(
             id = rs.getLong("id"),
             account = rs.getString("account"),
@@ -67,25 +72,20 @@ class CustomerDataAccessObject @Inject constructor(
       """.trimIndent()
    }
 
-   override fun fetchOne(id: Long): Customer? {
-      return jdbc.findFirstOrNull(FETCH_CUSTOMER_BY_ID, mapOf("id" to id), CUSTOMER_ROW_MAPPER)
+   override fun mapOfSaveParameters(entity: Customer): Map<String, Any?> {
+      return mapOf(
+         "account"     to entity.account,
+         "firstName"   to entity.firstName,
+         "lastName"    to entity.lastName,
+         "contactName" to entity.contactName,
+         "dateOfBirth" to entity.dateOfBirth
+      )
    }
 
    @Transactional
-   override fun save(t: Customer): Customer {
-      return jdbc.queryForObject(CREATE_NEW_CUSTOMER, mapOf(
-         "account"     to t.account,
-         "firstName"   to t.firstName,
-         "lastName"    to t.lastName,
-         "contactName" to t.contactName,
-         "dateOfBirth" to t.dateOfBirth
-      ), CUSTOMER_ROW_MAPPER)!!
-   }
-
-   @Transactional // convince method mostly for testing
    fun save(customers: Collection<Customer>): Collection<Customer> {
       return customers.map {
-         save(t = it)
+         save(entity = it)
       }
    }
 

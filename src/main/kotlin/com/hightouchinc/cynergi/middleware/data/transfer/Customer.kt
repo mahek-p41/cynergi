@@ -20,9 +20,6 @@ data class Customer(
 
    val dateOfBirth: LocalDate
 ) {
-   constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: LocalDate):
-      this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth)
-
    constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: Date):
       this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
 }
