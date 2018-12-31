@@ -66,6 +66,7 @@ class CustomerControllerTests extends ControllerTestsBase {
 
       when:
       def johns = client.toBlocking().retrieve(GET("$url/search/john"), Page)
+      def johnSimpsons = client.toBlocking().retrieve(GET("$url/search/john%20simpson"), Page)
 
       then:
       johns.content.size() == 2
@@ -75,5 +76,7 @@ class CustomerControllerTests extends ControllerTestsBase {
 
       johns.content[1].id == customers[2].id
       johns.content[1].firstName == customers[2].firstName
+
+      johnSimpsons.content.size() == 1
    }
 }

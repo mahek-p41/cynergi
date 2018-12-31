@@ -21,6 +21,6 @@ class CustomerService @Inject constructor(
       customerDataAccessObject.save(customers = customers)
 
    fun searchForCustomers(customerSearchString: String): Page<Customer> {
-      return customerDataAccessObject.searchForCustomers(customerSearchString = customerSearchString)
+      return customerDataAccessObject.searchForCustomers(customerSearchTokens = customerSearchString.split(" "))
    }
 }

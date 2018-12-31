@@ -17,7 +17,6 @@ class CustomerDataAccessObject @Inject constructor(
 ): DataAccessObject<Customer> {
 
    private companion object {
-
       val CUSTOMER_COLUMNS = """
          id AS id,
          uuid AS uuid,
@@ -83,16 +82,17 @@ class CustomerDataAccessObject @Inject constructor(
       ), CUSTOMER_ROW_MAPPER)!!
    }
 
-   @Transactional // convience method mostly for testing
+   @Transactional // convince method mostly for testing
    fun save(customers: Collection<Customer>): Collection<Customer> {
       return customers.map {
          save(t = it)
       }
    }
 
-   fun searchForCustomers(customerSearchString: String): Page<Customer> {
-      val content: List<Customer> = jdbc.query(SEARCH_CUSTOMERS, mapOf("customerSearchString" to "$customerSearchString:*"), CUSTOMER_ROW_MAPPER)
+   fun searchForCustomers(customerSearchTokens: List<String>): Page<Customer> {
+      val searchString = customerSearchTokens.asSequence().map { "$it:*" }.joinToString(separator = " & ")
+      val content: List<Customer> = jdbc.query(SEARCH_CUSTOMERS, mapOf("customerSearchString" to searchString), CUSTOMER_ROW_MAPPER)
 
-      return Page(content, content.size, 1, true, false)
+      return Page(content, content.size, 1, true, false) //TODO make paging actually work
    }
 }
