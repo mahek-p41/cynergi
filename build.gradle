@@ -25,8 +25,17 @@ dependencyManagement {
       mavenBom 'io.micronaut:micronaut-bom:1.0.2'
    }
 }
+
 jacoco {
    toolVersion = "0.8.2"
+}
+
+sourceSets {
+   test {
+      groovy {
+         srcDirs += ["src/ft/groovy"]
+      }
+   }
 }
 
 dependencies {

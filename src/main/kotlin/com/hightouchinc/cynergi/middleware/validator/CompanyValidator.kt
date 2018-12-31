@@ -2,8 +2,10 @@ package com.hightouchinc.cynergi.middleware.validator
 
 import com.hightouchinc.cynergi.middleware.entity.CompanyDto
 import com.hightouchinc.cynergi.middleware.validator.spi.ValidatorBase
+import javax.inject.Singleton
 import javax.validation.ConstraintViolationException
 
+@Singleton
 class CompanyValidator: ValidatorBase<CompanyDto>(
    clazz = CompanyDto::class.java
 ) {

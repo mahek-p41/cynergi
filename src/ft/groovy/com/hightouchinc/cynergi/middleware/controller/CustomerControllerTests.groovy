@@ -2,9 +2,9 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
+import com.hightouchinc.cynergi.middleware.domain.NotFound
 import com.hightouchinc.cynergi.middleware.domain.Page
 import com.hightouchinc.cynergi.middleware.entity.Customer
-import com.hightouchinc.cynergi.middleware.exception.NotFound
 import com.hightouchinc.cynergi.middleware.service.CustomerCrudService
 import com.hightouchinc.cynergi.test.data.loader.CustomerTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException

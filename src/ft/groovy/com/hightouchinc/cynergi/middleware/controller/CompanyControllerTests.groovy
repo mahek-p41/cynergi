@@ -1,8 +1,8 @@
 package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
+import com.hightouchinc.cynergi.middleware.domain.NotFound
 import com.hightouchinc.cynergi.middleware.entity.Company
-import com.hightouchinc.cynergi.middleware.exception.NotFound
 import com.hightouchinc.cynergi.test.data.loader.CompanyTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
