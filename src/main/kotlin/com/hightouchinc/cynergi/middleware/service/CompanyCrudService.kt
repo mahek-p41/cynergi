@@ -6,9 +6,9 @@ import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
 import javax.inject.Singleton
 
 @Singleton
-class CompanyService(
+class CompanyCrudService(
    private val companyRepository: CompanyRepository
-): Service<CompanyDto> {
+): CrudService<CompanyDto> {
 
    override fun findById(id: Long): CompanyDto? =
       companyRepository.fetchOne(id = id)?.let { CompanyDto(it) }

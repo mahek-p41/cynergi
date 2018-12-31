@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.service
 
-interface Service<DTO> {
+interface CrudService<DTO> {
    fun findById(id: Long): DTO?
 
    fun save(dto: DTO): DTO

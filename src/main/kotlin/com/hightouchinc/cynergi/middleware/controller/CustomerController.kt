@@ -4,7 +4,8 @@ import com.hightouchinc.cynergi.middleware.controller.spi.CrudControllerBase
 import com.hightouchinc.cynergi.middleware.domain.Page
 import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.entity.CustomerDto
-import com.hightouchinc.cynergi.middleware.service.CustomerService
+import com.hightouchinc.cynergi.middleware.service.CustomerCrudService
+import com.hightouchinc.cynergi.middleware.validator.CustomerValidator
 import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
@@ -12,9 +13,11 @@ import io.micronaut.http.annotation.Get
 
 @Controller("/api/v1/customers")
 class CustomerController(
-   private val customerService: CustomerService
+   private val customerService: CustomerCrudService,
+   customerValidator: CustomerValidator
 ): CrudControllerBase<CustomerDto>(
-   service = customerService
+   crudService = customerService,
+   validator = customerValidator
 ) {
    @Get("/search/{searchString}", produces = [APPLICATION_JSON])
    fun search(

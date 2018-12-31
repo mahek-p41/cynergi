@@ -5,7 +5,7 @@ import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
 import com.hightouchinc.cynergi.middleware.domain.Page
 import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.exception.NotFound
-import com.hightouchinc.cynergi.middleware.service.CustomerService
+import com.hightouchinc.cynergi.middleware.service.CustomerCrudService
 import com.hightouchinc.cynergi.test.data.loader.CustomerTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
@@ -15,7 +15,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class CustomerControllerTests extends ControllerTestsBase {
    final def url = "/api/v1/customers"
    def customerTestDataLoaderService = applicationContext.getBean(CustomerTestDataLoaderService)
-   def customerService = applicationContext.getBean(CustomerService)
+   def customerService = applicationContext.getBean(CustomerCrudService)
 
    def "fetch one customer"() {
       when:

@@ -8,9 +8,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CustomerService @Inject constructor(
+class CustomerCrudService @Inject constructor(
    private val customerRepository: CustomerRepository
-): Service<CustomerDto> {
+): CrudService<CustomerDto> {
    override fun findById(id: Long): CustomerDto? =
       customerRepository.fetchOne(id = id)?.let { CustomerDto(customer = it) }
 

@@ -31,17 +31,20 @@ jacoco {
 
 dependencies {
    compile "io.micronaut.configuration:micronaut-jdbc-hikari"
-   compile "org.postgresql:postgresql:42.2.5"
    compile "io.micronaut.configuration:micronaut-flyway:1.0.0.RC1"
    compile "io.micronaut:micronaut-http-client"
    compile "io.micronaut:micronaut-http-server-netty"
-   compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
-   compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+   compile "io.micronaut.configuration:micronaut-hibernate-validator"
    compile "io.micronaut:micronaut-runtime"
    compile "io.micronaut:micronaut-spring"
+   
+   compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+   compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
    compile "org.springframework:spring-jdbc:5.1.3.RELEASE"
-   compile "org.springframework.data:spring-data-jdbc:1.0.3.RELEASE"
    compile "io.swagger.core.v3:swagger-annotations"
+   compile "org.postgresql:postgresql:42.2.5"
+   compile "org.eclipse.collections:eclipse-collections-api:9.2.0"
+   compile "org.eclipse.collections:eclipse-collections:9.2.0"
 
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
