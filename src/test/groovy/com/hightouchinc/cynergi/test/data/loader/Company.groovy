@@ -2,7 +2,7 @@ package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.entity.Company
-import com.hightouchinc.cynergi.middleware.service.CompanyService
+import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Inject
@@ -25,15 +25,15 @@ class CompanyTestDataLoader {
 @Singleton
 @CompileStatic
 class CompanyTestDataLoaderService {
-   private final CompanyService companyService
+   private final CompanyRepository companyRepository
 
    @Inject
-   CompanyTestDataLoaderService(CompanyService companyService) {
-      this.companyService = companyService
+   CompanyTestDataLoaderService(CompanyRepository companyRepository) {
+      this.companyRepository = companyRepository
    }
 
    Stream<Company> stream(int number = 1) {
       return CompanyTestDataLoader.stream(number)
-         .map { companyService.save(it) }
+         .map { companyRepository.save(it) }
    }
 }

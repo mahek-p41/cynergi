@@ -2,7 +2,7 @@ package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.entity.Customer
-import com.hightouchinc.cynergi.middleware.service.CustomerService
+import com.hightouchinc.cynergi.middleware.repository.CustomerRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -33,14 +33,14 @@ class CustomerTestDataLoader {
 @Singleton
 @CompileStatic
 class CustomerTestDataLoaderService {
-   private final CustomerService customerService
+   private final CustomerRepository customerRepository
 
-   CustomerTestDataLoaderService(CustomerService customerService) {
-      this.customerService = customerService
+   CustomerTestDataLoaderService(CustomerRepository customerRepository) {
+      this.customerRepository = customerRepository
    }
 
    Stream<Customer> stream(int number = 1) {
       return CustomerTestDataLoader.stream(number)
-         .map { customerService.save(it) }
+         .map { customerRepository.save(it) }
    }
 }
