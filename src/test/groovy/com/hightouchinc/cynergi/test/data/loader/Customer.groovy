@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.data.transfer.Customer
+import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.service.CustomerService
 import groovy.transform.CompileStatic
 

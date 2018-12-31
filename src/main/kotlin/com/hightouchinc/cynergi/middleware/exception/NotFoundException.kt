@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.exception
 
-import com.hightouchinc.cynergi.middleware.data.domain.DataTransferObject
+import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
 
 class NotFoundException(
    val notFound: NotFound

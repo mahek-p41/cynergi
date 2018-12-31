@@ -1,6 +1,6 @@
-package com.hightouchinc.cynergi.middleware.data.transfer
+package com.hightouchinc.cynergi.middleware.entity
 
-import com.hightouchinc.cynergi.middleware.data.domain.DataTransferObject
+import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
 
 @DataTransferObject
 data class Company(

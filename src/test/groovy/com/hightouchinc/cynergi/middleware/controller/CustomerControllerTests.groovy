@@ -2,8 +2,8 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
-import com.hightouchinc.cynergi.middleware.data.domain.Page
-import com.hightouchinc.cynergi.middleware.data.transfer.Customer
+import com.hightouchinc.cynergi.middleware.domain.Page
+import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.exception.NotFound
 import com.hightouchinc.cynergi.middleware.service.CustomerService
 import com.hightouchinc.cynergi.test.data.loader.CustomerTestDataLoaderService

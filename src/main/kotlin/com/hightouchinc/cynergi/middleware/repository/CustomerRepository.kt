@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.data.domain.Page
-import com.hightouchinc.cynergi.middleware.data.transfer.Customer
+import com.hightouchinc.cynergi.middleware.domain.Page
+import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
 import io.micronaut.spring.tx.annotation.Transactional
 import org.intellij.lang.annotations.Language

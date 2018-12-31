@@ -1,4 +1,4 @@
-package com.hightouchinc.cynergi.middleware.data.domain
+package com.hightouchinc.cynergi.middleware.domain
 
 data class Page<T>(
    val content: List<T>,

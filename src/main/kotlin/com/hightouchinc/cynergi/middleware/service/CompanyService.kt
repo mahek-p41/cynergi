@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.middleware.service
 
 import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
-import com.hightouchinc.cynergi.middleware.data.transfer.Company
+import com.hightouchinc.cynergi.middleware.entity.Company
 import javax.inject.Singleton
 
 @Singleton

@@ -1,8 +1,8 @@
 package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.CrudControllerBase
-import com.hightouchinc.cynergi.middleware.data.domain.Page
-import com.hightouchinc.cynergi.middleware.data.transfer.Customer
+import com.hightouchinc.cynergi.middleware.domain.Page
+import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.service.CustomerService
 import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.MediaType.APPLICATION_JSON

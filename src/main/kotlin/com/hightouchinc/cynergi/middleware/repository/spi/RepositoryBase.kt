@@ -30,6 +30,10 @@ abstract class RepositoryBase<ENTITY> (
 
    @Transactional
    override fun save(entity: ENTITY): ENTITY {
-      return jdbc.queryForObject(saveOneQuery, mapOfSaveParameters(entity), entityRowMapper)!!
+      return jdbc.queryForObject(
+         saveOneQuery,
+         mapOfSaveParameters(entity),
+         entityRowMapper
+      )!!
    }
 }

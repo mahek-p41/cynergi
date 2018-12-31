@@ -1,8 +1,8 @@
 package com.hightouchinc.cynergi.middleware.service
 
+import com.hightouchinc.cynergi.middleware.domain.Page
+import com.hightouchinc.cynergi.middleware.entity.Customer
 import com.hightouchinc.cynergi.middleware.repository.CustomerRepository
-import com.hightouchinc.cynergi.middleware.data.domain.Page
-import com.hightouchinc.cynergi.middleware.data.transfer.Customer
 import javax.inject.Inject
 import javax.inject.Singleton
 

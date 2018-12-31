@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.data.transfer.Company
+import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
 import org.intellij.lang.annotations.Language
 import org.springframework.jdbc.core.RowMapper
