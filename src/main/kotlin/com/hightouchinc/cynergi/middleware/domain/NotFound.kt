@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.domain
 
+@DataTransferObject
 data class NotFound(
-   val requestedNotFound: String
+   val description: String
 )

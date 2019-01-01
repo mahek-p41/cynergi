@@ -1,5 +1,8 @@
 micronaut:
    environment: test
+   http:
+      client:
+         read-timeout: 3600s
 datasources:
    default:
       url: "jdbc:postgresql://localhost:6432/cynergidbtest"

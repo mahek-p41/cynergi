@@ -9,8 +9,10 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
+import io.micronaut.validation.Validated
 import javax.validation.Valid
 
+@Validated
 @Controller("/api/v1/companies")
 class CompanyController(
    private val companyService: CompanyService,
@@ -18,6 +20,7 @@ class CompanyController(
 ): CrudControllerBase<CompanyDto>(
    crudService = companyService
 ) {
+
    @Post(processes = [MediaType.APPLICATION_JSON])
    override fun save(
       @Valid @Body dto: CompanyDto

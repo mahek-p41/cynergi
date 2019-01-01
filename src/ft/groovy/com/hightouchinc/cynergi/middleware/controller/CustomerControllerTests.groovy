@@ -22,17 +22,17 @@ class CustomerControllerTests extends ControllerTestsBase {
       final def customer = customerTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Customer")}
 
       then:
-      client.toBlocking().retrieve(GET("$url/${customer.id}"), Customer) == customer
+      client.retrieve(GET("$url/${customer.id}"), Customer) == customer
    }
 
    def "fetch one customer not found"() {
       when:
-      client.toBlocking().exchange(GET("$url/0"))
+      client.exchange(GET("$url/0"))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(NotFound.class).orElse(null) == new NotFound("0")
+      exception.response.getBody(NotFound.class).orElse(null) == new NotFound("Resource 0 was unable to be found")
    }
 
    def "search for customer John" () {
@@ -65,8 +65,8 @@ class CustomerControllerTests extends ControllerTestsBase {
       ])
 
       when:
-      def johns = client.toBlocking().retrieve(GET("$url/search/john"), Page)
-      def johnSimpsons = client.toBlocking().retrieve(GET("$url/search/john%20simpson"), Page)
+      def johns = client.retrieve(GET("$url/search/john"), Page)
+      def johnSimpsons = client.retrieve(GET("$url/search/john%20simpson"), Page)
 
       then:
       johns.content.size() == 2

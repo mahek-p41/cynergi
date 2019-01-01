@@ -20,18 +20,18 @@ class LocalizationServiceTests extends Specification {
       englishLocale.getISOCountries().contains("US")
    }
 
-   void "localize english not found" () {
+   void "localize english messages" () {
       given:
       final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])
       final def localizationService = new LocalizationService(resourceBundleMessageSource)
       final def englishLocale = localizationService.localeFor("en")
 
       expect:
-      message == localizationService.localize(messageKey, englishLocale, args)
+      localizationService.localize(messageKey, englishLocale, args) == message
 
       where:
-      messageKey                     | args                || message
-      ErrorCodes.Validation.NOT_NULL | [] as Object[]      || "Property cannot be null"
-      ErrorCodes.System.NOT_FOUND    | [1] as Object[]     || "Resource 1 was unable to be found"
+      messageKey                     | args                 || message
+      ErrorCodes.Validation.NOT_NULL | ["name"] as Object[] || "name is required"
+      ErrorCodes.System.NOT_FOUND    | [1] as Object[]      || "Resource 1 was unable to be found"
    }
 }

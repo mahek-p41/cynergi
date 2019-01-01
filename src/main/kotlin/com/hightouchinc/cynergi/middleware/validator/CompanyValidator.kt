@@ -1,6 +1,5 @@
 package com.hightouchinc.cynergi.middleware.validator
 
-import com.hightouchinc.cynergi.middleware.domain.NotFound
 import com.hightouchinc.cynergi.middleware.entity.CompanyDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.service.CompanyService
@@ -26,7 +25,7 @@ class CompanyValidator @Inject constructor(
       if (id == null) {
          throw ConstraintViolationException("id cannot be null", setOf( super.validationConstraint(dto, "id") ))
       } else if( !companyService.exists(id = id) ) {
-         throw NotFoundException(notFound = NotFound(requestedNotFound = id.toString()))
+         throw NotFoundException(id = id)
       }
    }
 }

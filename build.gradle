@@ -86,7 +86,7 @@ allOpen {
 }
 
 noArg {
-   annotation("com.hightouchinc.cynergi.middleware.data.domain.DataTransferObject")
+   annotation("com.hightouchinc.cynergi.middleware.domain.DataTransferObject")
    invokeInitializers = true
 }
 

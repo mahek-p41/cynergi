@@ -3,8 +3,11 @@ package com.hightouchinc.cynergi.middleware.service
 import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.entity.CompanyDto
 import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
+import org.springframework.validation.annotation.Validated
 import javax.inject.Singleton
+import javax.validation.Valid
 
+@Validated
 @Singleton
 class CompanyService(
    private val companyRepository: CompanyRepository
@@ -27,5 +30,4 @@ class CompanyService(
          companyRepository.update(entity = Company(dto = dto))
       )
    }
-
 }

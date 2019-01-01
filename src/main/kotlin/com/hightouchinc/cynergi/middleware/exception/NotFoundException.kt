@@ -1,10 +1,9 @@
 package com.hightouchinc.cynergi.middleware.exception
 
-import com.hightouchinc.cynergi.middleware.domain.NotFound
-
 class NotFoundException(
-   val notFound: NotFound
-): Exception(notFound.requestedNotFound) {
+   val notFound: Any
+): Exception(notFound.toString()) {
+
    constructor(id: Long):
-      this(notFound = NotFound(id.toString()))
+      this(notFound = id)
 }
