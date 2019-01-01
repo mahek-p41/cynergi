@@ -41,6 +41,7 @@ CREATE TRIGGER update_company_trg
   BEFORE UPDATE
   ON company
   FOR EACH ROW EXECUTE PROCEDURE last_updated_column_fn();
+ALTER TABLE company ADD CONSTRAINT company_name_uq UNIQUE (name);
 
 CREATE TABLE employee (
   id           BIGSERIAL                             NOT NULL PRIMARY KEY,

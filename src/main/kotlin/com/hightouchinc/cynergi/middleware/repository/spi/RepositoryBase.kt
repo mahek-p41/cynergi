@@ -34,9 +34,11 @@ abstract class RepositoryBase<ENTITY: IdentifieableEntity> (
       return fetched
    }
 
-   override fun exists(id: Long): Boolean {
-      return jdbc.queryForObject("SELECT EXISTS(SELECT id FROM $tableName WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
-   }
+   override fun exists(id: Long): Boolean =
+      jdbc.queryForObject("SELECT EXISTS(SELECT id FROM $tableName WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+   fun exists(name: String): Boolean =
+      jdbc.queryForObject("SELECT EXISTS(SELECT id FROM $tableName WHERE name = :name)", mapOf("name" to name), Boolean::class.java)!!
 
    @Transactional
    override fun save(entity: ENTITY): ENTITY {

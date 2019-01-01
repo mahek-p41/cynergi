@@ -23,7 +23,6 @@ data class Company(
 data class CompanyDto(
    var id: Long? = null,
 
-   @field:NotBlank(message = ErrorCodes.Validation.NOT_NULL)
    @field:NotNull(message = ErrorCodes.Validation.NOT_NULL)
    var name: String? = null
 ) {

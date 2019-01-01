@@ -19,6 +19,9 @@ class CompanyService(
    override fun exists(id: Long): Boolean =
       companyRepository.exists(id = id)
 
+   fun exists(name: String): Boolean =
+      companyRepository.exists(name = name)
+
    override fun save(dto: CompanyDto): CompanyDto {
       return CompanyDto(
          companyRepository.save(entity = Company(dto = dto))

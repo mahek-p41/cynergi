@@ -1,17 +1,12 @@
 package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
-import com.hightouchinc.cynergi.middleware.domain.BadRequest
-import com.hightouchinc.cynergi.middleware.domain.BadRequestField
-import com.hightouchinc.cynergi.middleware.domain.NotFound
 import com.hightouchinc.cynergi.middleware.entity.CompanyDto
 import com.hightouchinc.cynergi.test.data.loader.CompanyTestDataLoaderService
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
+import io.micronaut.http.hateos.JsonError
 
-import static io.micronaut.http.HttpRequest.GET
-import static io.micronaut.http.HttpRequest.POST
-import static io.micronaut.http.HttpRequest.PUT
+import static io.micronaut.http.HttpRequest.*
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -34,7 +29,7 @@ class CompanyControllerTests extends ControllerTestsBase {
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(NotFound.class).orElse(null) == new NotFound("Resource 0 was unable to be found")
+      exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
    void "save company successfully"() {
@@ -54,7 +49,12 @@ class CompanyControllerTests extends ControllerTestsBase {
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(BadRequest).orElse(null) == new BadRequest([new BadRequestField("name is required", "name", null)] as Set)
+
+      final error = exception.response.getBody(JsonError[]).orElse(null)
+      error.length == 1
+      error[0].message == "save.dto.name is required"
+      error[0].getPath().isPresent()
+      error[0].getPath().get() == "save.dto.name"
    }
 
    void "update company name successfully"() {
