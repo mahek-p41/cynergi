@@ -3,6 +3,7 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
+import io.micronaut.spring.tx.annotation.Transactional
 import org.eclipse.collections.api.map.MutableMap
 import org.eclipse.collections.impl.factory.Maps
 import org.intellij.lang.annotations.Language
@@ -16,12 +17,10 @@ import javax.inject.Singleton
 class CompanyRepository @Inject constructor(
    jdbc: NamedParameterJdbcTemplate
 ): RepositoryBase<Company>(
-   tableName = TABLE_NAME,
+   tableName = "Company",
    jdbc = jdbc,
    entityRowMapper = COMPANY_ROW_MAPPER,
-   fetchOneQuery = FETCH_COMPANY_BY_ID,
-   saveOneQuery = CREATE_COMPANY,
-   updateOneQuery = UPDATE_COMPANY
+   fetchOneQuery = FETCH_COMPANY_BY_ID
 ) {
    private companion object {
       val COMPANY_ROW_MAPPER: RowMapper<Company> = RowMapper { rs: ResultSet, _: Int ->
@@ -31,37 +30,56 @@ class CompanyRepository @Inject constructor(
          )
       }
 
-      const val TABLE_NAME = "Company"
-
-      val COMPANY_COLUMNS = """
-         id AS id,
-         name AS name
-      """.trimIndent()
-
       @Language("PostgreSQL")
       val FETCH_COMPANY_BY_ID = """
           SELECT
-             $COMPANY_COLUMNS
-           FROM $TABLE_NAME c
+             c.id AS id,
+             c.name AS name
+           FROM Company c
            WHERE c.id = :id
       """.trimIndent()
 
       @Language("PostgreSQL")
       val CREATE_COMPANY = """
-          INSERT INTO $TABLE_NAME(name)
+          INSERT INTO Company (name)
           VALUES (:name)
-          RETURNING $COMPANY_COLUMNS
+          RETURNING
+            id AS id,
+            name AS name
       """.trimIndent()
 
       @Language("PostgreSQL")
       val UPDATE_COMPANY = """
-          UPDATE COMPANY
+          UPDATE Company c
           SET name = :name
           WHERE id = :id
-          RETURNING $COMPANY_COLUMNS
+          RETURNING
+            c.id AS id,
+            c.name AS name
       """.trimIndent()
    }
 
-   override fun mapOfSaveParameters(entity: Company): MutableMap<String, Any?> =
-      Maps.mutable.ofPairs("name" to entity.name)
+   fun exists(name: String): Boolean =
+      jdbc.queryForObject("SELECT EXISTS(SELECT id FROM $tableName WHERE name = :name)", mapOf("name" to name), Boolean::class.java)!!
+
+   @Transactional
+   override fun save(entity: Company): Company {
+      return jdbc.queryForObject(
+         CREATE_COMPANY,
+         Maps.mutable.ofPairs("name" to entity.name),
+         entityRowMapper
+      )!!
+   }
+
+   @Transactional
+   override fun update(entity: Company): Company {
+      return jdbc.queryForObject(
+         UPDATE_COMPANY,
+         Maps.mutable.ofPairs(
+            "id" to entity.id,
+            "name" to entity.name
+         ),
+         entityRowMapper
+      )!!
+   }
 }

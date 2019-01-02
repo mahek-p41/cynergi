@@ -1,15 +1,14 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
-import javax.validation.constraints.NotBlank
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import javax.validation.constraints.NotNull
 
 data class Company(
    val id: Long? = null,
 
    val name: String
-): IdentifieableEntity {
+): IdentifiableEntity {
    constructor(name: String):
       this(id = null, name = name)
 
@@ -23,7 +22,7 @@ data class Company(
 data class CompanyDto(
    var id: Long? = null,
 
-   @field:NotNull(message = ErrorCodes.Validation.NOT_NULL)
+   @field:NotNull(message = NOT_NULL)
    var name: String? = null
 ) {
    constructor(name: String):

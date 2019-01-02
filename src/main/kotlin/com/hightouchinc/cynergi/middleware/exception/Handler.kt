@@ -2,13 +2,15 @@ package com.hightouchinc.cynergi.middleware.exception
 
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
-import io.micronaut.http.*
-import io.micronaut.http.HttpHeaders.*
-import io.micronaut.http.HttpResponse.*
+import io.micronaut.http.HttpHeaders.ACCEPT_LANGUAGE
+import io.micronaut.http.HttpRequest
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpResponse.badRequest
+import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.http.hateos.JsonError
-import java.util.*
+import java.util.Locale
 import javax.validation.ConstraintViolationException
 import javax.validation.Path
 
@@ -45,7 +47,7 @@ class Handler(
 
       return badRequest(
          constraintViolationException.constraintViolations.map {
-            val field = it.propertyPath.toString()
+            val field = buildPropertyPath(rootPath = it.propertyPath)
             val jsonError = JsonError(localizationService.localize(it.constraintDescriptor.messageTemplate, locale, field))
 
             jsonError.path(field)
@@ -54,6 +56,11 @@ class Handler(
          }
       )
    }
+
+   private fun buildPropertyPath(rootPath: Path): String =
+      rootPath.asSequence()
+         .filter { it.name != "save" && it.name != "update" && it.name != "dto" }
+         .joinToString(".")
 
    private fun findLocale(httpRequest: HttpRequest<*>): Locale {
       return httpRequest.headers.findFirst(ACCEPT_LANGUAGE)

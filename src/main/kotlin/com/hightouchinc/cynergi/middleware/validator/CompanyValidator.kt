@@ -13,7 +13,7 @@ class CompanyValidator @Inject constructor(
 ): ValidatorBase<CompanyDto>() {
    override fun doValidateSave(dto: CompanyDto): List<ValidationError> {
       return if (companyService.exists(name = dto.name!!)) {
-         listOf(ValidationError("save.dto.name", ErrorCodes.Validation.DUPLICATE, listOf(dto.name!!)))
+         listOf(ValidationError("name", ErrorCodes.Validation.DUPLICATE, listOf(dto.name!!)))
       } else {
          listOf()
       }
@@ -24,22 +24,11 @@ class CompanyValidator @Inject constructor(
       val id = dto.id
 
       if (id == null) {
-         errors.add(element = ValidationError("update.dto.id", ErrorCodes.Validation.NOT_NULL, listOf("id")))
+         errors.add(element = ValidationError("id", ErrorCodes.Validation.NOT_NULL, listOf("id")))
       } else if ( !companyService.exists(id = id) ) {
-         errors.add(element = ValidationError("update.dto.id", ErrorCodes.System.NOT_FOUND, listOf(id)))
+         errors.add(element = ValidationError("id", ErrorCodes.System.NOT_FOUND, listOf(id)))
       }
 
       return errors
    }
-
-   /*
-   override fun validateUpdate(dto: CompanyDto) {
-      val id = dto.id
-
-      if (id == null) {
-         throw ValidationException()
-      } else if( !companyService.exists(id = id) ) {
-         throw NotFoundException(id = id)
-      }
-   }*/
 }

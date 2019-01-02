@@ -1,9 +1,10 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.*
+import java.util.Date
 import javax.validation.constraints.NotNull
 
 data class Customer(
@@ -18,7 +19,7 @@ data class Customer(
    val contactName: String,
 
    val dateOfBirth: LocalDate
-): IdentifieableEntity {
+): IdentifiableEntity {
    constructor(account: String, firstName: String, lastName: String, contactName: String, dateOfBirth: Date):
       this(id = null, account = account, firstName = firstName, lastName = lastName, contactName = contactName, dateOfBirth = dateOfBirth.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
 
@@ -32,19 +33,19 @@ data class Customer(
 data class CustomerDto(
    var id: Long? = null,
 
-   @NotNull
+   @field:NotNull(message = NOT_NULL)
    var account: String? = null,
 
-   @NotNull
+   @field:NotNull(message = NOT_NULL)
    var firstName: String? = null,
 
-   @NotNull
+   @field:NotNull(message = NOT_NULL)
    var lastName: String? = null,
 
-   @NotNull
+   @field:NotNull(message = NOT_NULL)
    var contactName: String? = null,
 
-   @NotNull
+   @field:NotNull(message = NOT_NULL)
    var dateOfBirth: LocalDate? = null
 ) {
    constructor(customer: Customer):

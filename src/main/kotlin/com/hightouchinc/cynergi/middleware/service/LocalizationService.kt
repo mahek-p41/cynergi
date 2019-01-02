@@ -13,6 +13,7 @@ class LocalizationService(
    private companion object {
        val logger: Logger = LoggerFactory.getLogger(LocalizationService::class.java)
    }
+
    fun localeFor(languageTag: String): Locale? {
       return Locale.forLanguageTag(languageTag)
    }

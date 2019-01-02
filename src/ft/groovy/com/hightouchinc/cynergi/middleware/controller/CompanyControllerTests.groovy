@@ -52,9 +52,9 @@ class CompanyControllerTests extends ControllerTestsBase {
 
       final error = exception.response.getBody(JsonError[]).orElse(null)
       error.length == 1
-      error[0].message == "save.dto.name is required"
+      error[0].message == "name is required"
       error[0].getPath().isPresent()
-      error[0].getPath().get() == "save.dto.name"
+      error[0].getPath().get() == "name"
    }
 
    void "update company name successfully"() {
