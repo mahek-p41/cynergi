@@ -12,6 +12,5 @@ datasources:
 flyway:
    datasources:
       default:
-         locations: classpath:db/migration/postgres
          clean-on-validation-error: true
          clean-disabled: false

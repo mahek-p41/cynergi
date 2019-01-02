@@ -15,10 +15,10 @@ class CompanyControllerTests extends ControllerTestsBase {
    def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
 
    void "fetch one company"() {
-      when:
+      given:
       final def savedCompany = companyTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Company")}
 
-      then:
+      expect:
       client.retrieve(GET("$url/${savedCompany.id}"), CompanyDto) == new CompanyDto(savedCompany)
    }
 
@@ -33,10 +33,10 @@ class CompanyControllerTests extends ControllerTestsBase {
    }
 
    void "save company successfully"() {
-      when:
+      given:
       final CompanyDto savedCompany = client.retrieve(POST(url, new CompanyDto("Test Company")), CompanyDto)
 
-      then:
+      expect:
       savedCompany.id != null
       savedCompany.id > 0
       savedCompany.name == "Test Company"
