@@ -11,6 +11,7 @@ import javax.inject.Singleton
 class CompanyValidator @Inject constructor(
    private val companyService: CompanyService
 ): ValidatorBase<CompanyDto>() {
+
    override fun doValidateSave(dto: CompanyDto): List<ValidationError> {
       return if (companyService.exists(name = dto.name!!)) {
          listOf(ValidationError("name", ErrorCodes.Validation.DUPLICATE, listOf(dto.name!!)))

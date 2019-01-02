@@ -5,7 +5,6 @@ import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.service.CrudService
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Get
-import org.springframework.validation.annotation.Validated
 
 abstract class CrudControllerBase<DTO> (
    private val crudService: CrudService<DTO>

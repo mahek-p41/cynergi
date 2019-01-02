@@ -8,7 +8,11 @@ import com.hightouchinc.cynergi.middleware.service.CustomerService
 import com.hightouchinc.cynergi.middleware.validator.CustomerValidator
 import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
 import javax.validation.Valid
 
 @Controller("/api/v1/customers")
@@ -18,6 +22,7 @@ class CustomerController(
 ): CrudControllerBase<CustomerDto>(
    crudService = customerService
 ) {
+
    @Get("/search/{searchString}", produces = [APPLICATION_JSON])
    fun search(
       @Parameter("searchString") searchString: String
