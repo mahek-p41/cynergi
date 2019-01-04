@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.service.CrudService
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.QueryValue
 
 abstract class CrudControllerBase<DTO> (
    private val crudService: CrudService<DTO>
@@ -12,7 +13,7 @@ abstract class CrudControllerBase<DTO> (
 
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    override fun fetchOne(
-      id: Long
+      @QueryValue("id") id: Long
    ): DTO {
       return crudService.findById(id = id) ?: throw NotFoundException(id)
    }
