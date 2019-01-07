@@ -7,6 +7,12 @@ import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Defines the business service for handling the loading and processing of the [Checklist] entity through the [ChecklistDto]
+ * that is provided by the web tier
+ *
+ * @property checklistRepository holds the database access definition for dealing with the checklist table
+ */
 @Validated
 @Singleton
 class ChecklistService @Inject constructor(
@@ -27,5 +33,4 @@ class ChecklistService @Inject constructor(
       ChecklistDto(
          checklist = checklistRepository.update(entity = Checklist(dto = dto, company = parent))
       )
-
 }
