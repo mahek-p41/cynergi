@@ -12,7 +12,7 @@ import io.micronaut.http.annotation.QueryValue
  *
  * @param DTO the data transfer object that represents the Entity being manipulated via the CRUD pattern
  * @param PARENT the parent of the Entity being manipulated such as the parent of a Store being a Company
- * @property crudService holds an implementation of the [NestedCrudService] that is used for calling the findById
+ * @property crudService holds an implementation of the [NestedCrudService] that is used for calling the fetchById
  *
  * @author garym
  */
@@ -26,6 +26,6 @@ abstract class NestedCrudControllerBase<DTO, PARENT> (
       @QueryValue("parentId") parentId: PARENT,
       @QueryValue("id") id: Long
    ): DTO {
-      return crudService.findById(id = id) ?: throw NotFoundException(id)
+      return crudService.fetchById(id = id) ?: throw NotFoundException(id)
    }
 }

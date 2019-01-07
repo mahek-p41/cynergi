@@ -34,6 +34,6 @@ class CompanyTestDataLoaderService {
 
    Stream<Company> stream(int number = 1) {
       return CompanyTestDataLoader.stream(number)
-         .map { companyRepository.save(it) }
+         .map { companyRepository.insert(it) }
    }
 }

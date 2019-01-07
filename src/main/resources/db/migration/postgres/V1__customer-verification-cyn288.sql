@@ -4,7 +4,7 @@ CREATE FUNCTION last_updated_column_fn()
    RETURNS TRIGGER AS
 $$
 BEGIN
-   new.last_updated := current_timestamp;
+   new.time_updated := current_timestamp;
 
    RETURN new;
 END;
@@ -89,8 +89,8 @@ CREATE TABLE checklist (
    time_updated            TIMESTAMP DEFAULT current_timestamp  NOT NULL,
    customer_account        VARCHAR(10)                          NOT NULL,
    customer_comments       VARCHAR(255),
-   verified_by             VARCHAR(50),
-   verified_time           TIMESTAMP,
+   verified_by             VARCHAR(50)                          NOT NULL ,
+   verified_time           TIMESTAMP DEFAULT current_timestamp  NOT NULL,
    company                 VARCHAR(6), -- this is the pointer for the company but as the current implementation for most of cynergi is divided up into company's having their own dataset
    checklist_auto_id       BIGINT REFERENCES checklist_auto(id),
    checklist_employment_id BIGINT REFERENCES checklist_employment(id),
@@ -101,6 +101,8 @@ CREATE TRIGGER update_checklist_trg
    ON checklist
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
+ALTER TABLE checklist
+   ADD CONSTRAINT checklist_customer_account_uq UNIQUE (customer_account);
 
 CREATE TABLE checklist_references (
    id                 BIGSERIAL                            NOT NULL PRIMARY KEY,

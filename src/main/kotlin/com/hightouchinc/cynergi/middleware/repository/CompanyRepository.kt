@@ -4,7 +4,6 @@ import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
 import io.micronaut.spring.tx.annotation.Transactional
-import org.eclipse.collections.api.map.MutableMap
 import org.eclipse.collections.impl.factory.Maps
 import org.intellij.lang.annotations.Language
 import org.springframework.jdbc.core.RowMapper
@@ -20,7 +19,7 @@ class CompanyRepository @Inject constructor(
    tableName = "Company",
    jdbc = jdbc,
    entityRowMapper = COMPANY_ROW_MAPPER,
-   fetchOneQuery = FETCH_COMPANY_BY_ID
+   selectOneQuery = FETCH_COMPANY_BY_ID
 ) {
    private companion object {
       val COMPANY_ROW_MAPPER: RowMapper<Company> = RowMapper { rs: ResultSet, _: Int ->
@@ -32,30 +31,30 @@ class CompanyRepository @Inject constructor(
 
       @Language("PostgreSQL")
       val FETCH_COMPANY_BY_ID = """
-          SELECT
-             c.id AS id,
-             c.name AS name
-           FROM Company c
-           WHERE c.id = :id
+         SELECT
+            c.id AS id,
+            c.name AS name
+          FROM Company c
+          WHERE c.id = :id
       """.trimIndent()
 
       @Language("PostgreSQL")
       val CREATE_COMPANY = """
-          INSERT INTO Company (name)
-          VALUES (:name)
-          RETURNING
-            id AS id,
-            name AS name
+         INSERT INTO Company (name)
+         VALUES (:name)
+         RETURNING
+           id AS id,
+           name AS name
       """.trimIndent()
 
       @Language("PostgreSQL")
       val UPDATE_COMPANY = """
-          UPDATE Company c
-          SET name = :name
-          WHERE id = :id
-          RETURNING
-            c.id AS id,
-            c.name AS name
+         UPDATE Company c
+         SET name = :name
+         WHERE id = :id
+         RETURNING
+           c.id AS id,
+           c.name AS name
       """.trimIndent()
    }
 
@@ -63,7 +62,7 @@ class CompanyRepository @Inject constructor(
       jdbc.queryForObject("SELECT EXISTS(SELECT id FROM $tableName WHERE name = :name)", mapOf("name" to name), Boolean::class.java)!!
 
    @Transactional
-   override fun save(entity: Company): Company {
+   override fun insert(entity: Company): Company {
       return jdbc.queryForObject(
          CREATE_COMPANY,
          Maps.mutable.ofPairs("name" to entity.name),

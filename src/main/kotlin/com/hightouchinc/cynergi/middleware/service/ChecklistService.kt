@@ -18,15 +18,21 @@ import javax.inject.Singleton
 class ChecklistService @Inject constructor(
    private val checklistRepository: ChecklistRepository
 ): NestedCrudService<ChecklistDto, String> {
-   override fun findById(id: Long): ChecklistDto? =
-      checklistRepository.fetchOne(id = id)?.let { ChecklistDto(checklist = it) }
+   override fun fetchById(id: Long): ChecklistDto? =
+      checklistRepository.findOne(id = id)?.let { ChecklistDto(checklist = it) }
+
+   fun fetchByCustomerAccount(customerAccount: String): ChecklistDto? =
+      checklistRepository.findByCustomerAccount(customerAccount = customerAccount)?.let { ChecklistDto(checklist = it) }
 
    override fun exists(id: Long): Boolean =
       checklistRepository.exists(id = id)
 
-   override fun save(dto: ChecklistDto, parent: String): ChecklistDto =
+   fun exists(customerAccount: String): Boolean =
+      checklistRepository.exists(customerAccount = customerAccount)
+
+   override fun create(dto: ChecklistDto, parent: String): ChecklistDto =
       ChecklistDto(
-         checklist = checklistRepository.save(entity = Checklist(dto = dto, company = parent))
+         checklist = checklistRepository.insert(entity = Checklist(dto = dto, company = parent))
       )
 
    override fun update(dto: ChecklistDto, parent: String): ChecklistDto =

@@ -1,5 +1,5 @@
 package com.hightouchinc.cynergi.middleware.entity
 
-interface IdentifiableEntity {
+interface Entity {
    fun entityId(): Long?
 }

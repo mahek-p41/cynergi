@@ -5,7 +5,6 @@ import com.hightouchinc.cynergi.middleware.entity.CompanyDto
 import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
 import org.springframework.validation.annotation.Validated
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Validated
 @Singleton
@@ -14,7 +13,7 @@ class CompanyService(
 ): CrudService<CompanyDto> {
 
    override fun findById(id: Long): CompanyDto? =
-      companyRepository.fetchOne(id = id)?.let { CompanyDto(it) }
+      companyRepository.findOne(id = id)?.let { CompanyDto(it) }
 
    override fun exists(id: Long): Boolean =
       companyRepository.exists(id = id)
@@ -22,9 +21,9 @@ class CompanyService(
    fun exists(name: String): Boolean =
       companyRepository.exists(name = name)
 
-   override fun save(dto: CompanyDto): CompanyDto {
+   override fun create(dto: CompanyDto): CompanyDto {
       return CompanyDto(
-         companyRepository.save(entity = Company(dto = dto))
+         companyRepository.insert(entity = Company(dto = dto))
       )
    }
 

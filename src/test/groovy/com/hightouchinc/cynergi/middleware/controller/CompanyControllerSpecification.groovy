@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller
 
-import com.hightouchinc.cynergi.middleware.controller.spi.ControllerTestsBase
+import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
 import com.hightouchinc.cynergi.middleware.entity.CompanyDto
 import com.hightouchinc.cynergi.test.data.loader.CompanyTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -10,9 +10,9 @@ import static io.micronaut.http.HttpRequest.*
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
-class CompanyControllerTests extends ControllerTestsBase {
+class CompanyControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/v1/companies"
-   def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
+   final def companyTestDataLoaderService = applicationContext.getBean(CompanyTestDataLoaderService)
 
    void "fetch one company"() {
       given:

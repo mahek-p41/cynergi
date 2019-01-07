@@ -4,7 +4,7 @@ import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
 import org.springframework.context.support.ResourceBundleMessageSource
 import spock.lang.Specification
 
-class LocalizationServiceTests extends Specification {
+class LocalizationServiceSpecification extends Specification {
    void "check english locale" () {
       given:
       final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])

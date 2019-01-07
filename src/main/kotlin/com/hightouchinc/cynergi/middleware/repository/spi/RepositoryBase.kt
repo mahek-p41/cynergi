@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository.spi
 
-import com.hightouchinc.cynergi.middleware.entity.IdentifiableEntity
+import com.hightouchinc.cynergi.middleware.entity.Entity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.repository.Repository
@@ -10,18 +10,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
-abstract class RepositoryBase<ENTITY: IdentifiableEntity> (
+abstract class RepositoryBase<ENTITY: Entity> (
    protected val tableName: String,
    protected val jdbc: NamedParameterJdbcTemplate,
    protected val entityRowMapper: RowMapper<ENTITY>,
-   private val fetchOneQuery: String
+   private val selectOneQuery: String
 ): Repository<ENTITY> {
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(RepositoryBase::class.java)
    }
 
-   override fun fetchOne(id: Long): ENTITY? {
-      val fetched: ENTITY? = jdbc.findFirstOrNull(fetchOneQuery, Maps.mutable.ofPairs("id" to id), entityRowMapper)
+   override fun findOne(id: Long): ENTITY? {
+      val fetched: ENTITY? = jdbc.findFirstOrNull(selectOneQuery, Maps.mutable.ofPairs("id" to id), entityRowMapper)
 
       logger.trace("fetched {} resulted in {}", id, fetched)
 

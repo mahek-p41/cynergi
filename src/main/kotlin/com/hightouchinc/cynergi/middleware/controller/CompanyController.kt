@@ -27,7 +27,7 @@ class CompanyController(
    ): CompanyDto {
       companyValidator.validateSave(dto = dto)
 
-      return companyService.save(dto = dto)
+      return companyService.create(dto = dto)
    }
 
    @Put(processes = [MediaType.APPLICATION_JSON])

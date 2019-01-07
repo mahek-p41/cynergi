@@ -9,6 +9,7 @@ import com.hightouchinc.cynergi.middleware.validator.ChecklistValidator
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
@@ -30,6 +31,15 @@ class ChecklistController @Inject constructor(
    crudService = checklistService
 ) {
 
+   @Throws(NotFoundException::class)
+   @Get(value = "/account/{customerAccount}", produces = [MediaType.APPLICATION_JSON])
+   fun fetchOne(
+      @QueryValue("parentId") parentId: String,
+      @QueryValue("customerAccount") customerAccount: String
+   ): ChecklistDto {
+      return checklistService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
+   }
+
    @Post(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    override fun save(
@@ -38,7 +48,7 @@ class ChecklistController @Inject constructor(
    ): ChecklistDto {
       checklistValidator.validateSave(dto = dto, parent = parentId)
 
-      return checklistService.save(dto = dto, parent = parentId)
+      return checklistService.create(dto = dto, parent = parentId)
    }
 
    @Put(processes = [MediaType.APPLICATION_JSON])

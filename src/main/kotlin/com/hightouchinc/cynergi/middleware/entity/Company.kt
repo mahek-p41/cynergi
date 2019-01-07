@@ -8,7 +8,7 @@ data class Company(
    val id: Long? = null,
 
    val name: String
-): IdentifiableEntity {
+): Entity {
    constructor(name: String):
       this(id = null, name = name)
 

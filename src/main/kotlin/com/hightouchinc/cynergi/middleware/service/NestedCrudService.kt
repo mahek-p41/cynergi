@@ -1,11 +1,11 @@
 package com.hightouchinc.cynergi.middleware.service
 
 interface NestedCrudService<DTO, PARENT> {
-   fun findById(id: Long): DTO?
+   fun fetchById(id: Long): DTO?
 
    fun exists(id: Long): Boolean
 
-   fun save(dto: DTO, parent: PARENT): DTO
+   fun create(dto: DTO, parent: PARENT): DTO
 
    fun update(dto: DTO, parent: PARENT): DTO
 }

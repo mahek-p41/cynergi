@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.extensions
 
 import org.eclipse.collections.api.factory.map.MutableMapFactory
+import org.eclipse.collections.api.list.ImmutableList
 import org.eclipse.collections.api.map.MutableMap
 
 fun <K, V> MutableMapFactory.ofPairs(vararg pairs: Pair<K, V>): MutableMap<K, V> {
@@ -9,4 +10,8 @@ fun <K, V> MutableMapFactory.ofPairs(vararg pairs: Pair<K, V>): MutableMap<K, V>
    map.putAll(pairs)
 
    return map
+}
+
+fun <T> ImmutableList<T>.isNotEmpty(): Boolean {
+   return !this.isEmpty
 }

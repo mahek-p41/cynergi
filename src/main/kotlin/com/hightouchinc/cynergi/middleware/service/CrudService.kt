@@ -5,7 +5,7 @@ interface CrudService<DTO> {
 
    fun exists(id: Long): Boolean
 
-   fun save(dto: DTO): DTO
+   fun create(dto: DTO): DTO
 
    fun update(dto: DTO): DTO
 }

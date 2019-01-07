@@ -9,7 +9,7 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-abstract class ControllerTestsBase extends Specification {
+abstract class ControllerSpecificationBase extends Specification {
    @Shared @AutoCleanup EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
    @Shared @AutoCleanup HttpClient reactiveClient = HttpClient.create(embeddedServer.URL)
    @Shared truncateDatabaseService = embeddedServer.applicationContext.getBean(TruncateDatabaseService)

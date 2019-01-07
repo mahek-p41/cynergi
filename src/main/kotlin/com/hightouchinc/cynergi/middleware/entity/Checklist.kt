@@ -1,14 +1,14 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
+import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.validation.constraints.NotNull
 
 data class Checklist(
-   var id: Long,
+   var id: Long?,
    var uuid: UUID,
    var timeCreated: LocalDateTime,
    var timeUpdated: LocalDateTime,
@@ -18,10 +18,10 @@ data class Checklist(
    var verifiedTime: LocalDateTime,
    var company: String // TODO convert from soft foreign key to point to a company
 
-): IdentifiableEntity {
+): Entity {
    constructor(dto: ChecklistDto, company: String):
       this(
-         id = dto.id!!,
+         id = dto.id,
          uuid = UUID.randomUUID(),
          timeCreated = LocalDateTime.now(),
          timeUpdated = LocalDateTime.now(),
@@ -35,7 +35,6 @@ data class Checklist(
    override fun entityId(): Long? = id
 }
 
-@DataTransferObject
 data class ChecklistDto(
    var id: Long?,
 
@@ -53,7 +52,7 @@ data class ChecklistDto(
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_date")
    var verifiedTime: LocalDateTime
-) {
+): DataTransferObjectBase<ChecklistDto>() {
    constructor(checklist: Checklist):
       this(
          id = checklist.id,
@@ -62,4 +61,8 @@ data class ChecklistDto(
          verifiedBy = checklist.verifiedBy,
          verifiedTime = checklist.verifiedTime
       )
+
+   override fun copyMe(): ChecklistDto {
+      return this.copy()
+   }
 }
