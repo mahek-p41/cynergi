@@ -1,24 +1,25 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Checklist
-import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.repository.spi.RepositoryBase
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import javax.inject.Singleton
 
+@Singleton
 class ChecklistRepository(
    jdbc: NamedParameterJdbcTemplate
 ): RepositoryBase<Checklist>(
    tableName = "checklist",
    jdbc = jdbc,
-   entityRowMapper = CHECKLIST_ROW_MAPPER
+   entityRowMapper = CHECKLIST_ROW_MAPPER,
+   fetchOneQuery = ""
 ) {
    private companion object {
-      val CHECKLIST_ROW_MAPPER: RowMapper<Company> = RowMapper { rs: ResultSet, _: Int ->
-         Company(
-            id = rs.getLong("id"),
-            name = rs.getString("name")
+      val CHECKLIST_ROW_MAPPER: RowMapper<Checklist> = RowMapper { rs: ResultSet, _: Int ->
+         Checklist(
+            id = rs.getLong("id")
          )
       }
    }

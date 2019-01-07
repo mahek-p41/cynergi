@@ -54,6 +54,7 @@ dependencies {
    compile "org.postgresql:postgresql:42.2.5"
    compile "org.eclipse.collections:eclipse-collections-api:9.2.0"
    compile "org.eclipse.collections:eclipse-collections:9.2.0"
+   compile "org.apache.commons:commons-lang3:3.8.1"
 
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
