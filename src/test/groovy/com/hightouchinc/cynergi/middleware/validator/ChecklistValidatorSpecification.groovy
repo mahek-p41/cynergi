@@ -56,5 +56,4 @@ class ChecklistValidatorSpecification extends Specification {
       1 * checkListService.fetchById(toUpdateChecklistDto.id) >> checklistDto
       notThrown(ValidationException)
    }
-
 }

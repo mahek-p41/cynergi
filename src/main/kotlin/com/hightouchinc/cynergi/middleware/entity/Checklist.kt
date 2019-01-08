@@ -52,6 +52,7 @@ data class ChecklistDto(
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_date")
    var verifiedTime: LocalDateTime
+
 ): DataTransferObjectBase<ChecklistDto>() {
    constructor(checklist: Checklist):
       this(

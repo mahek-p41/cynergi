@@ -108,7 +108,7 @@ class ChecklistRepository(
    }
 
    fun exists(customerAccount: String): Boolean =
-      jdbc.queryForObject("SELECT EXISTS(SELECT customerAccount FROM $tableName WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
+      jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM $tableName WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
 
    fun findByCustomerAccount(customerAccount: String): Checklist? =
       jdbc.findFirstOrNull(

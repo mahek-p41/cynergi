@@ -6,6 +6,7 @@ import com.hightouchinc.cynergi.middleware.service.NestedCrudService
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.validation.Validated
 
 /**
  * Basic helper implementation of the [NestedCrudController]
@@ -16,6 +17,7 @@ import io.micronaut.http.annotation.QueryValue
  *
  * @author garym
  */
+@Validated
 abstract class NestedCrudControllerBase<DTO, PARENT> (
    private val crudService: NestedCrudService<DTO, PARENT>
 ): NestedCrudController<DTO, PARENT> {

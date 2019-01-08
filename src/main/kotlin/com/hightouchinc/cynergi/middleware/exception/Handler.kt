@@ -27,7 +27,7 @@ class Handler(
 
    @Error(global = true, exception = Throwable::class)
    fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<JsonError> {
-      logger.trace("Unknown Error", throwable)
+      logger.error("Unknown Error", throwable)
 
       val locale = findLocale(httpRequest)
 

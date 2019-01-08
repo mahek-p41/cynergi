@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.validation.Validated
 import javax.validation.Valid
 
 /**
@@ -18,6 +19,7 @@ import javax.validation.Valid
  *
  * @author garym@hightouchinc.com
  */
+@Validated
 interface NestedCrudController<DTO, PARENT> {
 
    /**

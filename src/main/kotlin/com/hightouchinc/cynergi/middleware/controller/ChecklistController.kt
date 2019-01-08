@@ -13,7 +13,9 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.validation.Validated
 import javax.inject.Inject
+import javax.validation.Valid
 
 /**
  * Defines the primary CRUD controller for the verification process
@@ -23,6 +25,7 @@ import javax.inject.Inject
  *
  * @author garym@hightouchinc.com
  */
+@Validated
 @Controller("/api/company/{parentId}/verification/")
 class ChecklistController @Inject constructor(
    private val checklistService: ChecklistService,
@@ -44,7 +47,7 @@ class ChecklistController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    override fun save(
       @QueryValue("parentId") parentId: String,
-      @Body dto: ChecklistDto
+      @Valid @Body dto: ChecklistDto
    ): ChecklistDto {
       checklistValidator.validateSave(dto = dto, parent = parentId)
 
@@ -55,7 +58,7 @@ class ChecklistController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    override fun update(
       @QueryValue("parentId") parentId: String,
-      @Body dto: ChecklistDto
+      @Valid@Body dto: ChecklistDto
    ): ChecklistDto {
       checklistValidator.validateUpdate(dto = dto, parent = parentId)
 
