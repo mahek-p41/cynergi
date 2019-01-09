@@ -27,7 +27,7 @@ Currently Java 8 is the target for this application with the plan to move to Jav
    3. This does seem to cause a weird issue on Windows with destroying the original bash profile so you'll need to create a
       a new one and add the required SDK Man config lines to the end of that file which you should be able to do with
 	  the following command
-```bash
+```
 cat > ~/.profile <<EOF
 export SDKMAN_DIR="/c/Users/$USERNAME/.sdkman"
 [[ -s "/c/Users/$USERNAME/.sdkman/bin/sdkman-init.sh" ]] && source "/c/Users/$USERNAME/.sdkman/bin/sdkman-init.sh"
