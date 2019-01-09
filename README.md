@@ -3,7 +3,7 @@
 Provides the middleware component to the Java based Cynergi system.
 
 ## Setup
-1. For Windows install Git Bash
+1. For Windows install [Git Bash](https://git-scm.com/download/win)
 2. Need to checkout the [cynergi-dev-environment](http://gitlab.hightouchinc.com/cynergi2019/cynergi-dev-environment) project.
 3. Install [SDK Man](https://sdkman.io/)
    1. Easiest way is to open a bash termail (Git Bash if you are on Windows)
