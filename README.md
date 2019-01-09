@@ -14,13 +14,25 @@ Notepad or VIM to do your development as Gradle handles all the building outside
 Currently Java 8 is the target for this application with the plan to move to Java 11 as soon as it is feasible.
 
 ## Setup
-1. For Windows install [Git Bash](https://git-scm.com/download/win)
+1. For Windows install [Git Bash](https://git-scm.com/download/win) and [Chocolatey](https://chocolatey.org/install)
+   1. For Chocolatey the easiest way is to open up a Powershell Admin prompt and paste in 
+      `Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))`
+	2. Then we need the zip program so run `choco install zip`
 2. Need to checkout the [cynergi-dev-environment](http://gitlab.hightouchinc.com/cynergi2019/cynergi-dev-environment) project.
 3. Install [SDK Man](https://sdkman.io/)
    1. Easiest way is to open a bash termail (Git Bash if you are on Windows)
    2. Execute `curl -s "https://get.sdkman.io" | bash`
       1. There will be some instructions from the SDK Man installer about opening a new shell or sourcing a script.
          Either option is fine as long as we now have access to the `sdk` command.
+   3. This does seem to cause a weird issue on Windows with destroying the original bash profile so you'll need to create a
+      a new one and add the required SDK Man config lines to the end of that file which you should be able to do with
+	  the following command
+```bash
+cat > ~/.profile <<EOF
+export SDKMAN_DIR="/c/Users/$USERNAME/.sdkman"
+[[ -s "/c/Users/$USERNAME/.sdkman/bin/sdkman-init.sh" ]] && source "/c/Users/$USERNAME/.sdkman/bin/sdkman-init.sh"
+EOF
+```
 4. Need to have at least a Java 8 SDK installed and on the path.
    1. Using SDK Man from the command line run `sdk install java 8.0.192-zulu`
       1. This will install an OpenJDK similar to what will be used when the application is deployed in production called
