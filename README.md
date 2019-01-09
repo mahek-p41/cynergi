@@ -1,6 +1,17 @@
 # Cynergi Middleware
 
-Provides the middleware component to the Java based Cynergi system.
+Provides the middleware component to the Java based Cynergi system.  All interactions from customers through to the
+database will go through this application.
+
+This project uses [Micronaut](http://micronaut.io/) as it's Enterprise framework.  It is similar to Spring and Spring
+Boot in that it provides an annotation based develop workflow as well as various facilities to ease the develop cycle
+such as a built-in HTTP server, Database connection pooling, beans validation and testing.
+
+[Gradle](https://gradle.org/) is used as the build and dependency management tool.  It provides a declarative configuration
+system that is intended to handle the 80% of a standard java development and deployment workflow.  You could easily use
+Notepad or VIM to do your development as Gradle handles all the building outside of the development environment.
+
+Currently Java 8 is the target for this application with the plan to move to Java 11 as soon as it is feasible.
 
 ## Setup
 1. For Windows install [Git Bash](https://git-scm.com/download/win)
@@ -26,7 +37,7 @@ Provides the middleware component to the Java based Cynergi system.
       2. Also note for use with Intellij the JDK's that get installed via SDK Man are placed in the *$HOME/.sdkman/candidates/java/*
          directory.  To help with finding that you can from a bash terminal issue `which java` and note the overall
          directory structure SDK Man uses.
-   3. To test out the installation run `java -version` which should print out
+   3. To test out the installation run `java -version` which should print out something along the lines of
       ```
       openjdk version "1.8.0_192"
       OpenJDK Runtime Environment (Zulu 8.33.0.1-win64) (build 1.8.0_192-b01)
@@ -51,11 +62,19 @@ Provides the middleware component to the Java based Cynergi system.
    7. Navigate to where the JDK was installed from earlier and choose the directory that is where you pointed your JAVA_HOME
       environment variable from Bash earlier.  On Windows it will be something like **C:\Users\whoami\.sdkman\candidates\java\8.0.192-zulu**
 	  1. When choosing this make sure you choose the root of the directory as the way the tooling works the JDK is laid out in a 
-	     specific way.  Don't worry as Intellij checks to make sure it is valid before it makes that JDK available.
+	     specific way.  Don't worry as Intellij checks to make sure it is valid before it makes that JDK available by 
+	     verbally abusing you with a message like "No a valid JDK installation"
 7. Click "OK" to save those configurations
 9. Back on the "Welcome to Intellij IDEA" window click on the "Open" button in the middlish of the window
 10. Choose the **cyerngi-middleware** project that you checked out from the terminal earlier.
-11. Just take the defaults by clicking OK.  And you should be ready to develop on the source code.
+11. Just take the defaults by clicking OK.
+12. Finally the default builder for Intellij doesn't yet support some of the Micronaut features that are required by this
+    project.  With that a change has to be made to Intellij to enable Gradle to handle all the building of the source
+    code and the assembly of the resources.  If you don't do this the kotlin compiler won't generate the appropriate
+    stubs that Micronaut uses to weave the application dependencies together.  You may have to uncheck this in other
+    projects depending on how they are managed.
+    1. File > Settings > Build, Execution, Deployment > Gradle > Runner
+    2. Check the "Delegate IDE build/run actions to gradle"
 
 ## To run from Intellij
 1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*
@@ -124,7 +143,7 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
       1. It is now time to define the class(es) that will define the business logic that interacts with the `entity`
          defined earlier.
       2. All business logic should be housed in a `service` and should implement one of the two provided contract
-         interfaces
+         interfaces.  (Note: Most services defined in this project should be able to implement these interfaces)
          1. `com.hightouchinc.cynergi.middleware.service.CrudService` when dealing with an `entity` that doesn't have a
             parent of some kind.  For example a company has no parent but a store has a parent of a company that owns
             that store.  In this example a `CompanyService` would implement the `CrudService` interface
@@ -132,10 +151,51 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
              parent of some kind.  For example a company has no parent but a store has a parent of a company that owns
              that store.  In this example a `StoreService` would implement the `NestedCrudService` interface because it
              has a parent of a Company that will need to be provided for the business logic to manage the data in the 
-             database
-         
-   4. `validator`
-   5. `controller`
+             database.
+      3. If multiple interactions with the database are required it will be in the service where th is will be managed.
+         That might also include one service depending on another such as the `StoreService` depending on some 
+         functionality that is provided by the `CompanyService`
+   4. `controller`
+      1. The next to last class that will need to be created is a `controller`.
+      2. All controllers should have two annotations at the top of them
+         1. `io.micronaut.validation.Validated`
+            1. This tells the Micronaut framework that HTTP Request Bodies should be validated against the javax.validation
+               annotations defined on their properties.
+            2. These annotations are used by the framework to determine if the payload from the HTTP client is even
+               somewhat close to valid, and is the first line of defense the API uses to ensure data integrity 
+         2. `io.micronaut.http.annotation.Controller`
+            1. This annotation tells the Micronaut framework that public methods defined in this class and annotated
+               with annotations such as `io.micronaut.http.annotation.Get` and `io.micronaut.http.annotation.Post` will
+               provide HTTP endpoints that can be interacted with via an HTTP client of some kind such as cURL or 
+               a web browser.
+            2. A `value` will need to be provided that is the HTTP path through which the methods defined on this call
+               can be reached.  This `value` on the `Controller` annotation is the root of the path for this method.
+               The HTTP verb annotations also can define paths via the `value` attribute which will be appended to the
+               path defined on the `value` of the `Controller` annotation.
+      3. Controllers are how the application is interacted with and as such act as routers to the business logic that 
+         are housed in one or more `service` implementations.  A good rule of thumb is that it will be a one-to-one 
+         mapping of `controller` to `service`
+      4. Controllers also act as the gatekeeper to the business logic applying all validation first through the
+         standardized javax.validation system, and second through validators.
+   5. `validator`
+      1. Finally a `validator` will need to be defined.  This validator is the next line of defense that the API will
+         use to protect data integrity typically by checking that states are valid based on the data being passed. 
+      2. There are two types of validators that can be defined.  The final line of defense are the constraints defined
+         in the database via check constraints foreign keys, other method...
+         1. `com.hightouchinc.cynergi.middleware.validator.Validator`
+            1. This defines a top level validator for the an entity that has no parent.
+         1. `com.hightouchinc.cynergi.middleware.validator.NestedValidator`
+            1. This defines a validator for an entity that has a parent.
+      3. There will always need to be at the very least a `validateSave` and a `validateUpdate` method implemented
+         1. `validateSave` will need to be called by the controller when a POST is made to the server that will be 
+            creating new rows in the database and as such won't have an ID assigned to them yet.
+         2. `validateUpdate` will need to be called by the controller when a PUT is made to the server that will
+            be updating rows in the database.
+      4. Additional methods can be defined on implementations that need to different validation other than the basic
+         CREATE and UPDATE processes.
+      5. Also user validation can be done here to determine if a user has access to be applying the changes they are 
+         attempting to apply.  The current interfaces will need to be extended to handle user validation as they have
+         not currently been defined with that ability.
 
 ##### Resources 
 Resources such as application configuration is housed in `src/main/resources`.  Resources as defined in the scope
@@ -144,14 +204,19 @@ these types of files are `src/main/resources/application.yml` or the SQL files i
 
 #### Testing Source
 The source code described here will never be deployed to a customer or production system as it is meant to test code that
-will ultimately be deployed.  There are going to be two types of tests described here.  
+will ultimately be deployed.  The testing framework used by this project is called [Spock](http://spockframework.org).
+It is a Behavior Driven Testing tool that makes writing tests easier, especially when it comes to mocking out dependencies.
 
+There are going to be two types of tests described here.  
+
+##### Unit Tests
 A simple unit test that the developer will use to individually test out small parts of the business logic under various 
 scenarios.  In a unit test much of the infrastructure is "mocked" out to better control the inputs and outputs to the 
 business logic being testing.  Typically these tests are going to be small and fast.
 
+##### Integration Tests
 A second type of test is a functional test that will involve spinning up the entire application pointed at a locally
 running instance of Postgres (and any other 3rd party dependencies), and make real HTTP calls through the HTTP endpoints
 defined by the `@Controller`'s to determine if the result is correct.  These tests will have the most value when it comes
 to determining if a feature can be shipped as they will define the contract the API is providing, and checking that the
-API is actually fulfilling that contract.  
+API is actually fulfilling that contract.
