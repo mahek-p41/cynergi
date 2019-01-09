@@ -71,6 +71,8 @@ Provides the middleware component to the Java based Cynergi system.
    the green bug looking thing to run in debug.  (The third option is to run in code coverage mode)
 
 ## To run from Command Line
+Note: This option is useful if you just want to run the application but aren't interested in doing any coding.
+
 1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*
    1. Just leave this running in a separate terminal window
 2. Change directory to the root of the *cynergi-middleware* project using a bash prompt (IE Git Bash on Windows)
