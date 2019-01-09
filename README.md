@@ -56,8 +56,19 @@ Provides the middleware component to the Java based Cynergi system.
 11. Just take the defaults by clicking OK.  And you should be ready to develop on the source code.
 
 ## To run from Intellij
-Run the `com.hightouchinc.cynergi.middleware.Application` class.  Will need to pass in `-Dmicronaut.environments=local`
-as a jvm argument
+1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*
+2. Open up the `com.hightouchinc.cynergi.middleware.Application` class.
+   1. Expand the src/main/kotlin source folder then navigate through the packages until you get to the `Application`
+      class.
+3. Once you have found the Application class in the "Project" explorer pane on the left side of the screen right click
+   on the `Application` element and choose the "create 'com.hightouchinc.cyn..." selection
+4. Inside the "Create Run/Debug Configuration: 'com.hightouchinc.cynergi.middleware.Application'" window make sure
+   the following is correct or configured this way
+   1. `Main class:` com.hightouchinc.cynergi.middleware.Application
+   2. `VM options:` -Dmicronaut.environments=local
+   3. You might want to give it a `Name:` like cynergi-middleware (local) at the top of the window
+5. Once the runner has been created you can click the green arrow that points right to run the application or 
+   the green bug looking thing to run in debug.  (The third option is to run in code coverage mode)
 
 ## To run from Command Line
 1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*
