@@ -20,13 +20,18 @@ Currently Java 8 is the target for this application with the plan to move to Jav
 	2. Then we need the zip program so run `choco install zip`
 2. Need to checkout the [cynergi-dev-environment](http://gitlab.hightouchinc.com/cynergi2019/cynergi-dev-environment) project.
 3. Install [SDK Man](https://sdkman.io/)
-   1. Easiest way is to open a bash termail (Git Bash if you are on Windows)
+   1. Easiest way is to open a bash terminal (Git Bash if you are on Windows)
+      1. Make a backup of your bash profile files because sometimes the SDK Man install script seems to break bash on wndows
+         1. `cp ~/.bashrc ~/.bashrc.old`
+         2. `cp ~/.profile ~/.profile.old`
    2. Execute `curl -s "https://get.sdkman.io" | bash`
       1. There will be some instructions from the SDK Man installer about opening a new shell or sourcing a script.
          Either option is fine as long as we now have access to the `sdk` command.
-   3. This does seem to cause a weird issue on Windows with destroying the original bash profile so you'll need to create a
-      a new one and add the required SDK Man config lines to the end of that file which you should be able to do with
-	  the following command
+   3. This does seem to cause a weird issue on Windows with destroying the original bash profile so you'll need to restore
+      the copies made above if when you startup Git Bash it says it can't find a profile and has created a new one.
+      You'll need to restore the `.old` from above and then append the required SDK Man config lines to the end of that 
+      file which you should be able to do with the following command, making sure you put it in the right file.  The 
+      command below points at .profile
 ```
 cat > ~/.profile <<EOF
 export SDKMAN_DIR="/c/Users/$USERNAME/.sdkman"
