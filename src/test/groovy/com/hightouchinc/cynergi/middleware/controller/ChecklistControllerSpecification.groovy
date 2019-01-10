@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
 import com.hightouchinc.cynergi.middleware.entity.ChecklistDto
 import com.hightouchinc.cynergi.test.data.loader.ChecklistDataLoaderService
@@ -10,6 +11,7 @@ import io.micronaut.http.hateos.JsonError
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpRequest.PUT
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 class ChecklistControllerSpecification extends ControllerSpecificationBase {
@@ -66,6 +68,19 @@ class ChecklistControllerSpecification extends ControllerSpecificationBase {
       savedChecklist.customerComments == checklist.customerComments
       savedChecklist.verifiedBy == checklist.verifiedBy
       savedChecklist.verifiedTime != null
+   }
+
+   void "save checklist with longer than allowed customer comments" () {
+      given:
+      final def stringFaker = new Faker().lorem()
+      final def checklist = ChecklistTestDataLoader.stream(1).map { new ChecklistDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Checklist") }
+
+      when:
+      client.exchange(POST(url, checklist))
+
+      then:
+      final HttpClientResponseException exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
    }
 
    void "update checklist successfully" () {

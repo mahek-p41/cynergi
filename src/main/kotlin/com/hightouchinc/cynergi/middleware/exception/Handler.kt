@@ -80,7 +80,7 @@ class Handler(
 
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()
-         .filter { it.name != "insert" && it.name != "update" && it.name != "dto" }
+         .filter { it.name != "save" && it.name != "update" && it.name != "dto" && it.name.startsWith("arg") }
          .joinToString(".")
 
    private fun findLocale(httpRequest: HttpRequest<*>): Locale {

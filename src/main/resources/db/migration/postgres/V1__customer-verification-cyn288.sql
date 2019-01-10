@@ -12,29 +12,29 @@ $$
    LANGUAGE plpgsql;
 
 CREATE TABLE checklist_auto (
-   id                  BIGSERIAL                       NOT NULL PRIMARY KEY,
-   uuid                UUID DEFAULT uuid_generate_v1() NOT NULL,
-   time_created        TIMESTAMP                       NOT NULL,
-   time_updated        TIMESTAMP                       NOT NULL,
-   auto_address        BOOLEAN,
-   auto_comment        VARCHAR(100),
-   auto_dealer_phone   VARCHAR(18),
-   auto_diff_address   VARCHAR(50),
-   auto_diff_emp       VARCHAR(50),
-   auto_diff_phone     VARCHAR(18),
-   auto_dmv_verify     BOOLEAN,
-   auto_employer       BOOLEAN,
-   auto_last_payment   TIMESTAMP,
-   auto_name           VARCHAR(50),
-   auto_next_payment   TIMESTAMP,
-   auto_note           VARCHAR(50),
-   auto_pay_freq       VARCHAR(10),
-   auto_payment        FLOAT,
-   auto_pending_action VARCHAR(50),
-   auto_phone          BOOLEAN,
-   auto_prev_loan      BOOLEAN,
-   auto_purchase_date  TIMESTAMP,
-   auto_related        VARCHAR(50)
+   id                BIGSERIAL                          NOT NULL PRIMARY KEY,
+   uuid              UUID    DEFAULT uuid_generate_v1() NOT NULL,
+   time_created      TIMESTAMP                          NOT NULL,
+   time_updated      TIMESTAMP                          NOT NULL,
+   address           BOOLEAN DEFAULT FALSE              NOT NULL,
+   comment           VARCHAR(100),
+   dealer_phone      VARCHAR(18),
+   diff_address      VARCHAR(50),
+   diff_employee     VARCHAR(50),
+   diff_phone        VARCHAR(18),
+   dmv_verify        BOOLEAN DEFAULT FALSE              NOT NULL,
+   employer          BOOLEAN DEFAULT FALSE              NOT NULL,
+   last_payment      DATE,
+   name              VARCHAR(50),
+   next_payment      DATE,
+   note              VARCHAR(50),
+   payment_frequency VARCHAR(10),
+   payment           NUMERIC(19, 2),
+   pending_action    VARCHAR(50),
+   phone             BOOLEAN DEFAULT FALSE              NOT NULL,
+   prev_loan         BOOLEAN DEFAULT FALSE              NOT NULL,
+   purchase_date     DATE,
+   related           VARCHAR(50)
 );
 CREATE TRIGGER update_checklist_auto_trg
    BEFORE UPDATE
@@ -43,16 +43,16 @@ CREATE TRIGGER update_checklist_auto_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE checklist_employment (
-   id            BIGSERIAL                       NOT NULL PRIMARY KEY,
-   uuid          UUID DEFAULT uuid_generate_v1() NOT NULL,
-   time_created  TIMESTAMP                       NOT NULL,
-   time_updated  TIMESTAMP                       NOT NULL,
-   emp_dept      VARCHAR(50),
-   emp_hire_date TIMESTAMP,
-   emp_leave_msg BOOLEAN,
-   emp_name      VARCHAR(50),
-   emp_reliable  BOOLEAN,
-   emp_title     VARCHAR(50)
+   id           BIGSERIAL                          NOT NULL PRIMARY KEY,
+   uuid         UUID    DEFAULT uuid_generate_v1() NOT NULL,
+   time_created TIMESTAMP                          NOT NULL,
+   time_updated TIMESTAMP                          NOT NULL,
+   dept         VARCHAR(50),
+   hire_date    TIMESTAMP,
+   leave_msg    BOOLEAN DEFAULT FALSE              NOT NULL,
+   name         VARCHAR(50),
+   reliable     BOOLEAN DEFAULT FALSE              NOT NULL,
+   title        VARCHAR(50)
 );
 CREATE TRIGGER update_checklist_employment_trg
    BEFORE UPDATE
@@ -61,20 +61,20 @@ CREATE TRIGGER update_checklist_employment_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE checklist_landlord (
-   id              BIGSERIAL                       NOT NULL PRIMARY KEY,
-   uuid            UUID DEFAULT uuid_generate_v1() NOT NULL,
-   time_created    TIMESTAMP                       NOT NULL,
-   time_updated    TIMESTAMP                       NOT NULL,
-   land_address    BOOLEAN,
-   land_alt_phone  VARCHAR(18),
-   land_lease_type VARCHAR(25),
-   land_leave_msg  BOOLEAN,
-   land_length     INTEGER,
-   land_name       VARCHAR(50),
-   land_paid_rent  VARCHAR(15),
-   land_phone      BOOLEAN,
-   land_reliable   BOOLEAN,
-   land_rent       NUMERIC(19, 2)
+   id           BIGSERIAL                          NOT NULL PRIMARY KEY,
+   uuid         UUID    DEFAULT uuid_generate_v1() NOT NULL,
+   time_created TIMESTAMP                          NOT NULL,
+   time_updated TIMESTAMP                          NOT NULL,
+   address      BOOLEAN DEFAULT FALSE              NOT NULL,
+   alt_phone    VARCHAR(18),
+   lease_type   VARCHAR(25),
+   leave_msg    BOOLEAN DEFAULT TRUE               NOT NULL,
+   length       INTEGER,
+   name         VARCHAR(50),
+   paid_rent    VARCHAR(15),
+   phone        BOOLEAN DEFAULT FALSE              NOT NULL,
+   reliable     BOOLEAN DEFAULT FALSE              NOT NULL,
+   rent         NUMERIC(19, 2)
 );
 CREATE TRIGGER update_checklist_landlord_trg
    BEFORE UPDATE
@@ -83,18 +83,18 @@ CREATE TRIGGER update_checklist_landlord_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE checklist (
-   id                      BIGSERIAL                            NOT NULL PRIMARY KEY,
-   uuid                    UUID      DEFAULT uuid_generate_v1() NOT NULL,
-   time_created            TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   time_updated            TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   customer_account        VARCHAR(10)                          NOT NULL,
-   customer_comments       VARCHAR(255),
-   verified_by             VARCHAR(50)                          NOT NULL ,
-   verified_time           TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   company                 VARCHAR(6), -- this is the pointer for the company but as the current implementation for most of cynergi is divided up into company's having their own dataset
-   checklist_auto_id       BIGINT REFERENCES checklist_auto(id),
-   checklist_employment_id BIGINT REFERENCES checklist_employment(id),
-   checklist_landlord_id   BIGINT REFERENCES checklist_landlord(id)
+   id                BIGSERIAL                            NOT NULL PRIMARY KEY,
+   uuid              UUID      DEFAULT uuid_generate_v1() NOT NULL,
+   time_created      TIMESTAMP DEFAULT current_timestamp  NOT NULL,
+   time_updated      TIMESTAMP DEFAULT current_timestamp  NOT NULL,
+   customer_account  VARCHAR(10)                          NOT NULL,
+   customer_comments VARCHAR(255),
+   verified_by       VARCHAR(50)                          NOT NULL, -- is a soft reference to an employee
+   verified_time     TIMESTAMP DEFAULT current_timestamp  NOT NULL,
+   company           VARCHAR(6), -- this is the pointer for the company but as the current implementation for most of cynergi is divided up into company's having their own dataset
+   auto_id           BIGINT REFERENCES checklist_auto(id),
+   employment_id     BIGINT REFERENCES checklist_employment(id),
+   landlord_id       BIGINT REFERENCES checklist_landlord(id)
 );
 CREATE TRIGGER update_checklist_trg
    BEFORE UPDATE
@@ -105,20 +105,20 @@ ALTER TABLE checklist
    ADD CONSTRAINT checklist_customer_account_uq UNIQUE (customer_account);
 
 CREATE TABLE checklist_references (
-   id                 BIGSERIAL                            NOT NULL PRIMARY KEY,
-   uuid               UUID      DEFAULT uuid_generate_v1() NOT NULL,
-   time_created       TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   time_updated       TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   ref_address        BOOLEAN,
-   ref_has_home_phone BOOLEAN,
-   ref_known          INTEGER,
-   ref_leave_msg      BOOLEAN,
-   ref_rating         VARCHAR(3),
-   ref_relationship   BOOLEAN,
-   ref_reliable       BOOLEAN,
-   ref_time_frame     INTEGER,
-   ref_verify_phone   BOOLEAN,
-   checklist_id       BIGINT                               NOT NULL
+   id             BIGSERIAL                            NOT NULL PRIMARY KEY,
+   uuid           UUID      DEFAULT uuid_generate_v1() NOT NULL,
+   time_created   TIMESTAMP DEFAULT current_timestamp  NOT NULL,
+   time_updated   TIMESTAMP DEFAULT current_timestamp  NOT NULL,
+   address        BOOLEAN,
+   has_home_phone BOOLEAN,
+   known          INTEGER,
+   leave_msg      BOOLEAN,
+   rating         VARCHAR(3),
+   relationship   BOOLEAN,
+   reliable       BOOLEAN,
+   time_frame     INTEGER,
+   verify_phone   BOOLEAN,
+   checklist_id   BIGINT                               NOT NULL
 );
 CREATE TRIGGER update_checklist_references_trg
    BEFORE UPDATE

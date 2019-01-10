@@ -3,9 +3,11 @@ package com.hightouchinc.cynergi.middleware.entity
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Size
 
 data class Checklist(
    var id: Long?,
@@ -38,13 +40,16 @@ data class Checklist(
 data class ChecklistDto(
    var id: Long?,
 
+   @field:Size(max = 10, message = SIZE)
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_acct")
    var customerAccount: String,
 
+   @field:Size(max = 255, message = SIZE)
    @field:JsonProperty("cust_comments")
    var customerComments: String,
 
+   @field:Size(max = 50, message = SIZE)
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_by")
    var verifiedBy: String,

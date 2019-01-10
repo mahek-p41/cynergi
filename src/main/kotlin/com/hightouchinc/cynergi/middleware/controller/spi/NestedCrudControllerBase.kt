@@ -15,6 +15,9 @@ import io.micronaut.validation.Validated
  * @param PARENT the parent of the Entity being manipulated such as the parent of a Store being a Company
  * @property crudService holds an implementation of the [NestedCrudService] that is used for calling the fetchById
  *
+ * Note: That when using this the path defined on the child [io.micronaut.http.annotation.Controller] will need to
+ * have a {parentId} path param defined in it.
+ *
  * @author garym
  */
 @Validated
