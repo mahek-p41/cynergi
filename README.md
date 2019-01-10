@@ -67,7 +67,7 @@ EOF
          framework support.  Non of that is strictly necessary and the Community Edition is perfectly fine for this
          project.
 6. Start Intellij
-7. Configure a default JDK that Intelij will use
+7. Configure a default JDK that Intellij will use
    1. Assuming you have never used Intellij before it will come up with the "Welcome to Intellij IDEA" screen
    2. From the "Welcome" screen down in the lower right hand corner there is a "Configure" drop-down
    3. Click "Configure > Project Defaults > Project Structure" which will bring up the "Project Structure for New Projects"
@@ -134,10 +134,10 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
 
 ###### Code Conventions
 1. Top Level Package *(namespace)*
-   1. `com.hightouchinc.cynergi.middleware`
+   1. [com.hightouchinc.cynergi.middleware](./src/main/kotlin/com/hightouchinc/cynergi/middleware)
       1. All code will live under this package (and by extension directories on the file system)
 2. Primary Subpackages - The packages are were the bulk of the code will reside.
-   1. `entity`
+   1. [Entity](./src/main/kotlin/com/hightouchinc/cynergi/middleware/entity)
       1. Start here.  The first thing that should be done is the design of the Java Class that will represent a single
          row in the database AKA an "Entity".
       2. These should be a [Kotlin Data Class](https://kotlinlang.org/docs/reference/data-classes.html) which are a nice
@@ -150,29 +150,32 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
          2. The simplest way to start out a DTO is to define another data class that is similar to the `entity`, but 
             has various Jackson and javax.validation annotations on it that will be evaluated during the web
             marshalling and unmarshalling process.
-   2. `repository`
+   2. [Repository](./src/main/kotlin/com/hightouchinc/cynergi/middleware/repository)
       1. Next define how the Entity will interact with the database via a Repository.  Place all SQL queries here as 
          well as the mapping code (usually via a Spring RowMapper implementation)
       2. To make dealing with JDBC easier the Spring Frameworks JdbcTemplate and NamedParameterJdbcTemplate have been
          configured in the container.  Simply express a dependency on one or both beans in the `@Inject constructor` to
          get access to them.
-   3. `service`
+   3. [Service](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service)
       1. It is now time to define the class(es) that will define the business logic that interacts with the `entity`
          defined earlier.
       2. All business logic should be housed in a `service` and should implement one of the two provided contract
          interfaces.  (Note: Most services defined in this project should be able to implement these interfaces)
-         1. `com.hightouchinc.cynergi.middleware.service.CrudService` when dealing with an `entity` that doesn't have a
-            parent of some kind.  For example a company has no parent but a store has a parent of a company that owns
-            that store.  In this example a `CompanyService` would implement the `CrudService` interface
-         2. `com.hightouchinc.cynergi.middleware.service.NestedCrudService` when dealing with an `entity` that does have a
-             parent of some kind.  For example a company has no parent but a store has a parent of a company that owns
-             that store.  In this example a `StoreService` would implement the `NestedCrudService` interface because it
-             has a parent of a Company that will need to be provided for the business logic to manage the data in the 
-             database.
+         1. [com.hightouchinc.cynergi.middleware.service.CrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/CrudService.kt) 
+            when dealing with an `entity` that doesn't have a parent of some kind.  For example a company has no parent but a 
+            store has a parent of a company that owns that store.  In this example a `CompanyService` would implement the 
+            [CrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/CrudService.kt)
+            interface.
+         2. [com.hightouchinc.cynergi.middleware.service.NestedCrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/NestedCrudService.kt) 
+            when dealing with an `entity` that does have a parent of some kind.  For example a company has no parent but 
+            a store has a parent of a company that owns that store.  In this example a `StoreService` would implement 
+            the [NestedCrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/NestedCrudService.kt) 
+            interface because it has a parent of a Company that will need to be provided for the
+            business logic to manage the data in the database.
       3. If multiple interactions with the database are required it will be in the service where th is will be managed.
          That might also include one service depending on another such as the `StoreService` depending on some 
          functionality that is provided by the `CompanyService`
-   4. `controller`
+   4. [Controller](./src/main/kotlin/com/hightouchinc/cynergi/middleware/controller)
       1. The next to last class that will need to be created is a `controller`.
       2. All controllers should have two annotations at the top of them
          1. `io.micronaut.validation.Validated`
@@ -194,14 +197,14 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
          mapping of `controller` to `service`
       4. Controllers also act as the gatekeeper to the business logic applying all validation first through the
          standardized javax.validation system, and second through validators.
-   5. `validator`
+   5. [Validator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator)
       1. Finally a `validator` will need to be defined.  This validator is the next line of defense that the API will
          use to protect data integrity typically by checking that states are valid based on the data being passed. 
       2. There are two types of validators that can be defined.  The final line of defense are the constraints defined
          in the database via check constraints foreign keys, other method...
-         1. `com.hightouchinc.cynergi.middleware.validator.Validator`
+         1. [Validator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/Validator.kt)
             1. This defines a top level validator for the an entity that has no parent.
-         1. `com.hightouchinc.cynergi.middleware.validator.NestedValidator`
+         1. [NestedValidator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/NestedValidator.kt)
             1. This defines a validator for an entity that has a parent.
       3. There will always need to be at the very least a `validateSave` and a `validateUpdate` method implemented
          1. `validateSave` will need to be called by the controller when a POST is made to the server that will be 
@@ -215,9 +218,10 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
          not currently been defined with that ability.
 
 ##### Resources 
-Resources such as application configuration is housed in `src/main/resources`.  Resources as defined in the scope
-of this application are plain text files that are not compiled, but loaded by the application at runtime.  Examples of
-these types of files are `src/main/resources/application.yml` or the SQL files in `src/main/resources/db/migration/postgres`.
+Resources as defined in the scope of this application are plain text files that are not compiled, but loaded by the 
+application at runtime. Resources such as application configuration is housed in [Resources](./src/main/resources).  
+Examples of these types of files are [application.yml](src/main/resources/application.yml) or the 
+[SQL Migrations](src/main/resources/db/migration/postgres) files.
 
 #### Testing Source
 The source code described here will never be deployed to a customer or production system as it is meant to test code that
