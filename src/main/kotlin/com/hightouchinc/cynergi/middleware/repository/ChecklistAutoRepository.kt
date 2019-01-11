@@ -9,7 +9,7 @@ import org.intellij.lang.annotations.Language
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import javax.inject.Singleton
 
@@ -26,8 +26,8 @@ class ChecklistAutoRepository(
          ChecklistAuto(
             id = rs.getLong("id"),
             uuRowId = rs.getObject("uu_row_id", UUID::class.java),
-            timeCreated = rs.getObject("time_created", LocalDateTime::class.java),
-            timeUpdated = rs.getObject("time_updated", LocalDateTime::class.java),
+            timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
+            timeUpdated = rs.getObject("time_updated", OffsetDateTime::class.java),
             address = rs.getBoolean("address"),
             comment = rs.getString("comment"),
             dealerPhone = rs.getString("dealer_phone"),

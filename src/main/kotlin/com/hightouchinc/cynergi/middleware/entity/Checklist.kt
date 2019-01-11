@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
@@ -13,8 +14,8 @@ import javax.validation.constraints.Size
 data class Checklist(
    var id: Long?,
    var uuRowId: UUID = UUID.randomUUID(),
-   var timeCreated: LocalDateTime = LocalDateTime.now(),
-   var timeUpdated: LocalDateTime = timeCreated,
+   var timeCreated: OffsetDateTime = OffsetDateTime.now(),
+   var timeUpdated: OffsetDateTime = timeCreated,
    var customerAccount: String, // TODO convert from soft foreign key to soft_customer
    var customerComments: String,
    var verifiedBy: String, // TODO convert from soft foreign key to soft_employee

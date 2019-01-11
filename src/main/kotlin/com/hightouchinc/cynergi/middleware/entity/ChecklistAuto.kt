@@ -3,7 +3,7 @@ package com.hightouchinc.cynergi.middleware.entity
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.POSITIVE_NUMBER_REQUIRED
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.Digits
 import javax.validation.constraints.Positive
@@ -12,8 +12,8 @@ import javax.validation.constraints.Size
 data class ChecklistAuto(
    var id: Long? = null,
    var uuRowId: UUID? = UUID.randomUUID(),
-   var timeCreated: LocalDateTime? = LocalDateTime.now(),
-   var timeUpdated: LocalDateTime? = timeCreated,
+   var timeCreated: OffsetDateTime? = OffsetDateTime.now(),
+   var timeUpdated: OffsetDateTime? = timeCreated,
    var address: Boolean = false,
    var comment: String?,
    var dealerPhone: String?,

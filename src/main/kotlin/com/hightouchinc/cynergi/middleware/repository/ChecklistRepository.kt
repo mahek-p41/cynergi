@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import javax.inject.Singleton
 
@@ -28,8 +29,8 @@ class ChecklistRepository(
          Checklist(
             id = rs.getLong("id"),
             uuRowId = rs.getObject("uu_row_id", UUID::class.java),
-            timeCreated = rs.getObject("time_created", LocalDateTime::class.java),
-            timeUpdated = rs.getObject("time_updated", LocalDateTime::class.java),
+            timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
+            timeUpdated = rs.getObject("time_updated", OffsetDateTime::class.java),
             customerAccount = rs.getString("customer_account"),
             customerComments = rs.getString("customer_comments"),
             verifiedBy = rs.getString("verified_by"),

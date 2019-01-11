@@ -14,8 +14,8 @@ $$
 CREATE TABLE checklist_auto (
    id                BIGSERIAL                          NOT NULL PRIMARY KEY,
    uu_row_id         UUID    DEFAULT uuid_generate_v1() NOT NULL,
-   time_created      TIMESTAMP                          NOT NULL,
-   time_updated      TIMESTAMP                          NOT NULL,
+   time_created      TIMESTAMPTZ                        NOT NULL,
+   time_updated      TIMESTAMPTZ                        NOT NULL,
    address           BOOLEAN DEFAULT FALSE              NOT NULL,
    comment           VARCHAR(100),
    dealer_phone      VARCHAR(18),
@@ -45,8 +45,8 @@ EXECUTE PROCEDURE last_updated_column_fn();
 CREATE TABLE checklist_employment (
    id           BIGSERIAL                          NOT NULL PRIMARY KEY,
    uu_row_id    UUID    DEFAULT uuid_generate_v1() NOT NULL,
-   time_created TIMESTAMP                          NOT NULL,
-   time_updated TIMESTAMP                          NOT NULL,
+   time_created TIMESTAMPTZ                        NOT NULL,
+   time_updated TIMESTAMPTZ                        NOT NULL,
    dept         VARCHAR(50),
    hire_date    TIMESTAMP,
    leave_msg    BOOLEAN DEFAULT FALSE              NOT NULL,
@@ -63,8 +63,8 @@ EXECUTE PROCEDURE last_updated_column_fn();
 CREATE TABLE checklist_landlord (
    id           BIGSERIAL                          NOT NULL PRIMARY KEY,
    uu_row_id    UUID    DEFAULT uuid_generate_v1() NOT NULL,
-   time_created TIMESTAMP                          NOT NULL,
-   time_updated TIMESTAMP                          NOT NULL,
+   time_created TIMESTAMPTZ                        NOT NULL,
+   time_updated TIMESTAMPTZ                        NOT NULL,
    address      BOOLEAN DEFAULT FALSE              NOT NULL,
    alt_phone    VARCHAR(18),
    lease_type   VARCHAR(25),
@@ -83,15 +83,15 @@ CREATE TRIGGER update_checklist_landlord_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE checklist (
-   id                BIGSERIAL                            NOT NULL PRIMARY KEY,
-   uu_row_id         UUID      DEFAULT uuid_generate_v1() NOT NULL,
-   time_created      TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   time_updated      TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   customer_account  VARCHAR(10)                          NOT NULL,
+   id                BIGSERIAL                              NOT NULL PRIMARY KEY,
+   uu_row_id         UUID        DEFAULT uuid_generate_v1() NOT NULL,
+   time_created      TIMESTAMPTZ DEFAULT current_timestamp  NOT NULL,
+   time_updated      TIMESTAMPTZ DEFAULT current_timestamp  NOT NULL,
+   customer_account  VARCHAR(10)                            NOT NULL,
    customer_comments VARCHAR(255),
-   verified_by       VARCHAR(50)                          NOT NULL, -- is a soft reference to an employee
-   verified_time     TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   company           VARCHAR(6),                                    -- this is the pointer for the company but as the current implementation for most of cynergi is divided up into company's having their own dataset
+   verified_by       VARCHAR(50)                            NOT NULL, -- is a soft reference to an employee
+   verified_time     TIMESTAMP   DEFAULT current_timestamp  NOT NULL,
+   company           VARCHAR(6),                                      -- this is the pointer for the company but as the current implementation for most of cynergi is divided up into company's having their own dataset
    auto_id           BIGINT REFERENCES checklist_auto(id),
    employment_id     BIGINT REFERENCES checklist_employment(id),
    landlord_id       BIGINT REFERENCES checklist_landlord(id)
@@ -105,10 +105,10 @@ ALTER TABLE checklist
    ADD CONSTRAINT checklist_customer_account_uq UNIQUE (customer_account);
 
 CREATE TABLE checklist_references (
-   id             BIGSERIAL                            NOT NULL PRIMARY KEY,
-   uu_row_id      UUID      DEFAULT uuid_generate_v1() NOT NULL,
-   time_created   TIMESTAMP DEFAULT current_timestamp  NOT NULL,
-   time_updated   TIMESTAMP DEFAULT current_timestamp  NOT NULL,
+   id             BIGSERIAL                              NOT NULL PRIMARY KEY,
+   uu_row_id      UUID        DEFAULT uuid_generate_v1() NOT NULL,
+   time_created   TIMESTAMPTZ DEFAULT current_timestamp  NOT NULL,
+   time_updated   TIMESTAMPTZ DEFAULT current_timestamp  NOT NULL,
    address        BOOLEAN,
    has_home_phone BOOLEAN,
    known          INTEGER,
@@ -118,7 +118,7 @@ CREATE TABLE checklist_references (
    reliable       BOOLEAN,
    time_frame     INTEGER,
    verify_phone   BOOLEAN,
-   checklist_id   BIGINT                               NOT NULL
+   checklist_id   BIGINT                                 NOT NULL
 );
 CREATE TRIGGER update_checklist_references_trg
    BEFORE UPDATE
