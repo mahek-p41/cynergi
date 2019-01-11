@@ -18,8 +18,7 @@ class CompanyRepository @Inject constructor(
 ): RepositoryBase<Company>(
    tableName = "Company",
    jdbc = jdbc,
-   entityRowMapper = COMPANY_ROW_MAPPER,
-   selectOneQuery = FETCH_COMPANY_BY_ID
+   entityRowMapper = COMPANY_ROW_MAPPER
 ) {
    private companion object {
       val COMPANY_ROW_MAPPER: RowMapper<Company> = RowMapper { rs: ResultSet, _: Int ->
@@ -28,15 +27,6 @@ class CompanyRepository @Inject constructor(
             name = rs.getString("name")
          )
       }
-
-      @Language("PostgreSQL")
-      val FETCH_COMPANY_BY_ID = """
-         SELECT
-            c.id AS id,
-            c.name AS name
-          FROM Company c
-          WHERE c.id = :id
-      """.trimIndent()
 
       @Language("PostgreSQL")
       val CREATE_COMPANY = """

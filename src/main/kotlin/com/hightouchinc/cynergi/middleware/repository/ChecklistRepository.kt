@@ -16,56 +16,32 @@ import javax.inject.Singleton
 
 @Singleton
 class ChecklistRepository(
-   jdbc: NamedParameterJdbcTemplate
+   jdbc: NamedParameterJdbcTemplate,
+   private val checklistAutoRepository: ChecklistAutoRepository
 ): RepositoryBase<Checklist>(
    tableName = "checklist",
    jdbc = jdbc,
-   entityRowMapper = CHECKLIST_ROW_MAPPER,
-   selectOneQuery = SELECT_CHECKLIST_BY_ID
+   entityRowMapper = CHECKLIST_ROW_MAPPER
 ) {
    private companion object {
       val CHECKLIST_ROW_MAPPER: RowMapper<Checklist> = RowMapper { rs: ResultSet, _: Int ->
          Checklist(
             id = rs.getLong("id"),
-            uuid = rs.getObject("uuid", UUID::class.java),
-            timeCreated = rs.getObject("timeCreated", LocalDateTime::class.java),
-            timeUpdated = rs.getObject("timeUpdated", LocalDateTime::class.java),
-            customerAccount = rs.getString("customerAccount"),
-            customerComments = rs.getString("customerComments"),
-            verifiedBy = rs.getString("verifiedBy"),
-            verifiedTime = rs.getObject("verifiedTime", LocalDateTime::class.java),
+            uuRowId = rs.getObject("uu_row_id", UUID::class.java),
+            timeCreated = rs.getObject("time_created", LocalDateTime::class.java),
+            timeUpdated = rs.getObject("time_updated", LocalDateTime::class.java),
+            customerAccount = rs.getString("customer_account"),
+            customerComments = rs.getString("customer_comments"),
+            verifiedBy = rs.getString("verified_by"),
+            verifiedTime = rs.getObject("verified_time", LocalDateTime::class.java),
             company = rs.getString("company")
          )
       }
 
       @Language("PostgreSQL")
-      val SELECT_CHECKLIST_BY_ID = """
-         SELECT
-            c.id AS id,
-            c.uuid AS uuid,
-            c.time_created AS timeCreated,
-            c.time_updated AS timeUpdated,
-            c.customer_account AS customerAccount,
-            c.customer_comments AS customerComments,
-            c.verified_by AS verifiedBy,
-            c.verified_time AS verifiedTime,
-            c.company AS company
-         FROM Checklist c
-         WHERE c.id = :id
-      """.trimIndent()
-
-      @Language("PostgreSQL")
       val SELECT_CHECKLIST_BY_CUSTOMER_ACCOUNT = """
          SELECT
-            c.id AS id,
-            c.uuid AS uuid,
-            c.time_created AS timeCreated,
-            c.time_updated AS timeUpdated,
-            c.customer_account AS customerAccount,
-            c.customer_comments AS customerComments,
-            c.verified_by AS verifiedBy,
-            c.verified_time AS verifiedTime,
-            c.company AS company
+            *
          FROM Checklist c
          WHERE c.customer_account = :customerAccount
       """.trimIndent()
@@ -75,35 +51,20 @@ class ChecklistRepository(
          INSERT INTO Checklist (customer_account, customer_comments, verified_by, company)
          VALUES(:customerAccount, :customerComments, :verifiedBy, :company)
          RETURNING
-            id AS id,
-            uuid AS uuid,
-            time_created AS timeCreated,
-            time_updated AS timeUpdated,
-            customer_account AS customerAccount,
-            customer_comments AS customerComments,
-            verified_by AS verifiedBy,
-            verified_time AS verifiedTime,
-            company AS company
+            *
       """.trimIndent()
 
       @Language("PostgreSQL")
       val UPDATE_CHECKLIST = """
          UPDATE Checklist
-         SET customer_account = :customerAccount,
-             customer_comments = :customerComments,
-             verified_by = :verifiedBy,
-             verified_time = :verifiedTime
+         SET
+            customer_account = :customerAccount,
+            customer_comments = :customerComments,
+            verified_by = :verifiedBy,
+            verified_time = :verifiedTime
          WHERE id = :id
          RETURNING
-            id AS id,
-            uuid AS uuid,
-            time_created AS timeCreated,
-            time_updated AS timeUpdated,
-            customer_account AS customerAccount,
-            customer_comments AS customerComments,
-            verified_by AS verifiedBy,
-            verified_time AS verifiedTime,
-            company AS company
+            *
       """.trimIndent()
    }
 

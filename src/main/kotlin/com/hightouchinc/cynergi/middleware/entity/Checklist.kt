@@ -11,7 +11,7 @@ import javax.validation.constraints.Size
 
 data class Checklist(
    var id: Long?,
-   var uuid: UUID,
+   var uuRowId: UUID,
    var timeCreated: LocalDateTime,
    var timeUpdated: LocalDateTime,
    var customerAccount: String, // TODO convert from soft foreign key to customer
@@ -24,7 +24,7 @@ data class Checklist(
    constructor(dto: ChecklistDto, company: String):
       this(
          id = dto.id,
-         uuid = UUID.randomUUID(),
+         uuRowId = UUID.randomUUID(),
          timeCreated = LocalDateTime.now(),
          timeUpdated = LocalDateTime.now(),
          customerAccount = dto.customerAccount,

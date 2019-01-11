@@ -13,15 +13,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 abstract class RepositoryBase<ENTITY: Entity> (
    protected val tableName: String,
    protected val jdbc: NamedParameterJdbcTemplate,
-   protected val entityRowMapper: RowMapper<ENTITY>,
-   private val selectOneQuery: String
+   protected val entityRowMapper: RowMapper<ENTITY>
 ): Repository<ENTITY> {
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(RepositoryBase::class.java)
    }
 
    override fun findOne(id: Long): ENTITY? {
-      val fetched: ENTITY? = jdbc.findFirstOrNull(selectOneQuery, Maps.mutable.ofPairs("id" to id), entityRowMapper)
+      val fetched: ENTITY? = jdbc.findFirstOrNull("SELECT * FROM $tableName WHERE id = :id", Maps.mutable.ofPairs("id" to id), entityRowMapper)
 
       logger.trace("fetched {} resulted in {}", id, fetched)
 

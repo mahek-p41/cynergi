@@ -23,7 +23,7 @@ abstract class ControllerSpecificationBase extends Specification {
       ((DefaultHttpClient)reactiveClient).configuration.readTimeout = Duration.ofHours(1) // because sometimes it takes longer that 10 seconds to debug something
       client = reactiveClient.toBlocking()
    }
-   
+
    void cleanupSpec() {
       truncateDatabaseService.truncate()
    }
