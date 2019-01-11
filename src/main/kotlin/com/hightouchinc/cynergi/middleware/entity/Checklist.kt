@@ -15,11 +15,11 @@ data class Checklist(
    var uuRowId: UUID = UUID.randomUUID(),
    var timeCreated: LocalDateTime = LocalDateTime.now(),
    var timeUpdated: LocalDateTime = timeCreated,
-   var customerAccount: String, // TODO convert from soft foreign key to customer
+   var customerAccount: String, // TODO convert from soft foreign key to soft_customer
    var customerComments: String,
-   var verifiedBy: String, // TODO convert from soft foreign key to employee
+   var verifiedBy: String, // TODO convert from soft foreign key to soft_employee
    var verifiedTime: LocalDateTime,
-   var company: String, // TODO convert from soft foreign key to point to a company
+   var company: String, // TODO convert from soft foreign key to point to a soft_company
    var auto: ChecklistAuto?
 
 ): Entity {
