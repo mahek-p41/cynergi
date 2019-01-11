@@ -19,10 +19,10 @@ class ChecklistService @Inject constructor(
    private val checklistRepository: ChecklistRepository
 ): NestedCrudService<ChecklistDto, String> {
    override fun fetchById(id: Long): ChecklistDto? =
-      checklistRepository.findOne(id = id)?.let { ChecklistDto(checklist = it) }
+      checklistRepository.findOne(id = id)?.let { ChecklistDto(entity = it) }
 
    fun fetchByCustomerAccount(customerAccount: String): ChecklistDto? =
-      checklistRepository.findByCustomerAccount(customerAccount = customerAccount)?.let { ChecklistDto(checklist = it) }
+      checklistRepository.findByCustomerAccount(customerAccount = customerAccount)?.let { ChecklistDto(entity = it) }
 
    override fun exists(id: Long): Boolean =
       checklistRepository.exists(id = id)
@@ -32,11 +32,11 @@ class ChecklistService @Inject constructor(
 
    override fun create(dto: ChecklistDto, parent: String): ChecklistDto =
       ChecklistDto(
-         checklist = checklistRepository.insert(entity = Checklist(dto = dto, company = parent))
+         entity = checklistRepository.insert(entity = Checklist(dto = dto, company = parent))
       )
 
    override fun update(dto: ChecklistDto, parent: String): ChecklistDto =
       ChecklistDto(
-         checklist = checklistRepository.update(entity = Checklist(dto = dto, company = parent))
+         entity = checklistRepository.update(entity = Checklist(dto = dto, company = parent))
       )
 }

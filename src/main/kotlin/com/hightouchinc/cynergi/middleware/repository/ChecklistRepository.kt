@@ -34,7 +34,8 @@ class ChecklistRepository(
             customerComments = rs.getString("customer_comments"),
             verifiedBy = rs.getString("verified_by"),
             verifiedTime = rs.getObject("verified_time", LocalDateTime::class.java),
-            company = rs.getString("company")
+            company = rs.getString("company"),
+            auto = null // TODO add join to table and map columns using mapping from checklistAutoRepository
          )
       }
 

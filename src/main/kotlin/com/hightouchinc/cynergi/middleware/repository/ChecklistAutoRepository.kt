@@ -57,6 +57,7 @@ class ChecklistAutoRepository(
          RETURNING *
        """.trimIndent()
 
+      @Language("PostgreSQL")
       val CHECKLIST_AUTO_UPDATE = """
          UPDATE Checklist_Auto
          SET

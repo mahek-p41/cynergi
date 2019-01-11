@@ -29,7 +29,8 @@ class ChecklistTestDataLoader {
             chuckNorris.fact(),
             numberFaker.digits(6),
             LocalDateTime.now(),
-            numberFaker.digits(6)
+            numberFaker.digits(6),
+            null // TODO create dummy checklist auto
          )
       }
    }

@@ -11,9 +11,9 @@ import javax.validation.constraints.Size
 
 data class ChecklistAuto(
    var id: Long? = null,
-   var uuRowId: UUID,
-   var timeCreated: LocalDateTime,
-   var timeUpdated: LocalDateTime,
+   var uuRowId: UUID? = UUID.randomUUID(),
+   var timeCreated: LocalDateTime? = LocalDateTime.now(),
+   var timeUpdated: LocalDateTime? = timeCreated,
    var address: Boolean = false,
    var comment: String?,
    var dealerPhone: String?,
@@ -22,7 +22,7 @@ data class ChecklistAuto(
    var diffPhone: String?,
    var dmvVerify: Boolean = false,
    var employer: Boolean = false,
-   var lastPayment: LocalDate,
+   var lastPayment: LocalDate?,
    var name: String?,
    var nextPayment: LocalDate?,
    var note: String?,
@@ -36,7 +36,29 @@ data class ChecklistAuto(
 
 ) : Entity {
 
-
+   constructor(dto: ChecklistAutoDto) :
+      this(
+         id = dto.id,
+         address = dto.address,
+         comment = dto.comment,
+         dealerPhone = dto.dealerPhone,
+         diffAddress = dto.diffAddress,
+         diffEmployee = dto.diffEmployee,
+         diffPhone = dto.diffPhone,
+         dmvVerify = dto.dmvVerify,
+         employer = dto.employer,
+         lastPayment = dto.lastPayment,
+         name = dto.name,
+         nextPayment = dto.nextPayment,
+         note = dto.note,
+         paymentFrequency = dto.paymentFrequency,
+         payment = dto.payment,
+         pendingAction = dto.pendingAction,
+         phone = dto.phone,
+         previousLoan = dto.previousLoan,
+         purchaseDate = dto.purchaseDate,
+         related = dto.related
+      )
 
    override fun entityId(): Long? = id
 }
@@ -95,4 +117,28 @@ data class ChecklistAutoDto(
    @field:Size(max = 50)
    var related: String?
 
-)
+) {
+   constructor(entity: ChecklistAuto) :
+      this(
+         id = entity.id,
+         address = entity.address,
+         comment = entity.comment,
+         dealerPhone = entity.dealerPhone,
+         diffAddress = entity.diffAddress,
+         diffEmployee = entity.diffEmployee,
+         diffPhone = entity.diffPhone,
+         dmvVerify = entity.dmvVerify,
+         employer = entity.employer,
+         lastPayment = entity.lastPayment,
+         name = entity.name,
+         nextPayment = entity.nextPayment,
+         note = entity.note,
+         paymentFrequency = entity.paymentFrequency,
+         payment = entity.payment,
+         pendingAction = entity.pendingAction,
+         phone = entity.phone,
+         previousLoan = entity.previousLoan,
+         purchaseDate = entity.purchaseDate,
+         related = entity.related
+      )
+}
