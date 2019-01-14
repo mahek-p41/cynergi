@@ -159,20 +159,10 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
    3. [Service](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service)
       1. It is now time to define the class(es) that will define the business logic that interacts with the `entity`
          defined earlier.
-      2. All business logic should be housed in a `service` and should implement one of the two provided contract
-         interfaces.  (Note: Most services defined in this project should be able to implement these interfaces)
-         1. [com.hightouchinc.cynergi.middleware.service.CrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/CrudService.kt) 
-            when dealing with an `entity` that doesn't have a parent of some kind.  For example a company has no parent but a 
-            store has a parent of a company that owns that store.  In this example a `CompanyService` would implement the 
-            [CrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/CrudService.kt)
-            interface.
-         2. [com.hightouchinc.cynergi.middleware.service.NestedCrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/NestedCrudService.kt) 
-            when dealing with an `entity` that does have a parent of some kind.  For example a company has no parent but 
-            a store has a parent of a company that owns that store.  In this example a `StoreService` would implement 
-            the [NestedCrudService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/NestedCrudService.kt) 
-            interface because it has a parent of a Company that will need to be provided for the
-            business logic to manage the data in the database.
-      3. If multiple interactions with the database are required it will be in the service where th is will be managed.
+      2. All business logic should be housed in a `service` and should implement the following interface
+         1. [com.hightouchinc.cynergi.middleware.service.IdentifiableService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/IdentifiableService.kt) 
+            when dealing with an `entity` that has a primary key that is auto incrementing and some sort of integral type.
+      3. If multiple interactions with the database are required it will be in the service where this will be managed.
          That might also include one service depending on another such as the `StoreService` depending on some 
          functionality that is provided by the `CompanyService`
    4. [Controller](./src/main/kotlin/com/hightouchinc/cynergi/middleware/controller)
@@ -200,20 +190,14 @@ script.  The primary language used for writing the business logic is [Kotlin](ht
    5. [Validator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator)
       1. Finally a `validator` will need to be defined.  This validator is the next line of defense that the API will
          use to protect data integrity typically by checking that states are valid based on the data being passed. 
-      2. There are two types of validators that can be defined.  The final line of defense are the constraints defined
-         in the database via check constraints foreign keys, other method...
-         1. [Validator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/Validator.kt)
-            1. This defines a top level validator for the an entity that has no parent.
-         1. [NestedValidator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/NestedValidator.kt)
-            1. This defines a validator for an entity that has a parent.
-      3. There will always need to be at the very least a `validateSave` and a `validateUpdate` method implemented
+      2. There will always need to be at the very least a `validateSave` and a `validateUpdate` method implemented
          1. `validateSave` will need to be called by the controller when a POST is made to the server that will be 
             creating new rows in the database and as such won't have an ID assigned to them yet.
          2. `validateUpdate` will need to be called by the controller when a PUT is made to the server that will
             be updating rows in the database.
-      4. Additional methods can be defined on implementations that need to different validation other than the basic
+      3. Additional methods can be defined on implementations that need to different validation other than the basic
          CREATE and UPDATE processes.
-      5. Also user validation can be done here to determine if a user has access to be applying the changes they are 
+      4. Also user validation can be done here to determine if a user has access to be applying the changes they are 
          attempting to apply.  The current interfaces will need to be extended to handle user validation as they have
          not currently been defined with that ability.
 

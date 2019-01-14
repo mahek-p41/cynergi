@@ -1,6 +1,5 @@
 package com.hightouchinc.cynergi.middleware.controller
 
-import com.hightouchinc.cynergi.middleware.controller.spi.NestedCrudControllerBase
 import com.hightouchinc.cynergi.middleware.entity.ChecklistDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
@@ -30,9 +29,13 @@ import javax.validation.Valid
 class ChecklistController @Inject constructor(
    private val checklistService: ChecklistService,
    private val checklistValidator: ChecklistValidator
-): NestedCrudControllerBase<ChecklistDto, String>(
-   crudService = checklistService
 ) {
+   @Get(value = "/{id}", produces = [MediaType.APPLICATION_JSON])
+   fun fetchOne(
+      @QueryValue("id") id: Long
+   ): ChecklistDto {
+      return checklistService.fetchById(id = id) ?: throw NotFoundException(id)
+   }
 
    @Throws(NotFoundException::class)
    @Get(value = "/account/{customerAccount}", produces = [MediaType.APPLICATION_JSON])
@@ -45,7 +48,7 @@ class ChecklistController @Inject constructor(
 
    @Post(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   override fun save(
+   fun save(
       @QueryValue("parentId") parentId: String,
       @Valid @Body dto: ChecklistDto
    ): ChecklistDto {
@@ -56,7 +59,7 @@ class ChecklistController @Inject constructor(
 
    @Put(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   override fun update(
+   fun update(
       @QueryValue("parentId") parentId: String,
       @Valid@Body dto: ChecklistDto
    ): ChecklistDto {
