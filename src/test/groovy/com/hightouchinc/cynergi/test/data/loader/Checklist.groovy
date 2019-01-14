@@ -48,6 +48,8 @@ class ChecklistDataLoaderService {
 
    Stream<Checklist> stream(int number = 1) {
       return ChecklistTestDataLoader.stream(number)
-         .map { checklistRepository.insert(it) }
+         .map {
+            checklistRepository.insert(it)
+         }
    }
 }

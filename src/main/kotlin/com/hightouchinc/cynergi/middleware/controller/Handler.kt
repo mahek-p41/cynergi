@@ -1,5 +1,7 @@
-package com.hightouchinc.cynergi.middleware.exception
+package com.hightouchinc.cynergi.middleware.controller
 
+import com.hightouchinc.cynergi.middleware.exception.NotFoundException
+import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
 import io.micronaut.http.HttpHeaders.ACCEPT_LANGUAGE

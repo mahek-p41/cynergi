@@ -33,10 +33,10 @@ class ChecklistAutoTestDataLoader {
             OffsetDateTime.now(),
             bool.bool(),
             lorem.characters(3, 100),
-            phone.phoneNumber(),
+            phone.cellPhone(),
             address.streetAddress(false),
             name.username(),
-            phone.phoneNumber(),
+            phone.cellPhone(),
             bool.bool(),
             bool.bool(),
             date.past(28, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
@@ -66,6 +66,8 @@ class ChecklistAutoDataLoaderService {
 
    Stream<ChecklistAuto> stream(int number = 1) {
       return ChecklistAutoTestDataLoader.stream(number)
-         .map { checklistAutoRepository.insert(it) }
+         .map {
+            checklistAutoRepository.insert(it)
+         }
    }
 }

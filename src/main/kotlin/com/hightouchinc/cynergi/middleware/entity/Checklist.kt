@@ -22,8 +22,8 @@ data class Checklist(
    var company: String, // TODO convert from soft foreign key to point to a soft_company
    var auto: ChecklistAuto?
 
-): Entity {
-   constructor(dto: ChecklistDto, company: String):
+) : Entity {
+   constructor(dto: ChecklistDto, company: String) :
       this(
          id = dto.id,
          customerAccount = dto.customerAccount,
@@ -62,8 +62,8 @@ data class ChecklistDto(
    @field:JsonProperty("checklist_auto")
    var auto: ChecklistAutoDto?
 
-): DataTransferObjectBase<ChecklistDto>() {
-   constructor(entity: Checklist):
+) : DataTransferObjectBase<ChecklistDto>() {
+   constructor(entity: Checklist) :
       this(
          id = entity.id,
          customerAccount = entity.customerAccount,
