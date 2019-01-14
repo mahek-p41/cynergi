@@ -125,7 +125,7 @@ class ChecklistAutoRepository(
       )!!
 }
 
-class ChecklistAutoRowMapper(
+private class ChecklistAutoRowMapper(
    private val tableAlias: String = StringUtils.EMPTY
 ): RowMapper<ChecklistAuto> {
    override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistAuto? {
