@@ -10,7 +10,6 @@ import org.intellij.lang.annotations.Language
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.inject.Singleton
@@ -34,7 +33,7 @@ class ChecklistRepository(
             customerAccount = rs.getString("customer_account"),
             customerComments = rs.getString("customer_comments"),
             verifiedBy = rs.getString("verified_by"),
-            verifiedTime = rs.getObject("verified_time", LocalDateTime::class.java),
+            verifiedTime = rs.getObject("verified_time", OffsetDateTime::class.java),
             company = rs.getString("company"),
             auto = null // TODO add join to table and map columns using mapping from checklistAutoRepository
          )
@@ -96,7 +95,7 @@ class ChecklistRepository(
    @Transactional
    override fun update(entity: Checklist): Checklist {
       val existing = findOne(id = entity.id!!)!!
-      val verifiedTime: LocalDateTime? = if (existing.verifiedBy != entity.verifiedBy) {
+      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy != entity.verifiedBy) {
          null
       } else {
          existing.verifiedTime

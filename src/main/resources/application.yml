@@ -2,7 +2,6 @@ micronaut:
    application:
       name: cynergi-middleware
 jackson:
-   dateFormat: MM/dd/yyyy
    serialization:
       writeDatesAsTimestamps: false
    deserialization:

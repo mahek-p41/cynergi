@@ -7,7 +7,6 @@ import groovy.transform.CompileStatic
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -29,7 +28,7 @@ class ChecklistTestDataLoader {
             numberFaker.digits(6),
             chuckNorris.fact(),
             numberFaker.digits(6),
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             numberFaker.digits(6),
             ChecklistAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create ChecklistAuto") }
          )

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.annotation.Nullable
@@ -19,7 +18,7 @@ data class Checklist(
    var customerAccount: String, // TODO convert from soft foreign key to soft_customer
    var customerComments: String,
    var verifiedBy: String, // TODO convert from soft foreign key to soft_employee
-   var verifiedTime: LocalDateTime,
+   var verifiedTime: OffsetDateTime,
    var company: String, // TODO convert from soft foreign key to point to a soft_company
    var auto: ChecklistAuto?
 
@@ -57,7 +56,7 @@ data class ChecklistDto(
 
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_date")
-   var verifiedTime: LocalDateTime,
+   var verifiedTime: OffsetDateTime,
 
    @field:Nullable
    @field:JsonProperty("checklist_auto")
