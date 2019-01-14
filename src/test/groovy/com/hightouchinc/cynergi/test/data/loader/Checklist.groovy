@@ -13,7 +13,7 @@ import java.util.stream.Stream
 
 @CompileStatic
 class ChecklistTestDataLoader {
-   static Stream<Checklist> stream(int number = 1) {
+   static Stream<Checklist> stream(int number = 1, boolean generateAuto = true) {
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def numberFaker = faker.number()
@@ -30,7 +30,7 @@ class ChecklistTestDataLoader {
             numberFaker.digits(6),
             OffsetDateTime.now(),
             numberFaker.digits(6),
-            ChecklistAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create ChecklistAuto") }
+            generateAuto ? ChecklistAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create ChecklistAuto") } : null
          )
       }
    }

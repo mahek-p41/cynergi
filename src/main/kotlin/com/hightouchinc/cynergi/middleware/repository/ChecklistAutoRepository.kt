@@ -22,14 +22,15 @@ class ChecklistAutoRepository(
 ) : Repository<ChecklistAuto> {
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
-      val DML_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper()
-      val FIND_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(tableAlias = "ca.")
+      val SIMPLE_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper()
+      val FIND_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(tableAlias = "ca_")
    }
 
-   fun joinRowMapperWithCATableName(): RowMapper<ChecklistAuto> = FIND_CHECKLIST_AUTO_ROW_MAPPER
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistAuto? =
+      rs.getString("ca_id")?.let { FIND_CHECKLIST_AUTO_ROW_MAPPER.mapRow(rs, row) }
 
    override fun findOne(id: Long): ChecklistAuto? {
-      val fetched: ChecklistAuto? = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), FIND_CHECKLIST_AUTO_ROW_MAPPER)
+      val fetched: ChecklistAuto? = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_AUTO_ROW_MAPPER)
 
       logger.trace("fetched {} resulted in {}", id, fetched)
 
@@ -68,7 +69,7 @@ class ChecklistAutoRepository(
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related
          ),
-         DML_CHECKLIST_AUTO_ROW_MAPPER
+         SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
       )!!
 
    @Transactional
@@ -120,11 +121,11 @@ class ChecklistAutoRepository(
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related
          ),
-         DML_CHECKLIST_AUTO_ROW_MAPPER
+         SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
       )!!
 }
 
-private class ChecklistAutoRowMapper(
+class ChecklistAutoRowMapper(
    private val tableAlias: String = StringUtils.EMPTY
 ): RowMapper<ChecklistAuto> {
    override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistAuto? {

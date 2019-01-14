@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import io.micronaut.spring.tx.annotation.Transactional
 import org.eclipse.collections.impl.factory.Maps
+import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -19,7 +20,7 @@ import javax.inject.Singleton
 class ChecklistRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val checklistAutoRepository: ChecklistAutoRepository
-): Repository<Checklist> {
+) : Repository<Checklist> {
 
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(ChecklistRepository::class.java)
@@ -38,72 +39,79 @@ class ChecklistRepository @Inject constructor(
             auto = null // TODO add join to table and map columns using mapping from checklistAutoRepository
          )
       }
-   }
 
-   override fun findOne(id: Long): Checklist? {
-      val found:Checklist? = jdbc.findFirstOrNull(
-         """
-         SELECT
-            c.id AS checklistId,
-            c.uu_row_id,
-            c.time_created,
-            c.time_updated,
-            c.customer_account,
-            c.customer_comments,
-            c.verified_by,
-            c.verified_time,
-            c.company,
-            c.auto_id,
-            c.employment_id,
-            c.landlord_id,
-            ca.id,
-            ca.uu_row_id,
-            ca.time_created,
-            ca.time_updated,
-            ca.address,
-            ca.comment,
-            ca.dealer_phone,
-            ca.diff_address,
-            ca.diff_employee,
-            ca.diff_phone,
-            ca.dmv_verify,
-            ca.employer,
-            ca.last_payment,
-            ca.name,
-            ca.next_payment,
-            ca.note,
-            ca.payment_frequency,
-            ca.payment,
-            ca.pending_action,
-            ca.phone,
-            ca.previous_loan,
-            ca.purchase_date,
-            ca.related
+      @Language("PostgreSQL")
+      val SELECT_ALL_BASE = """SELECT
+            c.id AS c_id,
+            c.uu_row_id AS c_uu_row_id,
+            c.time_created AS c_time_created,
+            c.time_updated AS c_time_updated,
+            c.customer_account AS c_customer_account,
+            c.customer_comments AS c_customer_comments,
+            c.verified_by AS c_verified_by,
+            c.verified_time AS c_verified_time,
+            c.company AS c_company,
+            ca.id AS ca_id,
+            ca.uu_row_id AS ca_uu_row_id,
+            ca.time_created AS ca_time_created,
+            ca.time_updated AS ca_time_updated,
+            ca.address AS ca_address,
+            ca.comment AS ca_comment,
+            ca.dealer_phone AS ca_dealer_phone,
+            ca.diff_address AS ca_diff_address,
+            ca.diff_employee AS ca_diff_employee,
+            ca.diff_phone AS ca_diff_phone,
+            ca.dmv_verify AS ca_dmv_verify,
+            ca.employer AS ca_employer,
+            ca.last_payment AS ca_last_payment,
+            ca.name AS ca_name,
+            ca.next_payment AS ca_next_payment,
+            ca.note AS ca_note,
+            ca.payment_frequency AS ca_payment_frequency,
+            ca.payment AS ca_payment,
+            ca.pending_action AS ca_pending_action,
+            ca.phone AS ca_phone,
+            ca.previous_loan AS ca_previous_loan,
+            ca.purchase_date AS ca_purchase_date,
+            ca.related AS ca_related,
+            ce.id AS ce_id,
+            ce.uu_row_id AS ce_uu_row_id,
+            ce.time_created AS ce_time_created,
+            ce.time_updated AS ce_time_updated,
+            ce.department AS ce_department,
+            ce.hire_date AS ce_hire_date,
+            ce.leave_message AS ce_leave_message,
+            ce.name AS ce_name,
+            ce.reliable AS ce_reliable,
+            ce.title AS ce_title,
+            cl.id AS cl_id,
+            cl.uu_row_id AS cl_uu_row_id,
+            cl.time_created AS cl_time_created,
+            cl.time_updated AS cl_time_updated,
+            cl.address AS cl_address,
+            cl.alt_phone AS cl_alt_phone,
+            cl.lease_type AS cl_lease_type,
+            cl.leave_message AS cl_leave_message,
+            cl.length AS cl_length,
+            cl.name AS cl_name,
+            cl.paid_rent AS cl_paid_rent,
+            cl.phone AS cl_phone,
+            cl.reliable AS cl_reliable,
+            cl.rent AS cl_rent
          FROM checklist c
             LEFT OUTER JOIN checklist_auto ca
               ON c.auto_id = ca.id
-         WHERE c.id = :id
-         """.trimIndent(), Maps.mutable.ofPairs("id" to id),
-         RowMapper { rs: ResultSet, row: Int ->
-            val auto = if (rs.getString("ca.id") != null) {
-               checklistAutoRepository.joinRowMapperWithCATableName().mapRow(rs, row)
-            } else{
-               null
-            }
+            LEFT OUTER JOIN checklist_employment ce
+              ON c.employment_id = ce.id
+            LEFT OUTER JOIN checklist_landlord cl
+              ON c.landlord_id = cl.id
+         """.trimIndent()
+   }
 
-            Checklist(
-               id = rs.getLong("c.id"),
-               uuRowId = rs.getObject("c.uu_row_id", UUID::class.java),
-               timeCreated = rs.getObject("c.time_created", OffsetDateTime::class.java),
-               timeUpdated = rs.getObject("c.time_updated", OffsetDateTime::class.java),
-               customerAccount = rs.getString("c.customer_account"),
-               customerComments = rs.getString("c.customer_comments"),
-               verifiedBy = rs.getString("c.verified_by"),
-               verifiedTime = rs.getObject("c.verified_time", OffsetDateTime::class.java),
-               company = rs.getString("c.company"),
-               auto = auto
-            )
-         }
+   override fun findOne(id: Long): Checklist? {
+      val found: Checklist? = jdbc.findFirstOrNull(
+         "$SELECT_ALL_BASE \nWHERE c.id = :id", Maps.mutable.ofPairs("id" to id),
+         selectAllRowMapper()
       )
 
       logger.trace("Searched for {} found {}", id, found)
@@ -116,18 +124,13 @@ class ChecklistRepository @Inject constructor(
    }
 
    fun exists(customerAccount: String): Boolean =
-      jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM checlist WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
+      jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM checklist WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
 
    fun findByCustomerAccount(customerAccount: String): Checklist? =
       jdbc.findFirstOrNull(
-         """
-         SELECT
-            *
-         FROM Checklist c
-         WHERE c.customer_account = :customerAccount
-         """.trimIndent(),
+         "$SELECT_ALL_BASE \nWHERE c.customer_account = :customerAccount".trimIndent(),
          Maps.mutable.ofPairs("customerAccount" to customerAccount),
-         DML_CHECKLIST_ROW_MAPPER
+         selectAllRowMapper()
       )
 
    @Transactional
@@ -138,13 +141,13 @@ class ChecklistRepository @Inject constructor(
          "customerComments" to entity.customerComments,
          "verifiedBy" to entity.verifiedBy,
          "company" to entity.company,
-         "checklist_auto_id" to checklistAuto?.id
+         "auto_id" to checklistAuto?.id
       )
 
       val inserted = jdbc.queryForObject(
          """
-         INSERT INTO Checklist (customer_account, customer_comments, verified_by, company)
-         VALUES(:customerAccount, :customerComments, :verifiedBy, :company)
+         INSERT INTO Checklist (customer_account, customer_comments, verified_by, company, auto_id)
+         VALUES(:customerAccount, :customerComments, :verifiedBy, :company, :auto_id)
          RETURNING
             *
          """.trimIndent(),
@@ -191,4 +194,22 @@ class ChecklistRepository @Inject constructor(
          DML_CHECKLIST_ROW_MAPPER
       )!!
    }
+
+   private fun selectAllRowMapper(): RowMapper<Checklist> =
+      RowMapper { rs: ResultSet, row: Int ->
+         val auto = checklistAutoRepository.mapRowPrefixedRow(rs = rs, row = row)
+
+         Checklist(
+            id = rs.getLong("c_id"),
+            uuRowId = rs.getObject("c_uu_row_id", UUID::class.java),
+            timeCreated = rs.getObject("c_time_created", OffsetDateTime::class.java),
+            timeUpdated = rs.getObject("c_time_updated", OffsetDateTime::class.java),
+            customerAccount = rs.getString("c_customer_account"),
+            customerComments = rs.getString("c_customer_comments"),
+            verifiedBy = rs.getString("c_verified_by"),
+            verifiedTime = rs.getObject("c_verified_time", OffsetDateTime::class.java),
+            company = rs.getString("c_company"),
+            auto = auto
+         )
+      }
 }
