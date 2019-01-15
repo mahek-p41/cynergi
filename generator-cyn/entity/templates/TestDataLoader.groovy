@@ -1,8 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
-import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.entity.<%= entityname %>
-import com.hightouchinc.cynergi.middleware.repository.<%= entityname %>Repository
+import com.hightouchinc.cynergi.middleware.entity.<%= entity %>
+import com.hightouchinc.cynergi.middleware.repository.<%= entity %>Repository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -11,12 +10,12 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 
 @CompileStatic
-class <%= entityname %>TestDataLoader {
-   static Stream<<%= entityname %>> stream(int number =1) {
+class <%= entity %>TestDataLoader {
+   static Stream<<%= entity %>> stream(int number =1) {
       final int value = number > 0 ? number : 1
 
       return IntStream.range(0, value).mapToObj {
-         new <%= entityname %>(
+         new <%= entity %>(
             null,
             UUID.randomUUID(),
             OffsetDateTime.now(),
@@ -28,17 +27,17 @@ class <%= entityname %>TestDataLoader {
 
 @Singleton
 @CompileStatic
-class <%= entityname %>DataLoaderService {
-   private final <%= entityname %>Repository <%= entityname %>Repository
+class <%= entity %>DataLoaderService {
+   private final <%= entity %>Repository <%= entity %>Repository
 
-   <%= entityname %>DataLoaderService(<%= entityname %>Repository <%= entityname %>Repository) {
-      this.<%= entityname %>Repository = <%= entityname %>Repository
+   <%= entity %>DataLoaderService(<%= entity %>Repository <%= entity %>Repository) {
+      this.<%= entity %>Repository = <%= entity %>Repository
    }
 
-   Stream<<%= entityname %>> stream(int number = 1) {
-      return <%= entityname %>TestDataLoader.stream(number)
+   Stream<<%= entity %>> stream(int number = 1) {
+      return <%= entity %>TestDataLoader.stream(number)
          .map {
-         <%= entityname %>Repository.insert(it)
+         <%= entity %>Repository.insert(it)
       }
    }
 }
