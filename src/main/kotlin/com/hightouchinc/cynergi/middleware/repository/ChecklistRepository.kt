@@ -20,7 +20,8 @@ import javax.inject.Singleton
 class ChecklistRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val checklistAutoRepository: ChecklistAutoRepository,
-   private val checklistEmploymentRepository: ChecklistEmploymentRepository
+   private val checklistEmploymentRepository: ChecklistEmploymentRepository,
+   private val checklistLandlordRepository: ChecklistLandlordRepository
 ) : Repository<Checklist> {
 
    private companion object {
@@ -38,7 +39,8 @@ class ChecklistRepository @Inject constructor(
             verifiedTime = rs.getObject("verified_time", OffsetDateTime::class.java),
             company = rs.getString("company"),
             auto = null,
-            employment = null
+            employment = null,
+            landlord = null
          )
       }
 
@@ -216,6 +218,7 @@ class ChecklistRepository @Inject constructor(
       RowMapper { rs: ResultSet, row: Int ->
          val auto = checklistAutoRepository.mapRowPrefixedRow(rs = rs, row = row)
          val employment = checklistEmploymentRepository.mapRowPrefixedRow(rs = rs, row = row)
+         val landlord = checklistLandlordRepository.mapRowPrefixedRow(rs = rs, row = row)
 
          Checklist(
             id = rs.getLong("c_id"),
@@ -228,7 +231,8 @@ class ChecklistRepository @Inject constructor(
             verifiedTime = rs.getObject("c_verified_time", OffsetDateTime::class.java),
             company = rs.getString("c_company"),
             auto = auto,
-            employment = employment
+            employment = employment,
+            landlord = landlord
          )
       }
 }

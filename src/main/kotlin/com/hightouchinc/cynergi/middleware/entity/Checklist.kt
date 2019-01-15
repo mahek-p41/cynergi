@@ -21,7 +21,8 @@ data class Checklist(
    var verifiedTime: OffsetDateTime,
    var company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    var auto: ChecklistAuto?,
-   var employment: ChecklistEmployment?
+   var employment: ChecklistEmployment?,
+   var landlord: ChecklistLandlord?
 
 ) : Entity {
    constructor(dto: ChecklistDto, company: String) :
@@ -33,7 +34,8 @@ data class Checklist(
          verifiedTime = dto.verifiedTime,
          company = company,
          auto = copyAutoDtoToEntity(dto = dto),
-         employment = copyEmploymentDtoToEntity(dto = dto)
+         employment = copyEmploymentDtoToEntity(dto = dto),
+         landlord = copyLandlordDtoToEntity(dto = dto)
       )
 
    override fun entityId(): Long? = id
@@ -66,7 +68,11 @@ data class ChecklistDto(
 
    @field:Nullable
    @field:JsonProperty("checklist_employment")
-   var employment: ChecklistEmploymentDto?
+   var employment: ChecklistEmploymentDto?,
+
+   @field:Nullable
+   @field:JsonProperty("checklist_landlord")
+   var landlord: ChecklistLandlordDto?
 
 ) : DataTransferObjectBase<ChecklistDto>() {
    constructor(entity: Checklist) :
@@ -77,7 +83,8 @@ data class ChecklistDto(
          verifiedBy = entity.verifiedBy,
          verifiedTime = entity.verifiedTime,
          auto = copyAutoEntityToDto(entity = entity),
-         employment = copyEmploymentEntityToDto(entity = entity)
+         employment = copyEmploymentEntityToDto(entity = entity),
+         landlord = copyLandlordEntityToDto(entity = entity)
       )
 
    override fun copyMe(): ChecklistDto {
@@ -120,6 +127,26 @@ private fun copyEmploymentEntityToDto(entity: Checklist): ChecklistEmploymentDto
 
    return if (employment != null) {
       ChecklistEmploymentDto(entity = employment)
+   } else {
+      null
+   }
+}
+
+private fun copyLandlordDtoToEntity(dto: ChecklistDto): ChecklistLandlord? {
+   val landlord = dto.landlord
+
+   return if (landlord != null) {
+      ChecklistLandlord(dto = landlord)
+   } else {
+      return null
+   }
+}
+
+private fun copyLandlordEntityToDto(entity: Checklist): ChecklistLandlordDto? {
+   val landlord = entity.landlord
+
+   return if (landlord != null) {
+      ChecklistLandlordDto(entity = landlord)
    } else {
       null
    }

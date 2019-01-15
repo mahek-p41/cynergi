@@ -3,6 +3,7 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.ChecklistLandlord
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,11 +20,12 @@ class ChecklistLandlordRepository(
 ) : Repository<ChecklistLandlord> {
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(ChecklistLandlordRepository::class.java)
-      val SIMPLE_ROW_MAPPER = ChecklistLandlordRowMapper()
+      val SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER = ChecklistLandlordRowMapper()
+      val PREFIXED_CHECKLIST_LANDLORD_ROW_MAPPER = ChecklistLandlordRowMapper(rowPrefix = "cl_")
    }
 
    override fun findOne(id: Long): ChecklistLandlord? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_ROW_MAPPER)
+      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -45,15 +47,29 @@ class ChecklistLandlordRepository(
    override fun update(entity: ChecklistLandlord): ChecklistLandlord {
       TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
    }
+
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistLandlord? =
+      rs.getString("cl_id")?.let { PREFIXED_CHECKLIST_LANDLORD_ROW_MAPPER.mapRow(rs, row) }
 }
 
-private class ChecklistLandlordRowMapper : RowMapper<ChecklistLandlord> {
+private class ChecklistLandlordRowMapper(
+   private val rowPrefix: String = EMPTY
+) : RowMapper<ChecklistLandlord> {
    override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistLandlord =
       ChecklistLandlord(
-         id = rs.getLong("id"),
-         uuRowId = rs.getObject("uu_row_id", UUID::class.java),
-         timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
-         timeUpdated = rs.getObject("time_updated", OffsetDateTime::class.java),
-         address = rs.getBoolean("address")
+         id = rs.getLong("${rowPrefix}id"),
+         uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
+         timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),
+         timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
+         address = rs.getBoolean("${rowPrefix}address"),
+         altPhone = rs.getString("${rowPrefix}alt_phone"),
+         leaseType = rs.getString("${rowPrefix}lease_type"),
+         leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
+         length = rs.getInt("${rowPrefix}length"),
+         name = rs.getString("${rowPrefix}name"),
+         paidRent = rs.getString("${rowPrefix}paid_rent"),
+         phone = rs.getBoolean("${rowPrefix}phone"),
+         reliable = rs.getBoolean("${rowPrefix}reliable"),
+         rent = rs.getBigDecimal("${rowPrefix}rent")
       )
 }
