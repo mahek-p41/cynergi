@@ -26,16 +26,20 @@ module.exports = class extends Generator {
 
    writing() {
       this.log(`Generating Entity ${chalk.green(this.options.entity)}`);
-      [
-         {'Entity.kt': 'src/main/kotlin/com/hightouchinc/cynergi/middleware/entity'},
-         {'Repository.kt': 'src/main/kotlin/com/hightouchinc/cynergi/middleware/repository'},
-         {'TestDataLoader.groovy': 'src/main/test/com/hightouchinc/cynergi/test/data/loader'}
-      ].forEach((templateFile, destDir) => {
+      const templates = {
+         'Entity.kt': 'src/main/kotlin/com/hightouchinc/cynergi/middleware/entity',
+         'Repository.kt': 'src/main/kotlin/com/hightouchinc/cynergi/middleware/repository',
+         'TestDataLoader.groovy': 'src/test/groovy/com/hightouchinc/cynergi/test/data/loader'
+      };
+      Object.keys(templates).forEach((key) => {
+         const templateFile = key;
+         const destDir = templates[key];
+
          this.fs.copyTpl(
             this.templatePath(templateFile),
             this.destinationPath(destDir),
             { entityname: this.options.entity }
-         )
+         );
       });
    }
 };
