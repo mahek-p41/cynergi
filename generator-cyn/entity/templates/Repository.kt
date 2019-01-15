@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.Gary
+import com.hightouchinc.cynergi.middleware.entity.<%= entity %>
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import org.eclipse.collections.impl.factory.Maps
@@ -18,7 +18,7 @@ class <%= entity %>Repository(
    private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<<%= entity %>> {
    private companion object {
-      val logger: Logger = LoggerFactory.getLogger(<%= entity %>::class.java)
+      val logger: Logger = LoggerFactory.getLogger(<%= entity %>Repository::class.java)
       val SIMPLE_ROW_MAPPER = <%= entity %>RowMapper()
    }
 

@@ -2,18 +2,18 @@
 const Generator = require('yeoman-generator');
 const chalk = require('chalk');
 const yosay = require('yosay');
-const mkdirp = require('mkdirp');
-const os = require('os');
+const camelCase = require('camel-case');
+const pascalCase = require('pascal-case');
 
 module.exports = class extends Generator {
    constructor(args, opts) {
       super(args, opts);
 
-      this.argument('entity', {
+/*      this.argument('entity', {
          type: String,
          required: true,
          description: 'Generate a cynergi-middleware Entity, it\'s repository and boilerplate for a test data loader'
-      });
+      });*/
       this.argument('table', {
          type: String,
          required: true,
@@ -30,12 +30,19 @@ module.exports = class extends Generator {
    }
 
    writing() {
-      this.log(`Generating Entity ${chalk.green(this.options.entity)}`);
-      const templates = {
-         'Entity.kt': `src/main/kotlin/com/hightouchinc/cynergi/middleware/entity/${this.options.entity}.kt`,
-         'Repository.kt': `src/main/kotlin/com/hightouchinc/cynergi/middleware/repository/${this.options.entity}Repository.kt`,
-         'TestDataLoader.groovy': `src/test/groovy/com/hightouchinc/cynergi/test/data/loader/${this.options.entity}.groovy`
+      const templateValues = {
+         repository: camelCase(this.options.table),
+         entity: pascalCase(this.options.table),
+         table: this.options.table
       };
+      const templates = {
+         'Entity.kt': `src/main/kotlin/com/hightouchinc/cynergi/middleware/entity/${templateValues.entity}.kt`,
+         'Repository.kt': `src/main/kotlin/com/hightouchinc/cynergi/middleware/repository/${templateValues.entity}Repository.kt`,
+         'TestDataLoader.groovy': `src/test/groovy/com/hightouchinc/cynergi/test/data/loader/${templateValues.entity}.groovy`
+      };
+
+      this.log(`Generating Entity ${chalk.green(this.options.entity)}`);
+
       Object.keys(templates).forEach((key) => {
          const templateFile = key;
          const destDir = templates[key];
@@ -43,7 +50,7 @@ module.exports = class extends Generator {
          this.fs.copyTpl(
             this.templatePath(templateFile),
             this.destinationPath(destDir),
-            this.options
+            templateValues
          );
       });
    }

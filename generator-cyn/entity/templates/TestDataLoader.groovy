@@ -28,16 +28,16 @@ class <%= entity %>TestDataLoader {
 @Singleton
 @CompileStatic
 class <%= entity %>DataLoaderService {
-   private final <%= entity %>Repository <%= entity %>Repository
+   private final <%= entity %>Repository <%= repository %>Repository
 
-   <%= entity %>DataLoaderService(<%= entity %>Repository <%= entity %>Repository) {
-      this.<%= entity %>Repository = <%= entity %>Repository
+   <%= entity %>DataLoaderService(<%= entity %>Repository <%= repository %>Repository) {
+      this.<%= repository %>Repository = <%= repository %>Repository
    }
 
    Stream<<%= entity %>> stream(int number = 1) {
       return <%= entity %>TestDataLoader.stream(number)
          .map {
-         <%= entity %>Repository.insert(it)
-      }
+            <%= repository %>Repository.insert(it)
+         }
    }
 }

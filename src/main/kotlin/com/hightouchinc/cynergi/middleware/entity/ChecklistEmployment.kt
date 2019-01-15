@@ -1,68 +1,36 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
-import java.time.LocalDate
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
 import java.util.UUID
-import javax.validation.constraints.Size
+import javax.validation.constraints.Positive
 
-data class ChecklistEmployment(
-   var id: Long?,
-   var uuRowId: UUID = UUID.randomUUID(),
-   var timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   var timeUpdated: OffsetDateTime = timeCreated,
-   var department: String?,
-   var hireDate: LocalDate?,
-   var leaveMessage: Boolean = false,
-   var name: String?,
-   var reliable: Boolean = false,
-   var title: String?
+data class ChecklistEmployment (
+   var id: Long? = null,
+   var uuRowId: UUID? = UUID.randomUUID(),
+   var timeCreated: OffsetDateTime? = OffsetDateTime.now(),
+   var timeUpdated: OffsetDateTime? = timeCreated
 ) : Entity {
 
    constructor(dto: ChecklistEmploymentDto) :
       this(
-         id = dto.id,
-         department = dto.department,
-         hireDate = dto.hireDate,
-         leaveMessage = dto.leaveMessage,
-         name = dto.name,
-         reliable = dto.reliable,
-         title = dto.title
+         id = dto.id
       )
 
    override fun entityId(): Long? = id
 }
 
-data class ChecklistEmploymentDto(
+data class ChecklistEmploymentDto (
 
-   var id: Long? = null,
-
-   @field:Size(max = 50)
-   var department: String? = null,
-
-   var hireDate: LocalDate? = null,
-
-   var leaveMessage: Boolean = false,
-
-   @field:Size(max = 50)
-   var name: String? = null,
-
-   var reliable: Boolean = false,
-
-   @field:Size(max= 50)
-   var title: String? = null
+   @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
+   var id: Long? = null
 
 ) : DataTransferObjectBase<ChecklistEmploymentDto>() {
 
    constructor(entity: ChecklistEmployment) :
       this(
-         id = entity.id,
-         department = entity.department,
-         hireDate = entity.hireDate,
-         leaveMessage = entity.leaveMessage,
-         name = entity.name,
-         reliable = entity.reliable,
-         title = entity.title
+         id = entity.id
       )
 
    override fun copyMe(): ChecklistEmploymentDto = copy()
