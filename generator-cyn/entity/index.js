@@ -9,11 +9,6 @@ module.exports = class extends Generator {
    constructor(args, opts) {
       super(args, opts);
 
-/*      this.argument('entity', {
-         type: String,
-         required: true,
-         description: 'Generate a cynergi-middleware Entity, it\'s repository and boilerplate for a test data loader'
-      });*/
       this.argument('table', {
          type: String,
          required: true,
@@ -24,7 +19,7 @@ module.exports = class extends Generator {
    async prompting() {
       this.log(
          yosay(
-         `${chalk.red('cynergi-middleware')} Entity boilerplate generator!`
+         `${chalk.green('cynergi-middleware')} Entity boilerplate generator!`
          )
       );
    }
