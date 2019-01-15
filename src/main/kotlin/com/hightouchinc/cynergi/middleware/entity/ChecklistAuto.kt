@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.POSITIVE_NUMBER_REQUIRED
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -117,7 +118,7 @@ data class ChecklistAutoDto(
    @field:Size(max = 50)
    var related: String?
 
-) {
+) : DataTransferObjectBase<ChecklistAutoDto>() {
    constructor(entity: ChecklistAuto) :
       this(
          id = entity.id,
@@ -141,4 +142,6 @@ data class ChecklistAutoDto(
          purchaseDate = entity.purchaseDate,
          related = entity.related
       )
+
+   override fun copyMe(): ChecklistAutoDto = copy()
 }
