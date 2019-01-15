@@ -19,13 +19,14 @@ import javax.inject.Singleton
 @Singleton
 class ChecklistRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val checklistAutoRepository: ChecklistAutoRepository
+   private val checklistAutoRepository: ChecklistAutoRepository,
+   private val checklistEmploymentRepository: ChecklistEmploymentRepository
 ) : Repository<Checklist> {
 
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(ChecklistRepository::class.java)
 
-      val DML_CHECKLIST_ROW_MAPPER: RowMapper<Checklist> = RowMapper { rs: ResultSet, _: Int ->
+      val DML_CHECKLIST_ROW_MAPPER: RowMapper<Checklist> = RowMapper { rs: ResultSet, _: Int -> // this is used when running INSERT and UPDATE queries to map the result of the RETURNING * clause
          Checklist(
             id = rs.getLong("id"),
             uuRowId = rs.getObject("uu_row_id", UUID::class.java),
@@ -36,12 +37,14 @@ class ChecklistRepository @Inject constructor(
             verifiedBy = rs.getString("verified_by"),
             verifiedTime = rs.getObject("verified_time", OffsetDateTime::class.java),
             company = rs.getString("company"),
-            auto = null // TODO add join to table and map columns using mapping from checklistAutoRepository
+            auto = null,
+            employment = null
          )
       }
 
       @Language("PostgreSQL")
-      val SELECT_ALL_BASE = """SELECT
+      val SELECT_ALL_BASE = """
+          SELECT
             c.id AS c_id,
             c.uu_row_id AS c_uu_row_id,
             c.time_created AS c_time_created,
@@ -120,18 +123,32 @@ class ChecklistRepository @Inject constructor(
    }
 
    override fun exists(id: Long): Boolean {
-      return jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("searching for existence through ID: {} resulted in {}", id, exists)
+
+      return exists
    }
 
-   fun exists(customerAccount: String): Boolean =
-      jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM checklist WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
+   fun exists(customerAccount: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM checklist WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
 
-   fun findByCustomerAccount(customerAccount: String): Checklist? =
-      jdbc.findFirstOrNull(
+      logger.trace("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
+
+      return exists
+   }
+
+   fun findByCustomerAccount(customerAccount: String): Checklist? {
+      val found = jdbc.findFirstOrNull(
          "$SELECT_ALL_BASE \nWHERE c.customer_account = :customerAccount".trimIndent(),
          Maps.mutable.ofPairs("customerAccount" to customerAccount),
          selectAllRowMapper()
       )
+
+
+
+      return found
+   }
 
    @Transactional
    override fun insert(entity: Checklist): Checklist {
@@ -198,6 +215,7 @@ class ChecklistRepository @Inject constructor(
    private fun selectAllRowMapper(): RowMapper<Checklist> =
       RowMapper { rs: ResultSet, row: Int ->
          val auto = checklistAutoRepository.mapRowPrefixedRow(rs = rs, row = row)
+         val employment = checklistEmploymentRepository.mapRowPrefixedRow(rs = rs, row = row)
 
          Checklist(
             id = rs.getLong("c_id"),
@@ -209,7 +227,8 @@ class ChecklistRepository @Inject constructor(
             verifiedBy = rs.getString("c_verified_by"),
             verifiedTime = rs.getObject("c_verified_time", OffsetDateTime::class.java),
             company = rs.getString("c_company"),
-            auto = auto
+            auto = auto,
+            employment = employment
          )
       }
 }

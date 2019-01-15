@@ -4,7 +4,7 @@ import com.hightouchinc.cynergi.middleware.entity.ChecklistAuto
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,30 +23,35 @@ class ChecklistAutoRepository(
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
       val SIMPLE_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper()
-      val FIND_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(tableAlias = "ca_")
+      val PREFIXED_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(rowPrefix = "ca_")
    }
-
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistAuto? =
-      rs.getString("ca_id")?.let { FIND_CHECKLIST_AUTO_ROW_MAPPER.mapRow(rs, row) }
 
    override fun findOne(id: Long): ChecklistAuto? {
-      val fetched: ChecklistAuto? = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_AUTO_ROW_MAPPER)
+      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_AUTO_ROW_MAPPER)
 
-      logger.trace("fetched {} resulted in {}", id, fetched)
+      logger.trace("searching for {} resulted in {}", id, found)
 
-      return fetched
+      return found
    }
 
-   override fun exists(id: Long): Boolean =
-      jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist_auto WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   override fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist_auto WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
 
    @Transactional
-   override fun insert(entity: ChecklistAuto): ChecklistAuto =
-      jdbc.queryForObject(
+   override fun insert(entity: ChecklistAuto): ChecklistAuto {
+      logger.trace("Inserting {}", entity)
+
+      return jdbc.queryForObject(
          """
          INSERT INTO Checklist_Auto(address, comment, dealer_phone, diff_address, diff_employee, diff_phone, dmv_verify, employer, last_payment, name, next_payment, note, payment_frequency, payment, pending_action, phone, previous_loan, purchase_date, related)
          VALUES (:address, :comment, :dealerPhone, :diffAddress, :diffEmployee, :diffPhone, :dmvVerify, :employer, :lastPayment, :name, :nextPayment, :note, :paymentFrequency, :payment, :pendingAction, :phone, :previousLoan, :purchaseDate, :related)
-         RETURNING *
+         RETURNING
+            *
          """.trimIndent(),
          Maps.mutable.ofPairs(
             "address" to entity.address,
@@ -71,10 +76,13 @@ class ChecklistAutoRepository(
          ),
          SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
       )!!
+   }
 
    @Transactional
-   override fun update(entity: ChecklistAuto): ChecklistAuto =
-      jdbc.queryForObject(
+   override fun update(entity: ChecklistAuto): ChecklistAuto {
+      logger.trace("Updating {}", entity)
+
+      return jdbc.queryForObject(
          """
          UPDATE Checklist_Auto
          SET
@@ -123,36 +131,39 @@ class ChecklistAutoRepository(
          ),
          SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
       )!!
+   }
+
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistAuto? =
+      rs.getString("ca_id")?.let { PREFIXED_CHECKLIST_AUTO_ROW_MAPPER.mapRow(rs, row) }
 }
 
 private class ChecklistAutoRowMapper(
-   private val tableAlias: String = StringUtils.EMPTY
-): RowMapper<ChecklistAuto> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistAuto? {
-      return ChecklistAuto(
-         id = rs.getLong("${tableAlias}id"),
-         uuRowId = rs.getObject("${tableAlias}uu_row_id", UUID::class.java),
-         timeCreated = rs.getObject("${tableAlias}time_created", OffsetDateTime::class.java),
-         timeUpdated = rs.getObject("${tableAlias}time_updated", OffsetDateTime::class.java),
-         address = rs.getBoolean("${tableAlias}address"),
-         comment = rs.getString("${tableAlias}comment"),
-         dealerPhone = rs.getString("${tableAlias}dealer_phone"),
-         diffAddress = rs.getString("${tableAlias}diff_address"),
-         diffEmployee = rs.getString("${tableAlias}diff_employee"),
-         diffPhone = rs.getString("${tableAlias}diff_phone"),
-         dmvVerify = rs.getBoolean("${tableAlias}dmv_verify"),
-         employer = rs.getBoolean("${tableAlias}employer"),
-         lastPayment = rs.getObject("${tableAlias}last_payment", LocalDate::class.java),
-         name = rs.getString("${tableAlias}name"),
-         nextPayment = rs.getObject("${tableAlias}next_payment", LocalDate::class.java),
-         note = rs.getString("${tableAlias}note"),
-         paymentFrequency = rs.getString("${tableAlias}payment_frequency"),
-         payment = rs.getBigDecimal("${tableAlias}payment"),
-         pendingAction = rs.getString("${tableAlias}pending_action"),
-         phone = rs.getBoolean("${tableAlias}phone"),
-         previousLoan = rs.getBoolean("${tableAlias}previous_loan"),
-         purchaseDate = rs.getObject("${tableAlias}purchase_date", LocalDate::class.java),
-         related = rs.getString("${tableAlias}related")
+   private val rowPrefix: String = EMPTY
+) : RowMapper<ChecklistAuto> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistAuto =
+      ChecklistAuto(
+         id = rs.getLong("${rowPrefix}id"),
+         uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
+         timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),
+         timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
+         address = rs.getBoolean("${rowPrefix}address"),
+         comment = rs.getString("${rowPrefix}comment"),
+         dealerPhone = rs.getString("${rowPrefix}dealer_phone"),
+         diffAddress = rs.getString("${rowPrefix}diff_address"),
+         diffEmployee = rs.getString("${rowPrefix}diff_employee"),
+         diffPhone = rs.getString("${rowPrefix}diff_phone"),
+         dmvVerify = rs.getBoolean("${rowPrefix}dmv_verify"),
+         employer = rs.getBoolean("${rowPrefix}employer"),
+         lastPayment = rs.getObject("${rowPrefix}last_payment", LocalDate::class.java),
+         name = rs.getString("${rowPrefix}name"),
+         nextPayment = rs.getObject("${rowPrefix}next_payment", LocalDate::class.java),
+         note = rs.getString("${rowPrefix}note"),
+         paymentFrequency = rs.getString("${rowPrefix}payment_frequency"),
+         payment = rs.getBigDecimal("${rowPrefix}payment"),
+         pendingAction = rs.getString("${rowPrefix}pending_action"),
+         phone = rs.getBoolean("${rowPrefix}phone"),
+         previousLoan = rs.getBoolean("${rowPrefix}previous_loan"),
+         purchaseDate = rs.getObject("${rowPrefix}purchase_date", LocalDate::class.java),
+         related = rs.getString("${rowPrefix}related")
       )
-   }
 }

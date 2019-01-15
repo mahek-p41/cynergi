@@ -70,7 +70,7 @@ class ChecklistControllerSpecification extends ControllerSpecificationBase {
       savedChecklist.verifiedTime != null
    }
 
-   void "save checklist with longer than allowed customer comments" () {
+   void "save checklist with longer than allowed customer comments should result in a failure" () {
       given:
       final def stringFaker = new Faker().lorem()
       final def checklist = ChecklistTestDataLoader.stream(1).map { new ChecklistDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Checklist") }

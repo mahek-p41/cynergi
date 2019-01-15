@@ -19,8 +19,9 @@ data class Checklist(
    var customerComments: String,
    var verifiedBy: String, // TODO convert from soft foreign key to soft_employee
    var verifiedTime: OffsetDateTime,
-   var company: String, // TODO convert from soft foreign key to point to a soft_company
-   var auto: ChecklistAuto?
+   var company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
+   var auto: ChecklistAuto?,
+   var employment: ChecklistEmployment?
 
 ) : Entity {
    constructor(dto: ChecklistDto, company: String) :
@@ -31,7 +32,8 @@ data class Checklist(
          verifiedBy = dto.verifiedBy,
          verifiedTime = dto.verifiedTime,
          company = company,
-         auto = copyAutoDtoToEntity(dto = dto)
+         auto = copyAutoDtoToEntity(dto = dto),
+         employment = copyEmploymentDtoToEntity(dto = dto)
       )
 
    override fun entityId(): Long? = id
@@ -60,7 +62,11 @@ data class ChecklistDto(
 
    @field:Nullable
    @field:JsonProperty("checklist_auto")
-   var auto: ChecklistAutoDto?
+   var auto: ChecklistAutoDto?,
+
+   @field:Nullable
+   @field:JsonProperty("checklist_employment")
+   var employment: ChecklistEmploymentDto?
 
 ) : DataTransferObjectBase<ChecklistDto>() {
    constructor(entity: Checklist) :
@@ -70,7 +76,8 @@ data class ChecklistDto(
          customerComments = entity.customerComments,
          verifiedBy = entity.verifiedBy,
          verifiedTime = entity.verifiedTime,
-         auto = copyAutoEntityToDto(entity = entity)
+         auto = copyAutoEntityToDto(entity = entity),
+         employment = copyEmploymentEntityToDto(entity = entity)
       )
 
    override fun copyMe(): ChecklistDto {
@@ -93,6 +100,26 @@ private fun copyAutoEntityToDto(entity: Checklist): ChecklistAutoDto? {
 
    return if (auto != null) {
       ChecklistAutoDto(entity = auto)
+   } else {
+      null
+   }
+}
+
+private fun copyEmploymentDtoToEntity(dto: ChecklistDto): ChecklistEmployment? {
+   val employment = dto.employment
+
+   return if (employment != null) {
+      ChecklistEmployment(dto = employment)
+   } else {
+      null
+   }
+}
+
+private fun copyEmploymentEntityToDto(entity: Checklist): ChecklistEmploymentDto? {
+   val employment = entity.employment
+
+   return if (employment != null) {
+      ChecklistEmploymentDto(entity = employment)
    } else {
       null
    }

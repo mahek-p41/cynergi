@@ -30,7 +30,8 @@ class ChecklistTestDataLoader {
             numberFaker.digits(6),
             OffsetDateTime.now(),
             numberFaker.digits(6),
-            generateAuto ? ChecklistAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create ChecklistAuto") } : null
+            generateAuto ? ChecklistAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create ChecklistAuto") } : null,
+            null
          )
       }
    }
