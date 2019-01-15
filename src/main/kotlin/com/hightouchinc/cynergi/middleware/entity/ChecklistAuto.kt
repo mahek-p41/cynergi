@@ -15,14 +15,14 @@ data class ChecklistAuto(
    var uuRowId: UUID? = UUID.randomUUID(),
    var timeCreated: OffsetDateTime? = OffsetDateTime.now(),
    var timeUpdated: OffsetDateTime? = timeCreated,
-   var address: Boolean = false,
+   var address: Boolean?,
    var comment: String?,
    var dealerPhone: String?,
    var diffAddress: String?,
    var diffEmployee: String?,
    var diffPhone: String?,
-   var dmvVerify: Boolean = false,
-   var employer: Boolean = false,
+   var dmvVerify: Boolean?,
+   var employer: Boolean?,
    var lastPayment: LocalDate?,
    var name: String?,
    var nextPayment: LocalDate?,
@@ -30,8 +30,8 @@ data class ChecklistAuto(
    var paymentFrequency: String?,
    var payment: BigDecimal?,
    var pendingAction: String?,
-   var phone: Boolean = false,
-   var previousLoan: Boolean = false,
+   var phone: Boolean?,
+   var previousLoan: Boolean?,
    var purchaseDate: LocalDate?,
    var related: String?
 
@@ -69,7 +69,7 @@ data class ChecklistAutoDto(
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
-   var address: Boolean = false,
+   var address: Boolean?,
 
    @field:Size(max = 100)
    var comment: String?,
@@ -86,9 +86,9 @@ data class ChecklistAutoDto(
    @field:Size(max = 18)
    var diffPhone: String?,
 
-   var dmvVerify: Boolean = false,
+   var dmvVerify: Boolean?,
 
-   var employer: Boolean = false,
+   var employer: Boolean?,
 
    var lastPayment: LocalDate?,
 
@@ -109,9 +109,9 @@ data class ChecklistAutoDto(
    @field:Size(max = 50)
    var pendingAction: String?,
 
-   var phone: Boolean = false,
+   var phone: Boolean?,
 
-   var previousLoan: Boolean = false,
+   var previousLoan: Boolean?,
 
    var purchaseDate: LocalDate?,
 

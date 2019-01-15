@@ -31,9 +31,9 @@ module.exports = class extends Generator {
          table: this.options.table
       };
       const templates = {
-         'Entity.kt': `src/main/kotlin/com/hightouchinc/cynergi/middleware/entity/${templateValues.entity}.kt`,
-         'Repository.kt': `src/main/kotlin/com/hightouchinc/cynergi/middleware/repository/${templateValues.entity}Repository.kt`,
-         'TestDataLoader.groovy': `src/test/groovy/com/hightouchinc/cynergi/test/data/loader/${templateValues.entity}.groovy`
+         'Entity.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/entity/${templateValues.entity}.kt`,
+         'Repository.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/repository/${templateValues.entity}Repository.kt`,
+         'TestDataLoader.groovy.template': `src/test/groovy/com/hightouchinc/cynergi/test/data/loader/${templateValues.entity}.groovy`
       };
 
       this.log(`Generating Entity ${chalk.green(this.options.entity)}`);

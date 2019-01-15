@@ -16,14 +16,14 @@ CREATE TABLE checklist_auto (
    uu_row_id         UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   address           BOOLEAN     DEFAULT FALSE              NOT NULL,
+   address           BOOLEAN,
    comment           VARCHAR(100),
    dealer_phone      VARCHAR(18),
    diff_address      VARCHAR(50),
    diff_employee     VARCHAR(50),
    diff_phone        VARCHAR(18),
-   dmv_verify        BOOLEAN     DEFAULT FALSE              NOT NULL,
-   employer          BOOLEAN     DEFAULT FALSE              NOT NULL,
+   dmv_verify        BOOLEAN,
+   employer          BOOLEAN,
    last_payment      DATE,
    name              VARCHAR(50),
    next_payment      DATE,
@@ -31,8 +31,8 @@ CREATE TABLE checklist_auto (
    payment_frequency VARCHAR(10),
    payment           NUMERIC(19, 2),
    pending_action    VARCHAR(50),
-   phone             BOOLEAN     DEFAULT FALSE              NOT NULL,
-   previous_loan     BOOLEAN     DEFAULT FALSE              NOT NULL,
+   phone             BOOLEAN,
+   previous_loan     BOOLEAN,
    purchase_date     DATE,
    related           VARCHAR(50)
 );
@@ -49,9 +49,9 @@ CREATE TABLE checklist_employment (
    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    department    VARCHAR(50),
    hire_date     DATE,
-   leave_message BOOLEAN     DEFAULT FALSE              NOT NULL,
+   leave_message BOOLEAN,
    name          VARCHAR(50),
-   reliable      BOOLEAN     DEFAULT FALSE              NOT NULL,
+   reliable      BOOLEAN,
    title         VARCHAR(50)
 );
 CREATE TRIGGER update_checklist_employment_trg
@@ -65,15 +65,15 @@ CREATE TABLE checklist_landlord (
    uu_row_id     UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   address       BOOLEAN     DEFAULT FALSE              NOT NULL,
+   address       BOOLEAN,
    alt_phone     VARCHAR(18),
    lease_type    VARCHAR(25),
-   leave_message BOOLEAN     DEFAULT TRUE               NOT NULL,
+   leave_message BOOLEAN,
    length        INTEGER,
    name          VARCHAR(50),
    paid_rent     VARCHAR(15),
-   phone         BOOLEAN     DEFAULT FALSE              NOT NULL,
-   reliable      BOOLEAN     DEFAULT FALSE              NOT NULL,
+   phone         BOOLEAN,
+   reliable      BOOLEAN,
    rent          NUMERIC(19, 2)
 );
 CREATE TRIGGER update_checklist_landlord_trg
