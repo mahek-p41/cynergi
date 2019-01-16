@@ -20,11 +20,11 @@ import javax.validation.ConstraintViolationException
 import javax.validation.Path
 
 @Controller
-class Handler(
+class ErrorHandler(
    private val localizationService: LocalizationService
 ) {
    private companion object {
-       val logger: Logger = LoggerFactory.getLogger(Handler::class.java)
+       val logger: Logger = LoggerFactory.getLogger(ErrorHandler::class.java)
    }
 
    @Error(global = true, exception = Throwable::class)
