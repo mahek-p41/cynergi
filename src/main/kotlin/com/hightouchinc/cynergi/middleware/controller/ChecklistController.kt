@@ -61,7 +61,7 @@ class ChecklistController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
       @QueryValue("parentId") parentId: String,
-      @Valid@Body dto: ChecklistDto
+      @Valid @Body dto: ChecklistDto
    ): ChecklistDto {
       checklistValidator.validateUpdate(dto = dto, parent = parentId)
 
