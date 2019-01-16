@@ -6,18 +6,15 @@ import org.springframework.context.MessageSource
 import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
 
 @Factory
-class ExternalBeanFactory @Inject constructor(
-   private val dataSource: DataSource
-) {
+class ExternalBeanFactory {
 
    @Bean
    @Singleton
-   fun jdbcTemplate() = JdbcTemplate(dataSource)
+   fun jdbcTemplate(dataSource: DataSource) = JdbcTemplate(dataSource)
 
    @Bean
    @Singleton
