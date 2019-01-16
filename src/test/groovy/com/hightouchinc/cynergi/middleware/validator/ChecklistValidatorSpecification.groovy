@@ -38,7 +38,7 @@ class ChecklistValidatorSpecification extends Specification {
       validationException.errors.size() == 1
       validationException.errors[0].arguments == Lists.immutable.of(checklistDto.customerAccount)
       validationException.errors[0].path == "cust_acct"
-      validationException.errors[0].messageTemplate == ErrorCodes.Validation.DUPLICATE
+      validationException.errors[0].messageTemplate == ErrorCodes.Cynergi.DUPLICATE
    }
 
    void "validate update valid ChecklistDto" () {
