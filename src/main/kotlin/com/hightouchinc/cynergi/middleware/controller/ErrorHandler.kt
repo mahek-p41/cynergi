@@ -13,19 +13,19 @@ import io.micronaut.http.HttpResponse.serverError
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.http.hateos.JsonError
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Locale
+import javax.inject.Inject
 import javax.validation.ConstraintViolationException
 import javax.validation.Path
 
 @Controller
-class ErrorHandler(
+class ErrorHandler @Inject constructor(
    private val localizationService: LocalizationService
 ) {
-   private companion object {
-       val logger: Logger = LoggerFactory.getLogger(ErrorHandler::class.java)
-   }
+   private val logger: Logger = LoggerFactory.getLogger(ErrorHandler::class.java)
 
    @Error(global = true, exception = Throwable::class)
    fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<JsonError> {
@@ -71,7 +71,8 @@ class ErrorHandler(
       return badRequest(
          constraintViolationException.constraintViolations.map {
             val field = buildPropertyPath(rootPath = it.propertyPath)
-            val jsonError = JsonError(localizationService.localize(it.constraintDescriptor.messageTemplate, locale, field))
+            val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
+            val jsonError = JsonError(localizationService.localize(it.constraintDescriptor.messageTemplate, locale, field, value))
 
             jsonError.path(field)
 
@@ -82,7 +83,7 @@ class ErrorHandler(
 
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()
-         .filter { it.name != "save" && it.name != "update" && it.name != "dto" && it.name.startsWith("arg") }
+         .filter { it.name != "save" && it.name != "update" && it.name != "dto" && !it.name.startsWith("arg") }
          .joinToString(".")
 
    private fun findLocale(httpRequest: HttpRequest<*>): Locale {

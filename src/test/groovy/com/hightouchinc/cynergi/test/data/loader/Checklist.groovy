@@ -48,7 +48,7 @@ class ChecklistDataLoaderService {
       this.checklistRepository = checklistRepository
    }
 
-   Stream<Checklist> stream(int number = 1) {
+   Stream<Checklist> stream(int number = 1, boolean generateAuto = true, boolean generateEmployment = true, generateLandlord = true) {
       return ChecklistTestDataLoader.stream(number)
          .map {
             checklistRepository.insert(it)

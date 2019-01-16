@@ -27,10 +27,10 @@ data class Checklist(
    constructor(dto: ChecklistDto, company: String) :
       this(
          id = dto.id,
-         customerAccount = dto.customerAccount,
+         customerAccount = dto.customerAccount!!,
          customerComments = dto.customerComments,
-         verifiedBy = dto.verifiedBy,
-         verifiedTime = dto.verifiedTime,
+         verifiedBy = dto.verifiedBy!!,
+         verifiedTime = dto.verifiedTime!!,
          company = company,
          auto = copyAutoDtoToEntity(dto = dto),
          employment = copyEmploymentDtoToEntity(dto = dto),
@@ -46,7 +46,7 @@ data class ChecklistDto(
    @field:Size(max = 10, message = SIZE)
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_acct")
-   var customerAccount: String,
+   var customerAccount: String?,
 
    @field:Size(max = 255, message = SIZE)
    @field:JsonProperty("cust_comments")
@@ -55,11 +55,11 @@ data class ChecklistDto(
    @field:Size(max = 50, message = SIZE)
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_by")
-   var verifiedBy: String,
+   var verifiedBy: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_date")
-   var verifiedTime: OffsetDateTime,
+   var verifiedTime: OffsetDateTime?,
 
    @field:Nullable
    @field:JsonProperty("checklist_auto")

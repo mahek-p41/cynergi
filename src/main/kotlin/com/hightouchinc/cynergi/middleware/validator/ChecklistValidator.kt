@@ -15,8 +15,8 @@ class ChecklistValidator(
 
    @Throws(ValidationException::class)
    fun validateSave(dto: ChecklistDto, parent: String) {
-      val errors = if (checklistService.exists(customerAccount = dto.customerAccount)) {
-         Lists.immutable.of(ValidationError("cust_acct", ErrorCodes.Validation.DUPLICATE, Lists.immutable.of(dto.customerAccount)))
+      val errors = if (checklistService.exists(customerAccount = dto.customerAccount!!)) {
+         Lists.immutable.of(ValidationError("cust_acct", ErrorCodes.Cynergi.DUPLICATE, Lists.immutable.of(dto.customerAccount)))
       } else {
          Lists.immutable.empty()
       }
@@ -39,7 +39,7 @@ class ChecklistValidator(
          if (existingChecklist == null) {
             errors.add(element = ValidationError("id", ErrorCodes.System.NOT_FOUND, Lists.immutable.of(id)))
          } else if (existingChecklist.customerAccount != dto.customerAccount) {
-            errors.add(element = ValidationError("cust_acct", ErrorCodes.Validation.NOT_UPDATABLE, Lists.immutable.of(dto.customerAccount)))
+            errors.add(element = ValidationError("cust_acct", ErrorCodes.Cynergi.NOT_UPDATABLE, Lists.immutable.of(dto.customerAccount)))
          }
       }
 

@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.POSITIVE_NUMBER_REQUIRED
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime

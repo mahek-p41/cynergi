@@ -45,11 +45,11 @@ class ChecklistAutoTestDataLoader {
             lorem.characters(3, 50),
             lorem.characters(3, 10),
             num.randomDouble(2, 100, 1100).toBigDecimal(),
-            lorem.characters(0, 50),
+            lorem.characters(1, 50),
             bool.bool(),
             bool.bool(),
             date.past(90, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            lorem.characters(0, 50)
+            lorem.characters(1, 50)
          )
       }
    }

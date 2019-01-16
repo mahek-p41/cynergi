@@ -21,8 +21,6 @@ import javax.validation.Valid
  *
  * @param checklistService defines that the [ChecklistService] instance should be injected by the container
  * @param checklistValidator defines that the [ChecklistValidator] instance should be injected by the container
- *
- * @author garym@hightouchinc.com
  */
 @Validated
 @Controller("/api/company/{parentId}/verification/")
