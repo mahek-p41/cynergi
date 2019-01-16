@@ -2,8 +2,6 @@ package com.hightouchinc.cynergi.middleware.repository
 
 /**
  * Defines the basic operations a class that interacts with rows in the database should provide
- *
- * @author garym@hightouchinc.com
  */
 interface Repository<ENTITY> {
 

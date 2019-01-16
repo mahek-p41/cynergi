@@ -16,14 +16,13 @@ data class Checklist(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val customerAccount: String, // TODO convert from soft foreign key to soft_customer
-   val customerComments: String,
+   val customerComments: String?,
    val verifiedBy: String, // TODO convert from soft foreign key to soft_employee
    val verifiedTime: OffsetDateTime,
    val company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val auto: ChecklistAuto?,
    val employment: ChecklistEmployment?,
    val landlord: ChecklistLandlord?
-
 ) : Entity {
    constructor(dto: ChecklistDto, company: String) :
       this(
@@ -51,7 +50,7 @@ data class ChecklistDto(
 
    @field:Size(max = 255, message = SIZE)
    @field:JsonProperty("cust_comments")
-   var customerComments: String,
+   var customerComments: String?,
 
    @field:Size(max = 50, message = SIZE)
    @field:NotNull(message = NOT_NULL)
@@ -91,6 +90,12 @@ data class ChecklistDto(
       return this.copy()
    }
 }
+
+/*
+ * the functions defined below are placed here since they cannot be placed on the data classes themselves. They are
+ * listed as private so that they should be hidden from code outside of this file as they are an implementation detail
+ * of the way the checklist data associations are managed.
+ */
 
 private fun copyAutoDtoToEntity(dto: ChecklistDto): ChecklistAuto? {
    val auto = dto.auto

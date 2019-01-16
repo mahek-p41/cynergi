@@ -22,14 +22,12 @@ import javax.inject.Singleton
 class ChecklistAutoRepository(
    private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<ChecklistAuto> {
-   private companion object {
-      val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
-      val SIMPLE_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper()
-      val PREFIXED_CHECKLIST_AUTO_ROW_MAPPER: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(rowPrefix = "ca_")
-   }
+   private val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
+   private val simpleCheckListAutoRowMapper: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper()
+   private val prefixedChecklistAutoRowMapper: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(rowPrefix = "ca_")
 
    override fun findOne(id: Long): ChecklistAuto? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_AUTO_ROW_MAPPER)
+      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleCheckListAutoRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -76,7 +74,7 @@ class ChecklistAutoRepository(
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related
          ),
-         SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
+         simpleCheckListAutoRowMapper
       )
    }
 
@@ -133,7 +131,7 @@ class ChecklistAutoRepository(
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related
          ),
-         SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
+         simpleCheckListAutoRowMapper
       )
    }
 
@@ -149,7 +147,7 @@ class ChecklistAutoRepository(
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistAuto? =
-      rs.getString("ca_id")?.let { PREFIXED_CHECKLIST_AUTO_ROW_MAPPER.mapRow(rs, row) }
+      rs.getString("ca_id")?.let { prefixedChecklistAutoRowMapper.mapRow(rs, row) }
 }
 
 private class ChecklistAutoRowMapper(

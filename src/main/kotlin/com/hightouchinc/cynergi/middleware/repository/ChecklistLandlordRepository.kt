@@ -20,14 +20,12 @@ import javax.inject.Singleton
 class ChecklistLandlordRepository(
    private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<ChecklistLandlord> {
-   private companion object {
-      val logger: Logger = LoggerFactory.getLogger(ChecklistLandlordRepository::class.java)
-      val SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER = ChecklistLandlordRowMapper()
-      val PREFIXED_CHECKLIST_LANDLORD_ROW_MAPPER = ChecklistLandlordRowMapper(rowPrefix = "cl_")
-   }
+   private val logger: Logger = LoggerFactory.getLogger(ChecklistLandlordRepository::class.java)
+   private val simpleChecklistLandlordRowMapper = ChecklistLandlordRowMapper()
+   private val prefixedChecklistLandlordRowMapper = ChecklistLandlordRowMapper(rowPrefix = "cl_")
 
    override fun findOne(id: Long): ChecklistLandlord? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER)
+      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleChecklistLandlordRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -63,7 +61,7 @@ class ChecklistLandlordRepository(
             "reliable" to entity.reliable,
             "rent" to entity.rent
          ),
-         SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER
+         simpleChecklistLandlordRowMapper
       )
    }
 
@@ -100,7 +98,7 @@ class ChecklistLandlordRepository(
             "reliable" to entity.reliable,
             "rent" to entity.rent
          ),
-         SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER
+         simpleChecklistLandlordRowMapper
       )
    }
 
@@ -115,7 +113,7 @@ class ChecklistLandlordRepository(
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistLandlord? =
-      rs.getString("cl_id")?.let { PREFIXED_CHECKLIST_LANDLORD_ROW_MAPPER.mapRow(rs, row) }
+      rs.getString("cl_id")?.let { prefixedChecklistLandlordRowMapper.mapRow(rs, row) }
 }
 
 private class ChecklistLandlordRowMapper(

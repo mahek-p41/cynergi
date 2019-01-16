@@ -34,7 +34,6 @@ data class ChecklistAuto(
    val previousLoan: Boolean?,
    val purchaseDate: LocalDate?,
    val related: String?
-
 ) : Entity {
 
    constructor(dto: ChecklistAutoDto) :

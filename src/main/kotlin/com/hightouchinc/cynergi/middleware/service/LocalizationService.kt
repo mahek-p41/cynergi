@@ -21,7 +21,7 @@ class LocalizationService @Inject constructor(
    private val messageSource: MessageSource
 ) {
    private companion object {
-       val logger: Logger = LoggerFactory.getLogger(LocalizationService::class.java)
+      val logger: Logger = LoggerFactory.getLogger(LocalizationService::class.java)
    }
 
    /**

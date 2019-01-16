@@ -6,6 +6,7 @@ import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils
 import org.eclipse.collections.impl.factory.Maps
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
@@ -26,28 +27,12 @@ class ChecklistRepository @Inject constructor(
    private val checklistLandlordRepository: ChecklistLandlordRepository
 ) : Repository<Checklist> {
 
-   private companion object {
-      val logger: Logger = LoggerFactory.getLogger(ChecklistRepository::class.java)
+   private val selectAllRowMapper: RowMapper<Checklist>
+   private val logger: Logger = LoggerFactory.getLogger(ChecklistRepository::class.java)
+   private val simpleChecklistRowMapper: RowMapper<Checklist> = ChecklistRowMapper()
 
-      val DML_CHECKLIST_ROW_MAPPER: RowMapper<Checklist> = RowMapper { rs: ResultSet, _: Int -> // this is used when running INSERT and UPDATE queries to map the result of the RETURNING * clause
-         Checklist(
-            id = rs.getLong("id"),
-            uuRowId = rs.getObject("uu_row_id", UUID::class.java),
-            timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
-            timeUpdated = rs.getObject("time_updated", OffsetDateTime::class.java),
-            customerAccount = rs.getString("customer_account"),
-            customerComments = rs.getString("customer_comments"),
-            verifiedBy = rs.getString("verified_by"),
-            verifiedTime = rs.getObject("verified_time", OffsetDateTime::class.java),
-            company = rs.getString("company"),
-            auto = null,
-            employment = null,
-            landlord = null
-         )
-      }
-
-      @Language("PostgreSQL")
-      val SELECT_ALL_BASE = """
+   @Language("PostgreSQL")
+   private val selectAllBase = """
           SELECT
             c.id AS c_id,
             c.uu_row_id AS c_uu_row_id,
@@ -113,12 +98,20 @@ class ChecklistRepository @Inject constructor(
             LEFT OUTER JOIN checklist_landlord cl
               ON c.landlord_id = cl.id
          """.trimIndent()
+
+   init {
+       selectAllRowMapper = ChecklistRowMapper(
+          rowPrefix = "c_",
+          checklistAutoRepository = checklistAutoRepository,
+          checklistEmploymentRepository = checklistEmploymentRepository,
+          checklistLandlordRepository = checklistLandlordRepository
+       )
    }
 
    override fun findOne(id: Long): Checklist? {
       val found: Checklist? = jdbc.findFirstOrNull(
-         "$SELECT_ALL_BASE \nWHERE c.id = :id", Maps.mutable.ofPairs("id" to id),
-         selectAllRowMapper()
+         "$selectAllBase \nWHERE c.id = :id", Maps.mutable.ofPairs("id" to id),
+         selectAllRowMapper
       )
 
       logger.trace("Searched for {} found {}", id, found)
@@ -144,9 +137,9 @@ class ChecklistRepository @Inject constructor(
 
    fun findByCustomerAccount(customerAccount: String): Checklist? {
       val found = jdbc.findFirstOrNull(
-         "$SELECT_ALL_BASE \nWHERE c.customer_account = :customerAccount".trimIndent(),
+         "$selectAllBase \nWHERE c.customer_account = :customerAccount".trimIndent(),
          Maps.mutable.ofPairs("customerAccount" to customerAccount),
-         selectAllRowMapper()
+         selectAllRowMapper
       )
 
       logger.debug("search for checklist through Customer Aaccount: {} resulted in {}", customerAccount, found)
@@ -176,7 +169,7 @@ class ChecklistRepository @Inject constructor(
             *
          """.trimIndent(),
          paramMap,
-         DML_CHECKLIST_ROW_MAPPER
+         simpleChecklistRowMapper
       )
 
       return if (auto != null || employment != null || landlord != null) {
@@ -217,7 +210,7 @@ class ChecklistRepository @Inject constructor(
             "verifiedTime" to verifiedTime,
             "company" to entity.company
          ),
-         DML_CHECKLIST_ROW_MAPPER
+         simpleChecklistRowMapper
       )
 
       return if (auto != null || employment != null || landlord != null) {
@@ -226,26 +219,32 @@ class ChecklistRepository @Inject constructor(
          updated
       }
    }
+}
 
-   private fun selectAllRowMapper(): RowMapper<Checklist> =
-      RowMapper { rs: ResultSet, row: Int ->
-         val auto = checklistAutoRepository.mapRowPrefixedRow(rs = rs, row = row)
-         val employment = checklistEmploymentRepository.mapRowPrefixedRow(rs = rs, row = row)
-         val landlord = checklistLandlordRepository.mapRowPrefixedRow(rs = rs, row = row)
+private class ChecklistRowMapper(
+   private val rowPrefix: String = StringUtils.EMPTY,
+   private val checklistAutoRepository: ChecklistAutoRepository? = null,
+   private val checklistEmploymentRepository: ChecklistEmploymentRepository? = null,
+   private val checklistLandlordRepository: ChecklistLandlordRepository? = null
+): RowMapper<Checklist> {
+   override fun mapRow(rs: ResultSet, row: Int): Checklist? {
+      val auto = checklistAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
+      val employment = checklistEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)
+      val landlord = checklistLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)
 
-         Checklist(
-            id = rs.getLong("c_id"),
-            uuRowId = rs.getObject("c_uu_row_id", UUID::class.java),
-            timeCreated = rs.getObject("c_time_created", OffsetDateTime::class.java),
-            timeUpdated = rs.getObject("c_time_updated", OffsetDateTime::class.java),
-            customerAccount = rs.getString("c_customer_account"),
-            customerComments = rs.getString("c_customer_comments"),
-            verifiedBy = rs.getString("c_verified_by"),
-            verifiedTime = rs.getObject("c_verified_time", OffsetDateTime::class.java),
-            company = rs.getString("c_company"),
-            auto = auto,
-            employment = employment,
-            landlord = landlord
-         )
-      }
+      return Checklist(
+         id = rs.getLong("${rowPrefix}id"),
+         uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
+         timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),
+         timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
+         customerAccount = rs.getString("${rowPrefix}customer_account"),
+         customerComments = rs.getString("${rowPrefix}customer_comments"),
+         verifiedBy = rs.getString("${rowPrefix}verified_by"),
+         verifiedTime = rs.getObject("${rowPrefix}verified_time", OffsetDateTime::class.java),
+         company = rs.getString("${rowPrefix}company"),
+         auto = auto,
+         employment = employment,
+         landlord = landlord
+      )
+   }
 }

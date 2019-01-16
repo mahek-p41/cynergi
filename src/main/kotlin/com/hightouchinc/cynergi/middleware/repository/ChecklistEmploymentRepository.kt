@@ -22,14 +22,12 @@ import javax.inject.Singleton
 class ChecklistEmploymentRepository(
    private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<ChecklistEmployment> {
-   private companion object {
-      val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
-      val SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER: RowMapper<ChecklistEmployment> = ChecklistEmploymentRowMapper()
-      val PREFIXED_CHECKLIST_EMPLOYMENT_ROW_MAPPER: RowMapper<ChecklistEmployment> = ChecklistEmploymentRowMapper(rowPrefix = "ce_")
-   }
+   private val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
+   private val simpleChecklistEmploymentRowMapper: RowMapper<ChecklistEmployment> = ChecklistEmploymentRowMapper()
+   private val prefixedChecklistEmploymentRowMapper: RowMapper<ChecklistEmployment> = ChecklistEmploymentRowMapper(rowPrefix = "ce_")
 
    override fun findOne(id: Long): ChecklistEmployment? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_employment ce WHERE ce.id = :id", Maps.mutable.ofPairs("id" to id), SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER)
+      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_employment ce WHERE ce.id = :id", Maps.mutable.ofPairs("id" to id), simpleChecklistEmploymentRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -61,7 +59,7 @@ class ChecklistEmploymentRepository(
             "reliable" to entity.reliable,
             "title" to entity.title
          ),
-         SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER
+         simpleChecklistEmploymentRowMapper
       )
    }
 
@@ -90,7 +88,7 @@ class ChecklistEmploymentRepository(
             "reliable" to entity.reliable,
             "title" to entity.title
          ),
-         SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER
+         simpleChecklistEmploymentRowMapper
       )
    }
 
@@ -106,7 +104,7 @@ class ChecklistEmploymentRepository(
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistEmployment? =
-      rs.getString("ce_id")?.let { PREFIXED_CHECKLIST_EMPLOYMENT_ROW_MAPPER.mapRow(rs, row) }
+      rs.getString("ce_id")?.let { prefixedChecklistEmploymentRowMapper.mapRow(rs, row) }
 }
 
 private class ChecklistEmploymentRowMapper(

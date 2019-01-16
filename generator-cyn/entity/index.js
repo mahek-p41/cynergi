@@ -28,8 +28,7 @@ module.exports = class extends Generator {
       const templateValues = {
          repository: camelCase(this.options.table),
          entity: pascalCase(this.options.table),
-         table: this.options.table,
-         rowMapper: this.options.table.toUpperCase()
+         table: this.options.table
       };
       const templates = {
          'Entity.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/entity/${templateValues.entity}.kt`,
