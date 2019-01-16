@@ -11,18 +11,18 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 data class Checklist(
-   var id: Long?,
-   var uuRowId: UUID = UUID.randomUUID(),
-   var timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   var timeUpdated: OffsetDateTime = timeCreated,
-   var customerAccount: String, // TODO convert from soft foreign key to soft_customer
-   var customerComments: String,
-   var verifiedBy: String, // TODO convert from soft foreign key to soft_employee
-   var verifiedTime: OffsetDateTime,
-   var company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
-   var auto: ChecklistAuto?,
-   var employment: ChecklistEmployment?,
-   var landlord: ChecklistLandlord?
+   val id: Long?,
+   val uuRowId: UUID = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime = timeCreated,
+   val customerAccount: String, // TODO convert from soft foreign key to soft_customer
+   val customerComments: String,
+   val verifiedBy: String, // TODO convert from soft foreign key to soft_employee
+   val verifiedTime: OffsetDateTime,
+   val company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
+   val auto: ChecklistAuto?,
+   val employment: ChecklistEmployment?,
+   val landlord: ChecklistLandlord?
 
 ) : Entity {
    constructor(dto: ChecklistDto, company: String) :

@@ -137,7 +137,7 @@ class ChecklistRepository @Inject constructor(
    fun exists(customerAccount: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM checklist WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
 
-      logger.trace("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
+      logger.debug("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
 
       return exists
    }
@@ -149,7 +149,7 @@ class ChecklistRepository @Inject constructor(
          selectAllRowMapper()
       )
 
-
+      logger.debug("search for checklist through Customer Aaccount: {} resulted in {}", customerAccount, found)
 
       return found
    }
@@ -157,18 +157,19 @@ class ChecklistRepository @Inject constructor(
    @Transactional
    override fun insert(entity: Checklist): Checklist {
       val checklistAuto = entity.auto?.let { checklistAutoRepository.insert(entity = it) }
+      val checklistEmployment = entity.employment?.let { checklistEmploymentRepository.insert(entity = it) }
+      val checklistLandlord = entity.landlord?.let { checklistLandlordRepository.insert(entity = it) }
       val paramMap = Maps.mutable.ofPairs(
-         "customerAccount" to entity.customerAccount,
-         "customerComments" to entity.customerComments,
-         "verifiedBy" to entity.verifiedBy,
+         "customer_account" to entity.customerAccount,
+         "customer_comments" to entity.customerComments,
+         "verified_by" to entity.verifiedBy,
          "company" to entity.company,
          "auto_id" to checklistAuto?.id
       )
 
-      val inserted = jdbc.insertReturning(
-         """
+      val inserted = jdbc.insertReturning("""
          INSERT INTO Checklist (customer_account, customer_comments, verified_by, company, auto_id)
-         VALUES(:customerAccount, :customerComments, :verifiedBy, :company, :auto_id)
+         VALUES(:customer_account, :customer_comments, :verified_by, :company, :auto_id)
          RETURNING
             *
          """.trimIndent(),
@@ -176,8 +177,8 @@ class ChecklistRepository @Inject constructor(
          DML_CHECKLIST_ROW_MAPPER
       )
 
-      return if (checklistAuto != null) {
-         inserted.copy(auto = checklistAuto)
+      return if (checklistAuto != null || checklistEmployment != null || checklistLandlord != null) {
+         inserted.copy(auto = checklistAuto, employment = checklistEmployment, landlord = checklistLandlord)
       } else {
          inserted
       }
@@ -192,8 +193,7 @@ class ChecklistRepository @Inject constructor(
          existing.verifiedTime
       }
 
-      return jdbc.updateReturning(
-         """
+      return jdbc.updateReturning("""
          UPDATE Checklist
          SET
             customer_account = :customerAccount,

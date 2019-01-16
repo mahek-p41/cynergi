@@ -46,9 +46,9 @@ class ChecklistLandlordRepository(
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO checklist_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable)
+         INSERT INTO checklist_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent)
          VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent)
-         RETURN
+         RETURNING
             *
          """.trimIndent(),
          Maps.mutable.ofPairs(

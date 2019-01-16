@@ -108,7 +108,7 @@ private class ChecklistEmploymentRowMapper(
          timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
          department = rs.getString("${rowPrefix}department"),
          hireDate = rs.getObject("${rowPrefix}hire_date", LocalDate::class.java),
-         leaveMessage = rs.getBoolean("${rowPrefix}leaveMessage"),
+         leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
          name = rs.getString("${rowPrefix}name"),
          reliable = rs.getBoolean("${rowPrefix}reliable"),
          title = rs.getString("${rowPrefix}title")

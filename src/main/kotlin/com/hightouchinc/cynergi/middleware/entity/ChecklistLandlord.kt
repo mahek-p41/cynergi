@@ -10,20 +10,20 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 data class ChecklistLandlord (
-   var id: Long? = null,
-   var uuRowId: UUID? = UUID.randomUUID(),
-   var timeCreated: OffsetDateTime? = OffsetDateTime.now(),
-   var timeUpdated: OffsetDateTime? = timeCreated,
-   var address: Boolean?,
-   var altPhone: String?,
-   var leaseType: String?,
-   var leaveMessage: Boolean?,
-   var length: Int?,
-   var name: String?,
-   var paidRent: String?,
-   var phone: Boolean?,
-   var reliable: Boolean?,
-   var rent: BigDecimal
+   val id: Long? = null,
+   val uuRowId: UUID? = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime? = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime? = timeCreated,
+   val address: Boolean?,
+   val altPhone: String?,
+   val leaseType: String?,
+   val leaveMessage: Boolean?,
+   val length: Int?,
+   val name: String?,
+   val paidRent: String?,
+   val phone: Boolean?,
+   val reliable: Boolean?,
+   val rent: BigDecimal
 ) : Entity {
 
    constructor(dto: ChecklistLandlordDto) :

@@ -7,16 +7,16 @@ import java.util.UUID
 import javax.validation.constraints.Size
 
 data class ChecklistEmployment(
-   var id: Long?,
-   var uuRowId: UUID = UUID.randomUUID(),
-   var timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   var timeUpdated: OffsetDateTime = timeCreated,
-   var department: String?,
-   var hireDate: LocalDate?,
-   var leaveMessage: Boolean?,
-   var name: String?,
-   var reliable: Boolean?,
-   var title: String?
+   val id: Long?,
+   val uuRowId: UUID = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime = timeCreated,
+   val department: String?,
+   val hireDate: LocalDate?,
+   val leaveMessage: Boolean?,
+   val name: String?,
+   val reliable: Boolean?,
+   val title: String?
 ) : Entity {
 
    constructor(dto: ChecklistEmploymentDto) :

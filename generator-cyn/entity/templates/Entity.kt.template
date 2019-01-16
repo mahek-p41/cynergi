@@ -7,10 +7,10 @@ import java.util.UUID
 import javax.validation.constraints.Positive
 
 data class <%= entity %> (
-   var id: Long? = null,
-   var uuRowId: UUID? = UUID.randomUUID(),
-   var timeCreated: OffsetDateTime? = OffsetDateTime.now(),
-   var timeUpdated: OffsetDateTime? = timeCreated
+   val id: Long? = null,
+   val uuRowId: UUID? = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime? = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime? = timeCreated
 ) : Entity {
 
    constructor(dto: <%= entity %>Dto) :
