@@ -2,7 +2,9 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Checklist
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
+import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
 import org.eclipse.collections.impl.factory.Maps
 import org.intellij.lang.annotations.Language
@@ -163,7 +165,7 @@ class ChecklistRepository @Inject constructor(
          "auto_id" to checklistAuto?.id
       )
 
-      val inserted = jdbc.queryForObject(
+      val inserted = jdbc.insertReturning(
          """
          INSERT INTO Checklist (customer_account, customer_comments, verified_by, company, auto_id)
          VALUES(:customerAccount, :customerComments, :verifiedBy, :company, :auto_id)
@@ -172,7 +174,7 @@ class ChecklistRepository @Inject constructor(
          """.trimIndent(),
          paramMap,
          DML_CHECKLIST_ROW_MAPPER
-      )!!
+      )
 
       return if (checklistAuto != null) {
          inserted.copy(auto = checklistAuto)
@@ -190,7 +192,7 @@ class ChecklistRepository @Inject constructor(
          existing.verifiedTime
       }
 
-      return jdbc.queryForObject(
+      return jdbc.updateReturning(
          """
          UPDATE Checklist
          SET
@@ -211,7 +213,7 @@ class ChecklistRepository @Inject constructor(
             "company" to entity.company
          ),
          DML_CHECKLIST_ROW_MAPPER
-      )!!
+      )
    }
 
    private fun selectAllRowMapper(): RowMapper<Checklist> =

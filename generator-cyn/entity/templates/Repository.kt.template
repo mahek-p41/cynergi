@@ -39,11 +39,13 @@ class <%= entity %>Repository(
    }
 
    override fun insert(entity: <%= entity %>): <%= entity %> {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      logger.trace("Inserting {}", entity)
+      TODO("not implemented")
    }
 
    override fun update(entity: <%= entity %>): <%= entity %> {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      logger.trace("Updating {}", entity)
+      TODO("not implemented")
    }
 }
 

@@ -2,7 +2,9 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.ChecklistEmployment
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
+import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
@@ -44,7 +46,7 @@ class ChecklistEmploymentRepository(
    override fun insert(entity: ChecklistEmployment): ChecklistEmployment {
       logger.trace("Inserting {}", entity)
 
-      return jdbc.queryForObject("""
+      return jdbc.insertReturning("""
          INSERT INTO checklist_employment(department, hire_date, leave_message, name, reliable, title)
          VALUES(:department, :hire_date, :leave_message, :name, :reliable, :title)
          RETURNING
@@ -59,13 +61,13 @@ class ChecklistEmploymentRepository(
             "title" to entity.title
          ),
          SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER
-      )!!
+      )
    }
 
    override fun update(entity: ChecklistEmployment): ChecklistEmployment {
       logger.trace("Updating {}", entity)
 
-      return jdbc.queryForObject("""
+      return jdbc.updateReturning("""
          UPDATE checklist_employment
          SET
             department = :department,
@@ -88,7 +90,7 @@ class ChecklistEmploymentRepository(
             "title" to entity.title
          ),
          SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER
-      )!!
+      )
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistEmployment? =

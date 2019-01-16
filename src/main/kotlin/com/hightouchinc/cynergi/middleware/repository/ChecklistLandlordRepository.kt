@@ -2,7 +2,9 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.ChecklistLandlord
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
+import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
@@ -41,11 +43,63 @@ class ChecklistLandlordRepository(
    }
 
    override fun insert(entity: ChecklistLandlord): ChecklistLandlord {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      logger.trace("Inserting {}", entity)
+
+      return jdbc.insertReturning("""
+         INSERT INTO checklist_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable)
+         VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent)
+         RETURN
+            *
+         """.trimIndent(),
+         Maps.mutable.ofPairs(
+            "address" to entity.address,
+            "alt_phone" to entity.altPhone,
+            "lease_type" to entity.leaseType,
+            "leave_message" to entity.leaveMessage,
+            "length" to entity.length,
+            "name" to entity.name,
+            "paid_rent" to entity.paidRent,
+            "phone" to entity.phone,
+            "reliable" to entity.reliable,
+            "rent" to entity.rent
+         ),
+         SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER
+      )
    }
 
    override fun update(entity: ChecklistLandlord): ChecklistLandlord {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      logger.trace("Updating {}", entity)
+
+      return jdbc.updateReturning("""
+         UPDATE checklist_landlord
+         SET
+            address = :address,
+            alt_phone = :alt_phone,
+            least_type = :lease_type,
+            leave_message = :leave_message,
+            length = :length,
+            name = :name,
+            paid_rent = :paid_rent,
+            phone = :phone,
+            reliable = :reliable,
+            rent = :rent
+         WHERE id = :id
+         """.trimIndent(),
+         Maps.mutable.ofPairs(
+            "id" to entity.id,
+            "address" to entity.address,
+            "alt_phone" to entity.altPhone,
+            "lease_type" to entity.leaseType,
+            "leave_message" to entity.leaveMessage,
+            "length" to entity.length,
+            "name" to entity.name,
+            "paid_rent" to entity.paidRent,
+            "phone" to entity.phone,
+            "reliable" to entity.reliable,
+            "rent" to entity.rent
+         ),
+         SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER
+      )
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistLandlord? =
