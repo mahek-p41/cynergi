@@ -1,0 +1,51 @@
+package com.hightouchinc.cynergi.middleware.controller
+
+import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
+import com.hightouchinc.cynergi.middleware.exception.NotFoundException
+import com.hightouchinc.cynergi.middleware.exception.ValidationException
+import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
+import com.hightouchinc.cynergi.middleware.validator.<%= entity %>Validator
+import io.micronaut.http.MediaType.APPLICATION_JSON
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.QueryValue
+import io.micronaut.validation.Validated
+import javax.inject.Inject
+import javax.validation.Valid
+
+@Validated
+@Controller("/api/TODO add valid path here")
+class <%= entity %>Controller @Inject constructor(
+   private val <%= repository %>Service: <%= entity %>Service,
+   private val <%= repository %>Validator: <%= entity %>Validator
+) {
+   @Get(value = "/{id}", produces = [APPLICATION_JSON])
+   fun fetchOne(
+      @QueryValue("id") id: Long
+   ): <%= entity %>Dto {
+      return <%= repository %>Service.fetchById(id = id) ?: throw NotFoundException(id)
+   }
+
+   @Post(processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   fun save(
+      @Valid @Body dto: <%= entity %>Dto
+   ): <%= entity %>Dto {
+      <%= entity %>Validator.validateSave(dto = dto)
+
+      return <%= entity %>Service.create(dto = dto)
+   }
+
+   @Put(processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   fun update(
+      @Valid @Body dto: <%= entity %>Dto
+   ): <%= entity %>Dto {
+      <%= entity %>Validator.validateUpdate(dto = dto)
+
+      return <%= entity %>Service.update(dto = dto)
+   }
+}

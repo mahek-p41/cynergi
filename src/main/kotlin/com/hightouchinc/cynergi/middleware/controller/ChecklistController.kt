@@ -5,7 +5,7 @@ import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.ChecklistService
 import com.hightouchinc.cynergi.middleware.validator.ChecklistValidator
-import io.micronaut.http.MediaType
+import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -28,7 +28,7 @@ class ChecklistController @Inject constructor(
    private val checklistService: ChecklistService,
    private val checklistValidator: ChecklistValidator
 ) {
-   @Get(value = "/{id}", produces = [MediaType.APPLICATION_JSON])
+   @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
    ): ChecklistDto {
@@ -36,7 +36,7 @@ class ChecklistController @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   @Get(value = "/account/{customerAccount}", produces = [MediaType.APPLICATION_JSON])
+   @Get(value = "/account/{customerAccount}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("parentId") parentId: String,
       @QueryValue("customerAccount") customerAccount: String
@@ -44,7 +44,7 @@ class ChecklistController @Inject constructor(
       return checklistService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
    }
 
-   @Post(processes = [MediaType.APPLICATION_JSON])
+   @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
       @QueryValue("parentId") parentId: String,
@@ -55,7 +55,7 @@ class ChecklistController @Inject constructor(
       return checklistService.create(dto = dto, parent = parentId)
    }
 
-   @Put(processes = [MediaType.APPLICATION_JSON])
+   @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
       @QueryValue("parentId") parentId: String,
