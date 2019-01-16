@@ -189,13 +189,16 @@ class ChecklistRepository @Inject constructor(
    @Transactional
    override fun update(entity: Checklist): Checklist {
       val existing = findOne(id = entity.id!!)!!
-      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy != entity.verifiedBy) {
-         null
-      } else {
+      val auto = entity.auto?.let { checklistAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
+      val employment = entity.employment?.let { checklistEmploymentRepository.upsert(existing = existing.employment, requestedChange= it) }
+      val landlord = entity.landlord?.let { checklistLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
+      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) {
          existing.verifiedTime
+      } else {
+         null
       }
 
-      return jdbc.updateReturning("""
+      val updated = jdbc.updateReturning("""
          UPDATE Checklist
          SET
             customer_account = :customerAccount,
@@ -216,6 +219,12 @@ class ChecklistRepository @Inject constructor(
          ),
          DML_CHECKLIST_ROW_MAPPER
       )
+
+      return if (auto != null || employment != null || landlord != null) {
+         updated.copy(auto = auto, employment = employment, landlord = landlord)
+      } else {
+         updated
+      }
    }
 
    private fun selectAllRowMapper(): RowMapper<Checklist> =

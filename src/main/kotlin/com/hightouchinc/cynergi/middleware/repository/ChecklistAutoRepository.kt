@@ -108,6 +108,8 @@ class ChecklistAutoRepository(
             purchase_date = :purchaseDate,
             related = :related
          WHERE id = :id
+         RETURNING
+            *
          """.trimIndent(),
          Maps.mutable.ofPairs(
             "id" to entity.id,
@@ -133,6 +135,17 @@ class ChecklistAutoRepository(
          ),
          SIMPLE_CHECKLIST_AUTO_ROW_MAPPER
       )
+   }
+
+   @Transactional
+   fun upsert(existing: ChecklistAuto?, requestedChange: ChecklistAuto?): ChecklistAuto? {
+      return if (existing == null && requestedChange != null) {
+         insert(entity = requestedChange)
+      } else if (existing != null && requestedChange != null) {
+         update(entity = requestedChange)
+      } else {
+         null
+      }
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistAuto? =

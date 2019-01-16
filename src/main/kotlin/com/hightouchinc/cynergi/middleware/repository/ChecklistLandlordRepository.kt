@@ -75,7 +75,7 @@ class ChecklistLandlordRepository(
          SET
             address = :address,
             alt_phone = :alt_phone,
-            least_type = :lease_type,
+            lease_type = :lease_type,
             leave_message = :leave_message,
             length = :length,
             name = :name,
@@ -84,6 +84,8 @@ class ChecklistLandlordRepository(
             reliable = :reliable,
             rent = :rent
          WHERE id = :id
+         RETURNING
+            *
          """.trimIndent(),
          Maps.mutable.ofPairs(
             "id" to entity.id,
@@ -100,6 +102,16 @@ class ChecklistLandlordRepository(
          ),
          SIMPLE_CHECKLIST_LANDLORD_ROW_MAPPER
       )
+   }
+
+   fun upsert(existing: ChecklistLandlord?, requestedChange: ChecklistLandlord?): ChecklistLandlord? {
+      return if (existing == null && requestedChange != null) {
+         insert(entity = requestedChange)
+      } else if (existing != null && requestedChange != null) {
+         update(entity = requestedChange)
+      } else {
+         return null
+      }
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistLandlord? =

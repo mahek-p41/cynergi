@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
@@ -77,7 +78,7 @@ class ChecklistEmploymentRepository(
             reliable = :reliable,
             title = :title
          WHERE id = :id
-         RETURN
+         RETURNING
             *
          """.trimIndent(),
          Maps.mutable.ofPairs(
@@ -91,6 +92,17 @@ class ChecklistEmploymentRepository(
          ),
          SIMPLE_CHECKLIST_EMPLOYMENT_ROW_MAPPER
       )
+   }
+
+   @Transactional
+   fun upsert(existing: ChecklistEmployment?, requestedChange: ChecklistEmployment?): ChecklistEmployment? {
+      return if (existing == null && requestedChange != null) {
+         insert(entity = requestedChange)
+      } else if (existing != null && requestedChange != null) {
+         update(entity = requestedChange)
+      } else {
+         null
+      }
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistEmployment? =
