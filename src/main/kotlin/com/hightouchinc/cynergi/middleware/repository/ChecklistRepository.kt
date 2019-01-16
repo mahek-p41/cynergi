@@ -156,20 +156,22 @@ class ChecklistRepository @Inject constructor(
 
    @Transactional
    override fun insert(entity: Checklist): Checklist {
-      val checklistAuto = entity.auto?.let { checklistAutoRepository.insert(entity = it) }
-      val checklistEmployment = entity.employment?.let { checklistEmploymentRepository.insert(entity = it) }
-      val checklistLandlord = entity.landlord?.let { checklistLandlordRepository.insert(entity = it) }
+      val auto = entity.auto?.let { checklistAutoRepository.insert(entity = it) }
+      val employment = entity.employment?.let { checklistEmploymentRepository.insert(entity = it) }
+      val landlord = entity.landlord?.let { checklistLandlordRepository.insert(entity = it) }
       val paramMap = Maps.mutable.ofPairs(
          "customer_account" to entity.customerAccount,
          "customer_comments" to entity.customerComments,
          "verified_by" to entity.verifiedBy,
          "company" to entity.company,
-         "auto_id" to checklistAuto?.id
+         "auto_id" to auto?.id,
+         "employment_id" to employment?.id,
+         "landlord_id" to landlord?.id
       )
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO Checklist (customer_account, customer_comments, verified_by, company, auto_id)
-         VALUES(:customer_account, :customer_comments, :verified_by, :company, :auto_id)
+         INSERT INTO Checklist (customer_account, customer_comments, verified_by, company, auto_id, employment_id, landlord_id)
+         VALUES(:customer_account, :customer_comments, :verified_by, :company, :auto_id, :employment_id, :landlord_id)
          RETURNING
             *
          """.trimIndent(),
@@ -177,8 +179,8 @@ class ChecklistRepository @Inject constructor(
          DML_CHECKLIST_ROW_MAPPER
       )
 
-      return if (checklistAuto != null || checklistEmployment != null || checklistLandlord != null) {
-         inserted.copy(auto = checklistAuto, employment = checklistEmployment, landlord = checklistLandlord)
+      return if (auto != null || employment != null || landlord != null) {
+         inserted.copy(auto = auto, employment = employment, landlord = landlord)
       } else {
          inserted
       }
