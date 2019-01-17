@@ -61,6 +61,8 @@ data class VerificationAuto(
       )
 
    override fun entityId(): Long? = id
+
+   override fun rowId(): UUID = uuRowId
 }
 
 data class VerificationAutoDto(

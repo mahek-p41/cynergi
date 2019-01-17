@@ -31,6 +31,8 @@ data class VerificationEmployment(
       )
 
    override fun entityId(): Long? = id
+
+   override fun rowId(): UUID = uuRowId
 }
 
 data class VerificationEmploymentDto(

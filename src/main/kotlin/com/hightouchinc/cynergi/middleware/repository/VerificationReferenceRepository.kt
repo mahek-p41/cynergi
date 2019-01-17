@@ -58,7 +58,7 @@ class VerificationReferenceRepository @Inject constructor(
             "reliable" to entity.reliable,
             "time_frame" to entity.timeFrame,
             "verify_phone" to entity.verifyPhone,
-            "verification_id" to entity.verficationId
+            "verification_id" to entity.verificationId
          ),
          simpleVerificationReferenceRowMapper
       )
@@ -95,7 +95,7 @@ class VerificationReferenceRepository @Inject constructor(
             "reliable" to entity.reliable,
             "time_frame" to entity.timeFrame,
             "verify_phone" to entity.verifyPhone,
-            "verification_id" to entity.verficationId
+            "verification_id" to entity.verificationId
          ),
          simpleVerificationReferenceRowMapper
       )
@@ -118,6 +118,6 @@ private class VerificationReferenceRowMapper : RowMapper<VerificationReference> 
          reliable = rs.getBoolean("reliable"),
          timeFrame = rs.getInt("time_frame"),
          verifyPhone = rs.getBoolean("verify_phone"),
-         verficationId = rs.getLong("verification_id")
+         verificationId = rs.getLong("verification_id")
       )
 }

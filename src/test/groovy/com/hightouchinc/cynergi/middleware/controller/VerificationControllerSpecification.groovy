@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
+import org.eclipse.collections.impl.factory.Sets
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
@@ -108,7 +109,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
          null,
          null,
          null,
-         null
+         null,
+         Sets.mutable.empty()
       )
 
       when:

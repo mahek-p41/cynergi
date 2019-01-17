@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
+import org.eclipse.collections.api.set.MutableSet
+import org.eclipse.collections.impl.factory.Sets
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.annotation.Nullable
@@ -22,7 +24,8 @@ data class Verification(
    val company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val auto: VerificationAuto?,
    val employment: VerificationEmployment?,
-   val landlord: VerificationLandlord?
+   val landlord: VerificationLandlord?,
+   val references: MutableSet<VerificationReference> = Sets.mutable.empty()
 ) : Entity {
    constructor(dto: VerificationDto, company: String) :
       this(
@@ -38,6 +41,8 @@ data class Verification(
       )
 
    override fun entityId(): Long? = id
+
+   override fun rowId(): UUID = uuRowId
 }
 
 data class VerificationDto(
@@ -71,7 +76,9 @@ data class VerificationDto(
 
    @field:Nullable
    @field:JsonProperty("checklist_landlord")
-   var landlord: VerificationLandlordDto?
+   var landlord: VerificationLandlordDto?,
+
+   val references: kotlin.collections.MutableSet<VerificationReferenceDto> = mutableSetOf()
 
 ) : DataTransferObjectBase<VerificationDto>() {
    constructor(entity: Verification) :

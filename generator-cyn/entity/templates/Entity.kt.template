@@ -19,6 +19,8 @@ data class <%= entity %> (
       )
 
    override fun entityId(): Long? = id
+
+   override fun rowId(): UUID = uuRowId
 }
 
 data class <%= entity %>Dto (

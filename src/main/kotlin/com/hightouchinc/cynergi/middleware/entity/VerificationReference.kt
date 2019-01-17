@@ -1,8 +1,10 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
+import java.util.Objects
 import java.util.UUID
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -21,7 +23,7 @@ data class VerificationReference (
    val reliable: Boolean?,
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
-   val verficationId: Long
+   val verificationId: Long
 ) : Entity {
 
    constructor(dto: VerificationReferenceDto) :
@@ -36,16 +38,31 @@ data class VerificationReference (
          reliable = dto.reliable,
          timeFrame = dto.timeFrame,
          verifyPhone = dto.verifyPhone,
-         verficationId = dto.verificationId
+         verificationId = dto.verificationId
       )
 
    override fun entityId(): Long? = id
+
+   override fun rowId(): UUID = uuRowId
+
+   override fun hashCode(): Int = Objects.hashCode(uuRowId)
+
+   override fun equals(other: Any?): Boolean {
+      return when (other) {
+          this -> true
+          is VerificationReference -> this.uuRowId == other.uuRowId
+          else -> false
+      }
+   }
 }
 
 data class VerificationReferenceDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
+
+   @field:JsonIgnore
+   var uuRowId: UUID = UUID.randomUUID(),
 
    val address: Boolean?,
 
@@ -82,7 +99,7 @@ data class VerificationReferenceDto (
          reliable = entity.reliable,
          timeFrame = entity.timeFrame,
          verifyPhone = entity.verifyPhone,
-         verificationId = entity.verficationId
+         verificationId = entity.verificationId
       )
 
    override fun copyMe(): VerificationReferenceDto = copy()

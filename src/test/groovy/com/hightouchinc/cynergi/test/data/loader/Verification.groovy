@@ -4,6 +4,7 @@ import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.repository.VerificationRepository
 import groovy.transform.CompileStatic
+import org.eclipse.collections.impl.factory.Sets
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,7 +33,8 @@ class VerificationTestDataLoader {
             numberFaker.digits(6),
             generateAuto ? VerificationAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationAuto") } : null,
             generateEmployment ? VerificationEmploymentTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationEmployment") } : null,
-            generateLandlord ? VerificationLandlordTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationLandlord") } : null
+            generateLandlord ? VerificationLandlordTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationLandlord") } : null,
+            Sets.mutable.empty()
          )
       }
    }
