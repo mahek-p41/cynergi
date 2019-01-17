@@ -34,9 +34,9 @@ class <%= entity %>Controller @Inject constructor(
    fun save(
       @Valid @Body dto: <%= entity %>Dto
    ): <%= entity %>Dto {
-      <%= entity %>Validator.validateSave(dto = dto)
+      <%= repository %>Validator.validateSave(dto = dto)
 
-      return <%= entity %>Service.create(dto = dto)
+      return <%= repository %>Service.create(dto = dto)
    }
 
    @Put(processes = [APPLICATION_JSON])
@@ -44,8 +44,8 @@ class <%= entity %>Controller @Inject constructor(
    fun update(
       @Valid @Body dto: <%= entity %>Dto
    ): <%= entity %>Dto {
-      <%= entity %>Validator.validateUpdate(dto = dto)
+      <%= repository %>Validator.validateUpdate(dto = dto)
 
-      return <%= entity %>Service.update(dto = dto)
+      return <%= repository %>Service.update(dto = dto)
    }
 }

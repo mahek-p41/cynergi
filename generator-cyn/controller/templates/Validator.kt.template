@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.extensions.isNotEmpty
 import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
+import org.eclipse.collections.api.list.ImmutableList
 import org.eclipse.collections.impl.factory.Lists
 import javax.inject.Singleton
 
@@ -15,7 +16,7 @@ class <%= entity %>Validator(
 
    @Throws(ValidationException::class)
    fun validateSave(dto: <%= entity %>Dto) {
-      val errors = Lists.immutable.empty()
+      val errors: ImmutableList<ValidationError> = Lists.immutable.empty()
 
       if (errors.isNotEmpty()) {
          throw ValidationException(errors)

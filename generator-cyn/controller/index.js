@@ -31,8 +31,9 @@ module.exports = class extends Generator {
          table: this.options.table
       };
       const templates = {
-         'Controller.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/controller/${templateValues.entity}.kt`,
-         'Validator.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/${templateValues.entity}Repository.kt`,
+         'Controller.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/controller/${templateValues.entity}Controller.kt`,
+         'Service.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/service/${templateValues.entity}Service.kt`,
+         'Validator.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/${templateValues.entity}Validator.kt`,
          'ControllerSpecification.groovy.template': `src/test/groovy/com/hightouchinc/cynergi/middleware/controller/${templateValues.entity}ControllerSpecification.groovy`
       };
 
