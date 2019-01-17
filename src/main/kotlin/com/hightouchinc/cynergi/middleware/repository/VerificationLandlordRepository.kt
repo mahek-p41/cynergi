@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.ChecklistLandlord
+import com.hightouchinc.cynergi.middleware.entity.VerificationLandlord
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
@@ -17,15 +17,15 @@ import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistLandlordRepository(
+class VerificationLandlordRepository(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<ChecklistLandlord> {
-   private val logger: Logger = LoggerFactory.getLogger(ChecklistLandlordRepository::class.java)
-   private val simpleChecklistLandlordRowMapper = ChecklistLandlordRowMapper()
-   private val prefixedChecklistLandlordRowMapper = ChecklistLandlordRowMapper(rowPrefix = "cl_")
+) : Repository<VerificationLandlord> {
+   private val logger: Logger = LoggerFactory.getLogger(VerificationLandlordRepository::class.java)
+   private val simpleVerificationLandlordRowMapper = VerificationLandlordRowMapper()
+   private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(rowPrefix = "cl_")
 
-   override fun findOne(id: Long): ChecklistLandlord? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleChecklistLandlordRowMapper)
+   override fun findOne(id: Long): VerificationLandlord? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationLandlordRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -33,18 +33,18 @@ class ChecklistLandlordRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist_landlord WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   override fun insert(entity: ChecklistLandlord): ChecklistLandlord {
+   override fun insert(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO checklist_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent)
+         INSERT INTO verification_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent)
          VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent)
          RETURNING
             *
@@ -61,15 +61,15 @@ class ChecklistLandlordRepository(
             "reliable" to entity.reliable,
             "rent" to entity.rent
          ),
-         simpleChecklistLandlordRowMapper
+         simpleVerificationLandlordRowMapper
       )
    }
 
-   override fun update(entity: ChecklistLandlord): ChecklistLandlord {
+   override fun update(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Updating {}", entity)
 
       return jdbc.updateReturning("""
-         UPDATE checklist_landlord
+         UPDATE verification_landlord
          SET
             address = :address,
             alt_phone = :alt_phone,
@@ -98,11 +98,11 @@ class ChecklistLandlordRepository(
             "reliable" to entity.reliable,
             "rent" to entity.rent
          ),
-         simpleChecklistLandlordRowMapper
+         simpleVerificationLandlordRowMapper
       )
    }
 
-   fun upsert(existing: ChecklistLandlord?, requestedChange: ChecklistLandlord?): ChecklistLandlord? {
+   fun upsert(existing: VerificationLandlord?, requestedChange: VerificationLandlord?): VerificationLandlord? {
       return if (existing == null && requestedChange != null) {
          insert(entity = requestedChange)
       } else if (existing != null && requestedChange != null) {
@@ -112,15 +112,15 @@ class ChecklistLandlordRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistLandlord? =
-      rs.getString("cl_id")?.let { prefixedChecklistLandlordRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationLandlord? =
+      rs.getString("cl_id")?.let { prefixedVerificationLandlordRowMapper.mapRow(rs, row) }
 }
 
-private class ChecklistLandlordRowMapper(
+private class VerificationLandlordRowMapper(
    private val rowPrefix: String = EMPTY
-) : RowMapper<ChecklistLandlord> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistLandlord =
-      ChecklistLandlord(
+) : RowMapper<VerificationLandlord> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationLandlord =
+      VerificationLandlord(
          id = rs.getLong("${rowPrefix}id"),
          uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
          timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),

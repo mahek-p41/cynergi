@@ -1,8 +1,8 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.entity.ChecklistAuto
-import com.hightouchinc.cynergi.middleware.repository.ChecklistAutoRepository
+import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
+import com.hightouchinc.cynergi.middleware.repository.VerificationAutoRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -13,8 +13,8 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 
 @CompileStatic
-class ChecklistAutoTestDataLoader {
-   static Stream<ChecklistAuto> stream(int number =1) {
+class VerificationAutoTestDataLoader {
+   static Stream<VerificationAuto> stream(int number = 1) {
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def bool = faker.bool()
@@ -26,7 +26,7 @@ class ChecklistAutoTestDataLoader {
       final def num = faker.number()
 
       return IntStream.range(0, value).mapToObj {
-         new ChecklistAuto(
+         new VerificationAuto(
             null,
             UUID.randomUUID(),
             OffsetDateTime.now(),
@@ -57,17 +57,17 @@ class ChecklistAutoTestDataLoader {
 
 @Singleton
 @CompileStatic
-class ChecklistAutoDataLoaderService {
-   private final ChecklistAutoRepository checklistAutoRepository
+class VerificationAutoDataLoaderService {
+   private final VerificationAutoRepository verificationAutoRepository
 
-   ChecklistAutoDataLoaderService(ChecklistAutoRepository checklistAutoRepository) {
-      this.checklistAutoRepository = checklistAutoRepository
+   VerificationAutoDataLoaderService(VerificationAutoRepository verificationAutoRepository) {
+      this.verificationAutoRepository = verificationAutoRepository
    }
 
-   Stream<ChecklistAuto> stream(int number = 1) {
-      return ChecklistAutoTestDataLoader.stream(number)
+   Stream<VerificationAuto> stream(int number = 1) {
+      return VerificationAutoTestDataLoader.stream(number)
          .map {
-            checklistAutoRepository.insert(it)
+            verificationAutoRepository.insert(it)
          }
    }
 }

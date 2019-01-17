@@ -2,7 +2,9 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.<%= entity %>
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
+import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -11,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.UUID
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton

@@ -11,7 +11,7 @@ END;
 $$
    LANGUAGE plpgsql;
 
-CREATE TABLE checklist_auto (
+CREATE TABLE verification_auto (
    id                BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id         UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -36,13 +36,13 @@ CREATE TABLE checklist_auto (
    purchase_date     DATE,
    related           VARCHAR(50)
 );
-CREATE TRIGGER update_checklist_auto_trg
+CREATE TRIGGER update_verification_auto_trg
    BEFORE UPDATE
-   ON checklist_auto
+   ON verification_auto
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 
-CREATE TABLE checklist_employment (
+CREATE TABLE verification_employment (
    id            BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id     UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -54,13 +54,13 @@ CREATE TABLE checklist_employment (
    reliable      BOOLEAN,
    title         VARCHAR(50)
 );
-CREATE TRIGGER update_checklist_employment_trg
+CREATE TRIGGER update_verification_employment_trg
    BEFORE UPDATE
-   ON checklist_employment
+   ON verification_employment
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 
-CREATE TABLE checklist_landlord (
+CREATE TABLE verification_landlord (
    id            BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id     UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -76,13 +76,13 @@ CREATE TABLE checklist_landlord (
    reliable      BOOLEAN,
    rent          NUMERIC(19, 2)
 );
-CREATE TRIGGER update_checklist_landlord_trg
+CREATE TRIGGER update_verification_landlord_trg
    BEFORE UPDATE
-   ON checklist_landlord
+   ON verification_landlord
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 
-CREATE TABLE checklist (
+CREATE TABLE verification (
    id                BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id         UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -92,19 +92,19 @@ CREATE TABLE checklist (
    verified_by       VARCHAR(50)                            NOT NULL, -- is a soft reference to an employee
    verified_time     TIMESTAMP   DEFAULT clock_timestamp()  NOT NULL,
    company           VARCHAR(6),                                      -- this is the pointer for the company but as the current implementation for most of cynergi is divided up into company's having their own dataset
-   auto_id           BIGINT REFERENCES checklist_auto(id),
-   employment_id     BIGINT REFERENCES checklist_employment(id),
-   landlord_id       BIGINT REFERENCES checklist_landlord(id)
+   auto_id           BIGINT REFERENCES verification_auto(id),
+   employment_id     BIGINT REFERENCES verification_employment(id),
+   landlord_id       BIGINT REFERENCES verification_landlord(id)
 );
-CREATE TRIGGER update_checklist_trg
+CREATE TRIGGER update_verification_trg
    BEFORE UPDATE
-   ON checklist
+   ON verification
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-ALTER TABLE checklist
-   ADD CONSTRAINT checklist_customer_account_uq UNIQUE (customer_account);
+ALTER TABLE verification
+   ADD CONSTRAINT verification_customer_account_uq UNIQUE (customer_account);
 
-CREATE TABLE checklist_references (
+CREATE TABLE verification_references (
    id             BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id      UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created   TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -118,10 +118,10 @@ CREATE TABLE checklist_references (
    reliable       BOOLEAN,
    time_frame     INTEGER,
    verify_phone   BOOLEAN,
-   checklist_id   BIGINT REFERENCES checklist(id)        NOT NULL
+   verification_id   BIGINT REFERENCES verification(id)        NOT NULL
 );
-CREATE TRIGGER update_checklist_references_trg
+CREATE TRIGGER update_verification_references_trg
    BEFORE UPDATE
-   ON checklist_references
+   ON verification_references
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();

@@ -10,7 +10,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-data class ChecklistAuto(
+data class VerificationAuto(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -36,7 +36,7 @@ data class ChecklistAuto(
    val related: String?
 ) : Entity {
 
-   constructor(dto: ChecklistAutoDto) :
+   constructor(dto: VerificationAutoDto) :
       this(
          id = dto.id,
          address = dto.address,
@@ -63,7 +63,7 @@ data class ChecklistAuto(
    override fun entityId(): Long? = id
 }
 
-data class ChecklistAutoDto(
+data class VerificationAutoDto(
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
@@ -117,8 +117,8 @@ data class ChecklistAutoDto(
    @field:Size(max = 50)
    var related: String?
 
-) : DataTransferObjectBase<ChecklistAutoDto>() {
-   constructor(entity: ChecklistAuto) :
+) : DataTransferObjectBase<VerificationAutoDto>() {
+   constructor(entity: VerificationAuto) :
       this(
          id = entity.id,
          address = entity.address,
@@ -142,5 +142,5 @@ data class ChecklistAutoDto(
          related = entity.related
       )
 
-   override fun copyMe(): ChecklistAutoDto = copy()
+   override fun copyMe(): VerificationAutoDto = copy()
 }

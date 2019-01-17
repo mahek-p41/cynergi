@@ -9,7 +9,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-data class ChecklistLandlord (
+data class VerificationLandlord (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -26,7 +26,7 @@ data class ChecklistLandlord (
    val rent: BigDecimal
 ) : Entity {
 
-   constructor(dto: ChecklistLandlordDto) :
+   constructor(dto: VerificationLandlordDto) :
       this(
          id = dto.id,
          address = dto.address,
@@ -44,7 +44,7 @@ data class ChecklistLandlord (
    override fun entityId(): Long? = id
 }
 
-data class ChecklistLandlordDto (
+data class VerificationLandlordDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
@@ -75,9 +75,9 @@ data class ChecklistLandlordDto (
    @field:Digits(integer = 19, fraction = 2)
    var rent: BigDecimal
 
-) : DataTransferObjectBase<ChecklistLandlordDto>() {
+) : DataTransferObjectBase<VerificationLandlordDto>() {
 
-   constructor(entity: ChecklistLandlord) :
+   constructor(entity: VerificationLandlord) :
       this(
          id = entity.id,
          address = entity.address,
@@ -92,5 +92,5 @@ data class ChecklistLandlordDto (
          rent = entity.rent
       )
 
-   override fun copyMe(): ChecklistLandlordDto = copy()
+   override fun copyMe(): VerificationLandlordDto = copy()
 }

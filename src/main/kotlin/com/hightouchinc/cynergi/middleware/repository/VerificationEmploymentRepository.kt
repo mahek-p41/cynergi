@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.ChecklistEmployment
+import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
@@ -19,15 +19,15 @@ import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistEmploymentRepository(
+class VerificationEmploymentRepository(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<ChecklistEmployment> {
-   private val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
-   private val simpleChecklistEmploymentRowMapper: RowMapper<ChecklistEmployment> = ChecklistEmploymentRowMapper()
-   private val prefixedChecklistEmploymentRowMapper: RowMapper<ChecklistEmployment> = ChecklistEmploymentRowMapper(rowPrefix = "ce_")
+) : Repository<VerificationEmployment> {
+   private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
+   private val simpleVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper()
+   private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(rowPrefix = "ce_")
 
-   override fun findOne(id: Long): ChecklistEmployment? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_employment ce WHERE ce.id = :id", Maps.mutable.ofPairs("id" to id), simpleChecklistEmploymentRowMapper)
+   override fun findOne(id: Long): VerificationEmployment? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment ce WHERE ce.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationEmploymentRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -35,18 +35,18 @@ class ChecklistEmploymentRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist_employment WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   override fun insert(entity: ChecklistEmployment): ChecklistEmployment {
+   override fun insert(entity: VerificationEmployment): VerificationEmployment {
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO checklist_employment(department, hire_date, leave_message, name, reliable, title)
+         INSERT INTO verification_employment(department, hire_date, leave_message, name, reliable, title)
          VALUES(:department, :hire_date, :leave_message, :name, :reliable, :title)
          RETURNING
             *
@@ -59,15 +59,15 @@ class ChecklistEmploymentRepository(
             "reliable" to entity.reliable,
             "title" to entity.title
          ),
-         simpleChecklistEmploymentRowMapper
+         simpleVerificationEmploymentRowMapper
       )
    }
 
-   override fun update(entity: ChecklistEmployment): ChecklistEmployment {
+   override fun update(entity: VerificationEmployment): VerificationEmployment {
       logger.trace("Updating {}", entity)
 
       return jdbc.updateReturning("""
-         UPDATE checklist_employment
+         UPDATE verification_employment
          SET
             department = :department,
             hire_date = :hire_date,
@@ -88,12 +88,12 @@ class ChecklistEmploymentRepository(
             "reliable" to entity.reliable,
             "title" to entity.title
          ),
-         simpleChecklistEmploymentRowMapper
+         simpleVerificationEmploymentRowMapper
       )
    }
 
    @Transactional
-   fun upsert(existing: ChecklistEmployment?, requestedChange: ChecklistEmployment?): ChecklistEmployment? {
+   fun upsert(existing: VerificationEmployment?, requestedChange: VerificationEmployment?): VerificationEmployment? {
       return if (existing == null && requestedChange != null) {
          insert(entity = requestedChange)
       } else if (existing != null && requestedChange != null) {
@@ -103,15 +103,15 @@ class ChecklistEmploymentRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistEmployment? =
-      rs.getString("ce_id")?.let { prefixedChecklistEmploymentRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationEmployment? =
+      rs.getString("ce_id")?.let { prefixedVerificationEmploymentRowMapper.mapRow(rs, row) }
 }
 
-private class ChecklistEmploymentRowMapper(
+private class VerificationEmploymentRowMapper(
    private val rowPrefix: String = EMPTY
-) : RowMapper<ChecklistEmployment> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistEmployment =
-      ChecklistEmployment(
+) : RowMapper<VerificationEmployment> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationEmployment =
+      VerificationEmployment(
          id = rs.getLong("${rowPrefix}id"),
          uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
          timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),

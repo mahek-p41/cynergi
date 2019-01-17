@@ -1,22 +1,14 @@
 package com.hightouchinc.cynergi.middleware.controller
 
-import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
-import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
-import com.hightouchinc.cynergi.test.data.loader.<%= entity %>DataLoaderService
-import com.hightouchinc.cynergi.test.data.loader.<%= entity %>TestDataLoader
-import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.hateos.JsonError
-
-import static io.micronaut.http.HttpRequest.GET
-import static io.micronaut.http.HttpRequest.POST
-import static io.micronaut.http.HttpRequest.PUT
-import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.NOT_FOUND
+import com.hightouchinc.cynergi.test.data.loader.GaryTableDataLoaderService
 
 class <%= entity %>ControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/TODO add valid path here"
    final def <%= repository %>DataLoaderService = applicationContext.getBean(<%= entity %>DataLoaderService)
 
-
+   void "test" () {
+      expect:
+      1 != 1 // do a lot of testing!
+   }
 }

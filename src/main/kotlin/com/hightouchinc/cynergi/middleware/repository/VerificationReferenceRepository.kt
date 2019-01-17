@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.ChecklistReference
+import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
@@ -17,14 +17,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistReferenceRepository @Inject constructor(
+class VerificationReferenceRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<ChecklistReference> {
-   private val logger: Logger = LoggerFactory.getLogger(ChecklistReferenceRepository::class.java)
-   private val simpleChecklistReferenceRowMapper = ChecklistReferenceRowMapper()
+) : Repository<VerificationReference> {
+   private val logger: Logger = LoggerFactory.getLogger(VerificationReferenceRepository::class.java)
+   private val simpleVerificationReferenceRowMapper = VerificationReferenceRowMapper()
 
-   override fun findOne(id: Long): ChecklistReference? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_reference ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleChecklistReferenceRowMapper)
+   override fun findOne(id: Long): VerificationReference? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationReferenceRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -32,19 +32,19 @@ class ChecklistReferenceRepository @Inject constructor(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist_reference WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   override fun insert(entity: ChecklistReference): ChecklistReference {
+   override fun insert(entity: VerificationReference): VerificationReference {
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO checklist_reference(address, has_home_phone, known, leave_message, rating, relationship, reliable, time_frame, verify_phone, checklist_id)
-         VALUES (:address, :has_home_phone, :known, :leave_message, :rating, :relationship, :reliable, :time_frame, :verify_phone, :checklist_id)
+         INSERT INTO verification_reference(address, has_home_phone, known, leave_message, rating, relationship, reliable, time_frame, verify_phone, verification_id)
+         VALUES (:address, :has_home_phone, :known, :leave_message, :rating, :relationship, :reliable, :time_frame, :verify_phone, :verification_id)
          RETURNING
             *
          """.trimIndent(),
@@ -58,17 +58,17 @@ class ChecklistReferenceRepository @Inject constructor(
             "reliable" to entity.reliable,
             "time_frame" to entity.timeFrame,
             "verify_phone" to entity.verifyPhone,
-            "checklist_id" to entity.checklistId
+            "verification_id" to entity.verficationId
          ),
-         simpleChecklistReferenceRowMapper
+         simpleVerificationReferenceRowMapper
       )
    }
 
-   override fun update(entity: ChecklistReference): ChecklistReference {
+   override fun update(entity: VerificationReference): VerificationReference {
       logger.trace("Updating {}", entity)
 
       return jdbc.updateReturning("""
-         UPDATE checklist_reference
+         UPDATE verification_reference
          SET
             address = :address,
             has_home_phone = :has_home_phone,
@@ -79,7 +79,7 @@ class ChecklistReferenceRepository @Inject constructor(
             reliable = :reliable,
             time_frame = :time_frame,
             verify_phone = :verify_phone,
-            checklist_id = :checklist_id
+            verification_id = :verification_id
          WHERE id = :id
          RETURNING
             *
@@ -95,16 +95,16 @@ class ChecklistReferenceRepository @Inject constructor(
             "reliable" to entity.reliable,
             "time_frame" to entity.timeFrame,
             "verify_phone" to entity.verifyPhone,
-            "checklist_id" to entity.checklistId
+            "verification_id" to entity.verficationId
          ),
-         simpleChecklistReferenceRowMapper
+         simpleVerificationReferenceRowMapper
       )
    }
 }
 
-private class ChecklistReferenceRowMapper : RowMapper<ChecklistReference> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistReference =
-      ChecklistReference(
+private class VerificationReferenceRowMapper : RowMapper<VerificationReference> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationReference =
+      VerificationReference(
          id = rs.getLong("id"),
          uuRowId = rs.getObject("uu_row_id", UUID::class.java),
          timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
@@ -118,6 +118,6 @@ private class ChecklistReferenceRowMapper : RowMapper<ChecklistReference> {
          reliable = rs.getBoolean("reliable"),
          timeFrame = rs.getInt("time_frame"),
          verifyPhone = rs.getBoolean("verify_phone"),
-         checklistId = rs.getLong("checklist_id")
+         verficationId = rs.getLong("verification_id")
       )
 }

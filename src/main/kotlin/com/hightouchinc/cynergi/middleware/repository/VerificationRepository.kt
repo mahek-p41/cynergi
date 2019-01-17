@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.Checklist
+import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
@@ -20,16 +20,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistRepository @Inject constructor(
+class VerificationRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val checklistAutoRepository: ChecklistAutoRepository,
-   private val checklistEmploymentRepository: ChecklistEmploymentRepository,
-   private val checklistLandlordRepository: ChecklistLandlordRepository
-) : Repository<Checklist> {
+   private val verificationAutoRepository: VerificationAutoRepository,
+   private val verificationEmploymentRepository: VerificationEmploymentRepository,
+   private val verificationLandlordRepository: VerificationLandlordRepository
+) : Repository<Verification> {
 
-   private val selectAllRowMapper: RowMapper<Checklist>
-   private val logger: Logger = LoggerFactory.getLogger(ChecklistRepository::class.java)
-   private val simpleChecklistRowMapper: RowMapper<Checklist> = ChecklistRowMapper()
+   private val selectAllRowMapper: RowMapper<Verification>
+   private val logger: Logger = LoggerFactory.getLogger(VerificationRepository::class.java)
+   private val simpleVerificationRowMapper: RowMapper<Verification> = VerificationRowMapper()
 
    @Language("PostgreSQL")
    private val selectAllBase = """
@@ -90,26 +90,26 @@ class ChecklistRepository @Inject constructor(
             cl.phone AS cl_phone,
             cl.reliable AS cl_reliable,
             cl.rent AS cl_rent
-         FROM checklist c
-            LEFT OUTER JOIN checklist_auto ca
+         FROM verification c
+            LEFT OUTER JOIN verification_auto ca
               ON c.auto_id = ca.id
-            LEFT OUTER JOIN checklist_employment ce
+            LEFT OUTER JOIN verification_employment ce
               ON c.employment_id = ce.id
-            LEFT OUTER JOIN checklist_landlord cl
+            LEFT OUTER JOIN verification_landlord cl
               ON c.landlord_id = cl.id
          """.trimIndent()
 
    init {
-       selectAllRowMapper = ChecklistRowMapper(
+       selectAllRowMapper = VerificationRowMapper(
           rowPrefix = "c_",
-          checklistAutoRepository = checklistAutoRepository,
-          checklistEmploymentRepository = checklistEmploymentRepository,
-          checklistLandlordRepository = checklistLandlordRepository
+          verificationAutoRepository = verificationAutoRepository,
+          verificationEmploymentRepository = verificationEmploymentRepository,
+          verificationLandlordRepository = verificationLandlordRepository
        )
    }
 
-   override fun findOne(id: Long): Checklist? {
-      val found: Checklist? = jdbc.findFirstOrNull(
+   override fun findOne(id: Long): Verification? {
+      val found: Verification? = jdbc.findFirstOrNull(
          "$selectAllBase \nWHERE c.id = :id", Maps.mutable.ofPairs("id" to id),
          selectAllRowMapper
       )
@@ -120,7 +120,7 @@ class ChecklistRepository @Inject constructor(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("searching for existence through ID: {} resulted in {}", id, exists)
 
@@ -128,30 +128,30 @@ class ChecklistRepository @Inject constructor(
    }
 
    fun exists(customerAccount: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM checklist WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
 
       logger.debug("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
 
       return exists
    }
 
-   fun findByCustomerAccount(customerAccount: String): Checklist? {
+   fun findByCustomerAccount(customerAccount: String): Verification? {
       val found = jdbc.findFirstOrNull(
          "$selectAllBase \nWHERE c.customer_account = :customerAccount".trimIndent(),
          Maps.mutable.ofPairs("customerAccount" to customerAccount),
          selectAllRowMapper
       )
 
-      logger.debug("search for checklist through Customer Aaccount: {} resulted in {}", customerAccount, found)
+      logger.debug("search for verification through Customer Aaccount: {} resulted in {}", customerAccount, found)
 
       return found
    }
 
    @Transactional
-   override fun insert(entity: Checklist): Checklist {
-      val auto = entity.auto?.let { checklistAutoRepository.insert(entity = it) }
-      val employment = entity.employment?.let { checklistEmploymentRepository.insert(entity = it) }
-      val landlord = entity.landlord?.let { checklistLandlordRepository.insert(entity = it) }
+   override fun insert(entity: Verification): Verification {
+      val auto = entity.auto?.let { verificationAutoRepository.insert(entity = it) }
+      val employment = entity.employment?.let { verificationEmploymentRepository.insert(entity = it) }
+      val landlord = entity.landlord?.let { verificationLandlordRepository.insert(entity = it) }
       val paramMap = Maps.mutable.ofPairs(
          "customer_account" to entity.customerAccount,
          "customer_comments" to entity.customerComments,
@@ -163,13 +163,13 @@ class ChecklistRepository @Inject constructor(
       )
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO Checklist (customer_account, customer_comments, verified_by, company, auto_id, employment_id, landlord_id)
+         INSERT INTO Verification (customer_account, customer_comments, verified_by, company, auto_id, employment_id, landlord_id)
          VALUES(:customer_account, :customer_comments, :verified_by, :company, :auto_id, :employment_id, :landlord_id)
          RETURNING
             *
          """.trimIndent(),
          paramMap,
-         simpleChecklistRowMapper
+         simpleVerificationRowMapper
       )
 
       return if (auto != null || employment != null || landlord != null) {
@@ -180,11 +180,11 @@ class ChecklistRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: Checklist): Checklist {
+   override fun update(entity: Verification): Verification {
       val existing = findOne(id = entity.id!!)!!
-      val auto = entity.auto?.let { checklistAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
-      val employment = entity.employment?.let { checklistEmploymentRepository.upsert(existing = existing.employment, requestedChange= it) }
-      val landlord = entity.landlord?.let { checklistLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
+      val auto = entity.auto?.let { verificationAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
+      val employment = entity.employment?.let { verificationEmploymentRepository.upsert(existing = existing.employment, requestedChange= it) }
+      val landlord = entity.landlord?.let { verificationLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
       val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) {
          existing.verifiedTime
       } else {
@@ -192,7 +192,7 @@ class ChecklistRepository @Inject constructor(
       }
 
       val updated = jdbc.updateReturning("""
-         UPDATE Checklist
+         UPDATE Verification
          SET
             customer_account = :customerAccount,
             customer_comments = :customerComments,
@@ -210,7 +210,7 @@ class ChecklistRepository @Inject constructor(
             "verifiedTime" to verifiedTime,
             "company" to entity.company
          ),
-         simpleChecklistRowMapper
+         simpleVerificationRowMapper
       )
 
       return if (auto != null || employment != null || landlord != null) {
@@ -221,18 +221,18 @@ class ChecklistRepository @Inject constructor(
    }
 }
 
-private class ChecklistRowMapper(
+private class VerificationRowMapper(
    private val rowPrefix: String = StringUtils.EMPTY,
-   private val checklistAutoRepository: ChecklistAutoRepository? = null,
-   private val checklistEmploymentRepository: ChecklistEmploymentRepository? = null,
-   private val checklistLandlordRepository: ChecklistLandlordRepository? = null
-): RowMapper<Checklist> {
-   override fun mapRow(rs: ResultSet, row: Int): Checklist? {
-      val auto = checklistAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
-      val employment = checklistEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)
-      val landlord = checklistLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)
+   private val verificationAutoRepository: VerificationAutoRepository? = null,
+   private val verificationEmploymentRepository: VerificationEmploymentRepository? = null,
+   private val verificationLandlordRepository: VerificationLandlordRepository? = null
+): RowMapper<Verification> {
+   override fun mapRow(rs: ResultSet, row: Int): Verification? {
+      val auto = verificationAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
+      val employment = verificationEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)
+      val landlord = verificationLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)
 
-      return Checklist(
+      return Verification(
          id = rs.getLong("${rowPrefix}id"),
          uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
          timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),

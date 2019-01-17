@@ -6,7 +6,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.Size
 
-data class ChecklistEmployment(
+data class VerificationEmployment(
    val id: Long?,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -19,7 +19,7 @@ data class ChecklistEmployment(
    val title: String?
 ) : Entity {
 
-   constructor(dto: ChecklistEmploymentDto) :
+   constructor(dto: VerificationEmploymentDto) :
       this(
          id = dto.id,
          department = dto.department,
@@ -33,7 +33,7 @@ data class ChecklistEmployment(
    override fun entityId(): Long? = id
 }
 
-data class ChecklistEmploymentDto(
+data class VerificationEmploymentDto(
 
    var id: Long? = null,
 
@@ -52,9 +52,9 @@ data class ChecklistEmploymentDto(
    @field:Size(max= 50)
    var title: String? = null
 
-) : DataTransferObjectBase<ChecklistEmploymentDto>() {
+) : DataTransferObjectBase<VerificationEmploymentDto>() {
 
-   constructor(entity: ChecklistEmployment) :
+   constructor(entity: VerificationEmployment) :
       this(
          id = entity.id,
          department = entity.department,
@@ -65,5 +65,5 @@ data class ChecklistEmploymentDto(
          title = entity.title
       )
 
-   override fun copyMe(): ChecklistEmploymentDto = copy()
+   override fun copyMe(): VerificationEmploymentDto = copy()
 }

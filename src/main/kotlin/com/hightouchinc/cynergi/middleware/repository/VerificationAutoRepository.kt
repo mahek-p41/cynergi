@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.ChecklistAuto
+import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.ofPairs
@@ -19,15 +19,15 @@ import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistAutoRepository(
+class VerificationAutoRepository(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<ChecklistAuto> {
-   private val logger: Logger = LoggerFactory.getLogger(ChecklistAutoRepository::class.java)
-   private val simpleCheckListAutoRowMapper: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper()
-   private val prefixedChecklistAutoRowMapper: RowMapper<ChecklistAuto> = ChecklistAutoRowMapper(rowPrefix = "ca_")
+) : Repository<VerificationAuto> {
+   private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
+   private val simpleVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper()
+   private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(rowPrefix = "ca_")
 
-   override fun findOne(id: Long): ChecklistAuto? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM checklist_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleCheckListAutoRowMapper)
+   override fun findOne(id: Long): VerificationAuto? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationAutoRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -35,7 +35,7 @@ class ChecklistAutoRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM checklist_auto WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
@@ -43,12 +43,12 @@ class ChecklistAutoRepository(
    }
 
    @Transactional
-   override fun insert(entity: ChecklistAuto): ChecklistAuto {
+   override fun insert(entity: VerificationAuto): VerificationAuto {
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning(
          """
-         INSERT INTO checklist_auto(address, comment, dealer_phone, diff_address, diff_employee, diff_phone, dmv_verify, employer, last_payment, name, next_payment, note, payment_frequency, payment, pending_action, phone, previous_loan, purchase_date, related)
+         INSERT INTO verification_auto(address, comment, dealer_phone, diff_address, diff_employee, diff_phone, dmv_verify, employer, last_payment, name, next_payment, note, payment_frequency, payment, pending_action, phone, previous_loan, purchase_date, related)
          VALUES (:address, :comment, :dealerPhone, :diffAddress, :diffEmployee, :diffPhone, :dmvVerify, :employer, :lastPayment, :name, :nextPayment, :note, :paymentFrequency, :payment, :pendingAction, :phone, :previousLoan, :purchaseDate, :related)
          RETURNING
             *
@@ -74,17 +74,17 @@ class ChecklistAutoRepository(
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related
          ),
-         simpleCheckListAutoRowMapper
+         simpleVerificationAutoRowMapper
       )
    }
 
    @Transactional
-   override fun update(entity: ChecklistAuto): ChecklistAuto {
+   override fun update(entity: VerificationAuto): VerificationAuto {
       logger.trace("Updating {}", entity)
 
       return jdbc.updateReturning(
          """
-         UPDATE checklist_auto
+         UPDATE verification_auto
          SET
             address = :address,
             comment = :comment,
@@ -131,12 +131,12 @@ class ChecklistAutoRepository(
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related
          ),
-         simpleCheckListAutoRowMapper
+         simpleVerificationAutoRowMapper
       )
    }
 
    @Transactional
-   fun upsert(existing: ChecklistAuto?, requestedChange: ChecklistAuto?): ChecklistAuto? {
+   fun upsert(existing: VerificationAuto?, requestedChange: VerificationAuto?): VerificationAuto? {
       return if (existing == null && requestedChange != null) {
          insert(entity = requestedChange)
       } else if (existing != null && requestedChange != null) {
@@ -146,15 +146,15 @@ class ChecklistAutoRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int): ChecklistAuto? =
-      rs.getString("ca_id")?.let { prefixedChecklistAutoRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationAuto? =
+      rs.getString("ca_id")?.let { prefixedVerificationAutoRowMapper.mapRow(rs, row) }
 }
 
-private class ChecklistAutoRowMapper(
+private class VerificationAutoRowMapper(
    private val rowPrefix: String = EMPTY
-) : RowMapper<ChecklistAuto> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ChecklistAuto =
-      ChecklistAuto(
+) : RowMapper<VerificationAuto> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationAuto =
+      VerificationAuto(
          id = rs.getLong("${rowPrefix}id"),
          uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
          timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),

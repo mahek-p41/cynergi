@@ -1,8 +1,8 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.entity.ChecklistLandlord
-import com.hightouchinc.cynergi.middleware.repository.ChecklistLandlordRepository
+import com.hightouchinc.cynergi.middleware.entity.VerificationLandlord
+import com.hightouchinc.cynergi.middleware.repository.VerificationLandlordRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -11,8 +11,8 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 
 @CompileStatic
-class ChecklistLandlordTestDataLoader {
-   static Stream<ChecklistLandlord> stream(int number =1) {
+class VerificationLandlordTestDataLoader {
+   static Stream<VerificationLandlord> stream(int number =1) {
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def bool = faker.bool()
@@ -22,7 +22,7 @@ class ChecklistLandlordTestDataLoader {
       final def name = faker.name()
 
       return IntStream.range(0, value).mapToObj {
-         new ChecklistLandlord(
+         new VerificationLandlord(
             null,
             UUID.randomUUID(),
             OffsetDateTime.now(),
@@ -44,17 +44,17 @@ class ChecklistLandlordTestDataLoader {
 
 @Singleton
 @CompileStatic
-class ChecklistLandlordDataLoaderService {
-   private final ChecklistLandlordRepository checklistLandlordRepository
+class VerificationLandlordDataLoaderService {
+   private final VerificationLandlordRepository verificationLandlordRepository
 
-   ChecklistLandlordDataLoaderService(ChecklistLandlordRepository checklistLandlordRepository) {
-      this.checklistLandlordRepository = checklistLandlordRepository
+   VerificationLandlordDataLoaderService(VerificationLandlordRepository verificationLandlordRepository) {
+      this.verificationLandlordRepository = verificationLandlordRepository
    }
 
-   Stream<ChecklistLandlord> stream(int number = 1) {
-      return ChecklistLandlordTestDataLoader.stream(number)
+   Stream<VerificationLandlord> stream(int number = 1) {
+      return VerificationLandlordTestDataLoader.stream(number)
          .map {
-            checklistLandlordRepository.insert(it)
+            verificationLandlordRepository.insert(it)
          }
    }
 }

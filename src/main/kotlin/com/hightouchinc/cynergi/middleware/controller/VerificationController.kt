@@ -1,10 +1,10 @@
 package com.hightouchinc.cynergi.middleware.controller
 
-import com.hightouchinc.cynergi.middleware.entity.ChecklistDto
+import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
-import com.hightouchinc.cynergi.middleware.service.ChecklistService
-import com.hightouchinc.cynergi.middleware.validator.ChecklistValidator
+import com.hightouchinc.cynergi.middleware.service.VerificationService
+import com.hightouchinc.cynergi.middleware.validator.VerificationValidator
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -19,20 +19,20 @@ import javax.validation.Valid
 /**
  * Defines the primary CRUD controller for the verification process
  *
- * @param checklistService defines that the [ChecklistService] instance should be injected by the container
- * @param checklistValidator defines that the [ChecklistValidator] instance should be injected by the container
+ * @param verificationService defines that the [VerificationService] instance should be injected by the container
+ * @param verificationValidator defines that the [VerificationValidator] instance should be injected by the container
  */
 @Validated
 @Controller("/api/company/{parentId}/verification/")
-class ChecklistController @Inject constructor(
-   private val checklistService: ChecklistService,
-   private val checklistValidator: ChecklistValidator
+class VerificationController @Inject constructor(
+   private val verificationService: VerificationService,
+   private val verificationValidator: VerificationValidator
 ) {
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
-   ): ChecklistDto {
-      return checklistService.fetchById(id = id) ?: throw NotFoundException(id)
+   ): VerificationDto {
+      return verificationService.fetchById(id = id) ?: throw NotFoundException(id)
    }
 
    @Throws(NotFoundException::class)
@@ -40,29 +40,29 @@ class ChecklistController @Inject constructor(
    fun fetchOne(
       @QueryValue("parentId") parentId: String,
       @QueryValue("customerAccount") customerAccount: String
-   ): ChecklistDto {
-      return checklistService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
+   ): VerificationDto {
+      return verificationService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
    }
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
       @QueryValue("parentId") parentId: String,
-      @Valid @Body dto: ChecklistDto
-   ): ChecklistDto {
-      checklistValidator.validateSave(dto = dto, parent = parentId)
+      @Valid @Body dto: VerificationDto
+   ): VerificationDto {
+      verificationValidator.validateSave(dto = dto, parent = parentId)
 
-      return checklistService.create(dto = dto, parent = parentId)
+      return verificationService.create(dto = dto, parent = parentId)
    }
 
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
       @QueryValue("parentId") parentId: String,
-      @Valid @Body dto: ChecklistDto
-   ): ChecklistDto {
-      checklistValidator.validateUpdate(dto = dto, parent = parentId)
+      @Valid @Body dto: VerificationDto
+   ): VerificationDto {
+      verificationValidator.validateUpdate(dto = dto, parent = parentId)
 
-      return checklistService.update(dto = dto, parent = parentId)
+      return verificationService.update(dto = dto, parent = parentId)
    }
 }

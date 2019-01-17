@@ -7,7 +7,7 @@ import java.util.UUID
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-data class ChecklistReference (
+data class VerificationReference (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -21,10 +21,10 @@ data class ChecklistReference (
    val reliable: Boolean?,
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
-   val checklistId: Long
+   val verficationId: Long
 ) : Entity {
 
-   constructor(dto: ChecklistReferenceDto) :
+   constructor(dto: VerificationReferenceDto) :
       this(
          id = dto.id,
          address = dto.address,
@@ -36,13 +36,13 @@ data class ChecklistReference (
          reliable = dto.reliable,
          timeFrame = dto.timeFrame,
          verifyPhone = dto.verifyPhone,
-         checklistId = dto.checklistId
+         verficationId = dto.verificationId
       )
 
    override fun entityId(): Long? = id
 }
 
-data class ChecklistReferenceDto (
+data class VerificationReferenceDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
@@ -66,11 +66,11 @@ data class ChecklistReferenceDto (
 
    val verifyPhone: Boolean?,
 
-   val checklistId: Long
+   val verificationId: Long
 
-) : DataTransferObjectBase<ChecklistReferenceDto>() {
+) : DataTransferObjectBase<VerificationReferenceDto>() {
 
-   constructor(entity: ChecklistReference) :
+   constructor(entity: VerificationReference) :
       this(
          id = entity.id,
          address = entity.address,
@@ -82,8 +82,8 @@ data class ChecklistReferenceDto (
          reliable = entity.reliable,
          timeFrame = entity.timeFrame,
          verifyPhone = entity.verifyPhone,
-         checklistId = entity.checklistId
+         verificationId = entity.verficationId
       )
 
-   override fun copyMe(): ChecklistReferenceDto = copy()
+   override fun copyMe(): VerificationReferenceDto = copy()
 }

@@ -1,8 +1,8 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.entity.ChecklistEmployment
-import com.hightouchinc.cynergi.middleware.repository.ChecklistEmploymentRepository
+import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
+import com.hightouchinc.cynergi.middleware.repository.VerificationEmploymentRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -13,8 +13,8 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 
 @CompileStatic
-class ChecklistEmploymentTestDataLoader {
-   static Stream<ChecklistEmployment> stream(int number =1) {
+class VerificationEmploymentTestDataLoader {
+   static Stream<VerificationEmployment> stream(int number =1) {
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def company = faker.company()
@@ -23,7 +23,7 @@ class ChecklistEmploymentTestDataLoader {
       final def bool = faker.bool()
 
       return IntStream.range(0, value).mapToObj {
-         new ChecklistEmployment(
+         new VerificationEmployment(
             null,
             UUID.randomUUID(),
             OffsetDateTime.now(),
@@ -41,17 +41,17 @@ class ChecklistEmploymentTestDataLoader {
 
 @Singleton
 @CompileStatic
-class ChecklistEmploymentDataLoaderService {
-   private final ChecklistEmploymentRepository checklistEmploymentRepository
+class VerificationEmploymentDataLoaderService {
+   private final VerificationEmploymentRepository verificationEmploymentRepository
 
-   ChecklistEmploymentDataLoaderService(ChecklistEmploymentRepository checklistEmploymentRepository) {
-      this.checklistEmploymentRepository = checklistEmploymentRepository
+   VerificationEmploymentDataLoaderService(VerificationEmploymentRepository verificationEmploymentRepository) {
+      this.verificationEmploymentRepository = verificationEmploymentRepository
    }
 
-   Stream<ChecklistEmployment> stream(int number = 1) {
-      return ChecklistEmploymentTestDataLoader.stream(number)
+   Stream<VerificationEmployment> stream(int number = 1) {
+      return VerificationEmploymentTestDataLoader.stream(number)
          .map {
-            checklistEmploymentRepository.insert(it)
+            verificationEmploymentRepository.insert(it)
          }
    }
 }

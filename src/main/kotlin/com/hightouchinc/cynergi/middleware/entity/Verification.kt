@@ -10,7 +10,7 @@ import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-data class Checklist(
+data class Verification(
    val id: Long?,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -20,11 +20,11 @@ data class Checklist(
    val verifiedBy: String, // TODO convert from soft foreign key to soft_employee
    val verifiedTime: OffsetDateTime,
    val company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
-   val auto: ChecklistAuto?,
-   val employment: ChecklistEmployment?,
-   val landlord: ChecklistLandlord?
+   val auto: VerificationAuto?,
+   val employment: VerificationEmployment?,
+   val landlord: VerificationLandlord?
 ) : Entity {
-   constructor(dto: ChecklistDto, company: String) :
+   constructor(dto: VerificationDto, company: String) :
       this(
          id = dto.id,
          customerAccount = dto.customerAccount!!,
@@ -40,7 +40,7 @@ data class Checklist(
    override fun entityId(): Long? = id
 }
 
-data class ChecklistDto(
+data class VerificationDto(
    var id: Long?,
 
    @field:Size(max = 10, message = SIZE)
@@ -63,18 +63,18 @@ data class ChecklistDto(
 
    @field:Nullable
    @field:JsonProperty("checklist_auto")
-   var auto: ChecklistAutoDto?,
+   var auto: VerificationAutoDto?,
 
    @field:Nullable
    @field:JsonProperty("checklist_employment")
-   var employment: ChecklistEmploymentDto?,
+   var employment: VerificationEmploymentDto?,
 
    @field:Nullable
    @field:JsonProperty("checklist_landlord")
-   var landlord: ChecklistLandlordDto?
+   var landlord: VerificationLandlordDto?
 
-) : DataTransferObjectBase<ChecklistDto>() {
-   constructor(entity: Checklist) :
+) : DataTransferObjectBase<VerificationDto>() {
+   constructor(entity: Verification) :
       this(
          id = entity.id,
          customerAccount = entity.customerAccount,
@@ -86,7 +86,7 @@ data class ChecklistDto(
          landlord = copyLandlordEntityToDto(entity = entity)
       )
 
-   override fun copyMe(): ChecklistDto {
+   override fun copyMe(): VerificationDto {
       return this.copy()
    }
 }
@@ -94,64 +94,64 @@ data class ChecklistDto(
 /*
  * the functions defined below are placed here since they cannot be placed on the data classes themselves. They are
  * listed as private so that they should be hidden from code outside of this file as they are an implementation detail
- * of the way the checklist data associations are managed.
+ * of the way the verification data associations are managed.
  */
 
-private fun copyAutoDtoToEntity(dto: ChecklistDto): ChecklistAuto? {
+private fun copyAutoDtoToEntity(dto: VerificationDto): VerificationAuto? {
    val auto = dto.auto
 
    return if (auto != null) {
-      ChecklistAuto(dto = auto)
+      VerificationAuto(dto = auto)
    } else {
       null
    }
 }
 
-private fun copyAutoEntityToDto(entity: Checklist): ChecklistAutoDto? {
+private fun copyAutoEntityToDto(entity: Verification): VerificationAutoDto? {
    val auto = entity.auto
 
    return if (auto != null) {
-      ChecklistAutoDto(entity = auto)
+      VerificationAutoDto(entity = auto)
    } else {
       null
    }
 }
 
-private fun copyEmploymentDtoToEntity(dto: ChecklistDto): ChecklistEmployment? {
+private fun copyEmploymentDtoToEntity(dto: VerificationDto): VerificationEmployment? {
    val employment = dto.employment
 
    return if (employment != null) {
-      ChecklistEmployment(dto = employment)
+      VerificationEmployment(dto = employment)
    } else {
       null
    }
 }
 
-private fun copyEmploymentEntityToDto(entity: Checklist): ChecklistEmploymentDto? {
+private fun copyEmploymentEntityToDto(entity: Verification): VerificationEmploymentDto? {
    val employment = entity.employment
 
    return if (employment != null) {
-      ChecklistEmploymentDto(entity = employment)
+      VerificationEmploymentDto(entity = employment)
    } else {
       null
    }
 }
 
-private fun copyLandlordDtoToEntity(dto: ChecklistDto): ChecklistLandlord? {
+private fun copyLandlordDtoToEntity(dto: VerificationDto): VerificationLandlord? {
    val landlord = dto.landlord
 
    return if (landlord != null) {
-      ChecklistLandlord(dto = landlord)
+      VerificationLandlord(dto = landlord)
    } else {
       return null
    }
 }
 
-private fun copyLandlordEntityToDto(entity: Checklist): ChecklistLandlordDto? {
+private fun copyLandlordEntityToDto(entity: Verification): VerificationLandlordDto? {
    val landlord = entity.landlord
 
    return if (landlord != null) {
-      ChecklistLandlordDto(entity = landlord)
+      VerificationLandlordDto(entity = landlord)
    } else {
       null
    }
