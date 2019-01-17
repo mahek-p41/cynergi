@@ -22,7 +22,7 @@ class VerificationLandlordRepository(
 ) : Repository<VerificationLandlord> {
    private val logger: Logger = LoggerFactory.getLogger(VerificationLandlordRepository::class.java)
    private val simpleVerificationLandlordRowMapper = VerificationLandlordRowMapper()
-   private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(rowPrefix = "cl_")
+   private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(rowPrefix = "vl_")
 
    override fun findOne(id: Long): VerificationLandlord? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationLandlordRowMapper)
@@ -113,7 +113,7 @@ class VerificationLandlordRepository(
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationLandlord? =
-      rs.getString("cl_id")?.let { prefixedVerificationLandlordRowMapper.mapRow(rs, row) }
+      rs.getString("vl_id")?.let { prefixedVerificationLandlordRowMapper.mapRow(rs, row) }
 }
 
 private class VerificationLandlordRowMapper(

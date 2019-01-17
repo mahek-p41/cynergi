@@ -33,75 +33,75 @@ class VerificationRepository @Inject constructor(
 
    @Language("PostgreSQL")
    private val selectAllBase = """
-          SELECT
-            c.id AS c_id,
-            c.uu_row_id AS c_uu_row_id,
-            c.time_created AS c_time_created,
-            c.time_updated AS c_time_updated,
-            c.customer_account AS c_customer_account,
-            c.customer_comments AS c_customer_comments,
-            c.verified_by AS c_verified_by,
-            c.verified_time AS c_verified_time,
-            c.company AS c_company,
-            va.id AS ca_id,
-            va.uu_row_id AS ca_uu_row_id,
-            va.time_created AS ca_time_created,
-            va.time_updated AS ca_time_updated,
-            va.address AS ca_address,
-            va.comment AS ca_comment,
-            va.dealer_phone AS ca_dealer_phone,
-            va.diff_address AS ca_diff_address,
-            va.diff_employee AS ca_diff_employee,
-            va.diff_phone AS ca_diff_phone,
-            va.dmv_verify AS ca_dmv_verify,
-            va.employer AS ca_employer,
-            va.last_payment AS ca_last_payment,
-            va.name AS ca_name,
-            va.next_payment AS ca_next_payment,
-            va.note AS ca_note,
-            va.payment_frequency AS ca_payment_frequency,
-            va.payment AS ca_payment,
-            va.pending_action AS ca_pending_action,
-            va.phone AS ca_phone,
-            va.previous_loan AS ca_previous_loan,
-            va.purchase_date AS ca_purchase_date,
-            va.related AS ca_related,
-            ve.id AS ce_id,
-            ve.uu_row_id AS ce_uu_row_id,
-            ve.time_created AS ce_time_created,
-            ve.time_updated AS ce_time_updated,
-            ve.department AS ce_department,
-            ve.hire_date AS ce_hire_date,
-            ve.leave_message AS ce_leave_message,
-            ve.name AS ce_name,
-            ve.reliable AS ce_reliable,
-            ve.title AS ce_title,
-            vl.id AS cl_id,
-            vl.uu_row_id AS cl_uu_row_id,
-            vl.time_created AS cl_time_created,
-            vl.time_updated AS cl_time_updated,
-            vl.address AS cl_address,
-            vl.alt_phone AS cl_alt_phone,
-            vl.lease_type AS cl_lease_type,
-            vl.leave_message AS cl_leave_message,
-            vl.length AS cl_length,
-            vl.name AS cl_name,
-            vl.paid_rent AS cl_paid_rent,
-            vl.phone AS cl_phone,
-            vl.reliable AS cl_reliable,
-            vl.rent AS cl_rent
-         FROM verification c
-            LEFT OUTER JOIN verification_auto va
-              ON c.auto_id = va.id
-            LEFT OUTER JOIN verification_employment ve
-              ON c.employment_id = ve.id
-            LEFT OUTER JOIN verification_landlord vl
-              ON c.landlord_id = vl.id
-         """.trimIndent()
+       SELECT
+         v.id AS v_id,
+         v.uu_row_id AS v_uu_row_id,
+         v.time_created AS v_time_created,
+         v.time_updated AS v_time_updated,
+         v.customer_account AS v_customer_account,
+         v.customer_comments AS v_customer_comments,
+         v.verified_by AS v_verified_by,
+         v.verified_time AS v_verified_time,
+         v.company AS v_company,
+         va.id AS va_id,
+         va.uu_row_id AS va_uu_row_id,
+         va.time_created AS va_time_created,
+         va.time_updated AS va_time_updated,
+         va.address AS va_address,
+         va.comment AS va_comment,
+         va.dealer_phone AS va_dealer_phone,
+         va.diff_address AS va_diff_address,
+         va.diff_employee AS va_diff_employee,
+         va.diff_phone AS va_diff_phone,
+         va.dmv_verify AS va_dmv_verify,
+         va.employer AS va_employer,
+         va.last_payment AS va_last_payment,
+         va.name AS va_name,
+         va.next_payment AS va_next_payment,
+         va.note AS va_note,
+         va.payment_frequency AS va_payment_frequency,
+         va.payment AS va_payment,
+         va.pending_action AS va_pending_action,
+         va.phone AS va_phone,
+         va.previous_loan AS va_previous_loan,
+         va.purchase_date AS va_purchase_date,
+         va.related AS va_related,
+         ve.id AS ve_id,
+         ve.uu_row_id AS ve_uu_row_id,
+         ve.time_created AS ve_time_created,
+         ve.time_updated AS ve_time_updated,
+         ve.department AS ve_department,
+         ve.hire_date AS ve_hire_date,
+         ve.leave_message AS ve_leave_message,
+         ve.name AS ve_name,
+         ve.reliable AS ve_reliable,
+         ve.title AS ve_title,
+         vl.id AS vl_id,
+         vl.uu_row_id AS vl_uu_row_id,
+         vl.time_created AS vl_time_created,
+         vl.time_updated AS vl_time_updated,
+         vl.address AS vl_address,
+         vl.alt_phone AS vl_alt_phone,
+         vl.lease_type AS vl_lease_type,
+         vl.leave_message AS vl_leave_message,
+         vl.length AS vl_length,
+         vl.name AS vl_name,
+         vl.paid_rent AS vl_paid_rent,
+         vl.phone AS vl_phone,
+         vl.reliable AS vl_reliable,
+         vl.rent AS vl_rent
+      FROM verification v
+         LEFT OUTER JOIN verification_auto va
+           ON v.auto_id = va.id
+         LEFT OUTER JOIN verification_employment ve
+           ON v.employment_id = ve.id
+         LEFT OUTER JOIN verification_landlord vl
+           ON v.landlord_id = vl.id
+      """.trimIndent()
 
    init {
        selectAllRowMapper = VerificationRowMapper(
-          rowPrefix = "c_",
+          rowPrefix = "v_",
           verificationAutoRepository = verificationAutoRepository,
           verificationEmploymentRepository = verificationEmploymentRepository,
           verificationLandlordRepository = verificationLandlordRepository
@@ -110,7 +110,7 @@ class VerificationRepository @Inject constructor(
 
    override fun findOne(id: Long): Verification? {
       val found: Verification? = jdbc.findFirstOrNull(
-         "$selectAllBase \nWHERE c.id = :id", Maps.mutable.ofPairs("id" to id),
+         "$selectAllBase \nWHERE v.id = :id", Maps.mutable.ofPairs("id" to id),
          selectAllRowMapper
       )
 
@@ -137,7 +137,7 @@ class VerificationRepository @Inject constructor(
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
       val found = jdbc.findFirstOrNull(
-         "$selectAllBase \nWHERE c.customer_account = :customerAccount".trimIndent(),
+         "$selectAllBase \nWHERE v.customer_account = :customerAccount".trimIndent(),
          Maps.mutable.ofPairs("customerAccount" to customerAccount),
          selectAllRowMapper
       )

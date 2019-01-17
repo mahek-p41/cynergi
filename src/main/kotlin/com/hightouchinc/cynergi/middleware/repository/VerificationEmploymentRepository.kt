@@ -24,7 +24,7 @@ class VerificationEmploymentRepository(
 ) : Repository<VerificationEmployment> {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper()
-   private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(rowPrefix = "ce_")
+   private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(rowPrefix = "ve_")
 
    override fun findOne(id: Long): VerificationEmployment? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment ce WHERE ce.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationEmploymentRowMapper)
@@ -104,7 +104,7 @@ class VerificationEmploymentRepository(
    }
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationEmployment? =
-      rs.getString("ce_id")?.let { prefixedVerificationEmploymentRowMapper.mapRow(rs, row) }
+      rs.getString("ve_id")?.let { prefixedVerificationEmploymentRowMapper.mapRow(rs, row) }
 }
 
 private class VerificationEmploymentRowMapper(
