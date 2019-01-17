@@ -5,8 +5,6 @@ import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.extensions.isNotEmpty
 import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
-import org.eclipse.collections.api.list.ImmutableList
-import org.eclipse.collections.impl.factory.Lists
 import javax.inject.Singleton
 
 @Singleton
@@ -16,7 +14,7 @@ class <%= entity %>Validator(
 
    @Throws(ValidationException::class)
    fun validateSave(dto: <%= entity %>Dto) {
-      val errors: ImmutableList<ValidationError> = Lists.immutable.empty()
+      val errors: Set<ValidationError> = setOf()
 
       if (errors.isNotEmpty()) {
          throw ValidationException(errors)
@@ -25,21 +23,21 @@ class <%= entity %>Validator(
 
    @Throws(ValidationException::class)
    fun validateUpdate(dto: <%= entity %>Dto) {
-      val errors = Lists.mutable.of<ValidationError>()
+      val errors = mutableSetOf<ValidationError>()
       val id = dto.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", ErrorCodes.Validation.NOT_NULL, Lists.immutable.of("id")))
+         errors.add(element = ValidationError("id", ErrorCodes.Validation.NOT_NULL, listOf("id")))
       } else {
          val existing<%= entity %>: <%= entity %>Dto? = <%= repository %>Service.fetchById(id = id)
 
          if (existing<%= entity %> == null) {
-            errors.add(element = ValidationError("id", ErrorCodes.System.NOT_FOUND, Lists.immutable.of(id)))
+            errors.add(element = ValidationError("id", ErrorCodes.System.NOT_FOUND, listOf(id)))
          }
       }
 
       if (errors.isNotEmpty()) {
-         throw ValidationException(errors = errors.toImmutable())
+         throw ValidationException(errors = errors)
       }
    }
 }

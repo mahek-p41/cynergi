@@ -35,7 +35,7 @@ class VerificationValidatorSpecification extends Specification {
       1 * verificationService.exists(verificationDto.customerAccount) >> true
       final def validationException = thrown(ValidationException)
       validationException.errors.size() == 1
-      validationException.errors[0].arguments == Lists.immutable.of(verificationDto.customerAccount)
+      validationException.errors[0].arguments == [verificationDto.customerAccount]
       validationException.errors[0].path == "cust_acct"
       validationException.errors[0].messageTemplate == ErrorCodes.Cynergi.DUPLICATE
    }

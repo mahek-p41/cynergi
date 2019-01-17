@@ -2,8 +2,6 @@ package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
-import com.hightouchinc.cynergi.middleware.dto.helper.EntityProxiedIdentifiableDto
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
@@ -26,7 +24,7 @@ data class Verification(
    val auto: VerificationAuto?,
    val employment: VerificationEmployment?,
    val landlord: VerificationLandlord?,
-   val references: MutableSet<VerificationReference> = mutableSetOf() // eclipse collection set is used here because it uses much less memory than the java stdlib set implementations which are just wrappers around Map implementations
+   val references: MutableSet<VerificationReference> = mutableSetOf()
 ) : Entity {
    constructor(dto: VerificationDto, company: String) :
       this(
@@ -39,7 +37,9 @@ data class Verification(
          auto = copyAutoDtoToEntity(dto = dto),
          employment = copyEmploymentDtoToEntity(dto = dto),
          landlord = copyLandlordDtoToEntity(dto = dto)
-      )
+      ) {
+      dto.references.map { VerificationReference(it, this) }
+   }
 
    override fun entityId(): Long? = id
 
@@ -83,7 +83,7 @@ data class VerificationDto(
    @field:Size(max = 6)
    @field:JsonDeserialize(contentAs = VerificationReferenceDto::class)
    @field:JsonProperty("checklist_references")
-   val references: kotlin.collections.MutableSet<IdentifiableDto> = mutableSetOf() // have to use a stdlib set because can't currently get Jackson to understand an eclipse collection
+   val references: MutableSet<VerificationReferenceDto> = mutableSetOf()
 
 ) : DataTransferObjectBase<VerificationDto>() {
    constructor(entity: Verification) :
@@ -96,7 +96,7 @@ data class VerificationDto(
          auto = copyAutoEntityToDto(entity = entity),
          employment = copyEmploymentEntityToDto(entity = entity),
          landlord = copyLandlordEntityToDto(entity = entity),
-         references = entity.references.asSequence().map { EntityProxiedIdentifiableDto(it) }.toMutableSet()
+         references = entity.references.asSequence().map { VerificationReferenceDto(it) }.toMutableSet()
       )
 
    override fun copyMe(): VerificationDto = this.copy()

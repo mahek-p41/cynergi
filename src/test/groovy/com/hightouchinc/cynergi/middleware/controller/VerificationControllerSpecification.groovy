@@ -8,6 +8,7 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
 
+import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmpty
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpRequest.PUT
@@ -28,10 +29,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result == verificationDto
-      result.properties.findAll {
-         it.value == null ||
-            (it.value instanceof Collection && it.value.size() == 0)
-      }.size() == 0 //check that none of the properties on the result are null
+      allPropertiesFullAndNotEmpty(result)
       result.references.size() == 6
    }
 
@@ -55,7 +53,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result == verificationDto
-      result.properties.findAll { it.value == null }.size() == 0 //check that none of the properties on the result are null
+      allPropertiesFullAndNotEmpty(result)
    }
 
    void "fetch one verification by customer account not found" () {
@@ -113,7 +111,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
          null,
          null,
          null,
-         Sets.mutable.empty()
+         [] as Set
       )
 
       when:

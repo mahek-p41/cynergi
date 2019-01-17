@@ -1,9 +1,6 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.hightouchinc.cynergi.middleware.dto.helper.EntityProxiedIdentifiableDto
-import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
-import com.hightouchinc.cynergi.middleware.entity.helper.DtoProxiedIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
@@ -29,7 +26,7 @@ data class VerificationReference (
    val verification: IdentifiableEntity
 ) : Entity {
 
-   constructor(dto: VerificationReferenceDto) :
+   constructor(dto: VerificationReferenceDto, parent: Verification) :
       this(
          id = dto.id,
          address = dto.address,
@@ -41,7 +38,7 @@ data class VerificationReference (
          reliable = dto.reliable,
          timeFrame = dto.timeFrame,
          verifyPhone = dto.verifyPhone,
-         verification = DtoProxiedIdentifiableEntity(proxy = dto.verification)
+         verification = parent
       )
 
    override fun entityId(): Long? = id
@@ -84,9 +81,7 @@ data class VerificationReferenceDto (
 
    val timeFrame: Int?,
 
-   val verifyPhone: Boolean?,
-
-   val verification: IdentifiableDto
+   val verifyPhone: Boolean?
 
 ) : DataTransferObjectBase<VerificationReferenceDto>() {
 
@@ -101,11 +96,20 @@ data class VerificationReferenceDto (
          relationship = entity.relationship,
          reliable = entity.reliable,
          timeFrame = entity.timeFrame,
-         verifyPhone = entity.verifyPhone,
-         verification = EntityProxiedIdentifiableDto(proxy = entity.verification)
+         verifyPhone = entity.verifyPhone
       )
 
    override fun copyMe(): VerificationReferenceDto = copy()
 
    override fun dtoId(): Long? = id
+
+   override fun hashCode(): Int = Objects.hashCode(uuRowId)
+
+   override fun equals(other: Any?): Boolean {
+      return when {
+         this === other -> true
+         other is VerificationReferenceDto -> this.uuRowId == other.uuRowId
+         else -> false
+      }
+   }
 }

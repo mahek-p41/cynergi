@@ -1,7 +1,6 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.entity.helper.EntityProxiedIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.repository.VerificationReferenceRepository
@@ -37,7 +36,7 @@ class VerificationReferenceTestDataLoader {
             bool.bool(),
             num.numberBetween(1, 20),
             bool.bool(),
-            new EntityProxiedIdentifiableEntity(verificationRef)
+            verificationRef
          )
       }
    }
