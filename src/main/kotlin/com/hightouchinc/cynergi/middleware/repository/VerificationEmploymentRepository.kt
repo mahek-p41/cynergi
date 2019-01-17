@@ -3,11 +3,9 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
-import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -27,7 +25,7 @@ class VerificationEmploymentRepository(
    private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(rowPrefix = "ve_")
 
    override fun findOne(id: Long): VerificationEmployment? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment ce WHERE ce.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationEmploymentRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment ce WHERE ce.id = :id", mapOf("id" to id), simpleVerificationEmploymentRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -35,7 +33,7 @@ class VerificationEmploymentRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
@@ -51,7 +49,7 @@ class VerificationEmploymentRepository(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "department" to entity.department,
             "hire_date" to entity.hireDate,
             "leave_message" to entity.leaveMessage,
@@ -79,7 +77,7 @@ class VerificationEmploymentRepository(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "id" to entity.id,
             "department" to entity.department,
             "hire_date" to entity.hireDate,

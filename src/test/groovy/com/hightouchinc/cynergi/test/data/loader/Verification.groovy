@@ -2,9 +2,9 @@ package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.entity.Verification
+import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.repository.VerificationRepository
 import groovy.transform.CompileStatic
-import org.eclipse.collections.impl.factory.Sets
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,7 +35,7 @@ class VerificationTestDataLoader {
             generateAuto ? VerificationAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationAuto") } : null,
             generateEmployment ? VerificationEmploymentTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationEmployment") } : null,
             generateLandlord ? VerificationLandlordTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationLandlord") } : null,
-            Sets.mutable.empty()
+            new HashSet<VerificationReference>()
          )
 
          if (generateReferences) {
@@ -56,9 +56,8 @@ class VerificationDataLoaderService {
    VerificationDataLoaderService(VerificationRepository verificationRepository) {
       this.verificationRepository = verificationRepository
    }
-
-   Stream<Verification> stream(int number = 1, boolean generateAuto = true, boolean generateEmployment = true, generateLandlord = true) {
-      return VerificationTestDataLoader.stream(number)
+   Stream<Verification> stream(int number = 1, boolean generateAuto = true, boolean generateEmployment = true, boolean generateLandlord = true, boolean generateReferences = true) {
+      return VerificationTestDataLoader.stream(number, generateAuto, generateEmployment, generateLandlord, generateReferences)
          .map {
             verificationRepository.insert(it)
          }

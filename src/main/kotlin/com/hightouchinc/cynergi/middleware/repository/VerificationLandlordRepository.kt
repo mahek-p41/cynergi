@@ -3,10 +3,8 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.VerificationLandlord
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
-import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -25,7 +23,7 @@ class VerificationLandlordRepository(
    private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(rowPrefix = "vl_")
 
    override fun findOne(id: Long): VerificationLandlord? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationLandlordRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord ca WHERE ca.id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -33,7 +31,7 @@ class VerificationLandlordRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
@@ -49,7 +47,7 @@ class VerificationLandlordRepository(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "address" to entity.address,
             "alt_phone" to entity.altPhone,
             "lease_type" to entity.leaseType,
@@ -85,7 +83,7 @@ class VerificationLandlordRepository(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "id" to entity.id,
             "address" to entity.address,
             "alt_phone" to entity.altPhone,

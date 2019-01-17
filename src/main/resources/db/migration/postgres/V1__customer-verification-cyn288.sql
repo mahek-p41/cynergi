@@ -104,7 +104,7 @@ EXECUTE PROCEDURE last_updated_column_fn();
 ALTER TABLE verification
    ADD CONSTRAINT verification_customer_account_uq UNIQUE (customer_account);
 
-CREATE TABLE verification_references (
+CREATE TABLE verification_reference (
    id             BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id      UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created   TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -120,8 +120,8 @@ CREATE TABLE verification_references (
    verify_phone   BOOLEAN,
    verification_id   BIGINT REFERENCES verification(id)        NOT NULL
 );
-CREATE TRIGGER update_verification_references_trg
+CREATE TRIGGER update_verification_reference_trg
    BEFORE UPDATE
-   ON verification_references
+   ON verification_reference
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();

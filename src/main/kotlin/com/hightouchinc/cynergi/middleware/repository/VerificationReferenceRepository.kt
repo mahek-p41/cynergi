@@ -1,12 +1,10 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
+import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
-import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
-import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -25,7 +23,7 @@ class VerificationReferenceRepository @Inject constructor(
    private val simpleVerificationReferenceRowMapper = VerificationReferenceRowMapper()
 
    override fun findOne(id: Long): VerificationReference? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationReferenceRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference ca WHERE ca.id = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -33,7 +31,7 @@ class VerificationReferenceRepository @Inject constructor(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
@@ -49,7 +47,7 @@ class VerificationReferenceRepository @Inject constructor(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "address" to entity.address,
             "has_home_phone" to entity.hasHomePhone,
             "known" to entity.known,
@@ -85,7 +83,7 @@ class VerificationReferenceRepository @Inject constructor(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "id" to entity.id,
             "address" to entity.address,
             "has_home_phone" to entity.hasHomePhone,
@@ -111,7 +109,7 @@ private class VerificationReferenceRowMapper : RowMapper<VerificationReference> 
          timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
          timeUpdated = rs.getObject("time_updated", OffsetDateTime::class.java),
          address = rs.getBoolean("address"),
-         hasHomePhone = rs.getBoolean("has_home_address"),
+         hasHomePhone = rs.getBoolean("has_home_phone"),
          known = rs.getInt("known"),
          leaveMessage = rs.getBoolean("leave_message"),
          rating = rs.getString("rating"),

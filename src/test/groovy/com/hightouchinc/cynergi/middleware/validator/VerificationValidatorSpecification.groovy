@@ -4,7 +4,6 @@ import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.VerificationService
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
-import org.eclipse.collections.impl.factory.Lists
 import spock.lang.Specification
 
 class VerificationValidatorSpecification extends Specification {

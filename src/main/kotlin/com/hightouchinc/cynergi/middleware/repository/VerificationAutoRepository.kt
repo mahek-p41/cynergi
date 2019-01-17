@@ -3,11 +3,9 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
-import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.eclipse.collections.impl.factory.Maps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -27,7 +25,7 @@ class VerificationAutoRepository(
    private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(rowPrefix = "va_")
 
    override fun findOne(id: Long): VerificationAuto? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto ca WHERE ca.id = :id", Maps.mutable.ofPairs("id" to id), simpleVerificationAutoRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto ca WHERE ca.id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -35,7 +33,7 @@ class VerificationAutoRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", Maps.mutable.ofPairs("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
@@ -53,7 +51,7 @@ class VerificationAutoRepository(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "address" to entity.address,
             "comment" to entity.comment,
             "dealerPhone" to entity.dealerPhone,
@@ -109,7 +107,7 @@ class VerificationAutoRepository(
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "id" to entity.id,
             "address" to entity.address,
             "comment" to entity.comment,

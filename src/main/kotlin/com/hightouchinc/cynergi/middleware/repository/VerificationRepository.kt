@@ -3,11 +3,9 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
-import com.hightouchinc.cynergi.middleware.extensions.ofPairs
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
-import org.eclipse.collections.impl.factory.Maps
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,7 +22,8 @@ class VerificationRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val verificationAutoRepository: VerificationAutoRepository,
    private val verificationEmploymentRepository: VerificationEmploymentRepository,
-   private val verificationLandlordRepository: VerificationLandlordRepository
+   private val verificationLandlordRepository: VerificationLandlordRepository,
+   private val verificationReferenceRepository: VerificationReferenceRepository
 ) : Repository<Verification> {
 
    private val selectAllRowMapper: RowMapper<Verification>
@@ -110,7 +109,7 @@ class VerificationRepository @Inject constructor(
 
    override fun findOne(id: Long): Verification? {
       val found: Verification? = jdbc.findFirstOrNull(
-         "$selectAllBase \nWHERE v.id = :id", Maps.mutable.ofPairs("id" to id),
+         "$selectAllBase \nWHERE v.id = :id", mapOf("id" to id),
          selectAllRowMapper
       )
 
@@ -128,7 +127,7 @@ class VerificationRepository @Inject constructor(
    }
 
    fun exists(customerAccount: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customerAccount)", mapOf("customerAccount" to customerAccount), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customer_account)", mapOf("customer_account" to customerAccount), Boolean::class.java)!!
 
       logger.debug("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
 
@@ -137,8 +136,8 @@ class VerificationRepository @Inject constructor(
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
       val found = jdbc.findFirstOrNull(
-         "$selectAllBase \nWHERE v.customer_account = :customerAccount".trimIndent(),
-         Maps.mutable.ofPairs("customerAccount" to customerAccount),
+         "$selectAllBase \nWHERE v.customer_account = :customer_account".trimIndent(),
+         mapOf("customer_account" to customerAccount),
          selectAllRowMapper
       )
 
@@ -152,7 +151,7 @@ class VerificationRepository @Inject constructor(
       val auto = entity.auto?.let { verificationAutoRepository.insert(entity = it) }
       val employment = entity.employment?.let { verificationEmploymentRepository.insert(entity = it) }
       val landlord = entity.landlord?.let { verificationLandlordRepository.insert(entity = it) }
-      val paramMap = Maps.mutable.ofPairs(
+      val paramMap = mapOf(
          "customer_account" to entity.customerAccount,
          "customer_comments" to entity.customerComments,
          "verified_by" to entity.verifiedBy,
@@ -163,7 +162,7 @@ class VerificationRepository @Inject constructor(
       )
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO Verification (customer_account, customer_comments, verified_by, company, auto_id, employment_id, landlord_id)
+         INSERT INTO verification (customer_account, customer_comments, verified_by, company, auto_id, employment_id, landlord_id)
          VALUES(:customer_account, :customer_comments, :verified_by, :company, :auto_id, :employment_id, :landlord_id)
          RETURNING
             *
@@ -172,8 +171,10 @@ class VerificationRepository @Inject constructor(
          simpleVerificationRowMapper
       )
 
-      return if (auto != null || employment != null || landlord != null) {
-         inserted.copy(auto = auto, employment = employment, landlord = landlord)
+      val references = entity.references.asSequence().map { verificationReferenceRepository.insert(it.copy(verification = inserted)) }.toMutableSet()
+
+      return if (auto != null || employment != null || landlord != null || references.isNotEmpty()) {
+         inserted.copy(auto = auto, employment = employment, landlord = landlord, references = references)
       } else {
          inserted
       }
@@ -192,22 +193,22 @@ class VerificationRepository @Inject constructor(
       }
 
       val updated = jdbc.updateReturning("""
-         UPDATE Verification
+         UPDATE verification
          SET
-            customer_account = :customerAccount,
-            customer_comments = :customerComments,
-            verified_by = :verifiedBy,
-            verified_time = :verifiedTime
+            customer_account = :customer_account,
+            customer_comments = :customer_comments,
+            verified_by = :verified_by,
+            verified_time = :verified_time
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
-         Maps.mutable.ofPairs(
+         mapOf(
             "id" to entity.id,
-            "customerAccount" to entity.customerAccount,
-            "customerComments" to entity.customerComments,
-            "verifiedBy" to entity.verifiedBy,
-            "verifiedTime" to verifiedTime,
+            "customer_account" to entity.customerAccount,
+            "customer_comments" to entity.customerComments,
+            "verified_by" to entity.verifiedBy,
+            "verified_time" to verifiedTime,
             "company" to entity.company
          ),
          simpleVerificationRowMapper

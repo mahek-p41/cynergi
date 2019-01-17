@@ -39,9 +39,6 @@ dependencies {
    compile "org.springframework:spring-jdbc:5.0.10.RELEASE"
    compile "io.swagger.core.v3:swagger-annotations"
    compile "org.postgresql:postgresql:42.2.5"
-   compile "org.eclipse.collections:eclipse-collections-api:9.2.0"
-   compile "org.eclipse.collections:eclipse-collections:9.2.0"
-   compile "com.fasterxml.jackson.datatype:jackson-datatype-eclipse-collections:2.9.7"
    compile "org.apache.commons:commons-lang3:3.8.1"
 
    kapt "io.micronaut.configuration:micronaut-openapi"

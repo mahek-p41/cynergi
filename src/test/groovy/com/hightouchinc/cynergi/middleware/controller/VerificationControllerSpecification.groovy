@@ -7,7 +7,6 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
-import org.eclipse.collections.impl.factory.Sets
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
@@ -29,7 +28,11 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result == verificationDto
-      result.properties.findAll { it.value == null }.size() == 0 //check that none of the properties on the result are null
+      result.properties.findAll {
+         it.value == null ||
+            (it.value instanceof Collection && it.value.size() == 0)
+      }.size() == 0 //check that none of the properties on the result are null
+      result.references.size() == 6
    }
 
    void "fetch one verification by id not found" () {

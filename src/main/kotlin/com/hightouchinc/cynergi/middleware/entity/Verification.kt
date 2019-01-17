@@ -4,12 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
 import com.hightouchinc.cynergi.middleware.dto.helper.EntityProxiedIdentifiableDto
-import com.hightouchinc.cynergi.middleware.dto.helper.SimpleIdentifiableDto
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
-import org.eclipse.collections.api.set.MutableSet
-import org.eclipse.collections.impl.factory.Sets
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.annotation.Nullable
@@ -29,7 +26,7 @@ data class Verification(
    val auto: VerificationAuto?,
    val employment: VerificationEmployment?,
    val landlord: VerificationLandlord?,
-   val references: MutableSet<VerificationReference> = Sets.mutable.empty() // eclipse collection set is used here because it uses much less memory than the java stdlib set implementations which are just wrappers around Map implementations
+   val references: MutableSet<VerificationReference> = mutableSetOf() // eclipse collection set is used here because it uses much less memory than the java stdlib set implementations which are just wrappers around Map implementations
 ) : Entity {
    constructor(dto: VerificationDto, company: String) :
       this(
@@ -84,7 +81,7 @@ data class VerificationDto(
 
    @field:Nullable
    @field:Size(max = 6)
-   @field:JsonDeserialize(contentAs = SimpleIdentifiableDto::class)
+   @field:JsonDeserialize(contentAs = VerificationReferenceDto::class)
    @field:JsonProperty("checklist_references")
    val references: kotlin.collections.MutableSet<IdentifiableDto> = mutableSetOf() // have to use a stdlib set because can't currently get Jackson to understand an eclipse collection
 

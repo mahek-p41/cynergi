@@ -53,7 +53,7 @@ class ErrorHandler @Inject constructor(
 
       return badRequest(
          validationException.errors.map {
-            val jsonError = JsonError(localizationService.localize(it.messageTemplate, locale, it.arguments.castToList().toTypedArray()))
+            val jsonError = JsonError(localizationService.localize(it.messageTemplate, locale, it.arguments.toTypedArray()))
 
             jsonError.path(it.path)
 
