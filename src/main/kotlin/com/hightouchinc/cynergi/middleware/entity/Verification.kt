@@ -2,9 +2,9 @@ package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.hightouchinc.cynergi.middleware.dto.EntityProxiedIdentifiableDto
 import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
-import com.hightouchinc.cynergi.middleware.dto.SimpleIdentifiableDto
+import com.hightouchinc.cynergi.middleware.dto.helper.EntityProxiedIdentifiableDto
+import com.hightouchinc.cynergi.middleware.dto.helper.SimpleIdentifiableDto
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE

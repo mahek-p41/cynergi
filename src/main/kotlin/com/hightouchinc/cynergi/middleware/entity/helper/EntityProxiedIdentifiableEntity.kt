@@ -1,4 +1,6 @@
-package com.hightouchinc.cynergi.middleware.entity
+package com.hightouchinc.cynergi.middleware.entity.helper
+
+import com.hightouchinc.cynergi.middleware.entity.IdentifiableEntity
 
 class EntityProxiedIdentifiableEntity(
    private val proxy: IdentifiableEntity

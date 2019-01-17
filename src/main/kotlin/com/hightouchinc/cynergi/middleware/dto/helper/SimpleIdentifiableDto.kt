@@ -1,6 +1,7 @@
-package com.hightouchinc.cynergi.middleware.dto
+package com.hightouchinc.cynergi.middleware.dto.helper
 
 import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
+import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
 
 @DataTransferObject
 data class SimpleIdentifiableDto(

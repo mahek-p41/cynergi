@@ -1,8 +1,9 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.hightouchinc.cynergi.middleware.dto.EntityProxiedIdentifiableDto
+import com.hightouchinc.cynergi.middleware.dto.helper.EntityProxiedIdentifiableDto
 import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
+import com.hightouchinc.cynergi.middleware.entity.helper.DtoProxiedIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
