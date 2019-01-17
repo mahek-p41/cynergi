@@ -225,3 +225,16 @@ running instance of Postgres (and any other 3rd party dependencies), and make re
 defined by the `@Controller`'s to determine if the result is correct.  These tests will have the most value when it comes
 to determining if a feature can be shipped as they will define the contract the API is providing, and checking that the
 API is actually fulfilling that contract.
+
+## Helpers
+* `npx yo cyn:entity new_table`
+  * Will generate 
+    * NewTableEntity.kt
+    * NewTableRepository.kt 
+    * NewTableTestDataloader.groovy
+* `npx yo cyn:controller new_table`
+  * Will generate
+    * NewTableController.kt
+    * NewTableService.kt
+    * NewTableValidator.kt
+    * NewControllerSpecification.groovy
