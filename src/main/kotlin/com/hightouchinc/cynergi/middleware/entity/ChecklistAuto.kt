@@ -12,9 +12,9 @@ import javax.validation.constraints.Size
 
 data class ChecklistAuto(
    val id: Long? = null,
-   val uuRowId: UUID? = UUID.randomUUID(),
-   val timeCreated: OffsetDateTime? = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime? = timeCreated,
+   val uuRowId: UUID = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime = timeCreated,
    val address: Boolean?,
    val comment: String?,
    val dealerPhone: String?,

@@ -11,7 +11,7 @@ import java.util.stream.Stream
 
 @CompileStatic
 class <%= entity %>TestDataLoader {
-   static Stream<<%= entity %>> stream(int number =1) {
+   static Stream<<%= entity %>> stream(int number = 1) {
       final int value = number > 0 ? number : 1
 
       return IntStream.range(0, value).mapToObj {

@@ -111,14 +111,14 @@ CREATE TABLE checklist_references (
    time_updated   TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    address        BOOLEAN,
    has_home_phone BOOLEAN,
-   known          INTEGER,
-   leave_msg      BOOLEAN,
+   known          INTEGER, -- years known?
+   leave_message  BOOLEAN,
    rating         VARCHAR(3),
    relationship   BOOLEAN,
    reliable       BOOLEAN,
    time_frame     INTEGER,
    verify_phone   BOOLEAN,
-   checklist_id   BIGINT                                 NOT NULL
+   checklist_id   BIGINT REFERENCES checklist(id)        NOT NULL
 );
 CREATE TRIGGER update_checklist_references_trg
    BEFORE UPDATE

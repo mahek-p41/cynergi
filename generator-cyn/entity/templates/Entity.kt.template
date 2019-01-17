@@ -1,16 +1,16 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.POSITIVE_NUMBER_REQUIRED
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.Positive
 
 data class <%= entity %> (
    val id: Long? = null,
-   val uuRowId: UUID? = UUID.randomUUID(),
-   val timeCreated: OffsetDateTime? = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime? = timeCreated
+   val uuRowId: UUID = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime = timeCreated
 ) : Entity {
 
    constructor(dto: <%= entity %>Dto) :

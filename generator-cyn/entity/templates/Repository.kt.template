@@ -14,7 +14,7 @@ import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
-class <%= entity %>Repository(
+class <%= entity %>Repository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<<%= entity %>> {
    private val logger: Logger = LoggerFactory.getLogger(<%= entity %>Repository::class.java)
@@ -38,12 +38,34 @@ class <%= entity %>Repository(
 
    override fun insert(entity: <%= entity %>): <%= entity %> {
       logger.trace("Inserting {}", entity)
-      TODO("not implemented")
+
+      return jdbc.insertReturning("""
+         INSERT INTO <%= table %>()
+         VALUES ()
+         RETURNING
+            *
+         """.trimIndent(),
+         Maps.mutable.ofPairs(),
+         simple<%= entity %>RowMapper
+      )
    }
 
    override fun update(entity: <%= entity %>): <%= entity %> {
       logger.trace("Updating {}", entity)
-      TODO("not implemented")
+
+      return jdbc.updateReturning("""
+         UPDATE <%= table %>
+         SET
+
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         Maps.mutable.ofPairs(
+            "id" to entity.id
+         ),
+         simple<%= entity %>RowMapper
+      )
    }
 }
 
