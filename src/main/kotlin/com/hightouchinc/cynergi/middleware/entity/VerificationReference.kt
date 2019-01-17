@@ -1,6 +1,8 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.hightouchinc.cynergi.middleware.dto.EntityProxiedIdentifiableDto
+import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
@@ -23,7 +25,7 @@ data class VerificationReference (
    val reliable: Boolean?,
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
-   val verificationId: Long
+   val verification: IdentifiableEntity
 ) : Entity {
 
    constructor(dto: VerificationReferenceDto) :
@@ -38,7 +40,7 @@ data class VerificationReference (
          reliable = dto.reliable,
          timeFrame = dto.timeFrame,
          verifyPhone = dto.verifyPhone,
-         verificationId = dto.verificationId
+         verification = DtoProxiedIdentifiableEntity(proxy = dto.verification)
       )
 
    override fun entityId(): Long? = id
@@ -48,9 +50,9 @@ data class VerificationReference (
    override fun hashCode(): Int = Objects.hashCode(uuRowId)
 
    override fun equals(other: Any?): Boolean {
-      return when (other) {
-          this -> true
-          is VerificationReference -> this.uuRowId == other.uuRowId
+      return when {
+          this === other -> true
+          other is VerificationReference -> this.uuRowId == other.uuRowId
           else -> false
       }
    }
@@ -83,7 +85,7 @@ data class VerificationReferenceDto (
 
    val verifyPhone: Boolean?,
 
-   val verificationId: Long
+   val verification: IdentifiableDto
 
 ) : DataTransferObjectBase<VerificationReferenceDto>() {
 
@@ -99,8 +101,10 @@ data class VerificationReferenceDto (
          reliable = entity.reliable,
          timeFrame = entity.timeFrame,
          verifyPhone = entity.verifyPhone,
-         verificationId = entity.verificationId
+         verification = EntityProxiedIdentifiableDto(proxy = entity.verification)
       )
 
    override fun copyMe(): VerificationReferenceDto = copy()
+
+   override fun dtoId(): Long? = id
 }

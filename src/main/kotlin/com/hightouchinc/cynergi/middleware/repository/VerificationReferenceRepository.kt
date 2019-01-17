@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
+import com.hightouchinc.cynergi.middleware.entity.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
@@ -58,7 +59,7 @@ class VerificationReferenceRepository @Inject constructor(
             "reliable" to entity.reliable,
             "time_frame" to entity.timeFrame,
             "verify_phone" to entity.verifyPhone,
-            "verification_id" to entity.verificationId
+            "verification_id" to entity.verification.entityId()
          ),
          simpleVerificationReferenceRowMapper
       )
@@ -95,7 +96,7 @@ class VerificationReferenceRepository @Inject constructor(
             "reliable" to entity.reliable,
             "time_frame" to entity.timeFrame,
             "verify_phone" to entity.verifyPhone,
-            "verification_id" to entity.verificationId
+            "verification_id" to entity.verification.entityId()
          ),
          simpleVerificationReferenceRowMapper
       )
@@ -118,6 +119,6 @@ private class VerificationReferenceRowMapper : RowMapper<VerificationReference> 
          reliable = rs.getBoolean("reliable"),
          timeFrame = rs.getInt("time_frame"),
          verifyPhone = rs.getBoolean("verify_phone"),
-         verificationId = rs.getLong("verification_id")
+         verification = SimpleIdentifiableEntity(id = rs.getLong("verification_id"))
       )
 }

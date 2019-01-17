@@ -68,4 +68,6 @@ data class VerificationEmploymentDto(
       )
 
    override fun copyMe(): VerificationEmploymentDto = copy()
+
+   override fun dtoId(): Long? = id
 }

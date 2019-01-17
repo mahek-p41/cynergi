@@ -145,4 +145,6 @@ data class VerificationAutoDto(
       )
 
    override fun copyMe(): VerificationAutoDto = copy()
+
+   override fun dtoId(): Long? = id
 }

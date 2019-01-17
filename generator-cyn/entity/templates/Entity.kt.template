@@ -36,4 +36,6 @@ data class <%= entity %>Dto (
       )
 
    override fun copyMe(): <%= entity %>Dto = copy()
+
+   override fun dtoId(): Long? = id
 }

@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
+import com.hightouchinc.cynergi.middleware.entity.EntityProxiedIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.repository.VerificationReferenceRepository
@@ -13,12 +14,13 @@ import java.util.stream.Stream
 
 @CompileStatic
 class VerificationReferenceTestDataLoader {
-   static Stream<VerificationReference> stream(Verification verification, int number = 1) {
+   static Stream<VerificationReference> stream(Verification verification = null, int number = 1) {
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def bool = faker.bool()
       final def num = faker.number()
       final def lorem = faker.lorem()
+      final Verification verificationRef = verification != null ? verification : VerificationTestDataLoader.stream(1, false, false, false, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       return IntStream.range(0, value).mapToObj {
          new VerificationReference(
@@ -35,7 +37,7 @@ class VerificationReferenceTestDataLoader {
             bool.bool(),
             num.numberBetween(1, 20),
             bool.bool(),
-            verification.id
+            new EntityProxiedIdentifiableEntity(verificationRef)
          )
       }
    }

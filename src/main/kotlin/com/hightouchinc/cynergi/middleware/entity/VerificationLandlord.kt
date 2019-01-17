@@ -95,4 +95,6 @@ data class VerificationLandlordDto (
       )
 
    override fun copyMe(): VerificationLandlordDto = copy()
+
+   override fun dtoId(): Long? = id
 }

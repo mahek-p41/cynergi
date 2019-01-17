@@ -9,19 +9,20 @@ import org.eclipse.collections.impl.factory.Sets
 import javax.inject.Inject
 import javax.inject.Singleton
 import java.time.OffsetDateTime
+import java.util.stream.Collectors
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
 @CompileStatic
 class VerificationTestDataLoader {
-   static Stream<Verification> stream(int number = 1, boolean generateAuto = true, boolean generateEmployment = true, generateLandlord = true) {
+   static Stream<Verification> stream(int number = 1, boolean generateAuto = true, boolean generateEmployment = true, boolean generateLandlord = true, boolean generateReferences = true) {
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def numberFaker = faker.number()
       final def chuckNorris = faker.chuckNorris()
 
       return IntStream.range(0, value).mapToObj {
-         new Verification(
+         final def verification = new Verification(
             null,
             UUID.randomUUID(),
             OffsetDateTime.now(),
@@ -36,6 +37,12 @@ class VerificationTestDataLoader {
             generateLandlord ? VerificationLandlordTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationLandlord") } : null,
             Sets.mutable.empty()
          )
+
+         if (generateReferences) {
+            verification.references.addAll(VerificationReferenceTestDataLoader.stream(verification, 6).collect(Collectors.toList()))
+         }
+
+         return verification
       }
    }
 }

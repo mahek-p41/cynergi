@@ -1,6 +1,10 @@
 package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.hightouchinc.cynergi.middleware.dto.EntityProxiedIdentifiableDto
+import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
+import com.hightouchinc.cynergi.middleware.dto.SimpleIdentifiableDto
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
@@ -25,7 +29,7 @@ data class Verification(
    val auto: VerificationAuto?,
    val employment: VerificationEmployment?,
    val landlord: VerificationLandlord?,
-   val references: MutableSet<VerificationReference> = Sets.mutable.empty()
+   val references: MutableSet<VerificationReference> = Sets.mutable.empty() // eclipse collection set is used here because it uses much less memory than the java stdlib set implementations which are just wrappers around Map implementations
 ) : Entity {
    constructor(dto: VerificationDto, company: String) :
       this(
@@ -78,7 +82,11 @@ data class VerificationDto(
    @field:JsonProperty("checklist_landlord")
    var landlord: VerificationLandlordDto?,
 
-   val references: kotlin.collections.MutableSet<VerificationReferenceDto> = mutableSetOf()
+   @field:Nullable
+   @field:Size(max = 6)
+   @field:JsonDeserialize(contentAs = SimpleIdentifiableDto::class)
+   @field:JsonProperty("checklist_references")
+   val references: kotlin.collections.MutableSet<IdentifiableDto> = mutableSetOf() // have to use a stdlib set because can't currently get Jackson to understand an eclipse collection
 
 ) : DataTransferObjectBase<VerificationDto>() {
    constructor(entity: Verification) :
@@ -90,12 +98,13 @@ data class VerificationDto(
          verifiedTime = entity.verifiedTime,
          auto = copyAutoEntityToDto(entity = entity),
          employment = copyEmploymentEntityToDto(entity = entity),
-         landlord = copyLandlordEntityToDto(entity = entity)
+         landlord = copyLandlordEntityToDto(entity = entity),
+         references = entity.references.asSequence().map { EntityProxiedIdentifiableDto(it) }.toMutableSet()
       )
 
-   override fun copyMe(): VerificationDto {
-      return this.copy()
-   }
+   override fun copyMe(): VerificationDto = this.copy()
+
+   override fun dtoId(): Long? = id
 }
 
 /*
