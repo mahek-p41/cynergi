@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntit
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -21,9 +22,10 @@ class VerificationReferenceRepository @Inject constructor(
 ) : Repository<VerificationReference> {
    private val logger: Logger = LoggerFactory.getLogger(VerificationReferenceRepository::class.java)
    private val simpleVerificationReferenceRowMapper = VerificationReferenceRowMapper()
+   private val prefixedVerificationReferenceRowMapper = VerificationReferenceRowMapper("vr_")
 
    override fun findOne(id: Long): VerificationReference? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference ca WHERE ca.id = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference WHERE vid = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -99,24 +101,29 @@ class VerificationReferenceRepository @Inject constructor(
          simpleVerificationReferenceRowMapper
       )
    }
+
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationReference? =
+      rs.getString("vr_id")?.let { prefixedVerificationReferenceRowMapper.mapRow(rs, row) }
 }
 
-private class VerificationReferenceRowMapper : RowMapper<VerificationReference> {
+private class VerificationReferenceRowMapper(
+   private val rowPrefix: String = EMPTY
+) : RowMapper<VerificationReference> {
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationReference =
       VerificationReference(
-         id = rs.getLong("id"),
-         uuRowId = rs.getObject("uu_row_id", UUID::class.java),
-         timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),
-         timeUpdated = rs.getObject("time_updated", OffsetDateTime::class.java),
-         address = rs.getBoolean("address"),
-         hasHomePhone = rs.getBoolean("has_home_phone"),
-         known = rs.getInt("known"),
-         leaveMessage = rs.getBoolean("leave_message"),
-         rating = rs.getString("rating"),
-         relationship = rs.getBoolean("relationship"),
-         reliable = rs.getBoolean("reliable"),
-         timeFrame = rs.getInt("time_frame"),
-         verifyPhone = rs.getBoolean("verify_phone"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("verification_id"))
+         id = rs.getLong("${rowPrefix}id"),
+         uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
+         timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),
+         timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
+         address = rs.getBoolean("${rowPrefix}address"),
+         hasHomePhone = rs.getBoolean("${rowPrefix}has_home_phone"),
+         known = rs.getInt("${rowPrefix}known"),
+         leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
+         rating = rs.getString("${rowPrefix}rating"),
+         relationship = rs.getBoolean("${rowPrefix}relationship"),
+         reliable = rs.getBoolean("${rowPrefix}reliable"),
+         timeFrame = rs.getInt("${rowPrefix}time_frame"),
+         verifyPhone = rs.getBoolean("${rowPrefix}verify_phone"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
       )
 }

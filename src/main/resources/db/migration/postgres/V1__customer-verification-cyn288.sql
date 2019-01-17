@@ -105,23 +105,24 @@ ALTER TABLE verification
    ADD CONSTRAINT verification_customer_account_uq UNIQUE (customer_account);
 
 CREATE TABLE verification_reference (
-   id             BIGSERIAL                              NOT NULL PRIMARY KEY,
-   uu_row_id      UUID        DEFAULT uuid_generate_v1() NOT NULL,
-   time_created   TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   time_updated   TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   address        BOOLEAN,
-   has_home_phone BOOLEAN,
-   known          INTEGER, -- years known?
-   leave_message  BOOLEAN,
-   rating         VARCHAR(3),
-   relationship   BOOLEAN,
-   reliable       BOOLEAN,
-   time_frame     INTEGER,
-   verify_phone   BOOLEAN,
-   verification_id   BIGINT REFERENCES verification(id)        NOT NULL
+   id              BIGSERIAL                              NOT NULL PRIMARY KEY,
+   uu_row_id       UUID        DEFAULT uuid_generate_v1() NOT NULL,
+   time_created    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+   time_updated    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+   address         BOOLEAN,
+   has_home_phone  BOOLEAN,
+   known           INTEGER, -- years known?
+   leave_message   BOOLEAN,
+   rating          VARCHAR(3),
+   relationship    BOOLEAN,
+   reliable        BOOLEAN,
+   time_frame      INTEGER,
+   verify_phone    BOOLEAN,
+   verification_id BIGINT REFERENCES verification(id)     NOT NULL
 );
 CREATE TRIGGER update_verification_reference_trg
    BEFORE UPDATE
    ON verification_reference
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
+CREATE INDEX ON verification_reference (verification_id);

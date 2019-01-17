@@ -23,7 +23,7 @@ class VerificationLandlordRepository(
    private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(rowPrefix = "vl_")
 
    override fun findOne(id: Long): VerificationLandlord? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord ca WHERE ca.id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord WHERE id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -110,7 +110,7 @@ class VerificationLandlordRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationLandlord? =
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationLandlord? =
       rs.getString("vl_id")?.let { prefixedVerificationLandlordRowMapper.mapRow(rs, row) }
 }
 

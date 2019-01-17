@@ -25,7 +25,7 @@ class VerificationAutoRepository(
    private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(rowPrefix = "va_")
 
    override fun findOne(id: Long): VerificationAuto? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto ca WHERE ca.id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto WHERE id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -144,7 +144,7 @@ class VerificationAutoRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int): VerificationAuto? =
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationAuto? =
       rs.getString("va_id")?.let { prefixedVerificationAutoRowMapper.mapRow(rs, row) }
 }
 

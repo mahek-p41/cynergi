@@ -1,7 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Verification
-import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -32,7 +31,7 @@ class VerificationRepository @Inject constructor(
 
    @Language("PostgreSQL")
    private val selectAllBase = """
-       SELECT
+      SELECT
          v.id AS v_id,
          v.uu_row_id AS v_uu_row_id,
          v.time_created AS v_time_created,
@@ -88,7 +87,21 @@ class VerificationRepository @Inject constructor(
          vl.paid_rent AS vl_paid_rent,
          vl.phone AS vl_phone,
          vl.reliable AS vl_reliable,
-         vl.rent AS vl_rent
+         vl.rent AS vl_rent,
+         vr.id AS vr_id,
+         vr.uu_row_id AS vr_uu_row_id,
+         vr.time_created AS vr_time_created,
+         vr.time_updated AS vr_time_updated,
+         vr.address AS vr_address,
+         vr.has_home_phone AS vr_has_home_phone,
+         vr.known AS vr_known,
+         vr.leave_message AS vr_leave_message,
+         vr.rating AS vr_rating,
+         vr.relationship AS vr_relationship,
+         vr.reliable AS vr_reliable,
+         vr.time_frame AS vr_time_frame,
+         vr.verify_phone AS vr_verify_phone,
+         vr.verification_id AS vr_verification_id
       FROM verification v
          LEFT OUTER JOIN verification_auto va
            ON v.auto_id = va.id
@@ -96,6 +109,8 @@ class VerificationRepository @Inject constructor(
            ON v.employment_id = ve.id
          LEFT OUTER JOIN verification_landlord vl
            ON v.landlord_id = vl.id
+         JOIN verification_reference vr
+           ON v.id = vr.verification_id
       """.trimIndent()
 
    init {
@@ -108,12 +123,33 @@ class VerificationRepository @Inject constructor(
    }
 
    override fun findOne(id: Long): Verification? {
-      val found: Verification? = jdbc.findFirstOrNull(
-         "$selectAllBase \nWHERE v.id = :id", mapOf("id" to id),
-         selectAllRowMapper
-      )
+      var found: Verification? = null
+
+      jdbc.query("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs ->
+         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)!!
+
+         found = verification
+
+         verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+      }
 
       logger.trace("Searched for {} found {}", id, found)
+
+      return found
+   }
+
+   fun findByCustomerAccount(customerAccount: String): Verification? {
+      var found: Verification? = null
+
+      jdbc.query( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs ->
+         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)!!
+
+         found = verification
+
+         verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+      }
+
+      logger.debug("search for verification through Customer Account: {} resulted in {}", customerAccount, found)
 
       return found
    }
@@ -132,18 +168,6 @@ class VerificationRepository @Inject constructor(
       logger.debug("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
 
       return exists
-   }
-
-   fun findByCustomerAccount(customerAccount: String): Verification? {
-      val found = jdbc.findFirstOrNull(
-         "$selectAllBase \nWHERE v.customer_account = :customer_account".trimIndent(),
-         mapOf("customer_account" to customerAccount),
-         selectAllRowMapper
-      )
-
-      logger.debug("search for verification through Customer Account: {} resulted in {}", customerAccount, found)
-
-      return found
    }
 
    @Transactional
