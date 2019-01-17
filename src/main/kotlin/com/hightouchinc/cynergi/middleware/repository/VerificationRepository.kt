@@ -142,7 +142,7 @@ class VerificationRepository @Inject constructor(
          selectAllRowMapper
       )
 
-      logger.debug("search for verification through Customer Aaccount: {} resulted in {}", customerAccount, found)
+      logger.debug("search for verification through Customer Account: {} resulted in {}", customerAccount, found)
 
       return found
    }
