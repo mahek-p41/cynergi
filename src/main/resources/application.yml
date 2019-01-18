@@ -1,6 +1,11 @@
 micronaut:
    application:
       name: cynergi-middleware
+jackson:
+   serialization:
+      writeDatesAsTimestamps: false
+   deserialization:
+      failOnUnknownProperties: false
 datasources:
    default:
       driverClassName: org.postgresql.Driver

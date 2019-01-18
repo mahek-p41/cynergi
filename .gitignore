@@ -215,3 +215,4 @@ out/
 .settings
 .classpath
 .attach_pid*
+node_modules

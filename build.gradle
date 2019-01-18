@@ -1,15 +1,14 @@
 plugins {
    id "io.spring.dependency-management" version "1.0.6.RELEASE"
-   id "com.github.johnrengelman.shadow" version "4.0.2"
+   id "com.github.johnrengelman.shadow" version "4.0.3"
    id "org.jetbrains.kotlin.jvm" version "1.3.11"
    id "org.jetbrains.kotlin.kapt" version "1.3.11"
    id "org.jetbrains.kotlin.plugin.allopen" version "1.3.11"
    id "org.jetbrains.kotlin.plugin.noarg" version "1.3.11"
    id "jacoco"
+   id "application"
+   id "groovy"
 }
-
-apply plugin: "application"
-apply plugin: "groovy"
 
 version "0.1"
 group "cynergi.middleware"
@@ -22,19 +21,7 @@ repositories {
 
 dependencyManagement {
    imports {
-      mavenBom 'io.micronaut:micronaut-bom:1.0.2'
-   }
-}
-
-jacoco {
-   toolVersion = "0.8.2"
-}
-
-sourceSets {
-   test {
-      groovy {
-         srcDirs += ["src/ft/groovy"]
-      }
+      mavenBom 'io.micronaut:micronaut-bom:1.0.3'
    }
 }
 
@@ -49,11 +36,10 @@ dependencies {
    
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
-   compile "org.springframework:spring-jdbc:5.1.3.RELEASE"
+   compile "org.springframework:spring-jdbc:5.0.10.RELEASE"
    compile "io.swagger.core.v3:swagger-annotations"
    compile "org.postgresql:postgresql:42.2.5"
-   compile "org.eclipse.collections:eclipse-collections-api:9.2.0"
-   compile "org.eclipse.collections:eclipse-collections:9.2.0"
+   compile "org.apache.commons:commons-lang3:3.8.1"
 
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
@@ -61,7 +47,7 @@ dependencies {
    kaptTest "io.micronaut:micronaut-inject-java"
 
    runtime "ch.qos.logback:logback-classic:1.2.3"
-   runtime "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4.1"
+   runtime "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.7"
 
    testCompile "org.spockframework:spock-core:1.2-groovy-2.5"
    testCompile "io.micronaut:micronaut-runtime-groovy"
@@ -76,9 +62,13 @@ shadowJar {
    mergeServiceFiles()
 }
 
-run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1')
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dmicronaut.environments=local')
 
 mainClassName = "com.hightouchinc.cynergi.middleware.Application"
+
+jacoco {
+   toolVersion = "0.8.2"
+}
 
 allOpen {
    annotation("io.micronaut.aop.Around")
@@ -103,4 +93,10 @@ compileTestKotlin {
       jvmTarget = '1.8'
       javaParameters = true
    }
+}
+
+tasks.withType(JavaExec) {
+   // Assign all Java system properties from
+   // the command line to the JavaExec task.
+   systemProperties System.properties
 }

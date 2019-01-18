@@ -7,7 +7,7 @@ micronaut:
             mappings: /swagger/**
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:5432/cynergidb"
+      url: "jdbc:postgresql://localhost:6432/cynergidb"
       username: postgres
       password: password
       maximumPoolSize: 1
