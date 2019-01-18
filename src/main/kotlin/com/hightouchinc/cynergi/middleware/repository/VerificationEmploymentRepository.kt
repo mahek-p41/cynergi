@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
+import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
@@ -44,8 +45,8 @@ class VerificationEmploymentRepository(
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO verification_employment(department, hire_date, leave_message, name, reliable, title)
-         VALUES(:department, :hire_date, :leave_message, :name, :reliable, :title)
+         INSERT INTO verification_employment(department, hire_date, leave_message, name, reliable, title, verification_id)
+         VALUES(:department, :hire_date, :leave_message, :name, :reliable, :title, :verification_id)
          RETURNING
             *
          """.trimIndent(),
@@ -55,7 +56,8 @@ class VerificationEmploymentRepository(
             "leave_message" to entity.leaveMessage,
             "name" to entity.name,
             "reliable" to entity.reliable,
-            "title" to entity.title
+            "title" to entity.title,
+            "verification_id" to entity.verification.entityId()
          ),
          simpleVerificationEmploymentRowMapper
       )
@@ -117,6 +119,7 @@ private class VerificationEmploymentRowMapper(
          leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
          name = rs.getString("${rowPrefix}name"),
          reliable = rs.getBoolean("${rowPrefix}reliable"),
-         title = rs.getString("${rowPrefix}title")
+         title = rs.getString("${rowPrefix}title"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
       )
 }

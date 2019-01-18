@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
+import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationLandlord
 import com.hightouchinc.cynergi.middleware.repository.VerificationLandlordRepository
 import groovy.transform.CompileStatic
@@ -12,7 +13,8 @@ import java.util.stream.Stream
 
 @CompileStatic
 class VerificationLandlordTestDataLoader {
-   static Stream<VerificationLandlord> stream(int number =1) {
+   static Stream<VerificationLandlord> stream(int number = 1, Verification verificationIn = null) {
+      final Verification verification = verificationIn ?: VerificationTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def bool = faker.bool()
@@ -36,7 +38,8 @@ class VerificationLandlordTestDataLoader {
             lorem.characters(10),
             bool.bool(),
             bool.bool(),
-            num.randomDouble(2, 100, 10000).toBigDecimal()
+            num.randomDouble(2, 100, 10000).toBigDecimal(),
+            verification
          )
       }
    }
@@ -46,13 +49,20 @@ class VerificationLandlordTestDataLoader {
 @CompileStatic
 class VerificationLandlordDataLoaderService {
    private final VerificationLandlordRepository verificationLandlordRepository
+   private final VerificationDataLoaderService verificationDataLoaderService
 
-   VerificationLandlordDataLoaderService(VerificationLandlordRepository verificationLandlordRepository) {
+   VerificationLandlordDataLoaderService(
+      VerificationLandlordRepository verificationLandlordRepository,
+      VerificationDataLoaderService verificationDataLoaderService
+   ) {
       this.verificationLandlordRepository = verificationLandlordRepository
+      this.verificationDataLoaderService = verificationDataLoaderService
    }
 
-   Stream<VerificationLandlord> stream(int number = 1) {
-      return VerificationLandlordTestDataLoader.stream(number)
+   Stream<VerificationLandlord> stream(int number = 1, Verification verificationIn = null) {
+      final Verification verification = verificationIn ?: verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+
+      return VerificationLandlordTestDataLoader.stream(number, verification)
          .map {
             verificationLandlordRepository.insert(it)
          }

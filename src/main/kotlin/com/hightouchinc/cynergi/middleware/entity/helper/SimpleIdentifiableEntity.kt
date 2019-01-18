@@ -9,4 +9,8 @@ data class SimpleIdentifiableEntity(
       this(id = identifiableEntity.entityId())
 
    override fun entityId(): Long? = id
+
+   override fun toString(): String {
+      return "$id"
+   }
 }

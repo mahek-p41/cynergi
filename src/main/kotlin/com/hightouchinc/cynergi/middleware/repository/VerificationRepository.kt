@@ -65,6 +65,7 @@ class VerificationRepository @Inject constructor(
          va.previous_loan AS va_previous_loan,
          va.purchase_date AS va_purchase_date,
          va.related AS va_related,
+         va.verification_id AS va_verification_id,
          ve.id AS ve_id,
          ve.uu_row_id AS ve_uu_row_id,
          ve.time_created AS ve_time_created,
@@ -75,6 +76,7 @@ class VerificationRepository @Inject constructor(
          ve.name AS ve_name,
          ve.reliable AS ve_reliable,
          ve.title AS ve_title,
+         ve.verification_id AS ve_verification_id,
          vl.id AS vl_id,
          vl.uu_row_id AS vl_uu_row_id,
          vl.time_created AS vl_time_created,
@@ -89,6 +91,7 @@ class VerificationRepository @Inject constructor(
          vl.phone AS vl_phone,
          vl.reliable AS vl_reliable,
          vl.rent AS vl_rent,
+         vl.verification_id AS vl_verification_id,
          vr.id AS vr_id,
          vr.uu_row_id AS vr_uu_row_id,
          vr.time_created AS vr_time_created,
@@ -105,11 +108,11 @@ class VerificationRepository @Inject constructor(
          vr.verification_id AS vr_verification_id
       FROM verification v
          LEFT OUTER JOIN verification_auto va
-           ON v.auto_id = va.id
+           ON v.id = va.verification_id
          LEFT OUTER JOIN verification_employment ve
-           ON v.employment_id = ve.id
+           ON v.id = ve.verification_id
          LEFT OUTER JOIN verification_landlord vl
-           ON v.landlord_id = vl.id
+           ON v.id = vl.verification_id
          JOIN verification_reference vr
            ON v.id = vr.verification_id
       """.trimIndent()
@@ -173,22 +176,16 @@ class VerificationRepository @Inject constructor(
 
    @Transactional
    override fun insert(entity: Verification): Verification {
-      val auto = entity.auto?.let { verificationAutoRepository.insert(entity = it) }
-      val employment = entity.employment?.let { verificationEmploymentRepository.insert(entity = it) }
-      val landlord = entity.landlord?.let { verificationLandlordRepository.insert(entity = it) }
       val paramMap = mapOf(
          "customer_account" to entity.customerAccount,
          "customer_comments" to entity.customerComments,
          "verified_by" to entity.verifiedBy,
-         "company" to entity.company,
-         "auto_id" to auto?.id,
-         "employment_id" to employment?.id,
-         "landlord_id" to landlord?.id
+         "company" to entity.company
       )
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO verification (customer_account, customer_comments, verified_by, company, auto_id, employment_id, landlord_id)
-         VALUES(:customer_account, :customer_comments, :verified_by, :company, :auto_id, :employment_id, :landlord_id)
+         INSERT INTO verification (customer_account, customer_comments, verified_by, company)
+         VALUES(:customer_account, :customer_comments, :verified_by, :company)
          RETURNING
             *
          """.trimIndent(),
@@ -196,6 +193,9 @@ class VerificationRepository @Inject constructor(
          simpleVerificationRowMapper
       )
 
+      val auto = entity.auto?.let { verificationAutoRepository.insert(entity = it.copy(verification = inserted)) }
+      val employment = entity.employment?.let { verificationEmploymentRepository.insert(entity = it.copy(verification = inserted)) }
+      val landlord = entity.landlord?.let { verificationLandlordRepository.insert(entity = it.copy(verification = inserted)) }
       val references = entity.references.asSequence().map { verificationReferenceRepository.insert(it.copy(verification = inserted)) }.toMutableSet()
 
       return if (auto != null || employment != null || landlord != null || references.isNotEmpty()) {
@@ -208,9 +208,6 @@ class VerificationRepository @Inject constructor(
    @Transactional
    override fun update(entity: Verification): Verification {
       val existing = findOne(id = entity.id!!)!!
-      val auto = entity.auto?.let { verificationAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
-      val employment = entity.employment?.let { verificationEmploymentRepository.upsert(existing = existing.employment, requestedChange = it) }
-      val landlord = entity.landlord?.let { verificationLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
       val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { null }
 
       val updated = jdbc.updateReturning("""
@@ -235,6 +232,9 @@ class VerificationRepository @Inject constructor(
          simpleVerificationRowMapper
       )
 
+      val auto = entity.auto?.let { verificationAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
+      val employment = entity.employment?.let { verificationEmploymentRepository.upsert(existing = existing.employment, requestedChange = it) }
+      val landlord = entity.landlord?.let { verificationLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
       val references = doReferenceUpdates(entity, updated)
 
       doReferenceDeletes(existing, references)

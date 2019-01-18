@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
+import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
 import com.hightouchinc.cynergi.middleware.repository.VerificationEmploymentRepository
 import groovy.transform.CompileStatic
@@ -14,7 +15,8 @@ import java.util.stream.Stream
 
 @CompileStatic
 class VerificationEmploymentTestDataLoader {
-   static Stream<VerificationEmployment> stream(int number =1) {
+   static Stream<VerificationEmployment> stream(int number = 1, Verification verificationIn = null) {
+      final Verification verification = verificationIn ?: VerificationTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def company = faker.company()
@@ -33,7 +35,8 @@ class VerificationEmploymentTestDataLoader {
             bool.bool(),
             company.name(),
             bool.bool(),
-            job.title()
+            job.title(),
+            verification
          )
       }
    }
@@ -43,13 +46,20 @@ class VerificationEmploymentTestDataLoader {
 @CompileStatic
 class VerificationEmploymentDataLoaderService {
    private final VerificationEmploymentRepository verificationEmploymentRepository
+   private final VerificationDataLoaderService verificationDataLoaderService
 
-   VerificationEmploymentDataLoaderService(VerificationEmploymentRepository verificationEmploymentRepository) {
+   VerificationEmploymentDataLoaderService(
+      VerificationEmploymentRepository verificationEmploymentRepository,
+      VerificationDataLoaderService verificationDataLoaderService
+   ) {
       this.verificationEmploymentRepository = verificationEmploymentRepository
+      this.verificationDataLoaderService = verificationDataLoaderService
    }
 
-   Stream<VerificationEmployment> stream(int number = 1) {
-      return VerificationEmploymentTestDataLoader.stream(number)
+   Stream<VerificationEmployment> stream(int number = 1, Verification verificationIn = null) {
+      final Verification verification = verificationIn ?: verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+
+      return VerificationEmploymentTestDataLoader.stream(number, verification)
          .map {
             verificationEmploymentRepository.insert(it)
          }

@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
+import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
 import com.hightouchinc.cynergi.middleware.repository.VerificationAutoRepository
 import groovy.transform.CompileStatic
@@ -14,7 +15,8 @@ import java.util.stream.Stream
 
 @CompileStatic
 class VerificationAutoTestDataLoader {
-   static Stream<VerificationAuto> stream(int number = 1) {
+   static Stream<VerificationAuto> stream(int number = 1, Verification verificationIn = null) {
+      final Verification verification = verificationIn ?: VerificationTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final int value = number > 0 ? number : 1
       final def faker = new Faker()
       final def bool = faker.bool()
@@ -49,7 +51,8 @@ class VerificationAutoTestDataLoader {
             bool.bool(),
             bool.bool(),
             date.past(90, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            lorem.characters(1, 50)
+            lorem.characters(1, 50),
+            verification
          )
       }
    }
@@ -59,13 +62,20 @@ class VerificationAutoTestDataLoader {
 @CompileStatic
 class VerificationAutoDataLoaderService {
    private final VerificationAutoRepository verificationAutoRepository
+   private final VerificationDataLoaderService verificationDataLoaderService
 
-   VerificationAutoDataLoaderService(VerificationAutoRepository verificationAutoRepository) {
+   VerificationAutoDataLoaderService(
+      VerificationAutoRepository verificationAutoRepository,
+      VerificationDataLoaderService verificationDataLoaderService
+   ) {
       this.verificationAutoRepository = verificationAutoRepository
+      this.verificationDataLoaderService = verificationDataLoaderService
    }
 
-   Stream<VerificationAuto> stream(int number = 1) {
-      return VerificationAutoTestDataLoader.stream(number)
+   Stream<VerificationAuto> stream(int number = 1, Verification verificationIn = null) {
+      final Verification verification = verificationIn ?: verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+
+      return VerificationAutoTestDataLoader.stream(number, verification)
          .map {
             verificationAutoRepository.insert(it)
          }

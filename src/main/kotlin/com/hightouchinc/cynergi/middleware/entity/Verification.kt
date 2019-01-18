@@ -23,9 +23,9 @@ data class Verification(
    val verifiedBy: String, // TODO convert from soft foreign key to employee
    val verifiedTime: OffsetDateTime,
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
-   val auto: VerificationAuto?,
-   val employment: VerificationEmployment?,
-   val landlord: VerificationLandlord?,
+   var auto: VerificationAuto? = null,
+   var employment: VerificationEmployment? = null,
+   var landlord: VerificationLandlord? = null,
    val references: MutableSet<VerificationReference> = mutableSetOf()
 ) : Entity<Verification> {
    constructor(dto: VerificationDto, company: String) :
@@ -35,12 +35,12 @@ data class Verification(
          customerComments = dto.customerComments,
          verifiedBy = dto.verifiedBy!!,
          verifiedTime = dto.verifiedTime!!,
-         company = company,
-         auto = copyAutoDtoToEntity(dto = dto),
-         employment = copyEmploymentDtoToEntity(dto = dto),
-         landlord = copyLandlordDtoToEntity(dto = dto)
+         company = company
       ) {
 
+      this.auto = copyAutoDtoToEntity(dto = dto, parent = this)
+      this.employment = copyEmploymentDtoToEntity(dto = dto, parent = this)
+      this.landlord = copyLandlordDtoToEntity(dto = dto, parent = this)
       this.references.addAll( dto.references.map { VerificationReference(it, this) } )
    }
 
@@ -116,11 +116,11 @@ data class VerificationDto(
  * of the way the verification data associations are managed.
  */
 
-private fun copyAutoDtoToEntity(dto: VerificationDto): VerificationAuto? {
+private fun copyAutoDtoToEntity(dto: VerificationDto, parent: Verification): VerificationAuto? {
    val auto = dto.auto
 
    return if (auto != null) {
-      VerificationAuto(dto = auto)
+      VerificationAuto(dto = auto, verification = parent)
    } else {
       null
    }
@@ -136,11 +136,11 @@ private fun copyAutoEntityToDto(entity: Verification): VerificationAutoDto? {
    }
 }
 
-private fun copyEmploymentDtoToEntity(dto: VerificationDto): VerificationEmployment? {
+private fun copyEmploymentDtoToEntity(dto: VerificationDto, parent: Verification): VerificationEmployment? {
    val employment = dto.employment
 
    return if (employment != null) {
-      VerificationEmployment(dto = employment)
+      VerificationEmployment(dto = employment, verification = parent)
    } else {
       null
    }
@@ -156,11 +156,11 @@ private fun copyEmploymentEntityToDto(entity: Verification): VerificationEmploym
    }
 }
 
-private fun copyLandlordDtoToEntity(dto: VerificationDto): VerificationLandlord? {
+private fun copyLandlordDtoToEntity(dto: VerificationDto, parent: Verification): VerificationLandlord? {
    val landlord = dto.landlord
 
    return if (landlord != null) {
-      VerificationLandlord(dto = landlord)
+      VerificationLandlord(dto = landlord, verification = parent)
    } else {
       return null
    }

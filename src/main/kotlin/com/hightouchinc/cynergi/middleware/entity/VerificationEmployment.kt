@@ -19,9 +19,10 @@ data class VerificationEmployment(
    val leaveMessage: Boolean?,
    val name: String?,
    val reliable: Boolean?,
-   val title: String?
+   val title: String?,
+   val verification: IdentifiableEntity
 ) : Entity<VerificationEmployment> {
-   constructor(dto: VerificationEmploymentDto) :
+   constructor(dto: VerificationEmploymentDto, verification: IdentifiableEntity) :
       this(
          id = dto.id,
          department = dto.department,
@@ -29,7 +30,8 @@ data class VerificationEmployment(
          leaveMessage = dto.leaveMessage,
          name = dto.name,
          reliable = dto.reliable,
-         title = dto.title
+         title = dto.title,
+         verification = verification
       )
 
    override fun entityId(): Long? = id

@@ -26,10 +26,11 @@ data class VerificationLandlord (
    val paidRent: String?,
    val phone: Boolean?,
    val reliable: Boolean?,
-   val rent: BigDecimal
+   val rent: BigDecimal,
+   val verification: IdentifiableEntity
 ) : Entity<VerificationLandlord> {
 
-   constructor(dto: VerificationLandlordDto) :
+   constructor(dto: VerificationLandlordDto, verification: IdentifiableEntity) :
       this(
          id = dto.id,
          address = dto.address,
@@ -41,7 +42,8 @@ data class VerificationLandlord (
          paidRent = dto.paidRent,
          phone = dto.phone,
          reliable = dto.reliable,
-         rent = dto.rent
+         rent = dto.rent,
+         verification = verification
       )
 
    override fun entityId(): Long? = id

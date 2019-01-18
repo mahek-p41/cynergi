@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
+import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
@@ -46,8 +47,8 @@ class VerificationAutoRepository(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO verification_auto(address, comment, dealer_phone, diff_address, diff_employee, diff_phone, dmv_verify, employer, last_payment, name, next_payment, note, payment_frequency, payment, pending_action, phone, previous_loan, purchase_date, related)
-         VALUES (:address, :comment, :dealerPhone, :diffAddress, :diffEmployee, :diffPhone, :dmvVerify, :employer, :lastPayment, :name, :nextPayment, :note, :paymentFrequency, :payment, :pendingAction, :phone, :previousLoan, :purchaseDate, :related)
+         INSERT INTO verification_auto(address, comment, dealer_phone, diff_address, diff_employee, diff_phone, dmv_verify, employer, last_payment, name, next_payment, note, payment_frequency, payment, pending_action, phone, previous_loan, purchase_date, related, verification_id)
+         VALUES (:address, :comment, :dealerPhone, :diffAddress, :diffEmployee, :diffPhone, :dmvVerify, :employer, :lastPayment, :name, :nextPayment, :note, :paymentFrequency, :payment, :pendingAction, :phone, :previousLoan, :purchaseDate, :related, :verification_id)
          RETURNING
             *
          """.trimIndent(),
@@ -70,7 +71,8 @@ class VerificationAutoRepository(
             "phone" to entity.phone,
             "previousLoan" to entity.previousLoan,
             "purchaseDate" to entity.purchaseDate,
-            "related" to entity.related
+            "related" to entity.related,
+            "verification_id" to entity.verification.entityId()
          ),
          simpleVerificationAutoRowMapper
       )
@@ -173,6 +175,7 @@ private class VerificationAutoRowMapper(
          phone = rs.getBoolean("${rowPrefix}phone"),
          previousLoan = rs.getBoolean("${rowPrefix}previous_loan"),
          purchaseDate = rs.getObject("${rowPrefix}purchase_date", LocalDate::class.java),
-         related = rs.getString("${rowPrefix}related")
+         related = rs.getString("${rowPrefix}related"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
       )
 }

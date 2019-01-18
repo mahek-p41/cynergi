@@ -2,6 +2,9 @@ package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.entity.Verification
+import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
+import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
+import com.hightouchinc.cynergi.middleware.entity.VerificationLandlord
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.repository.VerificationRepository
 import groovy.transform.CompileStatic
@@ -32,11 +35,15 @@ class VerificationTestDataLoader {
             numberFaker.digits(6),
             OffsetDateTime.now(),
             numberFaker.digits(6),
-            generateAuto ? VerificationAutoTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationAuto") } : null,
-            generateEmployment ? VerificationEmploymentTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationEmployment") } : null,
-            generateLandlord ? VerificationLandlordTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create VerificationLandlord") } : null,
+            null,
+            null,
+            null,
             new HashSet<VerificationReference>()
          )
+
+         verification.auto = generateAuto ? VerificationAutoTestDataLoader.stream(1, verification).findFirst().orElseThrow { new Exception("Unable to create VerificationAuto") } : null as VerificationAuto
+         verification.employment = generateEmployment ? VerificationEmploymentTestDataLoader.stream(1, verification).findFirst().orElseThrow { new Exception("Unable to create VerificationEmployment") } : null as VerificationEmployment
+         verification.landlord = generateLandlord ? VerificationLandlordTestDataLoader.stream(1, verification).findFirst().orElseThrow { new Exception("Unable to create VerificationLandlord") } : null as VerificationLandlord
 
          if (generateReferences) {
             verification.references.addAll(VerificationReferenceTestDataLoader.stream(verification, 6).collect(Collectors.toList()))

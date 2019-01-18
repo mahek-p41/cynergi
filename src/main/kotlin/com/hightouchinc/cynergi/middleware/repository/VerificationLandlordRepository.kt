@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.VerificationLandlord
+import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
@@ -42,8 +43,8 @@ class VerificationLandlordRepository(
       logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO verification_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent)
-         VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent)
+         INSERT INTO verification_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent, verification_id)
+         VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent, :verification_id)
          RETURNING
             *
          """.trimIndent(),
@@ -57,7 +58,8 @@ class VerificationLandlordRepository(
             "paid_rent" to entity.paidRent,
             "phone" to entity.phone,
             "reliable" to entity.reliable,
-            "rent" to entity.rent
+            "rent" to entity.rent,
+            "verification_id" to entity.verification.entityId()
          ),
          simpleVerificationLandlordRowMapper
       )
@@ -130,6 +132,7 @@ private class VerificationLandlordRowMapper(
          paidRent = rs.getString("${rowPrefix}paid_rent"),
          phone = rs.getBoolean("${rowPrefix}phone"),
          reliable = rs.getBoolean("${rowPrefix}reliable"),
-         rent = rs.getBigDecimal("${rowPrefix}rent")
+         rent = rs.getBigDecimal("${rowPrefix}rent"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
       )
 }
