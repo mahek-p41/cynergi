@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller.spi
 
-import com.hightouchinc.cynergi.test.data.loader.TruncateDatabaseService
+import com.hightouchinc.cynergi.test.service.TruncateDatabaseService
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.DefaultHttpClient

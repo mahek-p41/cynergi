@@ -1,4 +1,4 @@
-package com.hightouchinc.cynergi.test.data.loader
+package com.hightouchinc.cynergi.test.service
 
 import io.micronaut.context.annotation.Requires
 import io.micronaut.spring.tx.annotation.Transactional
