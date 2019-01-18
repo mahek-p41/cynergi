@@ -7,10 +7,12 @@ import java.util.UUID
  * The advantage of defining this as an interface is that a Kotlin Data Class can implement it and not have any
  * collisions with the getters and setters it will automatically generate.
  */
-interface Entity : IdentifiableEntity {
+interface Entity<ENTITY> : IdentifiableEntity {
 
    /**
     * retrieve the system generated UUID assigned to each row
     */
    fun rowId(): UUID
+
+   fun copyMe(): ENTITY
 }

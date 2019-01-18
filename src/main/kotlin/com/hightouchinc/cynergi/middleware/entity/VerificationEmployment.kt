@@ -17,8 +17,7 @@ data class VerificationEmployment(
    val name: String?,
    val reliable: Boolean?,
    val title: String?
-) : Entity {
-
+) : Entity<VerificationEmployment> {
    constructor(dto: VerificationEmploymentDto) :
       this(
          id = dto.id,
@@ -33,6 +32,8 @@ data class VerificationEmployment(
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
+
+   override fun copyMe(): VerificationEmployment = copy()
 }
 
 data class VerificationEmploymentDto(

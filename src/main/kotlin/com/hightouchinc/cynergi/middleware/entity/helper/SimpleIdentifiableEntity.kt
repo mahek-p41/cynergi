@@ -2,8 +2,11 @@ package com.hightouchinc.cynergi.middleware.entity.helper
 
 import com.hightouchinc.cynergi.middleware.entity.IdentifiableEntity
 
-class SimpleIdentifiableEntity(
+data class SimpleIdentifiableEntity(
    private val id: Long?
 ) : IdentifiableEntity {
+   constructor(identifiableEntity: IdentifiableEntity) :
+      this(id = identifiableEntity.entityId())
+
    override fun entityId(): Long? = id
 }

@@ -25,7 +25,7 @@ data class Verification(
    val employment: VerificationEmployment?,
    val landlord: VerificationLandlord?,
    val references: MutableSet<VerificationReference> = mutableSetOf()
-) : Entity {
+) : Entity<Verification> {
    constructor(dto: VerificationDto, company: String) :
       this(
          id = dto.id,
@@ -39,12 +39,14 @@ data class Verification(
          landlord = copyLandlordDtoToEntity(dto = dto)
       ) {
 
-      this.references.addAll(dto.references.map { VerificationReference(it, this) })
+      this.references.addAll( dto.references.map { VerificationReference(it, this) } )
    }
 
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
+
+   override fun copyMe(): Verification = copy()
 }
 
 data class VerificationDto(

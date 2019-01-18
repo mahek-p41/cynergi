@@ -23,9 +23,8 @@ data class VerificationReference (
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
    val verification: IdentifiableEntity
-) : Entity {
-
-   constructor(dto: VerificationReferenceDto, parent: Verification) :
+) : Entity<VerificationReference> {
+   constructor(dto: VerificationReferenceDto, parent: IdentifiableEntity) :
       this(
          id = dto.id,
          address = dto.address,
@@ -43,6 +42,8 @@ data class VerificationReference (
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
+
+   override fun copyMe(): VerificationReference  = copy()
 
    override fun hashCode(): Int = Objects.hashCode(uuRowId)
 

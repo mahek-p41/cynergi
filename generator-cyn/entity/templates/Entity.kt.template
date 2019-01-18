@@ -11,7 +11,7 @@ data class <%= entity %> (
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated
-) : Entity {
+) : Entity<<%= entity %>> {
 
    constructor(dto: <%= entity %>Dto) :
       this(
@@ -21,6 +21,8 @@ data class <%= entity %> (
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
+
+   override fun copyMe(): <%= entity %> = copy()
 }
 
 data class <%= entity %>Dto (
@@ -35,7 +37,7 @@ data class <%= entity %>Dto (
          id = entity.id
       )
 
-   override fun copyMe(): <%= entity %>Dto = copy()
-
    override fun dtoId(): Long? = id
+
+   override fun copyMe(): <%= entity %>Dto = copy()
 }

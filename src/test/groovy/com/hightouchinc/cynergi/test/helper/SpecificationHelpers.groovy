@@ -16,4 +16,15 @@ class SpecificationHelpers {
             )
       }.size() == 0
    }
+
+   static boolean allPropertiesFullAndNotEmptyExcept(Object obj, String ...except) {
+      final def exceptions = new HashSet(except.collect())
+
+      return obj.properties.findAll { !exceptions.contains(it.key) }.findAll {
+         it.value == null ||
+            (
+               (it.value instanceof Collection || it.value instanceof Map) && it.value.size() < 1
+            )
+      }.size() == 0
+   }
 }

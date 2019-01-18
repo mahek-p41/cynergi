@@ -34,8 +34,7 @@ data class VerificationAuto(
    val previousLoan: Boolean?,
    val purchaseDate: LocalDate?,
    val related: String?
-) : Entity {
-
+) : Entity<VerificationAuto> {
    constructor(dto: VerificationAutoDto) :
       this(
          id = dto.id,
@@ -63,6 +62,8 @@ data class VerificationAuto(
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
+
+   override fun copyMe(): VerificationAuto = copy()
 }
 
 data class VerificationAutoDto(

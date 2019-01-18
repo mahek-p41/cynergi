@@ -1,10 +1,12 @@
 package com.hightouchinc.cynergi.middleware.repository
 
+import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,11 +27,24 @@ class VerificationReferenceRepository @Inject constructor(
    private val prefixedVerificationReferenceRowMapper = VerificationReferenceRowMapper("vr_")
 
    override fun findOne(id: Long): VerificationReference? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference WHERE vid = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference WHERE id = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
       return found
+   }
+
+   fun findAll(verification: Verification): List<VerificationReference> {
+      val vid = verification.id
+      val result = if (vid != null) {
+         jdbc.query("SELECT * FROM verification_reference WHERE verification_id = :vid", mapOf("vid" to verification.id), simpleVerificationReferenceRowMapper)
+      } else {
+         emptyList()
+      }
+
+      logger.trace("searching for all children of {} and found {}", verification, result)
+
+      return result
    }
 
    override fun exists(id: Long): Boolean {
@@ -101,6 +116,13 @@ class VerificationReferenceRepository @Inject constructor(
          simpleVerificationReferenceRowMapper
       )
    }
+
+   @Transactional
+   fun deleteAll(entites: Collection<VerificationReference>): Int =
+      jdbc.update(
+         "DELETE FROM verification_reference WHERE id IN (:ids)",
+         mapOf("ids" to entites.asSequence().filter { it.id != null }.map { it.id }.toSet())
+      )
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationReference? =
       rs.getString("vr_id")?.let { prefixedVerificationReferenceRowMapper.mapRow(rs, row) }

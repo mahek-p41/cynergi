@@ -24,7 +24,7 @@ data class VerificationLandlord (
    val phone: Boolean?,
    val reliable: Boolean?,
    val rent: BigDecimal
-) : Entity {
+) : Entity<VerificationLandlord> {
 
    constructor(dto: VerificationLandlordDto) :
       this(
@@ -44,6 +44,8 @@ data class VerificationLandlord (
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
+
+   override fun copyMe(): VerificationLandlord  = copy()
 }
 
 data class VerificationLandlordDto (

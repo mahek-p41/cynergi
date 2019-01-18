@@ -210,11 +210,7 @@ class VerificationRepository @Inject constructor(
       val auto = entity.auto?.let { verificationAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
       val employment = entity.employment?.let { verificationEmploymentRepository.upsert(existing = existing.employment, requestedChange= it) }
       val landlord = entity.landlord?.let { verificationLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
-      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) {
-         existing.verifiedTime
-      } else {
-         null
-      }
+      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { null }
 
       val updated = jdbc.updateReturning("""
          UPDATE verification
@@ -238,7 +234,19 @@ class VerificationRepository @Inject constructor(
          simpleVerificationRowMapper
       )
 
-      val references = entity.references.asSequence().map { verificationReferenceRepository.update(it.copy(verification = updated)) }.toMutableSet()
+      val references = entity.references.asSequence().map {
+         if (it.id == null ) {
+            verificationReferenceRepository.insert(it.copy(verification = updated))
+         } else {
+            verificationReferenceRepository.update(it.copy(verification = updated))
+         }
+      }.toMutableSet()
+
+      val referencesToDelete = existing.references.asSequence().filter { !references.contains(it) }.toList()
+
+      if (referencesToDelete.isNotEmpty()) {
+         verificationReferenceRepository.deleteAll(referencesToDelete)
+      }
 
       return if (auto != null || employment != null || landlord != null || references.isNotEmpty()) {
          updated.copy(auto = auto, employment = employment, landlord = landlord, references = references)
