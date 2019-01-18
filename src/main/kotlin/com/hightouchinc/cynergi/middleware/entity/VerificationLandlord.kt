@@ -1,5 +1,8 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.math.BigDecimal
@@ -48,35 +51,46 @@ data class VerificationLandlord (
    override fun copyMe(): VerificationLandlord  = copy()
 }
 
+@JsonInclude(NON_NULL)
 data class VerificationLandlordDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
+   @field:JsonProperty("land_address")
    var address: Boolean? = null,
 
    @field:Size(max = 18)
+   @field:JsonProperty("land_alt_phone")
    var altPhone: String?,
 
    @field:Size(max = 25)
+   @field:JsonProperty("land_lease_type")
    var leaseType: String?,
 
+   @field:JsonProperty("land_leave_msg")
    var leaveMessage: Boolean?,
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
+   @field:JsonProperty("land_length")
    var length: Int?,
 
    @field:Size(max = 50)
+   @field:JsonProperty("land_name")
    var name: String?,
 
    @field:Size(max = 15)
+   @field:JsonProperty("land_paid_rent")
    var paidRent: String?,
 
+   @field:JsonProperty("land_phone")
    var phone: Boolean?,
 
+   @field:JsonProperty("land_reliable")
    var reliable: Boolean?,
 
    @field:Digits(integer = 19, fraction = 2)
+   @field:JsonProperty("land_rent")
    var rent: BigDecimal
 
 ) : DataTransferObjectBase<VerificationLandlordDto>() {

@@ -1,5 +1,7 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
@@ -49,6 +51,7 @@ data class Verification(
    override fun copyMe(): Verification = copy()
 }
 
+@JsonInclude(NON_NULL)
 data class VerificationDto(
    var id: Long?,
 

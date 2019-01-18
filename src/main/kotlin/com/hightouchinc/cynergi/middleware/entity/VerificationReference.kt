@@ -1,5 +1,8 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
@@ -56,28 +59,38 @@ data class VerificationReference (
    }
 }
 
+@JsonInclude(NON_NULL)
 data class VerificationReferenceDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
+   @field:JsonProperty("ref_address")
    val address: Boolean?,
 
+   @field:JsonProperty("ref_has_home_phone")
    val hasHomePhone: Boolean?,
 
+   @field:JsonProperty("ref_known")
    val known: Int?,
 
+   @field:JsonProperty("ref_leave_msg")
    val leaveMessage: Boolean?,
 
    @field:Size(max = 3)
+   @field:JsonProperty("ref_rating")
    val rating: String?,
 
+   @field:JsonProperty("ref_relationship")
    val relationship: Boolean?,
 
+   @field:JsonProperty("ref_reliable")
    val reliable: Boolean?,
 
+   @field:JsonProperty("ref_time_frame")
    val timeFrame: Int?,
 
+   @field:JsonProperty("ref_verify_phone")
    val verifyPhone: Boolean?
 
 ) : DataTransferObjectBase<VerificationReferenceDto>() {

@@ -1,5 +1,8 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -36,23 +39,30 @@ data class VerificationEmployment(
    override fun copyMe(): VerificationEmployment = copy()
 }
 
+@JsonInclude(NON_NULL)
 data class VerificationEmploymentDto(
 
    var id: Long? = null,
 
    @field:Size(max = 50)
+   @field:JsonProperty("emp_dept")
    var department: String? = null,
 
+   @field:JsonProperty("emp_hire_date")
    var hireDate: LocalDate? = null,
 
+   @field:JsonProperty("emp_leave_msg")
    var leaveMessage: Boolean? = null,
 
    @field:Size(max = 50)
+   @field:JsonProperty("emp_name")
    var name: String? = null,
 
+   @field:JsonProperty("emp_reliable")
    var reliable: Boolean?,
 
    @field:Size(max= 50)
+   @field:JsonProperty("emp_title")
    var title: String? = null
 
 ) : DataTransferObjectBase<VerificationEmploymentDto>() {
