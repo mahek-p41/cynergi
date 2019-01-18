@@ -3,7 +3,6 @@ package com.hightouchinc.cynergi.middleware.validator
 import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
 import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
-import com.hightouchinc.cynergi.middleware.extensions.isNotEmpty
 import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
 import javax.inject.Singleton
 
