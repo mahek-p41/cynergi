@@ -249,9 +249,9 @@ class VerificationRepository @Inject constructor(
    private fun doReferenceUpdates(entity: Verification, updated: Verification): MutableSet<VerificationReference> {
       return entity.references.asSequence().map {
          if (it.id == null) {
-               verificationReferenceRepository.insert(it.copy(verification = updated))
+            verificationReferenceRepository.insert(it.copy(verification = updated))
          } else {
-               verificationReferenceRepository.update(it.copy(verification = updated))
+            verificationReferenceRepository.update(it.copy(verification = updated))
          }
       }.toMutableSet()
    }

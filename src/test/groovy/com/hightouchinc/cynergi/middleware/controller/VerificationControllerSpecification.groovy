@@ -237,4 +237,30 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       dbReferences.size() == 5
       dbReferences.collect { it.id } == savedVerification.references.collect { it.id } // check that the db only contains the 5 items passed through the PUT call
    }
+
+   void "delete two previously created verification reference via update with one missing" () {
+      given:
+      final def verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def savedVerification = new VerificationDto(verification)
+      savedVerification.references.remove(1)
+      savedVerification.references.remove(1)
+
+      when:
+      final def updatedVerification = client.retrieve(PUT(url, savedVerification), VerificationDto)
+      final def dbReferences = verificationReferenceRepository.findAll(verification) // query the db for what it actually has
+
+      then:
+      updatedVerification.id != null
+      updatedVerification.id > 0
+      updatedVerification.customerAccount == savedVerification.customerAccount
+      updatedVerification.customerComments == savedVerification.customerComments
+      updatedVerification.verifiedBy == savedVerification.verifiedBy
+      updatedVerification.verifiedTime != null
+      updatedVerification.references.size() ==  4
+      updatedVerification.references.collect { it.id != null && it.id > 0 }.size() == 4 // check that all 5 items in the references list have an ID assigned
+      allPropertiesFullAndNotEmpty(updatedVerification)
+
+      dbReferences.size() == 4
+      dbReferences.collect { it.id } == savedVerification.references.collect { it.id } // check that the db only contains the 5 items passed through the PUT call
+   }
 }
