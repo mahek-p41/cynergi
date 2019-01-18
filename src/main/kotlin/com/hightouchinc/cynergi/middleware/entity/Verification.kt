@@ -38,7 +38,8 @@ data class Verification(
          employment = copyEmploymentDtoToEntity(dto = dto),
          landlord = copyLandlordDtoToEntity(dto = dto)
       ) {
-      dto.references.map { VerificationReference(it, this) }
+
+      this.references.addAll(dto.references.map { VerificationReference(it, this) })
    }
 
    override fun entityId(): Long? = id
@@ -83,7 +84,7 @@ data class VerificationDto(
    @field:Size(max = 6)
    @field:JsonDeserialize(contentAs = VerificationReferenceDto::class)
    @field:JsonProperty("checklist_references")
-   val references: MutableSet<VerificationReferenceDto> = mutableSetOf()
+   val references: MutableList<VerificationReferenceDto> = mutableListOf()
 
 ) : DataTransferObjectBase<VerificationDto>() {
    constructor(entity: Verification) :
@@ -96,7 +97,7 @@ data class VerificationDto(
          auto = copyAutoEntityToDto(entity = entity),
          employment = copyEmploymentEntityToDto(entity = entity),
          landlord = copyLandlordEntityToDto(entity = entity),
-         references = entity.references.asSequence().map { VerificationReferenceDto(it) }.toMutableSet()
+         references = entity.references.asSequence().map { VerificationReferenceDto(it) }.toMutableList()
       )
 
    override fun copyMe(): VerificationDto = this.copy()

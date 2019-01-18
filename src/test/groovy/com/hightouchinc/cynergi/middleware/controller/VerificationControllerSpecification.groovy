@@ -111,7 +111,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
          null,
          null,
          null,
-         [] as Set
+         []
       )
 
       when:

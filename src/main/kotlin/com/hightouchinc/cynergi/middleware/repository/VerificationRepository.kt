@@ -238,8 +238,10 @@ class VerificationRepository @Inject constructor(
          simpleVerificationRowMapper
       )
 
-      return if (auto != null || employment != null || landlord != null) {
-         updated.copy(auto = auto, employment = employment, landlord = landlord)
+      val references = entity.references.asSequence().map { verificationReferenceRepository.update(it.copy(verification = updated)) }.toMutableSet()
+
+      return if (auto != null || employment != null || landlord != null || references.isNotEmpty()) {
+         updated.copy(auto = auto, employment = employment, landlord = landlord, references = references)
       } else {
          updated
       }

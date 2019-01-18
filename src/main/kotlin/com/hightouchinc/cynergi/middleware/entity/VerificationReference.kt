@@ -1,6 +1,5 @@
 package com.hightouchinc.cynergi.middleware.entity
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
@@ -61,9 +60,6 @@ data class VerificationReferenceDto (
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
-   @field:JsonIgnore
-   var uuRowId: UUID = UUID.randomUUID(),
-
    val address: Boolean?,
 
    val hasHomePhone: Boolean?,
@@ -102,14 +98,4 @@ data class VerificationReferenceDto (
    override fun copyMe(): VerificationReferenceDto = copy()
 
    override fun dtoId(): Long? = id
-
-   override fun hashCode(): Int = Objects.hashCode(uuRowId)
-
-   override fun equals(other: Any?): Boolean {
-      return when {
-         this === other -> true
-         other is VerificationReferenceDto -> this.uuRowId == other.uuRowId
-         else -> false
-      }
-   }
 }
