@@ -134,13 +134,11 @@ class VerificationAutoRepository(
    }
 
    @Transactional
-   fun upsert(existing: VerificationAuto?, requestedChange: VerificationAuto?): VerificationAuto? {
-      return if (existing == null && requestedChange != null) {
+   fun upsert(existing: VerificationAuto?, requestedChange: VerificationAuto): VerificationAuto? {
+      return if (existing == null) {
          insert(entity = requestedChange)
-      } else if (existing != null && requestedChange != null) {
-         update(entity = requestedChange)
       } else {
-         null
+         update(entity = requestedChange)
       }
    }
 

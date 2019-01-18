@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Verification
+import com.hightouchinc.cynergi.middleware.entity.VerificationReference
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -208,7 +209,7 @@ class VerificationRepository @Inject constructor(
    override fun update(entity: Verification): Verification {
       val existing = findOne(id = entity.id!!)!!
       val auto = entity.auto?.let { verificationAutoRepository.upsert(existing = existing.auto, requestedChange = it) }
-      val employment = entity.employment?.let { verificationEmploymentRepository.upsert(existing = existing.employment, requestedChange= it) }
+      val employment = entity.employment?.let { verificationEmploymentRepository.upsert(existing = existing.employment, requestedChange = it) }
       val landlord = entity.landlord?.let { verificationLandlordRepository.upsert(existing = existing.landlord, requestedChange = it) }
       val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { null }
 
@@ -234,24 +235,32 @@ class VerificationRepository @Inject constructor(
          simpleVerificationRowMapper
       )
 
-      val references = entity.references.asSequence().map {
-         if (it.id == null ) {
-            verificationReferenceRepository.insert(it.copy(verification = updated))
-         } else {
-            verificationReferenceRepository.update(it.copy(verification = updated))
-         }
-      }.toMutableSet()
+      val references = doReferenceUpdates(entity, updated)
 
-      val referencesToDelete = existing.references.asSequence().filter { !references.contains(it) }.toList()
-
-      if (referencesToDelete.isNotEmpty()) {
-         verificationReferenceRepository.deleteAll(referencesToDelete)
-      }
+      doReferenceDeletes(existing, references)
 
       return if (auto != null || employment != null || landlord != null || references.isNotEmpty()) {
          updated.copy(auto = auto, employment = employment, landlord = landlord, references = references)
       } else {
          updated
+      }
+   }
+
+   private fun doReferenceUpdates(entity: Verification, updated: Verification): MutableSet<VerificationReference> {
+      return entity.references.asSequence().map {
+         if (it.id == null) {
+               verificationReferenceRepository.insert(it.copy(verification = updated))
+         } else {
+               verificationReferenceRepository.update(it.copy(verification = updated))
+         }
+      }.toMutableSet()
+   }
+
+   private fun doReferenceDeletes(existing: Verification, references: MutableSet<VerificationReference>) {
+      val referencesToDelete = existing.references.asSequence().filter { !references.contains(it) }.toList()
+
+      if (referencesToDelete.isNotEmpty()) {
+         verificationReferenceRepository.deleteAll(referencesToDelete)
       }
    }
 }

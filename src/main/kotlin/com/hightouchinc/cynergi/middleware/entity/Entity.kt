@@ -14,5 +14,9 @@ interface Entity<ENTITY> : IdentifiableEntity {
     */
    fun rowId(): UUID
 
+   /**
+    * Creates a copy of this instance of an Entity.  Contract is the same as a Kotlin data class's copy method with
+    * no paramerters.
+    */
    fun copyMe(): ENTITY
 }

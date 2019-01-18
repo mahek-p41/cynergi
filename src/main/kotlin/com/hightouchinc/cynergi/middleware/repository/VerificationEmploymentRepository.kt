@@ -91,13 +91,11 @@ class VerificationEmploymentRepository(
    }
 
    @Transactional
-   fun upsert(existing: VerificationEmployment?, requestedChange: VerificationEmployment?): VerificationEmployment? {
-      return if (existing == null && requestedChange != null) {
+   fun upsert(existing: VerificationEmployment?, requestedChange: VerificationEmployment): VerificationEmployment? {
+      return if (existing == null) {
          insert(entity = requestedChange)
-      } else if (existing != null && requestedChange != null) {
-         update(entity = requestedChange)
       } else {
-         null
+         update(entity = requestedChange)
       }
    }
 

@@ -100,13 +100,11 @@ class VerificationLandlordRepository(
       )
    }
 
-   fun upsert(existing: VerificationLandlord?, requestedChange: VerificationLandlord?): VerificationLandlord? {
-      return if (existing == null && requestedChange != null) {
+   fun upsert(existing: VerificationLandlord?, requestedChange: VerificationLandlord): VerificationLandlord? {
+      return if (existing == null) {
          insert(entity = requestedChange)
-      } else if (existing != null && requestedChange != null) {
-         update(entity = requestedChange)
       } else {
-         return null
+         update(entity = requestedChange)
       }
    }
 

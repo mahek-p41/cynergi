@@ -18,11 +18,11 @@ data class Verification(
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val customerAccount: String, // TODO convert from soft foreign key to soft_customer
+   val customerAccount: String, // TODO convert from soft foreign key to customer
    val customerComments: String?,
-   val verifiedBy: String, // TODO convert from soft foreign key to soft_employee
+   val verifiedBy: String, // TODO convert from soft foreign key to employee
    val verifiedTime: OffsetDateTime,
-   val company: String, // TODO convert from soft foreign key to point to a soft_company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
+   val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val auto: VerificationAuto?,
    val employment: VerificationEmployment?,
    val landlord: VerificationLandlord?,
