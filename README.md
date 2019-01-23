@@ -251,4 +251,4 @@ API is actually fulfilling that contract.
     * Also a trigger will be attached to the table to keep the time_updated column up-to-date
 * `npx yo cyn:migration new_table feature-new-stuff-cynXXX -a`
   * Will append the table skeleton described above to an already existing migration script rather than creating a new one
-* `TABLE_NAME=new_table npx yo cyn:entity $TABLE_NAME && npx yo cyn:controller $TABLE_NAME && npx yo cyn:migration $TABLE_NAME feature-new-stuff-cynXXX`
+* `TABLE_NAME=new_table bash -c 'npx yo cyn:entity $TABLE_NAME && npx yo cyn:controller $TABLE_NAME && npx yo cyn:migration $TABLE_NAME feature-new-stuff-cynXXX'`

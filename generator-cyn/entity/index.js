@@ -36,7 +36,7 @@ module.exports = class extends Generator {
          'TestDataLoader.groovy.template': `src/test/groovy/com/hightouchinc/cynergi/test/data/loader/${templateValues.entity}.groovy`
       };
 
-      this.log(`Generating Entity ${chalk.green(this.options.entity)}`);
+      this.log(`Generating Entity ${chalk.green(this.options.table)}`);
 
       Object.keys(templates).forEach((key) => {
          const templateFile = key;

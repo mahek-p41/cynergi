@@ -63,7 +63,7 @@ module.exports = class extends Generator {
          'Entity.sql.template': `src/main/resources/db/migration/postgres/V${versionNumber}__${this.options.description}.sql`,
       };
 
-      this.log(`Generating Entity ${chalk.green(this.options.entity)}`);
+      this.log(`Generating Migration ${chalk.green(this.options.table)}`);
 
       Object.keys(templates).forEach((key) => {
          const templateFile = key;
