@@ -56,7 +56,7 @@ class VerificationReferenceRepository @Inject constructor(
    }
 
    override fun insert(entity: VerificationReference): VerificationReference {
-      logger.trace("Inserting {}", entity)
+      logger.trace("Inserting verification_reference {}", entity)
 
       return jdbc.insertReturning("""
          INSERT INTO verification_reference(address, has_home_phone, known, leave_message, rating, relationship, reliable, time_frame, verify_phone, verification_id)
@@ -81,7 +81,7 @@ class VerificationReferenceRepository @Inject constructor(
    }
 
    override fun update(entity: VerificationReference): VerificationReference {
-      logger.trace("Updating {}", entity)
+      logger.trace("Updating verification_reference {}", entity)
 
       return jdbc.updateReturning("""
          UPDATE verification_reference
@@ -118,10 +118,10 @@ class VerificationReferenceRepository @Inject constructor(
    }
 
    @Transactional
-   fun deleteAll(entites: Collection<VerificationReference>): Int =
+   fun deleteAll(entities: Collection<VerificationReference>): Int =
       jdbc.update(
          "DELETE FROM verification_reference WHERE id IN (:ids)",
-         mapOf("ids" to entites.asSequence().filter { it.id != null }.map { it.id }.toSet())
+         mapOf("ids" to entities.asSequence().filter { it.id != null }.map { it.id }.toSet())
       )
 
    fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationReference? =
