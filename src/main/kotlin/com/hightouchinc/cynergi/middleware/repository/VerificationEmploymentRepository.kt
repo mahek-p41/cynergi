@@ -42,7 +42,7 @@ class VerificationEmploymentRepository(
    }
 
    override fun insert(entity: VerificationEmployment): VerificationEmployment {
-      logger.trace("Inserting {}", entity)
+      logger.debug("Inserting verification_employment  {}", entity)
 
       return jdbc.insertReturning("""
          INSERT INTO verification_employment(department, hire_date, leave_message, name, reliable, title, verification_id)
@@ -64,7 +64,7 @@ class VerificationEmploymentRepository(
    }
 
    override fun update(entity: VerificationEmployment): VerificationEmployment {
-      logger.trace("Updating {}", entity)
+      logger.debug("Updating verification_employment {}", entity)
 
       return jdbc.updateReturning("""
          UPDATE verification_employment

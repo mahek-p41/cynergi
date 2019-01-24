@@ -51,6 +51,10 @@ data class VerificationLandlord (
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): VerificationLandlord  = copy()
+
+   override fun toString(): String {
+      return "VerificationLandlord(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, altPhone=$altPhone, leaseType=$leaseType, leaveMessage=$leaveMessage, length=$length, name=$name, paidRent=$paidRent, phone=$phone, reliable=$reliable, rent=$rent, verification=${verification.entityId()})"
+   }
 }
 
 @JsonInclude(NON_NULL)

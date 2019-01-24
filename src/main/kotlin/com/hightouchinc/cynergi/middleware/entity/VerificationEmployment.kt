@@ -39,6 +39,10 @@ data class VerificationEmployment(
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): VerificationEmployment = copy()
+
+   override fun toString(): String {
+      return "VerificationEmployment(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, department=$department, hireDate=$hireDate, leaveMessage=$leaveMessage, name=$name, reliable=$reliable, title=$title, verification=${verification.entityId()})"
+   }
 }
 
 @JsonInclude(NON_NULL)
