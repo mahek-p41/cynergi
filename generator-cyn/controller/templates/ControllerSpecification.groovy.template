@@ -1,14 +1,27 @@
 package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
+import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
 import com.hightouchinc.cynergi.test.data.loader.<%= entity %>DataLoaderService
+import io.micronaut.http.HttpRequest
+
+import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmpty
 
 class <%= entity %>ControllerSpecification extends ControllerSpecificationBase {
-   final def url = "/api/TODO add valid path here"
+   final def url = "/api/<%= table %>"
    final def <%= repository %>DataLoaderService = applicationContext.getBean(<%= entity %>DataLoaderService)
 
-   void "test" () {
-      expect:
-      1 != 1 // do a lot of testing!
+   void "fetch one <%= table %> by id" () {
+      given:
+      final def saved<%= entity %> = <%= table %>sDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create <%= entity %>") }
+      final def <%= table %>Dto = new <%= entity %>Dto(saved<%= entity %>)
+      
+      when:
+      def result = client.retrieve(HttpRequest.GET("$url/${saved<%= entity %>.id}"), <%= entity %>Dto)
+      
+      then:
+      result == <%= table %>Dto
+      allPropertiesFullAndNotEmpty(result)
+      // TODO more testing of the result
    }
 }

@@ -1,5 +1,7 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
+import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationType
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
@@ -25,26 +27,28 @@ class NotificationController @Inject constructor(
    private val notificationService: NotificationService,
    private val notificationValidator: NotificationValidator
 ) {
+   @Throws(NotFoundException::class)
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
-   ): NotificationDto {
-      return notificationService.fetchById(id = id) ?: throw NotFoundException(id)
+   ): NotificationResponseDto {
+      return notificationService.fetchResponseById(id = id) ?: throw NotFoundException(id)
    }
 
+   @Throws(NotFoundException::class)
+   @Get(produces = [APPLICATION_JSON])
    fun fetchAll(
-      @Header("X-Auth-Company") companyId: String,
-      @Header("X-Auth-User") authId: String,
+      @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
+      @Header("X-Auth-User") authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
       @PathVariable(name = "type", defaultValue = "E") type: String
-   ) : Map<String, List<NotificationDto>> {
+   ) : NotificationsResponseDto {
       val notificationType = NotificationType.fromValue(value = type) ?: throw NotFoundException(notFound = type)
 
-      val notifications: List<NotificationDto> = when(notificationType) {
+      return when(notificationType) {
          NotificationType.All -> notificationService.fetchAllByCompany(companyId = companyId, type = type)
+
          else -> notificationService.fetchAllByRecipient(companyId = companyId, authId = authId, type = type)
       }
-
-      return mapOf("notifications" to notifications)
    }
 
    @Post(processes = [APPLICATION_JSON])

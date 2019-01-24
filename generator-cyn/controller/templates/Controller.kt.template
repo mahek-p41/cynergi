@@ -22,6 +22,7 @@ class <%= entity %>Controller @Inject constructor(
    private val <%= repository %>Service: <%= entity %>Service,
    private val <%= repository %>Validator: <%= entity %>Validator
 ) {
+   @Throws(NotFoundException::class)
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
