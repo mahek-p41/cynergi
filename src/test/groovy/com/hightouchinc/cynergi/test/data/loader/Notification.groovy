@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.hightouchinc.cynergi.middleware.entity.Notification
-import com.hightouchinc.cynergi.middleware.repository.NotificationsRepository
+import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -28,9 +28,9 @@ class NotificationTestDataLoader {
 @Singleton
 @CompileStatic
 class NotificationDataLoaderService {
-   private final NotificationsRepository notificationsRepository
+   private final NotificationRepository notificationsRepository
 
-   NotificationDataLoaderService(NotificationsRepository notificationsRepository) {
+   NotificationDataLoaderService(NotificationRepository notificationsRepository) {
       this.notificationsRepository = notificationsRepository
    }
 

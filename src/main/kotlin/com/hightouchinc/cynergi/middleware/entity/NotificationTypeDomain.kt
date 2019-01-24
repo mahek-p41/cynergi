@@ -8,15 +8,14 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.Positive
 
-data class NotificationDomainType (
+data class NotificationTypeDomain (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val value: String,
    val description: String
-) : Entity<NotificationDomainType> {
-
+) : TypeDomainEntity<NotificationTypeDomain> {
    constructor(dto: NotificationDomainTypeDto) :
       this(
          id = dto.id,
@@ -28,7 +27,11 @@ data class NotificationDomainType (
 
    override fun rowId(): UUID = uuRowId
 
-   override fun copyMe(): NotificationDomainType = copy()
+   override fun copyMe(): NotificationTypeDomain = copy()
+
+   override fun myValue(): String = value
+
+   override fun myDescription(): String = description
 }
 
 @JsonInclude(NON_NULL)
@@ -43,7 +46,7 @@ data class NotificationDomainTypeDto (
 
 ) : DataTransferObjectBase<NotificationDomainTypeDto>() {
 
-   constructor(entity: NotificationDomainType) :
+   constructor(entity: NotificationTypeDomain) :
       this(
          id = entity.id,
          value = entity.value,

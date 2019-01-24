@@ -4,16 +4,18 @@ import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.Notification
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
-import com.hightouchinc.cynergi.middleware.repository.NotificationsRepository
+import com.hightouchinc.cynergi.middleware.repository.NotificationDomainTypeRepository
+import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationService @Inject constructor(
-   private val notificationsRepository: NotificationsRepository
+   private val notificationRepository: NotificationRepository,
+   private val notificationDomainTypeRepository: NotificationDomainTypeRepository
 ) : IdentifiableService<NotificationDto> {
    override fun fetchById(id: Long): NotificationDto? =
-      notificationsRepository.findOne(id = id)?.let { NotificationDto(entity = it) }
+      notificationRepository.findOne(id = id)?.let { NotificationDto(entity = it) }
 
    /**
     * Acts a wrapper to map the original front-end expectation of an object with a notification property pointing to the
@@ -21,7 +23,7 @@ class NotificationService @Inject constructor(
     *
     * FIXME by removing me someday
     */
-   @Deprecated("Remove this when the front end just consumes the DTO without the wrapper")
+   @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
    fun fetchResponseById(id: Long): NotificationResponseDto? =
       fetchById(id = id)?.let { NotificationResponseDto(notification = it) }
 
@@ -34,15 +36,21 @@ class NotificationService @Inject constructor(
    }
 
    fun exists(id: Long): Boolean =
-      notificationsRepository.exists(id = id)
+      notificationRepository.exists(id = id)
 
-   fun create(dto: NotificationDto): NotificationDto =
-      NotificationDto(
-         entity = notificationsRepository.insert(entity = Notification(dto = dto))
-      )
+   fun create(dto: NotificationDto): NotificationDto {
+      val notificationDomainType = notificationDomainTypeRepository.findOne(dto.notificationType!!)!!
 
-   fun update(dto: NotificationDto): NotificationDto =
-      NotificationDto(
-         entity = notificationsRepository.update(entity = Notification(dto = dto))
+      return NotificationDto(
+         entity = notificationRepository.insert(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))
       )
+   }
+
+   fun update(dto: NotificationDto): NotificationDto {
+      val notificationDomainType = notificationDomainTypeRepository.findOne(dto.notificationType!!)!!
+
+      return NotificationDto(
+         entity = notificationRepository.update(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))
+      )
+   }
 }

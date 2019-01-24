@@ -3,6 +3,9 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
+import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
+import com.hightouchinc.cynergi.middleware.extensions.getUUID
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -12,9 +15,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
@@ -111,11 +111,11 @@ private class VerificationEmploymentRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationEmployment =
       VerificationEmployment(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
-         timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),
-         timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
+         uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
          department = rs.getString("${rowPrefix}department"),
-         hireDate = rs.getObject("${rowPrefix}hire_date", LocalDate::class.java),
+         hireDate = rs.getLocalDate("${rowPrefix}hire_date"),
          leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
          name = rs.getString("${rowPrefix}name"),
          reliable = rs.getBoolean("${rowPrefix}reliable"),

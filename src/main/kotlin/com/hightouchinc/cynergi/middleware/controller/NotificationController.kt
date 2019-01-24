@@ -3,7 +3,6 @@ package com.hightouchinc.cynergi.middleware.controller
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
-import com.hightouchinc.cynergi.middleware.entity.NotificationType
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.NotificationService
@@ -42,10 +41,8 @@ class NotificationController @Inject constructor(
       @Header("X-Auth-User") authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
       @PathVariable(name = "type", defaultValue = "E") type: String
    ) : NotificationsResponseDto {
-      val notificationType = NotificationType.fromValue(value = type) ?: throw NotFoundException(notFound = type)
-
-      return when(notificationType) {
-         NotificationType.All -> notificationService.fetchAllByCompany(companyId = companyId, type = type)
+      return when(type.toUpperCase()) {
+         "A" -> notificationService.fetchAllByCompany(companyId = companyId, type = type)
 
          else -> notificationService.fetchAllByRecipient(companyId = companyId, authId = authId, type = type)
       }

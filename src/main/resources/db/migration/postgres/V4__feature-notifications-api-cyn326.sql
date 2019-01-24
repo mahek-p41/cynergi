@@ -6,9 +6,9 @@ CREATE TABLE notification_domain_type (
    value        CHAR(1)                                NOT NULL,
    description  VARCHAR(15)                            NOT NULL
 );
-CREATE TRIGGER update_notification_type_trg
+CREATE TRIGGER update_notification_domain_type_trg
    BEFORE UPDATE
-   ON notification_type
+   ON notification_domain_type
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 ALTER TABLE notification_domain_type
@@ -35,6 +35,6 @@ ALTER TABLE notification
    DROP COLUMN notification_type;
 
 ALTER TABLE notification_domain_type
-   ADD CONSTRAINT notification_notification_domain_type_uq
+   ADD CONSTRAINT notification_notification_domain_type_uq UNIQUE (value);
 
 
