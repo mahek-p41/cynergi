@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.<%= entity %>
+import com.hightouchinc.cynergi.middleware.entity.Notification
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
@@ -15,14 +15,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class <%= entity %>Repository @Inject constructor(
+class NotificationsRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<<%= entity %>> {
-   private val logger: Logger = LoggerFactory.getLogger(<%= entity %>Repository::class.java)
-   private val simple<%= entity %>RowMapper = <%= entity %>RowMapper()
+) : Repository<Notification> {
+   private val logger: Logger = LoggerFactory.getLogger(NotificationsRepository::class.java)
+   private val simpleNotificationsRowMapper = NotificationsRowMapper()
 
-   override fun findOne(id: Long): <%= entity %>? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM <%= table %> WHERE id = :id", mapOf("id" to id), simple<%= entity %>RowMapper)
+   override fun findOne(id: Long): Notification? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM notifications WHERE id = :id", mapOf("id" to id), simpleNotificationsRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -30,32 +30,32 @@ class <%= entity %>Repository @Inject constructor(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM <%= table %> WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notifications WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   override fun insert(entity: <%= entity %>): <%= entity %> {
-      logger.debug("Inserting <%= table %> {}", entity)
+   override fun insert(entity: Notification): Notification {
+      logger.trace("Inserting {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO <%= table %>()
+         INSERT INTO notifications()
          VALUES ()
          RETURNING
             *
          """.trimIndent(),
          mapOf<String, Any>(),
-         simple<%= entity %>RowMapper
+         simpleNotificationsRowMapper
       )
    }
 
-   override fun update(entity: <%= entity %>): <%= entity %> {
-      logger.debug("Updating <%= table %> {}", entity)
+   override fun update(entity: Notification): Notification {
+      logger.trace("Updating {}", entity)
 
       return jdbc.updateReturning("""
-         UPDATE <%= table %>
+         UPDATE notifications
          SET
 
          WHERE id = :id
@@ -65,14 +65,14 @@ class <%= entity %>Repository @Inject constructor(
          mapOf(
             "id" to entity.id
          ),
-         simple<%= entity %>RowMapper
+         simpleNotificationsRowMapper
       )
    }
 }
 
-private class <%= entity %>RowMapper : RowMapper<<%= entity %>> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): <%= entity %> =
-      <%= entity %>(
+private class NotificationsRowMapper : RowMapper<Notification> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
+      Notification(
          id = rs.getLong("id"),
          uuRowId = rs.getObject("uu_row_id", UUID::class.java),
          timeCreated = rs.getObject("time_created", OffsetDateTime::class.java),

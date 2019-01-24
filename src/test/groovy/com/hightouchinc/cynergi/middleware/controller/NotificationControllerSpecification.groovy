@@ -1,11 +1,11 @@
 package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
-import com.hightouchinc.cynergi.test.data.loader.<%= entity %>DataLoaderService
+import com.hightouchinc.cynergi.test.data.loader.NotificationDataLoaderService
 
-class <%= entity %>ControllerSpecification extends ControllerSpecificationBase {
+class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/TODO add valid path here"
-   final def <%= repository %>DataLoaderService = applicationContext.getBean(<%= entity %>DataLoaderService)
+   final def notificationsDataLoaderService = applicationContext.getBean(NotificationDataLoaderService)
 
    void "test" () {
       expect:
