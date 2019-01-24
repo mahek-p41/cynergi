@@ -8,39 +8,49 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.Positive
 
-data class Notification (
+data class NotificationDomainType (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated
-) : Entity<Notification> {
+   val timeUpdated: OffsetDateTime = timeCreated,
+   val value: String,
+   val description: String
+) : Entity<NotificationDomainType> {
 
-   constructor(dto: NotificationDto) :
+   constructor(dto: NotificationDomainTypeDto) :
       this(
-         id = dto.id
+         id = dto.id,
+         value = dto.value,
+         description = dto.description
       )
 
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 
-   override fun copyMe(): Notification = copy()
+   override fun copyMe(): NotificationDomainType = copy()
 }
 
 @JsonInclude(NON_NULL)
-data class NotificationDto (
+data class NotificationDomainTypeDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
-   var id: Long? = null
+   var id: Long? = null,
 
-) : DataTransferObjectBase<NotificationDto>() {
+   val value: String,
 
-   constructor(entity: Notification) :
+   val description: String
+
+) : DataTransferObjectBase<NotificationDomainTypeDto>() {
+
+   constructor(entity: NotificationDomainType) :
       this(
-         id = entity.id
+         id = entity.id,
+         value = entity.value,
+         description = entity.description
       )
 
    override fun dtoId(): Long? = id
 
-   override fun copyMe(): NotificationDto = copy()
+   override fun copyMe(): NotificationDomainTypeDto = copy()
 }
