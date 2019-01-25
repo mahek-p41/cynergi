@@ -31,7 +31,7 @@ class TruncateDatabaseService {
       })
 
       for (table in tables) {
-         if ( !table.contains("flyway") || !table.endsWith("_domain_type") ) {
+         if ( !table.contains("flyway") && !table.endsWith("_type_domain") ) {
             jdbc.update("TRUNCATE TABLE $table CASCADE")
          }
       }

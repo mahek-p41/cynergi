@@ -20,10 +20,10 @@ import javax.inject.Singleton
 @Singleton
 class NotificationRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val notificationDomainTypeRepository: NotificationDomainTypeRepository
+   private val notificationTypeDomainRepository: NotificationTypeDomainRepository
 ) : Repository<Notification> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
-   private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationDomainTypeRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
+   private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
    override fun findOne(id: Long): Notification? {
       val found = jdbc.findFirstOrNull("""
@@ -37,16 +37,16 @@ class NotificationRepository @Inject constructor(
             n.message AS n_message,
             n.sending_employee AS n_sending_employee,
             n.start_date AS n_start_date,
-            ndt.id AS ndt_id,
-            ndt.uu_row_id AS n_uu_row_id,
-            ndt.time_created AS n_time_created,
-            ndt.time_updated AS n_time_updated,
-            ndt.value AS ndt_value,
-            ndt.description AS ndt_description
-         FROM notifications n
-              JOIN notification_domain_type ndt
-                   ON n.notification_domain_type_id = ndt.id
-         WHERE id = :id
+            ntd.id AS ntd_id,
+            ntd.uu_row_id AS ntd_uu_row_id,
+            ntd.time_created AS ntd_time_created,
+            ntd.time_updated AS ntd_time_updated,
+            ntd.value AS ntd_value,
+            ntd.description AS ntd_description
+         FROM notification n
+              JOIN notification_type_domain ntd
+                   ON n.notification_type_domain_id = ntd.id
+         WHERE n.id = :id
          """.trimIndent(),
          mapOf("id" to id),
          fullNotificationsRowMapper
@@ -58,7 +58,7 @@ class NotificationRepository @Inject constructor(
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notifications WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
 
@@ -69,8 +69,8 @@ class NotificationRepository @Inject constructor(
       logger.debug("Inserting notification {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO notifications(company_id, expiration_date, message, sending_employee, start_date, notification_domain_type_id)
-         VALUES (:company_id, :expiration_date, :message, :sending_employee, :start_date, :notification_domain_type_id)
+         INSERT INTO notification(company_id, expiration_date, message, sending_employee, start_date, notification_type_domain_id)
+         VALUES (:company_id, :expiration_date, :message, :sending_employee, :start_date, :notification_type_domain_id)
          RETURNING
             *
          """.trimIndent(),
@@ -80,7 +80,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "start_date" to entity.startDate,
-            "notification_domain_type_id" to entity.notificationDomainType.entityId()!!
+            "notification_type_domain_id" to entity.notificationDomainType.entityId()!!
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
       )
@@ -90,14 +90,14 @@ class NotificationRepository @Inject constructor(
       logger.debug("Updating notification {}", entity)
 
       return jdbc.updateReturning("""
-         UPDATE notifications
+         UPDATE notification
          SET
             company_id = :company_id,
             expiration_date = :expiration_date,
             message = :message,
             sending_employee = :sending_employee,
             start_date = :start_date,
-            notification_domain_type_id = :notification_domain_type_id
+            notification_type_domain_id = :notification_type_domain_id
          WHERE id = :id
          RETURNING
             *
@@ -109,7 +109,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "start_date" to entity.startDate,
-            "notification_domain_type_id" to entity.notificationDomainType.entityId()!!
+            "notification_type_domain_id" to entity.notificationDomainType.entityId()!!
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
       )
@@ -123,10 +123,10 @@ private class NotificationsRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
       Notification(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUUID("uu_row_id"),
+         uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         company = rs.getString("${rowPrefix}company"),
+         company = rs.getString("${rowPrefix}company_id"),
          expirationDate = rs.getLocalDate("${rowPrefix}expiration_date"),
          message = rs.getString("${rowPrefix}message"),
          sendingEmployee = rs.getString("${rowPrefix}sending_employee"),

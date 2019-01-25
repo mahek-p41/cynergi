@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.hightouchinc.cynergi.middleware.entity.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
+import javax.validation.constraints.Size
 
 data class Notification (
    val id: Long? = null,
@@ -49,21 +51,25 @@ data class NotificationDto (
    var id: Long? = null,
 
    @field:NotNull(message = NOT_NULL)
+   @field:Size(max = 6, message = SIZE)
    val company: String?,
 
    @field:NotNull(message = NOT_NULL)
    val expirationDate: LocalDate?,
 
    @field:NotNull(message = NOT_NULL)
+   @field:Size(max = 500, message = SIZE)
    val message: String?,
 
    @field:NotNull(message = NOT_NULL)
+   @field:Size(max = 255, message = SIZE)
    val sendingEmployee: String?,
 
    @field:NotNull(message = NOT_NULL)
    val startDate: LocalDate?,
 
    @field:NotNull(message = NOT_NULL)
+   @field:Size(min = 1, max = 1, message = SIZE)
    val notificationType: String?
 
 ) : DataTransferObjectBase<NotificationDto>() {

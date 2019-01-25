@@ -4,15 +4,15 @@ import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.Notification
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
-import com.hightouchinc.cynergi.middleware.repository.NotificationDomainTypeRepository
 import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
+import com.hightouchinc.cynergi.middleware.repository.NotificationTypeDomainRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationService @Inject constructor(
    private val notificationRepository: NotificationRepository,
-   private val notificationDomainTypeRepository: NotificationDomainTypeRepository
+   private val notificationTypeDomainRepository: NotificationTypeDomainRepository
 ) : IdentifiableService<NotificationDto> {
    override fun fetchById(id: Long): NotificationDto? =
       notificationRepository.findOne(id = id)?.let { NotificationDto(entity = it) }
@@ -39,7 +39,7 @@ class NotificationService @Inject constructor(
       notificationRepository.exists(id = id)
 
    fun create(dto: NotificationDto): NotificationDto {
-      val notificationDomainType = notificationDomainTypeRepository.findOne(dto.notificationType!!)!!
+      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
 
       return NotificationDto(
          entity = notificationRepository.insert(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))
@@ -47,7 +47,7 @@ class NotificationService @Inject constructor(
    }
 
    fun update(dto: NotificationDto): NotificationDto {
-      val notificationDomainType = notificationDomainTypeRepository.findOne(dto.notificationType!!)!!
+      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
 
       return NotificationDto(
          entity = notificationRepository.update(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))

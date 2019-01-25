@@ -14,15 +14,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NotificationDomainTypeRepository @Inject constructor(
+class NotificationTypeDomainRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) : TypeDomainRepository<NotificationTypeDomain> {
-   private val logger: Logger = LoggerFactory.getLogger(NotificationDomainTypeRepository::class.java)
-   private val simpleNotificationDomainTypeRowMapper = NotificationDomainTypeRowMapper()
-   private val prefixedNotificationDomainTypeRowMapper = NotificationDomainTypeRowMapper("ndt_")
+   private val logger: Logger = LoggerFactory.getLogger(NotificationTypeDomainRepository::class.java)
+   private val simpleNotificationDomainTypeRowMapper = NotificationTypeDomainRowMapper()
+   private val prefixedNotificationDomainTypeRowMapper = NotificationTypeDomainRowMapper("ntd_")
 
    override fun findOne(id: Long): NotificationTypeDomain? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM notification_domain_type WHERE id = :id", mapOf("id" to id), simpleNotificationDomainTypeRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE id = :id", mapOf("id" to id), simpleNotificationDomainTypeRowMapper)
 
       logger.trace("searching for {} resulted in {}", id, found)
 
@@ -30,7 +30,7 @@ class NotificationDomainTypeRepository @Inject constructor(
    }
 
    override fun findOne(value: String): NotificationTypeDomain? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM notification_domain_type WHERE id = :id", mapOf("value" to value), simpleNotificationDomainTypeRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE id = :id", mapOf("value" to value), simpleNotificationDomainTypeRowMapper)
 
       logger.trace("searching for {} resulted in {}", value, found)
 
@@ -38,10 +38,10 @@ class NotificationDomainTypeRepository @Inject constructor(
    }
 
    fun mapPrefixedRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain? =
-      rs.getString("ndt_id")?.let { prefixedNotificationDomainTypeRowMapper.mapRow(rs = rs, rowNum = rowNum) }
+      rs.getString("ntd_id")?.let { prefixedNotificationDomainTypeRowMapper.mapRow(rs = rs, rowNum = rowNum) }
 }
 
-private class NotificationDomainTypeRowMapper(
+private class NotificationTypeDomainRowMapper(
    private val rowPrefix: String = EMPTY
 ) : RowMapper<NotificationTypeDomain> {
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain =
@@ -50,7 +50,7 @@ private class NotificationDomainTypeRowMapper(
          uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         value = rs.getString("value"),
+         value = rs.getString("${rowPrefix}value"),
          description = rs.getString("${rowPrefix}description")
       )
 }
