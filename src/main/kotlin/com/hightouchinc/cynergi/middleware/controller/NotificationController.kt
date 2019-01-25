@@ -17,6 +17,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.validation.Validated
+import org.apache.commons.lang3.StringUtils.EMPTY
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -38,7 +39,7 @@ class NotificationController @Inject constructor(
    @Get(produces = [APPLICATION_JSON])
    fun fetchAll(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
-      @Header("X-Auth-User") authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
+      @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
       @PathVariable(name = "type", defaultValue = "E") type: String
    ) : NotificationsResponseDto {
       return when(type.toUpperCase()) {

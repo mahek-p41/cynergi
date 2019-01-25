@@ -10,9 +10,11 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.http.hateos.JsonError
+import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,6 +36,24 @@ class ErrorHandler @Inject constructor(
       val locale = findLocale(httpRequest)
 
       return serverError(JsonError(localizationService.localize(ErrorCodes.System.INTERNAL_ERROR, locale)))
+   }
+
+   @Error(global = true, exception = NotImplementedError::class)
+   fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<JsonError> {
+      logger.error("Endpoint not implemented", exception)
+
+      val locale = findLocale(httpRequest)
+
+      return HttpResponse.status<JsonError>(HttpStatus.NOT_IMPLEMENTED).body(JsonError(localizationService.localize(ErrorCodes.System.NOT_IMPLEMENTED, locale, httpRequest.path)))
+   }
+
+   @Error(global = true, exception = UnsatisfiedRouteException::class)
+   fun unsatisifedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<JsonError> {
+      logger.trace("Unsatisfied Route Error", exception)
+
+      val locale = findLocale(httpRequest)
+
+      return badRequest(JsonError(localizationService.localize(ErrorCodes.System.REQUIRED_ARGUMENT, locale, exception.argument.name)))
    }
 
    @Error(global = true, exception = NotFoundException::class)

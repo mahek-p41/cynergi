@@ -15,8 +15,9 @@ import java.util.stream.Stream
 
 @CompileStatic
 class NotificationTestDataLoader {
-   static Stream<Notification> stream(int number = 1) {
+   static Stream<Notification> stream(int number = 1, String company = "corrto") {
       final int value = number > 0 ? number : 1
+      final String companyId = company != null ? company : "corrto"
       final def faker = new Faker()
       final def date = faker.date()
       final def lorem = faker.lorem()
@@ -28,7 +29,7 @@ class NotificationTestDataLoader {
             UUID.randomUUID(),
             OffsetDateTime.now(),
             OffsetDateTime.now(),
-            lorem.characters(6),
+            companyId,
             date.future(1000, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
             lorem.characters(1, 500),
             name.username(),
@@ -53,8 +54,8 @@ class NotificationDataLoaderService {
       this.notificationTypeDomainRepository = notificationTypeDomainRepository
    }
 
-   Stream<Notification> stream(int number = 1) {
-      return NotificationTestDataLoader.stream(number)
+   Stream<Notification> stream(int number = 1, String company = "corrto") {
+      return NotificationTestDataLoader.stream(number, company)
          .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id).basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
          .map { notificationsRepository.insert(it) }
    }

@@ -15,5 +15,7 @@ object ErrorCodes {
    object System {
       const val NOT_FOUND = "system.not.found"
       const val INTERNAL_ERROR = "system.internal.error"
+      const val REQUIRED_ARGUMENT = "system.route.error"
+      const val NOT_IMPLEMENTED = "system.not.implemented"
    }
 }
