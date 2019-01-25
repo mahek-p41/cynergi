@@ -20,10 +20,10 @@ INSERT INTO notification_type_domain(value, description) VALUES ('D', 'Departmen
 INSERT INTO notification_type_domain(value, description) VALUES ('A', 'All');
 
 ALTER TABLE notification
-   ADD COLUMN notification_type_domain_id BIGINT REFERENCES notification_type_domain(id);
+   ADD COLUMN notification_type_id BIGINT REFERENCES notification_type_domain(id);
 
 UPDATE notification n
-SET notification_type_domain_id = ntd.id
+SET notification_type_id = ntd.id
 FROM notification_type_domain ntd
 WHERE n.notification_type = ntd.value;
 

@@ -45,7 +45,7 @@ class NotificationRepository @Inject constructor(
             ntd.description AS ntd_description
          FROM notification n
               JOIN notification_type_domain ntd
-                   ON n.notification_type_domain_id = ntd.id
+                   ON n.notification_type_id = ntd.id
          WHERE n.id = :id
          """.trimIndent(),
          mapOf("id" to id),
@@ -69,8 +69,8 @@ class NotificationRepository @Inject constructor(
       logger.debug("Inserting notification {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO notification(company_id, expiration_date, message, sending_employee, start_date, notification_type_domain_id)
-         VALUES (:company_id, :expiration_date, :message, :sending_employee, :start_date, :notification_type_domain_id)
+         INSERT INTO notification(company_id, expiration_date, message, sending_employee, start_date, notification_type_id)
+         VALUES (:company_id, :expiration_date, :message, :sending_employee, :start_date, :notification_type_id)
          RETURNING
             *
          """.trimIndent(),
@@ -80,7 +80,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "start_date" to entity.startDate,
-            "notification_type_domain_id" to entity.notificationDomainType.entityId()!!
+            "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
       )
@@ -97,7 +97,7 @@ class NotificationRepository @Inject constructor(
             message = :message,
             sending_employee = :sending_employee,
             start_date = :start_date,
-            notification_type_domain_id = :notification_type_domain_id
+            notification_type_id = :notification_type_id
          WHERE id = :id
          RETURNING
             *
@@ -109,7 +109,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "start_date" to entity.startDate,
-            "notification_type_domain_id" to entity.notificationDomainType.entityId()!!
+            "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
       )
