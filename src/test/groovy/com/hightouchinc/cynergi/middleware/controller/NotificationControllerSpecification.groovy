@@ -53,7 +53,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      result == new NotificationsResponseDto(fiveNotifications)
+      result == new NotificationsResponseDto(fiveNotifications.collect { new NotificationDto(it)} )
    }
 
    void "fetch all by company without the required X-Auth-Company header" () {
