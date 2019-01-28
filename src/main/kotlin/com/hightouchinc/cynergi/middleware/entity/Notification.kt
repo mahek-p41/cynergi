@@ -18,11 +18,11 @@ data class Notification (
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
+   val startDate: LocalDate,
    val expirationDate: LocalDate,
    val message: String,
    val sendingEmployee: String, // TODO convert from soft foreign key to employee
-   val startDate: LocalDate,
+   val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val notificationDomainType: NotificationTypeDomain
 ) : Entity<Notification> {
 

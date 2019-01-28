@@ -8,6 +8,7 @@ import com.hightouchinc.cynergi.test.data.loader.NotificationDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
 
+import java.time.LocalDate
 import java.util.stream.Collectors
 
 import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmpty
@@ -46,10 +47,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
    void "fetch all by company" () {
       given:
       final def companyId = "corrto"
-      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId).collect(Collectors.toList())
+      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now()).collect(Collectors.toList())
 
       when:
-      def result = client.retrieve(GET(url).headers(["X-Auth-Company": companyId]), NotificationsResponseDto)
+      def result = client.retrieve(GET("$url?type=A").headers(["X-Auth-Company": companyId]), NotificationsResponseDto)
 
       then:
       notThrown(HttpClientResponseException)

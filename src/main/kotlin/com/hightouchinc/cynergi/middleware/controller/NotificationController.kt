@@ -12,7 +12,6 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Header
-import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
@@ -40,7 +39,7 @@ class NotificationController @Inject constructor(
    fun fetchAll(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
-      @PathVariable(name = "type", defaultValue = "E") type: String
+      @QueryValue(value = "type", defaultValue = "E") type: String
    ) : NotificationsResponseDto {
       return when(type.toUpperCase()) {
          "A" -> notificationService.fetchAllByCompany(companyId = companyId, type = type)

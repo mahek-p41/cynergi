@@ -9,6 +9,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getUUID
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -24,10 +25,8 @@ class NotificationRepository @Inject constructor(
 ) : Repository<Notification> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
    private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
-
-   override fun findOne(id: Long): Notification? {
-      val found = jdbc.findFirstOrNull("""
-         SELECT
+   @Language("PostgreSQL") private val baseFindQuery = """
+       SELECT
             n.id AS n_id,
             n.uu_row_id AS n_uu_row_id,
             n.time_created AS n_time_created,
@@ -43,9 +42,14 @@ class NotificationRepository @Inject constructor(
             ntd.time_updated AS ntd_time_updated,
             ntd.value AS ntd_value,
             ntd.description AS ntd_description
-         FROM notification n
-              JOIN notification_type_domain ntd
-                   ON n.notification_type_id = ntd.id
+       FROM notification n
+            JOIN notification_type_domain ntd
+                 ON n.notification_type_id = ntd.id
+   """.trimIndent()
+
+   override fun findOne(id: Long): Notification? {
+      val found = jdbc.findFirstOrNull("""
+         $baseFindQuery
          WHERE n.id = :id
          """.trimIndent(),
          mapOf("id" to id),
@@ -76,10 +80,11 @@ class NotificationRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "company_id" to entity.company,
+            "start_date" to entity.startDate,
             "expiration_date" to entity.expirationDate,
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
-            "start_date" to entity.startDate,
+            "expiration_date" to entity.expirationDate,
             "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
@@ -93,10 +98,10 @@ class NotificationRepository @Inject constructor(
          UPDATE notification
          SET
             company_id = :company_id,
+            start_date = :start_date,
             expiration_date = :expiration_date,
             message = :message,
             sending_employee = :sending_employee,
-            start_date = :start_date,
             notification_type_id = :notification_type_id
          WHERE id = :id
          RETURNING
@@ -105,15 +110,30 @@ class NotificationRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "company_id" to entity.company,
+            "start_date" to entity.startDate,
             "expiration_date" to entity.expirationDate,
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
-            "start_date" to entity.startDate,
             "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
       )
    }
+
+   fun findAllByCompany(companyId: String, type: String): List<Notification> =
+      jdbc.query("""
+         $baseFindQuery
+         WHERE n.company_id = :company_id
+               AND ntd.value = :notification_type
+               AND n.start_date <= current_date
+               AND n.expiration_date >= current_date
+         """.trimIndent(),
+         mapOf(
+            "company_id" to companyId,
+            "notification_type" to type
+         ),
+         fullNotificationsRowMapper
+      )
 }
 
 private class NotificationsRowMapper(
