@@ -16,6 +16,7 @@ data class NotificationTypeDomain (
    val value: String,
    val description: String
 ) : TypeDomainEntity<NotificationTypeDomain> {
+
    constructor(id: Long, value: String, description: String) :
       this(
          id = id,
@@ -25,6 +26,7 @@ data class NotificationTypeDomain (
          value = value,
          description = description
       )
+
    constructor(dto: NotificationDomainTypeDto) :
       this(
          id = dto.id,

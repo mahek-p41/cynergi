@@ -40,7 +40,7 @@ class NotificationController @Inject constructor(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
       @QueryValue(value = "type", defaultValue = "E") type: String
-   ) : NotificationsResponseDto {
+   ) : NotificationsResponseDto { // FIXME do away with this wrapper for the list of notifications
       return when(type.toUpperCase()) {
          "A" -> notificationService.fetchAllByCompany(companyId = companyId, type = type)
 

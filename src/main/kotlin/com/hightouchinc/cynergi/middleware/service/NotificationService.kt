@@ -32,9 +32,10 @@ class NotificationService @Inject constructor(
          notifications = notificationRepository.findAllByCompany(companyId = companyId, type = type).map { NotificationDto(it) }
       )
 
-   fun fetchAllByRecipient(companyId: String, authId: String, type: String): NotificationsResponseDto {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-   }
+   fun fetchAllByRecipient(companyId: String, authId: String, type: String): NotificationsResponseDto =
+      NotificationsResponseDto(
+         notifications = notificationRepository.findAllByRecipient(companyId = companyId, recipientId = authId, type = type).map { NotificationDto(it) }
+      )
 
    fun exists(id: Long): Boolean =
       notificationRepository.exists(id = id)

@@ -6,6 +6,10 @@ $$
 BEGIN
    new.time_updated := clock_timestamp();
 
+   IF new.uu_row_id <> old.uu_row_id THEN -- help ensure that the uu_row_id can't be updated once it is created
+      RAISE EXCEPTION 'cannot update uu_row_id once it has been created';
+   END IF;
+
    RETURN new;
 END;
 $$

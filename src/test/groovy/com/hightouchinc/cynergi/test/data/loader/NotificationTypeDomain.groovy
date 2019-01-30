@@ -3,21 +3,37 @@ package com.hightouchinc.cynergi.test.data.loader
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
 import com.hightouchinc.cynergi.middleware.repository.NotificationTypeDomainRepository
 import groovy.transform.CompileStatic
+import org.apache.commons.lang3.RandomUtils
 
 import javax.inject.Singleton
 import java.util.stream.Stream
 
+import static java.util.Collections.unmodifiableList
+
 @CompileStatic
 class NotificationTypeDomainTestDataLoader {
-   static Stream<NotificationTypeDomain> stream(int number = 1) {
-      final int value = number > 0 || number <= 4 ? number : 1
-
-      return Stream.of(
+   private static final List<NotificationTypeDomain> typeDomainValues = unmodifiableList(
+      [
          new NotificationTypeDomain(1, "S", "Store"),
          new NotificationTypeDomain(2, "E", "Employee"),
          new NotificationTypeDomain(3, "D", "Department"),
          new NotificationTypeDomain(4, "A", "All")
-      ).limit(value)
+      ]
+   )
+
+   static List<NotificationTypeDomain> values() {
+      return typeDomainValues
+   }
+
+   static NotificationTypeDomain random() {
+      return typeDomainValues[RandomUtils.nextInt(0, typeDomainValues.size())]
+   }
+
+   static Stream<NotificationTypeDomain> stream(int number = 1) {
+      final notificationTypes = typeDomainValues
+      final int value = number > 0 || number <= values().size() ? number : 1
+
+      return notificationTypes.stream().limit(value)
    }
 }
 

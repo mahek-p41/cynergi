@@ -25,6 +25,7 @@ class NotificationRepository @Inject constructor(
 ) : Repository<Notification> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
    private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
+
    @Language("PostgreSQL") private val baseFindQuery = """
        SELECT
             n.id AS n_id,
@@ -73,8 +74,8 @@ class NotificationRepository @Inject constructor(
       logger.debug("Inserting notification {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO notification(company_id, expiration_date, message, sending_employee, start_date, notification_type_id)
-         VALUES (:company_id, :expiration_date, :message, :sending_employee, :start_date, :notification_type_id)
+         INSERT INTO notification(company_id, start_date, expiration_date, message, sending_employee, notification_type_id)
+         VALUES (:company_id, :start_date, :expiration_date, :message, :sending_employee, :notification_type_id)
          RETURNING
             *
          """.trimIndent(),
@@ -87,7 +88,7 @@ class NotificationRepository @Inject constructor(
             "expiration_date" to entity.expirationDate,
             "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
-         NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
+         NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
    }
 
@@ -116,7 +117,7 @@ class NotificationRepository @Inject constructor(
             "sending_employee" to entity.sendingEmployee,
             "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
-         NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() })
+         NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
    }
 
@@ -125,12 +126,28 @@ class NotificationRepository @Inject constructor(
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
-               AND n.start_date <= current_date
-               AND n.expiration_date >= current_date
+               AND current_date BETWEEN n.start_date AND n.expiration_date
          """.trimIndent(),
          mapOf(
             "company_id" to companyId,
             "notification_type" to type
+         ),
+         fullNotificationsRowMapper
+      )
+
+   fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
+      jdbc.query("""
+         $baseFindQuery
+              JOIN notification_recipient nr
+                   ON n.id = nr.notification_id
+         WHERE n.company_id = :company_id
+               AND ntd.value = :notification_type
+               AND nr.recipient = :recipient_id
+         """.trimIndent(),
+         mapOf(
+            "company_id" to companyId,
+            "notification_type" to type,
+            "recipient_id" to recipientId
          ),
          fullNotificationsRowMapper
       )

@@ -5,6 +5,8 @@ import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
 import com.hightouchinc.cynergi.test.data.loader.NotificationDataLoaderService
+import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientDataLoaderService
+import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
 
@@ -19,6 +21,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/notifications"
    final def notificationsDataLoaderService = applicationContext.getBean(NotificationDataLoaderService)
+   final def notificationRecipientDataLoaderService = applicationContext.getBean(NotificationRecipientDataLoaderService)
 
    void "fetch one notification by id" () {
       given:
@@ -44,17 +47,36 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
-   void "fetch all by company" () {
+   void "fetch all by company with type All" () {
       given:
       final def companyId = "corrto"
-      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now()).collect(Collectors.toList())
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType).collect(Collectors.toList())
 
       when:
-      def result = client.retrieve(GET("$url?type=A").headers(["X-Auth-Company": companyId]), NotificationsResponseDto)
+      def result = client.retrieve(GET("$url?type=${notificationType.value}").headers(["X-Auth-Company": companyId]), NotificationsResponseDto)
 
       then:
       notThrown(HttpClientResponseException)
       result == new NotificationsResponseDto(fiveNotifications.collect { new NotificationDto(it)} )
+      result.notifications.size() == 5
+   }
+
+   void "fetch all by company with type Employee" () {
+      given:
+      final def companyId = "corrto"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+
+      when:
+      def recipient = recipientNotifications[0].recipient
+      def result = client.retrieve(GET("$url?type=${notificationType.value}").headers(["X-Auth-Company": companyId, "X-Auth-User": recipient]), NotificationsResponseDto)
+
+      then:
+      notThrown(HttpClientResponseException)
+      result == new NotificationsResponseDto([new NotificationDto(notification)])
+      result.notifications.size() == 1
    }
 
    void "fetch all by company without the required X-Auth-Company header" () {
@@ -65,10 +87,5 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       exception.response.getBody(JsonError).orElse(null)?.message == "Required argument companyId not specified"
-   }
-
-   void "fetch all by company and user" () {
-      expect:
-      "implemented" == "true"
    }
 }
