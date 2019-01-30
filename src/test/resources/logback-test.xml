@@ -9,6 +9,9 @@
     </appender>
 
     <logger name="io.micronaut" level="INFO"/>
+    <logger name="org.hibernate" level="ERROR"/>
+    <logger name="io.netty" level="ERROR"/>
+    <logger name="org.jboss" level="ERROR"/>
     <logger name="com.zaxxer.hikari" level="INFO"/>
     <logger name="org.springframework.jdbc.datasource" level="INFO"/>
     <logger name="org.flywaydb.core.internal.scanner.classpath" level="INFO"/>

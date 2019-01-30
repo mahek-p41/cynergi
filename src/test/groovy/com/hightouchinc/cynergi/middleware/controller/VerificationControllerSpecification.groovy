@@ -10,6 +10,7 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
+import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
 
@@ -153,7 +154,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(JsonError[]).orElse(null)
+      final def errors = exception.response.getBody(Argument.listOf(JsonError)).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "provided value ${verification.customerComments} is too large for customerComments"
