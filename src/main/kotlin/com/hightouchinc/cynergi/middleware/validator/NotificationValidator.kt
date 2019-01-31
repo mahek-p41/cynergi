@@ -35,12 +35,8 @@ class NotificationValidator @Inject constructor(
 
       if (id == null) {
          errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
-      } else {
-         val existingNotification: NotificationDto? = notificationService.fetchById(id = id)
-
-         if (existingNotification == null) {
-            errors.add(element = ValidationError("id", NOT_FOUND, listOf(id)))
-         }
+      } else if ( !notificationService.exists(id = id) ) {
+         errors.add(element = ValidationError("id", NOT_FOUND, listOf(id)))
       }
 
       if (errors.isNotEmpty()) {

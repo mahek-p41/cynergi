@@ -102,6 +102,14 @@ data class NotificationDto (
          notificationType = entity.notificationDomainType.value
       )
 
+   constructor(entity: Notification, recipients: List<NotificationRecipient>):
+      this(
+         entity = entity
+      ) {
+
+      this.recipients = recipients.map { NotificationRecipientDto(it) }
+   }
+
    override fun dtoId(): Long? = id
 
    override fun copyMe(): NotificationDto = copy()
