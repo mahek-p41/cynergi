@@ -35,7 +35,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = findLocale(httpRequest)
 
-      return serverError(JsonError(localizationService.localize(ErrorCodes.System.INTERNAL_ERROR, locale)))
+      return serverError(JsonError(localizationService.localize(ErrorCodes.System.INTERNAL_ERROR, locale, emptyArray())))
    }
 
    @Error(global = true, exception = NotImplementedError::class)
@@ -44,7 +44,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = findLocale(httpRequest)
 
-      return HttpResponse.status<JsonError>(HttpStatus.NOT_IMPLEMENTED).body(JsonError(localizationService.localize(ErrorCodes.System.NOT_IMPLEMENTED, locale, httpRequest.path)))
+      return HttpResponse.status<JsonError>(HttpStatus.NOT_IMPLEMENTED).body(JsonError(localizationService.localize(ErrorCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
@@ -53,7 +53,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = findLocale(httpRequest)
 
-      return badRequest(JsonError(localizationService.localize(ErrorCodes.System.REQUIRED_ARGUMENT, locale, exception.argument.name)))
+      return badRequest(JsonError(localizationService.localize(ErrorCodes.System.REQUIRED_ARGUMENT, locale, arrayOf(exception.argument.name))))
    }
 
    @Error(global = true, exception = NotFoundException::class)
@@ -62,7 +62,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = findLocale(httpRequest)
 
-      return notFound(JsonError(localizationService.localize(ErrorCodes.System.NOT_FOUND, locale, notFoundException.notFound)))
+      return notFound(JsonError(localizationService.localize(ErrorCodes.System.NOT_FOUND, locale, arrayOf(notFoundException.notFound))))
    }
 
    @Error(global = true, exception = ValidationException::class)
@@ -92,7 +92,7 @@ class ErrorHandler @Inject constructor(
          constraintViolationException.constraintViolations.map {
             val field = buildPropertyPath(rootPath = it.propertyPath)
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
-            val jsonError = JsonError(localizationService.localize(it.constraintDescriptor.messageTemplate, locale, field, value))
+            val jsonError = JsonError(localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arrayOf(field, value)))
 
             jsonError.path(field)
 

@@ -1,8 +1,11 @@
 package com.hightouchinc.cynergi.middleware.service
 
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
+
 import org.springframework.context.support.ResourceBundleMessageSource
 import spock.lang.Specification
+
+import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
+import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 
 class LocalizationServiceSpecification extends Specification {
 
@@ -31,8 +34,8 @@ class LocalizationServiceSpecification extends Specification {
       localizationService.localize(messageKey, englishLocale, args) == message
 
       where:
-      messageKey                     | args                 || message
-      ErrorCodes.Validation.NOT_NULL | ["name"] as Object[] || "name is required"
-      ErrorCodes.System.NOT_FOUND    | [1] as Object[]      || "Resource 1 was unable to be found"
+      messageKey | args                 || message
+      NOT_NULL   | ["name"] as Object[] || "name is required"
+      NOT_FOUND  | [1] as Object[]      || "Resource 1 was unable to be found"
    }
 }

@@ -46,7 +46,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       client.exchange(GET("$url/0"), NotificationResponseDto)
 
       then:
-      final HttpClientResponseException exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
    }
@@ -88,7 +88,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       client.retrieve(GET(url), NotificationsResponseDto)
 
       then:
-      final HttpClientResponseException exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       exception.response.getBody(JsonError).orElse(null)?.message == "Required argument companyId not specified"
    }
@@ -127,5 +127,23 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       savedNotification.recipients[0].description == notificationRecipients[0].description
       savedNotification.recipients[0].recipient == notificationRecipients[0].recipient
       notificationRepository.exists(savedNotification.id)
+   }
+
+   void "post invalid notification of type employee with no recipients" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+
+      when:
+      client.retrieve(POST(url, new NotificationDto(notification)), NotificationDto)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final errors = exception.response.getBody(JsonError[]).get()
+      errors.size() == 1
+      errors[0].message == "Recipients required for notification type E"
+      errors[0].path.present
+      errors[0].path.get() == "recipients"
    }
 }
