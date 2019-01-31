@@ -44,7 +44,12 @@ class NotificationService @Inject constructor(
       val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
 
       return NotificationDto(
-         entity = notificationRepository.insert(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))
+         entity = notificationRepository.insert(
+            entity = Notification(
+               dto = dto,
+               notificationDomainType = notificationDomainType
+            )
+         )
       )
    }
 

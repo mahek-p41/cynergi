@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.entity.NotificationDto
 import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import com.hightouchinc.cynergi.test.data.loader.NotificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientDataLoaderService
+import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -103,6 +104,28 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       then:
       savedNotification.id != null
       savedNotification.id > 0
+      savedNotification.company == "corrto"
+      savedNotification.sendingEmployee == notification.sendingEmployee
+      savedNotification.recipients.size() == 0
+      notificationRepository.exists(savedNotification.id)
+   }
+
+   void "post valid notification of type Employee with 1 recipient" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final def notificationRecipients = NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
+
+      when:
+      final def savedNotification = client.retrieve(POST(url, new NotificationDto(notification, notificationRecipients)), NotificationDto)
+
+      then:
+      savedNotification.id != null
+      savedNotification.id > 0
+      savedNotification.recipients.size() == 1
+      savedNotification.recipients[0].id > 0
+      savedNotification.recipients[0].description == notificationRecipients[0].description
+      savedNotification.recipients[0].recipient == notificationRecipients[0].recipient
       notificationRepository.exists(savedNotification.id)
    }
 }

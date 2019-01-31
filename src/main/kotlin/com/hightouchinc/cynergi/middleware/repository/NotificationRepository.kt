@@ -8,6 +8,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUUID
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
@@ -21,7 +22,8 @@ import javax.inject.Singleton
 @Singleton
 class NotificationRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val notificationTypeDomainRepository: NotificationTypeDomainRepository
+   private val notificationTypeDomainRepository: NotificationTypeDomainRepository,
+   private val notificationRecipientRepository: NotificationRecipientRepository
 ) : Repository<Notification> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
    private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
@@ -70,10 +72,11 @@ class NotificationRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
-      return jdbc.insertReturning("""
+      val notification = jdbc.insertReturning("""
          INSERT INTO notification(company_id, start_date, expiration_date, message, sending_employee, notification_type_id)
          VALUES (:company_id, :start_date, :expiration_date, :message, :sending_employee, :notification_type_id)
          RETURNING
@@ -90,8 +93,13 @@ class NotificationRepository @Inject constructor(
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
+
+      entity.recipients.asSequence().map { notificationRecipientRepository.insert(it.copy(notification = notification)) }.forEach { notification.recipients.add(it) }
+
+      return notification
    }
 
+   @Transactional
    override fun update(entity: Notification): Notification {
       logger.debug("Updating notification {}", entity)
 

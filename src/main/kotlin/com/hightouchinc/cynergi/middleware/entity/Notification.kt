@@ -99,7 +99,8 @@ data class NotificationDto (
          message = entity.message,
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
-         notificationType = entity.notificationDomainType.value
+         notificationType = entity.notificationDomainType.value,
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 
    constructor(entity: Notification, recipients: List<NotificationRecipient>):

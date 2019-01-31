@@ -34,6 +34,7 @@ data class NotificationRecipient (
       this(
          id = dto.id,
          recipient = dto.recipient,
+         description = dto.description,
          notification = notification
       )
 
@@ -42,6 +43,10 @@ data class NotificationRecipient (
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): NotificationRecipient = copy()
+
+   override fun toString(): String {
+      return "NotificationRecipient(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, description=$description, recipient='$recipient', notification=${notification.entityId()})"
+   }
 }
 
 @JsonInclude(NON_NULL)

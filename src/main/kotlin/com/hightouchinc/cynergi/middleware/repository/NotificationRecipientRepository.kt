@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUUID
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -38,6 +39,7 @@ class NotificationRecipientRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Inserting notification_recipient {}", entity)
 
@@ -56,6 +58,7 @@ class NotificationRecipientRepository @Inject constructor(
       )
    }
 
+   @Transactional
    override fun update(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Updating notification_recipient {}", entity)
 
