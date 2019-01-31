@@ -23,7 +23,7 @@ import javax.validation.Valid
  * @param verificationValidator defines that the [VerificationValidator] instance should be injected by the container
  */
 @Validated
-@Controller("/api/company/{parentId}/verification/")
+@Controller("/api/verifications/{companyId}/")
 class VerificationController @Inject constructor(
    private val verificationService: VerificationService,
    private val verificationValidator: VerificationValidator
@@ -38,7 +38,7 @@ class VerificationController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(value = "/account/{customerAccount}", produces = [APPLICATION_JSON])
    fun fetchOne(
-      @QueryValue("parentId") parentId: String,
+      @QueryValue("companyId") companyId: String,
       @QueryValue("customerAccount") customerAccount: String
    ): VerificationDto {
       return verificationService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
@@ -47,22 +47,22 @@ class VerificationController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
-      @QueryValue("parentId") parentId: String,
+      @QueryValue("companyId") companyId: String,
       @Valid @Body dto: VerificationDto
    ): VerificationDto {
-      verificationValidator.validateSave(dto = dto, parent = parentId)
+      verificationValidator.validateSave(dto = dto, parent = companyId)
 
-      return verificationService.create(dto = dto, parent = parentId)
+      return verificationService.create(dto = dto, parent = companyId)
    }
 
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
-      @QueryValue("parentId") parentId: String,
+      @QueryValue("companyId") companyId: String,
       @Valid @Body dto: VerificationDto
    ): VerificationDto {
-      verificationValidator.validateUpdate(dto = dto, parent = parentId)
+      verificationValidator.validateUpdate(dto = dto, parent = companyId)
 
-      return verificationService.update(dto = dto, parent = parentId)
+      return verificationService.update(dto = dto, parent = companyId)
    }
 }

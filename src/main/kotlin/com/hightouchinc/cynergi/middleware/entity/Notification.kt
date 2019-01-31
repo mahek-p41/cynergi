@@ -23,8 +23,20 @@ data class Notification (
    val message: String,
    val sendingEmployee: String, // TODO convert from soft foreign key to employee
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
-   val notificationDomainType: NotificationTypeDomain
+   val notificationDomainType: NotificationTypeDomain,
+   val recipients: MutableList<NotificationRecipient> = mutableListOf()
 ) : Entity<Notification> {
+
+   constructor(startDate: LocalDate, expirationDate: LocalDate, message: String, sendingEmployee: String, company: String, notificationDomainType: NotificationTypeDomain) :
+      this (
+         id = null,
+         startDate = startDate,
+         expirationDate = expirationDate,
+         message = message,
+         sendingEmployee = sendingEmployee,
+         company = company,
+         notificationDomainType = notificationDomainType
+      )
 
    constructor(dto: NotificationDto, notificationDomainType: NotificationTypeDomain) :
       this(
@@ -35,7 +47,10 @@ data class Notification (
          sendingEmployee = dto.sendingEmployee!!,
          startDate = dto.startDate!!,
          notificationDomainType = notificationDomainType
-      )
+      ) {
+
+      dto.recipients.asSequence().map { NotificationRecipient(it, this) }.forEach { this.recipients.add(it) }
+   }
 
    override fun entityId(): Long? = id
 
@@ -51,26 +66,28 @@ data class NotificationDto (
    var id: Long? = null,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Size(max = 6, message = SIZE)
-   val company: String?,
+   var startDate: LocalDate?,
 
    @field:NotNull(message = NOT_NULL)
-   val expirationDate: LocalDate?,
+   var expirationDate: LocalDate?,
+
+   @field:NotNull(message = NOT_NULL)
+   @field:Size(min = 6, max = 6, message = SIZE)
+   var company: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(max = 500, message = SIZE)
-   val message: String?,
+   var message: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(max = 255, message = SIZE)
-   val sendingEmployee: String?,
-
-   @field:NotNull(message = NOT_NULL)
-   val startDate: LocalDate?,
+   var sendingEmployee: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 1, max = 1, message = SIZE)
-   val notificationType: String?
+   var notificationType: String?,
+
+   var recipients: List<NotificationRecipientDto> = emptyList()
 
 ) : DataTransferObjectBase<NotificationDto>() {
 
@@ -82,7 +99,7 @@ data class NotificationDto (
          message = entity.message,
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
-         notificationType = "${entity.notificationDomainType.myValue()}:${entity.notificationDomainType.myDescription()}"
+         notificationType = entity.notificationDomainType.value
       )
 
    override fun dtoId(): Long? = id

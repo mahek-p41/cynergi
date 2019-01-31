@@ -9,7 +9,6 @@ import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
@@ -31,10 +30,6 @@ class NotificationTestDataLoader {
 
       return IntStream.range(0, value).mapToObj {
          new Notification(
-            null,
-            UUID.randomUUID(),
-            OffsetDateTime.now(),
-            OffsetDateTime.now(),
             startLocalDate,
             expirationLocalDate,
             lorem.characters(1, 500),

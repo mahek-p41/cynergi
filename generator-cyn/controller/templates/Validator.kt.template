@@ -4,16 +4,18 @@ import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
 import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import javax.inject.Singleton
 
 @Singleton
-class <%= entity %>Validator(
+class <%= entity %>Validator @Inject constructor(
    private val <%= repository %>Service: <%= entity %>Service
 ) {
 
    @Throws(ValidationException::class)
    fun validateSave(dto: <%= entity %>Dto) {
-      val errors: Set<ValidationError> = setOf()
+      val errors: MutableSet<ValidationError> = mutableSetOf()
 
       if (errors.isNotEmpty()) {
          throw ValidationException(errors)
@@ -26,12 +28,12 @@ class <%= entity %>Validator(
       val id = dto.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", ErrorCodes.Validation.NOT_NULL, listOf("id")))
+         errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
       } else {
          val existing<%= entity %>: <%= entity %>Dto? = <%= repository %>Service.fetchById(id = id)
 
          if (existing<%= entity %> == null) {
-            errors.add(element = ValidationError("id", ErrorCodes.System.NOT_FOUND, listOf(id)))
+            errors.add(element = ValidationError("id", NOT_FOUND, listOf(id)))
          }
       }
 

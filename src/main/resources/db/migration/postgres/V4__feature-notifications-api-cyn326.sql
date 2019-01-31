@@ -33,5 +33,3 @@ ALTER TABLE notification
 ALTER TABLE notification_type_domain
    ADD CONSTRAINT notification_notification_domain_type_uq UNIQUE (value);
 
-CREATE INDEX notification_recipient_id_idx
-   ON notification_recipient (notification_id);

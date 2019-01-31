@@ -135,4 +135,4 @@ CREATE TRIGGER update_verification_reference_trg
    ON verification_reference
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-CREATE INDEX ON verification_reference(verification_id);
+CREATE INDEX verification_reference_verification_id_idx ON verification_reference(verification_id);

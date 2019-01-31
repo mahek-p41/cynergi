@@ -41,7 +41,8 @@ data class Verification(
       this.auto = copyAutoDtoToEntity(dto = dto, parent = this)
       this.employment = copyEmploymentDtoToEntity(dto = dto, parent = this)
       this.landlord = copyLandlordDtoToEntity(dto = dto, parent = this)
-      this.references.addAll( dto.references.map { VerificationReference(it, this) } )
+
+      dto.references.asSequence().map { VerificationReference(it, this) }.forEach { this.references.add(it) }
    }
 
    override fun entityId(): Long? = id

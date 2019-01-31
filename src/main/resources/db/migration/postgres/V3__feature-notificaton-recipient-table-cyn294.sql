@@ -12,3 +12,7 @@ CREATE TRIGGER update_notification_recipient_trg
    ON notification_recipient
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
+CREATE INDEX notification_recipient_id_idx
+   ON notification_recipient (notification_id);
+ALTER TABLE notification_recipient
+   ADD CONSTRAINT recipient_notification_id_uq UNIQUE (recipient, notification_id);

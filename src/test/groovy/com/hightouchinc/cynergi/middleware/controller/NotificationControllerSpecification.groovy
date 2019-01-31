@@ -13,7 +13,7 @@ import io.micronaut.http.hateos.JsonError
 import java.time.LocalDate
 import java.util.stream.Collectors
 
-import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmpty
+import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -23,7 +23,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def notificationsDataLoaderService = applicationContext.getBean(NotificationDataLoaderService)
    final def notificationRecipientDataLoaderService = applicationContext.getBean(NotificationRecipientDataLoaderService)
 
-   void "fetch one notification by id" () {
+   void "fetch one notification by id with no recipients" () {
       given:
       final def savedNotification = notificationsDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create notification") }
       final def notificationDto = new NotificationResponseDto(new NotificationDto(savedNotification))
@@ -33,8 +33,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result == notificationDto
-      allPropertiesFullAndNotEmpty(result)
-      allPropertiesFullAndNotEmpty(result.notification)
+      allPropertiesFullAndNotEmptyExcept(result.notification, "recipients")
    }
 
    void "fetch one notification by id not found" () {
@@ -66,7 +65,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       given:
       final def companyId = "corrto"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
       final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
       when:

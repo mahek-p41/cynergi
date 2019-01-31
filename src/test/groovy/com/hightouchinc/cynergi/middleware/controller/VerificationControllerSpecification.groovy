@@ -25,7 +25,7 @@ import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 class VerificationControllerSpecification extends ControllerSpecificationBase {
-   final def url = "/api/company/corrto/verification"
+   final def url = "/api/verifications/corrto"
    final def verificationDataLoaderService = applicationContext.getBean(VerificationDataLoaderService)
    final def verificationReferenceDataLoaderService = applicationContext.getBean(VerificationReferenceDataLoaderService)
    final def verificationReferenceRepository = applicationContext.getBean(VerificationReferenceRepository)
@@ -39,6 +39,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       def result = client.retrieve(GET("$url/${savedVerification.id}"), VerificationDto)
 
       then:
+      notThrown(HttpClientResponseException)
       result == verificationDto
       result.references.size() == 6
       allPropertiesFullAndNotEmpty(result)
@@ -63,6 +64,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       def result = client.retrieve(GET("$url/account/${savedVerification.customerAccount}"), VerificationDto)
 
       then:
+      notThrown(HttpClientResponseException)
       result == verificationDto
       allPropertiesFullAndNotEmpty(result)
    }
