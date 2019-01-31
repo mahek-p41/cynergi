@@ -57,6 +57,10 @@ data class VerificationReference (
           else -> false
       }
    }
+
+   override fun toString(): String {
+      return "VerificationReference(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, hasHomePhone=$hasHomePhone, known=$known, leaveMessage=$leaveMessage, rating=$rating, relationship=$relationship, reliable=$reliable, timeFrame=$timeFrame, verifyPhone=$verifyPhone, verification=${verification.entityId()})"
+   }
 }
 
 @JsonInclude(NON_NULL)

@@ -69,6 +69,10 @@ data class VerificationAuto(
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): VerificationAuto = copy()
+
+   override fun toString(): String {
+      return "VerificationAuto(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, comment=$comment, dealerPhone=$dealerPhone, diffAddress=$diffAddress, diffEmployee=$diffEmployee, diffPhone=$diffPhone, dmvVerify=$dmvVerify, employer=$employer, lastPayment=$lastPayment, name=$name, nextPayment=$nextPayment, note=$note, paymentFrequency=$paymentFrequency, payment=$payment, pendingAction=$pendingAction, phone=$phone, previousLoan=$previousLoan, purchaseDate=$purchaseDate, related=$related, verification=${verification.entityId()})"
+   }
 }
 
 @JsonInclude(NON_NULL)

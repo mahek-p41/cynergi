@@ -183,6 +183,8 @@ class VerificationRepository @Inject constructor(
          "company" to entity.company
       )
 
+      logger.trace("Inserting Verification {}", paramMap)
+
       val inserted = jdbc.insertReturning("""
          INSERT INTO verification (customer_account, customer_comments, verified_by, company)
          VALUES(:customer_account, :customer_comments, :verified_by, :company)

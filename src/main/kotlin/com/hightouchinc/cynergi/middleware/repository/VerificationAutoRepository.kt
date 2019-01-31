@@ -43,7 +43,7 @@ class VerificationAutoRepository(
 
    @Transactional
    override fun insert(entity: VerificationAuto): VerificationAuto {
-      logger.trace("Inserting {}", entity)
+      logger.debug("Inserting verification_auto {}", entity)
 
       return jdbc.insertReturning(
          """
@@ -80,7 +80,7 @@ class VerificationAutoRepository(
 
    @Transactional
    override fun update(entity: VerificationAuto): VerificationAuto {
-      logger.trace("Updating {}", entity)
+      logger.debug("Updating verification_auto {}", entity)
 
       return jdbc.updateReturning(
          """

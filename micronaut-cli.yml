@@ -1,5 +1,5 @@
 profile: service
 defaultPackage: com.hightouchinc.cynergi.middleware
 ---
-testFramework: spek
+testFramework: spock
 sourceLanguage: kotlin

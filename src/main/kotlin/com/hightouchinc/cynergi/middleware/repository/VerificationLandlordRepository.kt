@@ -40,7 +40,7 @@ class VerificationLandlordRepository(
    }
 
    override fun insert(entity: VerificationLandlord): VerificationLandlord {
-      logger.trace("Inserting {}", entity)
+      logger.trace("Inserting verification_landlord {}", entity)
 
       return jdbc.insertReturning("""
          INSERT INTO verification_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent, verification_id)
@@ -66,7 +66,7 @@ class VerificationLandlordRepository(
    }
 
    override fun update(entity: VerificationLandlord): VerificationLandlord {
-      logger.trace("Updating {}", entity)
+      logger.trace("Updating verification_landlord {}", entity)
 
       return jdbc.updateReturning("""
          UPDATE verification_landlord
