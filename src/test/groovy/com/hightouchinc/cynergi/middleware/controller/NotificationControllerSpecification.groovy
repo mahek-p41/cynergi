@@ -146,4 +146,30 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       errors[0].path.present
       errors[0].path.get() == "recipients"
    }
+
+   void "post invalid notification of type all with nulls" () {
+      given:
+      final def notification = new NotificationDto(null, null, null, null, null, null, null, [])
+
+      when:
+      client.retrieve(POST(url, notification), NotificationDto)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final errors = exception.response.getBody(JsonError[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
+      errors.size() == 6
+      errors[0].message == "company is required"
+      errors[0].path.get() == "company"
+      errors[1].message == "expirationDate is required"
+      errors[1].path.get() == "expirationDate"
+      errors[2].message == "message is required"
+      errors[2].path.get() == "message"
+      errors[3].message == "notificationType is required"
+      errors[3].path.get() == "notificationType"
+      errors[4].message == "sendingEmployee is required"
+      errors[4].path.get() == "sendingEmployee"
+      errors[5].message == "startDate is required"
+      errors[5].path.get() == "startDate"
+   }
 }
