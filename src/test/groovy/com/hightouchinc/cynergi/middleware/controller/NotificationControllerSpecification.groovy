@@ -4,8 +4,10 @@ import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificatio
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
+import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import com.hightouchinc.cynergi.test.data.loader.NotificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientDataLoaderService
+import com.hightouchinc.cynergi.test.data.loader.NotificationTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateos.JsonError
@@ -15,11 +17,13 @@ import java.util.stream.Collectors
 
 import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
 import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/notifications"
+   final def notificationRepository = applicationContext.getBean(NotificationRepository)
    final def notificationsDataLoaderService = applicationContext.getBean(NotificationDataLoaderService)
    final def notificationRecipientDataLoaderService = applicationContext.getBean(NotificationRecipientDataLoaderService)
 
@@ -86,5 +90,19 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       exception.response.getBody(JsonError).orElse(null)?.message == "Required argument companyId not specified"
+   }
+
+   void "post valid notification of type All" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notification = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+
+      when:
+      final def savedNotification = client.retrieve(POST(url, new NotificationDto(notification)), NotificationDto)
+
+      then:
+      savedNotification.id != null
+      savedNotification.id > 0
+      notificationRepository.exists(savedNotification.id)
    }
 }
