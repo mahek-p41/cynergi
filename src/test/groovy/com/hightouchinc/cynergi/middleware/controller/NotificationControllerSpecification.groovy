@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
+import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
@@ -10,8 +11,8 @@ import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
+import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.hateos.JsonError
 
 import java.time.LocalDate
 import java.util.stream.Collectors
@@ -43,12 +44,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one notification by id not found" () {
       when:
-      client.exchange(GET("$url/0"), NotificationResponseDto)
+      client.exchange(GET("$url/0"), Argument.of(NotificationResponseDto), Argument.of(ErrorDto))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
    void "fetch all by company with type All" () {
@@ -85,12 +86,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all by company without the required X-Auth-Company header" () {
       when:
-      client.retrieve(GET(url), NotificationsResponseDto)
+      client.retrieve(GET(url), Argument.of(NotificationsResponseDto), Argument.of(ErrorDto))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(JsonError).orElse(null)?.message == "Required argument companyId not specified"
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Required argument companyId not specified"
    }
 
    void "post valid notification of type All" () {
@@ -135,16 +136,15 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(POST(url, new NotificationDto(notification)), NotificationDto)
+      client.retrieve(POST(url, new NotificationDto(notification)), Argument.of(NotificationDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      final errors = exception.response.getBody(JsonError[]).get()
+      final errors = exception.response.getBody(ErrorDto[]).get()
       errors.size() == 1
       errors[0].message == "Recipients required for notification type E"
-      errors[0].path.present
-      errors[0].path.get() == "recipients"
+      errors[0].path == "recipients"
    }
 
    void "post invalid notification of type all with nulls" () {
@@ -152,24 +152,24 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = new NotificationDto(null, null, null, null, null, null, null, [])
 
       when:
-      client.retrieve(POST(url, notification), NotificationDto)
+      client.retrieve(POST(url, notification), Argument.of(NotificationDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      final errors = exception.response.getBody(JsonError[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
+      final errors = exception.response.getBody(ErrorDto[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 6
       errors[0].message == "company is required"
-      errors[0].path.get() == "company"
+      errors[0].path == "company"
       errors[1].message == "expirationDate is required"
-      errors[1].path.get() == "expirationDate"
+      errors[1].path == "expirationDate"
       errors[2].message == "message is required"
-      errors[2].path.get() == "message"
+      errors[2].path == "message"
       errors[3].message == "notificationType is required"
-      errors[3].path.get() == "notificationType"
+      errors[3].path == "notificationType"
       errors[4].message == "sendingEmployee is required"
-      errors[4].path.get() == "sendingEmployee"
+      errors[4].path == "sendingEmployee"
       errors[5].message == "startDate is required"
-      errors[5].path.get() == "startDate"
+      errors[5].path == "startDate"
    }
 }

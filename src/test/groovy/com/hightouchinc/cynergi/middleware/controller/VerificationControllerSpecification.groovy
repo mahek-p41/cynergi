@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
+import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
@@ -12,7 +13,6 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceTestDataLo
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.hateos.JsonError
 
 import java.util.stream.Collectors
 
@@ -47,12 +47,12 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by id not found" () {
       when:
-      client.exchange(GET("$url/0"), VerificationDto)
+      client.exchange(GET("$url/0"), Argument.of(VerificationDto), Argument.of(ErrorDto))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
    void "fetch one verification by customer account" () {
@@ -71,12 +71,12 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by customer account not found" () {
       when:
-      client.exchange(GET("$url/account/-1"), VerificationDto)
+      client.exchange(GET("$url/account/-1"), Argument.of(VerificationDto), Argument.of(ErrorDto))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(JsonError).orElse(null)?.message == "Resource -1 was unable to be found"
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource -1 was unable to be found"
    }
 
    void "post verification successfully" () {
@@ -128,13 +128,13 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       )
 
       when:
-      client.retrieve(POST(url, verification), VerificationDto)
+      client.retrieve(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorDto[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(JsonError[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
       errors != null
       errors.size() == 3
 
@@ -150,13 +150,13 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      client.exchange(POST(url, verification))
+      client.exchange(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorDto[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(Argument.listOf(JsonError)).orElse(null)
+      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "provided value ${verification.customerComments} is too large for customerComments"
