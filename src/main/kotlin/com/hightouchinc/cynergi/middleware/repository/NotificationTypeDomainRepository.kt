@@ -37,6 +37,9 @@ class NotificationTypeDomainRepository @Inject constructor(
       return found
    }
 
+   override fun findAll(): List<NotificationTypeDomain> =
+      jdbc.query("SELECT * FROM notification_type_domain ORDER BY value", simpleNotificationDomainTypeRowMapper)
+
    fun mapPrefixedRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain? =
       rs.getString("ntd_id")?.let { prefixedNotificationDomainTypeRowMapper.mapRow(rs = rs, rowNum = rowNum) }
 }

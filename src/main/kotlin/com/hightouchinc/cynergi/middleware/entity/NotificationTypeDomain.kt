@@ -27,7 +27,7 @@ data class NotificationTypeDomain (
          description = description
       )
 
-   constructor(dto: NotificationDomainTypeDto) :
+   constructor(dto: NotificationTypeDomainDto) :
       this(
          id = dto.id,
          value = dto.value,
@@ -46,7 +46,7 @@ data class NotificationTypeDomain (
 }
 
 @JsonInclude(NON_NULL)
-data class NotificationDomainTypeDto (
+data class NotificationTypeDomainDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
@@ -55,7 +55,7 @@ data class NotificationDomainTypeDto (
 
    val description: String
 
-) : DataTransferObjectBase<NotificationDomainTypeDto>() {
+) : DataTransferObjectBase<NotificationTypeDomainDto>() {
 
    constructor(entity: NotificationTypeDomain) :
       this(
@@ -66,5 +66,5 @@ data class NotificationDomainTypeDto (
 
    override fun dtoId(): Long? = id
 
-   override fun copyMe(): NotificationDomainTypeDto = copy()
+   override fun copyMe(): NotificationTypeDomainDto = copy()
 }

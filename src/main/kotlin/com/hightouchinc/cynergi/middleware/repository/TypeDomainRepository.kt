@@ -16,5 +16,5 @@ interface TypeDomainRepository<ENTITY> {
 
    fun findOne(value: String): ENTITY?
 
-   // TODO fun fetchAll() with paging
+   fun findAll(): List<ENTITY>
 }

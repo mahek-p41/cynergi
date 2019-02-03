@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Notification
+import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
@@ -159,6 +160,9 @@ class NotificationRepository @Inject constructor(
          ),
          fullNotificationsRowMapper
       )
+
+   fun findAllTypes(): List<NotificationTypeDomain> =
+      notificationTypeDomainRepository.findAll()
 }
 
 private class NotificationsRowMapper(

@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
+import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import com.hightouchinc.cynergi.test.data.loader.NotificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientDataLoaderService
@@ -92,6 +93,22 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       exception.response.getBody(ErrorDto).orElse(null)?.message == "Required argument companyId not specified"
+   }
+
+   void "fetch all types" () {
+      when:
+      final def types = client.retrieve(GET("${url}/types"), NotificationTypeDomainDto[])
+
+      then:
+      types.size() == 4
+      types[0].value == 'A'
+      types[0].description == 'All'
+      types[1].value == 'D'
+      types[1].description == 'Department'
+      types[2].value == 'E'
+      types[2].description == 'Employee'
+      types[3].value == 'S'
+      types[3].description == 'Store'
    }
 
    void "post valid notification of type All" () {

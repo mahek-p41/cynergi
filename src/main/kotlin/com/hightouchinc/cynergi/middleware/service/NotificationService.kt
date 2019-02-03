@@ -3,6 +3,7 @@ package com.hightouchinc.cynergi.middleware.service
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.Notification
+import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
 import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import com.hightouchinc.cynergi.middleware.repository.NotificationTypeDomainRepository
@@ -17,8 +18,17 @@ class NotificationService @Inject constructor(
    override fun fetchById(id: Long): NotificationDto? =
       notificationRepository.findOne(id = id)?.let { NotificationDto(entity = it) }
 
+   fun fetchAllByCompany(companyId: String, type: String): List<NotificationDto> =
+      notificationRepository.findAllByCompany(companyId = companyId, type = type).map { NotificationDto(it) }
+
+   fun fetchAllByRecipient(companyId: String, authId: String, type: String): List<NotificationDto> =
+      notificationRepository.findAllByRecipient(companyId = companyId, recipientId = authId, type = type).map { NotificationDto(it) }
+
+   fun findAllTypes(): List<NotificationTypeDomainDto> =
+      notificationRepository.findAllTypes().map { NotificationTypeDomainDto(it) }
+
    /**
-    * Acts a wrapper to map the original front-end expectation of an object with a notification property pointing to the
+    * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the
     * notification that was in the DB.
     *
     * FIXME by removing me someday
@@ -27,14 +37,28 @@ class NotificationService @Inject constructor(
    fun fetchResponseById(id: Long): NotificationResponseDto? =
       fetchById(id = id)?.let { NotificationResponseDto(notification = it) }
 
-   fun fetchAllByCompany(companyId: String, type: String): NotificationsResponseDto =
+   /**
+    * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the
+    * notification that was in the DB.
+    *
+    * FIXME by removing me someday
+    */
+   @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
+   fun fetchAllByCompanyWrapped(companyId: String, type: String): NotificationsResponseDto =
       NotificationsResponseDto(
-         notifications = notificationRepository.findAllByCompany(companyId = companyId, type = type).map { NotificationDto(it) }
+         notifications = fetchAllByCompany(companyId = companyId, type = type)
       )
 
-   fun fetchAllByRecipient(companyId: String, authId: String, type: String): NotificationsResponseDto =
+   /**
+    * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the
+    * notification that was in the DB.
+    *
+    * FIXME by removing me someday
+    */
+   @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
+   fun fetchAllByRecipientWrapped(companyId: String, authId: String, type: String): NotificationsResponseDto =
       NotificationsResponseDto(
-         notifications = notificationRepository.findAllByRecipient(companyId = companyId, recipientId = authId, type = type).map { NotificationDto(it) }
+         notifications = fetchAllByRecipient(companyId = companyId, authId = authId, type = type)
       )
 
    fun exists(id: Long): Boolean =
