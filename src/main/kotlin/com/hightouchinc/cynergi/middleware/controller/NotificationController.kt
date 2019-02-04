@@ -2,8 +2,8 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
-import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
+import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.NotificationService
@@ -54,7 +54,7 @@ class NotificationController @Inject constructor(
       notificationService.findAllTypes()
 
    @Throws(NotFoundException::class)
-   @Get("/{companyId}", produces = [APPLICATION_JSON])
+   @Get("/company/{companyId}", produces = [APPLICATION_JSON])
    fun fetchAllByCompany(
       @QueryValue("companyId") companyId: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
@@ -63,7 +63,7 @@ class NotificationController @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   @Get("/{companyId}/{authId}", produces = [APPLICATION_JSON])
+   @Get("/company/{companyId}/{authId}", produces = [APPLICATION_JSON])
    fun fetchAllByCompanyAndUser(
       @QueryValue("companyId") companyId: String,
       @QueryValue("authId") authId: String,
