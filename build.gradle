@@ -10,8 +10,8 @@ plugins {
    id "groovy"
 }
 
-version "0.1"
-group "cynergi.middleware"
+version "${cynergiRelease}"
+group "com.hightouchinc.cynergi"
 
 repositories {
    mavenLocal()
