@@ -28,7 +28,7 @@ class NotificationController @Inject constructor(
    private val notificationValidator: NotificationValidator
 ) {
    @Throws(NotFoundException::class)
-   @Get(value = "/{id}", produces = [APPLICATION_JSON])
+   @Get("/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
    ): NotificationResponseDto {
@@ -48,7 +48,7 @@ class NotificationController @Inject constructor(
       }
    }
 
-   @Get(produces = [APPLICATION_JSON])
+   @Get("/admin", produces = [APPLICATION_JSON])
    fun fetchAllAdmin(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User") authId: String  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
@@ -56,7 +56,7 @@ class NotificationController @Inject constructor(
       return notificationService.findAllBySendingEmployee(companyId = companyId, sendingEmployee = authId)
    }
 
-   @Get(value = "/types", produces = [APPLICATION_JSON])
+   @Get("/types", produces = [APPLICATION_JSON])
    fun fetchAllTypes(): List<NotificationTypeDomainDto> =
       notificationService.findAllTypes()
 
