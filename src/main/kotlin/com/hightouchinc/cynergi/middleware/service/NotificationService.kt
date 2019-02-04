@@ -3,8 +3,8 @@ package com.hightouchinc.cynergi.middleware.service
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.Notification
-import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
+import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.repository.NotificationRepository
 import com.hightouchinc.cynergi.middleware.repository.NotificationTypeDomainRepository
 import javax.inject.Inject
@@ -48,6 +48,19 @@ class NotificationService @Inject constructor(
       NotificationsResponseDto(
          notifications = fetchAllByCompany(companyId = companyId, type = type)
       )
+
+   /**
+    * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the
+    * notification that was in the DB.
+    *
+    * FIXME by removing me someday
+    */
+   @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
+   fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): NotificationsResponseDto =
+      NotificationsResponseDto(
+         notifications = notificationRepository.findAllBySendingEmployee(companyId = companyId, recipient = sendingEmployee).map { NotificationDto(it) }
+      )
+
 
    /**
     * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the

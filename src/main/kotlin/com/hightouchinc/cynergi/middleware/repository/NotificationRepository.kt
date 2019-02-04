@@ -1,7 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Notification
-import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomainDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
@@ -73,6 +72,52 @@ class NotificationRepository @Inject constructor(
       return exists
    }
 
+   fun findAllByCompany(companyId: String, type: String): List<Notification> =
+      jdbc.query("""
+         $baseFindQuery
+         WHERE n.company_id = :company_id
+               AND ntd.value = :notification_type
+               AND current_date BETWEEN n.start_date AND n.expiration_date
+         """.trimIndent(),
+         mapOf(
+            "company_id" to companyId,
+            "notification_type" to type
+         ),
+         fullNotificationsRowMapper
+      )
+
+   fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
+      jdbc.query("""
+         $baseFindQuery
+              JOIN notification_recipient nr
+                   ON n.id = nr.notification_id
+         WHERE n.company_id = :company_id
+               AND ntd.value = :notification_type
+               AND nr.recipient = :recipient_id
+         """.trimIndent(),
+         mapOf(
+            "company_id" to companyId,
+            "notification_type" to type,
+            "recipient_id" to recipientId
+         ),
+         fullNotificationsRowMapper
+      )
+
+   fun findAllTypes(): List<NotificationTypeDomain> =
+      notificationTypeDomainRepository.findAll()
+
+   fun findAllBySendingEmployee(companyId: String, recipient: String): List<Notification> =
+      jdbc.query("""
+         WHERE n.company_id = :company_id
+               AND nr.recipient = :recipient_id
+         """.trimIndent(),
+         mapOf(
+            "company_id" to companyId,
+            "recipient_id" to recipient
+         ),
+         fullNotificationsRowMapper
+      )
+
    @Transactional
    override fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
@@ -129,40 +174,6 @@ class NotificationRepository @Inject constructor(
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
    }
-
-   fun findAllByCompany(companyId: String, type: String): List<Notification> =
-      jdbc.query("""
-         $baseFindQuery
-         WHERE n.company_id = :company_id
-               AND ntd.value = :notification_type
-               AND current_date BETWEEN n.start_date AND n.expiration_date
-         """.trimIndent(),
-         mapOf(
-            "company_id" to companyId,
-            "notification_type" to type
-         ),
-         fullNotificationsRowMapper
-      )
-
-   fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
-      jdbc.query("""
-         $baseFindQuery
-              JOIN notification_recipient nr
-                   ON n.id = nr.notification_id
-         WHERE n.company_id = :company_id
-               AND ntd.value = :notification_type
-               AND nr.recipient = :recipient_id
-         """.trimIndent(),
-         mapOf(
-            "company_id" to companyId,
-            "notification_type" to type,
-            "recipient_id" to recipientId
-         ),
-         fullNotificationsRowMapper
-      )
-
-   fun findAllTypes(): List<NotificationTypeDomain> =
-      notificationTypeDomainRepository.findAll()
 }
 
 private class NotificationsRowMapper(

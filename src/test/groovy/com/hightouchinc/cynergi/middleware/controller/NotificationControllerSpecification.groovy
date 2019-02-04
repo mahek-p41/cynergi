@@ -21,6 +21,7 @@ import java.util.stream.Collectors
 import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
+import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -188,5 +189,19 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       errors[4].path == "sendingEmployee"
       errors[5].message == "startDate is required"
       errors[5].path == "startDate"
+   }
+
+   void "put valid notification of type all" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def savedNotification = notificationsDataLoaderService.stream(1, "corrto", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+
+      when:
+      final updatedNotification = new NotificationDto(savedNotification)
+      updatedNotification.message = "Updated message"
+      final result = client.retrieve(PUT(url, updatedNotification), NotificationDto)
+
+      then:
+      result.message == "Updated message"
    }
 }

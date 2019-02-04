@@ -35,7 +35,6 @@ class NotificationController @Inject constructor(
       return notificationService.fetchResponseById(id = id) ?: throw NotFoundException(id)
    }
 
-   @Throws(NotFoundException::class)
    @Get(produces = [APPLICATION_JSON])
    fun fetchAll(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
@@ -47,6 +46,14 @@ class NotificationController @Inject constructor(
 
          else -> notificationService.fetchAllByRecipientWrapped(companyId = companyId, authId = authId, type = type)
       }
+   }
+
+   @Get(produces = [APPLICATION_JSON])
+   fun fetchAllAdmin(
+      @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
+      @Header("X-Auth-User") authId: String  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
+   ) : NotificationsResponseDto { // FIXME do away with this wrapper for the list of notifications
+      return notificationService.findAllBySendingEmployee(companyId = companyId, sendingEmployee = authId)
    }
 
    @Get(value = "/types", produces = [APPLICATION_JSON])
