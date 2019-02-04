@@ -1,3 +1,13 @@
+buildscript {
+   repositories {
+      mavenLocal()
+      mavenCentral()
+   }
+   dependencies {
+      classpath "org.openapitools:openapi-generator-gradle-plugin:3.3.4"
+   }
+}
+
 plugins {
    id "io.spring.dependency-management" version "1.0.6.RELEASE"
    id "com.github.johnrengelman.shadow" version "4.0.3"
@@ -9,6 +19,8 @@ plugins {
    id "application"
    id "groovy"
 }
+
+apply plugin: 'org.openapi.generator'
 
 version "${cynergiRelease}"
 group "com.hightouchinc.cynergi"
@@ -96,6 +108,12 @@ compileTestKotlin {
       jvmTarget = '1.8'
       javaParameters = true
    }
+}
+
+openApiGenerate {
+   generatorName = "typescript-axios"
+   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
+   validateSpec = false
 }
 
 tasks.withType(JavaExec) {
