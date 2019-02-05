@@ -24,7 +24,7 @@ data class Notification (
    val sendingEmployee: String, // TODO convert from soft foreign key to employee
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val notificationDomainType: NotificationTypeDomain,
-   val recipients: MutableList<NotificationRecipient> = mutableListOf()
+   val recipients: MutableSet<NotificationRecipient> = mutableSetOf()
 ) : Entity<Notification> {
 
    constructor(startDate: LocalDate, expirationDate: LocalDate, message: String, sendingEmployee: String, company: String, notificationDomainType: NotificationTypeDomain) :

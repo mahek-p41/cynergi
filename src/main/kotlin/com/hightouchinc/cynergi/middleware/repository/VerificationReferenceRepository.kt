@@ -55,6 +55,7 @@ class VerificationReferenceRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: VerificationReference): VerificationReference {
       logger.trace("Inserting verification_reference {}", entity)
 
@@ -80,6 +81,7 @@ class VerificationReferenceRepository @Inject constructor(
       )
    }
 
+   @Transactional
    override fun update(entity: VerificationReference): VerificationReference {
       logger.trace("Updating verification_reference {}", entity)
 
@@ -115,6 +117,15 @@ class VerificationReferenceRepository @Inject constructor(
          ),
          simpleVerificationReferenceRowMapper
       )
+   }
+
+   @Transactional
+   fun upsert(entity: VerificationReference): VerificationReference {
+      return if (entity.id == null) {
+         insert(entity)
+      } else {
+         update(entity)
+      }
    }
 
    @Transactional

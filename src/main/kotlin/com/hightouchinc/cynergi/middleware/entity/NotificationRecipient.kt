@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
 import java.time.OffsetDateTime
+import java.util.Objects
 import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -43,8 +44,16 @@ data class NotificationRecipient (
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): NotificationRecipient = copy()
+   override fun hashCode(): Int = Objects.hashCode(uuRowId)
 
-   override fun toString(): String {
+   override fun equals(other: Any?): Boolean {
+      return when {
+         this === other -> true
+         other is NotificationRecipient -> this.uuRowId == other.uuRowId
+         else -> false
+      }
+   }
+  override fun toString(): String {
       return "NotificationRecipient(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, description=$description, recipient='$recipient', notification=${notification.entityId()})"
    }
 }

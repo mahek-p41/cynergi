@@ -41,6 +41,7 @@ class VerificationEmploymentRepository(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: VerificationEmployment): VerificationEmployment {
       logger.debug("Inserting verification_employment  {}", entity)
 
@@ -63,6 +64,7 @@ class VerificationEmploymentRepository(
       )
    }
 
+   @Transactional
    override fun update(entity: VerificationEmployment): VerificationEmployment {
       logger.debug("Updating verification_employment {}", entity)
 

@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Notification
+import com.hightouchinc.cynergi.middleware.entity.NotificationRecipient
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
@@ -122,7 +123,7 @@ class NotificationRepository @Inject constructor(
    override fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
-      val notification = jdbc.insertReturning("""
+      val inserted = jdbc.insertReturning("""
          INSERT INTO notification(company_id, start_date, expiration_date, message, sending_employee, notification_type_id)
          VALUES (:company_id, :start_date, :expiration_date, :message, :sending_employee, :notification_type_id)
          RETURNING
@@ -140,16 +141,20 @@ class NotificationRepository @Inject constructor(
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
-      entity.recipients.asSequence().map { notificationRecipientRepository.insert(it.copy(notification = notification)) }.forEach { notification.recipients.add(it) }
+      entity.recipients.asSequence()
+         .map { notificationRecipientRepository.insert(it.copy(notification = inserted)) }
+         .forEach { inserted.recipients.add(it) }
 
-      return notification
+      return inserted
    }
 
    @Transactional
    override fun update(entity: Notification): Notification {
       logger.debug("Updating notification {}", entity)
 
-      return jdbc.updateReturning("""
+      val existing = findOne(id = entity.id!!)!!
+
+      val updated = jdbc.updateReturning("""
          UPDATE notification
          SET
             company_id = :company_id,
@@ -173,7 +178,30 @@ class NotificationRepository @Inject constructor(
          ),
          NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
+
+      val recipients = doRecipientUpdates(entity)
+
+      doRecipientDeletes(existing, recipients)
+
+      return if (recipients.isNotEmpty()) {
+         updated.copy(recipients = recipients)
+      } else {
+         updated
+      }
    }
+
+   private fun doRecipientDeletes(existing: Notification, recipients: MutableSet<NotificationRecipient>) {
+      val recipientsToDelete = existing.recipients.asSequence().filter { !recipients.contains(it) }.toList()
+
+      if (recipientsToDelete.isNotEmpty()) {
+         notificationRecipientRepository.deleteAll(recipientsToDelete)
+      }
+   }
+
+   private fun doRecipientUpdates(entity: Notification) =
+      entity.recipients.asSequence()
+         .map { notificationRecipientRepository.upsert(entity = it) }
+         .toMutableSet()
 }
 
 private class NotificationsRowMapper(

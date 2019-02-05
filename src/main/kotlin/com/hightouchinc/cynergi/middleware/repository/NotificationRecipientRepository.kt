@@ -81,6 +81,24 @@ class NotificationRecipientRepository @Inject constructor(
          simpleNotificationRecipientRowMapper
       )
    }
+
+   @Transactional
+   fun upsert(entity: NotificationRecipient): NotificationRecipient {
+      logger.debug("Upserting NotificationRecipient {}", entity)
+
+      return if (entity.id == null) {
+         insert(entity = entity)
+      } else {
+         update(entity = entity)
+      }
+   }
+
+   @Transactional
+   fun deleteAll(recipientsToDelete: Collection<NotificationRecipient>): Int =
+      jdbc.update(
+         "DELETE from notification_recipient WHERE id IN (:ids)",
+         mapOf("ids" to recipientsToDelete.asSequence().filter { it.id != null }.map { it.id }.toSet())
+      )
 }
 
 private class NotificationRecipientRowMapper : RowMapper<NotificationRecipient> {

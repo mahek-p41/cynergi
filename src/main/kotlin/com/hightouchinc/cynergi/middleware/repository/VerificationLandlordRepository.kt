@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUUID
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,6 +40,7 @@ class VerificationLandlordRepository(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Inserting verification_landlord {}", entity)
 
@@ -65,6 +67,7 @@ class VerificationLandlordRepository(
       )
    }
 
+   @Transactional
    override fun update(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Updating verification_landlord {}", entity)
 
@@ -102,6 +105,7 @@ class VerificationLandlordRepository(
       )
    }
 
+   @Transactional
    fun upsert(existing: VerificationLandlord?, requestedChange: VerificationLandlord): VerificationLandlord? {
       return if (existing == null) {
          insert(entity = requestedChange)
