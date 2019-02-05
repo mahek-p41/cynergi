@@ -114,6 +114,10 @@ openApiGenerate {
    generatorName = "typescript-axios"
    inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
    validateSpec = false
+   configOptions = [
+      npmName: "cynergi-axios-client",
+      npmVersion: "${cynergiRelease}"
+   ]
 }
 
 tasks.withType(JavaExec) {

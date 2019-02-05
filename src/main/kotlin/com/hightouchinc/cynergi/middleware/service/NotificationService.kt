@@ -21,8 +21,8 @@ class NotificationService @Inject constructor(
    fun fetchAllByCompany(companyId: String, type: String): List<NotificationDto> =
       notificationRepository.findAllByCompany(companyId = companyId, type = type).map { NotificationDto(it) }
 
-   fun fetchAllByRecipient(companyId: String, authId: String, type: String): List<NotificationDto> =
-      notificationRepository.findAllByRecipient(companyId = companyId, recipientId = authId, type = type).map { NotificationDto(it) }
+   fun fetchAllByRecipient(companyId: String, sendingEmployee: String, type: String): List<NotificationDto> =
+      notificationRepository.findAllByRecipient(companyId = companyId, recipientId = sendingEmployee, type = type).map { NotificationDto(it) }
 
    fun findAllTypes(): List<NotificationTypeDomainDto> =
       notificationRepository.findAllTypes().map { NotificationTypeDomainDto(it) }
@@ -69,9 +69,9 @@ class NotificationService @Inject constructor(
     * FIXME by removing me someday
     */
    @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
-   fun fetchAllByRecipientWrapped(companyId: String, authId: String, type: String): NotificationsResponseDto =
+   fun fetchAllByRecipientWrapped(companyId: String, sendingEmployee: String, type: String): NotificationsResponseDto =
       NotificationsResponseDto(
-         notifications = fetchAllByRecipient(companyId = companyId, authId = authId, type = type)
+         notifications = fetchAllByRecipient(companyId = companyId, sendingEmployee = sendingEmployee, type = type)
       )
 
    fun exists(id: Long): Boolean =

@@ -55,7 +55,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
-   void "fetch all by company with type All" () {
+   @Deprecated
+   void "fetch all by company with type All deprecated" () {
       given:
       final def companyId = "testco"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
@@ -65,12 +66,26 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       def result = client.retrieve(GET("$url?type=${notificationType.value}").headers(["X-Auth-Company": companyId]), NotificationsResponseDto)
 
       then:
-      notThrown(HttpClientResponseException)
       result == new NotificationsResponseDto(fiveNotifications.collect { new NotificationDto(it)} )
       result.notifications.size() == 5
    }
 
-   void "fetch all by company with type Employee" () {
+   void "fetch all by company with type All" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType).collect(Collectors.toList())
+
+      when:
+      def result = client.retrieve(GET("$url/company/${companyId}?type=${notificationType.value}"), NotificationDto[])
+
+      then:
+      result.size() == 5
+      result == fiveNotifications.collect { new NotificationDto(it) }.toArray()
+   }
+
+   @Deprecated
+   void "fetch all by company with type Employee deprecated" () {
       given:
       final def companyId = "testco"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
@@ -87,7 +102,24 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       result.notifications.size() == 1
    }
 
-   void "fetch all by company without the required X-Auth-Company header" () {
+   void "fetch all by company with type Employee" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+
+      when:
+      def recipient = recipientNotifications[0].recipient
+      def result = client.retrieve(GET("$url/company/${companyId}/${recipient}?type=${notificationType.value}"), NotificationDto[])
+
+      then:
+      result.size() == 1
+      result[0] == new NotificationDto(notification)
+   }
+
+   @Deprecated
+   void "fetch all by company without the required X-Auth-Company header deprecated" () {
       when:
       client.retrieve(GET(url), Argument.of(NotificationsResponseDto), Argument.of(ErrorDto))
 

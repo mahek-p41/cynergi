@@ -22,7 +22,7 @@ import javax.inject.Inject
 import javax.validation.Valid
 
 @Validated
-@Controller("/api/notifications")
+@Controller("/api/notifications") // TODO make company a first class part of this controller by defining it here
 class NotificationController @Inject constructor(
    private val notificationService: NotificationService,
    private val notificationValidator: NotificationValidator
@@ -36,6 +36,7 @@ class NotificationController @Inject constructor(
    }
 
    @Get(produces = [APPLICATION_JSON])
+   @Deprecated(message = "Needs to be removed for a path based endpoint rather than header base", replaceWith = ReplaceWith("fetchAllByCompany and fetchAllByCompanyAndUser"))
    fun fetchAll(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
@@ -44,11 +45,12 @@ class NotificationController @Inject constructor(
       return when(type.toUpperCase()) {
          "A" -> notificationService.fetchAllByCompanyWrapped(companyId = companyId, type = type)
 
-         else -> notificationService.fetchAllByRecipientWrapped(companyId = companyId, authId = authId, type = type)
+         else -> notificationService.fetchAllByRecipientWrapped(companyId = companyId, sendingEmployee = authId, type = type)
       }
    }
 
    @Get("/admin", produces = [APPLICATION_JSON])
+   @Deprecated(message = "Needs to be removed for a path based endpoint rather than header base", replaceWith = ReplaceWith("fetchAllByCompany and fetchAllByCompanyAndUser"))
    fun fetchAllAdmin(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User") authId: String  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
@@ -70,13 +72,13 @@ class NotificationController @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   @Get("/company/{companyId}/{authId}", produces = [APPLICATION_JSON])
+   @Get("/company/{companyId}/{sendingEmployee}", produces = [APPLICATION_JSON])
    fun fetchAllByCompanyAndUser(
       @QueryValue("companyId") companyId: String,
-      @QueryValue("authId") authId: String,
+      @QueryValue("sendingEmployee") sendingEmployee: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
    ): List<NotificationDto> {
-      return notificationService.fetchAllByRecipient(companyId = companyId, authId = authId, type = type)
+      return notificationService.fetchAllByRecipient(companyId = companyId, sendingEmployee = sendingEmployee, type = type)
    }
 
    @Post(processes = [APPLICATION_JSON])
