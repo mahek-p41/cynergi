@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
+import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
@@ -10,8 +11,8 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
+import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.hateos.JsonError
 
 import java.util.stream.Collectors
 
@@ -24,7 +25,7 @@ import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 class VerificationControllerSpecification extends ControllerSpecificationBase {
-   final def url = "/api/company/corrto/verification"
+   final def url = "/api/verifications/corrto"
    final def verificationDataLoaderService = applicationContext.getBean(VerificationDataLoaderService)
    final def verificationReferenceDataLoaderService = applicationContext.getBean(VerificationReferenceDataLoaderService)
    final def verificationReferenceRepository = applicationContext.getBean(VerificationReferenceRepository)
@@ -38,6 +39,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       def result = client.retrieve(GET("$url/${savedVerification.id}"), VerificationDto)
 
       then:
+      notThrown(HttpClientResponseException)
       result == verificationDto
       result.references.size() == 6
       allPropertiesFullAndNotEmpty(result)
@@ -45,12 +47,12 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by id not found" () {
       when:
-      client.exchange(GET("$url/0"), VerificationDto)
+      client.exchange(GET("$url/0"), Argument.of(VerificationDto), Argument.of(ErrorDto))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
    void "fetch one verification by customer account" () {
@@ -62,21 +64,22 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       def result = client.retrieve(GET("$url/account/${savedVerification.customerAccount}"), VerificationDto)
 
       then:
+      notThrown(HttpClientResponseException)
       result == verificationDto
       allPropertiesFullAndNotEmpty(result)
    }
 
    void "fetch one verification by customer account not found" () {
       when:
-      client.exchange(GET("$url/account/-1"), VerificationDto)
+      client.exchange(GET("$url/account/-1"), Argument.of(VerificationDto), Argument.of(ErrorDto))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(JsonError).orElse(null)?.message == "Resource -1 was unable to be found"
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource -1 was unable to be found"
    }
 
-   void "save verification successfully" () {
+   void "post verification successfully" () {
       given:
       final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
@@ -92,7 +95,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       savedVerification.verifiedTime != null
    }
 
-   void "save verification without auto, employment or landlord" () {
+   void "post verification without auto, employment or landlord" () {
       given:
       final def verification = VerificationTestDataLoader.stream(1, false, false, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
@@ -110,7 +113,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       savedVerification.properties.findAll { it.value == null }.collect { it.key }.containsAll(['auto', 'employment', 'landlord'])
    }
 
-   void "save completely empty verification should fail" () {
+   void "post completely empty verification should fail" () {
       given:
       final def verification = new VerificationDto(
          null,
@@ -125,13 +128,13 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       )
 
       when:
-      client.retrieve(POST(url, verification), VerificationDto)
+      client.retrieve(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorDto[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(JsonError[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
       errors != null
       errors.size() == 3
 
@@ -141,25 +144,25 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       sortedErrors[2].message == "verifiedTime is required"
    }
 
-   void "save verification with longer than allowed customer comments should result in a failure" () {
+   void "post verification with longer than allowed customer comments should result in a failure" () {
       given:
       final def stringFaker = new Faker().lorem()
       final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      client.exchange(POST(url, verification))
+      client.exchange(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorDto[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(JsonError[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "provided value ${verification.customerComments} is too large for customerComments"
    }
 
-   void "save verification with no references" () {
+   void "post verification with no references" () {
       given:
       final def verification = VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
@@ -177,7 +180,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       allPropertiesFullAndNotEmptyExcept(savedVerification, "references")
    }
 
-   void "update verification successfully" () {
+   void "put verification successfully" () {
       given:
       final def savedVerification = verificationDataLoaderService.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def toUpdateVerification = savedVerification.copyMe()
@@ -190,7 +193,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       updatedVerification == toUpdateVerification
    }
 
-   void "update verification references by adding a third reference" () {
+   void "put verification references by adding a third reference" () {
       given:
       final Verification verification = verificationDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final List<VerificationReference> references = verificationReferenceDataLoaderService.stream(verification, 2).collect(Collectors.toList())

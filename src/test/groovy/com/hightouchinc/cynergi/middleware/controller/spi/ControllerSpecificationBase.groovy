@@ -24,7 +24,7 @@ abstract class ControllerSpecificationBase extends Specification {
       client = reactiveClient.toBlocking()
    }
 
-   void cleanupSpec() {
+   void cleanup() {
       truncateDatabaseService.truncate()
    }
 }

@@ -6,6 +6,10 @@ $$
 BEGIN
    new.time_updated := clock_timestamp();
 
+   IF new.uu_row_id <> old.uu_row_id THEN -- help ensure that the uu_row_id can't be updated once it is created
+      RAISE EXCEPTION 'cannot update uu_row_id once it has been created';
+   END IF;
+
    RETURN new;
 END;
 $$
@@ -131,4 +135,4 @@ CREATE TRIGGER update_verification_reference_trg
    ON verification_reference
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-CREATE INDEX ON verification_reference(verification_id);
+CREATE INDEX verification_reference_verification_id_idx ON verification_reference(verification_id);

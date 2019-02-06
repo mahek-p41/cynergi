@@ -4,6 +4,10 @@ import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.VerificationService
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.DUPLICATE
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOT_UPDATABLE
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
+import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import javax.inject.Singleton
 
 @Singleton
@@ -14,7 +18,7 @@ class VerificationValidator(
    @Throws(ValidationException::class)
    fun validateSave(dto: VerificationDto, parent: String) {
       val errors = if (verificationService.exists(customerAccount = dto.customerAccount!!)) {
-         setOf(ValidationError("cust_acct", ErrorCodes.Cynergi.DUPLICATE, listOf(dto.customerAccount)))
+         setOf(ValidationError("cust_acct", DUPLICATE, listOf(dto.customerAccount)))
       } else {
          emptySet()
       }
@@ -30,14 +34,14 @@ class VerificationValidator(
       val id = dto.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", ErrorCodes.Validation.NOT_NULL, listOf("id")))
+         errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
       } else {
          val existingVerification: VerificationDto? = verificationService.fetchById(id = id)
 
          if (existingVerification == null) {
-            errors.add(element = ValidationError("id", ErrorCodes.System.NOT_FOUND, listOf(id)))
+            errors.add(element = ValidationError("id", NOT_FOUND, listOf(id)))
          } else if (existingVerification.customerAccount != dto.customerAccount) {
-            errors.add(element = ValidationError("cust_acct", ErrorCodes.Cynergi.NOT_UPDATABLE, listOf(dto.customerAccount)))
+            errors.add(element = ValidationError("cust_acct", NOT_UPDATABLE, listOf(dto.customerAccount)))
          }
       }
 

@@ -15,6 +15,11 @@ data class <%= entity %> (
    val timeUpdated: OffsetDateTime = timeCreated
 ) : Entity<<%= entity %>> {
 
+   constructor() : // TODO flesh out the constructor for making calling without the uuRowId, timeCreated and timeUpdated properties
+      this(
+         id = null
+      )
+
    constructor(dto: <%= entity %>Dto) :
       this(
          id = dto.id

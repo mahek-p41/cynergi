@@ -183,7 +183,7 @@ class VerificationRepository @Inject constructor(
          "company" to entity.company
       )
 
-      logger.trace("Inserting Verification {}", paramMap)
+      logger.debug("Inserting Verification {}", paramMap)
 
       val inserted = jdbc.insertReturning("""
          INSERT INTO verification (customer_account, customer_comments, verified_by, company)
@@ -209,6 +209,8 @@ class VerificationRepository @Inject constructor(
 
    @Transactional
    override fun update(entity: Verification): Verification {
+      logger.debug("Updating Verification {}", entity)
+
       val existing = findOne(id = entity.id!!)!!
       val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { null }
 
@@ -249,13 +251,9 @@ class VerificationRepository @Inject constructor(
    }
 
    private fun doReferenceUpdates(entity: Verification, updated: Verification): MutableSet<VerificationReference> {
-      return entity.references.asSequence().map {
-         if (it.id == null) {
-            verificationReferenceRepository.insert(it.copy(verification = updated))
-         } else {
-            verificationReferenceRepository.update(it.copy(verification = updated))
-         }
-      }.toMutableSet()
+      return entity.references.asSequence()
+         .map { verificationReferenceRepository.upsert(entity = it.copy(verification = updated)) }
+         .toMutableSet()
    }
 
    private fun doReferenceDeletes(existing: Verification, references: MutableSet<VerificationReference>) {

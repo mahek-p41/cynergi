@@ -39,7 +39,7 @@ class LocalizationService @Inject constructor(
     * @param arguments the arguments to be provided to the messageSource
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
-   fun localize(messageKey: String, locale: Locale = Locale.US, vararg arguments: Any): String {
+   fun localize(messageKey: String, locale: Locale = Locale.US, arguments: Array<Any?>): String {
       return try {
          messageSource.getMessage(messageKey, arguments, locale)
       } catch (e: Throwable) {

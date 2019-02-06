@@ -115,7 +115,7 @@ Note: This option is useful if you just want to run the application but aren't i
    1. Just leave this running in a separate terminal window
 2. Change directory to the root of the *cynergi-middleware* project using a bash prompt (IE Git Bash on Windows)
    1. Will want to do this in a new terminal window separate from where the *cynergi-dev-middleware.sh* script is being run
-3. Execute from the terminal `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*.jar`
+3. Execute from the terminal `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*-all.jar`
 4. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
 
 

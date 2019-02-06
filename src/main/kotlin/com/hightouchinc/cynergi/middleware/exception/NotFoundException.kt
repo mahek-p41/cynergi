@@ -1,9 +1,9 @@
 package com.hightouchinc.cynergi.middleware.exception
 
 class NotFoundException(
-   val notFound: Any
-): Exception(notFound.toString()) {
+   val notFound: String
+): Exception(notFound) {
 
    constructor(id: Long):
-      this(notFound = id)
+      this(notFound = id.toString())
 }
