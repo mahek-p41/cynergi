@@ -1,6 +1,6 @@
-package com.hightouchinc.cynergi.middleware.entity.spi
+package com.hightouchinc.cynergi.middleware.dto.spi
 
-import com.hightouchinc.cynergi.middleware.domain.DataTransferObject
+import com.hightouchinc.cynergi.middleware.dto.DataTransferObject
 import com.hightouchinc.cynergi.middleware.dto.IdentifiableDto
 
 /**
