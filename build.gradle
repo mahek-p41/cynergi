@@ -45,6 +45,7 @@ dependencies {
    compile "io.micronaut.configuration:micronaut-hibernate-validator"
    compile "io.micronaut:micronaut-runtime"
    compile "io.micronaut:micronaut-spring"
+   compile "org.codehaus.groovy:groovy-all:2.5.4"
    
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
