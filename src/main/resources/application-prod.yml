@@ -1,5 +1,8 @@
 micronaut:
    environment: prod
+   server:
+      port: 10900
+      host: localhost
 datasources:
    default:
       url: "jdbc:postgresql://localhost:5432/cynergidb"
