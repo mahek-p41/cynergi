@@ -145,6 +145,16 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       types[3].description == 'Store'
    }
 
+   void "attempt to fetch all types with typo results in bad request status" () {
+      when:
+      client.retrieve(GET("${url}/type"), Argument.of(NotificationTypeDomainDto[]), Argument.of(ErrorDto))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      exception.response.getBody(ErrorDto).orElse(null)?.message == "Failed to convert argument [id] for value [type]"
+   }
+
    void "post valid notification of type All" () {
       given:
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }

@@ -54,7 +54,12 @@ class ErrorHandler @Inject constructor(
       val argument = exception.argument
       val conversionError = exception.conversionError
 
-      return HttpResponse.badRequest(ErrorDto(localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argument.name, conversionError.originalValue.orElse(null)))))
+      return HttpResponse.badRequest(
+         ErrorDto(
+            message = localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argument.name, conversionError.originalValue.orElse(null))),
+            path = argument.name
+         )
+      )
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
