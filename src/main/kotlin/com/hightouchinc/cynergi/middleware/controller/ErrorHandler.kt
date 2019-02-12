@@ -5,6 +5,7 @@ import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
+import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpHeaders.ACCEPT_LANGUAGE
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -43,6 +44,17 @@ class ErrorHandler @Inject constructor(
       val locale = findLocale(httpRequest)
 
       return HttpResponse.status<ErrorDto>(HttpStatus.NOT_IMPLEMENTED).body(ErrorDto(localizationService.localize(ErrorCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
+   }
+
+   @Error(global = true, exception = ConversionErrorException::class)
+   fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDto> {
+      logger.error("Endpoint not implemented", exception)
+
+      val locale = findLocale(httpRequest)
+      val argument = exception.argument
+      val conversionError = exception.conversionError
+
+      return HttpResponse.badRequest(ErrorDto(localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argument.name, conversionError.originalValue.orElse(null)))))
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)

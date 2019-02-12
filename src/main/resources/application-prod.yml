@@ -5,4 +5,4 @@ datasources:
       url: "jdbc:postgresql://localhost:5432/cynergidb"
       maximumPoolSize: 10
       username: cynergiuser
-      password: 2h@rd2rememberNow
+      password: cynergiuser2019

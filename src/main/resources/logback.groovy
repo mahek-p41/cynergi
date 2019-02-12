@@ -12,11 +12,10 @@ final def logFileHome='/opt/cyn/v01/cynmid/logs'
 final String micrnautEnvironments=System.properties['micronaut.environments']
 final List<String> appenders = []
 
-if(micrnautEnvironments.contains('prod'))
-{
-   new File(logFileHome).mkdirs()
-
+if(micrnautEnvironments.equalsIgnoreCase('prod')) {
    final String appenderName = 'PROD_FILE'
+
+   new File(logFileHome).mkdirs()
 
    appender(appenderName, RollingFileAppender) {
       file="${logFileHome}/${baseLogFileName}.log"
@@ -34,15 +33,13 @@ if(micrnautEnvironments.contains('prod'))
 }
 
 if(micrnautEnvironments.contains('local') || appenders.isEmpty()) {
-   final String appenderName = 'LOCAL_STDOUT'
-
-   appender(appenderName, ConsoleAppender) {
+   appender('STDOUT', ConsoleAppender) {
       encoder(PatternLayoutEncoder) {
          pattern = '%d{HH:mm:ss.SSS} %-5level %logger{10} - %msg%n'
       }
    }
 
-   appenders.add(appenderName)
+   appenders.add('STDOUT')
 
    logger('com.hightouchinc', TRACE)
 }
@@ -51,12 +48,13 @@ if (System.properties.containsKey('HIGHTOUCH_TRACE_LOGGING')) {
    logger('com.hightouchinc', TRACE)
 }
 
-logger('com.zaxxer', INFO)
+logger('com.zaxxer', ERROR)
 logger('io.netty', ERROR)
-logger('io.micronaut', ERROR)
+logger('io.micronaut', INFO)
 logger('org.apache', ERROR)
 logger('org.flywaydb', INFO)
 logger('org.jboss', ERROR)
+logger('org.hibernate', ERROR)
 logger('org.springframework', ERROR)
 
 root(DEBUG, appenders)
