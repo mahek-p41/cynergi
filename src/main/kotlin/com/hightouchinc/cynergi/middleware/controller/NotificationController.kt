@@ -58,6 +58,14 @@ class NotificationController @Inject constructor(
       return notificationService.findAllBySendingEmployee(companyId = companyId, sendingEmployee = authId)
    }
 
+   @Get("/permissions", produces = [APPLICATION_JSON])
+   @Deprecated(message = "This is here for the original front-end for looking up permissions by department", replaceWith = ReplaceWith("something that handles this as yet TBD"))
+   fun fetchPermissions(): Map<String, Any> =
+      mapOf(
+         "id" to 1,
+         "depts_allowed" to listOf("ALL")
+      )
+
    @Get("/types", produces = [APPLICATION_JSON])
    fun fetchAllTypes(): List<NotificationTypeDomainDto> =
       notificationService.findAllTypes()

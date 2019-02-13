@@ -129,6 +129,18 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.getBody(ErrorDto).orElse(null)?.message == "Required argument companyId not specified"
    }
 
+   @Deprecated
+   void "fetch all permissions should only be hard coded department" () {
+      when:
+      final result = client.retrieve(GET("$url/permissions"), Map)
+
+      then:
+      result.size() == 2
+      result["id"] == 1
+      result["depts_allowed"].size() == 1
+      result["depts_allowed"][0] == "ALL"
+   }
+
    void "fetch all types" () {
       when:
       final def types = client.retrieve(GET("${url}/types"), NotificationTypeDomainDto[])
