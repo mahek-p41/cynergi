@@ -6,24 +6,33 @@ import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Singleton
 class <%= entity %>Validator @Inject constructor(
    private val <%= repository %>Service: <%= entity %>Service
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(<%= entity %>Validator::class.java)
 
    @Throws(ValidationException::class)
    fun validateSave(dto: <%= entity %>Dto) {
+      logger.debug("Validating Save <%= entity %> {}", dto)
+
       val errors: MutableSet<ValidationError> = mutableSetOf()
 
       if (errors.isNotEmpty()) {
+         logger.info("Validating Save <%= entity %> {} had errors", dto)
+
          throw ValidationException(errors)
       }
    }
 
    @Throws(ValidationException::class)
    fun validateUpdate(dto: <%= entity %>Dto) {
+      logger.debug("Validating Save <%= entity %> {}", dto)
+
       val errors = mutableSetOf<ValidationError>()
       val id = dto.id
 
@@ -38,6 +47,8 @@ class <%= entity %>Validator @Inject constructor(
       }
 
       if (errors.isNotEmpty()) {
+         logger.debug("Validating Update <%= entity %> {} had errors", dto)
+
          throw ValidationException(errors = errors)
       }
    }

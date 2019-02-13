@@ -24,7 +24,7 @@ class NotificationTypeDomainRepository @Inject constructor(
    override fun findOne(id: Long): NotificationTypeDomain? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE id = :id", mapOf("id" to id), simpleNotificationDomainTypeRowMapper)
 
-      logger.trace("searching for {} resulted in {}", id, found)
+      logger.trace("Searching for NotificationTypeDomain: {} resulted in {}", id, found)
 
       return found
    }
@@ -32,7 +32,7 @@ class NotificationTypeDomainRepository @Inject constructor(
    override fun findOne(value: String): NotificationTypeDomain? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE value = :value", mapOf("value" to value), simpleNotificationDomainTypeRowMapper)
 
-      logger.trace("searching for {} resulted in {}", value, found)
+      logger.trace("searching for NotificationTypeDomain: {} resulted in {}", value, found)
 
       return found
    }

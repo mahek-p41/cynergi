@@ -153,7 +153,7 @@ class VerificationRepository @Inject constructor(
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
-      logger.debug("search for verification through Customer Account: {} resulted in {}", customerAccount, found)
+      logger.debug("Search for Verification through Customer Account: {} resulted in {}", customerAccount, found)
 
       return found
    }
@@ -161,7 +161,7 @@ class VerificationRepository @Inject constructor(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("searching for existence through ID: {} resulted in {}", id, exists)
+      logger.trace("Searching for existence of Verification through ID: {} resulted in {}", id, exists)
 
       return exists
    }
@@ -169,7 +169,7 @@ class VerificationRepository @Inject constructor(
    fun exists(customerAccount: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customer_account)", mapOf("customer_account" to customerAccount), Boolean::class.java)!!
 
-      logger.debug("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
+      logger.debug("Searching for existence of Verification through Customer Account: {} resulted in {}", customerAccount, exists)
 
       return exists
    }

@@ -30,6 +30,8 @@ if(micrnautEnvironments.equalsIgnoreCase('prod')) {
    }
 
    appenders.add(appenderName)
+
+   logger('com.hightouchinc', INFO)
 }
 
 if(micrnautEnvironments.contains('local') || appenders.isEmpty()) {
@@ -46,6 +48,8 @@ if(micrnautEnvironments.contains('local') || appenders.isEmpty()) {
 
 if (System.properties.containsKey('HIGHTOUCH_TRACE_LOGGING')) {
    logger('com.hightouchinc', TRACE)
+} else if (System.properties.containsKey('HIGHTOUCH_TRACE_LOGGING')) {
+   logger('com.hightouchinc', DEBUG)
 }
 
 logger('com.zaxxer', ERROR)

@@ -9,6 +9,8 @@ import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOTIFICA
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOTIFICATION_RECIPIENTS_REQUIRED
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,18 +20,25 @@ class NotificationValidator @Inject constructor(
    private val notificationService: NotificationService,
    private val dateFormatter: DateTimeFormatter
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(NotificationValidator::class.java)
 
    @Throws(ValidationException::class)
    fun validateSave(dto: NotificationDto) {
+      logger.debug("Validating Save Notification {}", dto)
+
       val errors: MutableSet<ValidationError> = doValidate(dto = dto)
 
       if (errors.isNotEmpty()) {
+         logger.info("Validating Save Notification {} had errors", dto)
+
          throw ValidationException(errors)
       }
    }
 
    @Throws(ValidationException::class)
    fun validateUpdate(dto: NotificationDto) {
+      logger.debug("Validation Update Notification {}", dto)
+
       val errors = doValidate(dto = dto)
       val id = dto.id
 
@@ -40,6 +49,8 @@ class NotificationValidator @Inject constructor(
       }
 
       if (errors.isNotEmpty()) {
+         logger.debug("Validating Update Notification {} had errors", dto)
+
          throw ValidationException(errors = errors)
       }
    }

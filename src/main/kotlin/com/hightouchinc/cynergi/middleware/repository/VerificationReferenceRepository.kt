@@ -29,7 +29,7 @@ class VerificationReferenceRepository @Inject constructor(
    override fun findOne(id: Long): VerificationReference? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference WHERE id = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
 
-      logger.trace("searching for {} resulted in {}", id, found)
+      logger.trace("searching for VerificationLandlord: {} resulted in {}", id, found)
 
       return found
    }
@@ -42,7 +42,7 @@ class VerificationReferenceRepository @Inject constructor(
          emptyList()
       }
 
-      logger.trace("searching for all children of {} and found {}", verification, result)
+      logger.trace("Searching for all children of VerificationLandlord: {} and found {}", verification, result)
 
       return result
    }
@@ -50,7 +50,7 @@ class VerificationReferenceRepository @Inject constructor(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if VerificationLandlord: {} exists resulted in {}", id, exists)
 
       return exists
    }

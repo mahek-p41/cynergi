@@ -27,7 +27,7 @@ class VerificationLandlordRepository(
    override fun findOne(id: Long): VerificationLandlord? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord WHERE id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
 
-      logger.trace("searching for {} resulted in {}", id, found)
+      logger.trace("searching for VerificationLandlord: {} resulted in {}", id, found)
 
       return found
    }
@@ -35,7 +35,7 @@ class VerificationLandlordRepository(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if VerificationLandlord: {} exists resulted in {}", id, exists)
 
       return exists
    }

@@ -25,7 +25,7 @@ class <%= entity %>Repository @Inject constructor(
    override fun findOne(id: Long): <%= entity %>? {
       val found = jdbc.findFirstOrNull("SELECT * FROM <%= table %> WHERE id = :id", mapOf("id" to id), simple<%= entity %>RowMapper)
 
-      logger.trace("searching for {} resulted in {}", id, found)
+      logger.trace("Searching for <%= entity %>: {} resulted in {}", id, found)
 
       return found
    }
@@ -33,7 +33,7 @@ class <%= entity %>Repository @Inject constructor(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM <%= table %> WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if <%= entity %>: {} exists resulted in {}", id, exists)
 
       return exists
    }
