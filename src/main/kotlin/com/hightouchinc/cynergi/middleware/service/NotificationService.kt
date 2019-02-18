@@ -58,7 +58,7 @@ class NotificationService @Inject constructor(
    @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): NotificationsResponseDto =
       NotificationsResponseDto(
-         notifications = notificationRepository.findAllBySendingEmployee(companyId = companyId, recipient = sendingEmployee).map { NotificationDto(it) }
+         notifications = notificationRepository.findAllBySendingEmployee(companyId = companyId, sendingEmployee = sendingEmployee).map { NotificationDto(it) }
       )
 
 

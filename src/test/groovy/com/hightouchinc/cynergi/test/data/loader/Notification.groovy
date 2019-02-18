@@ -16,7 +16,7 @@ import java.util.stream.Stream
 
 @CompileStatic
 class NotificationTestDataLoader {
-   static Stream<Notification> stream(int number = 1, String company = "corrto", LocalDate startDateIn = null, LocalDate expirationDateIn = null, NotificationTypeDomain type = null) {
+   static Stream<Notification> stream(int number = 1, String company = "corrto", LocalDate startDateIn = null, LocalDate expirationDateIn = null, NotificationTypeDomain type = null, String sendingEmployee = null) {
       final int value = number > 0 ? number : 1
       final String companyId = company != null ? company : "corrto"
       final def faker = new Faker()
@@ -33,7 +33,7 @@ class NotificationTestDataLoader {
             startLocalDate,
             expirationLocalDate,
             lorem.characters(1, 500),
-            name.username(),
+            sendingEmployee != null ? sendingEmployee : name.username(),
             companyId,
             typeDomain
          )
@@ -55,8 +55,8 @@ class NotificationDataLoaderService {
       this.notificationTypeDomainRepository = notificationTypeDomainRepository
    }
 
-   Stream<Notification> stream(int number = 1, String company = "corrto", LocalDate startDate = null, LocalDate expirationDate = null, NotificationTypeDomain type = null) {
-      return NotificationTestDataLoader.stream(number, company, startDate, expirationDate, type)
+   Stream<Notification> stream(int number = 1, String company = "corrto", LocalDate startDate = null, LocalDate expirationDate = null, NotificationTypeDomain type = null, String sendingEmployee = null) {
+      return NotificationTestDataLoader.stream(number, company, startDate, expirationDate, type, sendingEmployee)
          .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id).basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
          .map { notificationsRepository.insert(it) }
    }

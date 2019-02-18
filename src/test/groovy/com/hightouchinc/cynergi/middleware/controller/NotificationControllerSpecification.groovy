@@ -55,6 +55,22 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
+   void "fetch all by sending employee and company" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def sendingEmployee = "bob"
+      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, sendingEmployee).collect(Collectors.toList())
+
+      when:
+      def result = client.retrieve(GET("$url/admin").headers(["X-Auth-Company": companyId, "X-Auth-User": sendingEmployee]), NotificationsResponseDto)
+
+      then:
+      result.notifications.size() == 5
+      result.notifications.collect { it.sendingEmployee }.findAll { it == sendingEmployee }.size() == 5
+      result.notifications == fiveNotifications.collect { new NotificationDto(it) }
+   }
+
    @Deprecated
    void "fetch all by company with type All deprecated" () {
       given:

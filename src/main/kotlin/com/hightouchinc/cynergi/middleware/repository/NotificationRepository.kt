@@ -107,14 +107,15 @@ class NotificationRepository @Inject constructor(
    fun findAllTypes(): List<NotificationTypeDomain> =
       notificationTypeDomainRepository.findAll()
 
-   fun findAllBySendingEmployee(companyId: String, recipient: String): List<Notification> =
+   fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
       jdbc.query("""
+         $baseFindQuery
          WHERE n.company_id = :company_id
-               AND nr.recipient = :recipient_id
+               AND n.sending_employee = :sending_employee
          """.trimIndent(),
          mapOf(
             "company_id" to companyId,
-            "recipient_id" to recipient
+            "sending_employee" to sendingEmployee
          ),
          fullNotificationsRowMapper
       )
