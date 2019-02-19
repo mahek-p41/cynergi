@@ -233,7 +233,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final errors = exception.response.getBody(ErrorDto[]).get()
       errors.size() == 1
-      errors[0].message == "Recipients required for notification type E"
+      errors[0].message == "Recipients required for notification type E:Employee"
       errors[0].path == "recipients"
    }
 

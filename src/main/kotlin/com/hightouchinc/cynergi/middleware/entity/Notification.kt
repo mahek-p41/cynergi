@@ -86,7 +86,7 @@ data class NotificationDto (
    var sendingEmployee: String?,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 1, max = 1, message = SIZE)
+   @field:Size(min = 2, message = SIZE)
    var notificationType: String?,
 
    var recipients: List<NotificationRecipientDto> = emptyList()
@@ -101,7 +101,7 @@ data class NotificationDto (
          message = entity.message,
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
-         notificationType = entity.notificationDomainType.value,
+         notificationType = "${entity.notificationDomainType.value}:${entity.notificationDomainType.description}",
          recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 

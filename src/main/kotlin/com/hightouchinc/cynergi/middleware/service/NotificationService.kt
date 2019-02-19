@@ -78,7 +78,7 @@ class NotificationService @Inject constructor(
       notificationRepository.exists(id = id)
 
    fun create(dto: NotificationDto): NotificationDto {
-      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
+      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!.substringBefore(":"))!!
 
       return NotificationDto(
          entity = notificationRepository.insert(
@@ -91,7 +91,7 @@ class NotificationService @Inject constructor(
    }
 
    fun update(dto: NotificationDto): NotificationDto {
-      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
+      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!.substringBefore(":"))!!
 
       return NotificationDto(
          entity = notificationRepository.update(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))

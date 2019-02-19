@@ -30,25 +30,25 @@ class NotificationRepository @Inject constructor(
    private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
    @Language("PostgreSQL") private val baseFindQuery = """
-       SELECT
-            n.id AS n_id,
-            n.uu_row_id AS n_uu_row_id,
-            n.time_created AS n_time_created,
-            n.time_updated AS n_time_updated,
-            n.company_id AS n_company_id,
-            n.expiration_date AS n_expiration_date,
-            n.message AS n_message,
-            n.sending_employee AS n_sending_employee,
-            n.start_date AS n_start_date,
-            ntd.id AS ntd_id,
-            ntd.uu_row_id AS ntd_uu_row_id,
-            ntd.time_created AS ntd_time_created,
-            ntd.time_updated AS ntd_time_updated,
-            ntd.value AS ntd_value,
-            ntd.description AS ntd_description
-       FROM notification n
-            JOIN notification_type_domain ntd
-                 ON n.notification_type_id = ntd.id
+      SELECT
+         n.id AS n_id,
+         n.uu_row_id AS n_uu_row_id,
+         n.time_created AS n_time_created,
+         n.time_updated AS n_time_updated,
+         n.company_id AS n_company_id,
+         n.expiration_date AS n_expiration_date,
+         n.message AS n_message,
+         n.sending_employee AS n_sending_employee,
+         n.start_date AS n_start_date,
+         ntd.id AS ntd_id,
+         ntd.uu_row_id AS ntd_uu_row_id,
+         ntd.time_created AS ntd_time_created,
+         ntd.time_updated AS ntd_time_updated,
+         ntd.value AS ntd_value,
+         ntd.description AS ntd_description
+      FROM notification n
+           JOIN notification_type_domain ntd
+             ON n.notification_type_id = ntd.id
    """.trimIndent()
 
    override fun findOne(id: Long): Notification? {
@@ -91,7 +91,7 @@ class NotificationRepository @Inject constructor(
       jdbc.query("""
          $baseFindQuery
               JOIN notification_recipient nr
-                   ON n.id = nr.notification_id
+                ON n.id = nr.notification_id
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
                AND nr.recipient = :recipient_id
