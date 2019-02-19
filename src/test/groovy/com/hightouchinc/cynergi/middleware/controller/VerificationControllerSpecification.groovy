@@ -159,7 +159,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
       errors != null
       errors.size() == 1
-      errors[0].message == "provided value ${verification.customerComments} is too large for customerComments"
+      errors[0].message == "size of provided value ${verification.customerComments} is invalid for property customerComments"
    }
 
    void "post verification with no references" () {

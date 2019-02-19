@@ -86,7 +86,7 @@ data class NotificationDto (
    var sendingEmployee: String?,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 2, message = SIZE)
+   @field:Size(min = 1, message = SIZE)
    var notificationType: String?,
 
    var recipients: List<NotificationRecipientDto> = emptyList()
