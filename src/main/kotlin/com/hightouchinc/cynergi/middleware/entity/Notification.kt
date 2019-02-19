@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.entity
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.dto.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
@@ -71,6 +72,7 @@ data class NotificationDto (
    @field:NotNull(message = NOT_NULL)
    var expirationDate: LocalDate?,
 
+   @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 6, max = 6, message = SIZE)
    var company: String?,
