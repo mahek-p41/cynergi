@@ -269,9 +269,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
 
       when:
-      final updatedNotification = new NotificationDto(savedNotification)
-      updatedNotification.message = "Updated message"
-      final result = client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
+      final updatedNotification = new NotificationDto(null, "Updated message", savedNotification)
+      final result = client.retrieve(PUT("$url/${savedNotification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
       result.message == "Updated message"
@@ -287,10 +286,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       notification.recipients.addAll(recipientNotifications)
 
       when:
-      final updatedNotification = new NotificationDto(notification)
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
       final newRecipient = NotificationRecipientTestDataLoader.stream(1, notification).findFirst().orElseThrow { new Exception("Unable to create NotificationRecipient")}
       updatedNotification.recipients.add(new NotificationRecipientDto(newRecipient))
-      final result = client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
+      final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
       result.id == notification.id
@@ -306,8 +305,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       notification.recipients.add(recipientNotifications[0])
 
       when:
-      final updatedNotification = new NotificationDto(notification)
-      final result = client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
+      final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
       result.id == notification.id
@@ -328,7 +327,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       updatedNotification.message = null
       updatedNotification.sendingEmployee = null
       updatedNotification.notificationType = null
-      client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
+      client.retrieve(PUT("$url/${savedNotification.id}", new NotificationRequestDto(updatedNotification)), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -355,13 +354,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, companyId, null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(PUT(url, new NotificationRequestDto(new NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
+      client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(new NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       final errors = exception.response.getBody(ErrorDto[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 1
-      errors[0].message == "id is required"
+      errors[0].message == "Failed to convert argument [id] for value [null]"
       errors[0].path == "id"
    }
 }

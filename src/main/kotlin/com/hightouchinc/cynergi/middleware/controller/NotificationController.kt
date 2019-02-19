@@ -152,18 +152,20 @@ class NotificationController @Inject constructor(
       return NotificationResponseDto(notification = response)
    }
 
-   @Put(processes = [APPLICATION_JSON])
+   @Put("/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
+      @QueryValue("id") id: Long,
       @Valid @Body dto: NotificationRequestDto
    ): NotificationResponseDto {
-      logger.info("Requested Update Notification {}", dto)
+      val notificationDto = dto.notification.copy(id = id) // the legacy front-end doesn't pass in the id as part of the request body, it is part of the path instead
+      logger.info("Requested Update Notification {}", notificationDto)
 
-      notificationValidator.validateUpdate(dto = dto.notification)
+      notificationValidator.validateUpdate(dto = notificationDto)
 
-      val response = notificationService.update(dto = dto.notification)
+      val response = notificationService.update(dto = notificationDto)
 
-      logger.debug("Requested Update Notification {} resulted in {}", dto, response)
+      logger.debug("Requested Update Notification {} resulted in {}", notificationDto, response)
 
       return NotificationResponseDto(notification = response)
    }

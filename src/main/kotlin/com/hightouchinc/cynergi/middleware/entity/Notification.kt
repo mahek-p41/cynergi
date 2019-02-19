@@ -105,6 +105,18 @@ data class NotificationDto (
          recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 
+   constructor(id: Long?, message: String, entity: Notification) :
+      this(
+         id = id,
+         company = entity.company,
+         expirationDate = entity.expirationDate,
+         message = message,
+         sendingEmployee = entity.sendingEmployee,
+         startDate = entity.startDate,
+         notificationType = "${entity.notificationDomainType.value}:${entity.notificationDomainType.description}",
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
+      )
+
    constructor(entity: Notification, recipients: List<NotificationRecipient>):
       this(
          entity = entity
