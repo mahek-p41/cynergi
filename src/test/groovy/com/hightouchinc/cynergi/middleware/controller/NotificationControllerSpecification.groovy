@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
 import com.hightouchinc.cynergi.middleware.dto.ErrorDto
+import com.hightouchinc.cynergi.middleware.dto.NotificationRequestDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
@@ -189,7 +190,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      final def savedNotification = client.retrieve(POST(url, new NotificationDto(notification)), NotificationDto)
+      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(new NotificationDto(notification))), NotificationResponseDto).notification
 
       then:
       savedNotification.id != null
@@ -207,7 +208,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notificationRecipients = NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
 
       when:
-      final def savedNotification = client.retrieve(POST(url, new NotificationDto(notification, notificationRecipients)), NotificationDto)
+      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(new NotificationDto(notification, notificationRecipients))), NotificationResponseDto).notification
 
       then:
       savedNotification.id != null
@@ -225,7 +226,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(POST(url, new NotificationDto(notification)), Argument.of(NotificationDto), Argument.of(ErrorDto[]))
+      client.retrieve(POST(url, new NotificationRequestDto(new NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -241,25 +242,25 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = new NotificationDto(null, null, null, null, null, null, null, [])
 
       when:
-      client.retrieve(POST(url, notification), Argument.of(NotificationDto), Argument.of(ErrorDto[]))
+      client.retrieve(POST(url, new NotificationRequestDto(notification)), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       final errors = exception.response.getBody(ErrorDto[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 6
-      errors[0].message == "company is required"
-      errors[0].path == "company"
-      errors[1].message == "expirationDate is required"
-      errors[1].path == "expirationDate"
-      errors[2].message == "message is required"
-      errors[2].path == "message"
-      errors[3].message == "notificationType is required"
-      errors[3].path == "notificationType"
-      errors[4].message == "sendingEmployee is required"
-      errors[4].path == "sendingEmployee"
-      errors[5].message == "startDate is required"
-      errors[5].path == "startDate"
+      errors[0].message == "notification.company is required"
+      errors[0].path == "notification.company"
+      errors[1].message == "notification.expirationDate is required"
+      errors[1].path == "notification.expirationDate"
+      errors[2].message == "notification.message is required"
+      errors[2].path == "notification.message"
+      errors[3].message == "notification.notificationType is required"
+      errors[3].path == "notification.notificationType"
+      errors[4].message == "notification.sendingEmployee is required"
+      errors[4].path == "notification.sendingEmployee"
+      errors[5].message == "notification.startDate is required"
+      errors[5].path == "notification.startDate"
    }
 
    void "put valid notification of type all" () {
@@ -270,7 +271,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       when:
       final updatedNotification = new NotificationDto(savedNotification)
       updatedNotification.message = "Updated message"
-      final result = client.retrieve(PUT(url, updatedNotification), NotificationDto)
+      final result = client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
       result.message == "Updated message"
@@ -289,7 +290,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final updatedNotification = new NotificationDto(notification)
       final newRecipient = NotificationRecipientTestDataLoader.stream(1, notification).findFirst().orElseThrow { new Exception("Unable to create NotificationRecipient")}
       updatedNotification.recipients.add(new NotificationRecipientDto(newRecipient))
-      final result = client.retrieve(PUT(url, updatedNotification), NotificationDto)
+      final result = client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
       result.id == notification.id
@@ -306,7 +307,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       when:
       final updatedNotification = new NotificationDto(notification)
-      final result = client.retrieve(PUT(url, updatedNotification), NotificationDto)
+      final result = client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
       result.id == notification.id
@@ -327,24 +328,24 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       updatedNotification.message = null
       updatedNotification.sendingEmployee = null
       updatedNotification.notificationType = null
-      client.retrieve(PUT(url, updatedNotification), Argument.of(NotificationDto), Argument.of(ErrorDto[]))
+      client.retrieve(PUT(url, new NotificationRequestDto(updatedNotification)), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       final errors = exception.response.getBody(ErrorDto[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 6
-      errors[0].message == "company is required"
-      errors[0].path == "company"
-      errors[1].message == "expirationDate is required"
-      errors[1].path == "expirationDate"
-      errors[2].message == "message is required"
-      errors[2].path == "message"
-      errors[3].message == "notificationType is required"
-      errors[3].path == "notificationType"
-      errors[4].message == "sendingEmployee is required"
-      errors[4].path == "sendingEmployee"
-      errors[5].message == "startDate is required"
-      errors[5].path == "startDate"
+      errors[0].message == "notification.company is required"
+      errors[0].path == "notification.company"
+      errors[1].message == "notification.expirationDate is required"
+      errors[1].path == "notification.expirationDate"
+      errors[2].message == "notification.message is required"
+      errors[2].path == "notification.message"
+      errors[3].message == "notification.notificationType is required"
+      errors[3].path == "notification.notificationType"
+      errors[4].message == "notification.sendingEmployee is required"
+      errors[4].path == "notification.sendingEmployee"
+      errors[5].message == "notification.startDate is required"
+      errors[5].path == "notification.startDate"
    }
 
    void "put invalid notification of type all without an ID" () {
@@ -354,7 +355,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, companyId, null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(PUT(url, new NotificationDto(notification)), Argument.of(NotificationDto), Argument.of(ErrorDto[]))
+      client.retrieve(PUT(url, new NotificationRequestDto(new NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)

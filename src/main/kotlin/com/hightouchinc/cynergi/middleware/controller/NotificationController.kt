@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.hightouchinc.cynergi.middleware.dto.NotificationRequestDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationResponseDto
 import com.hightouchinc.cynergi.middleware.dto.NotificationsResponseDto
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
@@ -138,32 +139,32 @@ class NotificationController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
-      @Valid @Body dto: NotificationDto
-   ): NotificationDto {
+      @Valid @Body dto: NotificationRequestDto
+   ): NotificationResponseDto {
       logger.info("Requested Save Notification {}", dto)
 
-      notificationValidator.validateSave(dto = dto)
+      notificationValidator.validateSave(dto = dto.notification)
 
-      val response = notificationService.create(dto = dto)
+      val response = notificationService.create(dto = dto.notification)
 
       logger.debug("Requested Save Notification {} resulted in {}", dto, response)
 
-      return response
+      return NotificationResponseDto(notification = response)
    }
 
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
-      @Valid @Body dto: NotificationDto
-   ): NotificationDto {
+      @Valid @Body dto: NotificationRequestDto
+   ): NotificationResponseDto {
       logger.info("Requested Update Notification {}", dto)
 
-      notificationValidator.validateUpdate(dto = dto)
+      notificationValidator.validateUpdate(dto = dto.notification)
 
-      val response = notificationService.update(dto = dto)
+      val response = notificationService.update(dto = dto.notification)
 
       logger.debug("Requested Update Notification {} resulted in {}", dto, response)
 
-      return response
+      return NotificationResponseDto(notification = response)
    }
 }
