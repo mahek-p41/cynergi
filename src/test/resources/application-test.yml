@@ -1,14 +1,16 @@
 micronaut:
    environment: test
+   http:
+      client:
+         read-timeout: 3600s
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:6432/cynergidbtest"
+      url: "jdbc:postgresql://localhost:7432/cynergitestdb"
       username: postgres
       password: password
       maximumPoolSize: 1
 flyway:
    datasources:
       default:
-         locations: classpath:db/migration/postgres
          clean-on-validation-error: true
          clean-disabled: false

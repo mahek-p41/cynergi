@@ -1,0 +1,19 @@
+package com.hightouchinc.cynergi.middleware.service
+
+/**
+ * Most services that interact with a [com.hightouchinc.cynergi.middleware.repository.Repository] are going to want to
+ * provide a way to look up the DTO that the caller is interacting with via an ID which this interface defines as being
+ * a long.
+ *
+ * @param DTO defines a DTO of some type
+ */
+interface IdentifiableService<DTO> {
+
+   /**
+    * search for a DTO via some underlying mechanism by an ID defined as a Long
+    *
+    * @param id the ID of the DTO to be searched for
+    * @return DTO an instance of that DTO or null if it was unable to be located
+    */
+   fun fetchById(id: Long): DTO?
+}
