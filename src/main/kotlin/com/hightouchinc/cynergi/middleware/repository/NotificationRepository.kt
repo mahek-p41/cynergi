@@ -191,6 +191,15 @@ class NotificationRepository @Inject constructor(
       }
    }
 
+   @Transactional
+   fun delete(id: Long): Int {
+      logger.trace("notification deletion requested for notification with id {}", id)
+
+      notificationRecipientRepository.deleteForParent(parentId = id)
+
+      return jdbc.update("DELETE FROM notification WHERE id = :id", mapOf("id" to id))
+   }
+
    private fun doRecipientDeletes(existing: Notification, recipients: MutableSet<NotificationRecipient>) {
       val recipientsToDelete = existing.recipients.asSequence().filter { !recipients.contains(it) }.toList()
 

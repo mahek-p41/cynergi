@@ -96,9 +96,13 @@ class NotificationRecipientRepository @Inject constructor(
    @Transactional
    fun deleteAll(recipientsToDelete: Collection<NotificationRecipient>): Int =
       jdbc.update(
-         "DELETE from notification_recipient WHERE id IN (:ids)",
+         "DELETE FROM notification_recipient WHERE id IN (:ids)",
          mapOf("ids" to recipientsToDelete.asSequence().filter { it.id != null }.map { it.id }.toSet())
       )
+
+   @Transactional
+   fun deleteForParent(parentId: Long): Int =
+      jdbc.update("DELETE FROM notification_recipient WHERE notification_id = :parentId", mapOf("parentId" to parentId))
 }
 
 private class NotificationRecipientRowMapper : RowMapper<NotificationRecipient> {

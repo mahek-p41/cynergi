@@ -9,14 +9,17 @@ import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.NotificationService
 import com.hightouchinc.cynergi.middleware.validator.NotificationValidator
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Header
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.Status
 import io.micronaut.validation.Validated
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -168,5 +171,13 @@ class NotificationController @Inject constructor(
       logger.debug("Requested Update Notification {} resulted in {}", notificationDto, response)
 
       return NotificationResponseDto(notification = response)
+   }
+
+   @Delete("/{id}")
+   @Status(HttpStatus.NO_CONTENT)
+   fun delete(
+      @QueryValue("id") id: Long
+   ) {
+      notificationService.delete(id = id)
    }
 }

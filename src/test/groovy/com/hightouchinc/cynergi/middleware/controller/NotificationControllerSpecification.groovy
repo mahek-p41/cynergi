@@ -15,17 +15,20 @@ import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientTestDataLo
 import com.hightouchinc.cynergi.test.data.loader.NotificationTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
 import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
 import java.time.LocalDate
 import java.util.stream.Collectors
 
 import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
+import static io.micronaut.http.HttpRequest.DELETE
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/notifications"
@@ -380,5 +383,31 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       errors.size() == 1
       errors[0].message == "Failed to convert argument [id] for value [null]"
       errors[0].path == "id"
+   }
+
+   void "delete notification of type all" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+
+      when:
+      final def response = client.exchange(DELETE("$url/${notification.id}"))
+
+      then:
+      response.status == NO_CONTENT
+   }
+
+   void 'delete notification of type employee with recipients' () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+
+      when:
+      final def response = client.exchange(DELETE("$url/${notification.id}"))
+
+      then:
+      response.status == NO_CONTENT
    }
 }
