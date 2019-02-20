@@ -49,6 +49,21 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       allPropertiesFullAndNotEmptyExcept(result.notification, "recipients")
    }
 
+   void "fetch one notification by id with recipients" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def recipients = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+
+      when:
+      def result = client.retrieve(GET("$url/${notification.id}"), NotificationResponseDto)
+
+      then:
+      result.notification.recipients.size() == 2
+      result.notification.recipients.sort({ o1, o2 -> o1.id <=> o2.id}) == recipients.sort({ o1, o2 -> o1.id <=> o2.id}).collect { new NotificationRecipientDto(it) }
+   }
+
    void "fetch one notification by id not found" () {
       when:
       client.exchange(GET("$url/0"), Argument.of(NotificationResponseDto), Argument.of(ErrorDto))

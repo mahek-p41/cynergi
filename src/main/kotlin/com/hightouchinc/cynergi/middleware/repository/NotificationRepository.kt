@@ -52,7 +52,7 @@ class NotificationRepository @Inject constructor(
    """.trimIndent()
 
    override fun findOne(id: Long): Notification? {
-      val found = jdbc.findFirstOrNull("""
+      val notification = jdbc.findFirstOrNull("""
          $baseFindQuery
          WHERE n.id = :id
          """.trimIndent(),
@@ -60,9 +60,11 @@ class NotificationRepository @Inject constructor(
          fullNotificationsRowMapper
       )
 
-      logger.trace("Searching for Notification: {} resulted in {}", id, found)
+      notification?.recipients?.addAll(notificationRecipientRepository.findAllByParent(notification = notification))
 
-      return found
+      logger.trace("Searching for Notification: {} resulted in {}", id, notification)
+
+      return notification
    }
 
    override fun exists(id: Long): Boolean {
