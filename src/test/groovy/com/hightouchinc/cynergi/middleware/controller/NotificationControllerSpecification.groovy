@@ -201,6 +201,24 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       notificationRepository.exists(savedNotification.id)
    }
 
+   void "post valid notification of type All with only the 'A'" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final def notificationPayload = new NotificationDto(notification, "A")
+
+      when:
+      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(notificationPayload)), NotificationResponseDto).notification
+
+      then:
+      savedNotification.id != null
+      savedNotification.id > 0
+      savedNotification.company == "testco"
+      savedNotification.sendingEmployee == notification.sendingEmployee
+      savedNotification.recipients.size() == 0
+      notificationRepository.exists(savedNotification.id)
+   }
+
    void "post valid notification of type Employee with 1 recipient" () {
       given:
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }

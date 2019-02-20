@@ -125,6 +125,18 @@ data class NotificationDto (
       this.recipients = recipients.map { NotificationRecipientDto(it) }
    }
 
+   constructor(entity: Notification, notificationType: String) :
+      this(
+         id = entity.id,
+         company = entity.company,
+         expirationDate = entity.expirationDate,
+         message = entity.message,
+         sendingEmployee = entity.sendingEmployee,
+         startDate = entity.startDate,
+         notificationType = notificationType,
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
+      )
+
    override fun dtoId(): Long? = id
 
    override fun copyMe(): NotificationDto = copy()
