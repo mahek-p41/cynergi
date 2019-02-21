@@ -123,7 +123,7 @@ class VerificationRepository @Inject constructor(
       """.trimIndent()
 
    override fun findOne(id: Long): Verification? {
-      val found: Verification? =  jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 

@@ -129,7 +129,6 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
       final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
-
       when:
       def recipient = recipientNotifications[0].recipient
       def result = client.retrieve(GET("$url?type=${notificationType.value}").headers(["X-Auth-Company": companyId, "X-Auth-User": recipient]), NotificationsResponseDto)
