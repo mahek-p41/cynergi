@@ -1,6 +1,5 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.Notification
 import com.hightouchinc.cynergi.middleware.entity.NotificationRecipient
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
@@ -41,9 +40,6 @@ class NotificationRecipientRepository @Inject constructor(
 
       return exists
    }
-
-   fun findAllByParent(notification: Notification): List<NotificationRecipient> =
-      jdbc.query("SELECT * FROM notification_recipient WHERE notification_id = :id", mapOf("id" to notification.id), simpleNotificationRecipientRowMapper)
 
    @Transactional
    override fun insert(entity: NotificationRecipient): NotificationRecipient {
