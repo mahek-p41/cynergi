@@ -4,17 +4,17 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations
 import java.sql.ResultSet
 
-fun <T> NamedParameterJdbcOperations.findFirstOrNull(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<T>): T? {
-   val resultList: List<T> = this.query(query, params, rowMapper)
+fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNull(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY? {
+   val resultList: List<ENTITY> = this.query(query, params, rowMapper)
 
    return resultList.firstOrNull()
 }
 
-fun <T> NamedParameterJdbcOperations.findFirstOrNullWithCrossJoin(query: String, params: Map<String, *>, primaryRowMapper: RowMapper<T>, childRowCallbackHandler: (T, ResultSet) -> Unit): T? {
-   var found: T? = null
+fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNullWithCrossJoin(query: String, params: Map<String, *>, primaryRowMapper: RowMapper<ENTITY>, childRowCallbackHandler: (ENTITY, ResultSet) -> Unit): ENTITY? {
+   var found: ENTITY? = null
 
    this.query(query, params) { rs ->
-      val tempResult: T = found ?: primaryRowMapper.mapRow(rs, 0)!!
+      val tempResult: ENTITY = found ?: primaryRowMapper.mapRow(rs, 0)!!
 
       found = tempResult
 
@@ -24,14 +24,14 @@ fun <T> NamedParameterJdbcOperations.findFirstOrNullWithCrossJoin(query: String,
    return found
 }
 
-fun <T> NamedParameterJdbcOperations.findAllWithCrossJoin(query: String, params: Map<String, *>, parentIdColumn: String, primaryRowMapper: RowMapper<T>, childRowCallbackHandler: (T, ResultSet) -> Unit): List<T> {
+fun <ENTITY> NamedParameterJdbcOperations.findAllWithCrossJoin(query: String, params: Map<String, *>, parentIdColumn: String, primaryRowMapper: RowMapper<ENTITY>, childRowCallbackHandler: (ENTITY, ResultSet) -> Unit): List<ENTITY> {
    var currentId: Long = -1
-   var currentParentEntity: T? = null
-   val resultList: MutableList<T> = mutableListOf()
+   var currentParentEntity: ENTITY? = null
+   val resultList: MutableList<ENTITY> = mutableListOf()
 
    this.query(query, params) { rs ->
       val tempId = rs.getLong(parentIdColumn)
-      val tempParentEntity: T = if (tempId != currentId) {
+      val tempParentEntity: ENTITY = if (tempId != currentId) {
          currentId = tempId
          currentParentEntity = primaryRowMapper.mapRow(rs, 0)
          resultList.add(currentParentEntity!!)
@@ -46,10 +46,10 @@ fun <T> NamedParameterJdbcOperations.findAllWithCrossJoin(query: String, params:
    return resultList
 }
 
-fun <T> NamedParameterJdbcOperations.insertReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<T>): T {
+fun <ENTITY> NamedParameterJdbcOperations.insertReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
    return this.queryForObject(query, params, rowMapper)!!
 }
 
-fun <T> NamedParameterJdbcOperations.updateReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<T>): T {
+fun <ENTITY> NamedParameterJdbcOperations.updateReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
    return this.queryForObject(query, params, rowMapper)!!
 }
