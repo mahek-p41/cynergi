@@ -15,7 +15,6 @@ import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientTestDataLo
 import com.hightouchinc.cynergi.test.data.loader.NotificationTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
 import io.micronaut.core.type.Argument
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
 import java.time.LocalDate
@@ -74,20 +73,23 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
-   void "fetch all by sending employee and company" () {
+   void "fetch all by sending employee and company through the admin path" () {
       given:
       final def companyId = "testco"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
       final def sendingEmployee = "bob"
       final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, sendingEmployee).collect(Collectors.toList())
+      fiveNotifications.each { notification -> notificationRecipientDataLoaderService.stream(2, notification).forEach { notification.recipients.add(it) } }
 
       when:
       def result = client.retrieve(GET("$url/admin").headers(["X-Auth-Company": companyId, "X-Auth-User": sendingEmployee]), NotificationsResponseDto)
 
       then:
+      result.notifications.each { it.recipients.sort { o1, o2 -> o1.id <=> o2.id } }.sort { o1, o2 -> o1.id <=> o2.id }
       result.notifications.size() == 5
       result.notifications.collect { it.sendingEmployee }.findAll { it == sendingEmployee }.size() == 5
       result.notifications == fiveNotifications.collect { new NotificationDto(it) }
+      result.notifications.collect { it.recipients.size() }.findAll { it == 2 }.size() == 5
    }
 
    @Deprecated
@@ -133,8 +135,9 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      result == new NotificationsResponseDto([new NotificationDto(notification)])
       result.notifications.size() == 1
+      result.notifications[0].id == notification.id
+      result.notifications[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    void "fetch all by company with type Employee" () {
@@ -150,7 +153,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result.size() == 1
-      result[0] == new NotificationDto(notification)
+      result[0].id == notification.id
+      result[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    @Deprecated

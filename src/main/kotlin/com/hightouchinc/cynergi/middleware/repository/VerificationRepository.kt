@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
+import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNullWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -25,10 +26,14 @@ class VerificationRepository @Inject constructor(
    private val verificationLandlordRepository: VerificationLandlordRepository,
    private val verificationReferenceRepository: VerificationReferenceRepository
 ) : Repository<Verification> {
-
-   private val selectAllRowMapper: RowMapper<Verification>
    private val logger: Logger = LoggerFactory.getLogger(VerificationRepository::class.java)
-   private val simpleVerificationRowMapper: RowMapper<Verification> = VerificationRowMapper()
+   private val simpleVerificationRowMapper: VerificationRowMapper = VerificationRowMapper()
+   private val selectAllRowMapper: VerificationRowMapper = VerificationRowMapper(
+      rowPrefix = "v_",
+      verificationAutoRepository = verificationAutoRepository,
+      verificationEmploymentRepository = verificationEmploymentRepository,
+      verificationLandlordRepository = verificationLandlordRepository
+   )
 
    @Language("PostgreSQL")
    private val selectAllBase = """
@@ -117,23 +122,8 @@ class VerificationRepository @Inject constructor(
            ON v.id = vr.verification_id
       """.trimIndent()
 
-   init {
-       selectAllRowMapper = VerificationRowMapper(
-          rowPrefix = "v_",
-          verificationAutoRepository = verificationAutoRepository,
-          verificationEmploymentRepository = verificationEmploymentRepository,
-          verificationLandlordRepository = verificationLandlordRepository
-       )
-   }
-
    override fun findOne(id: Long): Verification? {
-      var found: Verification? = null
-
-      jdbc.query("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs ->
-         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)!!
-
-         found = verification
-
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
@@ -143,13 +133,7 @@ class VerificationRepository @Inject constructor(
    }
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
-      var found: Verification? = null
-
-      jdbc.query( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs ->
-         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)!!
-
-         found = verification
-
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
@@ -271,7 +255,7 @@ private class VerificationRowMapper(
    private val verificationEmploymentRepository: VerificationEmploymentRepository? = null,
    private val verificationLandlordRepository: VerificationLandlordRepository? = null
 ): RowMapper<Verification> {
-   override fun mapRow(rs: ResultSet, row: Int): Verification? {
+   override fun mapRow(rs: ResultSet, row: Int): Verification {
       val auto = verificationAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
       val employment = verificationEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)
       val landlord = verificationLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)

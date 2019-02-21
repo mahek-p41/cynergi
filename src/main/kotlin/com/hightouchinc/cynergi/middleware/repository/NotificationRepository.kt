@@ -3,7 +3,8 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.Notification
 import com.hightouchinc.cynergi.middleware.entity.NotificationRecipient
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
-import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
+import com.hightouchinc.cynergi.middleware.extensions.findAllWithCrossJoin
+import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNullWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUUID
@@ -27,7 +28,7 @@ class NotificationRepository @Inject constructor(
    private val notificationRecipientRepository: NotificationRecipientRepository
 ) : Repository<Notification> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
-   private val fullNotificationsRowMapper = NotificationsRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
+   private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
    @Language("PostgreSQL") private val baseFindQuery = """
       SELECT
@@ -45,26 +46,29 @@ class NotificationRepository @Inject constructor(
          ntd.time_created AS ntd_time_created,
          ntd.time_updated AS ntd_time_updated,
          ntd.value AS ntd_value,
-         ntd.description AS ntd_description
+         ntd.description AS ntd_description,
+         nr.id AS nr_id,
+         nr.uu_row_id AS nr_uu_row_id,
+         nr.time_created AS nr_time_created,
+         nr.time_updated AS nr_time_updated,
+         nr.description AS nr_description,
+         nr.recipient AS nr_recipient,
+         nr.notification_id AS nr_notification_id
       FROM notification n
-           JOIN notification_type_domain ntd
-             ON n.notification_type_id = ntd.id
+         JOIN notification_type_domain ntd
+           ON n.notification_type_id = ntd.id
+         LEFT OUTER JOIN notification_recipient nr
+           ON n.id = nr.notification_id
    """.trimIndent()
 
    override fun findOne(id: Long): Notification? {
-      val notification = jdbc.findFirstOrNull("""
-         $baseFindQuery
-         WHERE n.id = :id
-         """.trimIndent(),
-         mapOf("id" to id),
-         fullNotificationsRowMapper
-      )
+      val found: Notification? = jdbc.findFirstOrNullWithCrossJoin("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id), fullNotificationRowMapper) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also { notification.recipients.add(it) }
+      }
 
-      notification?.recipients?.addAll(notificationRecipientRepository.findAllByParent(notification = notification))
+      logger.trace("Searching for Notification: {} resulted in {}", id, found)
 
-      logger.trace("Searching for Notification: {} resulted in {}", id, notification)
-
-      return notification
+      return found
    }
 
    override fun exists(id: Long): Boolean {
@@ -76,24 +80,28 @@ class NotificationRepository @Inject constructor(
    }
 
    fun findAllByCompany(companyId: String, type: String): List<Notification> =
-      jdbc.query("""
+      jdbc.findAllWithCrossJoin("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
                AND current_date BETWEEN n.start_date AND n.expiration_date
+         ORDER BY n_id ASC
          """.trimIndent(),
          mapOf(
             "company_id" to companyId,
             "notification_type" to type
          ),
-         fullNotificationsRowMapper
-      )
+         "n_id",
+         fullNotificationRowMapper
+      ) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            notification.recipients.add(it)
+         }
+      }
 
    fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
-      jdbc.query("""
+      jdbc.findAllWithCrossJoin("""
          $baseFindQuery
-              JOIN notification_recipient nr
-                ON n.id = nr.notification_id
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
                AND nr.recipient = :recipient_id
@@ -103,14 +111,19 @@ class NotificationRepository @Inject constructor(
             "notification_type" to type,
             "recipient_id" to recipientId
          ),
-         fullNotificationsRowMapper
-      )
+         "n_id",
+         fullNotificationRowMapper
+      ) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            notification.recipients.add(it)
+         }
+      }
 
    fun findAllTypes(): List<NotificationTypeDomain> =
       notificationTypeDomainRepository.findAll()
 
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
-      jdbc.query("""
+      jdbc.findAllWithCrossJoin("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND n.sending_employee = :sending_employee
@@ -119,8 +132,13 @@ class NotificationRepository @Inject constructor(
             "company_id" to companyId,
             "sending_employee" to sendingEmployee
          ),
-         fullNotificationsRowMapper
-      )
+         "n_id",
+         fullNotificationRowMapper
+      ) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            notification.recipients.add(it)
+         }
+      }
 
    @Transactional
    override fun insert(entity: Notification): Notification {
@@ -141,7 +159,7 @@ class NotificationRepository @Inject constructor(
             "expiration_date" to entity.expirationDate,
             "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
-         NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
+         NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
       entity.recipients.asSequence()
@@ -179,18 +197,18 @@ class NotificationRepository @Inject constructor(
             "sending_employee" to entity.sendingEmployee,
             "notification_type_id" to entity.notificationDomainType.entityId()!!
          ),
-         NotificationsRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
+         NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
       val recipients = doRecipientUpdates(entity)
 
       doRecipientDeletes(existing, recipients)
 
-      return if (recipients.isNotEmpty()) {
-         updated.copy(recipients = recipients)
-      } else {
-         updated
+      if (recipients.isNotEmpty()) {
+         updated.recipients.addAll(recipients)
       }
+
+      return updated
    }
 
    @Transactional
@@ -216,7 +234,7 @@ class NotificationRepository @Inject constructor(
          .toMutableSet()
 }
 
-private class NotificationsRowMapper(
+private class NotificationRowMapper(
    private val rowPrefix: String = EMPTY,
    private val notificationDomainTypeRowMapper: RowMapper<NotificationTypeDomain>
 ) : RowMapper<Notification> {
