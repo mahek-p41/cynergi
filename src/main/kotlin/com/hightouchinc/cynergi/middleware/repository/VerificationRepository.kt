@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
+import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNullWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -122,13 +123,7 @@ class VerificationRepository @Inject constructor(
       """.trimIndent()
 
    override fun findOne(id: Long): Verification? {
-      var found: Verification? = null
-
-      jdbc.query("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs ->
-         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)
-
-         found = verification
-
+      val found: Verification? =  jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
@@ -138,13 +133,7 @@ class VerificationRepository @Inject constructor(
    }
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
-      var found: Verification? = null
-
-      jdbc.query( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs ->
-         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)
-
-         found = verification
-
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
