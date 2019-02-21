@@ -80,12 +80,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
       final def sendingEmployee = "bob"
       final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, sendingEmployee).collect(Collectors.toList())
-      fiveNotifications.each { notification -> notificationRecipientDataLoaderService.stream(2, notification).forEach { } }
+      fiveNotifications.each { notification -> notificationRecipientDataLoaderService.stream(2, notification).forEach { notification.recipients.add(it) } }
 
       when:
       def result = client.retrieve(GET("$url/admin").headers(["X-Auth-Company": companyId, "X-Auth-User": sendingEmployee]), NotificationsResponseDto)
 
       then:
+      result.notifications.each { it.recipients.sort { o1, o2 -> o1.id <=> o2.id } }.sort { o1, o2 -> o1.id <=> o2.id }
       result.notifications.size() == 5
       result.notifications.collect { it.sendingEmployee }.findAll { it == sendingEmployee }.size() == 5
       result.notifications == fiveNotifications.collect { new NotificationDto(it) }

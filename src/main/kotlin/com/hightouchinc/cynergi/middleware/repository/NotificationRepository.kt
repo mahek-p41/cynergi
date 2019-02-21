@@ -3,6 +3,7 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.Notification
 import com.hightouchinc.cynergi.middleware.entity.NotificationRecipient
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
+import com.hightouchinc.cynergi.middleware.extensions.findAllWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNullWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
@@ -79,34 +80,27 @@ class NotificationRepository @Inject constructor(
    }
 
    fun findAllByCompany(companyId: String, type: String): List<Notification> =
-      jdbc.findFirstOrNullWithCrossJoin("""
+      jdbc.findAllWithCrossJoin("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
                AND current_date BETWEEN n.start_date AND n.expiration_date
-         """.trimIndent(),
-         mapOf(
-            "company_id" to companyId,
-            "notification_type" to type
-         ), fullNotificationRowMapper) { notification, rs ->
-         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also { notification.recipients.add(it) }
-      }
-
-/*   jdbc.query("""
-         $baseFindQuery
-         WHERE n.company_id = :company_id
-               AND ntd.value = :notification_type
-               AND current_date BETWEEN n.start_date AND n.expiration_date
+         ORDER BY n_id ASC
          """.trimIndent(),
          mapOf(
             "company_id" to companyId,
             "notification_type" to type
          ),
+         "n_id",
          fullNotificationRowMapper
-      )*/
+      ) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            notification.recipients.add(it)
+         }
+      }
 
    fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
-      jdbc.query("""
+      jdbc.findAllWithCrossJoin("""
          $baseFindQuery
               JOIN notification_recipient nr
                 ON n.id = nr.notification_id
@@ -119,14 +113,19 @@ class NotificationRepository @Inject constructor(
             "notification_type" to type,
             "recipient_id" to recipientId
          ),
+         "n_id",
          fullNotificationRowMapper
-      )
+      ) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            notification.recipients.add(it)
+         }
+      }
 
    fun findAllTypes(): List<NotificationTypeDomain> =
       notificationTypeDomainRepository.findAll()
 
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
-      jdbc.query("""
+      jdbc.findAllWithCrossJoin("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND n.sending_employee = :sending_employee
@@ -135,8 +134,13 @@ class NotificationRepository @Inject constructor(
             "company_id" to companyId,
             "sending_employee" to sendingEmployee
          ),
+         "n_id",
          fullNotificationRowMapper
-      )
+      ) { notification, rs ->
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            notification.recipients.add(it)
+         }
+      }
 
    @Transactional
    override fun insert(entity: Notification): Notification {
