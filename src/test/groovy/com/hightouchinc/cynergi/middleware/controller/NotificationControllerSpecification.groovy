@@ -15,7 +15,6 @@ import com.hightouchinc.cynergi.test.data.loader.NotificationRecipientTestDataLo
 import com.hightouchinc.cynergi.test.data.loader.NotificationTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.NotificationTypeDomainTestDataLoader
 import io.micronaut.core.type.Argument
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
 import java.time.LocalDate
@@ -130,14 +129,16 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
       final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
+
       when:
       def recipient = recipientNotifications[0].recipient
       def result = client.retrieve(GET("$url?type=${notificationType.value}").headers(["X-Auth-Company": companyId, "X-Auth-User": recipient]), NotificationsResponseDto)
 
       then:
       notThrown(HttpClientResponseException)
-      result == new NotificationsResponseDto([new NotificationDto(notification)])
       result.notifications.size() == 1
+      result.notifications[0].id == notification.id
+      result.notifications[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    void "fetch all by company with type Employee" () {
@@ -153,7 +154,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result.size() == 1
-      result[0] == new NotificationDto(notification)
+      result[0].id == notification.id
+      result[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    @Deprecated

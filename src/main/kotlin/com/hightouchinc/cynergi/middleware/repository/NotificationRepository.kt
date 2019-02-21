@@ -57,7 +57,7 @@ class NotificationRepository @Inject constructor(
       FROM notification n
          JOIN notification_type_domain ntd
            ON n.notification_type_id = ntd.id
-         JOIN notification_recipient nr
+         LEFT OUTER JOIN notification_recipient nr
            ON n.id = nr.notification_id
    """.trimIndent()
 
@@ -102,8 +102,6 @@ class NotificationRepository @Inject constructor(
    fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
       jdbc.findAllWithCrossJoin("""
          $baseFindQuery
-              JOIN notification_recipient nr
-                ON n.id = nr.notification_id
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
                AND nr.recipient = :recipient_id
