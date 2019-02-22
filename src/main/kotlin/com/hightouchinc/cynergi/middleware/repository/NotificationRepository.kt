@@ -200,7 +200,7 @@ class NotificationRepository @Inject constructor(
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
-      val recipients = doRecipientUpdates(entity)
+      val recipients = doRecipientUpdates(entity, existing)
 
       doRecipientDeletes(existing, recipients)
 
@@ -228,8 +228,9 @@ class NotificationRepository @Inject constructor(
       }
    }
 
-   private fun doRecipientUpdates(entity: Notification) =
+   private fun doRecipientUpdates(entity: Notification, existing: Notification) =
       entity.recipients.asSequence()
+         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.entityId() == n.notification.entityId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
 }

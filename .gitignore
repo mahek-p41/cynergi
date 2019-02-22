@@ -645,3 +645,5 @@ healthchecksdb
 
 # End of https://www.gitignore.io/api/node,java,macos,linux,kotlin,gradle,windows,intellij+all,visualstudio,visualstudiocode
 .settings/
+
+.project
