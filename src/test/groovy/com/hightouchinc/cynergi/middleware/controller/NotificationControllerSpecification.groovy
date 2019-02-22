@@ -336,7 +336,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       result.recipients.size() == 3
    }
 
-   void "put valid notification of type employee remove recipient" () {
+   void "put valid notification of type employee remove recipient with recipient ID's from client" () {
       given:
       final def companyId = "testco"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
@@ -346,6 +346,25 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       when:
       final updatedNotification = new NotificationDto(null, notification.message, notification)
+      final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
+
+      then:
+      result.id == notification.id
+      result.recipients.size() == 1
+      result.recipients[0].id == recipientNotifications[0].id
+   }
+
+   void "put valid notification of type employee remove recipient without recipient ID's from client" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      notification.recipients.add(recipientNotifications[0])
+
+      when:
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
+      updatedNotification.recipients.each { it.id = null }
       final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
