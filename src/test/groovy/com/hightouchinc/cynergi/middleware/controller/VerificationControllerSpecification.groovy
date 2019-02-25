@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.javafaker.Faker
 import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
 import com.hightouchinc.cynergi.middleware.dto.ErrorDto
@@ -11,6 +12,8 @@ import com.hightouchinc.cynergi.test.data.loader.VerificationDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.VerificationReferenceTestDataLoader
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
@@ -29,6 +32,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
    final def verificationDataLoaderService = applicationContext.getBean(VerificationDataLoaderService)
    final def verificationReferenceDataLoaderService = applicationContext.getBean(VerificationReferenceDataLoaderService)
    final def verificationReferenceRepository = applicationContext.getBean(VerificationReferenceRepository)
+   final ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper)
 
    void "fetch one verification by id where everything is filled out" () {
       given:
@@ -178,6 +182,25 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       savedVerification.verifiedTime != null
       savedVerification.references.size() ==  0
       allPropertiesFullAndNotEmptyExcept(savedVerification, "references")
+   }
+
+   void "post verification unsuccessfully due to bad date" () {
+      given:
+      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verificationJson = new JsonSlurper().parseText(objectMapper.writeValueAsString(verification))
+
+      when:
+      verificationJson["cust_verified_date"] = "2019-02-30"
+      client.exchange(POST(url, verificationJson), Argument.of(VerificationDto), Argument.of(ErrorDto[]))
+
+      then:
+      final HttpClientResponseException exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+
+      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
+      errors != null
+      errors.size() == 1
+      errors[0].message == "Failed to convert argument [cust_verified_date] for value [2019-02-30]"
    }
 
    void "put verification successfully" () {
