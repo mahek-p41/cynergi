@@ -7,7 +7,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.hightouchinc.cynergi.middleware.dto.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
+import java.sql.Date
+import java.sql.Time
+import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
@@ -34,7 +39,7 @@ data class Verification(
          customerAccount = dto.customerAccount!!,
          customerComments = dto.customerComments,
          verifiedBy = dto.verifiedBy!!,
-         verifiedTime = dto.verifiedTime!!,
+         verifiedTime = OffsetTime.now().atDate(dto.verifiedTime!!) ,
          company = company
       ) {
 
@@ -72,7 +77,7 @@ data class VerificationDto(
 
    @field:NotNull(message = NOT_NULL)
    @field:JsonProperty("cust_verified_date")
-   var verifiedTime: OffsetDateTime?,
+   var verifiedTime: LocalDate?,
 
    @field:Nullable
    @field:JsonProperty("checklist_auto")
@@ -99,7 +104,7 @@ data class VerificationDto(
          customerAccount = entity.customerAccount,
          customerComments = entity.customerComments,
          verifiedBy = entity.verifiedBy,
-         verifiedTime = entity.verifiedTime,
+         verifiedTime = entity.verifiedTime.toLocalDate(),
          auto = copyAutoEntityToDto(entity = entity),
          employment = copyEmploymentEntityToDto(entity = entity),
          landlord = copyLandlordEntityToDto(entity = entity),
