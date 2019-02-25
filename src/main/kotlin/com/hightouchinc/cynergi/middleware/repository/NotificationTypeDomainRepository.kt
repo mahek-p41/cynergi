@@ -3,7 +3,7 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.NotificationTypeDomain
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
-import com.hightouchinc.cynergi.middleware.extensions.getUUID
+import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -50,7 +50,7 @@ private class NotificationTypeDomainRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain =
       NotificationTypeDomain(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
+         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
          value = rs.getString("${rowPrefix}value"),

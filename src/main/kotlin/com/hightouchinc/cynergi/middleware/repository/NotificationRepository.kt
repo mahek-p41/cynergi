@@ -7,7 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.findAllWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNullWithCrossJoin
 import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
-import com.hightouchinc.cynergi.middleware.extensions.getUUID
+import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -200,7 +200,7 @@ class NotificationRepository @Inject constructor(
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
-      val recipients = doRecipientUpdates(entity)
+      val recipients = doRecipientUpdates(entity, existing)
 
       doRecipientDeletes(existing, recipients)
 
@@ -228,8 +228,9 @@ class NotificationRepository @Inject constructor(
       }
    }
 
-   private fun doRecipientUpdates(entity: Notification) =
+   private fun doRecipientUpdates(entity: Notification, existing: Notification) =
       entity.recipients.asSequence()
+         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.entityId() == n.notification.entityId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
 }
@@ -241,7 +242,7 @@ private class NotificationRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
       Notification(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
+         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
          company = rs.getString("${rowPrefix}company_id"),
