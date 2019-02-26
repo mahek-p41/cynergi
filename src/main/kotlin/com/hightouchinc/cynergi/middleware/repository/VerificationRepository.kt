@@ -197,7 +197,7 @@ class VerificationRepository @Inject constructor(
       logger.debug("Updating Verification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!
-      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { null }
+      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { entity.verifiedTime }
 
       val updated = jdbc.updateReturning("""
          UPDATE verification

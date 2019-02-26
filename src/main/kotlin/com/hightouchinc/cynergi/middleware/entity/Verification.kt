@@ -10,6 +10,7 @@ import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.time.ZoneId
 import java.util.UUID
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
@@ -36,7 +37,7 @@ data class Verification(
          customerAccount = dto.customerAccount!!,
          customerComments = dto.customerComments,
          verifiedBy = dto.verifiedBy!!,
-         verifiedTime = OffsetTime.MIN.atDate(dto.verifiedTime!!),
+         verifiedTime = dto.verifiedTime!!.atStartOfDay(ZoneId.of("UTC")).toOffsetDateTime(),
          company = company
       ) {
 

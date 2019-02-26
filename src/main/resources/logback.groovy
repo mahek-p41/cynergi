@@ -12,7 +12,7 @@ final def logFileHome='/opt/cyn/v01/cynmid/logs'
 final String micrnautEnvironments=System.properties['micronaut.environments']
 final List<String> appenders = []
 
-if(micrnautEnvironments.equalsIgnoreCase('prod')) {
+if('prod'.equalsIgnoreCase(micrnautEnvironments)) {
    final String appenderName = 'PROD_FILE'
 
    new File(logFileHome).mkdirs()
