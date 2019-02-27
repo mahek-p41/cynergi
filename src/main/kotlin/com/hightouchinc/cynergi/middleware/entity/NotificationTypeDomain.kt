@@ -27,13 +27,6 @@ data class NotificationTypeDomain (
          description = description
       )
 
-   constructor(dto: NotificationTypeDomainDto) :
-      this(
-         id = dto.id,
-         value = dto.value,
-         description = dto.description
-      )
-
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
