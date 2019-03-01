@@ -5,6 +5,20 @@ micronaut:
          swagger:
             paths: classpath:META-INF/swagger
             mapping: /swagger/**
+   security:
+      token:
+         jwt:
+            enabled: true
+            refresh-token-expiration: 86400 # 24 hours
+            access-token-expiration: 43200 # 12 hours
+            signatures:
+               secret:
+                  generator:
+                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
+                     jws-algorith: HS256
+            cookie:
+               enabled: true
+               cookie-name: CAT # cynergi api token
 datasources:
    default:
       url: "jdbc:postgresql://localhost:6432/cynergidb"

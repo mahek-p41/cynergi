@@ -45,6 +45,7 @@ dependencies {
    compile "io.micronaut.configuration:micronaut-hibernate-validator"
    compile "io.micronaut:micronaut-runtime"
    compile "io.micronaut:micronaut-spring"
+   compile "io.micronaut:micronaut-security-jwt"
    compile "org.codehaus.groovy:groovy-all:2.5.4"
    
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
@@ -57,6 +58,7 @@ dependencies {
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
    kapt "io.micronaut:micronaut-validation"
+   kapt "io.micronaut:micronaut-security"
    kaptTest "io.micronaut:micronaut-inject-java"
 
    runtime "ch.qos.logback:logback-classic:1.2.3"
