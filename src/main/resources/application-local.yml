@@ -6,22 +6,58 @@ micronaut:
             paths: classpath:META-INF/swagger
             mapping: /swagger/**
    security:
+      enabled: true
+      endpoints:
+         login:
+            enabled: true
+            #path: /api/login
+         logout:
+            enabled: true
       token:
          jwt:
             enabled: true
-            refresh-token-expiration: 86400 # 24 hours
-            access-token-expiration: 43200 # 12 hours
+            #refresh-token-expiration: 86400 # 24 hours
+            #access-token-expiration: 43200 # 12 hours
+            bearer:
+               enabled: false
+            cookie:
+               enabled: true
+               loginFailureTargetUrl: /login/authFailed
+               #cookie-name: CAT # cynergi api token
             signatures:
                secret:
                   generator:
-                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
-                     jws-algorith: HS256
-            cookie:
-               enabled: true
-               cookie-name: CAT # cynergi api token
+                     secret: pleaseChangeThisSecretForANewOne
+#   security:
+#      enabled: true
+#      endpoints:
+#         login:
+#            enabled: true
+#      token:
+#         jwt:
+#            enabled: true
+#            refresh-token-expiration: 86400 # 24 hours
+#            access-token-expiration: 43200 # 12 hours
+#            signatures:
+#               secret:
+#                  generator:
+#                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
+#                     jws-algorith: HS256
+#            cookie:
+#               enabled: true
+#               cookie-name: CAT # cynergi api token
+postgres:
+   reactive:
+      client:
+         port: 6432
+         host: localhost
+         database: cynergidb
+         user: postgres
+         password: password
+         maxSize: 1
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:6432/cynergidb"
-      username: postgres
-      password: password
+      url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
+      username: "${postgres.reactive.client.user}"
+      password: "${postgres.reactive.client.password}"
       maximumPoolSize: 1

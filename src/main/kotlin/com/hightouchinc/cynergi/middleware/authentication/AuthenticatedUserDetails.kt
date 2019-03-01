@@ -8,5 +8,4 @@ data class AuthenticatedUserDetails(
    val userName: String,
    val level: Int,
    val userRoles: Set<String>
-) : UserDetails(userName, userRoles) {
-}
+) : UserDetails(userName, userRoles)

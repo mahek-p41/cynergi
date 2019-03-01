@@ -1,7 +1,4 @@
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
-import ch.qos.logback.core.ConsoleAppender
-import ch.qos.logback.core.rolling.RollingFileAppender
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 
 import static ch.qos.logback.classic.Level.DEBUG
 import static ch.qos.logback.classic.Level.ERROR
@@ -54,7 +51,7 @@ if (System.properties.containsKey('HIGHTOUCH_TRACE_LOGGING')) {
 
 logger('com.zaxxer', ERROR)
 logger('io.netty', ERROR)
-logger('io.micronaut', INFO)
+logger('io.micronaut', DEBUG)
 logger('org.apache', ERROR)
 logger('org.flywaydb', INFO)
 logger('org.jboss', ERROR)
