@@ -53,6 +53,7 @@ dependencies {
    compile "org.springframework:spring-jdbc:5.0.10.RELEASE"
    compile "io.swagger.core.v3:swagger-annotations"
    compile "org.postgresql:postgresql:42.2.5"
+   compile "io.micronaut.configuration:micronaut-postgres-reactive"
    compile "org.apache.commons:commons-lang3:3.8.1"
 
    kapt "io.micronaut.configuration:micronaut-openapi"
