@@ -113,6 +113,7 @@ data class NotificationDto (
    constructor(id: Long?, message: String, entity: Notification) :
       this(
          id = id,
+         dateCreated = entity.timeCreated.toLocalDate(),
          company = entity.company,
          expirationDate = entity.expirationDate,
          message = message,
@@ -133,6 +134,7 @@ data class NotificationDto (
    constructor(entity: Notification, notificationType: String) :
       this(
          id = entity.id,
+         dateCreated = entity.timeCreated.toLocalDate(),
          company = entity.company,
          expirationDate = entity.expirationDate,
          message = entity.message,
