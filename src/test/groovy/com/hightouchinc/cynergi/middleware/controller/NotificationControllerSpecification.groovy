@@ -200,7 +200,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post invalid notification of type all with nulls" () {
       given:
-      final def notification = new NotificationDto(null, null, null, null, null, null, null, [])
+      final def notification = new NotificationDto(null, null, null, null, null, null, null, null, [])
 
       when:
       client.retrieve(POST(url, notification), Argument.of(NotificationDto), Argument.of(ErrorDto[]))

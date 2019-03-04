@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.hightouchinc.cynergi.middleware.dto.spi.DataTransferObjectBase
@@ -65,6 +66,9 @@ data class NotificationDto (
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
+   @JsonFormat(pattern = "yyyy-MM-dd")
+   var dateCreated: LocalDate?,
+
    @field:NotNull(message = NOT_NULL)
    var startDate: LocalDate?,
 
@@ -94,6 +98,7 @@ data class NotificationDto (
    constructor(entity: Notification) :
       this(
          id = entity.id,
+         dateCreated = entity.timeCreated.toLocalDate(),
          company = entity.company,
          expirationDate = entity.expirationDate,
          message = entity.message,
