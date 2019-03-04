@@ -26,7 +26,7 @@ data class VerificationLandlord (
    val paidRent: String?,
    val phone: Boolean?,
    val reliable: Boolean?,
-   val rent: BigDecimal,
+   val rent: BigDecimal?,
    val verification: IdentifiableEntity
 ) : Entity<VerificationLandlord> {
 
@@ -97,7 +97,7 @@ data class VerificationLandlordDto (
 
    @field:Digits(integer = 19, fraction = 2)
    @field:JsonProperty("land_rent")
-   var rent: BigDecimal
+   var rent: BigDecimal?
 
 ) : DataTransferObjectBase<VerificationLandlordDto>() {
 
