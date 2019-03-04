@@ -3,6 +3,7 @@ package com.hightouchinc.cynergi.middleware.entity
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.hightouchinc.cynergi.middleware.dto.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
@@ -75,6 +76,7 @@ data class NotificationDto (
    @field:NotNull(message = NOT_NULL)
    var expirationDate: LocalDate?,
 
+   @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 6, max = 6, message = SIZE)
    var company: String?,
@@ -88,7 +90,7 @@ data class NotificationDto (
    var sendingEmployee: String?,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 1, max = 1, message = SIZE)
+   @field:Size(min = 1, message = SIZE)
    var notificationType: String?,
 
    var recipients: List<NotificationRecipientDto> = emptyList()
@@ -104,7 +106,19 @@ data class NotificationDto (
          message = entity.message,
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
-         notificationType = entity.notificationDomainType.value,
+         notificationType = "${entity.notificationDomainType.value}:${entity.notificationDomainType.description}",
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
+      )
+
+   constructor(id: Long?, message: String, entity: Notification) :
+      this(
+         id = id,
+         company = entity.company,
+         expirationDate = entity.expirationDate,
+         message = message,
+         sendingEmployee = entity.sendingEmployee,
+         startDate = entity.startDate,
+         notificationType = "${entity.notificationDomainType.value}:${entity.notificationDomainType.description}",
          recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 
@@ -115,6 +129,18 @@ data class NotificationDto (
 
       this.recipients = recipients.map { NotificationRecipientDto(it) }
    }
+
+   constructor(entity: Notification, notificationType: String) :
+      this(
+         id = entity.id,
+         company = entity.company,
+         expirationDate = entity.expirationDate,
+         message = entity.message,
+         sendingEmployee = entity.sendingEmployee,
+         startDate = entity.startDate,
+         notificationType = notificationType,
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
+      )
 
    override fun dtoId(): Long? = id
 

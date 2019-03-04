@@ -44,6 +44,7 @@ data class NotificationRecipient (
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): NotificationRecipient = copy()
+
    override fun hashCode(): Int = Objects.hashCode(uuRowId)
 
    override fun equals(other: Any?): Boolean {

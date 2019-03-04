@@ -14,6 +14,7 @@ object ErrorCodes {
       const val POSITIVE_NUMBER_REQUIRED = "cynergi.validation.positive.number.required"
       const val NOTIFICATION_RECIPIENTS_ALL = "cynergi.validation.notification.recipients.not.required"
       const val NOTIFICATION_RECIPIENTS_REQUIRED = "cynergi.validation.notification.recipients.required"
+      const val CONVERSION_ERROR = "cynergi.conversion.error"
    }
 
    object System {

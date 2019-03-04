@@ -1,10 +1,12 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
 import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
+import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpHeaders.ACCEPT_LANGUAGE
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -43,6 +45,35 @@ class ErrorHandler @Inject constructor(
       val locale = findLocale(httpRequest)
 
       return HttpResponse.status<ErrorDto>(HttpStatus.NOT_IMPLEMENTED).body(ErrorDto(localizationService.localize(ErrorCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
+   }
+
+   @Error(global = true, exception = ConversionErrorException::class)
+   fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDto> {
+      logger.error("Endpoint not implemented", exception)
+
+      val locale = findLocale(httpRequest)
+      val argument = exception.argument
+      val conversionError = exception.conversionError
+      val conversionErrorCause = conversionError.cause
+
+      return when {
+         conversionErrorCause is InvalidFormatException && conversionErrorCause.path.size > 0 && conversionErrorCause.value is String -> {
+            processBadRequest(conversionErrorCause.path[0].fieldName, conversionErrorCause.value, locale)
+         }
+
+         else -> {
+            processBadRequest(argument.name, conversionError.originalValue.orElse(null), locale)
+         }
+      }
+   }
+
+   private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDto> {
+      return HttpResponse.badRequest(
+         ErrorDto(
+            message = localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
+            path = argumentName
+         )
+      )
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)

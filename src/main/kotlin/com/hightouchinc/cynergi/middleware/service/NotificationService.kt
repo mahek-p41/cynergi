@@ -58,7 +58,7 @@ class NotificationService @Inject constructor(
    @Deprecated("Remove this when the front end just consumes the DTO without the wrapper", ReplaceWith(expression = "Should not be replaced just removed"))
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): NotificationsResponseDto =
       NotificationsResponseDto(
-         notifications = notificationRepository.findAllBySendingEmployee(companyId = companyId, recipient = sendingEmployee).map { NotificationDto(it) }
+         notifications = notificationRepository.findAllBySendingEmployee(companyId = companyId, sendingEmployee = sendingEmployee).map { NotificationDto(it) }
       )
 
 
@@ -78,7 +78,7 @@ class NotificationService @Inject constructor(
       notificationRepository.exists(id = id)
 
    fun create(dto: NotificationDto): NotificationDto {
-      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
+      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!.substringBefore(":"))!!
 
       return NotificationDto(
          entity = notificationRepository.insert(
@@ -91,10 +91,13 @@ class NotificationService @Inject constructor(
    }
 
    fun update(dto: NotificationDto): NotificationDto {
-      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!)!!
+      val notificationDomainType = notificationTypeDomainRepository.findOne(dto.notificationType!!.substringBefore(":"))!!
 
       return NotificationDto(
          entity = notificationRepository.update(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))
       )
    }
+
+   fun delete(id: Long): Int =
+      notificationRepository.delete(id = id)
 }

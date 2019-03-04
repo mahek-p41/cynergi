@@ -95,7 +95,7 @@ class NotificationValidatorSpecification extends Specification {
       exception.errors[0].messageTemplate == NOTIFICATION_RECIPIENTS_REQUIRED
       exception.errors[0].path == "recipients"
       exception.errors[0].arguments.size() == 1
-      exception.errors[0].arguments[0] == "E"
+      exception.errors[0].arguments[0] == "E:Employee"
    }
 
    void "validate save invalid NotificationDto of type All where startDate is after expirationDate" () {

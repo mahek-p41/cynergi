@@ -3,9 +3,9 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.VerificationEmployment
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
-import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
+import com.hightouchinc.cynergi.middleware.extensions.getLocalDateOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
-import com.hightouchinc.cynergi.middleware.extensions.getUUID
+import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -28,7 +28,7 @@ class VerificationEmploymentRepository(
    override fun findOne(id: Long): VerificationEmployment? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment WHERE id = :id", mapOf("id" to id), simpleVerificationEmploymentRowMapper)
 
-      logger.trace("searching for {} resulted in {}", id, found)
+      logger.trace("Searching for VerificationEmployment: {} resulted in {}", id, found)
 
       return found
    }
@@ -36,7 +36,7 @@ class VerificationEmploymentRepository(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if VerificationEmployment: {} exists resulted in {}", id, exists)
 
       return exists
    }
@@ -113,11 +113,11 @@ private class VerificationEmploymentRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationEmployment =
       VerificationEmployment(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
+         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
          department = rs.getString("${rowPrefix}department"),
-         hireDate = rs.getLocalDate("${rowPrefix}hire_date"),
+         hireDate = rs.getLocalDateOrNull("${rowPrefix}hire_date"),
          leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
          name = rs.getString("${rowPrefix}name"),
          reliable = rs.getBoolean("${rowPrefix}reliable"),

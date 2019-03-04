@@ -2,6 +2,9 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Verification
 import com.hightouchinc.cynergi.middleware.entity.VerificationReference
+import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNullWithCrossJoin
+import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
+import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -13,7 +16,6 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,10 +27,14 @@ class VerificationRepository @Inject constructor(
    private val verificationLandlordRepository: VerificationLandlordRepository,
    private val verificationReferenceRepository: VerificationReferenceRepository
 ) : Repository<Verification> {
-
-   private val selectAllRowMapper: RowMapper<Verification>
    private val logger: Logger = LoggerFactory.getLogger(VerificationRepository::class.java)
-   private val simpleVerificationRowMapper: RowMapper<Verification> = VerificationRowMapper()
+   private val simpleVerificationRowMapper: VerificationRowMapper = VerificationRowMapper()
+   private val selectAllRowMapper: VerificationRowMapper = VerificationRowMapper(
+      rowPrefix = "v_",
+      verificationAutoRepository = verificationAutoRepository,
+      verificationEmploymentRepository = verificationEmploymentRepository,
+      verificationLandlordRepository = verificationLandlordRepository
+   )
 
    @Language("PostgreSQL")
    private val selectAllBase = """
@@ -117,23 +123,8 @@ class VerificationRepository @Inject constructor(
            ON v.id = vr.verification_id
       """.trimIndent()
 
-   init {
-       selectAllRowMapper = VerificationRowMapper(
-          rowPrefix = "v_",
-          verificationAutoRepository = verificationAutoRepository,
-          verificationEmploymentRepository = verificationEmploymentRepository,
-          verificationLandlordRepository = verificationLandlordRepository
-       )
-   }
-
    override fun findOne(id: Long): Verification? {
-      var found: Verification? = null
-
-      jdbc.query("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs ->
-         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)!!
-
-         found = verification
-
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
@@ -143,17 +134,11 @@ class VerificationRepository @Inject constructor(
    }
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
-      var found: Verification? = null
-
-      jdbc.query( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs ->
-         val verification: Verification = found ?: selectAllRowMapper.mapRow(rs, 0)!!
-
-         found = verification
-
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
-      logger.debug("search for verification through Customer Account: {} resulted in {}", customerAccount, found)
+      logger.debug("Search for Verification through Customer Account: {} resulted in {}", customerAccount, found)
 
       return found
    }
@@ -161,7 +146,7 @@ class VerificationRepository @Inject constructor(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("searching for existence through ID: {} resulted in {}", id, exists)
+      logger.trace("Searching for existence of Verification through ID: {} resulted in {}", id, exists)
 
       return exists
    }
@@ -169,7 +154,7 @@ class VerificationRepository @Inject constructor(
    fun exists(customerAccount: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customer_account)", mapOf("customer_account" to customerAccount), Boolean::class.java)!!
 
-      logger.debug("searching for existence through Customer Account: {} resulted in {}", customerAccount, exists)
+      logger.debug("Searching for existence of Verification through Customer Account: {} resulted in {}", customerAccount, exists)
 
       return exists
    }
@@ -212,7 +197,7 @@ class VerificationRepository @Inject constructor(
       logger.debug("Updating Verification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!
-      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { null }
+      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { entity.verifiedTime }
 
       val updated = jdbc.updateReturning("""
          UPDATE verification
@@ -271,20 +256,20 @@ private class VerificationRowMapper(
    private val verificationEmploymentRepository: VerificationEmploymentRepository? = null,
    private val verificationLandlordRepository: VerificationLandlordRepository? = null
 ): RowMapper<Verification> {
-   override fun mapRow(rs: ResultSet, row: Int): Verification? {
+   override fun mapRow(rs: ResultSet, row: Int): Verification {
       val auto = verificationAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
       val employment = verificationEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)
       val landlord = verificationLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)
 
       return Verification(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getObject("${rowPrefix}uu_row_id", UUID::class.java),
-         timeCreated = rs.getObject("${rowPrefix}time_created", OffsetDateTime::class.java),
-         timeUpdated = rs.getObject("${rowPrefix}time_updated", OffsetDateTime::class.java),
+         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
          customerAccount = rs.getString("${rowPrefix}customer_account"),
          customerComments = rs.getString("${rowPrefix}customer_comments"),
          verifiedBy = rs.getString("${rowPrefix}verified_by"),
-         verifiedTime = rs.getObject("${rowPrefix}verified_time", OffsetDateTime::class.java),
+         verifiedTime = rs.getOffsetDateTime("${rowPrefix}verified_time"),
          company = rs.getString("${rowPrefix}company"),
          auto = auto,
          employment = employment,

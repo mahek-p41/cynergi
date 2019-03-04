@@ -3,9 +3,9 @@ package com.hightouchinc.cynergi.middleware.repository
 import com.hightouchinc.cynergi.middleware.entity.VerificationAuto
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
-import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
+import com.hightouchinc.cynergi.middleware.extensions.getLocalDateOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
-import com.hightouchinc.cynergi.middleware.extensions.getUUID
+import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -28,7 +28,7 @@ class VerificationAutoRepository(
    override fun findOne(id: Long): VerificationAuto? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto WHERE id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
 
-      logger.trace("searching for {} resulted in {}", id, found)
+      logger.trace("Searching for VerificationAuto: {} resulted in {}", id, found)
 
       return found
    }
@@ -36,7 +36,7 @@ class VerificationAutoRepository(
    override fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if ID: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if VerificationAuto: {} exists resulted in {}", id, exists)
 
       return exists
    }
@@ -154,7 +154,7 @@ private class VerificationAutoRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationAuto =
       VerificationAuto(
          id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUUID("${rowPrefix}uu_row_id"),
+         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
          address = rs.getBoolean("${rowPrefix}address"),
@@ -165,16 +165,16 @@ private class VerificationAutoRowMapper(
          diffPhone = rs.getString("${rowPrefix}diff_phone"),
          dmvVerify = rs.getBoolean("${rowPrefix}dmv_verify"),
          employer = rs.getBoolean("${rowPrefix}employer"),
-         lastPayment = rs.getLocalDate("${rowPrefix}last_payment"),
+         lastPayment = rs.getLocalDateOrNull("${rowPrefix}last_payment"),
          name = rs.getString("${rowPrefix}name"),
-         nextPayment = rs.getLocalDate("${rowPrefix}next_payment"),
+         nextPayment = rs.getLocalDateOrNull("${rowPrefix}next_payment"),
          note = rs.getString("${rowPrefix}note"),
          paymentFrequency = rs.getString("${rowPrefix}payment_frequency"),
          payment = rs.getBigDecimal("${rowPrefix}payment"),
          pendingAction = rs.getString("${rowPrefix}pending_action"),
          phone = rs.getBoolean("${rowPrefix}phone"),
          previousLoan = rs.getBoolean("${rowPrefix}previous_loan"),
-         purchaseDate = rs.getLocalDate("${rowPrefix}purchase_date"),
+         purchaseDate = rs.getLocalDateOrNull("${rowPrefix}purchase_date"),
          related = rs.getString("${rowPrefix}related"),
          verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
       )
