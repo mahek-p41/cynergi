@@ -18,7 +18,7 @@ class OperatorAuthenticationProvider @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(OperatorAuthenticationProvider::class.java)
 
    override fun authenticate(authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
-      logger.debug("Authentication requested {}/{}", authenticationRequest?.identity, authenticationRequest?.secret)
+      logger.debug("Authentication requested for user {}", authenticationRequest?.identity)
 
       return if (authenticationRequest != null && authenticationRequest.identity != null && authenticationRequest.secret != null) {
 
