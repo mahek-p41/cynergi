@@ -16,8 +16,9 @@ micronaut:
       token:
          jwt:
             enabled: true
-            refresh-token-expiration: 86400 # 24 hours
-            access-token-expiration: 43200 # 12 hours
+            generator:
+               access-token-expiration: 43200 # 12 hours
+               refresh-token-expiration: 86400 # 24 hours
             bearer:
                enabled: false
             cookie:
@@ -30,11 +31,13 @@ micronaut:
                   generator:
                      secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
                      jws-algorithm: HS256
+         roles-name: DEPARTMENT
    views:
       thymeleaf:
          cacheable: false
-
-postgres:
+pem:
+   path: "classpath:security/local-dev.pem" #openssl genrsa -out local-dev.pem 2048
+postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
          port: 6432

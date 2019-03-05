@@ -48,7 +48,10 @@ dependencies {
    compile "io.micronaut:micronaut-security-jwt"
    compile "io.micronaut:micronaut-views"
    compile "org.codehaus.groovy:groovy-all:2.5.4"
-   
+   compile "org.bouncycastle:bcprov-jdk15on:1.61"
+   compile "org.bouncycastle:bcpkix-jdk15on:1.61"
+   compile "commons-io:commons-io:2.6"
+
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
    compile "org.springframework:spring-jdbc:5.0.10.RELEASE"
