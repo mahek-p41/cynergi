@@ -14,6 +14,6 @@ CREATE TRIGGER update_employee_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 CREATE INDEX employee_username_idx ON employee(username);
 
-INSERT INTO employee(username, password, level) VALUES ('user1', 'user1', 20);
-INSERT INTO employee(username, password, level) VALUES ('user2', 'user2', 30);
+INSERT INTO employee(username, password, level) VALUES ('sherlock', 'password', 20);
+INSERT INTO employee(username, password, level) VALUES ('watson', 'password', 30);
 
