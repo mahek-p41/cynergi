@@ -22,13 +22,17 @@ micronaut:
                enabled: false
             cookie:
                enabled: true
-               loginFailureTargetUrl: /login.php
+               login-success-target-url: /app/menus
+               login-failure-target-url: /login.php
                cookie-name: CAT
             signatures:
                secret:
                   generator:
                      secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
                      jws-algorithm: HS256
+   views:
+      thymeleaf:
+         cacheable: false
 
 postgres:
    reactive:

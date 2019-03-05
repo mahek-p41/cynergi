@@ -28,7 +28,7 @@ class AuthenticationService @Inject constructor(
 
             val row = iterator.next()
 
-            AuthenticatedUserDetails(userName = username, level = row.getInteger("level"), userRoles = emptySet())
+            AuthenticatedUserDetails(userName = username, userRoles = emptySet(), level = row.getInteger("level"))
          } else {
             logger.trace("Unable to authenticate user {}", username)
 
