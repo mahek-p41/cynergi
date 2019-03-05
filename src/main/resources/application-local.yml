@@ -10,42 +10,26 @@ micronaut:
       endpoints:
          login:
             enabled: true
-            #path: /api/login
+            path: /api/login
          logout:
             enabled: true
       token:
          jwt:
             enabled: true
-            #refresh-token-expiration: 86400 # 24 hours
-            #access-token-expiration: 43200 # 12 hours
+            refresh-token-expiration: 86400 # 24 hours
+            access-token-expiration: 43200 # 12 hours
             bearer:
                enabled: false
             cookie:
                enabled: true
-               loginFailureTargetUrl: /login/authFailed
-               #cookie-name: CAT # cynergi api token
+               loginFailureTargetUrl: /login.php
+               cookie-name: CAT
             signatures:
                secret:
                   generator:
-                     secret: pleaseChangeThisSecretForANewOne
-#   security:
-#      enabled: true
-#      endpoints:
-#         login:
-#            enabled: true
-#      token:
-#         jwt:
-#            enabled: true
-#            refresh-token-expiration: 86400 # 24 hours
-#            access-token-expiration: 43200 # 12 hours
-#            signatures:
-#               secret:
-#                  generator:
-#                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
-#                     jws-algorith: HS256
-#            cookie:
-#               enabled: true
-#               cookie-name: CAT # cynergi api token
+                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
+                     jws-algorithm: HS256
+
 postgres:
    reactive:
       client:

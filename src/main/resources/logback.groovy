@@ -51,7 +51,7 @@ if (System.properties.containsKey('HIGHTOUCH_TRACE_LOGGING')) {
 
 logger('com.zaxxer', ERROR)
 logger('io.netty', ERROR)
-logger('io.micronaut', DEBUG)
+logger('io.micronaut', INFO)
 logger('org.apache', ERROR)
 logger('org.flywaydb', INFO)
 logger('org.jboss', ERROR)
