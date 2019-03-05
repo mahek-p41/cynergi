@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.authentication
 
 import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWEAlgorithm
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import io.micronaut.core.io.ResourceResolver
 import io.micronaut.security.token.jwt.encryption.rsa.RSAEncryptionConfiguration
@@ -20,6 +21,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
+@Requires(env = ["local", "prod"])
 @Named("generator")
 class RSAOAEPEncryptionConfiguration @Inject constructor(
    @Value("\${pem.path}") pemPath: String

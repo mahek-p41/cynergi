@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.authentication
 
+import io.micronaut.context.annotation.Requires
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationProvider
 import io.micronaut.security.authentication.AuthenticationRequest
@@ -12,6 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Requires(env = ["local", "prod"])
 class OperatorAuthenticationProvider @Inject constructor(
    private val authenticationService: AuthenticationService
 ) : AuthenticationProvider {
