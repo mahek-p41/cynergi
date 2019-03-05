@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.authentication
 
+import io.micronaut.context.annotation.Requires
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
 import io.micronaut.security.authentication.AuthenticationResponse
@@ -12,6 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Requires(env = ["local", "prod"])
 class AuthenticationService @Inject constructor(
    private val client: PgPool
 ) {
