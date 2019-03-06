@@ -23,8 +23,8 @@ micronaut:
                enabled: false
             cookie:
                enabled: true
-               login-success-target-url: /api/logged-in
-               login-failure-target-url: /api/logged-in
+               login-success-target-url: /api/authenticated
+               login-failure-target-url: /api/authenticated
                cookie-name: CAT
             signatures:
                secret:

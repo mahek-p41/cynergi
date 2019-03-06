@@ -11,8 +11,8 @@ import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import javax.inject.Inject
 
-@Controller("/api/logged-in")
-class LoggedInController @Inject constructor(
+@Controller("/api/authenticated")
+class AuthenticatedController @Inject constructor(
    private val localizationService: LocalizationService
 ) {
 
