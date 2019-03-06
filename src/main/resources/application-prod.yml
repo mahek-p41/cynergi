@@ -21,8 +21,8 @@ micronaut:
                enabled: false
             cookie:
                enabled: true
-               login-success-target-url: /app/menus
-               login-failure-target-url: /login.php
+               login-success-target-url: /api/logged-in
+               login-failure-target-url: /api/logged-in
                cookie-name: CAT
             signatures:
                secret:
