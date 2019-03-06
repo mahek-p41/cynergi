@@ -4,11 +4,11 @@ import com.hightouchinc.cynergi.middleware.entity.NotificationDto
 import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.NotificationService
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.END_DATE_BEFORE_START
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOTIFICATION_RECIPIENTS_ALL
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOTIFICATION_RECIPIENTS_REQUIRED
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.END_DATE_BEFORE_START
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.NOTIFICATION_RECIPIENTS_ALL
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.NOTIFICATION_RECIPIENTS_REQUIRED
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.NOT_FOUND
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter

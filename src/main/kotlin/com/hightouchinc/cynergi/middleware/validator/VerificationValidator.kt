@@ -4,10 +4,10 @@ import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.VerificationService
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.DUPLICATE
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOT_UPDATABLE
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.DUPLICATE
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.NOT_UPDATABLE
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.NOT_FOUND
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import javax.inject.Singleton
 
 @Singleton

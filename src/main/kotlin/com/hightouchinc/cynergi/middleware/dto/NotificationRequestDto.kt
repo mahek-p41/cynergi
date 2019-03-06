@@ -3,7 +3,7 @@ package com.hightouchinc.cynergi.middleware.dto
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.hightouchinc.cynergi.middleware.entity.NotificationDto
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 

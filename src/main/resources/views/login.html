@@ -4,15 +4,14 @@
    <meta charset="UTF-8">
    <title>Login</title>
    <style>
-      section.main-content {
-         display: grid;
-         height: 100vh;
-         margin: 0;
-         place-items: center center;
+      section.response-text b#successContent {
+         display: none;
+         color: green;
       }
-      #login {
-         display: grid;
-         grid-template-columns: 150px 250px;
+
+      section.response-text b#failureContent {
+         display: none;
+         color: firebrick;
       }
    </style>
 </head>
@@ -22,10 +21,16 @@
       <label for="username">Username:</label><input id="username" name="username" type="text">
 
       <label for="password">Password:</label><input id="password" name="password" type="password">
-      <button id="submit" type="submit">Login</button>
+      <button id="loginButton" type="submit">Login</button>
+      <button id="logoutButton" type="submit">Logout</button>
    </form>
 </section>
+<section class="response-text">
+   <b id="successContent">Success!</b>
+   <b id="failureContent">Failure!</b>
+</section>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" type="application/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@2.2.0/build/jwt-decode.min.js" type="application/javascript"></script>
 <script type="application/javascript">
 $(document).ready(function () {
    $('#login').submit(function (e) {
@@ -35,14 +40,35 @@ $(document).ready(function () {
       ;
 
       $.ajax('/api/login', { method: 'POST', data: form })
-         .done( (data) => console.log(data) )
-         .fail( (xhr, status) => console.log(`${status} => ${xhr.responseText}`) )
+         .done( (data) => successfulLogin(data) )
+         .fail( (xhr) => failedLogin(xhr) )
       ;
 
       e.preventDefault();
       return false;
    });
 });
+function successfulLogin(data) {
+   let text = data.message;
+
+   $('#failureContent').hide();
+   $('#successContent').text(text);
+   $('#successContent').show();
+}
+function failedLogin(xhr) {
+   let data = $.parseJSON(xhr.responseText);
+   let text = '';
+
+   if ($.isArray(data)) {
+      text = data.map((m) => m.message).reduce((acc, cur) => `${acc}<br>${cur}`, '');
+   } else {
+      text = data.message;
+   }
+
+   $('#successContent').hide();
+   $('#failureContent').html(text);
+   $('#failureContent').show();
+}
 </script>
 </body>
 </html>

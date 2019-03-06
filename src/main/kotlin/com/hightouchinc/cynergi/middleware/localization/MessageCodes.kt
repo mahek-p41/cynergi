@@ -1,6 +1,6 @@
-package com.hightouchinc.cynergi.middleware.validator
+package com.hightouchinc.cynergi.middleware.localization
 
-object ErrorCodes {
+object MessageCodes {
    object Validation {
       // define validation messages here that use the provided javax.validation annotations ex: @NotNull @Size
       const val NOT_NULL = "javax.validation.not.null"

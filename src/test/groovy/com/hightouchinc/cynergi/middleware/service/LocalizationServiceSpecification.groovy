@@ -4,8 +4,8 @@ package com.hightouchinc.cynergi.middleware.service
 import org.springframework.context.support.ResourceBundleMessageSource
 import spock.lang.Specification
 
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.NOT_FOUND
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 
 class LocalizationServiceSpecification extends Specification {
 
