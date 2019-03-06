@@ -40,8 +40,10 @@ class LocalizationService @Inject constructor(
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
    fun localize(messageKey: String, locale: Locale = Locale.US, arguments: Array<Any?>): String {
+      val cleanMessageKey = messageKey.removeSurrounding("{", "}")
+
       return try {
-         messageSource.getMessage(messageKey, arguments, locale)
+         messageSource.getMessage(cleanMessageKey, arguments, locale)
       } catch (e: Throwable) {
          logger.error("Unable to convert message using {} for locale {} with arguments {}", messageKey, locale, arguments)
          EMPTY // return the Java empty string if an error occurred

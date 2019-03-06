@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.hightouchinc.cynergi.middleware.dto.spi.DataTransferObjectBase
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.SIZE
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.SIZE
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.OffsetTime
 import java.time.ZoneId
 import java.util.UUID
 import javax.annotation.Nullable

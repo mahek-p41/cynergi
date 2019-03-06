@@ -5,8 +5,8 @@ import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.extensions.findLocaleWithDefault
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
-import com.hightouchinc.cynergi.middleware.validator.ErrorCodes
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -37,7 +37,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorDto(localizationService.localize(ErrorCodes.System.INTERNAL_ERROR, locale, emptyArray())))
+      return serverError(ErrorDto(localizationService.localize(MessageCodes.System.INTERNAL_ERROR, locale, emptyArray())))
    }
 
    @Error(global = true, exception = NotImplementedError::class)
@@ -46,7 +46,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return HttpResponse.status<ErrorDto>(HttpStatus.NOT_IMPLEMENTED).body(ErrorDto(localizationService.localize(ErrorCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
+      return HttpResponse.status<ErrorDto>(HttpStatus.NOT_IMPLEMENTED).body(ErrorDto(localizationService.localize(MessageCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
@@ -72,7 +72,7 @@ class ErrorHandler @Inject constructor(
    private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDto> {
       return HttpResponse.badRequest(
          ErrorDto(
-            message = localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
+            message = localizationService.localize(MessageCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
             path = argumentName
          )
       )
@@ -84,7 +84,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return badRequest(ErrorDto(localizationService.localize(ErrorCodes.System.REQUIRED_ARGUMENT, locale, arrayOf(exception.argument.name))))
+      return badRequest(ErrorDto(localizationService.localize(MessageCodes.System.REQUIRED_ARGUMENT, locale, arrayOf(exception.argument.name))))
    }
 
    @Error(global = true, exception = NotFoundException::class)
@@ -93,7 +93,7 @@ class ErrorHandler @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return notFound(ErrorDto(localizationService.localize(ErrorCodes.System.NOT_FOUND, locale, arrayOf(notFoundException.notFound))))
+      return notFound(ErrorDto(localizationService.localize(MessageCodes.System.NOT_FOUND, locale, arrayOf(notFoundException.notFound))))
    }
 
    @Error(global = true, exception = ValidationException::class)
