@@ -24,17 +24,19 @@ class AuthenticatedController @Inject constructor(
 
    @Secured("isAnonymous()")
    @Get(produces = [APPLICATION_JSON])
-   fun loggedIn(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<MessageDto> {
+   fun loggedIn(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<Any> {
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authentication != null) {
          val message = localizationService.localize(MessageCodes.System.LOGGED_IN, locale, arrayOf(authentication.name))
 
-         HttpResponse.ok(MessageDto(message = message))
+         val cynergiAccessToken = httpRequest.cookies.findCookie("CAT").map { it.value }.orElse(null)
+
+         HttpResponse.ok(mapOf("message" to message, "token" to cynergiAccessToken))
       } else {
          val message = localizationService.localize(MessageCodes.System.NOT_LOGGED_IN, locale, emptyArray())
 
-         HttpResponse.status<MessageDto>(UNAUTHORIZED).body(MessageDto(message = message))
+         HttpResponse.status<Any>(UNAUTHORIZED).body(MessageDto(message = message))
       }
    }
 }
