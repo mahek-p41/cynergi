@@ -36,7 +36,7 @@ $(document).ready(function () {
 
       $.ajax('/api/login', { method: 'POST', data: form })
          .done( (data) => console.log(data) )
-         .fail( (xhr, status) => console.log(`${status} => ${xhr.text}`) )
+         .fail( (xhr, status) => console.log(`${status} => ${xhr.responseText}`) )
       ;
 
       e.preventDefault();
