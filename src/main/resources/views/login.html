@@ -28,7 +28,20 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" type="application/javascript"></script>
 <script type="application/javascript">
 $(document).ready(function () {
-   console.log('Ready');
+   $('#login').submit(function (e) {
+      const form = $(e.target).serializeArray()
+         .map((i) => Object.assign({}, {[i.name]: i.value}))
+         .reduce((acc, cur) => Object.assign(acc, cur), {})
+      ;
+
+      $.ajax('/api/login', { method: 'POST', data: form })
+         .done( (data) => console.log(data) )
+         .fail( (xhr, status) => console.log(`${status} => ${xhr.text}`) )
+      ;
+
+      e.preventDefault();
+      return false;
+   });
 });
 </script>
 </body>
