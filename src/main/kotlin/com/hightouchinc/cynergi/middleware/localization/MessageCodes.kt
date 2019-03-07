@@ -24,5 +24,6 @@ object MessageCodes {
       const val NOT_IMPLEMENTED = "system.not.implemented"
       const val LOGGED_IN = "system.logged.in"
       const val NOT_LOGGED_IN = "system.not.logged.in"
+      const val LOGGED_OUT = "system.logged.out"
    }
 }
