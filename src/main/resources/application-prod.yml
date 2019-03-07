@@ -24,6 +24,7 @@ micronaut:
                enabled: true
                login-success-target-url: /api/authenticated
                login-failure-target-url: /api/authenticated
+               logout-target-url: /api/authenticated
                cookie-name: CAT
             signatures:
                secret:
