@@ -24,9 +24,9 @@ import javax.inject.Singleton
 @Requires(env = ["local", "prod"])
 @Named("generator")
 class RSAOAEPEncryptionConfiguration @Inject constructor(
+   resourceResolver: ResourceResolver,
    @Value("\${cynergi.jwt.pem.path}") pemPath: String
 ): RSAEncryptionConfiguration {
-   private val resourceLoader: ResourceResolver = ResourceResolver()
    private val jweAlgorithm = JWEAlgorithm.RSA_OAEP_256
    private val encryptionMethod = EncryptionMethod.A128GCM
    private val rsaPrivateKey: RSAPrivateKey
@@ -34,7 +34,7 @@ class RSAOAEPEncryptionConfiguration @Inject constructor(
 
    init {
       Security.addProvider(BouncyCastleProvider())
-      val pemParser = resourceLoader.getResourceAsStream(pemPath)
+      val pemParser = resourceResolver.getResourceAsStream(pemPath)
          .map { AutoCloseInputStream(it) }
          .map { InputStreamReader(it) }
          .map { PEMParser(it) }
