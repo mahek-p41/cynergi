@@ -38,7 +38,7 @@ micronaut:
       thymeleaf:
          cacheable: false
 pem:
-   path: "classpath:security/local-dev.pem" #openssl genrsa -out local-dev.pem 2048
+   path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
