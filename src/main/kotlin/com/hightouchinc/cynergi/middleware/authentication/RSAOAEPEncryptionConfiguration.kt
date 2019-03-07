@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @Requires(env = ["local", "prod"])
 @Named("generator")
 class RSAOAEPEncryptionConfiguration @Inject constructor(
-   @Value("\${pem.path}") pemPath: String
+   @Value("\${cynergi.jwt.pem.path}") pemPath: String
 ): RSAEncryptionConfiguration {
    private val resourceLoader: ResourceResolver = ResourceResolver()
    private val jweAlgorithm = JWEAlgorithm.RSA_OAEP_256

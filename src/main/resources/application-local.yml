@@ -37,8 +37,6 @@ micronaut:
    views:
       thymeleaf:
          cacheable: false
-pem:
-   path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
@@ -54,3 +52,7 @@ datasources:
       username: "${postgres.reactive.client.user}"
       password: "${postgres.reactive.client.password}"
       maximumPoolSize: 1
+cynergi:
+   jwt:
+      pem:
+         path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
