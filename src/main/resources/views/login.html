@@ -53,12 +53,9 @@ $(document).ready(function () {
 
       $.ajax('/api/logout', { method: 'POST', data: form })
          .done( (data, statusText, xhr) => failedLogin(xhr))
-         .fail( (xhr) => successfulLogin(xhr.data) )
+         .fail( (xhr) => successfulLogout($.parseJSON(xhr.responseText)) )
       ;
-
-      e.preventDefault();
-      return false;
-   })
+   });
 });
 function successfulLogin(data) {
    let text = data.message;
@@ -66,6 +63,14 @@ function successfulLogin(data) {
    $('#failureContent').hide();
    $('#successContent').text(text);
    $('#successContent').show();
+}
+
+function successfulLogout(data) {
+   let text = data.message;
+
+   $('#successContent').hide();
+   $('#failureContent').html(text);
+   $('#failureContent').show();
 }
 
 function failedLogin(xhr) {

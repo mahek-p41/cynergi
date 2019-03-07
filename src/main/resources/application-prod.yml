@@ -32,8 +32,6 @@ micronaut:
                      secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr
                      jws-algorithm: HS256
          roles-name: DEPARTMENT
-pem:
-   path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
@@ -49,3 +47,7 @@ datasources:
       username: "${postgres.reactive.client.user}"
       password: "${postgres.reactive.client.password}"
       maximumPoolSize: 10
+cynergi:
+   jwt:
+      pem:
+         path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048
