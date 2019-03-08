@@ -28,6 +28,10 @@ class MenuTestDataLoader {
          )
       }
    }
+
+   static Menu single() {
+      return stream(1).findFirst().orElseThrow { new Exception("Unable to create Menu") }
+   }
 }
 
 @Singleton
@@ -44,5 +48,9 @@ class MenuDataLoaderService {
          .map {
             menuRepository.insert(it)
          }
+   }
+
+   Menu single() {
+      return stream(1).findFirst().orElseThrow { new Exception("Unable to create Menu") }
    }
 }

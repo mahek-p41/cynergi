@@ -4,10 +4,11 @@ import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
 import com.hightouchinc.cynergi.middleware.exception.ValidationError
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.service.<%= entity %>Service
-import com.hightouchinc.cynergi.middleware.validator.MessageCodes.System.NOT_FOUND
-import com.hightouchinc.cynergi.middleware.validator.MessageCodes.Validation.NOT_NULL
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.NOT_FOUND
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
