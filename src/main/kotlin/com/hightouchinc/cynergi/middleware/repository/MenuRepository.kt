@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.repository
 
-import com.hightouchinc.cynergi.middleware.entity.<%= entity %>
+import com.hightouchinc.cynergi.middleware.entity.Menu
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
@@ -16,47 +16,47 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class <%= entity %>Repository @Inject constructor(
+class MenuRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<<%= entity %>> {
-   private val logger: Logger = LoggerFactory.getLogger(<%= entity %>Repository::class.java)
-   private val simple<%= entity %>RowMapper = <%= entity %>RowMapper()
+) : Repository<Menu> {
+   private val logger: Logger = LoggerFactory.getLogger(MenuRepository::class.java)
+   private val simpleMenuRowMapper = MenuRowMapper()
 
-   override fun findOne(id: Long): <%= entity %>? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM <%= table %> WHERE id = :id", mapOf("id" to id), simple<%= entity %>RowMapper)
+   override fun findOne(id: Long): Menu? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM menu WHERE id = :id", mapOf("id" to id), simpleMenuRowMapper)
 
-      logger.trace("Searching for <%= entity %>: {} resulted in {}", id, found)
+      logger.trace("Searching for Menu: {} resulted in {}", id, found)
 
       return found
    }
 
    override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM <%= table %> WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM menu WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if <%= entity %>: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if Menu: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   override fun insert(entity: <%= entity %>): <%= entity %> {
-      logger.debug("Inserting <%= table %> {}", entity)
+   override fun insert(entity: Menu): Menu {
+      logger.debug("Inserting menu {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO <%= table %>()
+         INSERT INTO menu()
          VALUES ()
          RETURNING
             *
          """.trimIndent(),
          mapOf<String, Any>(),
-         simple<%= entity %>RowMapper
+         simpleMenuRowMapper
       )
    }
 
-   override fun update(entity: <%= entity %>): <%= entity %> {
-      logger.debug("Updating <%= table %> {}", entity)
+   override fun update(entity: Menu): Menu {
+      logger.debug("Updating menu {}", entity)
 
       return jdbc.updateReturning("""
-         UPDATE <%= table %>
+         UPDATE menu
          SET
 
          WHERE id = :id
@@ -66,19 +66,21 @@ class <%= entity %>Repository @Inject constructor(
          mapOf(
             "id" to entity.id!!
          ),
-         simple<%= entity %>RowMapper
+         simpleMenuRowMapper
       )
    }
 }
 
-private class <%= entity %>RowMapper(
+private class MenuRowMapper(
    private val rowPrefix: String = EMPTY
-) : RowMapper<<%= entity %>> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): <%= entity %> =
-      <%= entity %>(
+) : RowMapper<Menu> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): Menu =
+      Menu(
          id = rs.getLong("${rowPrefix}id"),
          uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated")
+         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
+         name = rs.getString("${rowPrefix}name"),
+         literal = rs.getString("${rowPrefix}literal")
       )
 }

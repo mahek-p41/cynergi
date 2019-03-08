@@ -29,7 +29,7 @@ micronaut:
             signatures:
                secret:
                   generator:
-                     secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr
+                     secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate
                      jws-algorithm: HS256
          roles-name: DEPARTMENT
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
