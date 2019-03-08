@@ -23,6 +23,10 @@ class <%= entity %>TestDataLoader {
          )
       }
    }
+
+   static <%= entity %> single() {
+      return stream(1).findFirst().orElseThrow { new Exception("Unable to create <%= entity %>") }
+   }
 }
 
 @Singleton
@@ -39,5 +43,9 @@ class <%= entity %>DataLoaderService {
          .map {
             <%= repository %>Repository.insert(it)
          }
+   }
+
+   <%= entity %> single() {
+      return stream(1).findFirst().orElseThrow { new Exception("Unable to create <%= entity %>") }
    }
 }
