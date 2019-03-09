@@ -33,7 +33,6 @@ micronaut:
                   generator:
                      secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
                      jws-algorithm: HS256
-         roles-name: DEPARTMENT
    views:
       thymeleaf:
          cacheable: false
@@ -53,6 +52,8 @@ datasources:
       password: "${postgres.reactive.client.password}"
       maximumPoolSize: 1
 cynergi:
-   jwt:
-      pem:
-         path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
+   security:
+      jwt:
+         pem:
+            path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
+      roles-level-prefix: "ROLE_LEVEL_"

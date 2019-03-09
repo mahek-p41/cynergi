@@ -31,7 +31,6 @@ micronaut:
                   generator:
                      secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate
                      jws-algorithm: HS256
-         roles-name: DEPARTMENT
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
@@ -48,6 +47,8 @@ datasources:
       password: "${postgres.reactive.client.password}"
       maximumPoolSize: 10
 cynergi:
-   jwt:
-      pem:
-         path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048
+   security:
+      jwt:
+         pem:
+            path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048
+      roles-level-prefix: "ROLE_LEVEL_"
