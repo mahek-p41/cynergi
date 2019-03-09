@@ -25,4 +25,8 @@ class AreaService @Inject constructor(
       AreaDto(
          entity = areaRepository.update(entity = Area(dto = dto))
       )
+
+   fun findAreasByLevel(level: Int): AreaDto? {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
 }
