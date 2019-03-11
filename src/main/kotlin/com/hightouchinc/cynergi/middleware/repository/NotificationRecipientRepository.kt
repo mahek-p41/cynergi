@@ -23,7 +23,7 @@ class NotificationRecipientRepository @Inject constructor(
 ) : Repository<NotificationRecipient> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRecipientRepository::class.java)
    private val simpleNotificationRecipientRowMapper = NotificationRecipientRowMapper()
-   private val prefixedNotificationRecipientRowMapper = NotificationRecipientRowMapper(rowPrefix = "nr_")
+   private val prefixedNotificationRecipientRowMapper = NotificationRecipientRowMapper(columnPrefix = "nr_")
 
    override fun findOne(id: Long): NotificationRecipient? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_recipient WHERE id = :id", mapOf("id" to id), simpleNotificationRecipientRowMapper)
@@ -111,16 +111,16 @@ class NotificationRecipientRepository @Inject constructor(
 }
 
 private class NotificationRecipientRowMapper(
-   private val rowPrefix: String = StringUtils.EMPTY
+   private val columnPrefix: String = StringUtils.EMPTY
 ) : RowMapper<NotificationRecipient> {
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationRecipient =
       NotificationRecipient(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         description = rs.getString("${rowPrefix}description"),
-         recipient = rs.getString("${rowPrefix}recipient"),
-         notification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}notification_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         description = rs.getString("${columnPrefix}description"),
+         recipient = rs.getString("${columnPrefix}recipient"),
+         notification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}notification_id"))
       )
 }

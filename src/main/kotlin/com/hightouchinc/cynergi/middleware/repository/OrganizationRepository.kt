@@ -78,15 +78,15 @@ class OrganizationRepository @Inject constructor(
 }
 
 private class OrganizationRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<Organization> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Organization =
       Organization(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         name = rs.getString("${rowPrefix}name"),
-         billingAccount = rs.getString("${rowPrefix}billing_account")
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         name = rs.getString("${columnPrefix}name"),
+         billingAccount = rs.getString("${columnPrefix}billing_account")
       )
 }

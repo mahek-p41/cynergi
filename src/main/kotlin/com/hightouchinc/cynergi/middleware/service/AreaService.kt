@@ -16,17 +16,16 @@ class AreaService @Inject constructor(
    fun exists(id: Long): Boolean =
       areaRepository.exists(id = id)
 
-   fun create(dto: AreaDto): AreaDto =
+   fun create(dto: AreaDto, companyId: Long): AreaDto =
       AreaDto(
-         entity = areaRepository.insert(entity = Area(dto = dto))
+         entity = areaRepository.insert(entity = Area(dto = dto, companyId = companyId))
       )
 
-   fun update(dto: AreaDto): AreaDto =
+   fun update(dto: AreaDto, companyId: Long): AreaDto =
       AreaDto(
-         entity = areaRepository.update(entity = Area(dto = dto))
+         entity = areaRepository.update(entity = Area(dto = dto, companyId = companyId))
       )
 
-   fun findAreasByLevel(level: Int): AreaDto? {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-   }
+   fun findAreasByLevel(level: Int): List<AreaDto> =
+      areaRepository.findAreasByLevel(level = level).map { AreaDto(it) }
 }

@@ -23,7 +23,7 @@ class VerificationEmploymentRepository(
 ) : Repository<VerificationEmployment> {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper()
-   private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(rowPrefix = "ve_")
+   private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(columnPrefix = "ve_")
 
    override fun findOne(id: Long): VerificationEmployment? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment WHERE id = :id", mapOf("id" to id), simpleVerificationEmploymentRowMapper)
@@ -108,20 +108,20 @@ class VerificationEmploymentRepository(
 }
 
 private class VerificationEmploymentRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationEmployment> {
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationEmployment =
       VerificationEmployment(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         department = rs.getString("${rowPrefix}department"),
-         hireDate = rs.getLocalDateOrNull("${rowPrefix}hire_date"),
-         leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
-         name = rs.getString("${rowPrefix}name"),
-         reliable = rs.getBoolean("${rowPrefix}reliable"),
-         title = rs.getString("${rowPrefix}title"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         department = rs.getString("${columnPrefix}department"),
+         hireDate = rs.getLocalDateOrNull("${columnPrefix}hire_date"),
+         leaveMessage = rs.getBoolean("${columnPrefix}leave_message"),
+         name = rs.getString("${columnPrefix}name"),
+         reliable = rs.getBoolean("${columnPrefix}reliable"),
+         title = rs.getString("${columnPrefix}title"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

@@ -43,12 +43,16 @@ class AreaRepository @Inject constructor(
       logger.debug("Inserting area {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO area()
-         VALUES ()
+         INSERT INTO area(company_id, menu_id, level)
+         VALUES (:company_id, :menu_id, :level)
          RETURNING
             *
          """.trimIndent(),
-         mapOf<String, Any>(),
+         mapOf(
+            "company_id" to entity.company.entityId(),
+            "menu_id" to entity.menu.entityId(),
+            "level" to entity.level
+         ),
          simpleAreaRowMapper
       )
    }
@@ -59,29 +63,39 @@ class AreaRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE area
          SET
-
+            company_id = :company_id,
+            menu_id = :menu_id,
+            level = :level
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id!!
+            "id" to entity.id!!,
+            "company_id" to entity.company.entityId(),
+            "menu_id" to entity.menu.entityId(),
+            "level" to entity.level
          ),
          simpleAreaRowMapper
       )
    }
+
+   fun findAreasByLevel(level: Int): List<Area> {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
 }
 
 private class AreaRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<Area> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Area =
       Area(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         menu = SimpleIdentifiableEntity(rs.getLong("${rowPrefix}menu_id")),
-         level = rs.getInt("${rowPrefix}level")
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company_id")),
+         menu = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}menu_id")),
+         level = rs.getInt("${columnPrefix}level")
       )
 }

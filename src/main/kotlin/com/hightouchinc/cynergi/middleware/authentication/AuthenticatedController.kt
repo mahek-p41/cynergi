@@ -24,7 +24,7 @@ class AuthenticatedController @Inject constructor(
 
    @Secured("isAnonymous()")
    @Get(produces = [APPLICATION_JSON])
-   fun loggedIn(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<Any> {
+   fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<Any> {
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authentication != null) {

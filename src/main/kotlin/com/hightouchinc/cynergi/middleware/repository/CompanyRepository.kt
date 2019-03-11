@@ -73,15 +73,15 @@ class CompanyRepository @Inject constructor(
 }
 
 private class CompanyRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<Company> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Company =
       Company(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         name = rs.getString("${rowPrefix}name"),
-         organization = SimpleIdentifiableEntity(rs.getLong("${rowPrefix}organization_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         name = rs.getString("${columnPrefix}name"),
+         organization = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}organization_id"))
       )
 }

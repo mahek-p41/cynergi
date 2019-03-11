@@ -30,6 +30,10 @@ class CompanyTestDataLoader {
          )
       }
    }
+
+   static Company single() {
+      return stream(1).findFirst().orElseThrow { new Exception("Unable to create Company") }
+   }
 }
 
 @Singleton
@@ -50,5 +54,11 @@ class CompanyDataLoaderService {
          .map {
             companyRepository.insert(it)
          }
+   }
+
+   Company single() {
+      final Organization organization = organizationDataLoaderService.single()
+
+      return stream(1, organization).findFirst().orElseThrow { new Exception("Unable to create Company") }
    }
 }

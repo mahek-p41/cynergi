@@ -72,15 +72,15 @@ class MenuRepository @Inject constructor(
 }
 
 private class MenuRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<Menu> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Menu =
       Menu(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         name = rs.getString("${rowPrefix}name"),
-         literal = rs.getString("${rowPrefix}literal")
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         name = rs.getString("${columnPrefix}name"),
+         literal = rs.getString("${columnPrefix}literal")
       )
 }

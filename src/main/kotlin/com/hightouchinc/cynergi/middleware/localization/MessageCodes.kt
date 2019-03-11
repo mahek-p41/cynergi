@@ -15,6 +15,7 @@ object MessageCodes {
       const val NOTIFICATION_RECIPIENTS_ALL = "cynergi.validation.notification.recipients.not.required"
       const val NOTIFICATION_RECIPIENTS_REQUIRED = "cynergi.validation.notification.recipients.required"
       const val CONVERSION_ERROR = "cynergi.conversion.error"
+      const val LEVEL_NOT_FOUND = "cynergi.level.not.found"
    }
 
    object System {
