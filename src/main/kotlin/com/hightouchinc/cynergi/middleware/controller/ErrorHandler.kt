@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.hightouchinc.cynergi.middleware.dto.ErrorDto
+import com.hightouchinc.cynergi.middleware.exception.CynergiAccessException
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.extensions.findLocaleWithDefault
@@ -13,7 +14,8 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
-import io.micronaut.http.HttpStatus
+import io.micronaut.http.HttpStatus.FORBIDDEN
+import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
@@ -40,13 +42,21 @@ class ErrorHandler @Inject constructor(
       return serverError(ErrorDto(localizationService.localize(MessageCodes.System.INTERNAL_ERROR, locale, emptyArray())))
    }
 
+   fun cynergiAccessExceptionHandler(httpRequest: HttpRequest<*>, accessException: CynergiAccessException) : HttpResponse<ErrorDto> {
+      logger.info("Unauthorized exception")
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return HttpResponse.status<ErrorDto>(FORBIDDEN).body(ErrorDto(localizationService.localize(accessException.errorMessage, locale, arrayOf(accessException.user))))
+   }
+
    @Error(global = true, exception = NotImplementedError::class)
    fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<ErrorDto> {
       logger.error("Endpoint not implemented", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return HttpResponse.status<ErrorDto>(HttpStatus.NOT_IMPLEMENTED).body(ErrorDto(localizationService.localize(MessageCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
+      return HttpResponse.status<ErrorDto>(NOT_IMPLEMENTED).body(ErrorDto(localizationService.localize(MessageCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)

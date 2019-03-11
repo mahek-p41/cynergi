@@ -236,20 +236,20 @@ class NotificationRepository @Inject constructor(
 }
 
 private class NotificationRowMapper(
-   private val rowPrefix: String = EMPTY,
+   private val columnPrefix: String = EMPTY,
    private val notificationDomainTypeRowMapper: RowMapper<NotificationTypeDomain>
 ) : RowMapper<Notification> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
       Notification(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         company = rs.getString("${rowPrefix}company_id"),
-         expirationDate = rs.getLocalDate("${rowPrefix}expiration_date"),
-         message = rs.getString("${rowPrefix}message"),
-         sendingEmployee = rs.getString("${rowPrefix}sending_employee"),
-         startDate = rs.getLocalDate("${rowPrefix}start_date"),
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         company = rs.getString("${columnPrefix}company_id"),
+         expirationDate = rs.getLocalDate("${columnPrefix}expiration_date"),
+         message = rs.getString("${columnPrefix}message"),
+         sendingEmployee = rs.getString("${columnPrefix}sending_employee"),
+         startDate = rs.getLocalDate("${columnPrefix}start_date"),
          notificationDomainType = notificationDomainTypeRowMapper.mapRow(rs, rowNum)!!
       )
 }

@@ -79,16 +79,16 @@ class ModuleRepository @Inject constructor(
 }
 
 private class ModuleRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<Module> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Module =
       Module(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         name = rs.getString("${rowPrefix}name"),
-         literal = rs.getString("${rowPrefix}literal"),
-         menu = SimpleIdentifiableEntity(rs.getLong("${rowPrefix}menu_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         name = rs.getString("${columnPrefix}name"),
+         literal = rs.getString("${columnPrefix}literal"),
+         menu = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}menu_id"))
       )
 }

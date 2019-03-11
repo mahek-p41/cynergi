@@ -140,23 +140,23 @@ class VerificationReferenceRepository @Inject constructor(
 }
 
 private class VerificationReferenceRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationReference> {
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationReference =
       VerificationReference(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         address = rs.getBoolean("${rowPrefix}address"),
-         hasHomePhone = rs.getBoolean("${rowPrefix}has_home_phone"),
-         known = rs.getInt("${rowPrefix}known"),
-         leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
-         rating = rs.getString("${rowPrefix}rating"),
-         relationship = rs.getBoolean("${rowPrefix}relationship"),
-         reliable = rs.getBoolean("${rowPrefix}reliable"),
-         timeFrame = rs.getInt("${rowPrefix}time_frame"),
-         verifyPhone = rs.getBoolean("${rowPrefix}verify_phone"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         address = rs.getBoolean("${columnPrefix}address"),
+         hasHomePhone = rs.getBoolean("${columnPrefix}has_home_phone"),
+         known = rs.getInt("${columnPrefix}known"),
+         leaveMessage = rs.getBoolean("${columnPrefix}leave_message"),
+         rating = rs.getString("${columnPrefix}rating"),
+         relationship = rs.getBoolean("${columnPrefix}relationship"),
+         reliable = rs.getBoolean("${columnPrefix}reliable"),
+         timeFrame = rs.getInt("${columnPrefix}time_frame"),
+         verifyPhone = rs.getBoolean("${columnPrefix}verify_phone"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

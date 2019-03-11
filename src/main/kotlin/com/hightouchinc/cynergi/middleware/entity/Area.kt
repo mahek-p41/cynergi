@@ -20,20 +20,23 @@ data class Area (
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
+   val company: IdentifiableEntity,
    val menu: IdentifiableEntity,
    val level: Int
 ) : Entity<Area> {
 
-   constructor(menu: IdentifiableEntity, level: Int) :
+   constructor(menu: IdentifiableEntity, company: IdentifiableEntity, level: Int) :
       this(
          id = null,
-         menu = SimpleIdentifiableEntity(menu),
+         company = company,
+         menu = menu,
          level = level
       )
 
-   constructor(dto: AreaDto) :
+   constructor(dto: AreaDto, companyId: Long) :
       this(
          id = dto.id,
+         company = SimpleIdentifiableEntity(id = companyId),
          menu = SimpleIdentifiableEntity(dto.menu!!),
          level = dto.level!!
       )
