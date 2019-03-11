@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.controller
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.hightouchinc.cynergi.middleware.dto.ErrorDto
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
@@ -53,11 +54,24 @@ class ErrorHandler @Inject constructor(
       val locale = findLocale(httpRequest)
       val argument = exception.argument
       val conversionError = exception.conversionError
+      val conversionErrorCause = conversionError.cause
 
+      return when {
+         conversionErrorCause is InvalidFormatException && conversionErrorCause.path.size > 0 && conversionErrorCause.value is String -> {
+            processBadRequest(conversionErrorCause.path[0].fieldName, conversionErrorCause.value, locale)
+         }
+
+         else -> {
+            processBadRequest(argument.name, conversionError.originalValue.orElse(null), locale)
+         }
+      }
+   }
+
+   private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDto> {
       return HttpResponse.badRequest(
          ErrorDto(
-            message = localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argument.name, conversionError.originalValue.orElse(null))),
-            path = argument.name
+            message = localizationService.localize(ErrorCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
+            path = argumentName
          )
       )
    }

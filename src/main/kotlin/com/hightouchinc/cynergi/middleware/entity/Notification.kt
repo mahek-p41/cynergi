@@ -1,5 +1,6 @@
 package com.hightouchinc.cynergi.middleware.entity
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -66,6 +67,9 @@ data class NotificationDto (
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
+   @JsonFormat(pattern = "yyyy-MM-dd")
+   var dateCreated: LocalDate?,
+
    @field:NotNull(message = NOT_NULL)
    var startDate: LocalDate?,
 
@@ -96,6 +100,7 @@ data class NotificationDto (
    constructor(entity: Notification) :
       this(
          id = entity.id,
+         dateCreated = entity.timeCreated.toLocalDate(),
          company = entity.company,
          expirationDate = entity.expirationDate,
          message = entity.message,
@@ -108,6 +113,7 @@ data class NotificationDto (
    constructor(id: Long?, message: String, entity: Notification) :
       this(
          id = id,
+         dateCreated = entity.timeCreated.toLocalDate(),
          company = entity.company,
          expirationDate = entity.expirationDate,
          message = message,
@@ -124,6 +130,19 @@ data class NotificationDto (
 
       this.recipients = recipients.map { NotificationRecipientDto(it) }
    }
+
+   constructor(entity: Notification, notificationType: String) :
+      this(
+         id = entity.id,
+         dateCreated = entity.timeCreated.toLocalDate(),
+         company = entity.company,
+         expirationDate = entity.expirationDate,
+         message = entity.message,
+         sendingEmployee = entity.sendingEmployee,
+         startDate = entity.startDate,
+         notificationType = notificationType,
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
+      )
 
    override fun dtoId(): Long? = id
 

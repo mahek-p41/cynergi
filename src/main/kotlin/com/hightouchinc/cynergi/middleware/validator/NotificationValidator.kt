@@ -57,10 +57,11 @@ class NotificationValidator @Inject constructor(
 
    private fun doValidate(dto: NotificationDto): MutableSet<ValidationError> {
       val errors: MutableSet<ValidationError> = mutableSetOf()
+      val notificationType = dto.notificationType?.substringBefore(":")
 
-      if (dto.notificationType == "A:All" && dto.recipients.isNotEmpty()) {
+      if (notificationType == "A" && dto.recipients.isNotEmpty()) {
          errors.add(ValidationError("recipients", NOTIFICATION_RECIPIENTS_ALL, listOf("A")))
-      } else if (dto.notificationType != "A:All" && dto.recipients.isEmpty()) {
+      } else if (notificationType != "A" && dto.recipients.isEmpty()) {
          errors.add(ValidationError("recipients", NOTIFICATION_RECIPIENTS_REQUIRED, listOf(dto.notificationType)))
       }
 

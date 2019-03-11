@@ -97,4 +97,7 @@ class NotificationService @Inject constructor(
          entity = notificationRepository.update(entity = Notification(dto = dto, notificationDomainType = notificationDomainType))
       )
    }
+
+   fun delete(id: Long): Int =
+      notificationRepository.delete(id = id)
 }

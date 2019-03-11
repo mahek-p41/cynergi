@@ -4,10 +4,11 @@ import com.hightouchinc.cynergi.middleware.entity.NotificationRecipient
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
-import com.hightouchinc.cynergi.middleware.extensions.getUUID
+import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -22,6 +23,7 @@ class NotificationRecipientRepository @Inject constructor(
 ) : Repository<NotificationRecipient> {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRecipientRepository::class.java)
    private val simpleNotificationRecipientRowMapper = NotificationRecipientRowMapper()
+   private val prefixedNotificationRecipientRowMapper = NotificationRecipientRowMapper(rowPrefix = "nr_")
 
    override fun findOne(id: Long): NotificationRecipient? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_recipient WHERE id = :id", mapOf("id" to id), simpleNotificationRecipientRowMapper)
@@ -96,20 +98,29 @@ class NotificationRecipientRepository @Inject constructor(
    @Transactional
    fun deleteAll(recipientsToDelete: Collection<NotificationRecipient>): Int =
       jdbc.update(
-         "DELETE from notification_recipient WHERE id IN (:ids)",
+         "DELETE FROM notification_recipient WHERE id IN (:ids)",
          mapOf("ids" to recipientsToDelete.asSequence().filter { it.id != null }.map { it.id }.toSet())
       )
+
+   @Transactional
+   fun deleteForParent(parentId: Long): Int =
+      jdbc.update("DELETE FROM notification_recipient WHERE notification_id = :parentId", mapOf("parentId" to parentId))
+
+   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): NotificationRecipient? =
+      rs.getString("nr_id")?.let { prefixedNotificationRecipientRowMapper.mapRow(rs, row) }
 }
 
-private class NotificationRecipientRowMapper : RowMapper<NotificationRecipient> {
+private class NotificationRecipientRowMapper(
+   private val rowPrefix: String = StringUtils.EMPTY
+) : RowMapper<NotificationRecipient> {
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationRecipient =
       NotificationRecipient(
-         id = rs.getLong("id"),
-         uuRowId = rs.getUUID("uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
-         description = rs.getString("description"),
-         recipient = rs.getString("recipient"),
-         notification = SimpleIdentifiableEntity(id = rs.getLong("notification_id"))
+         id = rs.getLong("${rowPrefix}id"),
+         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
+         description = rs.getString("${rowPrefix}description"),
+         recipient = rs.getString("${rowPrefix}recipient"),
+         notification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}notification_id"))
       )
 }

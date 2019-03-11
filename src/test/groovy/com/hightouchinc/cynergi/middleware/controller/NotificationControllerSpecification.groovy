@@ -21,11 +21,13 @@ import java.time.LocalDate
 import java.util.stream.Collectors
 
 import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
+import static io.micronaut.http.HttpRequest.DELETE
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/notifications"
@@ -46,6 +48,21 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       allPropertiesFullAndNotEmptyExcept(result.notification, "recipients")
    }
 
+   void "fetch one notification by id with recipients" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def recipients = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+
+      when:
+      def result = client.retrieve(GET("$url/${notification.id}"), NotificationResponseDto)
+
+      then:
+      result.notification.recipients.size() == 2
+      result.notification.recipients.sort({ o1, o2 -> o1.id <=> o2.id}) == recipients.sort({ o1, o2 -> o1.id <=> o2.id}).collect { new NotificationRecipientDto(it) }
+   }
+
    void "fetch one notification by id not found" () {
       when:
       client.exchange(GET("$url/0"), Argument.of(NotificationResponseDto), Argument.of(ErrorDto))
@@ -56,20 +73,23 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
-   void "fetch all by sending employee and company" () {
+   void "fetch all by sending employee and company through the admin path" () {
       given:
       final def companyId = "testco"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
       final def sendingEmployee = "bob"
       final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, sendingEmployee).collect(Collectors.toList())
+      fiveNotifications.each { notification -> notificationRecipientDataLoaderService.stream(2, notification).forEach { notification.recipients.add(it) } }
 
       when:
       def result = client.retrieve(GET("$url/admin").headers(["X-Auth-Company": companyId, "X-Auth-User": sendingEmployee]), NotificationsResponseDto)
 
       then:
+      result.notifications.each { it.recipients.sort { o1, o2 -> o1.id <=> o2.id } }.sort { o1, o2 -> o1.id <=> o2.id }
       result.notifications.size() == 5
       result.notifications.collect { it.sendingEmployee }.findAll { it == sendingEmployee }.size() == 5
       result.notifications == fiveNotifications.collect { new NotificationDto(it) }
+      result.notifications.collect { it.recipients.size() }.findAll { it == 2 }.size() == 5
    }
 
    @Deprecated
@@ -115,8 +135,9 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      result == new NotificationsResponseDto([new NotificationDto(notification)])
       result.notifications.size() == 1
+      result.notifications[0].id == notification.id
+      result.notifications[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    void "fetch all by company with type Employee" () {
@@ -132,7 +153,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       result.size() == 1
-      result[0] == new NotificationDto(notification)
+      result[0].id == notification.id
+      result[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    @Deprecated
@@ -201,6 +223,24 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       notificationRepository.exists(savedNotification.id)
    }
 
+   void "post valid notification of type All with only the 'A'" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final def notificationPayload = new NotificationDto(notification, "A")
+
+      when:
+      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(notificationPayload)), NotificationResponseDto).notification
+
+      then:
+      savedNotification.id != null
+      savedNotification.id > 0
+      savedNotification.company == "testco"
+      savedNotification.sendingEmployee == notification.sendingEmployee
+      savedNotification.recipients.size() == 0
+      notificationRepository.exists(savedNotification.id)
+   }
+
    void "post valid notification of type Employee with 1 recipient" () {
       given:
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
@@ -239,7 +279,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post invalid notification of type all with nulls" () {
       given:
-      final def notification = new NotificationDto(null, null, null, null, null, null, null, [])
+      final def notification = new NotificationDto(null, null, null, null, null, null, null, null, [])
 
       when:
       client.retrieve(POST(url, new NotificationRequestDto(notification)), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
@@ -296,7 +336,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       result.recipients.size() == 3
    }
 
-   void "put valid notification of type employee remove recipient" () {
+   void "put valid notification of type employee remove recipient with recipient ID's from client" () {
       given:
       final def companyId = "testco"
       final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
@@ -306,6 +346,25 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       when:
       final updatedNotification = new NotificationDto(null, notification.message, notification)
+      final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
+
+      then:
+      result.id == notification.id
+      result.recipients.size() == 1
+      result.recipients[0].id == recipientNotifications[0].id
+   }
+
+   void "put valid notification of type employee remove recipient without recipient ID's from client" () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      notification.recipients.add(recipientNotifications[0])
+
+      when:
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
+      updatedNotification.recipients.each { it.id = null }
       final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
@@ -362,5 +421,31 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       errors.size() == 1
       errors[0].message == "Failed to convert argument [id] for value [null]"
       errors[0].path == "id"
+   }
+
+   void "delete notification of type all" () {
+      given:
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+
+      when:
+      final def response = client.exchange(DELETE("$url/${notification.id}"))
+
+      then:
+      response.status == NO_CONTENT
+   }
+
+   void 'delete notification of type employee with recipients' () {
+      given:
+      final def companyId = "testco"
+      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+
+      when:
+      final def response = client.exchange(DELETE("$url/${notification.id}"))
+
+      then:
+      response.status == NO_CONTENT
    }
 }
