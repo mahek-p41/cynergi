@@ -17,61 +17,65 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
-data class Area (
+data class CompanyModuleAccess (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
+   val level: Int,
    val company: IdentifiableEntity,
-   val menu: IdentifiableEntity,
-   val level: Int
-) : Entity<Area> {
+   val module: IdentifiableEntity
+) : Entity<CompanyModuleAccess> {
 
-   constructor(menu: IdentifiableEntity, company: IdentifiableEntity, level: Int) :
+   constructor(level: Int, company: IdentifiableEntity, module: IdentifiableEntity) :
       this(
          id = null,
+         level = level,
          company = company,
-         menu = menu,
-         level = level
+         module = module
       )
 
-   constructor(dto: AreaDto, companyId: Long) :
+   constructor(dto: CompanyModuleAccessDto, company: IdentifiableDto, module: IdentifiableDto) :
       this(
          id = dto.id,
-         company = SimpleIdentifiableEntity(id = companyId),
-         menu = SimpleIdentifiableEntity(dto.menu!!),
-         level = dto.level!!
+         level = dto.level!!,
+         company = SimpleIdentifiableEntity(identifiableDto = company),
+         module = SimpleIdentifiableEntity(identifiableDto = module)
       )
 
    override fun entityId(): Long? = id
    override fun rowId(): UUID = uuRowId
-   override fun copyMe(): Area = copy()
+   override fun copyMe(): CompanyModuleAccess = copy()
 }
 
 @JsonInclude(NON_NULL)
-data class AreaDto (
+data class CompanyModuleAccessDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var id: Long? = null,
 
    @field:NotNull(message = NOT_NULL)
-   var menu: IdentifiableDto? = null,
-
-   @field:NotNull(message = NOT_NULL)
    @field:Min(1, message = MIN)
    @field:Max(99, message = MAX)
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
-   var level: Int? = null
+   var level: Int? = null,
 
-) : DataTransferObjectBase<AreaDto>() {
+   @field:NotNull(message = NOT_NULL)
+   var company: IdentifiableDto? = null,
 
-   constructor(entity: Area) :
+   @field:NotNull(message = NOT_NULL)
+   var module: IdentifiableDto? = null
+
+) : DataTransferObjectBase<CompanyModuleAccessDto>() {
+
+   constructor(entity: CompanyModuleAccess) :
       this(
          id = entity.id,
-         menu = SimpleIdentifiableDto(entity.menu),
-         level = entity.level
+         level = entity.level,
+         company = SimpleIdentifiableDto(identifiableEntity = entity.company),
+         module = SimpleIdentifiableDto(identifiableEntity = entity.module)
       )
 
    override fun dtoId(): Long? = id
-   override fun copyMe(): AreaDto = copy()
+   override fun copyMe(): CompanyModuleAccessDto = copy()
 }

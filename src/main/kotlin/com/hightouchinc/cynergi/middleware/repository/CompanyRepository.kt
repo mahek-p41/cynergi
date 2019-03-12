@@ -43,12 +43,15 @@ class CompanyRepository @Inject constructor(
       logger.debug("Inserting company {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO company()
-         VALUES ()
+         INSERT INTO company(name, organization_id)
+         VALUES (:name, :organization_id)
          RETURNING
             *
          """.trimIndent(),
-         mapOf<String, Any>(),
+         mapOf(
+            "name" to entity.name,
+            "organization_id" to entity.organization.entityId()
+         ),
          simpleCompanyRowMapper
       )
    }
@@ -59,13 +62,16 @@ class CompanyRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE company
          SET
-
+            name = :name,
+            organization_id = :organization_id
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id!!
+            "id" to entity.id!!,
+            "name" to entity.name,
+            "organization_id" to entity.organization.entityId()
          ),
          simpleCompanyRowMapper
       )

@@ -16,7 +16,7 @@ class DepartmentTestDataLoader {
       final faker = new Faker()
       final company = faker.company()
       final num = faker.number()
-      final int departmentLevel = level != null ? level : num.numberBetween(1, 99)
+      final int departmentLevel = level ?: num.numberBetween(1, 99)
 
       return IntStream.range(0, value).mapToObj {
          new Department(

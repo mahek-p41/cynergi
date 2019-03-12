@@ -16,7 +16,7 @@ class ModuleTestDataLoader {
       final int value = number > 0 ? number : 1
       final faker = new Faker()
       final lorem = faker.lorem()
-      final Menu moduleMenu = menu != null ? menu : MenuTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Menu") }
+      final Menu moduleMenu = menu ?: MenuTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Menu") }
 
       return IntStream.range(0, value).mapToObj {
          new Module(
@@ -26,6 +26,10 @@ class ModuleTestDataLoader {
          )
       }
    }
+
+   static Module single(Menu menu = null) {
+      return stream(1, menu).findFirst().orElseThrow { new Exception("Unable to create Module") }
+   }
 }
 
 @Singleton
@@ -34,17 +38,24 @@ class ModuleDataLoaderService {
    private final ModuleRepository moduleRepository
    private final MenuDataLoaderService menuDataLoaderService
 
-   ModuleDataLoaderService(ModuleRepository moduleRepository, MenuDataLoaderService menuDataLoaderService) {
+   ModuleDataLoaderService(
+      ModuleRepository moduleRepository,
+      MenuDataLoaderService menuDataLoaderService
+   ) {
       this.moduleRepository = moduleRepository
       this.menuDataLoaderService = menuDataLoaderService
    }
 
    Stream<Module> stream(int number = 1, Menu menu = null) {
-      final Menu moduleMenu = menu != null ? menu : menuDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Menu") }
+      final Menu moduleMenu = menu ?: menuDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Menu") }
 
       return ModuleTestDataLoader.stream(number, moduleMenu)
          .map {
             moduleRepository.insert(it)
          }
+   }
+
+   Module single( Menu menu = null) {
+      return stream(1, menu).findFirst().orElseThrow { new Exception("Unable to create Module") }
    }
 }

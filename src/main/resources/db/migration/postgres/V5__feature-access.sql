@@ -1,5 +1,5 @@
 CREATE TABLE menu (
-   id           BIGSERIAL                              NOT NULL PRIMARY KEY,
+   id           BIGSERIAL                              NOT NULL PRIMARY KEY, -- TODO consider not making this generated off of a sequence but rather hard coded in INSERT statements in this file
    uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -13,7 +13,7 @@ CREATE TRIGGER update_menu_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE module (
-   id           BIGSERIAL                              NOT NULL PRIMARY KEY,
+   id           BIGSERIAL                              NOT NULL PRIMARY KEY, -- TODO consider not making this generated off of a sequence but rather hard coded in INSERT statements in this file
    uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -102,49 +102,35 @@ CREATE TRIGGER update_department_trg
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 
-CREATE TABLE employee (
-   id           BIGSERIAL                              NOT NULL PRIMARY KEY,
-   uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
-   time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   user_id      VARCHAR(8)                             NOT NULL,
-   password     VARCHAR(8)                             NOT NULL,
-   first_name   TEXT                                   NOT NULL,
-   last_name    TEXT                                   NOT NULL,
-   level        NUMERIC(2)                             NOT NULL,
-   company_id   BIGINT REFERENCES company(id)          NOT NULL
+CREATE TABLE employee ( -- TODO convert to a view in the cynergi-data-migration project
+   id            BIGSERIAL                              NOT NULL PRIMARY KEY,
+   uu_row_id     UUID        DEFAULT uuid_generate_v1() NOT NULL,
+   time_created  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+   time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+   user_id       VARCHAR(8)                             NOT NULL,
+   password      VARCHAR(8)                             NOT NULL,
+   first_name    TEXT                                   NOT NULL,
+   last_name     TEXT                                   NOT NULL,
+   department_id BIGINT REFERENCES department(id)       NOT NULL,
+   company_id    BIGINT REFERENCES company(id)          NOT NULL
 );
 CREATE TRIGGER update_employee_trg
    BEFORE UPDATE
    ON employee
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-CREATE INDEX employee_username_idx ON employee(user_id);
-
-CREATE TABLE department_access (
-   id            BIGSERIAL                              NOT NULL PRIMARY KEY,
-   uu_row_id     UUID        DEFAULT uuid_generate_v1() NOT NULL,
-   time_created  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   department_id BIGINT REFERENCES department(id)       NOT NULL,
-   area_id       BIGINT REFERENCES area(id)             NOT NULL
-);
-CREATE TRIGGER update_department_access_trg
-   BEFORE UPDATE
-   ON department_access
-   FOR EACH ROW
-EXECUTE PROCEDURE last_updated_column_fn();
-CREATE INDEX department_access_department ON department_access(department_id);
-CREATE INDEX department_access_area ON department_access(area_id);
+CREATE INDEX employee_username_password_idx ON employee(user_id, password);
+CREATE INDEX employee_department_idx ON employee(department_id);
+CREATE INDEX employee_company_idx ON employee(company_id);
 
 CREATE TABLE company_module_access (
    id           BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+   level        NUMERIC(2)                             NOT NULL,
    company_id   BIGINT REFERENCES company(id)          NOT NULL,
-   module_id    BIGINT REFERENCES module(id)           NOT NULL,
-   level        NUMERIC(2)                             NOT NULL
+   module_id    BIGINT REFERENCES module(id)           NOT NULL
 );
 CREATE TRIGGER update_company_module_access_trg
    BEFORE UPDATE

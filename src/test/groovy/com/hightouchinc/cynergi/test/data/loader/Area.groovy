@@ -18,8 +18,8 @@ class AreaTestDataLoader {
       final Faker faker = new Faker()
       final num = faker.number()
       final employeeLevel = level != null && level < 100 && level > 0 ? level : num.numberBetween(1, 99)
-      final areaMenu = menu != null ? menu : MenuTestDataLoader.single()
-      final areaCompany = company != null ? company : CompanyTestDataLoader.single()
+      final areaMenu = menu ?: MenuTestDataLoader.single()
+      final areaCompany = company ?: CompanyTestDataLoader.single()
 
       return IntStream.range(0, value).mapToObj {
          new Area(

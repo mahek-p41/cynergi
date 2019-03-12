@@ -11,8 +11,6 @@ import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.POS
 import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import java.time.OffsetDateTime
 import java.util.UUID
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -26,19 +24,17 @@ data class Employee (
    val password: String,
    val firstName: String,
    val lastName: String,
-   val level: Int,
    val department: IdentifiableEntity,
    val company: IdentifiableEntity
 ) : Entity<Employee> {
 
-   constructor(userId: String, password: String, firstName: String, lastName: String, level: Int, department: IdentifiableEntity, company: IdentifiableEntity) :
+   constructor(userId: String, password: String, firstName: String, lastName: String, department: IdentifiableEntity, company: IdentifiableEntity) :
       this(
          id = null,
          userId = userId,
          password = password,
          firstName = firstName,
          lastName = lastName,
-         level = level,
          department = department,
          company = company
       )
@@ -50,7 +46,6 @@ data class Employee (
          password = dto.password!!,
          firstName = dto.firstName!!,
          lastName = dto.lastName!!,
-         level = dto.level!!,
          company = SimpleIdentifiableEntity(identifiableDto = company),
          department = SimpleIdentifiableEntity(identifiableDto = department)
       )
@@ -81,12 +76,6 @@ data class EmployeeDto (
    val lastName: String?,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Min(1, message = MessageCodes.Validation.MIN)
-   @field:Max(99, message = MessageCodes.Validation.MAX)
-   @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
-   val level: Int?,
-
-   @field:NotNull(message = NOT_NULL)
    val department: IdentifiableDto?
 
 ) : DataTransferObjectBase<EmployeeDto>() {
@@ -98,7 +87,6 @@ data class EmployeeDto (
          password = entity.password,
          firstName = entity.firstName,
          lastName = entity.lastName,
-         level = entity.level,
          department = SimpleIdentifiableDto(identifiableEntity = department)
       )
 
