@@ -5,6 +5,8 @@ object MessageCodes {
       // define validation messages here that use the provided javax.validation annotations ex: @NotNull @Size
       const val NOT_NULL = "javax.validation.not.null"
       const val SIZE = "javax.validation.size"
+      const val MIN = "javax.validation.constraints.Min.message"
+      const val MAX = "javax.validation.constraints.Max.message"
    }
 
    object Cynergi {

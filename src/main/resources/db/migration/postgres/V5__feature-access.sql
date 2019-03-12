@@ -137,7 +137,7 @@ EXECUTE PROCEDURE last_updated_column_fn();
 CREATE INDEX department_access_department ON department_access(department_id);
 CREATE INDEX department_access_area ON department_access(area_id);
 
-CREATE TABLE company_module (
+CREATE TABLE company_module_access (
    id           BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
@@ -146,8 +146,8 @@ CREATE TABLE company_module (
    module_id    BIGINT REFERENCES module(id)           NOT NULL,
    level        NUMERIC(2)                             NOT NULL
 );
-CREATE TRIGGER update_company_module_trg
+CREATE TRIGGER update_company_module_access_trg
    BEFORE UPDATE
-   ON company_module
+   ON company_module_access
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
