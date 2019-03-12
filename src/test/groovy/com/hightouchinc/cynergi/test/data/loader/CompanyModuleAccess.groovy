@@ -67,13 +67,16 @@ class CompanyModuleAccessDataLoaderService {
       final Company company = companyIn ?: companyDataLoaderService.single()
       final List<Module> modules = modulesIn != null && modulesIn.size() > 0 ? modulesIn : [moduleDataLoaderService.single()]
 
-      return modules.collect {
-         new CompanyModuleAccess(
-            level,
-            company,
-            it
-         )
-      }
+      return modules
+         .collect {
+            new CompanyModuleAccess(
+               level,
+               company,
+               it
+            )
+         }.collect {
+            companyModuleAccessRepository.insert(it)
+         }
    }
 
    CompanyModuleAccess single(Integer level = null, Company company = null, Module module = null) {

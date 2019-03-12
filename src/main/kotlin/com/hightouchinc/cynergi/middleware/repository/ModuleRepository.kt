@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,23 +40,26 @@ class ModuleRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: Module): Module {
       logger.debug("Inserting module {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO module(name, literal)
-         VALUES (:name, :literal)
+         INSERT INTO module(name, literal, menu_id)
+         VALUES (:name, :literal, :menu_id)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "name" to entity.name,
-            "literal" to entity.literal
+            "literal" to entity.literal,
+            "menu_id" to entity.menu.entityId()
          ),
          simpleModuleRowMapper
       )
    }
 
+   @Transactional
    override fun update(entity: Module): Module {
       logger.debug("Updating module {}", entity)
 
@@ -63,7 +67,8 @@ class ModuleRepository @Inject constructor(
          UPDATE module
          SET
             name = :name,
-            literal = :literal
+            literal = :literal,
+            menu_id = :menu_id
          WHERE id = :id
          RETURNING
             *
@@ -71,7 +76,8 @@ class ModuleRepository @Inject constructor(
          mapOf(
             "id" to entity.id!!,
             "name" to entity.name,
-            "literal" to entity.literal
+            "literal" to entity.literal,
+            "menu_id" to entity.menu.entityId()
          ),
          simpleModuleRowMapper
       )

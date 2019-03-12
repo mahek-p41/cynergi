@@ -47,6 +47,7 @@ CREATE TABLE company (
    uu_row_id       UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+   name            TEXT                                   NOT NULL,
    organization_id BIGINT REFERENCES organization(id)     NOT NULL
 );
 CREATE TRIGGER update_company_trg
@@ -78,6 +79,7 @@ CREATE TABLE area (
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    company_id   BIGINT REFERENCES company(id)          NOT NULL,
    menu_id      BIGINT REFERENCES menu(id)             NOT NULL,
+   literal      TEXT                                   NOT NULL,
    level        NUMERIC(2)                             NOT NULL
 );
 CREATE TRIGGER update_area_trg

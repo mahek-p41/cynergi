@@ -42,12 +42,15 @@ class MenuRepository @Inject constructor(
       logger.debug("Inserting menu {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO menu()
-         VALUES ()
+         INSERT INTO menu(name, literal)
+         VALUES (:name, :literal)
          RETURNING
             *
          """.trimIndent(),
-         mapOf<String, Any>(),
+         mapOf(
+            "name" to entity.name,
+            "literal" to entity.literal
+         ),
          simpleMenuRowMapper
       )
    }
@@ -58,13 +61,16 @@ class MenuRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE menu
          SET
-
+            name = :name,
+            literal = :literal
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id!!
+            "id" to entity.id!!,
+            "name" to entity.name,
+            "literal" to entity.literal
          ),
          simpleMenuRowMapper
       )

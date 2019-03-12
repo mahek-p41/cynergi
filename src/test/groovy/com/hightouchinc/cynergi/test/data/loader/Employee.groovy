@@ -23,7 +23,7 @@ class EmployeeTestDataLoader {
 
       return IntStream.range(0, value).mapToObj {
          new Employee(
-            name.username(),
+            lorem.characters(1, 8),
             lorem.characters(2, 8),
             name.firstName(),
             name.lastName(),

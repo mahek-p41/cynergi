@@ -1,6 +1,5 @@
 package com.hightouchinc.cynergi.middleware.service
 
-
 import com.hightouchinc.cynergi.middleware.service.spi.ServiceSpecificationBase
 import com.hightouchinc.cynergi.test.data.loader.AreaDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.CompanyDataLoaderService
@@ -9,11 +8,9 @@ import com.hightouchinc.cynergi.test.data.loader.DepartmentDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.EmployeeDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.MenuDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.ModuleDataLoaderService
-import spock.lang.Ignore
 
 import static java.util.stream.Collectors.toList
 
-@Ignore
 class AreaServiceSpecification extends ServiceSpecificationBase {
    final def areaService = applicationContext.getBean(AreaService)
    final def areaDataLoaderService = applicationContext.getBean(AreaDataLoaderService)
