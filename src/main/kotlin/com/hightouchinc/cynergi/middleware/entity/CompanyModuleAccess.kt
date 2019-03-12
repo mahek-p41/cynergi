@@ -27,7 +27,7 @@ data class CompanyModuleAccess (
    val module: IdentifiableEntity
 ) : Entity<CompanyModuleAccess> {
 
-   constructor(level: Int, company: IdentifiableEntity, module: IdentifiableEntity) :
+   constructor(level: Int, company: Company, module: Module) :
       this(
          id = null,
          level = level,

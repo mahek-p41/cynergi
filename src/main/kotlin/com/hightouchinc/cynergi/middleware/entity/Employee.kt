@@ -80,7 +80,7 @@ data class EmployeeDto (
 
 ) : DataTransferObjectBase<EmployeeDto>() {
 
-   constructor(entity: Employee, department: IdentifiableEntity) :
+   constructor(entity: Employee, department: Department) :
       this(
          id = entity.id,
          userId = entity.userId,

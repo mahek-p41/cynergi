@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,33 +40,44 @@ class CompanyModuleAccessRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: CompanyModuleAccess): CompanyModuleAccess {
       logger.debug("Inserting company_module_access {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO company_module_access()
-         VALUES ()
+         INSERT INTO company_module_access(level, company_id, module_id)
+         VALUES (:level, :company_id, :module_id)
          RETURNING
             *
          """.trimIndent(),
-         mapOf<String, Any>(),
+         mapOf(
+            "level" to entity.level,
+            "company_id" to entity.company.entityId()!!,
+            "module_id" to entity.module.entityId()!!
+         ),
          simpleCompanyModuleAccessRowMapper
       )
    }
 
+   @Transactional
    override fun update(entity: CompanyModuleAccess): CompanyModuleAccess {
       logger.debug("Updating company_module_access {}", entity)
 
       return jdbc.updateReturning("""
          UPDATE company_module_access
          SET
-
+            level = :level,
+            company_id = :company_id,
+            module_id = :module_id
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id!!
+            "id" to entity.id!!,
+            "level" to entity.level,
+            "company_id" to entity.company.entityId()!!,
+            "module_id" to entity.module.entityId()!!
          ),
          simpleCompanyModuleAccessRowMapper
       )

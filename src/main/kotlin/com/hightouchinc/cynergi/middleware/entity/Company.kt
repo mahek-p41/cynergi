@@ -24,11 +24,11 @@ data class Company (
    val organization: IdentifiableEntity
 ) : Entity<Company> {
 
-   constructor(name: String, organization: IdentifiableEntity) :
+   constructor(name: String, organization: Organization) :
       this(
          id = null,
          name = name,
-         organization = SimpleIdentifiableEntity(organization)
+         organization = organization
       )
 
    constructor(dto: CompanyDto) :

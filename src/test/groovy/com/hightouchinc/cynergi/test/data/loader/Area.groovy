@@ -13,19 +13,21 @@ import java.util.stream.Stream
 
 @CompileStatic
 class AreaTestDataLoader {
-   static Stream<Area> stream(int number = 1, Integer level = null, Menu menu = null, Company company = null) {
+   static Stream<Area> stream(int number = 1, Integer levelIn = null, Menu menuIn = null, Company companyIn = null) {
       final int value = number > 0 ? number : 1
       final Faker faker = new Faker()
       final num = faker.number()
-      final employeeLevel = level != null && level < 100 && level > 0 ? level : num.numberBetween(1, 99)
-      final areaMenu = menu ?: MenuTestDataLoader.single()
-      final areaCompany = company ?: CompanyTestDataLoader.single()
+      final lorem = faker.lorem()
+      final level = levelIn != null && levelIn < 100 && levelIn > 0 ? levelIn : num.numberBetween(1, 99)
+      final company = companyIn ?: CompanyTestDataLoader.single()
+      final menu = menuIn ?: MenuTestDataLoader.single()
 
       return IntStream.range(0, value).mapToObj {
          new Area(
-            areaCompany,
-            areaMenu,
-            employeeLevel
+            company,
+            menu,
+            lorem.characters(),
+            level
          )
       }
    }

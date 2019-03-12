@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,6 +40,7 @@ class CompanyRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: Company): Company {
       logger.debug("Inserting company {}", entity)
 
@@ -56,6 +58,7 @@ class CompanyRepository @Inject constructor(
       )
    }
 
+   @Transactional
    override fun update(entity: Company): Company {
       logger.debug("Updating company {}", entity)
 

@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,6 +23,41 @@ class AreaRepository @Inject constructor(
 ) : Repository<Area> {
    private val logger: Logger = LoggerFactory.getLogger(AreaRepository::class.java)
    private val simpleAreaRowMapper = AreaRowMapper()
+   private val areaLevelQuery = """
+       SELECT
+          a.id AS a_id,
+          a.uu_row_id AS a_uu_row_id,
+          a.time_created AS a_time_created,
+          a.time_updated AS a_time_updated,
+          a.level AS a_level,
+          m.id AS m_id,
+          m.uu_row_id AS m_uu_row_id,
+          m.time_created AS m_time_created,
+          m.time_updated AS m_time_updated,
+          m.name AS m_name,
+          m.literal AS m_literal,
+          mod.id AS mod_id,
+          mod.uu_row_id AS mod_uu_row_id,
+          mod.time_created AS mod_time_created,
+          mod.time_updated AS mod_time_updated,
+          mod.name AS mod_name,
+          mod.literal AS mod_literal,
+          cma.id AS cma_id,
+          cma.uu_row_id AS cma_uu_row_id,
+          cma.time_created AS cma_time_created,
+          cma.time_updated AS cma_time_updated,
+          cma.level AS cma_level
+       FROM area a
+          JOIN menu m
+            ON a.menu_id = m.id
+          JOIN module mod
+             ON m.id = mod.menu_id
+          JOIN company_module_access cma
+             ON mod.id = cma.module_id
+       WHERE :level >= a.level
+          AND :level >= cma.level
+          AND a.company_id = :company_id
+   """.trimIndent()
 
    override fun findOne(id: Long): Area? {
       val found = jdbc.findFirstOrNull("SELECT * FROM area WHERE id = :id", mapOf("id" to id), simpleAreaRowMapper)
@@ -39,24 +75,27 @@ class AreaRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: Area): Area {
       logger.debug("Inserting area {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO area(company_id, menu_id, level)
-         VALUES (:company_id, :menu_id, :level)
+         INSERT INTO area(company_id, menu_id, literal, level)
+         VALUES (:company_id, :menu_id, :literal, :level)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "company_id" to entity.company.entityId(),
             "menu_id" to entity.menu.entityId(),
+            "literal" to entity.literal,
             "level" to entity.level
          ),
          simpleAreaRowMapper
       )
    }
 
+   @Transactional
    override fun update(entity: Area): Area {
       logger.debug("Updating area {}", entity)
 
@@ -65,6 +104,7 @@ class AreaRepository @Inject constructor(
          SET
             company_id = :company_id,
             menu_id = :menu_id,
+            literal = :literal,
             level = :level
          WHERE id = :id
          RETURNING
@@ -74,6 +114,7 @@ class AreaRepository @Inject constructor(
             "id" to entity.id!!,
             "company_id" to entity.company.entityId(),
             "menu_id" to entity.menu.entityId(),
+            "literal" to entity.literal,
             "level" to entity.level
          ),
          simpleAreaRowMapper
@@ -96,6 +137,7 @@ private class AreaRowMapper(
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company_id")),
          menu = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}menu_id")),
+         literal = rs.getString("${columnPrefix}literal"),
          level = rs.getInt("${columnPrefix}level")
       )
 }

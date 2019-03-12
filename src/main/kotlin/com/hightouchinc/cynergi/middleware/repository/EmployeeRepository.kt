@@ -7,6 +7,7 @@ import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,6 +40,7 @@ class EmployeeRepository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: Employee): Employee {
       logger.debug("Inserting employee {}", entity)
 
@@ -60,6 +62,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
+   @Transactional
    override fun update(entity: Employee): Employee {
       logger.debug("Updating employee {}", entity)
 
@@ -103,7 +106,7 @@ private class EmployeeRowMapper(
          password = rs.getString("${columnPrefix}password"),
          firstName = rs.getString("${columnPrefix}first_name"),
          lastName = rs.getString("${columnPrefix}last_name"),
-         department = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}department")),
-         company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company"))
+         department = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}department_id")),
+         company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company_id"))
       )
 }
