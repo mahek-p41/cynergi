@@ -7,6 +7,8 @@ import com.hightouchinc.cynergi.middleware.dto.helper.SimpleIdentifiableDto
 import com.hightouchinc.cynergi.middleware.dto.spi.DataTransferObjectBase
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.MAX
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.MIN
 import com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -56,8 +58,8 @@ data class AreaDto (
    var menu: IdentifiableDto?,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Min(1)
-   @field:Max(99)
+   @field:Min(1, message = MIN)
+   @field:Max(99, message = MAX)
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    var level: Int?
 

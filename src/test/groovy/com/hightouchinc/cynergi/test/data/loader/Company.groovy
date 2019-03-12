@@ -7,7 +7,6 @@ import com.hightouchinc.cynergi.middleware.repository.CompanyRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
-import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -21,18 +20,14 @@ class CompanyTestDataLoader {
 
       return IntStream.range(0, value).mapToObj {
          new Company(
-            null,
-            UUID.randomUUID(),
-            OffsetDateTime.now(),
-            OffsetDateTime.now(),
             company.name(),
             companyOrganization
          )
       }
    }
 
-   static Company single() {
-      return stream(1).findFirst().orElseThrow { new Exception("Unable to create Company") }
+   static Company single(Organization organization = null) {
+      return stream(1, organization).findFirst().orElseThrow { new Exception("Unable to create Company") }
    }
 }
 
@@ -56,9 +51,7 @@ class CompanyDataLoaderService {
          }
    }
 
-   Company single() {
-      final Organization organization = organizationDataLoaderService.single()
-
+   Company single(Organization organization = null) {
       return stream(1, organization).findFirst().orElseThrow { new Exception("Unable to create Company") }
    }
 }

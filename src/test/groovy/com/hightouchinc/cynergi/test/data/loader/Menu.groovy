@@ -6,7 +6,6 @@ import com.hightouchinc.cynergi.middleware.repository.MenuRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
-import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -19,10 +18,6 @@ class MenuTestDataLoader {
 
       return IntStream.range(0, value).mapToObj {
          new Menu(
-            null,
-            UUID.randomUUID(),
-            OffsetDateTime.now(),
-            OffsetDateTime.now(),
             lorem.fixedString(6),
             lorem.characters(1, 50)
          )
