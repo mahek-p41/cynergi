@@ -14,7 +14,7 @@ import java.util.stream.Stream
 class CompanyTestDataLoader {
    static Stream<Company> stream(int number = 1, Organization organization = null) {
       final int value = number > 0 ? number : 1
-      final Organization companyOrganization = organization != null ? organization : OrganizationTestDataLoader.single()
+      final Organization companyOrganization = organization ?: OrganizationTestDataLoader.single()
       final Faker faker = new Faker()
       final company = faker.company()
 

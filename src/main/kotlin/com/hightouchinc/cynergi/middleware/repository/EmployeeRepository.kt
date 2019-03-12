@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Employee
+import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
@@ -42,12 +43,19 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee()
-         VALUES ()
+         INSERT INTO employee(user_id, password, first_name, last_name, department_id, company_id)
+         VALUES (:user_id, :password, :first_name, :last_name, :department_id, :company_id)
          RETURNING
             *
          """.trimIndent(),
-         mapOf<String, Any>(),
+         mapOf(
+            "user_id" to entity.userId,
+            "password" to entity.password,
+            "first_name" to entity.firstName,
+            "last_name" to entity.lastName,
+            "department_id" to entity.department.entityId(),
+            "company_id" to entity.company.entityId()
+         ),
          simpleEmployeeRowMapper
       )
    }
@@ -58,13 +66,24 @@ class EmployeeRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE employee
          SET
-
+            user_id = :user_id,
+            password = :password,
+            first_name = :first_name,
+            last_name = :last_name,,
+            department_id = :department_id,
+            company_id = :company_id
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id!!
+            "id" to entity.id!!,
+            "user_id" to entity.userId,
+            "password" to entity.password,
+            "first_name" to entity.firstName,
+            "last_name" to entity.lastName,
+            "department_id" to entity.department.entityId(),
+            "company_id" to entity.company.entityId()
          ),
          simpleEmployeeRowMapper
       )
@@ -79,6 +98,12 @@ private class EmployeeRowMapper(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated")
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         userId = rs.getString("${columnPrefix}user_id"),
+         password = rs.getString("${columnPrefix}password"),
+         firstName = rs.getString("${columnPrefix}first_name"),
+         lastName = rs.getString("${columnPrefix}last_name"),
+         department = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}department")),
+         company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company"))
       )
 }

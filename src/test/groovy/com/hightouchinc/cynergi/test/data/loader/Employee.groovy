@@ -13,13 +13,11 @@ import java.util.stream.Stream
 
 @CompileStatic
 class EmployeeTestDataLoader {
-   static Stream<Employee> stream(int number = 1, Integer level = null, Department department = null, Company company = null) {
+   static Stream<Employee> stream(int number = 1, Department department = null, Company company = null) {
       final int value = number > 0 ? number : 1
       final Faker faker = new Faker()
-      final num = faker.number()
-      final employeeLevel = level != null && level < 100 && level > 0 ? level : num.numberBetween(1, 99)
-      final Department employeeDepartment = department != null ? department : DepartmentTestDataLoader.single(employeeLevel)
-      final Company employeeCompany = company != null ? company : CompanyTestDataLoader.single()
+      final Department employeeDepartment = department ?: DepartmentTestDataLoader.single()
+      final Company employeeCompany = company ?: CompanyTestDataLoader.single()
       final name = faker.name()
       final lorem = faker.lorem()
 
@@ -29,15 +27,14 @@ class EmployeeTestDataLoader {
             lorem.characters(2, 8),
             name.firstName(),
             name.lastName(),
-            employeeLevel,
             employeeDepartment,
             employeeCompany
          )
       }
    }
 
-   static Employee single(Integer level = null, Department department = null, Company company = null) {
-      return stream(1, level, department, company).findFirst().orElseThrow { new Exception("Unable to create Employee") }
+   static Employee single(Department department = null, Company company = null) {
+      return stream(1, department, company).findFirst().orElseThrow { new Exception("Unable to create Employee") }
    }
 }
 
@@ -58,17 +55,17 @@ class EmployeeDataLoaderService {
       this.employeeRepository = employeeRepository
    }
 
-   Stream<Employee> stream(int number = 1, Integer level = null, Department department = null, Company company = null) {
+   Stream<Employee> stream(int number = 1, Department department = null, Company company = null) {
       final Department employeeDepartment = department != null ? department : departmentDataLoaderService.single()
       final Company employeeCompany = company != null ? company : companyDataLoaderService.single()
 
-      return EmployeeTestDataLoader.stream(number, level, employeeDepartment, employeeCompany)
+      return EmployeeTestDataLoader.stream(number, employeeDepartment, employeeCompany)
          .map {
             employeeRepository.insert(it)
          }
    }
 
-   Employee single(Integer level = null, Department department = null, Company company = null) {
-      return stream(1, level, department, company).findFirst().orElseThrow { new Exception("Unable to create Employee") }
+   Employee single(Department department = null, Company company = null) {
+      return stream(1, department, company).findFirst().orElseThrow { new Exception("Unable to create Employee") }
    }
 }
