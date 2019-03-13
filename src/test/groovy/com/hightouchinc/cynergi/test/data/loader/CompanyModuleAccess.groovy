@@ -18,8 +18,8 @@ class CompanyModuleAccessTestDataLoader {
       final Faker faker = new Faker()
       final num = faker.number()
       final level = levelIn != null && levelIn < 100 && levelIn > 0 ? levelIn : num.numberBetween(1, 99)
-      final Company company = companyIn ?: CompanyTestDataLoader.single()
-      final Module module = moduleIn?: ModuleTestDataLoader.single()
+      final Company company = companyIn ?: CompanyTestDataLoader.single(null)
+      final Module module = moduleIn?: ModuleTestDataLoader.single(null)
 
       return IntStream.range(0, value).mapToObj {
          new CompanyModuleAccess(
@@ -53,7 +53,7 @@ class CompanyModuleAccessDataLoaderService {
    }
 
    Stream<CompanyModuleAccess> stream(int number = 1, Integer levelIn = null, Company companyIn = null, Module moduleIn = null) {
-      final Company company = companyIn != null ? companyIn : companyDataLoaderService.single()
+      final Company company = companyIn != null ? companyIn : companyDataLoaderService.single(null)
       final Module module = moduleIn != null ? moduleIn : moduleDataLoaderService.single()
 
       return CompanyModuleAccessTestDataLoader.stream(number, levelIn, company, module)
@@ -64,7 +64,7 @@ class CompanyModuleAccessDataLoaderService {
 
    List<CompanyModuleAccess> associate(List<Module> modulesIn = null, Company companyIn = null, Integer levelIn = null) {
       final Integer level = levelIn != null && levelIn > 0 && levelIn < 99 ? levelIn : 1
-      final Company company = companyIn ?: companyDataLoaderService.single()
+      final Company company = companyIn ?: companyDataLoaderService.single(null)
       final List<Module> modules = modulesIn != null && modulesIn.size() > 0 ? modulesIn : [moduleDataLoaderService.single()]
 
       return modules

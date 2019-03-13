@@ -1,6 +1,6 @@
 package com.hightouchinc.cynergi.middleware.service.spi
 
-import com.hightouchinc.cynergi.test.service.TruncateDatabaseService
+import com.hightouchinc.cynergi.test.helper.TruncateDatabaseService
 import io.micronaut.context.ApplicationContext
 import io.micronaut.runtime.server.EmbeddedServer
 import spock.lang.AutoCleanup

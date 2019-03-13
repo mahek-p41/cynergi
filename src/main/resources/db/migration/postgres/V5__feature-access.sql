@@ -3,7 +3,7 @@ CREATE TABLE menu (
    uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   name         VARCHAR(6)                             NOT NULL,
+   name         VARCHAR(10) UNIQUE                     NOT NULL,
    literal      TEXT                                   NOT NULL
 );
 CREATE TRIGGER update_menu_trg
@@ -17,7 +17,7 @@ CREATE TABLE module (
    uu_row_id    UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   name         VARCHAR(6)                             NOT NULL,
+   name         VARCHAR(10) UNIQUE                     NOT NULL,
    literal      TEXT                                   NOT NULL,
    menu_id      BIGINT REFERENCES menu(id)             NOT NULL
 );
@@ -138,3 +138,7 @@ CREATE TRIGGER update_company_module_access_trg
    ON company_module_access
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
+
+INSERT INTO menu(name, literal) VALUES ('AP', 'Accounts Payable');
+INSERT INTO menu(name, literal) VALUES ('APRECUR', 'Accounts Payable - Add a Recurring Entry');
+INSERT INTO menu(name, literal) VALUES ('APREPORT', 'Accounts Payable - Aging Report');

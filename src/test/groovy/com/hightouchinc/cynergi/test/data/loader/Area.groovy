@@ -19,7 +19,7 @@ class AreaTestDataLoader {
       final num = faker.number()
       final lorem = faker.lorem()
       final level = levelIn != null && levelIn < 100 && levelIn > 0 ? levelIn : num.numberBetween(1, 99)
-      final company = companyIn ?: CompanyTestDataLoader.single()
+      final company = companyIn ?: CompanyTestDataLoader.single(null)
       final menu = menuIn ?: MenuTestDataLoader.single()
 
       return IntStream.range(0, value).mapToObj {
@@ -56,7 +56,7 @@ class AreaDataLoaderService {
 
    Stream<Area> stream(int number = 1, Integer level = null, Menu menu = null, Company company = null) {
       final Menu areaMenu = menu != null ? menu : menuDataLoaderService.single()
-      final Company areaCompany = company != null ? company : companyDataLoaderService.single()
+      final Company areaCompany = company != null ? company : companyDataLoaderService.single(null)
 
       return AreaTestDataLoader.stream(number, level, areaMenu, areaCompany)
          .map {

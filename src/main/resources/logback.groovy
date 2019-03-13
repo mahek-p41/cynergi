@@ -31,7 +31,7 @@ if('prod'.equalsIgnoreCase(micrnautEnvironments)) {
    logger('com.hightouchinc', INFO)
 }
 
-if(micrnautEnvironments.contains('local') || appenders.isEmpty()) {
+if(micrnautEnvironments.contains('local') || micrnautEnvironments.contains('demo') || appenders.isEmpty()) {
    appender('STDOUT', ConsoleAppender) {
       encoder(PatternLayoutEncoder) {
          pattern = '%d{HH:mm:ss.SSS} %-5level %logger{10} - %msg%n'
