@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.middleware.service
 
 /**
- * Most services that interact with a [com.hightouchinc.cynergi.middleware.repository.Repository] are going to want to
+ * Most services that interact with a [com.hightouchinc.cynergi.middleware.repository.CrudRepository] are going to want to
  * provide a way to look up the DTO that the caller is interacting with via an ID which this interface defines as being
  * a long.
  *

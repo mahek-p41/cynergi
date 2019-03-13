@@ -79,7 +79,6 @@ CREATE TABLE area (
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    company_id   BIGINT REFERENCES company(id)          NOT NULL,
    menu_id      BIGINT REFERENCES menu(id)             NOT NULL,
-   literal      TEXT                                   NOT NULL,
    level        NUMERIC(2)                             NOT NULL
 );
 CREATE TRIGGER update_area_trg
@@ -177,4 +176,3 @@ INSERT INTO module(name, literal, menu_id) VALUES ('CASHOUT', 'Requirements Repo
 INSERT INTO module(name, literal, menu_id) VALUES ('APTRLBAL', 'Trial Balance Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
 INSERT INTO module(name, literal, menu_id) VALUES ('AP1099', 'Vendor 1099''s', (SELECT id FROM menu WHERE name = 'APREPORT'));
 INSERT INTO module(name, literal, menu_id) VALUES ('APUNDO', 'Account Maintenance', (SELECT id FROM menu WHERE name = 'APREPORT'));
-INSERT INTO module(name, literal, menu_id) VALUES ('FLOWANAL', 'Cash Flow Report', (SELECT id FROM menu WHERE name = 'APREPORT'));

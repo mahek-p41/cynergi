@@ -33,4 +33,4 @@ class AreaService @Inject constructor(
 
       return areaRepository.findAreasByLevelAndCompany(level = level, company = company).map { AreaDto(it) }
    }
-}
+   }
