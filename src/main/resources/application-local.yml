@@ -56,4 +56,3 @@ cynergi:
       jwt:
          pem:
             path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
-      roles-level-prefix: "ROLE_LEVEL_"

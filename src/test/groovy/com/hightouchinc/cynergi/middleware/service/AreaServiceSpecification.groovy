@@ -34,7 +34,7 @@ class AreaServiceSpecification extends ServiceSpecificationBase {
          final companyModuleAccessOne = companyModuleAccessService.associate(modulesMenuOne, company, 10)
          final companyModuleAccessTwo = companyModuleAccessService.associate(modulesMenuTwo, company, 10)
       when:
-         final areas = areaService.findAreasByLevel(10)
+         final areas = areaService.findAreasByLevelAndCompany(10)
       then:
          areas.size() == 2
    }

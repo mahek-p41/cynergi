@@ -51,4 +51,3 @@ cynergi:
       jwt:
          pem:
             path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048
-      roles-level-prefix: "ROLE_LEVEL_"

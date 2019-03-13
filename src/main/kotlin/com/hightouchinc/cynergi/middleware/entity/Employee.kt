@@ -80,14 +80,14 @@ data class EmployeeDto (
 
 ) : DataTransferObjectBase<EmployeeDto>() {
 
-   constructor(entity: Employee, department: Department) :
+   constructor(entity: Employee) :
       this(
          id = entity.id,
          userId = entity.userId,
          password = entity.password,
          firstName = entity.firstName,
          lastName = entity.lastName,
-         department = SimpleIdentifiableDto(identifiableEntity = department)
+         department = SimpleIdentifiableDto(id = entity.department.entityId()!!)
       )
 
    override fun dtoId(): Long? = id

@@ -74,7 +74,7 @@ class NotificationService @Inject constructor(
          notifications = fetchAllByRecipient(companyId = companyId, sendingEmployee = sendingEmployee, type = type)
       )
 
-   fun exists(id: Long): Boolean =
+   override fun exists(id: Long): Boolean =
       notificationRepository.exists(id = id)
 
    fun create(dto: NotificationDto): NotificationDto {

@@ -16,4 +16,12 @@ interface IdentifiableService<DTO> {
     * @return DTO an instance of that DTO or null if it was unable to be located
     */
    fun fetchById(id: Long): DTO?
+
+   /**
+    * search for the DTO via some underlying mechanism by an ID defined as a Long
+    *
+    * @param id the ID of the DTO to be searched for
+    * @return Boolean with true if a DTO could be found using the provided ID or false if it could not
+    */
+   fun exists(id: Long): Boolean
 }
