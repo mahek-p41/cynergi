@@ -140,5 +140,41 @@ CREATE TRIGGER update_company_module_access_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 INSERT INTO menu(name, literal) VALUES ('AP', 'Accounts Payable');
+INSERT INTO module(name, literal, menu_id) VALUES ('APADD', 'Add Vendor Invoices', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APCHG', 'Change Vendor Invoices', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APDEL', 'Delete Vendor Invoices', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APSTATUS', 'Display Vendor Status', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APUTIL', 'File Maintenance', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APRECUR', 'Frequent/Recurring Entries', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APGLRPT', 'General Ledger Interface', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APCHKLST', 'List Checks', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APLST', 'List Vendor Invoices', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APCHECK', 'Print Checks', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APREPORT', 'Reports Menu', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APSEL', 'Select Invoices By Vendor', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APSELDUE', 'Select Invoices By Due Date', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APSHO', 'Show Vendor Invoices', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APVOID', 'Void Checks', (SELECT id FROM menu WHERE name = 'AP'));
+INSERT INTO module(name, literal, menu_id) VALUES ('PRTAPDST', 'Print Distribution Template', (SELECT id FROM menu WHERE name = 'AP'));
+
 INSERT INTO menu(name, literal) VALUES ('APRECUR', 'Accounts Payable - Add a Recurring Entry');
+INSERT INTO module(name, literal, menu_id) VALUES ('ADDAPREC', 'Add a Recurring Entry', (SELECT id FROM menu WHERE name = 'APRECUR'));
+INSERT INTO module(name, literal, menu_id) VALUES ('CHGAPREC', 'Change a Recurring Entry', (SELECT id FROM menu WHERE name = 'APRECUR'));
+INSERT INTO module(name, literal, menu_id) VALUES ('DELAPREC', 'Delete a Recurring Entry', (SELECT id FROM menu WHERE name = 'APRECUR'));
+INSERT INTO module(name, literal, menu_id) VALUES ('LSTAPREC', 'List Recurring Entries', (SELECT id FROM menu WHERE name = 'APRECUR'));
+INSERT INTO module(name, literal, menu_id) VALUES ('PRTAPREC', 'Print Recurring Entry Report', (SELECT id FROM menu WHERE name = 'APRECUR'));
+INSERT INTO module(name, literal, menu_id) VALUES ('SHOAPREC', 'Show a Recurring Entry', (SELECT id FROM menu WHERE name = 'APRECUR'));
+INSERT INTO module(name, literal, menu_id) VALUES ('TRNAPREC', 'Transfer Recurring Entries', (SELECT id FROM menu WHERE name = 'APRECUR'));
+
 INSERT INTO menu(name, literal) VALUES ('APREPORT', 'Accounts Payable - Aging Report');
+INSERT INTO module(name, literal, menu_id) VALUES ('APAGERPT', 'Aging Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('FLOWANAL', 'Cash Flow Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APCHKRPT', 'Check Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APEXPENS', 'Expense Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APRPT', 'Invoice Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APPREVUE', 'Preview Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('CASHOUT', 'Requirements Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APTRLBAL', 'Trial Balance Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('AP1099', 'Vendor 1099''s', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('APUNDO', 'Account Maintenance', (SELECT id FROM menu WHERE name = 'APREPORT'));
+INSERT INTO module(name, literal, menu_id) VALUES ('FLOWANAL', 'Cash Flow Report', (SELECT id FROM menu WHERE name = 'APREPORT'));
