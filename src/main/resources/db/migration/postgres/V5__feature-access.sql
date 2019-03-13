@@ -96,7 +96,8 @@ CREATE TABLE department (
    time_created TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    name         TEXT                                   NOT NULL,
-   level        NUMERIC(2)                             NOT NULL
+   level        NUMERIC(2)                             NOT NULL,
+   company_id   BIGINT REFERENCES company(id)          NOT NULL
 );
 CREATE TRIGGER update_department_trg
    BEFORE UPDATE
@@ -113,8 +114,7 @@ CREATE TABLE employee ( -- TODO convert to a view in the cynergi-data-migration 
    password      VARCHAR(8)                             NOT NULL,
    first_name    TEXT                                   NOT NULL,
    last_name     TEXT                                   NOT NULL,
-   department_id BIGINT REFERENCES department(id)       NOT NULL,
-   company_id    BIGINT REFERENCES company(id)          NOT NULL
+   department_id BIGINT REFERENCES department(id)       NOT NULL
 );
 CREATE TRIGGER update_employee_trg
    BEFORE UPDATE
@@ -123,7 +123,6 @@ CREATE TRIGGER update_employee_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 CREATE INDEX employee_username_password_idx ON employee(user_id, password);
 CREATE INDEX employee_department_idx ON employee(department_id);
-CREATE INDEX employee_company_idx ON employee(company_id);
 
 CREATE TABLE company_module_access (
    id           BIGSERIAL                              NOT NULL PRIMARY KEY,

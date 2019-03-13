@@ -22,7 +22,7 @@ class VerificationService @Inject constructor(
    fun fetchByCustomerAccount(customerAccount: String): VerificationDto? =
       verificationRepository.findByCustomerAccount(customerAccount = customerAccount)?.let { VerificationDto(entity = it) }
 
-   fun exists(id: Long): Boolean =
+   override fun exists(id: Long): Boolean =
       verificationRepository.exists(id = id)
 
    fun exists(customerAccount: String): Boolean =

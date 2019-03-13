@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Area
+import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
@@ -121,8 +122,12 @@ class AreaRepository @Inject constructor(
       )
    }
 
-   fun findAreasByLevel(level: Int): List<Area> {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   fun findAreasByLevelAndCompany(level: Int, company: Company): List<Area> {
+      val areas = mutableListOf<Area>()
+
+
+
+      return areas
    }
 }
 
