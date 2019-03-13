@@ -17,7 +17,7 @@ class EmployeeTestDataLoader {
       final int value = number > 0 ? number : 1
       final Faker faker = new Faker()
       final Department employeeDepartment = department ?: DepartmentTestDataLoader.single()
-      final Company employeeCompany = company ?: CompanyTestDataLoader.single()
+      final Company employeeCompany = company ?: CompanyTestDataLoader.single(null)
       final name = faker.name()
       final lorem = faker.lorem()
 
@@ -57,7 +57,7 @@ class EmployeeDataLoaderService {
 
    Stream<Employee> stream(int number = 1, Department department = null, Company company = null) {
       final Department employeeDepartment = department != null ? department : departmentDataLoaderService.single()
-      final Company employeeCompany = company != null ? company : companyDataLoaderService.single()
+      final Company employeeCompany = company != null ? company : companyDataLoaderService.single(null)
 
       return EmployeeTestDataLoader.stream(number, employeeDepartment, employeeCompany)
          .map {
