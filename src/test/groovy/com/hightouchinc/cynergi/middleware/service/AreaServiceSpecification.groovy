@@ -1,25 +1,19 @@
 package com.hightouchinc.cynergi.middleware.service
 
 import com.hightouchinc.cynergi.middleware.service.spi.ServiceSpecificationBase
-import com.hightouchinc.cynergi.test.data.loader.AreaDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.CompanyDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.CompanyModuleAccessDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.DepartmentDataLoaderService
 import com.hightouchinc.cynergi.test.data.loader.EmployeeDataLoaderService
-import com.hightouchinc.cynergi.test.data.loader.MenuDataLoaderService
-import com.hightouchinc.cynergi.test.data.loader.ModuleDataLoaderService
 
 import static java.util.stream.Collectors.toList
 
 class AreaServiceSpecification extends ServiceSpecificationBase {
    final def areaService = applicationContext.getBean(AreaService)
-   final def areaDataLoaderService = applicationContext.getBean(AreaDataLoaderService)
    final def companyDataLoaderService = applicationContext.getBean(CompanyDataLoaderService)
    final def companyModuleAccessService = applicationContext.getBean(CompanyModuleAccessDataLoaderService)
    final def departmentDataLoaderService = applicationContext.getBean(DepartmentDataLoaderService)
    final def employeeDataLoaderService = applicationContext.getBean(EmployeeDataLoaderService)
-   final def menuDataLoaderService = applicationContext.getBean(MenuDataLoaderService)
-   final def moduleDataLoaderService = applicationContext.getBean(ModuleDataLoaderService)
 
    void "test with area level 10 and module level 10" () {
       given:

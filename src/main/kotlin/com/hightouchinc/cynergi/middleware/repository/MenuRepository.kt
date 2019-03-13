@@ -4,8 +4,6 @@ import com.hightouchinc.cynergi.middleware.entity.Menu
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
-import com.hightouchinc.cynergi.middleware.extensions.insertReturning
-import com.hightouchinc.cynergi.middleware.extensions.updateReturning
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -18,7 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class MenuRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<Menu> {
+) : TypeDomainRepository<Menu> {
    private val logger: Logger = LoggerFactory.getLogger(MenuRepository::class.java)
    private val simpleMenuRowMapper = MenuRowMapper()
 
@@ -30,51 +28,17 @@ class MenuRepository @Inject constructor(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM menu WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   override fun findOne(value: String): Menu? {
+      val found = jdbc.findFirstOrNull("SELECT * FROM menu WHERE name = :name", mapOf("name" to value), simpleMenuRowMapper)
 
-      logger.trace("Checking if Menu: {} exists resulted in {}", id, exists)
+      logger.trace("Search for Module: {} resulted in {}", value, found)
 
-      return exists
+      return found
    }
 
-   override fun insert(entity: Menu): Menu {
-      logger.debug("Inserting menu {}", entity)
+   override fun findAll(): List<Menu> =
+      jdbc.query("SELECT * FROM menu", emptyMap<String, Any>(), simpleMenuRowMapper)
 
-      return jdbc.insertReturning("""
-         INSERT INTO menu(name, literal)
-         VALUES (:name, :literal)
-         RETURNING
-            *
-         """.trimIndent(),
-         mapOf(
-            "name" to entity.name,
-            "literal" to entity.literal
-         ),
-         simpleMenuRowMapper
-      )
-   }
-
-   override fun update(entity: Menu): Menu {
-      logger.debug("Updating menu {}", entity)
-
-      return jdbc.updateReturning("""
-         UPDATE menu
-         SET
-            name = :name,
-            literal = :literal
-         WHERE id = :id
-         RETURNING
-            *
-         """.trimIndent(),
-         mapOf(
-            "id" to entity.id!!,
-            "name" to entity.name,
-            "literal" to entity.literal
-         ),
-         simpleMenuRowMapper
-      )
-   }
 }
 
 private class MenuRowMapper(

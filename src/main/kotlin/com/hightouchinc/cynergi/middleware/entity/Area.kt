@@ -24,16 +24,14 @@ data class Area (
    val timeUpdated: OffsetDateTime = timeCreated,
    val company: IdentifiableEntity,
    val menu: IdentifiableEntity,
-   val literal: String,
    val level: Int
 ) : Entity<Area> {
 
-   constructor(company: Company, menu: Menu, literal: String, level: Int) :
+   constructor(company: Company, menu: Menu, level: Int) :
       this(
          id = null,
          company = company,
          menu = menu,
-         literal = literal,
          level = level
       )
 
@@ -42,7 +40,6 @@ data class Area (
          id = dto.id,
          company = SimpleIdentifiableEntity(id = companyId),
          menu = SimpleIdentifiableEntity(dto.menu!!),
-         literal = dto.literal!!,
          level = dto.level!!
       )
 
@@ -59,9 +56,6 @@ data class AreaDto (
 
    @field:NotNull(message = NOT_NULL)
    var menu: IdentifiableDto? = null,
-
-   @field:NotNull(message = NOT_NULL)
-   var literal: String? = null,
 
    @field:NotNull(message = NOT_NULL)
    @field:Min(1, message = MIN)

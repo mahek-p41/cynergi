@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Area
 import com.hightouchinc.cynergi.middleware.entity.Company
+import com.hightouchinc.cynergi.middleware.entity.Menu
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
@@ -81,15 +82,14 @@ class AreaRepository @Inject constructor(
       logger.debug("Inserting area {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO area(company_id, menu_id, literal, level)
-         VALUES (:company_id, :menu_id, :literal, :level)
+         INSERT INTO area(company_id, menu_id, level)
+         VALUES (:company_id, :menu_id, :level)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "company_id" to entity.company.entityId(),
             "menu_id" to entity.menu.entityId(),
-            "literal" to entity.literal,
             "level" to entity.level
          ),
          simpleAreaRowMapper
@@ -105,7 +105,6 @@ class AreaRepository @Inject constructor(
          SET
             company_id = :company_id,
             menu_id = :menu_id,
-            literal = :literal,
             level = :level
          WHERE id = :id
          RETURNING
@@ -115,7 +114,6 @@ class AreaRepository @Inject constructor(
             "id" to entity.id!!,
             "company_id" to entity.company.entityId(),
             "menu_id" to entity.menu.entityId(),
-            "literal" to entity.literal,
             "level" to entity.level
          ),
          simpleAreaRowMapper
@@ -128,6 +126,16 @@ class AreaRepository @Inject constructor(
 
 
       return areas
+   }
+
+   fun associate(menu: Menu, company: Company, level: Int): Area {
+      return insert(
+         Area(
+            company = company,
+            menu = menu,
+            level = level
+         )
+      )
    }
 }
 
@@ -142,7 +150,6 @@ private class AreaRowMapper(
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company_id")),
          menu = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}menu_id")),
-         literal = rs.getString("${columnPrefix}literal"),
          level = rs.getInt("${columnPrefix}level")
       )
 }
