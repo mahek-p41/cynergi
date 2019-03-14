@@ -1,6 +1,8 @@
 package com.hightouchinc.cynergi.middleware.repository
 
+import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.entity.CompanyModuleAccess
+import com.hightouchinc.cynergi.middleware.entity.Module
 import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
@@ -82,6 +84,23 @@ class CompanyModuleAccessRepository @Inject constructor(
          simpleCompanyModuleAccessRowMapper
       )
    }
+
+   @Transactional
+   fun associate(module: Module, company: Company, level: Int): CompanyModuleAccess =
+      insert(
+         CompanyModuleAccess(
+            level = level,
+            company = company,
+            module = module
+         )
+      )
+
+   @Transactional
+   fun associate(company: Company, vararg moduleLevels: Pair<Module, Int>): List<CompanyModuleAccess> =
+      moduleLevels
+         .asSequence()
+         .map { associate(company = company, module = it.first, level = it.second) }
+         .toList()
 }
 
 private class CompanyModuleAccessRowMapper(
