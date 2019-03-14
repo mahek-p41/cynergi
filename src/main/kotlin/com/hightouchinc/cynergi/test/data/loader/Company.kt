@@ -27,7 +27,7 @@ object CompanyTestDataLoader {
    }
 
    @JvmStatic
-   fun single(organizationIn: Organization?): Company {
+   fun single(organizationIn: Organization? = null): Company {
       return stream(organizationIn = organizationIn).findFirst().orElseThrow { Exception("Unable to create Company") }
    }
 }
@@ -46,7 +46,7 @@ class CompanyDataLoaderService(
          .map { companyRepository.insert(it) }
    }
 
-   fun single(organizationIn: Organization?): Company {
+   fun single(organizationIn: Organization? = null): Company {
       return stream(organizationIn = organizationIn).findFirst().orElseThrow { Exception("Unable to create Company") }
    }
 }

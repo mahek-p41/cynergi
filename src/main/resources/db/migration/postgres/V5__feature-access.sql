@@ -130,7 +130,8 @@ CREATE TABLE company_module_access (
    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
    level        NUMERIC(2)                             NOT NULL,
    company_id   BIGINT REFERENCES company(id)          NOT NULL,
-   module_id    BIGINT REFERENCES module(id)           NOT NULL
+   module_id    BIGINT REFERENCES module(id)           NOT NULL,
+   UNIQUE (company_id, module_id)
 );
 CREATE TRIGGER update_company_module_access_trg
    BEFORE UPDATE
