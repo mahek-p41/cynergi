@@ -53,4 +53,15 @@ class CompanyModuleAccessDataLoaderService(
    fun single(levelIn: Int = 10, companyIn: Company? = null, moduleIn: Module? = null): CompanyModuleAccess {
       return stream(levelIn = levelIn, companyIn = companyIn, moduleIn = moduleIn).findFirst().orElseThrow { Exception("Unable to create CompanyModuleAccess") }
    }
+
+   fun associate(companyIn: Company? = null, moduleLevels: List<Pair<String, Int>>): List<CompanyModuleAccess> {
+      val company = companyIn ?: companyDataLoaderService.single()
+
+      return moduleLevels
+         .asSequence()
+         .map { moduleService.findByName(it.first) to it.second }
+         .filter { it.first != null }
+         .map { companyModuleAccessRepository.associate(module = it.first!!, company = company, level = it.second) }
+         .toList()
+   }
 }

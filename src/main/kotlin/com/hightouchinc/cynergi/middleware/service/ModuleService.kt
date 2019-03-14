@@ -10,6 +10,10 @@ import javax.inject.Singleton
 class ModuleService @Inject constructor(
    val moduleRepository: ModuleRepository
 ) {
+
+   fun findByName(name: String): Module? =
+      moduleRepository.findOne(value = name)
+
    fun randomModule(): Module {
       val modules = moduleRepository.findAll()
       val random: Int = RandomUtils.nextInt(0, modules.size)
