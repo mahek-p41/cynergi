@@ -1,7 +1,6 @@
 package com.hightouchinc.cynergi.test.data.loader
 
 import com.github.javafaker.Faker
-import com.hightouchinc.cynergi.middleware.entity.Company
 import com.hightouchinc.cynergi.middleware.entity.Department
 import com.hightouchinc.cynergi.middleware.entity.Employee
 import com.hightouchinc.cynergi.middleware.repository.EmployeeRepository
@@ -13,11 +12,10 @@ import java.util.stream.Stream
 
 @CompileStatic
 class EmployeeTestDataLoader {
-   static Stream<Employee> stream(int number = 1, Department department = null, Company company = null) {
+   static Stream<Employee> stream(int number = 1, Department department = null) {
       final int value = number > 0 ? number : 1
       final Faker faker = new Faker()
       final Department employeeDepartment = department ?: DepartmentTestDataLoader.single()
-      final Company employeeCompany = company ?: CompanyTestDataLoader.single(null)
       final name = faker.name()
       final lorem = faker.lorem()
 
@@ -27,45 +25,40 @@ class EmployeeTestDataLoader {
             lorem.characters(2, 8),
             name.firstName(),
             name.lastName(),
-            employeeDepartment,
-            employeeCompany
+            employeeDepartment
          )
       }
    }
 
-   static Employee single(Department department = null, Company company = null) {
-      return stream(1, department, company).findFirst().orElseThrow { new Exception("Unable to create Employee") }
+   static Employee single(Department department = null) {
+      return stream(1, department).findFirst().orElseThrow { new Exception("Unable to create Employee") }
    }
 }
 
 @Singleton
 @CompileStatic
 class EmployeeDataLoaderService {
-   private final CompanyDataLoaderService companyDataLoaderService
    private final DepartmentDataLoaderService departmentDataLoaderService
    private final EmployeeRepository employeeRepository
 
    EmployeeDataLoaderService(
-      CompanyDataLoaderService companyDataLoaderService,
       DepartmentDataLoaderService departmentDataLoaderService,
       EmployeeRepository employeeRepository
    ) {
-      this.companyDataLoaderService = companyDataLoaderService
       this.departmentDataLoaderService = departmentDataLoaderService
       this.employeeRepository = employeeRepository
    }
 
-   Stream<Employee> stream(int number = 1, Department department = null, Company company = null) {
+   Stream<Employee> stream(int number = 1, Department department = null) {
       final Department employeeDepartment = department != null ? department : departmentDataLoaderService.single()
-      final Company employeeCompany = company != null ? company : companyDataLoaderService.single(null)
 
-      return EmployeeTestDataLoader.stream(number, employeeDepartment, employeeCompany)
+      return EmployeeTestDataLoader.stream(number, employeeDepartment)
          .map {
             employeeRepository.insert(it)
          }
    }
 
-   Employee single(Department department = null, Company company = null) {
-      return stream(1, department, company).findFirst().orElseThrow { new Exception("Unable to create Employee") }
+   Employee single(Department department = null) {
+      return stream(1, department).findFirst().orElseThrow { new Exception("Unable to create Employee") }
    }
 }

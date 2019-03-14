@@ -21,6 +21,7 @@ class ModuleRepository @Inject constructor(
 ) : TypeDomainRepository<Module> {
    private val logger: Logger = LoggerFactory.getLogger(ModuleRepository::class.java)
    private val simpleModuleRowMapper = ModuleRowMapper()
+   private val prefixedModuleRowMapper = ModuleRowMapper("mod_")
 
    override fun findOne(id: Long): Module? {
       val found = jdbc.findFirstOrNull("SELECT * FROM module WHERE id = :id", mapOf("id" to id), simpleModuleRowMapper)
@@ -43,6 +44,9 @@ class ModuleRepository @Inject constructor(
 
    fun findAllAssociatedWithMenu(menu: Menu): List<Module> =
       jdbc.query("SELECT * FROM module WHERE menu_id = :menu_id", mapOf("menu_id" to menu.id), simpleModuleRowMapper)
+
+   fun mapRow(rs: ResultSet, row: Int = 0): Module? =
+      rs.getString("mod_id")?.let { prefixedModuleRowMapper.mapRow(rs, row) }
 }
 
 private class ModuleRowMapper(
