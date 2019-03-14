@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AreaValidator @Inject constructor(
+class MenuValidator @Inject constructor(
    private val companyService: CompanyService,
    private val employeeService: EmployeeService
 ) {

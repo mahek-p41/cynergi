@@ -25,41 +25,6 @@ class AreaRepository @Inject constructor(
 ) : Repository<Area> {
    private val logger: Logger = LoggerFactory.getLogger(AreaRepository::class.java)
    private val simpleAreaRowMapper = AreaRowMapper()
-   private val areaLevelQuery = """
-       SELECT
-          a.id AS a_id,
-          a.uu_row_id AS a_uu_row_id,
-          a.time_created AS a_time_created,
-          a.time_updated AS a_time_updated,
-          a.level AS a_level,
-          m.id AS m_id,
-          m.uu_row_id AS m_uu_row_id,
-          m.time_created AS m_time_created,
-          m.time_updated AS m_time_updated,
-          m.name AS m_name,
-          m.literal AS m_literal,
-          mod.id AS mod_id,
-          mod.uu_row_id AS mod_uu_row_id,
-          mod.time_created AS mod_time_created,
-          mod.time_updated AS mod_time_updated,
-          mod.name AS mod_name,
-          mod.literal AS mod_literal,
-          cma.id AS cma_id,
-          cma.uu_row_id AS cma_uu_row_id,
-          cma.time_created AS cma_time_created,
-          cma.time_updated AS cma_time_updated,
-          cma.level AS cma_level
-       FROM area a
-          JOIN menu m
-            ON a.menu_id = m.id
-          JOIN module mod
-             ON m.id = mod.menu_id
-          JOIN company_module_access cma
-             ON mod.id = cma.module_id
-       WHERE :level >= a.level
-          AND :level >= cma.level
-          AND a.company_id = :company_id
-   """.trimIndent()
 
    override fun findOne(id: Long): Area? {
       val found = jdbc.findFirstOrNull("SELECT * FROM area WHERE id = :id", mapOf("id" to id), simpleAreaRowMapper)
@@ -118,14 +83,6 @@ class AreaRepository @Inject constructor(
          ),
          simpleAreaRowMapper
       )
-   }
-
-   fun findAreasByLevelAndCompany(level: Int, company: Company): List<Area> {
-      val areas = mutableListOf<Area>()
-
-
-
-      return areas
    }
 
    fun associate(menu: Menu, company: Company, level: Int): Area {

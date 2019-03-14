@@ -75,7 +75,7 @@ class DemoDataLoader @Inject constructor(
       logger.info("Setting up APREPORT for {}", company)
       val apreportMenu = menuRepository.findOne("APREPORT")!!
       moduleRepository.findAllAssociatedWithMenu(apreportMenu)
-      areaRepository.associate(aprecurMenu, company, 2)
+      areaRepository.associate(apreportMenu, company, 2)
       companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
          "APAGERPT" to 10,
          "FLOWANAL" to 10,
