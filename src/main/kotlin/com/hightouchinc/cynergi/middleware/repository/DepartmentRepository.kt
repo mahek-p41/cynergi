@@ -1,6 +1,7 @@
 package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.Department
+import com.hightouchinc.cynergi.middleware.entity.helper.SimpleIdentifiableEntity
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
@@ -44,14 +45,15 @@ class DepartmentRepository @Inject constructor(
       logger.debug("Inserting department {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO department(name, level)
-         VALUES (:name, :level)
+         INSERT INTO department(name, level, company_id)
+         VALUES (:name, :level, :company_id)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "name" to entity.name,
-            "level" to entity.level
+            "level" to entity.level,
+            "company_id" to entity.company.entityId()!!
          ),
          simpleDepartmentRowMapper
       )
@@ -65,13 +67,17 @@ class DepartmentRepository @Inject constructor(
          UPDATE department
          SET
             name = :name,
-            level = :level
+            level = :level,
+            company_id = :company_id
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id!!
+            "id" to entity.id!!,
+            "name" to entity.name,
+            "level" to entity.level,
+            "company_id" to entity.company.entityId()!!
          ),
          simpleDepartmentRowMapper
       )
@@ -88,6 +94,7 @@ private class DepartmentRowMapper(
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          name = rs.getString("${columnPrefix}name"),
-         level = rs.getInt("${columnPrefix}level")
+         level = rs.getInt("${columnPrefix}level"),
+         company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company_id"))
       )
 }

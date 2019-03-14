@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.authentication
 
 import com.nimbusds.jwt.JWTClaimsSet
 import io.micronaut.context.annotation.Replaces
+import io.micronaut.context.annotation.Requires
 import io.micronaut.security.authentication.UserDetails
 import io.micronaut.security.token.config.TokenConfiguration
 import io.micronaut.security.token.jwt.generator.claims.ClaimsAudienceProvider
@@ -11,6 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 @Replaces(JWTClaimsSetGenerator::class)
+@Requires(env = ["local", "prod", "demo"])
 class CynergiCustomJwtClaimsSetGenerator(
    tokenConfiguration: TokenConfiguration?,
    jwtIdGenerator: JwtIdGenerator?,

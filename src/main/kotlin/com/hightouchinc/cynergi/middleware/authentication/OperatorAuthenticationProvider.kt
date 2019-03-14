@@ -13,7 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@Requires(env = ["local", "prod"])
+@Requires(env = ["local", "prod", "demo"])
 class OperatorAuthenticationProvider @Inject constructor(
    private val authenticationService: AuthenticationService
 ) : AuthenticationProvider {

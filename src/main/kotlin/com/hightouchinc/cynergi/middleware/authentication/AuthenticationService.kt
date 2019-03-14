@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@Requires(env = ["local", "prod"])
+@Requires(env = ["local", "prod", "demo"])
 class AuthenticationService @Inject constructor(
    private val client: PgPool,
    private val tokenConfiguration: TokenConfiguration
