@@ -1,7 +1,10 @@
 package com.hightouchinc.cynergi.test.data.loader
 
+import com.hightouchinc.cynergi.middleware.entity.Department
+import com.hightouchinc.cynergi.middleware.entity.Employee
 import com.hightouchinc.cynergi.middleware.repository.AreaRepository
-import com.hightouchinc.cynergi.middleware.repository.CompanyModuleAccessRepository
+import com.hightouchinc.cynergi.middleware.repository.DepartmentRepository
+import com.hightouchinc.cynergi.middleware.repository.EmployeeRepository
 import com.hightouchinc.cynergi.middleware.repository.MenuRepository
 import com.hightouchinc.cynergi.middleware.repository.ModuleRepository
 import io.micronaut.context.annotation.Requires
@@ -18,6 +21,8 @@ class DemoDataLoader @Inject constructor(
    private val areaRepository: AreaRepository,
    private val companyModuleAccessDataLoaderService: CompanyModuleAccessDataLoaderService,
    private val companyDataLoaderService: CompanyDataLoaderService,
+   private val departmentRepository: DepartmentRepository,
+   private val employeeRepository: EmployeeRepository,
    private val menuRepository: MenuRepository,
    private val moduleRepository: ModuleRepository,
    private val organizationDataLoaderService: OrganizationDataLoaderService
@@ -26,15 +31,15 @@ class DemoDataLoader @Inject constructor(
 
    override fun onApplicationEvent(event: ServerStartupEvent?) {
       logger.info("Creating demo data")
-
+10
       val organization = organizationDataLoaderService.single()
       val company = companyDataLoaderService.single(organization)
 
       logger.info("Setting up AP for {}", company)
       val apMenu = menuRepository.findOne("AP")!!
-      val apModules = moduleRepository.findAllAssociatedWithMenu(apMenu)
-      val apArea = areaRepository.associate(apMenu, company, 2)
-      val apCompanyModules = companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
+      moduleRepository.findAllAssociatedWithMenu(apMenu)
+      areaRepository.associate(apMenu, company, 2)
+      companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
          "APADD" to 10,
          "APCHG" to 30,
          "APDEL" to 30,
@@ -55,9 +60,9 @@ class DemoDataLoader @Inject constructor(
 
       logger.info("Setting up APRECR for {}", company)
       val aprecurMenu = menuRepository.findOne("APRECUR")!!
-      val aprecurModules = moduleRepository.findAllAssociatedWithMenu(aprecurMenu)
-      val aprecurArea = areaRepository.associate(aprecurMenu, company, 2)
-      val aprecurCompanyModules = companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
+      moduleRepository.findAllAssociatedWithMenu(aprecurMenu)
+      areaRepository.associate(aprecurMenu, company, 2)
+      companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
          "ADDAPREC" to 10,
          "CHGAPREC" to 30,
          "DELAPREC" to 40,
@@ -69,9 +74,9 @@ class DemoDataLoader @Inject constructor(
 
       logger.info("Setting up APREPORT for {}", company)
       val apreportMenu = menuRepository.findOne("APREPORT")!!
-      val apreportModules = moduleRepository.findAllAssociatedWithMenu(apreportMenu)
-      val apreportArea = areaRepository.associate(aprecurMenu, company, 2)
-      val apreportCompanyModules = companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
+      moduleRepository.findAllAssociatedWithMenu(apreportMenu)
+      areaRepository.associate(aprecurMenu, company, 2)
+      companyModuleAccessDataLoaderService.associate(companyIn = company, moduleLevels = listOf(
          "APAGERPT" to 10,
          "FLOWANAL" to 10,
          "APCHKRPT" to 20,
@@ -84,6 +89,17 @@ class DemoDataLoader @Inject constructor(
          "APUNDO" to 10
       ))
 
+      val department10 = departmentRepository.insert(Department("Department 10", 10, company))
+      val department20 = departmentRepository.insert(Department("Department 20", 20, company))
+      val department30 = departmentRepository.insert(Department("Department 30", 30, company))
+      val department40 = departmentRepository.insert(Department("Department 40", 40, company))
+      val department60 = departmentRepository.insert(Department("Department 60", 60, company))
+
+      employeeRepository.insert(Employee(userId = "employ10", password = "10", firstName = "Employee", lastName = "Ten", department = department10))
+      employeeRepository.insert(Employee(userId = "employ20", password = "20", firstName = "Employee", lastName = "Twenty", department = department20))
+      employeeRepository.insert(Employee(userId = "employ30", password = "30", firstName = "Employee", lastName = "Thirty", department = department30))
+      employeeRepository.insert(Employee(userId = "employ40", password = "40", firstName = "Employee", lastName = "Forty", department = department40))
+      employeeRepository.insert(Employee(userId = "employ60", password = "60", firstName = "Employee", lastName = "Sixty", department = department60))
 
       logger.info("Finished creating demo data")
    }

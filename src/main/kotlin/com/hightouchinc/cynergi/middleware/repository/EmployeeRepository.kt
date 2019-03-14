@@ -45,8 +45,8 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(user_id, password, first_name, last_name, department_id, company_id)
-         VALUES (:user_id, :password, :first_name, :last_name, :department_id, :company_id)
+         INSERT INTO employee(user_id, password, first_name, last_name, department_id)
+         VALUES (:user_id, :password, :first_name, :last_name, :department_id)
          RETURNING
             *
          """.trimIndent(),
@@ -55,8 +55,7 @@ class EmployeeRepository @Inject constructor(
             "password" to entity.password,
             "first_name" to entity.firstName,
             "last_name" to entity.lastName,
-            "department_id" to entity.department.entityId(),
-            "company_id" to entity.company.entityId()
+            "department_id" to entity.department.entityId()
          ),
          simpleEmployeeRowMapper
       )
@@ -73,8 +72,7 @@ class EmployeeRepository @Inject constructor(
             password = :password,
             first_name = :first_name,
             last_name = :last_name,,
-            department_id = :department_id,
-            company_id = :company_id
+            department_id = :department_id
          WHERE id = :id
          RETURNING
             *
@@ -85,8 +83,7 @@ class EmployeeRepository @Inject constructor(
             "password" to entity.password,
             "first_name" to entity.firstName,
             "last_name" to entity.lastName,
-            "department_id" to entity.department.entityId(),
-            "company_id" to entity.company.entityId()
+            "department_id" to entity.department.entityId()
          ),
          simpleEmployeeRowMapper
       )
@@ -106,7 +103,6 @@ private class EmployeeRowMapper(
          password = rs.getString("${columnPrefix}password"),
          firstName = rs.getString("${columnPrefix}first_name"),
          lastName = rs.getString("${columnPrefix}last_name"),
-         department = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}department_id")),
-         company = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}company_id"))
+         department = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}department_id"))
       )
 }

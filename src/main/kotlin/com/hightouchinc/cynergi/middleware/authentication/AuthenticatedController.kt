@@ -4,6 +4,7 @@ import com.hightouchinc.cynergi.middleware.dto.MessageDto
 import com.hightouchinc.cynergi.middleware.extensions.findLocaleWithDefault
 import com.hightouchinc.cynergi.middleware.localization.MessageCodes
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
+import io.micronaut.context.annotation.Requires
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -17,6 +18,7 @@ import javax.inject.Inject
 /**
  * This controller exists to give the framework some place to redirect AJAX requests to
  */
+@Requires(env = ["local", "prod", "demo"])
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
    private val localizationService: LocalizationService

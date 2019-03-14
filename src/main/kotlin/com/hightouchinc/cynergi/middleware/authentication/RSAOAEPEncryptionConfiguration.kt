@@ -21,8 +21,8 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-@Requires(env = ["local", "prod"])
 @Named("generator")
+@Requires(env = ["local", "prod", "demo"])
 class RSAOAEPEncryptionConfiguration @Inject constructor(
    resourceResolver: ResourceResolver,
    @Value("\${cynergi.security.jwt.pem.path}") pemPath: String

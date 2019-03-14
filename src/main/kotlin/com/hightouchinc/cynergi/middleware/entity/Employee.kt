@@ -24,29 +24,26 @@ data class Employee (
    val password: String,
    val firstName: String,
    val lastName: String,
-   val department: IdentifiableEntity,
-   val company: IdentifiableEntity
+   val department: IdentifiableEntity
 ) : Entity<Employee> {
 
-   constructor(userId: String, password: String, firstName: String, lastName: String, department: IdentifiableEntity, company: IdentifiableEntity) :
+   constructor(userId: String, password: String, firstName: String, lastName: String, department: Department) :
       this(
          id = null,
          userId = userId,
          password = password,
          firstName = firstName,
          lastName = lastName,
-         department = department,
-         company = company
+         department = department
       )
 
-   constructor(dto: EmployeeDto, company: IdentifiableDto, department: IdentifiableDto) :
+   constructor(dto: EmployeeDto, department: IdentifiableDto) :
       this(
          id = dto.id,
          userId = dto.userId!!,
          password = dto.password!!,
          firstName = dto.firstName!!,
          lastName = dto.lastName!!,
-         company = SimpleIdentifiableEntity(identifiableDto = company),
          department = SimpleIdentifiableEntity(identifiableDto = department)
       )
 
