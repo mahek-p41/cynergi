@@ -56,8 +56,8 @@ class MenuRepository @Inject constructor(
              ON m.id = mod.menu_id
           JOIN company_module_access cma
              ON mod.id = cma.module_id
-       WHERE :level >= a.level
-          AND :level >= cma.level
+       WHERE a.level <= :level
+          AND cma.level <= :level
           AND a.company_id = :company_id
        ORDER BY a_id, m_id, mod_id, cma_id
    """.trimIndent()

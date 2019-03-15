@@ -252,3 +252,4 @@ API is actually fulfilling that contract.
 * `npx yo cyn:migration new_table feature-new-stuff-cynXXX -a`
   * Will append the table skeleton described above to an already existing migration script rather than creating a new one
 * `TABLE_NAME=new_table bash -c 'npx yo cyn:entity $TABLE_NAME && npx yo cyn:controller $TABLE_NAME && npx yo cyn:migration $TABLE_NAME feature-new-stuff-cynXXX'`
+* `./gradlew clean assemble openApiGenerate`
