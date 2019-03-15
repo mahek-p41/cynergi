@@ -1,7 +1,7 @@
 package com.hightouchinc.cynergi.middleware.service
 
+import com.hightouchinc.cynergi.middleware.dto.AreaDto
 import com.hightouchinc.cynergi.middleware.entity.Area
-import com.hightouchinc.cynergi.middleware.entity.AreaDto
 import com.hightouchinc.cynergi.middleware.repository.AreaRepository
 import javax.inject.Inject
 import javax.inject.Singleton
