@@ -131,6 +131,8 @@ openApiGenerate {
    ]
 }
 
+tasks.openApiGenerate.dependsOn(compileKotlin)
+
 tasks.withType(JavaExec) {
    // Assign all Java system properties from
    // the command line to the JavaExec task.
