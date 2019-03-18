@@ -33,7 +33,7 @@ class VerificationLandlordTestDataLoader {
             phone.cellPhone(),
             lorem.characters(10),
             bool.bool(),
-            num.randomNumber(3, true).intValue(),
+            num.randomNumber(3, true).toString() + " " + lorem.characters(5),
             name.name(),
             lorem.characters(10),
             bool.bool(),

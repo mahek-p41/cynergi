@@ -131,7 +131,7 @@ private class VerificationLandlordRowMapper(
          altPhone = rs.getString("${rowPrefix}alt_phone"),
          leaseType = rs.getString("${rowPrefix}lease_type"),
          leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
-         length = rs.getInt("${rowPrefix}length"),
+         length = rs.getString("${rowPrefix}length"),
          name = rs.getString("${rowPrefix}name"),
          paidRent = rs.getString("${rowPrefix}paid_rent"),
          phone = rs.getBoolean("${rowPrefix}phone"),
