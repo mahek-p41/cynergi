@@ -2,7 +2,8 @@ package com.hightouchinc.cynergi.middleware.authentication
 
 import com.hightouchinc.cynergi.middleware.dto.MessageDto
 import com.hightouchinc.cynergi.middleware.extensions.findLocaleWithDefault
-import com.hightouchinc.cynergi.middleware.localization.MessageCodes
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.LOGGED_IN
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.NOT_LOGGED_IN
 import com.hightouchinc.cynergi.middleware.service.LocalizationService
 import io.micronaut.context.annotation.Requires
 import io.micronaut.http.HttpRequest
@@ -30,13 +31,13 @@ class AuthenticatedController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authentication != null) {
-         val message = localizationService.localize(MessageCodes.System.LOGGED_IN, locale, arrayOf(authentication.name))
+         val message = localizationService.localize(LOGGED_IN, locale, arrayOf(authentication.name))
 
          val cynergiAccessToken = httpRequest.cookies.findCookie("CAT").map { it.value }.orElse(null)
 
          HttpResponse.ok(mapOf("message" to message, "token" to cynergiAccessToken))
       } else {
-         val message = localizationService.localize(MessageCodes.System.NOT_LOGGED_IN, locale, emptyArray())
+         val message = localizationService.localize(NOT_LOGGED_IN, locale, emptyArray())
 
          HttpResponse.status<Any>(UNAUTHORIZED).body(MessageDto(message = message))
       }
