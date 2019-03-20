@@ -122,11 +122,11 @@ compileTestKotlin {
 }
 
 openApiGenerate {
-   generatorName = "typescript-axios"
+   generatorName = "typescript-fetch"
    inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
    validateSpec = false
    configOptions = [
-      npmName: "cynergi-axios-client",
+      npmName: "cynergi-fetch-client",
       npmVersion: "${cynergiRelease}"
    ]
 }
