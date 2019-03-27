@@ -31,7 +31,7 @@ class DemoDataLoader @Inject constructor(
 
    override fun onApplicationEvent(event: ServerStartupEvent?) {
       logger.info("Creating demo data")
-10
+
       val organization = organizationDataLoaderService.single()
       val company = companyDataLoaderService.single(organization)
 
