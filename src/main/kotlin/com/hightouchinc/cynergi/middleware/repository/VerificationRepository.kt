@@ -183,7 +183,7 @@ class VerificationRepository @Inject constructor(
       val auto = entity.auto?.let { verificationAutoRepository.insert(entity = it.copy(verification = inserted)) }
       val employment = entity.employment?.let { verificationEmploymentRepository.insert(entity = it.copy(verification = inserted)) }
       val landlord = entity.landlord?.let { verificationLandlordRepository.insert(entity = it.copy(verification = inserted)) }
-      val references = entity.references.asSequence().map { verificationReferenceRepository.insert(it.copy(verification = inserted)) }.toMutableSet()
+      val references = entity.references.asSequence().map { verificationReferenceRepository.insert(it.copy(verification = inserted)) }.toMutableList()
 
       return if (auto != null || employment != null || landlord != null || references.isNotEmpty()) {
          inserted.copy(auto = auto, employment = employment, landlord = landlord, references = references)
@@ -235,13 +235,13 @@ class VerificationRepository @Inject constructor(
       }
    }
 
-   private fun doReferenceUpdates(entity: Verification, updated: Verification): MutableSet<VerificationReference> {
+   private fun doReferenceUpdates(entity: Verification, updated: Verification): MutableList<VerificationReference> {
       return entity.references.asSequence()
          .map { verificationReferenceRepository.upsert(entity = it.copy(verification = updated)) }
-         .toMutableSet()
+         .toMutableList()
    }
 
-   private fun doReferenceDeletes(existing: Verification, references: MutableSet<VerificationReference>) {
+   private fun doReferenceDeletes(existing: Verification, references: MutableList<VerificationReference>) {
       val referencesToDelete = existing.references.asSequence().filter { !references.contains(it) }.toList()
 
       if (referencesToDelete.isNotEmpty()) {
