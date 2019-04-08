@@ -29,7 +29,7 @@ data class Verification(
    var auto: VerificationAuto? = null,
    var employment: VerificationEmployment? = null,
    var landlord: VerificationLandlord? = null,
-   val references: MutableSet<VerificationReference> = mutableSetOf()
+   val references: MutableList<VerificationReference> = mutableListOf()
 ) : Entity<Verification> {
    constructor(dto: VerificationDto, company: String) :
       this(
