@@ -38,7 +38,7 @@ class VerificationTestDataLoader {
             null,
             null,
             null,
-            new HashSet<VerificationReference>()
+            new ArrayList<VerificationReference>()
          )
 
          verification.auto = generateAuto ? VerificationAutoTestDataLoader.stream(1, verification).findFirst().orElseThrow { new Exception("Unable to create VerificationAuto") } : null as VerificationAuto
