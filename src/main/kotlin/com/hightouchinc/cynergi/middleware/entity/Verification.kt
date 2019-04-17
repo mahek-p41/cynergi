@@ -29,7 +29,7 @@ data class Verification(
    var auto: VerificationAuto? = null,
    var employment: VerificationEmployment? = null,
    var landlord: VerificationLandlord? = null,
-   val references: MutableSet<VerificationReference> = mutableSetOf()
+   val references: MutableList<VerificationReference> = mutableListOf()
 ) : Entity<Verification> {
    constructor(dto: VerificationDto, company: String) :
       this(
@@ -106,7 +106,7 @@ data class VerificationDto(
          auto = copyAutoEntityToDto(entity = entity),
          employment = copyEmploymentEntityToDto(entity = entity),
          landlord = copyLandlordEntityToDto(entity = entity),
-         references = entity.references.asSequence().map { VerificationReferenceDto(it) }.toMutableList()
+         references = entity.references.asSequence().map { VerificationReferenceDto(it) }.sortedBy { it.id }.toMutableList()
       )
 
    override fun copyMe(): VerificationDto = this.copy()

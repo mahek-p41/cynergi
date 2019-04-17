@@ -21,7 +21,7 @@ data class VerificationLandlord (
    val altPhone: String?,
    val leaseType: String?,
    val leaveMessage: Boolean?,
-   val length: Int?,
+   val length: String?,
    val name: String?,
    val paidRent: String?,
    val phone: Boolean?,
@@ -79,7 +79,7 @@ data class VerificationLandlordDto (
 
    @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
    @field:JsonProperty("land_length")
-   var length: Int?,
+   var length: String?,
 
    @field:Size(max = 50)
    @field:JsonProperty("land_name")
