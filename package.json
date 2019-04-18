@@ -17,7 +17,7 @@
     "chalk": "2.4.2",
     "pascal-case": "2.0.1",
     "yeoman-generator": "3.2.0",
-    "yo": "2.0.5",
+    "yo": "2.0.6",
     "yosay": "2.0.2"
   }
 }
