@@ -47,9 +47,7 @@ pipeline {
 
    post {
       always {
-         stage('Shutdown Postgres') {
-            sh 'docker-compose down && docker-compose rm -f'
-         }
+         sh 'docker-compose down && docker-compose rm -f'
       }
    }
 }
