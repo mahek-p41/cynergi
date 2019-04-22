@@ -1,7 +1,8 @@
 buildscript {
    repositories {
-      mavenLocal()
-      mavenCentral()
+      maven {
+         url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
+      }
    }
    dependencies {
       classpath "org.openapitools:openapi-generator-gradle-plugin:3.3.4"
@@ -28,8 +29,9 @@ group "com.hightouchinc.cynergi"
 
 repositories {
    mavenLocal()
-   mavenCentral()
-   maven { url "https://jcenter.bintray.com" }
+   maven {
+      url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
+   }   
 }
 
 dependencyManagement {
