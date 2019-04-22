@@ -23,7 +23,7 @@ plugins {
 
 apply plugin: 'org.openapi.generator'
 
-version "${cynergiRelease}"
+version "${releaseVersion}"
 group "com.hightouchinc.cynergi"
 
 repositories {
@@ -118,7 +118,7 @@ openApiGenerate {
    validateSpec = false
    configOptions = [
       npmName: "cynergi-axios-client",
-      npmVersion: "${cynergiRelease}"
+      npmVersion: "${releaseVersion}"
    ]
 }
 
@@ -137,7 +137,7 @@ jar {
          'HT-Created-By'     : "Gradle ${gradle.gradleVersion}",
          'HT-Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
          'HT-Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
-         'HT-App-Version'    : cynergiRelease
+         'HT-App-Version'    : releaseVersion
       )
    }
 }
