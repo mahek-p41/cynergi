@@ -23,7 +23,7 @@ class VerificationAutoRepository(
 ) : Repository<VerificationAuto> {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper()
-   private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(rowPrefix = "va_")
+   private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(columnPrefix = "va_")
 
    override fun findOne(id: Long): VerificationAuto? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto WHERE id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
@@ -149,33 +149,33 @@ class VerificationAutoRepository(
 }
 
 private class VerificationAutoRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationAuto> {
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationAuto =
       VerificationAuto(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         address = rs.getBoolean("${rowPrefix}address"),
-         comment = rs.getString("${rowPrefix}comment"),
-         dealerPhone = rs.getString("${rowPrefix}dealer_phone"),
-         diffAddress = rs.getString("${rowPrefix}diff_address"),
-         diffEmployee = rs.getString("${rowPrefix}diff_employee"),
-         diffPhone = rs.getString("${rowPrefix}diff_phone"),
-         dmvVerify = rs.getBoolean("${rowPrefix}dmv_verify"),
-         employer = rs.getBoolean("${rowPrefix}employer"),
-         lastPayment = rs.getLocalDateOrNull("${rowPrefix}last_payment"),
-         name = rs.getString("${rowPrefix}name"),
-         nextPayment = rs.getLocalDateOrNull("${rowPrefix}next_payment"),
-         note = rs.getString("${rowPrefix}note"),
-         paymentFrequency = rs.getString("${rowPrefix}payment_frequency"),
-         payment = rs.getBigDecimal("${rowPrefix}payment"),
-         pendingAction = rs.getString("${rowPrefix}pending_action"),
-         phone = rs.getBoolean("${rowPrefix}phone"),
-         previousLoan = rs.getBoolean("${rowPrefix}previous_loan"),
-         purchaseDate = rs.getLocalDateOrNull("${rowPrefix}purchase_date"),
-         related = rs.getString("${rowPrefix}related"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         address = rs.getBoolean("${columnPrefix}address"),
+         comment = rs.getString("${columnPrefix}comment"),
+         dealerPhone = rs.getString("${columnPrefix}dealer_phone"),
+         diffAddress = rs.getString("${columnPrefix}diff_address"),
+         diffEmployee = rs.getString("${columnPrefix}diff_employee"),
+         diffPhone = rs.getString("${columnPrefix}diff_phone"),
+         dmvVerify = rs.getBoolean("${columnPrefix}dmv_verify"),
+         employer = rs.getBoolean("${columnPrefix}employer"),
+         lastPayment = rs.getLocalDateOrNull("${columnPrefix}last_payment"),
+         name = rs.getString("${columnPrefix}name"),
+         nextPayment = rs.getLocalDateOrNull("${columnPrefix}next_payment"),
+         note = rs.getString("${columnPrefix}note"),
+         paymentFrequency = rs.getString("${columnPrefix}payment_frequency"),
+         payment = rs.getBigDecimal("${columnPrefix}payment"),
+         pendingAction = rs.getString("${columnPrefix}pending_action"),
+         phone = rs.getBoolean("${columnPrefix}phone"),
+         previousLoan = rs.getBoolean("${columnPrefix}previous_loan"),
+         purchaseDate = rs.getLocalDateOrNull("${columnPrefix}purchase_date"),
+         related = rs.getString("${columnPrefix}related"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

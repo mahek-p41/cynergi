@@ -22,7 +22,7 @@ class VerificationLandlordRepository(
 ) : Repository<VerificationLandlord> {
    private val logger: Logger = LoggerFactory.getLogger(VerificationLandlordRepository::class.java)
    private val simpleVerificationLandlordRowMapper = VerificationLandlordRowMapper()
-   private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(rowPrefix = "vl_")
+   private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(columnPrefix = "vl_")
 
    override fun findOne(id: Long): VerificationLandlord? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord WHERE id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
@@ -119,24 +119,24 @@ class VerificationLandlordRepository(
 }
 
 private class VerificationLandlordRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationLandlord> {
    override fun mapRow(rs: ResultSet, rowNum: Int): VerificationLandlord =
       VerificationLandlord(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         address = rs.getBoolean("${rowPrefix}address"),
-         altPhone = rs.getString("${rowPrefix}alt_phone"),
-         leaseType = rs.getString("${rowPrefix}lease_type"),
-         leaveMessage = rs.getBoolean("${rowPrefix}leave_message"),
-         length = rs.getString("${rowPrefix}length"),
-         name = rs.getString("${rowPrefix}name"),
-         paidRent = rs.getString("${rowPrefix}paid_rent"),
-         phone = rs.getBoolean("${rowPrefix}phone"),
-         reliable = rs.getBoolean("${rowPrefix}reliable"),
-         rent = rs.getBigDecimal("${rowPrefix}rent"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${rowPrefix}verification_id"))
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         address = rs.getBoolean("${columnPrefix}address"),
+         altPhone = rs.getString("${columnPrefix}alt_phone"),
+         leaseType = rs.getString("${columnPrefix}lease_type"),
+         leaveMessage = rs.getBoolean("${columnPrefix}leave_message"),
+         length = rs.getString("${columnPrefix}length"),
+         name = rs.getString("${columnPrefix}name"),
+         paidRent = rs.getString("${columnPrefix}paid_rent"),
+         phone = rs.getBoolean("${columnPrefix}phone"),
+         reliable = rs.getBoolean("${columnPrefix}reliable"),
+         rent = rs.getBigDecimal("${columnPrefix}rent"),
+         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

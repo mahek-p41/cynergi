@@ -1,7 +1,4 @@
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
-import ch.qos.logback.core.ConsoleAppender
-import ch.qos.logback.core.rolling.RollingFileAppender
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 
 import static ch.qos.logback.classic.Level.DEBUG
 import static ch.qos.logback.classic.Level.ERROR
@@ -34,7 +31,7 @@ if('prod'.equalsIgnoreCase(micrnautEnvironments)) {
    logger('com.hightouchinc', INFO)
 }
 
-if(micrnautEnvironments.contains('local') || appenders.isEmpty()) {
+if(micrnautEnvironments.contains('local') || micrnautEnvironments.contains('demo') || appenders.isEmpty()) {
    appender('STDOUT', ConsoleAppender) {
       encoder(PatternLayoutEncoder) {
          pattern = '%d{HH:mm:ss.SSS} %-5level %logger{10} - %msg%n'

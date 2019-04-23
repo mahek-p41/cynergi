@@ -2,11 +2,12 @@ package com.hightouchinc.cynergi.middleware.repository
 
 import com.hightouchinc.cynergi.middleware.entity.<%= entity %>
 import com.hightouchinc.cynergi.middleware.extensions.findFirstOrNull
-import com.hightouchinc.cynergi.middleware.extensions.getLocalDate
 import com.hightouchinc.cynergi.middleware.extensions.getOffsetDateTime
 import com.hightouchinc.cynergi.middleware.extensions.getUuid
 import com.hightouchinc.cynergi.middleware.extensions.insertReturning
 import com.hightouchinc.cynergi.middleware.extensions.updateReturning
+import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -38,6 +39,7 @@ class <%= entity %>Repository @Inject constructor(
       return exists
    }
 
+   @Transactional
    override fun insert(entity: <%= entity %>): <%= entity %> {
       logger.debug("Inserting <%= table %> {}", entity)
 
@@ -52,6 +54,7 @@ class <%= entity %>Repository @Inject constructor(
       )
    }
 
+   @Transactional
    override fun update(entity: <%= entity %>): <%= entity %> {
       logger.debug("Updating <%= table %> {}", entity)
 
@@ -64,19 +67,21 @@ class <%= entity %>Repository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id
+            "id" to entity.id!!
          ),
          simple<%= entity %>RowMapper
       )
    }
 }
 
-private class <%= entity %>RowMapper : RowMapper<<%= entity %>> {
+private class <%= entity %>RowMapper(
+   private val columnPrefix: String = EMPTY
+) : RowMapper<<%= entity %>> {
    override fun mapRow(rs: ResultSet, rowNum: Int): <%= entity %> =
       <%= entity %>(
-         id = rs.getLong("id"),
-         uuRowId = rs.getUUID("uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated")
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated")
       )
 }

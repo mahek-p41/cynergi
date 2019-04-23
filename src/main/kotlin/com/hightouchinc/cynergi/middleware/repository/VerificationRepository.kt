@@ -30,7 +30,7 @@ class VerificationRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VerificationRepository::class.java)
    private val simpleVerificationRowMapper: VerificationRowMapper = VerificationRowMapper()
    private val selectAllRowMapper: VerificationRowMapper = VerificationRowMapper(
-      rowPrefix = "v_",
+      columnPrefix = "v_",
       verificationAutoRepository = verificationAutoRepository,
       verificationEmploymentRepository = verificationEmploymentRepository,
       verificationLandlordRepository = verificationLandlordRepository
@@ -251,7 +251,7 @@ class VerificationRepository @Inject constructor(
 }
 
 private class VerificationRowMapper(
-   private val rowPrefix: String = StringUtils.EMPTY,
+   private val columnPrefix: String = StringUtils.EMPTY,
    private val verificationAutoRepository: VerificationAutoRepository? = null,
    private val verificationEmploymentRepository: VerificationEmploymentRepository? = null,
    private val verificationLandlordRepository: VerificationLandlordRepository? = null
@@ -262,15 +262,15 @@ private class VerificationRowMapper(
       val landlord = verificationLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)
 
       return Verification(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         customerAccount = rs.getString("${rowPrefix}customer_account"),
-         customerComments = rs.getString("${rowPrefix}customer_comments"),
-         verifiedBy = rs.getString("${rowPrefix}verified_by"),
-         verifiedTime = rs.getOffsetDateTime("${rowPrefix}verified_time"),
-         company = rs.getString("${rowPrefix}company"),
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         customerAccount = rs.getString("${columnPrefix}customer_account"),
+         customerComments = rs.getString("${columnPrefix}customer_comments"),
+         verifiedBy = rs.getString("${columnPrefix}verified_by"),
+         verifiedTime = rs.getOffsetDateTime("${columnPrefix}verified_time"),
+         company = rs.getString("${columnPrefix}company"),
          auto = auto,
          employment = employment,
          landlord = landlord

@@ -13,11 +13,11 @@ import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
 import static com.hightouchinc.cynergi.middleware.config.ExternalBeanFactory.DATE_PATTERN
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.END_DATE_BEFORE_START
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOTIFICATION_RECIPIENTS_ALL
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Cynergi.NOTIFICATION_RECIPIENTS_REQUIRED
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.System.NOT_FOUND
-import static com.hightouchinc.cynergi.middleware.validator.ErrorCodes.Validation.NOT_NULL
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.END_DATE_BEFORE_START
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.NOTIFICATION_RECIPIENTS_ALL
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.Cynergi.NOTIFICATION_RECIPIENTS_REQUIRED
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.System.NOT_FOUND
+import static com.hightouchinc.cynergi.middleware.localization.MessageCodes.Validation.NOT_NULL
 import static java.time.Month.FEBRUARY
 import static java.time.Month.JANUARY
 

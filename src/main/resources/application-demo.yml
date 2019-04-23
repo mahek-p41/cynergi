@@ -1,11 +1,63 @@
 micronaut:
    environment: demo
+   router:
+      static-resources:
+         swagger:
+            paths: classpath:META-INF/swagger
+            mapping: /swagger/**
+   security:
+      enabled: true
+      endpoints:
+         login:
+            enabled: true
+            path: /api/login
+         logout:
+            enabled: true
+            path: /api/logout
+      token:
+         jwt:
+            enabled: true
+            generator:
+               access-token-expiration: 43200 # 12 hours
+               refresh-token-expiration: 86400 # 24 hours
+            bearer:
+               enabled: false
+            cookie:
+               enabled: true
+               login-success-target-url: /api/authenticated
+               login-failure-target-url: /api/authenticated
+               logout-target-url: /api/authenticated
+               cookie-name: CAT
+            signatures:
+               secret:
+                  generator:
+                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
+                     jws-algorithm: HS256
+   views:
+      thymeleaf:
+         cacheable: false
+postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
+   reactive:
+      client:
+         port: 6432
+         host: localhost
+         database: cynergidemodb
+         user: postgres
+         password: password
+         maxSize: 1
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:5432/cynergidbdemo"
-      username: postgres
-      password: password
+      url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
+      username: "${postgres.reactive.client.user}"
+      password: "${postgres.reactive.client.password}"
+      maximumPoolSize: 1
 flyway:
    datasources:
       default:
          clean-disabled: false
+         clean-schema: true
+cynergi:
+   security:
+      jwt:
+         pem:
+            path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048

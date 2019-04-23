@@ -3,9 +3,51 @@ micronaut:
    server:
       port: 10900
       host: localhost
+   security:
+      enabled: true
+      endpoints:
+         login:
+            enabled: true
+            path: /api/login
+         logout:
+            enabled: true
+            path: /api/logout
+      token:
+         jwt:
+            enabled: true
+            generator:
+               access-token-expiration: 43200 # 12 hours
+               refresh-token-expiration: 86400 # 24 hours
+            bearer:
+               enabled: false
+            cookie:
+               enabled: true
+               login-success-target-url: /api/authenticated
+               login-failure-target-url: /api/authenticated
+               logout-target-url: /api/authenticated
+               cookie-name: CAT
+            signatures:
+               secret:
+                  generator:
+                     secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate
+                     jws-algorithm: HS256
+postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
+   reactive:
+      client:
+         port: 5432
+         host: localhost
+         database: cynergidb
+         user: cynergiuser
+         password: cynergiuser2019
+         maxSize: 10
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:5432/cynergidb"
+      url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
+      username: "${postgres.reactive.client.user}"
+      password: "${postgres.reactive.client.password}"
       maximumPoolSize: 10
-      username: cynergiuser
-      password: cynergiuser2019
+cynergi:
+   security:
+      jwt:
+         pem:
+            path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048

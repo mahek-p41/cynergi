@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="UTF-8">
+   <title>Login</title>
+   <style>
+      section.response-text b#successContent {
+         display: none;
+         color: green;
+      }
+
+      section.response-text b#failureContent {
+         display: none;
+         color: firebrick;
+      }
+   </style>
+</head>
+<body>
+<section class="main-content">
+   <form id="login" name="login">
+      <label for="username">Username:</label><input id="username" name="username" type="text">
+
+      <label for="password">Password:</label><input id="password" name="password" type="password">
+      <button id="loginButton" type="submit">Login</button>
+      <button id="logoutButton" type="reset">Logout</button>
+   </form>
+</section>
+<section class="response-text">
+   <b id="successContent">Success!</b>
+   <b id="failureContent">Failure!</b>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" type="application/javascript"></script>
+<script type="application/javascript">
+$(document).ready(function () {
+   $('#login').submit(function (e) {
+      const form = $(e.target).serializeArray()
+         .map((i) => Object.assign({}, {[i.name]: i.value}))
+         .reduce((acc, cur) => Object.assign(acc, cur), {})
+      ;
+
+      $.ajax('/api/login', { method: 'POST', data: form })
+         .done( (data) => successfulLogin(data))
+         .fail( (xhr) => failedLogin(xhr) )
+      ;
+
+      e.preventDefault();
+      return false;
+   }).on('reset', function (e) {
+      const form = $(e.target).serializeArray()
+         .map((i) => Object.assign({}, {[i.name]: i.value}))
+         .reduce((acc, cur) => Object.assign(acc, cur), {})
+      ;
+
+      $.ajax('/api/logout', { method: 'POST', data: form })
+         .done( (data, statusText, xhr) => failedLogin(xhr))
+         .fail( (xhr) => successfulLogout($.parseJSON(xhr.responseText)) )
+      ;
+   });
+});
+function successfulLogin(data) {
+   let text = data.message;
+
+   $('#failureContent').hide();
+   $('#successContent').text(text);
+   $('#successContent').show();
+}
+
+function successfulLogout(data) {
+   let text = data.message;
+
+   $('#successContent').hide();
+   $('#failureContent').html(text);
+   $('#failureContent').show();
+}
+
+function failedLogin(xhr) {
+   let data = $.parseJSON(xhr.responseText);
+   let text = '';
+
+   if ($.isArray(data)) {
+      text = data.map((m) => m.message).reduce((acc, cur) => `${acc}<br>${cur}`, '');
+   } else {
+      text = data.message;
+   }
+
+   $('#successContent').hide();
+   $('#failureContent').html(text);
+   $('#failureContent').show();
+}
+</script>
+</body>
+</html>
+

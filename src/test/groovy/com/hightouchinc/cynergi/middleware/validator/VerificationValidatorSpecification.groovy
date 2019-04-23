@@ -2,6 +2,7 @@ package com.hightouchinc.cynergi.middleware.validator
 
 import com.hightouchinc.cynergi.middleware.entity.VerificationDto
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
+import com.hightouchinc.cynergi.middleware.localization.MessageCodes
 import com.hightouchinc.cynergi.middleware.service.VerificationService
 import com.hightouchinc.cynergi.test.data.loader.VerificationTestDataLoader
 import spock.lang.Specification
@@ -37,7 +38,7 @@ class VerificationValidatorSpecification extends Specification {
       validationException.errors.size() == 1
       validationException.errors[0].arguments == [verificationDto.customerAccount]
       validationException.errors[0].path == "cust_acct"
-      validationException.errors[0].messageTemplate == ErrorCodes.Cynergi.DUPLICATE
+      validationException.errors[0].messageTemplate == MessageCodes.Cynergi.DUPLICATE
    }
 
    void "validate update valid VerificationDto" () {

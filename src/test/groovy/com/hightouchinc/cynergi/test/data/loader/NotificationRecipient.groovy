@@ -14,7 +14,7 @@ import java.util.stream.Stream
 class NotificationRecipientTestDataLoader {
    static Stream<NotificationRecipient> stream(int number = 1, Notification notificationIn = null) {
       final int value = number > 0 ? number : 1
-      final def notification = notificationIn != null ? notificationIn : NotificationTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final def notification = notificationIn ?: NotificationTestDataLoader.stream(1).findFirst().orElseThrow { new Exception("Unable to create Notification") }
       final def faker = new Faker()
       final def lorem = faker.lorem()
       final def name = faker.name()

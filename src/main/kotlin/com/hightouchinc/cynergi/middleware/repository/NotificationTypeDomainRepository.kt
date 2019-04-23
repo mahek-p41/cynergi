@@ -45,15 +45,15 @@ class NotificationTypeDomainRepository @Inject constructor(
 }
 
 private class NotificationTypeDomainRowMapper(
-   private val rowPrefix: String = EMPTY
+   private val columnPrefix: String = EMPTY
 ) : RowMapper<NotificationTypeDomain> {
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain =
       NotificationTypeDomain(
-         id = rs.getLong("${rowPrefix}id"),
-         uuRowId = rs.getUuid("${rowPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${rowPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         value = rs.getString("${rowPrefix}value"),
-         description = rs.getString("${rowPrefix}description")
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         value = rs.getString("${columnPrefix}value"),
+         description = rs.getString("${columnPrefix}description")
       )
 }

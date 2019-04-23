@@ -16,6 +16,7 @@ plugins {
    id "org.jetbrains.kotlin.kapt" version "1.3.20"
    id "org.jetbrains.kotlin.plugin.allopen" version "1.3.20"
    id "org.jetbrains.kotlin.plugin.noarg" version "1.3.20"
+   id "java"
    id "jacoco"
    id "application"
    id "groovy"
@@ -48,23 +49,33 @@ dependencies {
    compile "io.micronaut.configuration:micronaut-hibernate-validator"
    compile "io.micronaut:micronaut-runtime"
    compile "io.micronaut:micronaut-spring"
+   compile "io.micronaut:micronaut-security-jwt"
+   compile "io.micronaut:micronaut-views"
    compile "org.codehaus.groovy:groovy-all:2.5.4"
-   
+   compile "org.bouncycastle:bcprov-jdk15on:1.61"
+   compile "org.bouncycastle:bcpkix-jdk15on:1.61"
+   compile "commons-io:commons-io:2.6"
+
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
    compile "org.springframework:spring-jdbc:5.0.10.RELEASE"
    compile "io.swagger.core.v3:swagger-annotations"
    compile "org.postgresql:postgresql:42.2.5"
+   compile "io.micronaut.configuration:micronaut-postgres-reactive"
    compile "org.apache.commons:commons-lang3:3.8.1"
 
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
    kapt "io.micronaut:micronaut-validation"
+   kapt "io.micronaut:micronaut-security"
    kaptTest "io.micronaut:micronaut-inject-java"
 
+   runtime "org.thymeleaf:thymeleaf:3.0.11.RELEASE"
    runtime "ch.qos.logback:logback-classic:1.2.3"
    runtime "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8"
 
+   compile "com.github.javafaker:javafaker:0.16"
+   
    testCompile("org.spockframework:spock-core") {
       exclude group: "org.codehaus.groovy", module: "groovy-all"
    }
@@ -72,7 +83,6 @@ dependencies {
    testCompile "io.micronaut:micronaut-runtime-groovy"
    testCompile "junit:junit:4.12"
    testCompile "io.micronaut:micronaut-inject-java"
-   testCompile "com.github.javafaker:javafaker:0.16"
    testRuntime "net.bytebuddy:byte-buddy:1.8.21"
    testRuntime "org.objenesis:objenesis:2.6"
 }
@@ -115,14 +125,16 @@ compileTestKotlin {
 }
 
 openApiGenerate {
-   generatorName = "typescript-axios"
+   generatorName = "typescript-fetch"
    inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
    validateSpec = false
    configOptions = [
-      npmName: "cynergi-axios-client",
-      npmVersion: "${releaseVersion}"
+      npmName: "cynergi-fetch-client",
+      npmVersion: "${cynergiRelease}"
    ]
 }
+
+tasks.openApiGenerate.dependsOn(compileKotlin)
 
 tasks.withType(JavaExec) {
    // Assign all Java system properties from
