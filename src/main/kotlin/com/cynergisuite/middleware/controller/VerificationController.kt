@@ -1,10 +1,10 @@
 package com.cynergisuite.middleware.controller
 
-import com.cynergisuite.middleware.entity.VerificationDto
-import com.cynergisuite.middleware.exception.NotFoundException
-import com.cynergisuite.middleware.exception.ValidationException
-import com.cynergisuite.middleware.service.VerificationService
-import com.cynergisuite.middleware.validator.VerificationValidator
+import com.cynergisuite.middleware.verfication.VerificationDto
+import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.verfication.infrastructure.VerificationService
+import com.cynergisuite.middleware.verfication.infrastructure.VerificationValidator
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller

@@ -1,6 +1,9 @@
 package com.cynergisuite.middleware.validator
 
+import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.notification.NotificationDto
+import com.cynergisuite.middleware.notification.infrastructure.NotificationService
+import com.cynergisuite.middleware.notification.infrastructure.NotificationValidator
 import spock.lang.Specification
 
 import java.time.LocalDate
@@ -20,7 +23,7 @@ class NotificationValidatorSpecification extends Specification {
 
    void "validate save valid NotificationDto of type All" () {
       given:
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
@@ -31,12 +34,12 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
       then:
-      notThrown(com.cynergisuite.middleware.exception.ValidationException)
+      notThrown(ValidationException)
    }
 
    void "validate save valid NotificationDto of type Employee with single recipient" () {
       given:
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
 
@@ -47,12 +50,12 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
       then:
-      notThrown(com.cynergisuite.middleware.exception.ValidationException)
+      notThrown(ValidationException)
    }
 
    void "validate save invalid NotificationDto of type All with single recipient" () {
       given:
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
@@ -63,7 +66,7 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
       then:
-      final def exception = thrown(com.cynergisuite.middleware.exception.ValidationException)
+      final def exception = thrown(ValidationException)
       exception.errors.size() == 1
       exception.errors[0].messageTemplate == NOTIFICATION_RECIPIENTS_ALL
       exception.errors[0].path == "recipients"
@@ -73,7 +76,7 @@ class NotificationValidatorSpecification extends Specification {
 
    void "validate save invalid NotificationDto of type Employee with no recipients" () {
       given:
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
 
@@ -85,7 +88,7 @@ class NotificationValidatorSpecification extends Specification {
 
 
       then:
-      final def exception = thrown(com.cynergisuite.middleware.exception.ValidationException)
+      final def exception = thrown(ValidationException)
       exception.errors.size() == 1
       exception.errors[0].messageTemplate == NOTIFICATION_RECIPIENTS_REQUIRED
       exception.errors[0].path == "recipients"
@@ -95,7 +98,7 @@ class NotificationValidatorSpecification extends Specification {
 
    void "validate save invalid NotificationDto of type All where startDate is after expirationDate" () {
       given:
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
@@ -106,7 +109,7 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
       then:
-      final def exception = thrown(com.cynergisuite.middleware.exception.ValidationException)
+      final def exception = thrown(ValidationException)
       exception.errors.size() == 1
       exception.errors[0].messageTemplate == END_DATE_BEFORE_START
       exception.errors[0].path == "expirationDate"
@@ -118,7 +121,7 @@ class NotificationValidatorSpecification extends Specification {
    void "validate update valid NotificationDto of type all" () {
       given:
       final def notificationId = 1
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
@@ -130,13 +133,13 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)
 
       then:
-      notThrown(com.cynergisuite.middleware.exception.ValidationException)
+      notThrown(ValidationException)
       1 * notificationService.exists(notificationId) >> true
    }
 
    void "validate update invalid NotificationDto of type all due to missing ID" () {
       given:
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
@@ -147,7 +150,7 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)
 
       then:
-      final exception = thrown(com.cynergisuite.middleware.exception.ValidationException)
+      final exception = thrown(ValidationException)
       exception.errors.size() == 1
       exception.errors[0].messageTemplate == NOT_NULL
       exception.errors[0].path == "id"
@@ -159,7 +162,7 @@ class NotificationValidatorSpecification extends Specification {
    void "validate update invalid NotificationDto of type all due to exisiting Notification not existing with provided ID" () {
       given:
       final def notificationId = 1
-      final com.cynergisuite.middleware.service.NotificationService notificationService = Mock()
+      final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
       final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
@@ -171,7 +174,7 @@ class NotificationValidatorSpecification extends Specification {
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)
 
       then:
-      final exception = thrown(com.cynergisuite.middleware.exception.ValidationException)
+      final exception = thrown(ValidationException)
       exception.errors.size() == 1
       exception.errors[0].messageTemplate == NOT_FOUND
       exception.errors[0].path == "id"

@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.middleware.dto.spi.DataTransferObjectBase
-import com.cynergisuite.middleware.entity.Entity
-import com.cynergisuite.middleware.entity.IdentifiableEntity
+import com.cynergisuite.domain.DataTransferObjectBase
+import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.IdentifiableEntity
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE

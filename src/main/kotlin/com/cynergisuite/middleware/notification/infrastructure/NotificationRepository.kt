@@ -10,7 +10,7 @@ import com.cynergisuite.middleware.extensions.getOffsetDateTime
 import com.cynergisuite.middleware.extensions.getUuid
 import com.cynergisuite.middleware.extensions.insertReturning
 import com.cynergisuite.middleware.extensions.updateReturning
-import com.cynergisuite.middleware.repository.Repository
+import com.cynergisuite.domain.infrastructure.Repository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language

@@ -1,14 +1,12 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.middleware.dto.NotificationRequestDto
-import com.cynergisuite.middleware.dto.NotificationResponseDto
-import com.cynergisuite.middleware.dto.NotificationsResponseDto
+import com.cynergisuite.middleware.notification.NotificationRequestValueObject
+import com.cynergisuite.middleware.notification.NotificationResponseValueObject
+import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import com.cynergisuite.middleware.notification.NotificationDto
 import com.cynergisuite.middleware.notification.NotificationTypeDomainDto
-import com.cynergisuite.middleware.exception.NotFoundException
-import com.cynergisuite.middleware.exception.ValidationException
-import com.cynergisuite.middleware.service.NotificationService
-import com.cynergisuite.middleware.validator.NotificationValidator
+import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -39,7 +37,7 @@ class NotificationController @Inject constructor(
    @Get("/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
-   ): NotificationResponseDto {
+   ): NotificationResponseValueObject {
       logger.info("Fetching Notification by {}", id)
 
       val response = notificationService.fetchResponseById(id = id) ?: throw NotFoundException(id)
@@ -55,7 +53,7 @@ class NotificationController @Inject constructor(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
       @QueryValue(value = "type", defaultValue = "E") type: String
-   ) : NotificationsResponseDto { // FIXME do away with this wrapper for the list of notifications, and make pageable
+   ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
       logger.info("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
 
       val response = when(type.toUpperCase()) {
@@ -74,7 +72,7 @@ class NotificationController @Inject constructor(
    fun fetchAllAdmin(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Header("X-Auth-User") authId: String  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
-   ) : NotificationsResponseDto { // FIXME do away with this wrapper for the list of notifications
+   ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications
       logger.info("Fetching All Notifications by Admin by company: {}, authId: {}", companyId, authId)
 
       val response = notificationService.findAllBySendingEmployee(companyId = companyId, sendingEmployee = authId)
@@ -142,8 +140,8 @@ class NotificationController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
-      @Valid @Body dto: NotificationRequestDto
-   ): NotificationResponseDto {
+      @Valid @Body dto: NotificationRequestValueObject
+   ): NotificationResponseValueObject {
       logger.info("Requested Save Notification {}", dto)
 
       notificationValidator.validateSave(dto = dto.notification)
@@ -152,15 +150,15 @@ class NotificationController @Inject constructor(
 
       logger.debug("Requested Save Notification {} resulted in {}", dto, response)
 
-      return NotificationResponseDto(notification = response)
+      return NotificationResponseValueObject(notification = response)
    }
 
    @Put("/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
       @QueryValue("id") id: Long,
-      @Valid @Body dto: NotificationRequestDto
-   ): NotificationResponseDto {
+      @Valid @Body dto: NotificationRequestValueObject
+   ): NotificationResponseValueObject {
       val notificationDto = dto.notification.copy(id = id) // the legacy front-end doesn't pass in the id as part of the request body, it is part of the path instead
       logger.info("Requested Update Notification {}", notificationDto)
 
@@ -170,7 +168,7 @@ class NotificationController @Inject constructor(
 
       logger.debug("Requested Update Notification {} resulted in {}", notificationDto, response)
 
-      return NotificationResponseDto(notification = response)
+      return NotificationResponseValueObject(notification = response)
    }
 
    @Delete("/{id}")

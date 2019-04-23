@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.middleware.notification.NotificationRecipient
-import com.cynergisuite.middleware.entity.helper.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.extensions.findFirstOrNull
 import com.cynergisuite.middleware.extensions.getOffsetDateTime
 import com.cynergisuite.middleware.extensions.getUuid
 import com.cynergisuite.middleware.extensions.insertReturning
 import com.cynergisuite.middleware.extensions.updateReturning
-import com.cynergisuite.middleware.repository.Repository
+import com.cynergisuite.domain.infrastructure.Repository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger

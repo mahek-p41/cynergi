@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.notification.NotificationTypeDomain
 import com.cynergisuite.middleware.extensions.findFirstOrNull
 import com.cynergisuite.middleware.extensions.getOffsetDateTime
 import com.cynergisuite.middleware.extensions.getUuid
-import com.cynergisuite.middleware.repository.TypeDomainRepository
+import com.cynergisuite.domain.infrastructure.TypeDomainRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

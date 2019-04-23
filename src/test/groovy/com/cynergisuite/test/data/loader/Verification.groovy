@@ -1,12 +1,12 @@
 package com.cynergisuite.test.data.loader
 
-
+import com.cynergisuite.middleware.verfication.infrastructure.VerificationRepository
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.entity.Verification
-import com.cynergisuite.middleware.entity.VerificationAuto
-import com.cynergisuite.middleware.entity.VerificationEmployment
-import com.cynergisuite.middleware.entity.VerificationLandlord
-import com.cynergisuite.middleware.entity.VerificationReference
+import com.cynergisuite.middleware.verfication.Verification
+import com.cynergisuite.middleware.verfication.VerificationAuto
+import com.cynergisuite.middleware.verfication.VerificationEmployment
+import com.cynergisuite.middleware.verfication.VerificationLandlord
+import com.cynergisuite.middleware.verfication.VerificationReference
 import groovy.transform.CompileStatic
 
 import javax.inject.Inject
@@ -57,10 +57,10 @@ class VerificationTestDataLoader {
 @Singleton
 @CompileStatic
 class VerificationDataLoaderService {
-   private final com.cynergisuite.middleware.repository.VerificationRepository verificationRepository
+   private final VerificationRepository verificationRepository
 
    @Inject
-   VerificationDataLoaderService(com.cynergisuite.middleware.repository.VerificationRepository verificationRepository) {
+   VerificationDataLoaderService(VerificationRepository verificationRepository) {
       this.verificationRepository = verificationRepository
    }
    Stream<Verification> stream(int number = 1, boolean generateAuto = true, boolean generateEmployment = true, boolean generateLandlord = true, boolean generateReferences = true) {

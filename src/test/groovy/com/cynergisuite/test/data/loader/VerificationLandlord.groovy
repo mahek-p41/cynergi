@@ -1,9 +1,9 @@
 package com.cynergisuite.test.data.loader
 
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.entity.Verification
-import com.cynergisuite.middleware.entity.VerificationLandlord
-import com.cynergisuite.middleware.repository.VerificationLandlordRepository
+import com.cynergisuite.middleware.verfication.Verification
+import com.cynergisuite.middleware.verfication.VerificationLandlord
+import com.cynergisuite.middleware.verfication.infrastructure.VerificationLandlordRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton

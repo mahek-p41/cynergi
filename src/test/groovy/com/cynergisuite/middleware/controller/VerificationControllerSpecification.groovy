@@ -1,9 +1,12 @@
 package com.cynergisuite.middleware.controller
 
-
+import com.cynergisuite.middleware.verfication.Verification
+import com.cynergisuite.middleware.verfication.VerificationDto
+import com.cynergisuite.middleware.verfication.VerificationReference
+import com.cynergisuite.middleware.verfication.infrastructure.VerificationReferenceRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.dto.ErrorDto
+import com.cynergisuite.middleware.error.ErrorValueObject
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -22,16 +25,16 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
    final def url = "/api/verifications/corrto"
    final def verificationDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.VerificationDataLoaderService)
    final def verificationReferenceDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.VerificationReferenceDataLoaderService)
-   final def verificationReferenceRepository = applicationContext.getBean(com.cynergisuite.middleware.repository.VerificationReferenceRepository)
+   final def verificationReferenceRepository = applicationContext.getBean(VerificationReferenceRepository)
    final ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper)
 
    void "fetch one verification by id where everything is filled out" () {
       given:
       final def savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def verificationDto = new com.cynergisuite.middleware.entity.VerificationDto(savedVerification)
+      final def verificationDto = new VerificationDto(savedVerification)
 
       when:
-      def result = client.retrieve(GET("$url/${savedVerification.id}"), com.cynergisuite.middleware.entity.VerificationDto)
+      def result = client.retrieve(GET("$url/${savedVerification.id}"), VerificationDto)
 
       then:
       notThrown(HttpClientResponseException)
@@ -42,21 +45,21 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "fetch one verification by id not found" () {
       when:
-      client.exchange(GET("$url/0"), Argument.of(com.cynergisuite.middleware.entity.VerificationDto), Argument.of(ErrorDto))
+      client.exchange(GET("$url/0"), Argument.of(VerificationDto), Argument.of(ErrorValueObject))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 
    void "fetch one verification by customer account" () {
       given:
       final def savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def verificationDto = new com.cynergisuite.middleware.entity.VerificationDto(savedVerification)
+      final def verificationDto = new VerificationDto(savedVerification)
 
       when:
-      def result = client.retrieve(GET("$url/account/${savedVerification.customerAccount}"), com.cynergisuite.middleware.entity.VerificationDto)
+      def result = client.retrieve(GET("$url/account/${savedVerification.customerAccount}"), VerificationDto)
 
       then:
       notThrown(HttpClientResponseException)
@@ -66,20 +69,20 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "fetch one verification by customer account not found" () {
       when:
-      client.exchange(GET("$url/account/-1"), Argument.of(com.cynergisuite.middleware.entity.VerificationDto), Argument.of(ErrorDto))
+      client.exchange(GET("$url/account/-1"), Argument.of(VerificationDto), Argument.of(ErrorValueObject))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorDto).orElse(null)?.message == "Resource -1 was unable to be found"
+      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource -1 was unable to be found"
    }
 
    void "post verification successfully" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new com.cynergisuite.middleware.entity.VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      final def savedVerification = client.retrieve(POST(url, verification), com.cynergisuite.middleware.entity.VerificationDto)
+      final def savedVerification = client.retrieve(POST(url, verification), VerificationDto)
 
       then:
       savedVerification.id != null
@@ -92,10 +95,10 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "post verification without auto, employment or landlord" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1, false, false, false).map { new com.cynergisuite.middleware.entity.VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1, false, false, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      final def savedVerification = client.retrieve(POST(url, verification), com.cynergisuite.middleware.entity.VerificationDto)
+      final def savedVerification = client.retrieve(POST(url, verification), VerificationDto)
 
       then:
       savedVerification.id != null
@@ -110,7 +113,7 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "post completely empty verification should fail" () {
       given:
-      final def verification = new com.cynergisuite.middleware.entity.VerificationDto(
+      final def verification = new VerificationDto(
          null,
          null,
          null,
@@ -123,13 +126,13 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
       )
 
       when:
-      client.retrieve(POST(url, verification), Argument.of(com.cynergisuite.middleware.entity.VerificationDto), Argument.of(ErrorDto[]))
+      client.retrieve(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorValueObject[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
       errors != null
       errors.size() == 3
 
@@ -142,16 +145,16 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
    void "post verification with longer than allowed customer comments should result in a failure" () {
       given:
       final def stringFaker = new Faker().lorem()
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new com.cynergisuite.middleware.entity.VerificationDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      client.exchange(POST(url, verification), Argument.of(com.cynergisuite.middleware.entity.VerificationDto), Argument.of(ErrorDto[]))
+      client.exchange(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorValueObject[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "size of provided value ${verification.customerComments} is invalid for property customerComments"
@@ -159,10 +162,10 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "post verification with no references" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1, true, true, true, false).map { new com.cynergisuite.middleware.entity.VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      final def savedVerification = client.retrieve(POST(url, verification), com.cynergisuite.middleware.entity.VerificationDto)
+      final def savedVerification = client.retrieve(POST(url, verification), VerificationDto)
 
       then:
       savedVerification.id != null
@@ -177,18 +180,18 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "post verification unsuccessfully due to bad date" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new com.cynergisuite.middleware.entity.VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def verificationJson = new JsonSlurper().parseText(objectMapper.writeValueAsString(verification))
 
       when:
       verificationJson["cust_verified_date"] = "2019-02-30"
-      client.exchange(POST(url, verificationJson), Argument.of(com.cynergisuite.middleware.entity.VerificationDto), Argument.of(ErrorDto[]))
+      client.exchange(POST(url, verificationJson), Argument.of(VerificationDto), Argument.of(ErrorValueObject[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorDto[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "Failed to convert argument [cust_verified_date] for value [2019-02-30]"
@@ -196,12 +199,12 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "put verification successfully" () {
       given:
-      final def savedVerification = verificationDataLoaderService.stream(1).map { new com.cynergisuite.middleware.entity.VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def savedVerification = verificationDataLoaderService.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def toUpdateVerification = savedVerification.copyMe()
 
       when:
       toUpdateVerification.customerComments = "Updated comments"
-      final def updatedVerification = client.retrieve(PUT(url, toUpdateVerification), com.cynergisuite.middleware.entity.VerificationDto)
+      final def updatedVerification = client.retrieve(PUT(url, toUpdateVerification), VerificationDto)
 
       then:
       updatedVerification == toUpdateVerification
@@ -209,14 +212,14 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "put verification references by adding a third reference" () {
       given:
-      final com.cynergisuite.middleware.entity.Verification verification = verificationDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final List<com.cynergisuite.middleware.entity.VerificationReference> references = verificationReferenceDataLoaderService.stream(verification, 2).collect(Collectors.toList())
+      final Verification verification = verificationDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final List<VerificationReference> references = verificationReferenceDataLoaderService.stream(verification, 2).collect(Collectors.toList())
       final def toUpdate = verification.copyMe()
       toUpdate.references.addAll(references)
       toUpdate.references.add(com.cynergisuite.test.data.loader.VerificationReferenceTestDataLoader.stream(toUpdate, 1).findFirst().orElseThrow { new Exception("Unable to create VerificationReference") })
 
       when:
-      final def updatedVerification = client.retrieve(PUT(url, new com.cynergisuite.middleware.entity.VerificationDto(toUpdate)), com.cynergisuite.middleware.entity.VerificationDto)
+      final def updatedVerification = client.retrieve(PUT(url, new VerificationDto(toUpdate)), VerificationDto)
 
       then:
       updatedVerification.id != null
@@ -233,11 +236,11 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
    void "delete verification reference via update with one missing" () {
       given:
       final def verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def savedVerification = new com.cynergisuite.middleware.entity.VerificationDto(verification)
+      final def savedVerification = new VerificationDto(verification)
       savedVerification.references.remove(5) // remove the last one
 
       when:
-      final def updatedVerification = client.retrieve(PUT(url, savedVerification), com.cynergisuite.middleware.entity.VerificationDto)
+      final def updatedVerification = client.retrieve(PUT(url, savedVerification), VerificationDto)
       final def dbReferences = verificationReferenceRepository.findAll(verification)
 
       then:
@@ -258,12 +261,12 @@ class VerificationControllerSpecification extends com.cynergisuite.middleware.co
    void "delete two previously created verification reference via update with one missing" () {
       given:
       final def verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def savedVerification = new com.cynergisuite.middleware.entity.VerificationDto(verification)
+      final def savedVerification = new VerificationDto(verification)
       savedVerification.references.remove(1)
       savedVerification.references.remove(1)
 
       when:
-      final def updatedVerification = client.retrieve(PUT(url, savedVerification), com.cynergisuite.middleware.entity.VerificationDto)
+      final def updatedVerification = client.retrieve(PUT(url, savedVerification), VerificationDto)
       final def dbReferences = verificationReferenceRepository.findAll(verification) // query the db for what it actually has
 
       then:

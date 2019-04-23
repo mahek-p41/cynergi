@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.cynergisuite.middleware.dto.spi.DataTransferObjectBase
-import com.cynergisuite.middleware.entity.Entity
+import com.cynergisuite.domain.DataTransferObjectBase
+import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE

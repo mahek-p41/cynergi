@@ -1,9 +1,9 @@
 package com.cynergisuite.test.data.loader
 
-
+import com.cynergisuite.middleware.verfication.infrastructure.VerificationAutoRepository
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.entity.Verification
-import com.cynergisuite.middleware.entity.VerificationAuto
+import com.cynergisuite.middleware.verfication.Verification
+import com.cynergisuite.middleware.verfication.VerificationAuto
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -61,11 +61,11 @@ class VerificationAutoTestDataLoader {
 @Singleton
 @CompileStatic
 class VerificationAutoDataLoaderService {
-   private final com.cynergisuite.middleware.repository.VerificationAutoRepository verificationAutoRepository
+   private final VerificationAutoRepository verificationAutoRepository
    private final VerificationDataLoaderService verificationDataLoaderService
 
    VerificationAutoDataLoaderService(
-      com.cynergisuite.middleware.repository.VerificationAutoRepository verificationAutoRepository,
+      VerificationAutoRepository verificationAutoRepository,
       VerificationDataLoaderService verificationDataLoaderService
    ) {
       this.verificationAutoRepository = verificationAutoRepository
