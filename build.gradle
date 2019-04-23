@@ -49,11 +49,8 @@ dependencies {
    compile "io.micronaut.configuration:micronaut-hibernate-validator"
    compile "io.micronaut:micronaut-runtime"
    compile "io.micronaut:micronaut-spring"
-   compile "io.micronaut:micronaut-security-jwt"
    compile "io.micronaut:micronaut-views"
    compile "org.codehaus.groovy:groovy-all:2.5.4"
-   compile "org.bouncycastle:bcprov-jdk15on:1.61"
-   compile "org.bouncycastle:bcpkix-jdk15on:1.61"
    compile "commons-io:commons-io:2.6"
 
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
@@ -67,7 +64,6 @@ dependencies {
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
    kapt "io.micronaut:micronaut-validation"
-   kapt "io.micronaut:micronaut-security"
    kaptTest "io.micronaut:micronaut-inject-java"
 
    runtime "org.thymeleaf:thymeleaf:3.0.11.RELEASE"
@@ -130,7 +126,7 @@ openApiGenerate {
    validateSpec = false
    configOptions = [
       npmName: "cynergi-fetch-client",
-      npmVersion: "${cynergiRelease}"
+      npmVersion: "${releaseVersion}"
    ]
 }
 

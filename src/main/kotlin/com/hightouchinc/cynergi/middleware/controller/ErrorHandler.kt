@@ -2,7 +2,6 @@ package com.hightouchinc.cynergi.middleware.controller
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.hightouchinc.cynergi.middleware.dto.ErrorDto
-import com.hightouchinc.cynergi.middleware.exception.CynergiAccessException
 import com.hightouchinc.cynergi.middleware.exception.NotFoundException
 import com.hightouchinc.cynergi.middleware.exception.ValidationException
 import com.hightouchinc.cynergi.middleware.extensions.findLocaleWithDefault
@@ -40,14 +39,6 @@ class ErrorHandler @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return serverError(ErrorDto(localizationService.localize(MessageCodes.System.INTERNAL_ERROR, locale, emptyArray())))
-   }
-
-   fun cynergiAccessExceptionHandler(httpRequest: HttpRequest<*>, accessException: CynergiAccessException) : HttpResponse<ErrorDto> {
-      logger.info("Unauthorized exception")
-
-      val locale = httpRequest.findLocaleWithDefault()
-
-      return HttpResponse.status<ErrorDto>(FORBIDDEN).body(ErrorDto(localizationService.localize(accessException.errorMessage, locale, arrayOf(accessException.user))))
    }
 
    @Error(global = true, exception = NotImplementedError::class)

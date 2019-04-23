@@ -12,8 +12,6 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
-import io.micronaut.security.annotation.Secured
-import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.micronaut.validation.Validated
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,7 +25,6 @@ import javax.validation.Valid
  * @param verificationValidator defines that the [VerificationValidator] instance should be injected by the container
  */
 @Validated
-@Secured(IS_AUTHENTICATED)
 @Controller("/api/verifications/{companyId}/")
 class VerificationController @Inject constructor(
    private val verificationService: VerificationService,
