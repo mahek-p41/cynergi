@@ -1,10 +1,10 @@
-package com.cynergisuite.middleware.controller
+package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.middleware.dto.NotificationRequestDto
 import com.cynergisuite.middleware.dto.NotificationResponseDto
 import com.cynergisuite.middleware.dto.NotificationsResponseDto
-import com.cynergisuite.middleware.entity.NotificationDto
-import com.cynergisuite.middleware.entity.NotificationTypeDomainDto
+import com.cynergisuite.middleware.notification.NotificationDto
+import com.cynergisuite.middleware.notification.NotificationTypeDomainDto
 import com.cynergisuite.middleware.exception.NotFoundException
 import com.cynergisuite.middleware.exception.ValidationException
 import com.cynergisuite.middleware.service.NotificationService
@@ -33,7 +33,7 @@ class NotificationController @Inject constructor(
    private val notificationService: NotificationService,
    private val notificationValidator: NotificationValidator
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(com.cynergisuite.middleware.controller.NotificationController::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(NotificationController::class.java)
 
    @Throws(NotFoundException::class)
    @Get("/{id}", produces = [APPLICATION_JSON])

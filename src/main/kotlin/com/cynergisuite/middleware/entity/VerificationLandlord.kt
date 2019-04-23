@@ -27,10 +27,10 @@ data class VerificationLandlord (
    val phone: Boolean?,
    val reliable: Boolean?,
    val rent: BigDecimal?,
-   val verification: com.cynergisuite.middleware.entity.IdentifiableEntity
-) : com.cynergisuite.middleware.entity.Entity<VerificationLandlord> {
+   val verification: IdentifiableEntity
+) : Entity<VerificationLandlord> {
 
-   constructor(dto: VerificationLandlordDto, verification: com.cynergisuite.middleware.entity.IdentifiableEntity) :
+   constructor(dto: VerificationLandlordDto, verification: IdentifiableEntity) :
       this(
          id = dto.id,
          address = dto.address,

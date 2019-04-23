@@ -1,7 +1,8 @@
 package com.cynergisuite.test.data.loader
 
 
-import com.cynergisuite.middleware.entity.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import groovy.transform.CompileStatic
 import org.apache.commons.lang3.RandomUtils
 
@@ -40,9 +41,9 @@ class NotificationTypeDomainTestDataLoader {
 @Singleton
 @CompileStatic
 class NotificationTypeDomainDataLoaderService {
-   private final com.cynergisuite.middleware.repository.NotificationTypeDomainRepository notificationTypeDomainRepository
+   private final NotificationTypeDomainRepository notificationTypeDomainRepository
 
-   NotificationTypeDomainDataLoaderService(com.cynergisuite.middleware.repository.NotificationTypeDomainRepository notificationTypeDomainRepository) {
+   NotificationTypeDomainDataLoaderService(NotificationTypeDomainRepository notificationTypeDomainRepository) {
       this.notificationTypeDomainRepository = notificationTypeDomainRepository
    }
 

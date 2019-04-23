@@ -37,9 +37,9 @@ data class VerificationAuto(
    val previousLoan: Boolean?,
    val purchaseDate: LocalDate?,
    val related: String?,
-   val verification: com.cynergisuite.middleware.entity.IdentifiableEntity
-) : com.cynergisuite.middleware.entity.Entity<VerificationAuto> {
-   constructor(dto: VerificationAutoDto, verification: com.cynergisuite.middleware.entity.IdentifiableEntity) :
+   val verification: IdentifiableEntity
+) : Entity<VerificationAuto> {
+   constructor(dto: VerificationAutoDto, verification: IdentifiableEntity) :
       this(
          id = dto.id,
          address = dto.address,

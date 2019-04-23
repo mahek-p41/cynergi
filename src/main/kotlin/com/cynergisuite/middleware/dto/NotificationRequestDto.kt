@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
-import com.cynergisuite.middleware.entity.NotificationDto
+import com.cynergisuite.middleware.notification.NotificationDto
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
 import javax.validation.Valid
 import javax.validation.constraints.NotNull

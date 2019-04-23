@@ -1,10 +1,11 @@
-package com.cynergisuite.middleware.entity
+package com.cynergisuite.middleware.notification
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.cynergisuite.middleware.dto.spi.DataTransferObjectBase
+import com.cynergisuite.middleware.entity.Entity
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
@@ -25,11 +26,11 @@ data class Notification (
    val message: String,
    val sendingEmployee: String, // TODO convert from soft foreign key to employee
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
-   val notificationDomainType: com.cynergisuite.middleware.entity.NotificationTypeDomain,
-   val recipients: MutableSet<com.cynergisuite.middleware.entity.NotificationRecipient> = mutableSetOf()
-) : com.cynergisuite.middleware.entity.Entity<com.cynergisuite.middleware.entity.Notification> {
+   val notificationDomainType: NotificationTypeDomain,
+   val recipients: MutableSet<NotificationRecipient> = mutableSetOf()
+) : Entity<Notification> {
 
-   constructor(startDate: LocalDate, expirationDate: LocalDate, message: String, sendingEmployee: String, company: String, notificationDomainType: com.cynergisuite.middleware.entity.NotificationTypeDomain) :
+   constructor(startDate: LocalDate, expirationDate: LocalDate, message: String, sendingEmployee: String, company: String, notificationDomainType: NotificationTypeDomain) :
       this (
          id = null,
          startDate = startDate,
@@ -40,7 +41,7 @@ data class Notification (
          notificationDomainType = notificationDomainType
       )
 
-   constructor(dto: com.cynergisuite.middleware.entity.NotificationDto, notificationDomainType: com.cynergisuite.middleware.entity.NotificationTypeDomain) :
+   constructor(dto: NotificationDto, notificationDomainType: NotificationTypeDomain) :
       this(
          id = dto.id,
          company = dto.company!!,
@@ -51,14 +52,14 @@ data class Notification (
          notificationDomainType = notificationDomainType
       ) {
 
-      dto.recipients.asSequence().map { com.cynergisuite.middleware.entity.NotificationRecipient(it, this) }.forEach { this.recipients.add(it) }
+      dto.recipients.asSequence().map { NotificationRecipient(it, this) }.forEach { this.recipients.add(it) }
    }
 
    override fun entityId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 
-   override fun copyMe(): com.cynergisuite.middleware.entity.Notification = copy()
+   override fun copyMe(): Notification = copy()
 }
 
 @JsonInclude(NON_NULL)
@@ -93,11 +94,11 @@ data class NotificationDto (
    @field:Size(min = 1, message = SIZE)
    var notificationType: String?,
 
-   var recipients: List<com.cynergisuite.middleware.entity.NotificationRecipientDto> = emptyList()
+   var recipients: List<NotificationRecipientDto> = emptyList()
 
-) : DataTransferObjectBase<com.cynergisuite.middleware.entity.NotificationDto>() {
+) : DataTransferObjectBase<NotificationDto>() {
 
-   constructor(entity: com.cynergisuite.middleware.entity.Notification) :
+   constructor(entity: Notification) :
       this(
          id = entity.id,
          dateCreated = entity.timeCreated.toLocalDate(),
@@ -107,10 +108,10 @@ data class NotificationDto (
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
          notificationType = "${entity.notificationDomainType.value}:${entity.notificationDomainType.description}",
-         recipients = entity.recipients.map { com.cynergisuite.middleware.entity.NotificationRecipientDto(it) }
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 
-   constructor(id: Long?, message: String, entity: com.cynergisuite.middleware.entity.Notification) :
+   constructor(id: Long?, message: String, entity: Notification) :
       this(
          id = id,
          dateCreated = entity.timeCreated.toLocalDate(),
@@ -120,18 +121,18 @@ data class NotificationDto (
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
          notificationType = "${entity.notificationDomainType.value}:${entity.notificationDomainType.description}",
-         recipients = entity.recipients.map { com.cynergisuite.middleware.entity.NotificationRecipientDto(it) }
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 
-   constructor(entity: com.cynergisuite.middleware.entity.Notification, recipients: List<com.cynergisuite.middleware.entity.NotificationRecipient>):
+   constructor(entity: Notification, recipients: List<NotificationRecipient>):
       this(
          entity = entity
       ) {
 
-      this.recipients = recipients.map { com.cynergisuite.middleware.entity.NotificationRecipientDto(it) }
+      this.recipients = recipients.map { NotificationRecipientDto(it) }
    }
 
-   constructor(entity: com.cynergisuite.middleware.entity.Notification, notificationType: String) :
+   constructor(entity: Notification, notificationType: String) :
       this(
          id = entity.id,
          dateCreated = entity.timeCreated.toLocalDate(),
@@ -141,10 +142,10 @@ data class NotificationDto (
          sendingEmployee = entity.sendingEmployee,
          startDate = entity.startDate,
          notificationType = notificationType,
-         recipients = entity.recipients.map { com.cynergisuite.middleware.entity.NotificationRecipientDto(it) }
+         recipients = entity.recipients.map { NotificationRecipientDto(it) }
       )
 
    override fun dtoId(): Long? = id
 
-   override fun copyMe(): com.cynergisuite.middleware.entity.NotificationDto = copy()
+   override fun copyMe(): NotificationDto = copy()
 }

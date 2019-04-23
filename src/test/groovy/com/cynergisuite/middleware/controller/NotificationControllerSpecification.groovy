@@ -5,6 +5,10 @@ import com.cynergisuite.middleware.dto.ErrorDto
 import com.cynergisuite.middleware.dto.NotificationRequestDto
 import com.cynergisuite.middleware.dto.NotificationResponseDto
 import com.cynergisuite.middleware.dto.NotificationsResponseDto
+import com.cynergisuite.middleware.notification.NotificationDto
+import com.cynergisuite.middleware.notification.NotificationRecipientDto
+import com.cynergisuite.middleware.notification.NotificationTypeDomainDto
+import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
@@ -22,14 +26,14 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 class NotificationControllerSpecification extends com.cynergisuite.middleware.controller.spi.ControllerSpecificationBase {
    final def url = "/api/notifications"
-   final def notificationRepository = applicationContext.getBean(com.cynergisuite.middleware.repository.NotificationRepository)
+   final def notificationRepository = applicationContext.getBean(NotificationRepository)
    final def notificationsDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.NotificationDataLoaderService)
    final def notificationRecipientDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.NotificationRecipientDataLoaderService)
 
    void "fetch one notification by id with no recipients" () {
       given:
       final def savedNotification = notificationsDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def notificationDto = new NotificationResponseDto(new com.cynergisuite.middleware.entity.NotificationDto(savedNotification))
+      final def notificationDto = new NotificationResponseDto(new NotificationDto(savedNotification))
 
       when:
       def result = client.retrieve(GET("$url/${savedNotification.id}"), NotificationResponseDto)
@@ -51,7 +55,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
 
       then:
       result.notification.recipients.size() == 2
-      result.notification.recipients.sort({ o1, o2 -> o1.id <=> o2.id}) == recipients.sort({ o1, o2 -> o1.id <=> o2.id}).collect { new com.cynergisuite.middleware.entity.NotificationRecipientDto(it) }
+      result.notification.recipients.sort({ o1, o2 -> o1.id <=> o2.id}) == recipients.sort({ o1, o2 -> o1.id <=> o2.id}).collect { new NotificationRecipientDto(it) }
    }
 
    void "fetch one notification by id not found" () {
@@ -79,7 +83,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       result.notifications.each { it.recipients.sort { o1, o2 -> o1.id <=> o2.id } }.sort { o1, o2 -> o1.id <=> o2.id }
       result.notifications.size() == 5
       result.notifications.collect { it.sendingEmployee }.findAll { it == sendingEmployee }.size() == 5
-      result.notifications == fiveNotifications.collect { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+      result.notifications == fiveNotifications.collect { new NotificationDto(it) }
       result.notifications.collect { it.recipients.size() }.findAll { it == 2 }.size() == 5
    }
 
@@ -94,7 +98,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       def result = client.retrieve(GET("$url?type=${notificationType.value}").headers(["X-Auth-Company": companyId]), NotificationsResponseDto)
 
       then:
-      result == new NotificationsResponseDto(fiveNotifications.collect { new com.cynergisuite.middleware.entity.NotificationDto(it)} )
+      result == new NotificationsResponseDto(fiveNotifications.collect { new NotificationDto(it)} )
       result.notifications.size() == 5
    }
 
@@ -105,11 +109,11 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType).collect(Collectors.toList())
 
       when:
-      def result = client.retrieve(GET("$url/company/${companyId}?type=${notificationType.value}"), com.cynergisuite.middleware.entity.NotificationDto[])
+      def result = client.retrieve(GET("$url/company/${companyId}?type=${notificationType.value}"), NotificationDto[])
 
       then:
       result.size() == 5
-      result == fiveNotifications.collect { new com.cynergisuite.middleware.entity.NotificationDto(it) }.toArray()
+      result == fiveNotifications.collect { new NotificationDto(it) }.toArray()
    }
 
    @Deprecated
@@ -128,7 +132,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       notThrown(HttpClientResponseException)
       result.notifications.size() == 1
       result.notifications[0].id == notification.id
-      result.notifications[0].recipients[0] == new com.cynergisuite.middleware.entity.NotificationRecipientDto(recipientNotifications[0])
+      result.notifications[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    void "fetch all by company with type Employee" () {
@@ -140,12 +144,12 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
 
       when:
       def recipient = recipientNotifications[0].recipient
-      def result = client.retrieve(GET("$url/company/${companyId}/${recipient}?type=${notificationType.value}"), com.cynergisuite.middleware.entity.NotificationDto[])
+      def result = client.retrieve(GET("$url/company/${companyId}/${recipient}?type=${notificationType.value}"), NotificationDto[])
 
       then:
       result.size() == 1
       result[0].id == notification.id
-      result[0].recipients[0] == new com.cynergisuite.middleware.entity.NotificationRecipientDto(recipientNotifications[0])
+      result[0].recipients[0] == new NotificationRecipientDto(recipientNotifications[0])
    }
 
    @Deprecated
@@ -173,7 +177,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "fetch all types" () {
       when:
-      final def types = client.retrieve(GET("${url}/types"), com.cynergisuite.middleware.entity.NotificationTypeDomainDto[])
+      final def types = client.retrieve(GET("${url}/types"), NotificationTypeDomainDto[])
 
       then:
       types.size() == 4
@@ -189,7 +193,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "attempt to fetch all types with typo results in bad request status" () {
       when:
-      client.retrieve(GET("${url}/type"), Argument.of(com.cynergisuite.middleware.entity.NotificationTypeDomainDto[]), Argument.of(ErrorDto))
+      client.retrieve(GET("${url}/type"), Argument.of(NotificationTypeDomainDto[]), Argument.of(ErrorDto))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -203,7 +207,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(new com.cynergisuite.middleware.entity.NotificationDto(notification))), NotificationResponseDto).notification
+      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(new NotificationDto(notification))), NotificationResponseDto).notification
 
       then:
       savedNotification.id != null
@@ -218,7 +222,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       given:
       final def notificationType = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
       final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
-      final def notificationPayload = new com.cynergisuite.middleware.entity.NotificationDto(notification, "A")
+      final def notificationPayload = new NotificationDto(notification, "A")
 
       when:
       final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(notificationPayload)), NotificationResponseDto).notification
@@ -239,7 +243,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def notificationRecipients = com.cynergisuite.test.data.loader.NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
 
       when:
-      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(new com.cynergisuite.middleware.entity.NotificationDto(notification, notificationRecipients))), NotificationResponseDto).notification
+      final def savedNotification = client.retrieve(POST(url, new NotificationRequestDto(new NotificationDto(notification, notificationRecipients))), NotificationResponseDto).notification
 
       then:
       savedNotification.id != null
@@ -257,7 +261,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(POST(url, new NotificationRequestDto(new com.cynergisuite.middleware.entity.NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
+      client.retrieve(POST(url, new NotificationRequestDto(new NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -270,7 +274,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
 
    void "post invalid notification of type all with nulls" () {
       given:
-      final def notification = new com.cynergisuite.middleware.entity.NotificationDto(null, null, null, null, null, null, null, null, [])
+      final def notification = new NotificationDto(null, null, null, null, null, null, null, null, [])
 
       when:
       client.retrieve(POST(url, new NotificationRequestDto(notification)), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
@@ -300,7 +304,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
 
       when:
-      final updatedNotification = new com.cynergisuite.middleware.entity.NotificationDto(null, "Updated message", savedNotification)
+      final updatedNotification = new NotificationDto(null, "Updated message", savedNotification)
       final result = client.retrieve(PUT("$url/${savedNotification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
@@ -317,9 +321,9 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       notification.recipients.addAll(recipientNotifications)
 
       when:
-      final updatedNotification = new com.cynergisuite.middleware.entity.NotificationDto(null, notification.message, notification)
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
       final newRecipient = com.cynergisuite.test.data.loader.NotificationRecipientTestDataLoader.stream(1, notification).findFirst().orElseThrow { new Exception("Unable to create NotificationRecipient")}
-      updatedNotification.recipients.add(new com.cynergisuite.middleware.entity.NotificationRecipientDto(newRecipient))
+      updatedNotification.recipients.add(new NotificationRecipientDto(newRecipient))
       final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
@@ -336,7 +340,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       notification.recipients.add(recipientNotifications[0])
 
       when:
-      final updatedNotification = new com.cynergisuite.middleware.entity.NotificationDto(null, notification.message, notification)
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
       final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
       then:
@@ -354,7 +358,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       notification.recipients.add(recipientNotifications[0])
 
       when:
-      final updatedNotification = new com.cynergisuite.middleware.entity.NotificationDto(null, notification.message, notification)
+      final updatedNotification = new NotificationDto(null, notification.message, notification)
       updatedNotification.recipients.each { it.id = null }
       final result = client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(updatedNotification)), NotificationResponseDto).notification
 
@@ -370,7 +374,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create notification") }
 
       when:
-      final updatedNotification = new com.cynergisuite.middleware.entity.NotificationDto(savedNotification)
+      final updatedNotification = new NotificationDto(savedNotification)
       updatedNotification.startDate = null
       updatedNotification.expirationDate = null
       updatedNotification.company = null
@@ -404,7 +408,7 @@ class NotificationControllerSpecification extends com.cynergisuite.middleware.co
       final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, companyId, null, null, notificationType).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(new com.cynergisuite.middleware.entity.NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
+      client.retrieve(PUT("$url/${notification.id}", new NotificationRequestDto(new NotificationDto(notification))), Argument.of(NotificationResponseDto), Argument.of(ErrorDto[]))
 
       then:
       final exception = thrown(HttpClientResponseException)

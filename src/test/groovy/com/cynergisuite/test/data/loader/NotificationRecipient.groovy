@@ -1,9 +1,9 @@
 package com.cynergisuite.test.data.loader
 
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.entity.Notification
-import com.cynergisuite.middleware.entity.NotificationRecipient
-import com.cynergisuite.middleware.repository.NotificationRecipientRepository
+import com.cynergisuite.middleware.notification.Notification
+import com.cynergisuite.middleware.notification.NotificationRecipient
+import com.cynergisuite.middleware.notification.infrastructure.NotificationRecipientRepository
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton

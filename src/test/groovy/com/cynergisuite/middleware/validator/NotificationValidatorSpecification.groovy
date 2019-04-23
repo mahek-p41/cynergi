@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.validator
 
-
+import com.cynergisuite.middleware.notification.NotificationDto
 import spock.lang.Specification
 
 import java.time.LocalDate
@@ -26,7 +26,7 @@ class NotificationValidatorSpecification extends Specification {
 
       when:
       final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
-         .map { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+         .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
@@ -43,7 +43,7 @@ class NotificationValidatorSpecification extends Specification {
       when:
       final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll).findFirst().orElseThrow { new Exception("Unable to create Notification") }
       final def notificationRecipients = com.cynergisuite.test.data.loader.NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
-      final def notificationDto = new com.cynergisuite.middleware.entity.NotificationDto(notification, notificationRecipients)
+      final def notificationDto = new NotificationDto(notification, notificationRecipients)
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
       then:
@@ -59,7 +59,7 @@ class NotificationValidatorSpecification extends Specification {
       when:
       final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll).findFirst().orElseThrow { new Exception("Unable to create Notification") }
       final def notificationRecipients = com.cynergisuite.test.data.loader.NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
-      final def notificationDto = new com.cynergisuite.middleware.entity.NotificationDto(notification, notificationRecipients)
+      final def notificationDto = new NotificationDto(notification, notificationRecipients)
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
       then:
@@ -79,7 +79,7 @@ class NotificationValidatorSpecification extends Specification {
 
       when:
       final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
-         .map { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+         .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
@@ -101,7 +101,7 @@ class NotificationValidatorSpecification extends Specification {
 
       when:
       final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", LocalDate.of(2000, FEBRUARY, 2), LocalDate.of(2000, JANUARY, 2), notificationTypeAll)
-         .map { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+         .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
@@ -124,7 +124,7 @@ class NotificationValidatorSpecification extends Specification {
 
       when:
       final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
-         .map { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+         .map { new NotificationDto(it) }
          .peek { it.id = notificationId }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)
@@ -142,7 +142,7 @@ class NotificationValidatorSpecification extends Specification {
 
       when:
       final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
-         .map { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+         .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)
 
@@ -165,7 +165,7 @@ class NotificationValidatorSpecification extends Specification {
 
       when:
       final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
-         .map { new com.cynergisuite.middleware.entity.NotificationDto(it) }
+         .map { new NotificationDto(it) }
          .peek { it.id = notificationId }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)

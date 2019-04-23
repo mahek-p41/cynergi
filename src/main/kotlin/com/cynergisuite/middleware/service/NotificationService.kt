@@ -2,11 +2,11 @@ package com.cynergisuite.middleware.service
 
 import com.cynergisuite.middleware.dto.NotificationResponseDto
 import com.cynergisuite.middleware.dto.NotificationsResponseDto
-import com.cynergisuite.middleware.entity.Notification
-import com.cynergisuite.middleware.entity.NotificationDto
-import com.cynergisuite.middleware.entity.NotificationTypeDomainDto
-import com.cynergisuite.middleware.repository.NotificationRepository
-import com.cynergisuite.middleware.repository.NotificationTypeDomainRepository
+import com.cynergisuite.middleware.notification.Notification
+import com.cynergisuite.middleware.notification.NotificationDto
+import com.cynergisuite.middleware.notification.NotificationTypeDomainDto
+import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
+import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 

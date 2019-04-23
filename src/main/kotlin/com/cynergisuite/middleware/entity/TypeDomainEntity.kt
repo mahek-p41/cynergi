@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.entity
 
-interface TypeDomainEntity<ENTITY>: com.cynergisuite.middleware.entity.Entity<ENTITY> {
+interface TypeDomainEntity<ENTITY>: Entity<ENTITY> {
 
    fun myValue(): String
 

@@ -20,9 +20,9 @@ data class VerificationEmployment(
    val name: String?,
    val reliable: Boolean?,
    val title: String?,
-   val verification: com.cynergisuite.middleware.entity.IdentifiableEntity
-) : com.cynergisuite.middleware.entity.Entity<VerificationEmployment> {
-   constructor(dto: VerificationEmploymentDto, verification: com.cynergisuite.middleware.entity.IdentifiableEntity) :
+   val verification: IdentifiableEntity
+) : Entity<VerificationEmployment> {
+   constructor(dto: VerificationEmploymentDto, verification: IdentifiableEntity) :
       this(
          id = dto.id,
          department = dto.department,

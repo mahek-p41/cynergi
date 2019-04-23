@@ -1,9 +1,10 @@
-package com.cynergisuite.middleware.repository
+package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.middleware.entity.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.NotificationTypeDomain
 import com.cynergisuite.middleware.extensions.findFirstOrNull
 import com.cynergisuite.middleware.extensions.getOffsetDateTime
 import com.cynergisuite.middleware.extensions.getUuid
+import com.cynergisuite.middleware.repository.TypeDomainRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

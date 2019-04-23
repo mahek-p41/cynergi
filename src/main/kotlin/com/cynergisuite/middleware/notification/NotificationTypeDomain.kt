@@ -1,8 +1,9 @@
-package com.cynergisuite.middleware.entity
+package com.cynergisuite.middleware.notification
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.cynergisuite.middleware.dto.spi.DataTransferObjectBase
+import com.cynergisuite.middleware.entity.TypeDomainEntity
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
 import java.util.UUID

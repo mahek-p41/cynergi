@@ -1,8 +1,8 @@
-package com.cynergisuite.middleware.repository
+package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.middleware.entity.Notification
-import com.cynergisuite.middleware.entity.NotificationRecipient
-import com.cynergisuite.middleware.entity.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.Notification
+import com.cynergisuite.middleware.notification.NotificationRecipient
+import com.cynergisuite.middleware.notification.NotificationTypeDomain
 import com.cynergisuite.middleware.extensions.findAllWithCrossJoin
 import com.cynergisuite.middleware.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.middleware.extensions.getLocalDate
@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.extensions.getOffsetDateTime
 import com.cynergisuite.middleware.extensions.getUuid
 import com.cynergisuite.middleware.extensions.insertReturning
 import com.cynergisuite.middleware.extensions.updateReturning
+import com.cynergisuite.middleware.repository.Repository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language

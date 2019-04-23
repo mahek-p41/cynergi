@@ -25,9 +25,9 @@ data class VerificationReference (
    val reliable: Boolean?,
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
-   val verification: com.cynergisuite.middleware.entity.IdentifiableEntity
-) : com.cynergisuite.middleware.entity.Entity<VerificationReference> {
-   constructor(dto: VerificationReferenceDto, parent: com.cynergisuite.middleware.entity.IdentifiableEntity) :
+   val verification: IdentifiableEntity
+) : Entity<VerificationReference> {
+   constructor(dto: VerificationReferenceDto, parent: IdentifiableEntity) :
       this(
          id = dto.id,
          address = dto.address,

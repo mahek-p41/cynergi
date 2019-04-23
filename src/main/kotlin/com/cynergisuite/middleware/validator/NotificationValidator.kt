@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.validator
 
-import com.cynergisuite.middleware.entity.NotificationDto
+import com.cynergisuite.middleware.notification.NotificationDto
 import com.cynergisuite.middleware.exception.ValidationError
 import com.cynergisuite.middleware.exception.ValidationException
 import com.cynergisuite.middleware.service.NotificationService

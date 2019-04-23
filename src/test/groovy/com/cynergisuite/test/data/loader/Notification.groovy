@@ -1,9 +1,10 @@
 package com.cynergisuite.test.data.loader
 
-
+import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
+import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.entity.Notification
-import com.cynergisuite.middleware.entity.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.Notification
+import com.cynergisuite.middleware.notification.NotificationTypeDomain
 import groovy.transform.CompileStatic
 
 import javax.inject.Singleton
@@ -43,12 +44,12 @@ class NotificationTestDataLoader {
 @Singleton
 @CompileStatic
 class NotificationDataLoaderService {
-   private final com.cynergisuite.middleware.repository.NotificationRepository notificationsRepository
-   private final com.cynergisuite.middleware.repository.NotificationTypeDomainRepository notificationTypeDomainRepository
+   private final NotificationRepository notificationsRepository
+   private final NotificationTypeDomainRepository notificationTypeDomainRepository
 
    NotificationDataLoaderService(
-      com.cynergisuite.middleware.repository.NotificationRepository notificationsRepository,
-      com.cynergisuite.middleware.repository.NotificationTypeDomainRepository notificationTypeDomainRepository
+      NotificationRepository notificationsRepository,
+      NotificationTypeDomainRepository notificationTypeDomainRepository
    ) {
       this.notificationsRepository = notificationsRepository
       this.notificationTypeDomainRepository = notificationTypeDomainRepository

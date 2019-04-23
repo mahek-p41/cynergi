@@ -1,11 +1,13 @@
-package com.cynergisuite.middleware.entity
+package com.cynergisuite.middleware.notification
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.cynergisuite.middleware.dto.spi.DataTransferObjectBase
+import com.cynergisuite.middleware.entity.Entity
+import com.cynergisuite.middleware.entity.IdentifiableEntity
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import java.time.OffsetDateTime
 import java.util.Objects
 import java.util.UUID
@@ -20,10 +22,10 @@ data class NotificationRecipient (
    val timeUpdated: OffsetDateTime = timeCreated,
    val description: String? = null,
    val recipient: String,
-   val notification: com.cynergisuite.middleware.entity.IdentifiableEntity
-) : com.cynergisuite.middleware.entity.Entity<NotificationRecipient> {
+   val notification: IdentifiableEntity
+) : Entity<NotificationRecipient> {
 
-   constructor(description: String, recipient: String, notification: com.cynergisuite.middleware.entity.IdentifiableEntity) :
+   constructor(description: String, recipient: String, notification: IdentifiableEntity) :
       this(
          id = null,
          description = description,
@@ -31,7 +33,7 @@ data class NotificationRecipient (
          notification = notification
       )
 
-   constructor(dto: NotificationRecipientDto, notification: com.cynergisuite.middleware.entity.IdentifiableEntity) :
+   constructor(dto: NotificationRecipientDto, notification: IdentifiableEntity) :
       this(
          id = dto.id,
          recipient = dto.recipient,
