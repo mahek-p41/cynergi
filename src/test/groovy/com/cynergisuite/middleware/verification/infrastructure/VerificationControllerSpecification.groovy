@@ -1,5 +1,6 @@
-package com.cynergisuite.middleware.controller
+package com.cynergisuite.middleware.verification.infrastructure
 
+import com.cynergisuite.middleware.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationDto
 import com.cynergisuite.middleware.verfication.VerificationReference
@@ -21,7 +22,7 @@ import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
-class VerificationControllerSpecification extends com.cynergisuite.middleware.controller.spi.ControllerSpecificationBase {
+class VerificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/verifications/corrto"
    final def verificationDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.VerificationDataLoaderService)
    final def verificationReferenceDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.VerificationReferenceDataLoaderService)

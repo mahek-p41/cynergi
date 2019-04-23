@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.service
+package com.cynergisuite.middleware.localization
 
 import com.cynergisuite.middleware.localization.LocalizationFacade
 import org.springframework.context.support.ResourceBundleMessageSource

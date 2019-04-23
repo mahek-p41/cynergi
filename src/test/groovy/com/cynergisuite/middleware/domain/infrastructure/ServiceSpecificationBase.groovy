@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.service.spi
+package com.cynergisuite.middleware.domain.infrastructure
 
 
 import io.micronaut.context.ApplicationContext

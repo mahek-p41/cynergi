@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.validator
+package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.notification.NotificationDto

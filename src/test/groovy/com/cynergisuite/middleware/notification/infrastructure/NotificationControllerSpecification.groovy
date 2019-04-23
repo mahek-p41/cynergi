@@ -1,6 +1,6 @@
-package com.cynergisuite.middleware.controller
+package com.cynergisuite.middleware.notification.infrastructure
 
-
+import com.cynergisuite.middleware.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.notification.NotificationRequestValueObject
 import com.cynergisuite.middleware.notification.NotificationResponseValueObject
@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import com.cynergisuite.middleware.notification.NotificationDto
 import com.cynergisuite.middleware.notification.NotificationRecipientDto
 import com.cynergisuite.middleware.notification.NotificationTypeDomainDto
-import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 
@@ -24,7 +23,7 @@ import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
-class NotificationControllerSpecification extends com.cynergisuite.middleware.controller.spi.ControllerSpecificationBase {
+class NotificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/notifications"
    final def notificationRepository = applicationContext.getBean(NotificationRepository)
    final def notificationsDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.NotificationDataLoaderService)

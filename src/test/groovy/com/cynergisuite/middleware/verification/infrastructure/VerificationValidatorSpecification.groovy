@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.validator
+package com.cynergisuite.middleware.verification.infrastructure
 
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.MessageCodes

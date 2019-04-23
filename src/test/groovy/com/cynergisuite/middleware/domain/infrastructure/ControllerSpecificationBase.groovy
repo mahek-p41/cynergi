@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.controller.spi
+package com.cynergisuite.middleware.domain.infrastructure
 
 import com.cynergisuite.test.helper.TruncateDatabaseService
 import io.micronaut.context.ApplicationContext
