@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.domain.infrastructure
+package com.cynergisuite.domain.infrastructure
 
 
 import io.micronaut.context.ApplicationContext
@@ -10,7 +10,7 @@ import spock.lang.Specification
 abstract class ServiceSpecificationBase extends Specification {
    @Shared @AutoCleanup EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
    @Shared applicationContext = embeddedServer.applicationContext
-   private @Shared truncateDatabaseService = applicationContext.getBean(com.cynergisuite.test.helper.TruncateDatabaseService)
+   private @Shared truncateDatabaseService = applicationContext.getBean(TruncateDatabaseService)
 
    void cleanup() {
       truncateDatabaseService.truncate()

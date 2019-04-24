@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.verification.infrastructure
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.MessageCodes
 import com.cynergisuite.middleware.verfication.VerificationDto
+import com.cynergisuite.middleware.verfication.VerificationTestDataLoader
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationService
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationValidator
 import spock.lang.Specification
@@ -11,7 +12,7 @@ class VerificationValidatorSpecification extends Specification {
 
    void "validate save valid VerificationDto" () {
       given:
-      final def verificationDto = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verificationDto = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def verificationService = Mock(VerificationService)
       final def validator = new VerificationValidator(verificationService)
 
@@ -25,7 +26,7 @@ class VerificationValidatorSpecification extends Specification {
 
    void "validate save invalid VerificationDto due to duplicate customer account" () {
       given:
-      final def verificationDto = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verificationDto = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def verificationService = Mock(VerificationService)
       final def validator = new VerificationValidator(verificationService)
 
@@ -43,7 +44,7 @@ class VerificationValidatorSpecification extends Specification {
 
    void "validate update valid VerificationDto" () {
       given:
-      final def verificationDto = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.id = 1 }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verificationDto = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.id = 1 }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def toUpdateVerificationDto = verificationDto.copyMe()
       final def verificationService = Mock(VerificationService)
       final def validator = new VerificationValidator(verificationService)

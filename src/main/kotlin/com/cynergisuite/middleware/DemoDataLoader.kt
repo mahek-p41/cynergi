@@ -1,4 +1,4 @@
-package com.cynergisuite.test.data.loader
+package com.cynergisuite.middleware
 
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.event.ApplicationEventListener

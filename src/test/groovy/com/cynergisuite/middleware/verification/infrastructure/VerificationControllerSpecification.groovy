@@ -1,10 +1,14 @@
 package com.cynergisuite.middleware.verification.infrastructure
 
-import com.cynergisuite.middleware.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationDto
 import com.cynergisuite.middleware.verfication.VerificationReference
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationReferenceRepository
+import com.cynergisuite.middleware.verfication.VerificationDataLoaderService
+import com.cynergisuite.middleware.verfication.VerificationReferenceDataLoaderService
+import com.cynergisuite.middleware.verfication.VerificationReferenceTestDataLoader
+import com.cynergisuite.middleware.verfication.VerificationTestDataLoader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.javafaker.Faker
 import com.cynergisuite.middleware.error.ErrorValueObject
@@ -14,8 +18,8 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 
 import java.util.stream.Collectors
 
-import static com.cynergisuite.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmpty
-import static com.cynergisuite.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
+import static com.cynergisuite.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmpty
+import static com.cynergisuite.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpRequest.PUT
@@ -24,8 +28,8 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 class VerificationControllerSpecification extends ControllerSpecificationBase {
    final def url = "/api/verifications/corrto"
-   final def verificationDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.VerificationDataLoaderService)
-   final def verificationReferenceDataLoaderService = applicationContext.getBean(com.cynergisuite.test.data.loader.VerificationReferenceDataLoaderService)
+   final def verificationDataLoaderService = applicationContext.getBean(VerificationDataLoaderService)
+   final def verificationReferenceDataLoaderService = applicationContext.getBean(VerificationReferenceDataLoaderService)
    final def verificationReferenceRepository = applicationContext.getBean(VerificationReferenceRepository)
    final ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper)
 
@@ -80,7 +84,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification successfully" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       final def savedVerification = client.retrieve(POST(url, verification), VerificationDto)
@@ -96,7 +100,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification without auto, employment or landlord" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1, false, false, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = VerificationTestDataLoader.stream(1, false, false, false, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       final def savedVerification = client.retrieve(POST(url, verification), VerificationDto)
@@ -146,7 +150,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
    void "post verification with longer than allowed customer comments should result in a failure" () {
       given:
       final def stringFaker = new Faker().lorem()
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       client.exchange(POST(url, verification), Argument.of(VerificationDto), Argument.of(ErrorValueObject[]))
@@ -163,7 +167,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification with no references" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       final def savedVerification = client.retrieve(POST(url, verification), VerificationDto)
@@ -181,7 +185,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification unsuccessfully due to bad date" () {
       given:
-      final def verification = com.cynergisuite.test.data.loader.VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationDto(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final def verificationJson = new JsonSlurper().parseText(objectMapper.writeValueAsString(verification))
 
       when:
@@ -214,10 +218,10 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
    void "put verification references by adding a third reference" () {
       given:
       final Verification verification = verificationDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final List<VerificationReference> references = verificationReferenceDataLoaderService.stream(verification, 2).collect(Collectors.toList())
+      final List<VerificationReference> references = verificationReferenceDataLoaderService.stream(2, verification).collect(Collectors.toList())
       final def toUpdate = verification.copyMe()
       toUpdate.references.addAll(references)
-      toUpdate.references.add(com.cynergisuite.test.data.loader.VerificationReferenceTestDataLoader.stream(toUpdate, 1).findFirst().orElseThrow { new Exception("Unable to create VerificationReference") })
+      toUpdate.references.add(VerificationReferenceTestDataLoader.stream(1, toUpdate).findFirst().orElseThrow { new Exception("Unable to create VerificationReference") })
 
       when:
       final def updatedVerification = client.retrieve(PUT(url, new VerificationDto(toUpdate)), VerificationDto)

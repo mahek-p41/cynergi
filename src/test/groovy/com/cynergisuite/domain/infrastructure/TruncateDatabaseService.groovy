@@ -1,4 +1,4 @@
-package com.cynergisuite.test.helper
+package com.cynergisuite.domain.infrastructure
 
 import io.micronaut.context.annotation.Requires
 import io.micronaut.spring.tx.annotation.Transactional

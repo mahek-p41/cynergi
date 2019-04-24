@@ -12,7 +12,7 @@ import java.util.UUID
 import javax.validation.constraints.Size
 
 data class VerificationEmployment(
-   val id: Long?,
+   val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,

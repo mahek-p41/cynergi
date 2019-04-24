@@ -1,6 +1,6 @@
-package com.cynergisuite.middleware.domain.infrastructure
+package com.cynergisuite.domain.infrastructure
 
-import com.cynergisuite.test.helper.TruncateDatabaseService
+
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.DefaultHttpClient

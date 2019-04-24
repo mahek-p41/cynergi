@@ -2,6 +2,9 @@ package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.notification.NotificationDto
+import com.cynergisuite.middleware.notification.NotificationRecipientTestDataLoader
+import com.cynergisuite.middleware.notification.NotificationTestDataLoader
+import com.cynergisuite.middleware.notification.NotificationTypeDomainTestDataLoader
 import com.cynergisuite.middleware.notification.infrastructure.NotificationService
 import com.cynergisuite.middleware.notification.infrastructure.NotificationValidator
 import spock.lang.Specification
@@ -25,10 +28,10 @@ class NotificationValidatorSpecification extends Specification {
       given:
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
       when:
-      final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
+      final def notificationDto = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null)
          .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
@@ -41,11 +44,11 @@ class NotificationValidatorSpecification extends Specification {
       given:
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
 
       when:
-      final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll).findFirst().orElseThrow { new Exception("Unable to create Notification") }
-      final def notificationRecipients = com.cynergisuite.test.data.loader.NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
+      final def notification = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final def notificationRecipients = NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
       final def notificationDto = new NotificationDto(notification, notificationRecipients)
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
@@ -57,11 +60,11 @@ class NotificationValidatorSpecification extends Specification {
       given:
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
       when:
-      final def notification = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll).findFirst().orElseThrow { new Exception("Unable to create Notification") }
-      final def notificationRecipients = com.cynergisuite.test.data.loader.NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
+      final def notification = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final def notificationRecipients = NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
       final def notificationDto = new NotificationDto(notification, notificationRecipients)
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
 
@@ -78,10 +81,10 @@ class NotificationValidatorSpecification extends Specification {
       given:
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
 
       when:
-      final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
+      final def notificationDto = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null)
          .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
@@ -100,10 +103,10 @@ class NotificationValidatorSpecification extends Specification {
       given:
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
       when:
-      final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", LocalDate.of(2000, FEBRUARY, 2), LocalDate.of(2000, JANUARY, 2), notificationTypeAll)
+      final def notificationDto = NotificationTestDataLoader.stream(1, "corrto", LocalDate.of(2000, FEBRUARY, 2), LocalDate.of(2000, JANUARY, 2), notificationTypeAll, null)
          .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateSave(notificationDto)
@@ -123,10 +126,10 @@ class NotificationValidatorSpecification extends Specification {
       final def notificationId = 1
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
       when:
-      final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
+      final def notificationDto = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null)
          .map { new NotificationDto(it) }
          .peek { it.id = notificationId }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
@@ -141,10 +144,10 @@ class NotificationValidatorSpecification extends Specification {
       given:
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
       when:
-      final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
+      final def notificationDto = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null)
          .map { new NotificationDto(it) }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }
       new NotificationValidator(notificationService, dateFormatter).validateUpdate(notificationDto)
@@ -164,10 +167,10 @@ class NotificationValidatorSpecification extends Specification {
       final def notificationId = 1
       final NotificationService notificationService = Mock()
       final def dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
-      final def notificationTypeAll = com.cynergisuite.test.data.loader.NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final def notificationTypeAll = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
 
       when:
-      final def notificationDto = com.cynergisuite.test.data.loader.NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll)
+      final def notificationDto = NotificationTestDataLoader.stream(1, "corrto", null, null, notificationTypeAll, null)
          .map { new NotificationDto(it) }
          .peek { it.id = notificationId }
          .findFirst().orElseThrow { new Exception("Unable to create Notification") }

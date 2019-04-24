@@ -26,10 +26,10 @@ import javax.validation.ConstraintViolationException
 import javax.validation.Path
 
 @Controller
-class ErrorHandler @Inject constructor(
+class ErrorHandlerController @Inject constructor(
    private val localizationService: LocalizationFacade
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(ErrorHandler::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
 
    @Error(global = true, exception = Throwable::class)
    fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorValueObject> {

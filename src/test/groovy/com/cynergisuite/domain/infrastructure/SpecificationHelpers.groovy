@@ -1,4 +1,4 @@
-package com.cynergisuite.test.helper
+package com.cynergisuite.domain.infrastructure
 
 class SpecificationHelpers {
 
