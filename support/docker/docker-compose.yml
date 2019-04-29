@@ -1,0 +1,69 @@
+version: '3.5'
+networks:
+  cynerginet:
+    name: cynerginet
+services:
+  cynergidevdb:
+    container_name: cynergidevdb
+    build:
+      context: db
+      dockerfile: cynergidevdb.dockerfile
+    ports:
+      - "6432:5432"
+    volumes:
+    - ./db/DatabaseDumps:/tmp/dumps
+    environment:
+      - POSTGRES_PASSWORD=password
+    restart: always
+    networks:
+      - cynerginet
+  cynergidevdbsnapshot:
+    container_name: cynergidevdbsnapshot
+    build:
+      context: db
+      dockerfile: cynergiedevdbsnapshot.dockerfile
+    volumes:
+      - ./db/DatabaseDumps:/tmp/dumps
+    depends_on:
+      - cynergidevdb
+    networks:
+      - cynerginet
+    command: [ "/root/cynergi-dev-db-dump.sh" ]
+  cynergidevdbpsql:
+    build:
+      context: db
+      dockerfile: cynergiedevdbsnapshot.dockerfile
+    container_name: cynergidevdbpsql
+    depends_on:
+      - cynergidevdb
+    stdin_open: true
+    tty: true
+    command: [ "/usr/bin/psql", "--host=cynergidevdb", "--port=5432", "cynergidb", "postgres" ]
+    networks:
+      - cynerginet
+  cynergitestdb:
+    build:
+      context: db
+      dockerfile: cynergitestdb.dockerfile
+    ports:
+      - "7432:5432"
+    tmpfs: /var/lib/postgresql/data:rw
+    environment:
+      - POSTGRES_DB=cynergitestdb
+      - POSTGRES_PASSWORD=password
+    restart: always
+    container_name: cynergitestdb
+    networks:
+      - cynerginet
+  cynergitestdbpsql:
+    build:
+      context: db
+      dockerfile: cynergiedevdbsnapshot.dockerfile
+    container_name: cynergitestdbpsql
+    depends_on:
+      - cynergidevdb
+    stdin_open: true
+    tty: true
+    command: [ "/usr/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
+    networks:
+      - cynerginet

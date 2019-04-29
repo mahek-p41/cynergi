@@ -647,3 +647,6 @@ healthchecksdb
 .settings/
 
 .project
+.vertx/
+
+*.dump

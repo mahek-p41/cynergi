@@ -115,7 +115,10 @@ Note: This option is useful if you just want to run the application but aren't i
    1. Just leave this running in a separate terminal window
 2. Change directory to the root of the *cynergi-middleware* project using a bash prompt (IE Git Bash on Windows)
    1. Will want to do this in a new terminal window separate from where the *cynergi-dev-middleware.sh* script is being run
-3. Execute from the terminal `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*-all.jar`
+3. For local mode execute from the terminal 
+   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*-all.jar`
+4. For demo mode execute from the terminal 
+   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=demo -jar ./build/libs/cynergi-middleware*-all.jar`
 4. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
 
 
@@ -252,3 +255,4 @@ API is actually fulfilling that contract.
 * `npx yo cyn:migration new_table feature-new-stuff-cynXXX -a`
   * Will append the table skeleton described above to an already existing migration script rather than creating a new one
 * `TABLE_NAME=new_table bash -c 'npx yo cyn:entity $TABLE_NAME && npx yo cyn:controller $TABLE_NAME && npx yo cyn:migration $TABLE_NAME feature-new-stuff-cynXXX'`
+* `./gradlew clean assemble openApiGenerate`
