@@ -31,16 +31,17 @@ repositories {
    mavenLocal()
    maven {
       url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
-   }   
+   }
 }
 
 dependencyManagement {
    imports {
-      mavenBom 'io.micronaut:micronaut-bom:1.1.0'
+      mavenBom "io.micronaut:micronaut-bom:${micronautVersion}"
    }
 }
 
 dependencies {
+   annotationProcessor "io.micronaut:micronaut-graal"
    compile "io.micronaut.configuration:micronaut-jdbc-hikari"
    compile "io.micronaut.configuration:micronaut-flyway"
    compile "io.micronaut:micronaut-http-client"
@@ -69,7 +70,7 @@ dependencies {
    runtime "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8"
 
    compile "com.github.javafaker:javafaker:0.16"
-   
+
    testCompile("org.spockframework:spock-core") {
       exclude group: "org.codehaus.groovy", module: "groovy-all"
    }
@@ -123,7 +124,7 @@ openApiGenerate {
    inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
    validateSpec = false
    configOptions = [
-      npmName: "cynergi-fetch-client",
+      npmName   : "cynergi-fetch-client",
       npmVersion: "${releaseVersion}"
    ]
 }
@@ -139,13 +140,13 @@ tasks.withType(JavaExec) {
 jar {
    manifest {
       attributes(
-         'HT-Built-By'       : System.properties['user.name'],
+         'HT-Built-By': System.properties['user.name'],
          'HT-Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-         'HT-Build-Revision' : versioning.info.commit,
-         'HT-Created-By'     : "Gradle ${gradle.gradleVersion}",
-         'HT-Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-         'HT-Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
-         'HT-App-Version'    : releaseVersion
+         'HT-Build-Revision': versioning.info.commit,
+         'HT-Created-By': "Gradle ${gradle.gradleVersion}",
+         'HT-Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+         'HT-Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
+         'HT-App-Version': releaseVersion
       )
    }
 }
