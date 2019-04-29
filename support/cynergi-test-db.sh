@@ -2,4 +2,4 @@
 
 cd docker
 
-docker-compose rm -f && docker-compose build cynergidevdb cynergitestdb && docker-compose up cynergidevdb cynergitestdb
+docker-compose rm -f && docker-compose build cynergitestdb && docker-compose up cynergitestdb
