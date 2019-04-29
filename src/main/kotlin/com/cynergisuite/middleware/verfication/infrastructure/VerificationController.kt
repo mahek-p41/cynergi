@@ -1,10 +1,8 @@
-package com.cynergisuite.middleware.controller
+package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.middleware.verfication.VerificationDto
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.verfication.infrastructure.VerificationService
-import com.cynergisuite.middleware.verfication.infrastructure.VerificationValidator
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -30,7 +28,7 @@ class VerificationController @Inject constructor(
    private val verificationService: VerificationService,
    private val verificationValidator: VerificationValidator
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(com.cynergisuite.middleware.controller.VerificationController::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(VerificationController::class.java)
 
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(

@@ -6,8 +6,8 @@ services:
   cynergidevdb:
     container_name: cynergidevdb
     build:
-      context: ./db
-      dockerfile: cynergidevdb.dockerfile
+      context: db
+      dockerfile: db/cynergidevdb.dockerfile
     ports:
       - "6432:5432"
     volumes:
@@ -20,8 +20,8 @@ services:
   cynergidevdbsnapshot:
     container_name: cynergidevdbsnapshot
     build:
-      context: ./db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      context: db
+      dockerfile: db/cynergiedevdbsnapshot.dockerfile
     volumes:
       - ./db/DatabaseDumps:/tmp/dumps
     depends_on:
@@ -31,8 +31,8 @@ services:
     command: [ "/root/cynergi-dev-db-dump.sh" ]
   cynergidevdbpsql:
     build:
-      context: ./db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      context: db
+      dockerfile: db/cynergiedevdbsnapshot.dockerfile
     container_name: cynergidevdbpsql
     depends_on:
       - cynergidevdb
@@ -43,8 +43,8 @@ services:
       - cynerginet
   cynergitestdb:
     build:
-      context: ./db
-      dockerfile: cynergitestdb.dockerfile
+      context: db
+      dockerfile: db/cynergitestdb.dockerfile
     ports:
       - "7432:5432"
     tmpfs: /var/lib/postgresql/data:rw
@@ -57,8 +57,8 @@ services:
       - cynerginet
   cynergitestdbpsql:
     build:
-      context: ./db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      context: db
+      dockerfile: db/cynergiedevdbsnapshot.dockerfile
     container_name: cynergitestdbpsql
     depends_on:
       - cynergidevdb
