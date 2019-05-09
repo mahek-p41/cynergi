@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class EmployeeValidator @Inject constructor (
-   private val employeeService: EmployeeService
+   private val employeeRepository: EmployeeRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeValidator::class.java)
 
@@ -37,7 +38,7 @@ class EmployeeValidator @Inject constructor (
 
       if (id == null) {
          errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
-      } else if ( !employeeService.exists(id = id) ) {
+      } else if ( !employeeRepository.exists(id = id) ) {
          errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
       }
 

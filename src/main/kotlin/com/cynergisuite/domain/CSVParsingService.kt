@@ -8,10 +8,10 @@ import org.apache.commons.csv.CSVRecord
 import java.io.Reader
 
 abstract class CSVParsingService : LegacyCsvLoadingService {
-   abstract fun processCsvRow(record: CSVRecord)
+   protected abstract fun processCsvRow(record: CSVRecord)
 
    @Transactional
-   final override fun processCsv(reader: Reader) {
+   override fun processCsv(reader: Reader) {
       CSVParser(reader, CSVFormat.EXCEL.withHeader()).use { parser ->
          for (record in parser) {
             processCsvRow(record)
