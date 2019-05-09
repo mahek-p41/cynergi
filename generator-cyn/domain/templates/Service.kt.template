@@ -10,6 +10,7 @@ import javax.validation.Valid
 @Singleton
 class <%= domain %>Service @Inject constructor(
    private val <%= repository %>Repository: <%= domain %>Repository
+   private val <%= repository %>Validator: <%= domain %>Validator
 ) : IdentifiableService<<%= domain %>ValueObject> {
    override fun fetchById(id: Long): <%= domain %>ValueObject? =
       <%= repository %>Repository.findOne(id = id)?.let { <%= domain %>ValueObject(entity = it) }
@@ -18,14 +19,20 @@ class <%= domain %>Service @Inject constructor(
       <%= repository %>Repository.exists(id = id)
 
    @Validated
-   fun create(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject =
-      <%= domain %>ValueObject(
+   fun create(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject {
+      <%= repository %>Validator.validateSave(vo)
+
+      return <%= domain %>ValueObject(
          entity = <%= repository %>Repository.insert(entity = <%= domain %>(vo = vo))
       )
+   }
 
    @Validated
-   fun update(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject =
+   fun update(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject {
+      <%= repository %>Validator.validateSave(vo)
+
       <%= domain %>ValueObject(
          entity = <%= repository %>Repository.update(entity = <%= domain %>(vo = vo))
       )
+   }
 }

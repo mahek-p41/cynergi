@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeService
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND

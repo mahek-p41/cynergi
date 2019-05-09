@@ -1,6 +1,5 @@
 package <%= fullDomainPackage %>
 
-import <%= fullDomainPackage %>.infrastructure.<%= domain %>Service
 import <%= pkg %>.<%= appName %>.error.ValidationError
 import <%= pkg %>.<%= appName %>.error.ValidationException
 import <%= pkg %>.<%= appName %>.localization.MessageCodes.System.NOT_FOUND

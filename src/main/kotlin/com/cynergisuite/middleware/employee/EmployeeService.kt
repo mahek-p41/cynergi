@@ -11,7 +11,8 @@ import javax.validation.Valid
 
 @Singleton
 class EmployeeService @Inject constructor(
-   private val employeeRepository: EmployeeRepository
+   private val employeeRepository: EmployeeRepository,
+   private val employeeValidator: EmployeeValidator
 ) : IdentifiableService<EmployeeValueObject>, CSVParsingService() {
    override fun fetchById(id: Long): EmployeeValueObject? =
       employeeRepository.findOne(id = id)?.let { EmployeeValueObject(entity = it) }
@@ -20,16 +21,22 @@ class EmployeeService @Inject constructor(
       employeeRepository.exists(id = id)
 
    @Validated
-   fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject =
-      EmployeeValueObject(
+   fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {
+      employeeValidator.validateSave(vo)
+
+      return EmployeeValueObject(
          entity = employeeRepository.insert(entity = Employee(vo = vo))
       )
+   }
 
    @Validated
-   fun update(@Valid vo: EmployeeValueObject): EmployeeValueObject =
-      EmployeeValueObject(
+   fun update(@Valid vo: EmployeeValueObject): EmployeeValueObject {
+      employeeValidator.validateUpdate(vo)
+
+      return EmployeeValueObject(
          entity = employeeRepository.update(entity = Employee(vo = vo))
       )
+   }
 
    override fun processCsv(reader: Reader) {
       processCsv(reader) { record ->
