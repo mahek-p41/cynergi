@@ -38,9 +38,7 @@ class <%= domain %>Validator @Inject constructor (
       if (id == null) {
          errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
       } else {
-         val existing<%= domain %>: <%= domain %>ValueObject? = <%= repository %>Service.fetchById(id = id)
-
-         if (existing<%= domain %> == null) {
+         if ( !<%= repository %>.exists(id = id) ) {
             errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
          }
       }

@@ -19,7 +19,7 @@ class EmployeeValidator @Inject constructor (
    fun validateSave(vo: EmployeeValueObject) {
       logger.debug("Validating Save Employee {}", vo)
 
-      val errors = doSharedValidation(vo)
+      val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer
 
       if (errors.isNotEmpty()) {
          logger.debug("Validating Save Employee {} had errors", vo)
@@ -32,17 +32,13 @@ class EmployeeValidator @Inject constructor (
    fun validateUpdate(vo: EmployeeValueObject) {
       logger.debug("Validating Update Employee {}", vo)
 
-      val errors = doSharedValidation(vo)
+      val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer
       val id = vo.id
 
       if (id == null) {
          errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
-      } else {
-         val existingEmployee: EmployeeValueObject? = employeeService.fetchById(id = id)
-
-         if (existingEmployee == null) {
-            errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
-         }
+      } else if ( !employeeService.exists(id = id) ) {
+         errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
       }
 
       if (errors.isNotEmpty()) {
@@ -50,13 +46,5 @@ class EmployeeValidator @Inject constructor (
 
          throw ValidationException(errors)
       }
-   }
-
-   private fun doSharedValidation(vo: EmployeeValueObject): MutableSet<ValidationError> {
-      val errors = mutableSetOf<ValidationError>()
-
-      TODO("Do validation that is shared for both save and update here")
-
-      return errors
    }
 }

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware
 
-import com.cynergisuite.middleware.employee.EmployeeService
+import com.cynergisuite.middleware.legacy.load.LegacyCsvLoaderProcessor
 import com.cynergisuite.middleware.legacy.load.LegacyLoad
 import com.cynergisuite.middleware.legacy.load.infrastructure.LegacyLoadRepository
 import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
@@ -24,6 +24,12 @@ import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/*
+ This class is here rather than it's own package because when it was initially added to the project and placed in the
+ legacy.load package Micronaut wouldn't start it automatically
+
+ TODO try putting this in it's own package
+ */
 @Singleton
 class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.location}") private val legacyImportLocation: String,
@@ -31,12 +37,11 @@ class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.rename-extension}") private val renameExtension: String = "processed",
    @Value("\${cynergi.legacy.import.process-startup}") private val processImportsOnStartup: Boolean = true,
    private val legacyImportationRepository: LegacyLoadRepository,
-   private val employeeService: EmployeeService
+   private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor
 ) : ApplicationEventListener<MigrationFinishedEvent> {
    private val logger: Logger = LoggerFactory.getLogger(LegacyDataLoader::class.java)
    private val fileSystem = FileSystems.getDefault()
    private val eliMatcher = fileSystem.getPathMatcher("glob:eli*csv")
-   private val employeeMatcher = fileSystem.getPathMatcher("glob:eli-employee*csv")
 
    override fun onApplicationEvent(event: MigrationFinishedEvent?) {
       if (processImportsOnStartup) {
@@ -70,9 +75,7 @@ class LegacyDataLoader @Inject constructor(
 
          InputStreamReader(teeInputStream).use { reader ->
             BufferedReader(reader).use { bufferedReader ->
-               when {
-                  employeeMatcher.matches(path) -> employeeService.processCsv(bufferedReader)
-               }
+               legacyCsvLoaderProcessor.processCsv(path, bufferedReader)
             }
          }
 

@@ -1,17 +1,21 @@
 package com.cynergisuite.domain
 
+import com.cynergisuite.middleware.legacy.load.LegacyCsvLoadingService
+import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import java.io.Reader
 
-abstract class CSVParsingService {
+abstract class CSVParsingService : LegacyCsvLoadingService {
+   abstract fun processCsvRow(record: CSVRecord)
 
-   abstract fun processCsv(reader: Reader)
-
-   protected fun processCsv(reader: Reader, rowProcessor: (record: CSVRecord) -> Unit) {
+   @Transactional
+   final override fun processCsv(reader: Reader) {
       CSVParser(reader, CSVFormat.EXCEL.withHeader()).use { parser ->
-         parser.forEach(rowProcessor)
+         for (record in parser) {
+            processCsvRow(record)
+         }
       }
    }
 }
