@@ -33,6 +33,7 @@ module.exports = class extends Generator {
       const pkg = this.config.get('basePkg');
       const pkgPath = pkg.replace(/\./gi, '/');
       const mainSrc = this.config.get('mainSrc');
+      const testSrc = this.config.get('testSrc');
       const domainPackage = dotCase(camelCase(domain));
       const domainPath = domainPackage.replace(/\./gi, '/');
       const fullDomainPackage = `${pkg}.${appName}.${domainPackage}`;

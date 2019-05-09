@@ -1,8 +1,7 @@
-package <%= fullDomainPackage %>.infrastructure
+package <%= fullDomainPackage %>
 
 import <%= pkg %>.domain.infrastructure.IdentifiableService
-import <%= fullDomainPackage %>.<%= domain %>
-import <%= fullDomainPackage %>.<%= domain %>ValueObject
+import <%= fullDomainPackage %>.infrastructure.<%= domain %>Repository
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
