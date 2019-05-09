@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE SCHEMA fastinfo_prod_import;
-CREATE TABLE fastinfo_prod_import.employee (
+CREATE TABLE fastinfo_prod_import.employee_vw (
    id                BIGSERIAL                              NOT NULL PRIMARY KEY,
    uu_row_id         UUID        DEFAULT uuid_generate_v1() NOT NULL,
    time_created      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,

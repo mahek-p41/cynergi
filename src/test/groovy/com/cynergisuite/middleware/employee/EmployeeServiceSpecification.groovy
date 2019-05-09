@@ -68,4 +68,26 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       cleanup:
       reader.close()
    }
+
+   void "check authentication employee found" () {
+      given:
+      def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
+      def tempFile = tempDirectory.resolve("eli-employees.csv")
+      def testEmployeeFile = Paths.get(EmployeeServiceSpecification.class.classLoader.getResource("legacy/load/employee/eli-employee.csv").toURI())
+      Files.copy(testEmployeeFile, tempFile)
+      def reader = Files.newBufferedReader(tempFile)
+      employeeService.processCsv(reader)
+
+      when:
+      final def employee = employeeService.findUserByAuthentication("123", "tryme").blockingGet()
+
+      then:
+      null != employee
+      "123" == employee.number
+      "tryme" == employee.passCode
+      employee.active
+
+      cleanup:
+      reader.close()
+   }
 }

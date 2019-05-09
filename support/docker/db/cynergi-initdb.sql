@@ -1,7 +1,7 @@
 \c fastinfo_production
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE OR REPLACE VIEW employee AS
+CREATE OR REPLACE VIEW employee_vw AS
    SELECT
       id AS id,
       ht_etl_checksum::uuid AS uu_row_id,
@@ -51,7 +51,7 @@ CREATE USER MAPPING FOR postgres
 CREATE FOREIGN TABLE fastinfo_prod_import.employee (
    number INTEGER,
    passcode VARCHAR
-) SERVER fastinfo OPTIONS (TABLE_NAME 'employee', SCHEMA_NAME 'public');
+) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
 
 CREATE TABLE cyn_temp.employee (
    number INTEGER NOT NULL,

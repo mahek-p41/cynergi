@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,30 +54,31 @@ class EmployeeRepository @Inject constructor(
       logger.trace("Checking authentication for {}", number)
 
       return postgresClient.rxPreparedQuery("""
-         SELECT * FROM (
-            SELECT
-               fpie.id AS id,
-               fpie.uu_row_id AS uu_row_id,
-               fpie.time_create AS time_created,
-               fpie.time_updated AS time_update,
-               fpie.number AS number,
-               fpie.pass_code AS pass_code,
-               fpie.active AS active
-            FROM fastinfo_prod_import.employee fpie
-            UNION
-            SELECT
-               e.id AS id,
-               e.uu_row_id AS uu_row_id,
-               e.time_create AS time_created,
-               e.time_updated AS time_update,
-               e.number AS number,
-               e.pass_code AS pass_code,
-               e.active AS active
-            FROM employee e
-         )
-         WHERE user_id = $1
-            AND password = $2
-            AND active = true
+         SELECT
+            fpie.id AS id,
+            fpie.uu_row_id AS uu_row_id,
+            fpie.time_created AS time_created,
+            fpie.time_updated AS time_update,
+            fpie.number AS number,
+            fpie.pass_code AS pass_code,
+            fpie.active AS active
+         FROM fastinfo_prod_import.employee fpie
+         WHERE fpie.number = $1
+            AND fpie.pass_code = $2
+            AND fpie.active = true
+         UNION
+         SELECT
+            e.id AS id,
+            e.uu_row_id AS uu_row_id,
+            e.time_created AS time_created,
+            e.time_updated AS time_update,
+            e.number AS number,
+            e.pass_code AS pass_code,
+            e.active AS active
+         FROM employee e
+         WHERE e.number = $1
+            AND e.pass_code = $2
+            AND e.active = true
          LIMIT 1
          """.trimIndent(), Tuple.of(number, passCode)).map { rs ->
          val iterator = rs.iterator()
@@ -90,7 +92,7 @@ class EmployeeRepository @Inject constructor(
                id = row.getLong("id"),
                uuRowId = row.getUUID("uu_row_id"),
                timeCreated = row.getOffsetDateTime("time_created"),
-               timeUpdated = row.getOffsetDateTime("time_updated"),
+               timeUpdated = row.getOffsetDateTime("time_updated") ?: OffsetDateTime.now(),
                number = row.getString("number"),
                passCode = row.getString("pass_code"),
                active = row.getBoolean("active")
