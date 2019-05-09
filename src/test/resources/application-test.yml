@@ -3,14 +3,29 @@ micronaut:
    http:
       client:
          read-timeout: 3600s
+postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
+   reactive:
+      client:
+         port: 7432
+         host: localhost
+         database: cynergitestdb
+         user: postgres
+         password: password
+         maxSize: 1
 datasources:
    default:
-      url: "jdbc:postgresql://localhost:7432/cynergitestdb"
-      username: postgres
-      password: password
+      url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
+      username: "${postgres.reactive.client.user}"
+      password: "${postgres.reactive.client.password}"
       maximumPoolSize: 1
 flyway:
    datasources:
       default:
          clean-on-validation-error: true
          clean-disabled: false
+cynergi:
+   legacy:
+      import:
+         location: "./importEmpty/"
+         rename: true
+         process-startup: false

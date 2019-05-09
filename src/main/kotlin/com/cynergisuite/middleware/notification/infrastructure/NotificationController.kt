@@ -1,12 +1,14 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.middleware.notification.NotificationRequestValueObject
-import com.cynergisuite.middleware.notification.NotificationResponseValueObject
-import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
-import com.cynergisuite.middleware.notification.NotificationDto
-import com.cynergisuite.middleware.notification.NotificationTypeDomainDto
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.notification.NotificationRequestValueObject
+import com.cynergisuite.middleware.notification.NotificationResponseValueObject
+import com.cynergisuite.middleware.notification.NotificationService
+import com.cynergisuite.middleware.notification.NotificationTypeDomainValueObject
+import com.cynergisuite.middleware.notification.NotificationValidator
+import com.cynergisuite.middleware.notification.NotificationValueObject
+import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -96,7 +98,7 @@ class NotificationController @Inject constructor(
    }
 
    @Get("/types", produces = [APPLICATION_JSON])
-   fun fetchAllTypes(): List<NotificationTypeDomainDto> {
+   fun fetchAllTypes(): List<NotificationTypeDomainValueObject> {
       logger.info("Fetching All Notification Type Domains")
 
       val response = notificationService.findAllTypes()
@@ -111,7 +113,7 @@ class NotificationController @Inject constructor(
    fun fetchAllByCompany(
       @QueryValue("companyId") companyId: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
-   ): List<NotificationDto> {
+   ): List<NotificationValueObject> {
       logger.info("Fetch all notifications by company {}, type {}", companyId, type)
 
       val response = notificationService.fetchAllByCompany(companyId = companyId, type = type)
@@ -127,7 +129,7 @@ class NotificationController @Inject constructor(
       @QueryValue("companyId") companyId: String,
       @QueryValue("sendingEmployee") sendingEmployee: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
-   ): List<NotificationDto> {
+   ): List<NotificationValueObject> {
       logger.info("Fetch All Notifications by Company and User with company: {}, sendingEmployee: {}, type: {}", companyId, sendingEmployee, type)
 
       val response = notificationService.fetchAllByRecipient(companyId = companyId, sendingEmployee = sendingEmployee, type = type)
@@ -144,7 +146,7 @@ class NotificationController @Inject constructor(
    ): NotificationResponseValueObject {
       logger.info("Requested Save Notification {}", dto)
 
-      notificationValidator.validateSave(dto = dto.notification)
+      notificationValidator.validateSave(vo = dto.notification)
 
       val response = notificationService.create(dto = dto.notification)
 
@@ -159,14 +161,14 @@ class NotificationController @Inject constructor(
       @QueryValue("id") id: Long,
       @Valid @Body dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
-      val notificationDto = dto.notification.copy(id = id) // the legacy front-end doesn't pass in the id as part of the request body, it is part of the path instead
-      logger.info("Requested Update Notification {}", notificationDto)
+      val notificationValueObject = dto.notification.copy(id = id) // the legacy front-end doesn't pass in the id as part of the request body, it is part of the path instead
+      logger.info("Requested Update Notification {}", notificationValueObject)
 
-      notificationValidator.validateUpdate(dto = notificationDto)
+      notificationValidator.validateUpdate(vo = notificationValueObject)
 
-      val response = notificationService.update(dto = notificationDto)
+      val response = notificationService.update(dto = notificationValueObject)
 
-      logger.debug("Requested Update Notification {} resulted in {}", notificationDto, response)
+      logger.debug("Requested Update Notification {} resulted in {}", notificationValueObject, response)
 
       return NotificationResponseValueObject(notification = response)
    }

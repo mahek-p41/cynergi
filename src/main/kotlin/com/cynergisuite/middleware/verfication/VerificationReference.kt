@@ -2,16 +2,9 @@ package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.IdentifiableEntity
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.cynergisuite.domain.DataTransferObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
 import java.util.Objects
 import java.util.UUID
-import javax.validation.constraints.Positive
-import javax.validation.constraints.Size
 
 data class VerificationReference (
    val id: Long? = null,
@@ -29,7 +22,7 @@ data class VerificationReference (
    val verifyPhone: Boolean?,
    val verification: IdentifiableEntity
 ) : Entity<VerificationReference> {
-   constructor(dto: VerificationReferenceDto, parent: IdentifiableEntity) :
+   constructor(dto: VerificationReferenceValueObject, parent: IdentifiableEntity) :
       this(
          id = dto.id,
          address = dto.address,
@@ -63,59 +56,4 @@ data class VerificationReference (
    override fun toString(): String {
       return "VerificationReference(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, hasHomePhone=$hasHomePhone, known=$known, leaveMessage=$leaveMessage, rating=$rating, relationship=$relationship, reliable=$reliable, timeFrame=$timeFrame, verifyPhone=$verifyPhone, verification=${verification.entityId()})"
    }
-}
-
-@JsonInclude(NON_NULL)
-data class VerificationReferenceDto (
-
-   @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
-   var id: Long? = null,
-
-   @field:JsonProperty("ref_address")
-   val address: Boolean?,
-
-   @field:JsonProperty("ref_has_home_phone")
-   val hasHomePhone: Boolean?,
-
-   @field:JsonProperty("ref_known")
-   val known: Int?,
-
-   @field:JsonProperty("ref_leave_msg")
-   val leaveMessage: Boolean?,
-
-   @field:Size(max = 3)
-   @field:JsonProperty("ref_rating")
-   val rating: String?,
-
-   @field:JsonProperty("ref_relationship")
-   val relationship: Boolean?,
-
-   @field:JsonProperty("ref_reliable")
-   val reliable: Boolean?,
-
-   @field:JsonProperty("ref_time_frame")
-   val timeFrame: Int?,
-
-   @field:JsonProperty("ref_verify_phone")
-   val verifyPhone: Boolean?
-
-) : DataTransferObjectBase<VerificationReferenceDto>() {
-
-   constructor(entity: VerificationReference) :
-      this(
-         id = entity.id,
-         address = entity.address,
-         hasHomePhone = entity.hasHomePhone,
-         known = entity.known,
-         leaveMessage = entity.leaveMessage,
-         rating = entity.rating,
-         relationship = entity.relationship,
-         reliable = entity.reliable,
-         timeFrame = entity.timeFrame,
-         verifyPhone = entity.verifyPhone
-      )
-
-   override fun copyMe(): VerificationReferenceDto = copy()
-
-   override fun dtoId(): Long? = id
 }

@@ -14,29 +14,11 @@ if [[ -f /tmp/dumps/cynergidb.dump ]]; then
     echo "Finished restoring cynergidb from snapshot"
 fi
 
-dropdb --if-exists customers
-createdb customers
+dropdb --if-exists fastinfo_production
+createdb fastinfo_production
 
-if [[ -f /tmp/dumps/customers.dump ]]; then
-    echo "Restoring customers from snapshot"
-    pg_restore -v -O -x --role=postgres --dbname=customers /tmp/dumps/customers.dump
-    echo "Finished restoring customers from snapshot"
-fi
-
-dropdb --if-exists transactions
-createdb transactions
-
-if [[ -f /tmp/dumps/transactions.dump ]]; then
-    echo "Restoring transactions from snapshot"
-    pg_restore -v -O -x --role=postgres --dbname=transactions /tmp/dumps/transactions.dump
-    echo "Finished restoring transactions from snapshot"
-fi
-
-dropdb --if-exists notifications
-createdb notifications
-
-if [[ -f /tmp/dumps/notifications.dump ]]; then
-    echo "Restoring transactions from snapshot"
-    pg_restore -v -O -x --role=postgres --dbname=notifications /tmp/dumps/notifications.dump
-    echo "Finished restoring transactions from snapshot"
+if [[ -f /tmp/dumps/fastinfo.dump ]]; then
+    echo "Restoring fastinfo_production from snapshot"
+    pg_restore -v -O -x --role=postgres --dbname=fastinfo_production /tmp/dumps/fastinfo.dump
+    echo "Finished restoring fastinfo_production from snapshot"
 fi

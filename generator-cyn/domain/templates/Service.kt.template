@@ -1,0 +1,32 @@
+package <%= fullDomainPackage %>.infrastructure
+
+import <%= pkg %>.domain.infrastructure.IdentifiableService
+import <%= fullDomainPackage %>.<%= domain %>
+import <%= fullDomainPackage %>.<%= domain %>ValueObject
+import io.micronaut.validation.Validated
+import javax.inject.Inject
+import javax.inject.Singleton
+import javax.validation.Valid
+
+@Singleton
+class <%= domain %>Service @Inject constructor(
+   private val <%= repository %>Repository: <%= domain %>Repository
+) : IdentifiableService<<%= domain %>ValueObject> {
+   override fun fetchById(id: Long): <%= domain %>ValueObject? =
+      <%= repository %>Repository.findOne(id = id)?.let { <%= domain %>ValueObject(entity = it) }
+
+   override fun exists(id: Long): Boolean =
+      <%= repository %>Repository.exists(id = id)
+
+   @Validated
+   fun create(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject =
+      <%= domain %>ValueObject(
+         entity = <%= repository %>Repository.insert(entity = <%= domain %>(vo = vo))
+      )
+
+   @Validated
+   fun update(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject =
+      <%= domain %>ValueObject(
+         entity = <%= repository %>Repository.update(entity = <%= domain %>(vo = vo))
+      )
+}

@@ -1,0 +1,63 @@
+package <%= fullDomainPackage %>
+
+import <%= fullDomainPackage %>.infrastructure.<%= domain %>Service
+import <%= pkg %>.<%= appName %>.error.ValidationError
+import <%= pkg %>.<%= appName %>.error.ValidationException
+import <%= pkg %>.<%= appName %>.localization.MessageCodes.System.NOT_FOUND
+import <%= pkg %>.<%= appName %>.localization.MessageCodes.Validation.NOT_NULL
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class <%= domain %>Validator @Inject constructor (
+   private val <%= repository %>Service: <%= domain %>Service
+) {
+   private val logger: Logger = LoggerFactory.getLogger(<%= domain %>Validator::class.java)
+
+   @Throws(ValidationException::class)
+   fun validateSave(vo: <%= domain %>ValueObject) {
+      logger.debug("Validating Save <%= domain %> {}", vo)
+
+      val errors = doSharedValidation(vo)
+
+      if (errors.isNotEmpty()) {
+         logger.debug("Validating Save <%= domain %> {} had errors", vo)
+
+         throw ValidationException(errors)
+      }
+   }
+
+   @Throws(ValidationException::class)
+   fun validateUpdate(vo: <%= domain %>ValueObject) {
+      logger.debug("Validating Update <%= domain %> {}", vo)
+
+      val errors = doSharedValidation(vo)
+      val id = vo.id
+
+      if (id == null) {
+         errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
+      } else {
+         val existing<%= domain %>: <%= domain %>ValueObject? = <%= repository %>Service.fetchById(id = id)
+
+         if (existing<%= domain %> == null) {
+            errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
+         }
+      }
+
+      if (errors.isNotEmpty()) {
+         logger.debug("Validating Update <%= domain %> {} had errors", vo)
+
+         throw ValidationException(errors)
+      }
+   }
+
+   private fun doSharedValidation(vo: <%= domain %>ValueObject): MutableSet<ValidationError> {
+      val errors = mutableSetOf<ValidationError>()
+
+      TODO("Do validation that is shared for both save and update here")
+
+      return errors
+   }
+}

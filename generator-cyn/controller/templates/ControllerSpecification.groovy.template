@@ -1,40 +1,46 @@
-package com.hightouchinc.cynergi.middleware.controller
+package <%= fullDomainPackage %>.infrastructure
 
-import com.hightouchinc.cynergi.middleware.controller.spi.ControllerSpecificationBase
-import com.hightouchinc.cynergi.middleware.entity.<%= entity %>Dto
-import com.hightouchinc.cynergi.test.data.loader.<%= entity %>DataLoaderService
+import <%= pkg %>.domain.infrastructure.ControllerSpecificationBase
+import <%= fullDomainPackage %>.<%= domain %>FactoryService
+import <%= pkg %>.<%= appName %>.error.ErrorValueObject
+import <%= fullDomainPackage %>.<%= domain %>ValueObject
+import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.hateos.JsonError
+import io.micronaut.test.annotation.MicronautTest
 
-import static com.hightouchinc.cynergi.test.helper.SpecificationHelpers.allPropertiesFullAndNotEmpty
+import javax.inject.Inject
+
+import static <%= pkg %>.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmpty
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
-class <%= entity %>ControllerSpecification extends ControllerSpecificationBase {
-   final def url = "/api/<%= table %>"
-   final def <%= repository %>DataLoaderService = applicationContext.getBean(<%= entity %>DataLoaderService)
+@MicronautTest(transactional = false)
+class <%= domain %>ControllerSpecification extends ControllerSpecificationBase {
+   private static final String path = "/api/<%= table %>"
+
+   @Inject <%= domain %>FactoryService <%= repository %>FactoryService
 
    void "fetch one <%= table %> by id" () {
       given:
-      final def saved<%= entity %> = <%= table %>sDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create <%= entity %>") }
-      final def <%= table %>Dto = new <%= entity %>Dto(saved<%= entity %>)
-      
+      final def saved<%= domain %> = <%= table %>FactoryService.single()
+      final def <%= table %>ValueObject = new <%= domain %>ValueObject(saved<%= domain %>)
+
       when:
-      def result = client.retrieve(GET("$url/${saved<%= entity %>.id}"), <%= entity %>Dto)
-      
+      def result = client.retrieve(GET("$path/${saved<%= domain %>.id}"), <%= domain %>ValueObject)
+
       then:
-      result == <%= table %>Dto
+      result == <%= table %>ValueObject
       allPropertiesFullAndNotEmpty(result)
       // TODO more testing of the result
    }
 
    void "fetch one <%= table %> by id not found" () {
       when:
-      client.exchange(GET("$url/0"), <%= entity %>Dto)
+      client.exchange(GET("$path/0"), Argument.of(<%= domain %>ValueObject), Argument.of(ErrorValueObject))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(JsonError).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource 0 was unable to be found"
    }
 }

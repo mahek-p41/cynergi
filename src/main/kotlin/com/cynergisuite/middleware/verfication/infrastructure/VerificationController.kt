@@ -1,8 +1,10 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.middleware.verfication.VerificationDto
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.verfication.VerificationService
+import com.cynergisuite.middleware.verfication.VerificationValidator
+import com.cynergisuite.middleware.verfication.VerificationValueObject
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -33,7 +35,7 @@ class VerificationController @Inject constructor(
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
-   ): VerificationDto {
+   ): VerificationValueObject {
       logger.info("Fetching Verification by {}", id)
 
       val response = verificationService.fetchById(id = id) ?: throw NotFoundException(id)
@@ -48,7 +50,7 @@ class VerificationController @Inject constructor(
    fun fetchOne(
       @QueryValue("companyId") companyId: String,
       @QueryValue("customerAccount") customerAccount: String
-   ): VerificationDto {
+   ): VerificationValueObject {
       logger.info("Fetching Verification by company: {}, customer account {}", companyId, customerAccount)
 
       val response = verificationService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
@@ -62,11 +64,11 @@ class VerificationController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
       @QueryValue("companyId") companyId: String,
-      @Valid @Body dto: VerificationDto
-   ): VerificationDto {
+      @Valid @Body dto: VerificationValueObject
+   ): VerificationValueObject {
       logger.info("Requested Save Validation {} with company: {}", dto, companyId)
 
-      verificationValidator.validateSave(dto = dto, parent = companyId)
+      verificationValidator.validateSave(vo = dto, parent = companyId)
 
       val response = verificationService.create(dto = dto, parent = companyId)
 
@@ -79,11 +81,11 @@ class VerificationController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
       @QueryValue("companyId") companyId: String,
-      @Valid @Body dto: VerificationDto
-   ): VerificationDto {
+      @Valid @Body dto: VerificationValueObject
+   ): VerificationValueObject {
       logger.info("Requested Update Validation {} with company: {}", dto, companyId)
 
-      verificationValidator.validateUpdate(dto = dto, parent = companyId)
+      verificationValidator.validateUpdate(vo = dto, parent = companyId)
 
       val response = verificationService.update(dto = dto, parent = companyId)
 

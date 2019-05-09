@@ -4,41 +4,56 @@ const chalk = require('chalk');
 const yosay = require('yosay');
 const camelCase = require('camel-case');
 const pascalCase = require('pascal-case');
+const dotCase = require('dot-case');
+const decamelize = require('decamelize');
 
 module.exports = class extends Generator {
    constructor(args, opts) {
       super(args, opts);
 
-      this.argument('table', {
+      this.argument('domain', {
          type: String,
          required: true,
-         description: 'Name of the table that the Controller will will be managing via an Entity'
+         description: 'Name of the table that the Entity will be managing'
       });
    }
 
    async prompting() {
       this.log(
          yosay(
-            `${chalk.green('cynergi-middleware')} Controller boilerplate generator!`
+         `${chalk.green('cynergi-middleware')} Entity boilerplate generator!`
          )
       );
    }
 
    writing() {
+      const domain = this.options.domain;
+      const appName = this.config.get('name');
+      const lineOfBusiness = this.config.get('lob');
+      const pkg = this.config.get('basePkg');
+      const pkgPath = pkg.replace(/\./gi, '/');
+      const mainSrc = this.config.get('mainSrc');
+      const testSrc = this.config.get('testSrc');
+      const domainPackage = dotCase(camelCase(domain));
+      const domainPath = domainPackage.replace(/\./gi, '/');
+      const fullDomainPackage = `${pkg}.${appName}.${domainPackage}`;
+      const tableName = decamelize(domain);
       const templateValues = {
-         repository: camelCase(this.options.table),
-         entity: pascalCase(this.options.table),
-         table: this.options.table
-      };
-      const templates = {
-         'Controller.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/controller/${templateValues.entity}Controller.kt`,
-         'Service.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/service/${templateValues.entity}Service.kt`,
-         'Validator.kt.template': `src/main/kotlin/com/hightouchinc/cynergi/middleware/validator/${templateValues.entity}Validator.kt`,
-         'ControllerSpecification.groovy.template': `src/test/groovy/com/hightouchinc/cynergi/middleware/controller/${templateValues.entity}ControllerSpecification.groovy`,
-         'ValidatorSpecification.groovy.template': `src/test/groovy/com/hightouchinc/cynergi/middleware/validator/${templateValues.entity}ValidatorSpecification.groovy`
+         appName: appName,
+         domain: pascalCase(domain),
+         lineOfBusiness: lineOfBusiness,
+         pkg: pkg,
+         repository: camelCase(domain),
+         fullDomainPackage: fullDomainPackage,
+         table: tableName
       };
 
-      this.log(`Generating Controller ${chalk.green(this.options.entity)}`);
+      const templates = {
+         'Controller.kt.template': `${mainSrc}/${pkgPath}/${appName}/${domainPath}/infrastructure/${templateValues.domain}Controller.kt`,
+         'ControllerSpecification.groovy.template': `${testSrc}/${pkgPath}/${appName}/${domainPath}/infrastructure/${templateValues.domain}ControllerSpecification.groovy`,
+      };
+
+      this.log(`Generating Domain ${chalk.green(this.options.domain)}`);
 
       Object.keys(templates).forEach((key) => {
          const templateFile = key;

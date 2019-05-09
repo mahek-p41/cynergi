@@ -1,0 +1,11 @@
+package <%= fullDomainPackage %>
+
+import spock.lang.Specification
+
+class <%= domain %>ValidatorSpecification extends Specification {
+
+   void "test" () {
+      expect:
+      1 != 1 // TODO test all the scenarios for the validator
+   }
+}

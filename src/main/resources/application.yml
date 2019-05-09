@@ -10,8 +10,20 @@ datasources:
    default:
       driverClassName: org.postgresql.Driver
       connectionInitSql: SELECT 1
+endpoints:
+   health:
+      enabled: false
+      postgres:
+         reactive:
+            enabled: false
 flyway:
    datasources:
       default:
          locations: classpath:db/migration/postgres
          clean-disabled: true
+         async: false
+cynergi:
+   legacy:
+      import:
+         rename-extension: "processed"
+         process-startup: true

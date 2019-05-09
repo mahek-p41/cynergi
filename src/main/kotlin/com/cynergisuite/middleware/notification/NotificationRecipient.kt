@@ -1,19 +1,10 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.DataTransferObjectBase
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.IdentifiableEntity
-import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import java.time.OffsetDateTime
 import java.util.Objects
 import java.util.UUID
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
-import javax.validation.constraints.Size
 
 data class NotificationRecipient (
    val id: Long? = null,
@@ -33,7 +24,7 @@ data class NotificationRecipient (
          notification = notification
       )
 
-   constructor(dto: NotificationRecipientDto, notification: IdentifiableEntity) :
+   constructor(dto: NotificationRecipientValueObject, notification: IdentifiableEntity) :
       this(
          id = dto.id,
          recipient = dto.recipient,
@@ -59,31 +50,4 @@ data class NotificationRecipient (
   override fun toString(): String {
       return "NotificationRecipient(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, description=$description, recipient='$recipient', notification=${notification.entityId()})"
    }
-}
-
-@JsonInclude(NON_NULL)
-data class NotificationRecipientDto (
-
-   @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
-   var id: Long? = null,
-
-   @field:Size(max = 255, message = SIZE)
-   val description: String? = null,
-
-   @field:Size(max = 255, message = SIZE)
-   @field:NotNull(message = NOT_NULL)
-   var recipient: String
-
-) : DataTransferObjectBase<NotificationRecipientDto>() {
-
-   constructor(entity: NotificationRecipient) :
-      this(
-         id = entity.id,
-         description = entity.description,
-         recipient = entity.recipient
-      )
-
-   override fun dtoId(): Long? = id
-
-   override fun copyMe(): NotificationRecipientDto = copy()
 }

@@ -1,16 +1,16 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
+import com.cynergisuite.domain.infrastructure.Repository
+import com.cynergisuite.extensions.findAllWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationRecipient
 import com.cynergisuite.middleware.notification.NotificationTypeDomain
-import com.cynergisuite.middleware.extensions.findAllWithCrossJoin
-import com.cynergisuite.middleware.extensions.findFirstOrNullWithCrossJoin
-import com.cynergisuite.middleware.extensions.getLocalDate
-import com.cynergisuite.middleware.extensions.getOffsetDateTime
-import com.cynergisuite.middleware.extensions.getUuid
-import com.cynergisuite.middleware.extensions.insertReturning
-import com.cynergisuite.middleware.extensions.updateReturning
-import com.cynergisuite.domain.infrastructure.Repository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language

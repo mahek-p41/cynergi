@@ -3,11 +3,11 @@ package com.cynergisuite.middleware.verfication.infrastructure
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationReference
-import com.cynergisuite.middleware.extensions.findFirstOrNullWithCrossJoin
-import com.cynergisuite.middleware.extensions.getOffsetDateTime
-import com.cynergisuite.middleware.extensions.getUuid
-import com.cynergisuite.middleware.extensions.insertReturning
-import com.cynergisuite.middleware.extensions.updateReturning
+import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.intellij.lang.annotations.Language
@@ -135,7 +135,7 @@ class VerificationRepository @Inject constructor(
    }
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
-      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin( "$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount), selectAllRowMapper) { verification, rs ->
+      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
 
@@ -198,7 +198,11 @@ class VerificationRepository @Inject constructor(
       logger.debug("Updating Verification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!
-      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) { existing.verifiedTime } else { entity.verifiedTime }
+      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) {
+         existing.verifiedTime
+      } else {
+         entity.verifiedTime
+      }
 
       val updated = jdbc.updateReturning("""
          UPDATE verification
@@ -256,7 +260,7 @@ private class VerificationRowMapper(
    private val verificationAutoRepository: VerificationAutoRepository? = null,
    private val verificationEmploymentRepository: VerificationEmploymentRepository? = null,
    private val verificationLandlordRepository: VerificationLandlordRepository? = null
-): RowMapper<Verification> {
+) : RowMapper<Verification> {
    override fun mapRow(rs: ResultSet, row: Int): Verification {
       val auto = verificationAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
       val employment = verificationEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)

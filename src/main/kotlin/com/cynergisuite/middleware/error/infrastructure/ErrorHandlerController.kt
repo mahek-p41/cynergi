@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.extensions.findLocaleWithDefault
+import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.localization.MessageCodes
 import com.cynergisuite.middleware.localization.LocalizationFacade
 import io.micronaut.core.convert.exceptions.ConversionErrorException
@@ -69,8 +70,22 @@ class ErrorHandlerController @Inject constructor(
       }
    }
 
+   @Error(global = true, exception = OperationNotPermittedException::class)
+   fun operationNotPermitted(httpRequest: HttpRequest<*>, exception: OperationNotPermittedException): HttpResponse<ErrorValueObject> {
+      logger.error("An operation that is not permitted was initiated", exception)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return badRequest(
+         ErrorValueObject(
+            message = localizationService.localize(exception.messageTemplate, locale, emptyArray()),
+            path = exception.path
+         )
+      )
+   }
+
    private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorValueObject> {
-      return HttpResponse.badRequest(
+      return badRequest(
          ErrorValueObject(
             message = localizationService.localize(MessageCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
             path = argumentName
@@ -127,6 +142,13 @@ class ErrorHandlerController @Inject constructor(
 
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()
-         .filter { it.name != "save" && it.name != "update" && it.name != "dto" && !it.name.startsWith("arg") }
+         .filter {
+            it.name != "save"
+               && it.name != "create"
+               && it.name != "update"
+               && it.name != "dto"
+               && it.name != "vo"
+               && !it.name.startsWith("arg")
+         }
          .joinToString(".")
 }

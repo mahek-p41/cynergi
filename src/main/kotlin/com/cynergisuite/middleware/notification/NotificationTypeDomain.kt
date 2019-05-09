@@ -1,13 +1,8 @@
 package com.cynergisuite.middleware.notification
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
-import com.cynergisuite.domain.DataTransferObjectBase
 import com.cynergisuite.domain.TypeDomainEntity
-import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.POSITIVE_NUMBER_REQUIRED
 import java.time.OffsetDateTime
 import java.util.UUID
-import javax.validation.constraints.Positive
 
 data class NotificationTypeDomain (
    val id: Long? = null,
@@ -37,28 +32,4 @@ data class NotificationTypeDomain (
    override fun myValue(): String = value
 
    override fun myDescription(): String = description
-}
-
-@JsonInclude(NON_NULL)
-data class NotificationTypeDomainDto (
-
-   @field:Positive(message = POSITIVE_NUMBER_REQUIRED)
-   var id: Long? = null,
-
-   val value: String,
-
-   val description: String
-
-) : DataTransferObjectBase<NotificationTypeDomainDto>() {
-
-   constructor(entity: NotificationTypeDomain) :
-      this(
-         id = entity.id,
-         value = entity.value,
-         description = entity.description
-      )
-
-   override fun dtoId(): Long? = id
-
-   override fun copyMe(): NotificationTypeDomainDto = copy()
 }

@@ -1,0 +1,27 @@
+package <%= fullDomainPackage %>
+
+import <%= pkg %>.domain.Entity
+import java.time.OffsetDateTime
+import java.util.UUID
+
+data class <%= domain %> (
+   val id: Long? = null,
+   val uuRowId: UUID = UUID.randomUUID(),
+   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
+   val timeUpdated: OffsetDateTime = timeCreated
+) : Entity<<%= domain %>> {
+
+   constructor() : // TODO flesh out the constructor for making calling without the uuRowId, timeCreated and timeUpdated properties
+      this(
+         id = null
+      )
+
+   constructor(vo: <%= domain %>ValueObject) :
+      this(
+         id = vo.id
+      )
+
+   override fun entityId(): Long? = id
+   override fun rowId(): UUID = uuRowId
+   override fun copyMe(): <%= domain %> = copy()
+}

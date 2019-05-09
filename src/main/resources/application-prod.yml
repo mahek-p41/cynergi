@@ -51,3 +51,7 @@ cynergi:
       jwt:
          pem:
             path: "file:/opt/cyn/v01/cynmid/jwt.pem" #openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048
+   legacy:
+      import:
+         location: "/opt/cyn/v01/cynmid/legacy/import/"
+         rename: true

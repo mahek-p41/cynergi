@@ -1,3 +1,16 @@
 {
-
+  "cynergi-middleware": {
+    "promptValues": {
+      "name": "middleware",
+      "basePkg": "com.cynergisuite",
+      "mainSrc": "src/main/kotlin",
+      "testSrc": "src/test/groovy",
+      "lob": "Cynergi"
+    },
+    "name": "middleware",
+    "basePkg": "com.cynergisuite",
+    "mainSrc": "src/main/kotlin",
+    "testSrc": "src/test/groovy",
+    "lob": "Cynergi"
+  }
 }

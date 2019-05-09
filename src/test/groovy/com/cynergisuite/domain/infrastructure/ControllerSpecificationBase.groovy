@@ -1,30 +1,17 @@
 package com.cynergisuite.domain.infrastructure
 
-
-import io.micronaut.context.ApplicationContext
 import io.micronaut.http.client.BlockingHttpClient
-import io.micronaut.http.client.DefaultHttpClient
-import io.micronaut.http.client.HttpClient
-import io.micronaut.runtime.server.EmbeddedServer
-import spock.lang.AutoCleanup
-import spock.lang.Shared
-import spock.lang.Specification
+import io.micronaut.http.client.RxHttpClient
+import io.micronaut.http.client.annotation.Client
 
-import java.time.Duration
+import javax.inject.Inject
 
-abstract class ControllerSpecificationBase extends Specification {
-   @Shared @AutoCleanup EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
-   @Shared @AutoCleanup HttpClient reactiveClient = HttpClient.create(embeddedServer.URL)
-   @Shared applicationContext = embeddedServer.applicationContext
-   private @Shared truncateDatabaseService = applicationContext.getBean(TruncateDatabaseService)
-   @Shared BlockingHttpClient client
+abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
+   @Client("/api") @Inject RxHttpClient httpClient
 
-   void setupSpec() {
-      ((DefaultHttpClient)reactiveClient).configuration.readTimeout = Duration.ofHours(1) // because sometimes it takes longer that 10 seconds to debug something
-      client = reactiveClient.toBlocking()
-   }
+   protected BlockingHttpClient client
 
-   void cleanup() {
-      truncateDatabaseService.truncate()
+   void setup() {
+      client = httpClient.toBlocking()
    }
 }
