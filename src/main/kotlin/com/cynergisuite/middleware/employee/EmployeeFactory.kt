@@ -16,10 +16,11 @@ object EmployeeFactory {
       val faker = Faker()
       val lorem = faker.lorem()
       val bool = faker.bool()
+      val numbers = faker.number()
 
       return IntStream.range(0, number).mapToObj {
          Employee(
-            number = lorem.characters(3, 6),
+            number = numbers.numberBetween(1, 10_000),
             passCode = lorem.characters(3, 6),
             active = bool.bool()
          )

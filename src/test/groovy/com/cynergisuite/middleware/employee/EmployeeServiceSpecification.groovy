@@ -60,7 +60,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       then:
       3 == jdbc.queryForObject("SELECT COUNT(*) FROM employee", Integer)
       3 == jdbc.queryForList("SELECT id, number, pass_code, active FROM employee").findAll {
-         it["number"] == "123" || it["number"] == "987" || it["number"] == "4500"
+         it["number"] == 123 || it["number"] == 987 || it["number"] == 4500
       }.size()
 
       cleanup:
@@ -77,11 +77,11 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.findUserByAuthentication("123", "tryme").blockingGet()
+      final def employee = employeeService.findUserByAuthentication(123, "tryme").blockingGet()
 
       then:
       null != employee
-      "123" == employee.number
+      123 == employee.number
       "tryme" == employee.passCode
       employee.active
 
@@ -99,7 +99,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.findUserByAuthentication("989", "studio")
+      final def employee = employeeService.findUserByAuthentication(989, "studio")
 
       then:
       employee.isEmpty()

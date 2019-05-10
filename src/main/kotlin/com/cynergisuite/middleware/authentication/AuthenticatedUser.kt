@@ -8,6 +8,6 @@ class AuthenticatedUser(
 ) : UserDetails(username, mutableListOf()) {
    constructor(employee: Employee) :
       this (
-         username = employee.number
+         username = employee.number.toString()
       )
 }

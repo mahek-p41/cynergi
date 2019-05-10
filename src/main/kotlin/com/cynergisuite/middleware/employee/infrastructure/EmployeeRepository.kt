@@ -51,7 +51,7 @@ class EmployeeRepository @Inject constructor(
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
     * pointed at FastInfo to pull in Zortec data about an Employee
     */
-   fun findUserByAuthentication(number: String, passCode: String): Maybe<Employee> {
+   fun findUserByAuthentication(number: Int, passCode: String): Maybe<Employee> {
       logger.trace("Checking authentication for {}", number)
 
       return postgresClient.rxPreparedQuery("""
@@ -92,7 +92,7 @@ class EmployeeRepository @Inject constructor(
                uuRowId = row.getUUID("uu_row_id"),
                timeCreated = row.getOffsetDateTime("time_created"),
                timeUpdated = row.getOffsetDateTime("time_updated") ?: OffsetDateTime.now(),
-               number = row.getString("number"),
+               number = row.getInteger("number"),
                passCode = row.getString("pass_code"),
                active = row.getBoolean("active")
             )
@@ -152,7 +152,7 @@ private class EmployeeRowMapper(
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         number = rs.getString("${columnPrefix}number"),
+         number = rs.getInt("${columnPrefix}number"),
          passCode = rs.getString("${columnPrefix}pass_code"),
          active = rs.getBoolean("${columnPrefix}active")
       )

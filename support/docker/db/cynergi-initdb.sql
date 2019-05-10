@@ -15,7 +15,7 @@ CREATE OR REPLACE VIEW employee_vw AS
          CAST(emp_pass_4 AS TEXT) ||
          CAST(emp_pass_5 AS TEXT) ||
          CAST(emp_pass_6 AS TEXT)
-      ) AS passcode,
+      ) AS pass_code,
       true AS active
    FROM corrto.level1_loc_emps
    UNION ALL
@@ -32,7 +32,7 @@ CREATE OR REPLACE VIEW employee_vw AS
          CAST(emp_pass_4 AS TEXT) ||
          CAST(emp_pass_5 AS TEXT) ||
          CAST(emp_pass_6 AS TEXT)
-      ) AS passcode,
+      ) AS pass_code,
       true AS active
    FROM corrnr.level1_loc_emps
    ORDER BY number;
@@ -48,12 +48,33 @@ CREATE USER MAPPING FOR postgres
    SERVER fastinfo
    OPTIONS (USER 'postgres', PASSWORD 'password');
 
-CREATE FOREIGN TABLE fastinfo_prod_import.employee (
+CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
+   id BIGINT,
+   uu_row_id UUID,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
    number INTEGER,
-   passcode VARCHAR
+   pass_code VARCHAR,
+   active BOOLEAN
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
 
-CREATE TABLE cyn_temp.employee (
-   number INTEGER NOT NULL,
-   passcode VARCHAR(6) NOT NULL
-)
+\c cynergidemodb
+CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+CREATE SCHEMA fastinfo_prod_import;
+
+CREATE SERVER fastinfo
+   FOREIGN DATA WRAPPER postgres_fdw
+   OPTIONS (host 'localhost', dbname 'fastinfo_production', updatable 'false');
+CREATE USER MAPPING FOR postgres
+   SERVER fastinfo
+   OPTIONS (USER 'postgres', PASSWORD 'password');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
+   id BIGINT,
+   uu_row_id UUID,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
+   number INTEGER,
+   pass_code VARCHAR,
+   active BOOLEAN
+) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');

@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.employee
 import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.domain.infrastructure.IdentifiableService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.legacy.load.LegacyCsvLoadingService
 import io.micronaut.validation.Validated
 import io.reactivex.Maybe
-import io.reactivex.Single
 import org.apache.commons.csv.CSVRecord
 import java.nio.file.FileSystems
 import java.nio.file.Path
@@ -17,7 +17,7 @@ import javax.validation.Valid
 class EmployeeService @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val employeeValidator: EmployeeValidator
-) : IdentifiableService<EmployeeValueObject>, CSVParsingService() {
+) : IdentifiableService<EmployeeValueObject>, CSVParsingService(), LegacyCsvLoadingService {
    private val employeeMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-employee*csv")
 
    override fun fetchById(id: Long): EmployeeValueObject? =
@@ -44,7 +44,7 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   fun findUserByAuthentication(number: String, passCode: String): Maybe<Employee> =
+   fun findUserByAuthentication(number: Int, passCode: String): Maybe<Employee> =
       employeeRepository.findUserByAuthentication(number, passCode)
 
    override fun canProcess(path: Path): Boolean =
@@ -53,7 +53,7 @@ class EmployeeService @Inject constructor(
    override fun processCsvRow(record: CSVRecord) {
       create (
          EmployeeValueObject(
-            number = record.get("number"),
+            number = record.get("number").toInt(),
             passCode = record.get("pass_code"),
             active = record.get("active")?.toBoolean() ?: true
          )

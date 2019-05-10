@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.middleware.localization.MessageCodes.Validation.MIN
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.POSITIVE
 import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -17,8 +19,8 @@ data class EmployeeValueObject(
    var id: Long? = null,
 
    @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 3, max = 6, message = SIZE)
-   val number: String?,
+   @field:Min(1, message = MIN)
+   val number: Int?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 3, max = 6, message = SIZE)
@@ -29,7 +31,7 @@ data class EmployeeValueObject(
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 
-   constructor(number: String, passCode: String, active: Boolean) :
+   constructor(number: Int, passCode: String, active: Boolean) :
       this(
          id = null,
          number = number,

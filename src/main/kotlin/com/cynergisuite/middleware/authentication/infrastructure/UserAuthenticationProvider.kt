@@ -25,7 +25,7 @@ class UserAuthenticationProvider @Inject constructor(
       logger.debug("Authentication requested for user {}", authenticationRequest?.identity)
 
       return if (authenticationRequest != null && authenticationRequest.identity != null && authenticationRequest.secret != null) {
-         employeeService.findUserByAuthentication(authenticationRequest.identity as String, authenticationRequest.secret as String)
+         employeeService.findUserByAuthentication((authenticationRequest.identity as String).toInt(), authenticationRequest.secret as String)
             .flatMapPublisher { Flowable.just(AuthenticatedUser(it)) }
       } else {
          Flowable.just<AuthenticationResponse>(AuthenticationFailed())

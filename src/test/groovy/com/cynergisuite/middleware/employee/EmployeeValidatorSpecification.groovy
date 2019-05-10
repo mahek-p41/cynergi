@@ -15,7 +15,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject("989", "studio", true))
+      employeeValidator.validateSave(new EmployeeValueObject(989, "studio", true))
 
       then:
       notThrown(ValidationException)
@@ -42,7 +42,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "989", "studio", true))
+      employeeValidator.validateUpdate(new EmployeeValueObject(1L, 989, "studio", true))
 
       then:
       1 * employeeRepository.exists(1L) >> true
@@ -55,7 +55,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "989", "studio", true))
+      employeeValidator.validateUpdate(new EmployeeValueObject(1L, 989, "studio", true))
 
       then:
       1 * employeeRepository.exists(1L) >> false
