@@ -17,10 +17,10 @@ import javax.inject.Singleton
  * @author garym@hightouchinc.com
  */
 @Singleton
-class LocalizationFacade @Inject constructor(
+class LocalizationService @Inject constructor(
    private val messageSource: MessageSource
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(LocalizationFacade::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(LocalizationService::class.java)
 
    /**
     * Loads a [Locale] based on the language tag.  This should be most likely retrieved from the Accept-Language HTTP header

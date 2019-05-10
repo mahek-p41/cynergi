@@ -54,10 +54,15 @@ dependencies {
    compile "io.micronaut:micronaut-runtime"
    compile "io.micronaut:micronaut-spring"
    compile "io.micronaut.configuration:micronaut-postgres-reactive"
+   compile "io.micronaut:micronaut-security"
+   compile "io.micronaut:micronaut-security-jwt"
    kapt "io.micronaut.configuration:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
    kapt "io.micronaut:micronaut-validation"
-   
+
+   compile "org.bouncycastle:bcprov-jdk15on:1.61"
+   compile "org.bouncycastle:bcpkix-jdk15on:1.61"
+
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
    

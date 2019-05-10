@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.localization.MessageCodes
-import com.cynergisuite.middleware.localization.LocalizationFacade
+import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -28,7 +28,7 @@ import javax.validation.Path
 
 @Controller
 class ErrorHandlerController @Inject constructor(
-   private val localizationService: LocalizationFacade
+   private val localizationService: LocalizationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
 

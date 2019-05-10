@@ -24,5 +24,7 @@ object MessageCodes {
       const val INTERNAL_ERROR = "system.internal.error"
       const val REQUIRED_ARGUMENT = "system.route.error"
       const val NOT_IMPLEMENTED = "system.not.implemented"
+      const val LOGGED_IN = "system.logged.in"
+      const val NOT_LOGGED_IN = "system.not.logged.in"
    }
 }
