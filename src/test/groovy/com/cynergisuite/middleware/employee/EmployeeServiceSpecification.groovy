@@ -59,11 +59,13 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
 
       then:
       3 == jdbc.queryForObject("SELECT COUNT(*) FROM employee", Integer)
-      [
-          ["id": 1, "number": "123", "pass_code": "tryme", "active": true ],
+
+          /*["id": 1, "number": "123", "pass_code": "tryme", "active": true ],
           ["id": 2, "number": "987", "pass_code": "hrdpas", "active": true ],
-          ["id": 3, "number": "4500", "pass_code": "psswrd", "active": true ]
-      ] == jdbc.queryForList("SELECT id, number, pass_code, active FROM employee")
+          ["id": 3, "number": "4500", "pass_code": "psswrd", "active": true ]*/
+      3 == jdbc.queryForList("SELECT id, number, pass_code, active FROM employee").findAll {
+         it["number"] == "123" || it["number"] == "987" || it["number"] == "4500"
+      }.size()
 
       cleanup:
       reader.close()
@@ -92,7 +94,21 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
    }
 
    void "check authentication employee not found" () {
-      expect:
-      1 != 1
+      given:
+      def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
+      def tempFile = tempDirectory.resolve("eli-employees.csv")
+      def testEmployeeFile = Paths.get(EmployeeServiceSpecification.class.classLoader.getResource("legacy/load/employee/eli-employee.csv").toURI())
+      Files.copy(testEmployeeFile, tempFile)
+      def reader = Files.newBufferedReader(tempFile)
+      employeeService.processCsv(reader)
+
+      when:
+      final def employee = employeeService.findUserByAuthentication("989", "studio")
+
+      then:
+      employee.isEmpty()
+
+      cleanup:
+      reader.close()
    }
 }

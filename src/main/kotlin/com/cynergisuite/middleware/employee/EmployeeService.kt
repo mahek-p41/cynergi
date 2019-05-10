@@ -4,6 +4,7 @@ import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.domain.infrastructure.IdentifiableService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.validation.Validated
+import io.reactivex.Maybe
 import io.reactivex.Single
 import org.apache.commons.csv.CSVRecord
 import java.nio.file.FileSystems
@@ -43,7 +44,7 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   fun findUserByAuthentication(number: String, passCode: String): Single<Employee?> =
+   fun findUserByAuthentication(number: String, passCode: String): Maybe<Employee> =
       employeeRepository.findUserByAuthentication(number, passCode)
 
    override fun canProcess(path: Path): Boolean =

@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.employee.Employee
 import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Tuple
+import io.reactivex.Maybe
 import io.reactivex.Single
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -50,7 +51,7 @@ class EmployeeRepository @Inject constructor(
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
     * pointed at FastInfo to pull in Zortec data about an Employee
     */
-   fun findUserByAuthentication(number: String, passCode: String): Single<Employee?> {
+   fun findUserByAuthentication(number: String, passCode: String): Maybe<Employee> {
       logger.trace("Checking authentication for {}", number)
 
       return postgresClient.rxPreparedQuery("""
@@ -62,7 +63,7 @@ class EmployeeRepository @Inject constructor(
             fpie.number AS number,
             fpie.pass_code AS pass_code,
             fpie.active AS active
-         FROM fastinfo_prod_import.employee fpie
+         FROM fastinfo_prod_import.employee_vw fpie
          WHERE fpie.number = $1
             AND fpie.pass_code = $2
             AND fpie.active = true
@@ -80,12 +81,10 @@ class EmployeeRepository @Inject constructor(
             AND e.pass_code = $2
             AND e.active = true
          LIMIT 1
-         """.trimIndent(), Tuple.of(number, passCode)).map { rs ->
-         val iterator = rs.iterator()
-
-         if(iterator.hasNext()) {
-            logger.trace("successfully authenticated user {}", number)
-
+         """.trimIndent(), Tuple.of(number, passCode))
+         .filter { rs -> rs.size() > 0 }
+         .map { rs ->
+            val iterator = rs.iterator()
             val row = iterator.next()
 
             Employee(
@@ -97,13 +96,7 @@ class EmployeeRepository @Inject constructor(
                passCode = row.getString("pass_code"),
                active = row.getBoolean("active")
             )
-         } else {
-            logger.trace("Unable to authenticate user {}", number)
-
-            null
          }
-      }
-
    }
 
    @Transactional
