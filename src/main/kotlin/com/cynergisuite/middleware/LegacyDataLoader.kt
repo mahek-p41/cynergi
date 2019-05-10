@@ -36,7 +36,7 @@ class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.rename}") private val rename: Boolean = true,
    @Value("\${cynergi.legacy.import.rename-extension}") private val renameExtension: String = "processed",
    @Value("\${cynergi.legacy.import.process-startup}") private val processImportsOnStartup: Boolean = true,
-   private val legacyImportationRepository: LegacyLoadRepository,
+   private val legacyLoadRepository: LegacyLoadRepository,
    private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor
 ) : ApplicationEventListener<MigrationFinishedEvent> {
    private val logger: Logger = LoggerFactory.getLogger(LegacyDataLoader::class.java)
@@ -55,9 +55,10 @@ class LegacyDataLoader @Inject constructor(
 
       Files.newDirectoryStream(importLocation).use { directoryStream ->
          directoryStream.asSequence()
-            .filter { p -> p.toFile().isFile } // filter out anything that isn't a file
-            .filter { p -> eliMatcher.matches(p.fileName) } // filter out anything that doesn't end in .csv
-            .filter { p -> !legacyImportationRepository.exists(p.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
+            .filter { path -> path.toFile().isFile } // filter out anything that isn't a file
+            .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
+            .filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
+            .filter { path -> path.toFile().length() > 0 }
             .map { path -> processFile(path) } // read in file and save to appropriate table in the database
             .onEach { processed -> saveInLegacyImport(processed) } // safe file and meta in database
             .forEach { processed -> moveProcessedFile(processed) } // move the file to processed
@@ -90,7 +91,7 @@ class LegacyDataLoader @Inject constructor(
    }
 
    private fun saveInLegacyImport(processed: Pair<Path, String>) {
-      legacyImportationRepository.insert(
+      legacyLoadRepository.insert(
          LegacyLoad(
             filename = processed.first,
             hash = processed.second

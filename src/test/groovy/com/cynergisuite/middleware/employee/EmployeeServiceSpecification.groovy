@@ -90,4 +90,9 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       cleanup:
       reader.close()
    }
+
+   void "check authentication employee not found" () {
+      expect:
+      1 != 1
+   }
 }
