@@ -59,10 +59,6 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
 
       then:
       3 == jdbc.queryForObject("SELECT COUNT(*) FROM employee", Integer)
-
-          /*["id": 1, "number": "123", "pass_code": "tryme", "active": true ],
-          ["id": 2, "number": "987", "pass_code": "hrdpas", "active": true ],
-          ["id": 3, "number": "4500", "pass_code": "psswrd", "active": true ]*/
       3 == jdbc.queryForList("SELECT id, number, pass_code, active FROM employee").findAll {
          it["number"] == "123" || it["number"] == "987" || it["number"] == "4500"
       }.size()

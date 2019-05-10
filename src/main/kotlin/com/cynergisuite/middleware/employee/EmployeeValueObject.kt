@@ -29,6 +29,14 @@ data class EmployeeValueObject(
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 
+   constructor(number: String, passCode: String, active: Boolean) :
+      this(
+         id = null,
+         number = number,
+         passCode = passCode,
+         active = active
+      )
+
    constructor(entity: Employee) :
       this(
          id = entity.id,
