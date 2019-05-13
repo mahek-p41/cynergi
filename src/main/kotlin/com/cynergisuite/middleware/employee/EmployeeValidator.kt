@@ -18,7 +18,7 @@ class EmployeeValidator @Inject constructor (
 
    @Throws(ValidationException::class)
    fun validateSave(vo: EmployeeValueObject) {
-      logger.debug("Validating Save Employee {}", vo)
+      logger.trace("Validating Save Employee {}", vo)
 
       val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer
 
@@ -31,7 +31,7 @@ class EmployeeValidator @Inject constructor (
 
    @Throws(ValidationException::class)
    fun validateUpdate(vo: EmployeeValueObject) {
-      logger.debug("Validating Update Employee {}", vo)
+      logger.trace("Validating Update Employee {}", vo)
 
       val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer
       val id = vo.id
