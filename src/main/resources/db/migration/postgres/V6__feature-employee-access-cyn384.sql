@@ -6,13 +6,13 @@ CREATE TABLE legacy_importation (
 );
 
 CREATE TABLE employee (
-   id                BIGSERIAL                              NOT NULL PRIMARY KEY,
-   uu_row_id         UUID        DEFAULT uuid_generate_v1() NOT NULL,
-   time_created      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   time_updated      TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
-   number            INTEGER                                NOT NULL,
-   pass_code         VARCHAR(6)                             NOT NULL,
-   active            BOOLEAN DEFAULT TRUE                   NOT NULL,
+   id           BIGSERIAL                                       NOT NULL PRIMARY KEY,
+   uu_row_id    UUID        DEFAULT uuid_generate_v1()          NOT NULL,
+   time_created TIMESTAMPTZ DEFAULT clock_timestamp()           NOT NULL,
+   time_updated TIMESTAMPTZ DEFAULT clock_timestamp()           NOT NULL,
+   number       INTEGER CHECK ( number > -1 )                   NOT NULL,
+   pass_code    VARCHAR(6) CHECK ( char_length(pass_code) > 2 ) NOT NULL,
+   active       BOOLEAN     DEFAULT TRUE                        NOT NULL,
    UNIQUE (number, pass_code)
 );
 CREATE TRIGGER update_employee_trg

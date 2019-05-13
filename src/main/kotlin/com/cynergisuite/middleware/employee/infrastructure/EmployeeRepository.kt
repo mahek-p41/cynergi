@@ -67,6 +67,7 @@ class EmployeeRepository @Inject constructor(
          WHERE fpie.number = $1
             AND fpie.pass_code = $2
             AND fpie.active = true
+            AND char_length(fpie.pass_code) > 0
          UNION
          SELECT
             e.id AS id,
