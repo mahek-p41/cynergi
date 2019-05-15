@@ -11,7 +11,7 @@ class LocalizationServiceSpecification extends Specification {
    void "check english locale" () {
       given:
       final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])
-      final def localizationService = new LocalizationFacade(resourceBundleMessageSource)
+      final def localizationService = new LocalizationService(resourceBundleMessageSource)
 
       when:
       final def englishLocale = localizationService.localeFor("en")
@@ -26,7 +26,7 @@ class LocalizationServiceSpecification extends Specification {
    void "localize english messages" () {
       given:
       final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])
-      final def localizationService = new LocalizationFacade(resourceBundleMessageSource)
+      final def localizationService = new LocalizationService(resourceBundleMessageSource)
       final def englishLocale = localizationService.localeFor("en")
 
       expect:

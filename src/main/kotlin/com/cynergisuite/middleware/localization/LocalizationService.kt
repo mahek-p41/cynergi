@@ -17,10 +17,10 @@ import javax.inject.Singleton
  * @author garym@hightouchinc.com
  */
 @Singleton
-class LocalizationFacade @Inject constructor(
+class LocalizationService @Inject constructor(
    private val messageSource: MessageSource
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(LocalizationFacade::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(LocalizationService::class.java)
 
    /**
     * Loads a [Locale] based on the language tag.  This should be most likely retrieved from the Accept-Language HTTP header
@@ -30,6 +30,17 @@ class LocalizationFacade @Inject constructor(
    fun localeFor(languageTag: String): Locale? {
       return Locale.forLanguageTag(languageTag)
    }
+
+   /**
+    * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided.  Assumption with
+    * this method is that the message does not take any parameters.
+    *
+    * @param messageKey the key of the message to be looked up and localized
+    * @param locale the [Locale] instance to be used to localize the message or [Locale.US] as a default
+    * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
+    */
+   fun localize(messageKey: String, locale: Locale = Locale.US): String =
+      localize(messageKey, locale, emptyArray())
 
    /**
     * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided

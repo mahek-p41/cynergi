@@ -49,13 +49,13 @@ if (System.properties.containsKey('HIGHTOUCH_TRACE_LOGGING')) {
    logger('com.hightouchinc', DEBUG)
 }
 
-/*logger('io.reactiverse', TRACE)
+logger('io.reactiverse', DEBUG)
 logger('com.zaxxer', ERROR)
 logger('io.netty', ERROR)
 logger('io.micronaut', INFO)
 logger('org.apache', ERROR)
 logger('org.flywaydb', INFO)
 logger('org.jboss', ERROR)
-logger('org.springframework', ERROR)*/
+logger('org.springframework', ERROR)
 
-root(TRACE, appenders)
+root(DEBUG, appenders)

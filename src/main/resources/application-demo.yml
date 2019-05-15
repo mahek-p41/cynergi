@@ -21,13 +21,7 @@ micronaut:
                access-token-expiration: 43200 # 12 hours
                refresh-token-expiration: 86400 # 24 hours
             bearer:
-               enabled: false
-            cookie:
                enabled: true
-               login-success-target-url: /api/authenticated
-               login-failure-target-url: /api/authenticated
-               logout-target-url: /api/authenticated
-               cookie-name: CAT
             signatures:
                secret:
                   generator:

@@ -57,7 +57,7 @@ module.exports = class extends Generator {
       const templateValues = {
          repository: camelCase(this.options.table),
          entity: pascalCase(this.options.table),
-         table: this.options.table
+         table: this.options.table.toLowerCase()
       };
       const templates = {
          'Entity.sql.template': `src/main/resources/db/migration/postgres/V${versionNumber}__${this.options.description}.sql`,

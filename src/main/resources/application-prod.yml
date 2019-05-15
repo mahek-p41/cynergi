@@ -19,17 +19,11 @@ micronaut:
                access-token-expiration: 43200 # 12 hours
                refresh-token-expiration: 86400 # 24 hours
             bearer:
-               enabled: false
-            cookie:
                enabled: true
-               login-success-target-url: /api/authenticated
-               login-failure-target-url: /api/authenticated
-               logout-target-url: /api/authenticated
-               cookie-name: CAT
             signatures:
                secret:
                   generator:
-                     secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate
+                     secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate this secret at deployment time
                      jws-algorithm: HS256
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:

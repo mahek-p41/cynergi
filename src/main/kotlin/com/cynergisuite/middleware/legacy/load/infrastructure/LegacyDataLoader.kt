@@ -1,7 +1,7 @@
-package com.cynergisuite.middleware
+package com.cynergisuite.middleware.legacy.load.infrastructure
 
+import com.cynergisuite.middleware.legacy.load.LegacyCsvLoaderProcessor
 import com.cynergisuite.middleware.legacy.load.LegacyLoad
-import com.cynergisuite.middleware.legacy.load.infrastructure.LegacyLoadRepository
 import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.event.ApplicationEventListener
@@ -15,7 +15,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.nio.file.LinkOption
+import java.nio.file.LinkOption.NOFOLLOW_LINKS
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.security.DigestOutputStream
@@ -29,7 +29,8 @@ class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.rename}") private val rename: Boolean = true,
    @Value("\${cynergi.legacy.import.rename-extension}") private val renameExtension: String = "processed",
    @Value("\${cynergi.legacy.import.process-startup}") private val processImportsOnStartup: Boolean = true,
-   private val legacyImportationRepository: LegacyLoadRepository
+   private val legacyLoadRepository: LegacyLoadRepository,
+   private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor
 ) : ApplicationEventListener<MigrationFinishedEvent> {
    private val logger: Logger = LoggerFactory.getLogger(LegacyDataLoader::class.java)
    private val fileSystem = FileSystems.getDefault()
@@ -47,9 +48,10 @@ class LegacyDataLoader @Inject constructor(
 
       Files.newDirectoryStream(importLocation).use { directoryStream ->
          directoryStream.asSequence()
-            .filter { p -> p.toFile().isFile } // filter out anything that isn't a file
-            .filter { p -> eliMatcher.matches(p.fileName) } // filter out anything that doesn't end in .csv
-            .filter { p -> !legacyImportationRepository.exists(p.toRealPath(LinkOption.NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
+            .filter { path -> path.toFile().isFile } // filter out anything that isn't a file
+            .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
+            .filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
+            .filter { path -> path.toFile().length() > 0 }
             .map { path -> processFile(path) } // read in file and save to appropriate table in the database
             .onEach { processed -> saveInLegacyImport(processed) } // safe file and meta in database
             .forEach { processed -> moveProcessedFile(processed) } // move the file to processed
@@ -67,7 +69,7 @@ class LegacyDataLoader @Inject constructor(
 
          InputStreamReader(teeInputStream).use { reader ->
             BufferedReader(reader).use { bufferedReader ->
-               // TODO add in logic for reading in data
+               legacyCsvLoaderProcessor.processCsv(path, bufferedReader)
             }
          }
 
@@ -82,7 +84,7 @@ class LegacyDataLoader @Inject constructor(
    }
 
    private fun saveInLegacyImport(processed: Pair<Path, String>) {
-      legacyImportationRepository.insert(
+      legacyLoadRepository.insert(
          LegacyLoad(
             filename = processed.first,
             hash = processed.second

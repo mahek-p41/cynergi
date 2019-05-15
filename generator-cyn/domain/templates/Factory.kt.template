@@ -12,8 +12,8 @@ object <%= domain %>Factory {
 
    @JvmStatic
    fun stream(numberIn: Int = 1): Stream<<%= domain %>> {
-      val faker = Faker()
       val number = if (numberIn > 0) numberIn else 1
+      val faker = Faker()
 
       return IntStream.range(0, number).mapToObj {
          <%= domain %>(

@@ -1,6 +1,5 @@
 package <%= fullDomainPackage %>
 
-import <%= fullDomainPackage %>.infrastructure.<%= domain %>Service
 import <%= pkg %>.<%= appName %>.error.ValidationError
 import <%= pkg %>.<%= appName %>.error.ValidationException
 import <%= pkg %>.<%= appName %>.localization.MessageCodes.System.NOT_FOUND
@@ -12,7 +11,7 @@ import javax.inject.Singleton
 
 @Singleton
 class <%= domain %>Validator @Inject constructor (
-   private val <%= repository %>Service: <%= domain %>Service
+   private val <%= repository %>Repository: <%= domain %>Repository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(<%= domain %>Validator::class.java)
 
@@ -39,9 +38,7 @@ class <%= domain %>Validator @Inject constructor (
       if (id == null) {
          errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
       } else {
-         val existing<%= domain %>: <%= domain %>ValueObject? = <%= repository %>Service.fetchById(id = id)
-
-         if (existing<%= domain %> == null) {
+         if ( !<%= repository %>Repository.exists(id = id) ) {
             errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
          }
       }

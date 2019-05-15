@@ -1,4 +1,0 @@
-name,dba_name,type,client_code,client_id,dataset_code,fin,address_1,address_2,country,city,state,postal_code,primary_phone,secondary_phone,fax_number
-ebr Sample Company,Ebro International,rto,ebr,1813,corrto,55-555555,123 Fake Street,,US,Springfield,OR,12345,555-555-5555,,555-555-5556
-Samply Company,Rental Concepts,rnr,rcr,1650,corrnr,55-555544,742 Evergreen Terrace,Box 12,US,Springfield,OR,12345,555-444-3333,1113334444,
-Sample RTO Company,,rto,cdb,1900,corrto,55-555553,955  Lauren Drive,,US,Brookly,WI,53521,608-455-6958,715-904-4143,
