@@ -44,8 +44,8 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   fun canEmployeeAccess(assert: String, employee: Employee): Boolean {
-      return true // TODO check against the employee's level and the
+   fun canEmployeeAccess(assert: String, employee: EmployeeValueObject): Boolean {
+      return employeeRepository.canEmployeeAccess(assert, employee.id!!)
    }
 
    fun findUserByAuthentication(number: Int, passCode: String): Maybe<Employee> =

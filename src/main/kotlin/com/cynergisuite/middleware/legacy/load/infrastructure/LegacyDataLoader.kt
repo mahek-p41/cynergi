@@ -1,8 +1,7 @@
-package com.cynergisuite.middleware
+package com.cynergisuite.middleware.legacy.load.infrastructure
 
 import com.cynergisuite.middleware.legacy.load.LegacyCsvLoaderProcessor
 import com.cynergisuite.middleware.legacy.load.LegacyLoad
-import com.cynergisuite.middleware.legacy.load.infrastructure.LegacyLoadRepository
 import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.event.ApplicationEventListener
@@ -24,12 +23,6 @@ import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/*
- This class is here rather than it's own package because when it was initially added to the project and placed in the
- legacy.load package Micronaut wouldn't start it automatically
-
- TODO try putting this in it's own package
- */
 @Singleton
 class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.location}") private val legacyImportLocation: String,

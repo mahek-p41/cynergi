@@ -141,6 +141,10 @@ class EmployeeRepository @Inject constructor(
          simpleEmployeeRowMapper
       )
    }
+
+   fun canEmployeeAccess(assert: String, id: Long): Boolean {
+      return true // TODO do this check once the appropriate data from the menu/modules conversion is in place
+   }
 }
 
 private class EmployeeRowMapper(
