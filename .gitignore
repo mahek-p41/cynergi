@@ -649,4 +649,4 @@ healthchecksdb
 .project
 .vertx/
 
-*.dump
+*.dump.*

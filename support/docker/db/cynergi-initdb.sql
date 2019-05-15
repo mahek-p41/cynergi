@@ -1,6 +1,36 @@
 \c fastinfo_production
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE SCHEMA IF NOT EXISTS corrto;
+CREATE SCHEMA IF NOT EXISTS corrnr;
+
+CREATE TABLE IF NOT EXISTS  corrto.level1_loc_emps ( -- create stand-in table that should exist in fastinfo if a dump isn't used
+   id              BIGSERIAL                                 NOT NULL PRIMARY KEY,
+   ht_etl_checksum VARCHAR(255),
+   created_at      TIMESTAMP DEFAULT clock_timestamp()       NOT NULL,
+   updated_at      TIMESTAMP DEFAULT clock_timestamp()       NOT NULL,
+   emp_nbr         INTEGER,
+   emp_pass_1      VARCHAR(1),
+   emp_pass_2      VARCHAR(1),
+   emp_pass_3      VARCHAR(1),
+   emp_pass_4      VARCHAR(1),
+   emp_pass_5      VARCHAR(1),
+   emp_pass_6      VARCHAR(1)
+);
+CREATE TABLE IF NOT EXISTS  corrnr.level1_loc_emps ( -- create stand-in table that should exist in fastinfo if a dump isn't used
+   id              BIGSERIAL                                 NOT NULL PRIMARY KEY,
+   ht_etl_checksum VARCHAR(255),
+   created_at      TIMESTAMP DEFAULT clock_timestamp()       NOT NULL,
+   updated_at      TIMESTAMP DEFAULT clock_timestamp()       NOT NULL,
+   emp_nbr         INTEGER,
+   emp_pass_1      VARCHAR(1),
+   emp_pass_2      VARCHAR(1),
+   emp_pass_3      VARCHAR(1),
+   emp_pass_4      VARCHAR(1),
+   emp_pass_5      VARCHAR(1),
+   emp_pass_6      VARCHAR(1)
+);
+
 CREATE OR REPLACE VIEW employee_vw AS
    SELECT
       id AS id,
@@ -18,6 +48,7 @@ CREATE OR REPLACE VIEW employee_vw AS
       ) AS pass_code,
       true AS active
    FROM corrto.level1_loc_emps
+   WHERE emp_nbr IS NOT NULL
    UNION ALL
    SELECT
       id AS id,

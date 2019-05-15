@@ -9,7 +9,7 @@ import static com.cynergisuite.middleware.localization.MessageCodes.System.NOT_F
 
 class EmployeeValidatorSpecification extends Specification {
 
-   void "valid employee to be saved" () {
+   void "valid employee to be saved"() {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
@@ -21,13 +21,13 @@ class EmployeeValidatorSpecification extends Specification {
       notThrown(ValidationException)
    }
 
-   void "invalid employee with all properties null to be saved" () {
+   void "invalid employee with all properties null to be saved"() {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject(null,null, null, null))
+      employeeValidator.validateSave(new EmployeeValueObject(null, null, null, null))
 
       then:
       notThrown(ValidationException)
@@ -36,7 +36,7 @@ class EmployeeValidatorSpecification extends Specification {
       // longer the case
    }
 
-   void "valid employee to be updated" () {
+   void "valid employee to be updated"() {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
@@ -49,7 +49,7 @@ class EmployeeValidatorSpecification extends Specification {
       notThrown(ValidationException)
    }
 
-   void "valid employee to be update that doesn't exist" () {
+   void "valid employee to be update that doesn't exist"() {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
@@ -62,17 +62,17 @@ class EmployeeValidatorSpecification extends Specification {
       def exception = thrown(ValidationException)
       1 == exception.errors.size()
       exception.errors.containsAll([
-          new ValidationError("id", NOT_FOUND, [1L])
+         new ValidationError("id", NOT_FOUND, [1L])
       ])
    }
 
-   void "invalid employee to be updated that does exist" () {
+   void "invalid employee to be updated that does exist"() {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L,null, null, null))
+      employeeValidator.validateUpdate(new EmployeeValueObject(1L, null, null, null))
 
       then:
       1 * employeeRepository.exists(1L) >> true

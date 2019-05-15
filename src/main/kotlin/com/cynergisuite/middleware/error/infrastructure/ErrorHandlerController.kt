@@ -1,19 +1,26 @@
 package com.cynergisuite.middleware.error.infrastructure
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.error.OperationNotPermittedException
-import com.cynergisuite.middleware.localization.MessageCodes
+import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.LocalizationService
+import com.cynergisuite.middleware.localization.MessageCodes
+import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.CONVERSION_ERROR
+import com.cynergisuite.middleware.localization.MessageCodes.System.INTERNAL_ERROR
+import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
+import com.cynergisuite.middleware.localization.MessageCodes.System.REQUIRED_ARGUMENT
+import com.cynergisuite.middleware.localization.MessageCodes.System.UNKNOWN
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
+import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
@@ -21,6 +28,7 @@ import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
 import javax.validation.ConstraintViolationException
@@ -38,7 +46,16 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorValueObject(localizationService.localize(MessageCodes.System.INTERNAL_ERROR, locale, emptyArray())))
+      return serverError(ErrorValueObject(localizationService.localize(INTERNAL_ERROR, locale, emptyArray())))
+   }
+
+   @Error(global = true, exception = IOException::class)
+   fun inputOutputExceptionhandler(httpRequest: HttpRequest<*>, exception: IOException) {
+      if (exception.message?.trim() == "An existing connection was forcibly closed by the remote host") {
+         logger.error("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
+      } else {
+         logger.error("Unknown IOException occurred during request processing", exception)
+      }
    }
 
    @Error(global = true, exception = NotImplementedError::class)
@@ -47,7 +64,9 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return HttpResponse.status<ErrorValueObject>(NOT_IMPLEMENTED).body(ErrorValueObject(localizationService.localize(MessageCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
+      return HttpResponse
+         .status<ErrorValueObject>(NOT_IMPLEMENTED)
+         .body(ErrorValueObject(localizationService.localize(MessageCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
@@ -87,7 +106,7 @@ class ErrorHandlerController @Inject constructor(
    private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorValueObject> {
       return badRequest(
          ErrorValueObject(
-            message = localizationService.localize(MessageCodes.Cynergi.CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
+            message = localizationService.localize(CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
             path = argumentName
          )
       )
@@ -99,7 +118,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return badRequest(ErrorValueObject(localizationService.localize(MessageCodes.System.REQUIRED_ARGUMENT, locale, arrayOf(exception.argument.name))))
+      return badRequest(ErrorValueObject(localizationService.localize(REQUIRED_ARGUMENT, locale, arrayOf(exception.argument.name))))
    }
 
    @Error(global = true, exception = NotFoundException::class)
@@ -108,7 +127,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return notFound(ErrorValueObject(localizationService.localize(MessageCodes.System.NOT_FOUND, locale, arrayOf(notFoundException.notFound))))
+      return notFound(ErrorValueObject(localizationService.localize(NOT_FOUND, locale, arrayOf(notFoundException.notFound))))
    }
 
    @Error(global = true, exception = ValidationException::class)
@@ -139,6 +158,18 @@ class ErrorHandlerController @Inject constructor(
          }
       )
    }
+
+   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorValueObject> {
+      logger.info("Unauthorized exception")
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val username: String = accessException.user ?: localizationService.localize(UNKNOWN, locale, emptyArray())
+
+      return HttpResponse
+         .status<ErrorValueObject>(FORBIDDEN)
+         .body(ErrorValueObject(localizationService.localize(accessException.errorMessage, locale, arrayOf(username))))
+   }
+
 
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()

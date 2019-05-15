@@ -13,20 +13,23 @@ import java.nio.file.Paths
 
 @MicronautTest(transactional = false)
 class EmployeeServiceSpecification extends ServiceSpecificationBase {
-   @Rule TemporaryFolder temporaryFolder
+   @Rule
+   TemporaryFolder temporaryFolder
 
-   @Inject EmployeeService employeeService
-   @Inject JdbcTemplate jdbc
+   @Inject
+   EmployeeService employeeService
+   @Inject
+   JdbcTemplate jdbc
 
    void "eli path glob"() {
       expect:
       check == employeeService.canProcess(path)
 
       where:
-      path                                                           | check
-      Paths.get("import/eli-employee-new-stuff.csv")            | true
-      Paths.get("import/eli-address.csv")                       | false
-      Paths.get("import/eli-employee-new-stuff.csv.processed")  | false
+      path                                                     | check
+      Paths.get("import/eli-employee-new-stuff.csv")           | true
+      Paths.get("import/eli-address.csv")                      | false
+      Paths.get("import/eli-employee-new-stuff.csv.processed") | false
    }
 
    void "csv process empty file"() {
@@ -46,7 +49,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       reader.close()
    }
 
-   void "csv process file with 3 record" () {
+   void "csv process file with 3 record"() {
       given:
       def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
       def tempFile = tempDirectory.resolve("eli-employees.csv")
@@ -67,7 +70,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       reader.close()
    }
 
-   void "check authentication employee found" () {
+   void "check authentication employee found"() {
       given:
       def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
       def tempFile = tempDirectory.resolve("eli-employees.csv")
@@ -89,7 +92,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       reader.close()
    }
 
-   void "check authentication employee not found" () {
+   void "check authentication employee not found"() {
       given:
       def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
       def tempFile = tempDirectory.resolve("eli-employees.csv")

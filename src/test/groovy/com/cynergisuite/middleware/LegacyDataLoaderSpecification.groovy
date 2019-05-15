@@ -11,15 +11,16 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class LegacyDataLoaderSpecification extends Specification {
-   @Rule TemporaryFolder temporaryFolder
+   @Rule
+   TemporaryFolder temporaryFolder
 
-   void "process valid csv file" () {
+   void "process valid csv file"() {
       given:
       def migrationFinishedEvent = Mock(MigrationFinishedEvent)
       def tempDirectory = temporaryFolder.newFolder()
       def legacyLoadRepository = Mock(LegacyLoadRepository)
       def legacyCsvLoaderProcessor = Mock(LegacyCsvLoaderProcessor)
-      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(),true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor)
+      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(), true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor)
       def tempCsvFile = new File(tempDirectory, "eli-test.csv")
 
       when:
@@ -27,18 +28,18 @@ class LegacyDataLoaderSpecification extends Specification {
       legacyLoader.onApplicationEvent(migrationFinishedEvent)
 
       then:
-      1 * legacyCsvLoaderProcessor.processCsv(_, _) >> { path, Reader reader -> IOUtils.copy(reader, new OutputStreamWriter(new NullOutputStream())) }
+      1 * legacyCsvLoaderProcessor.processCsv(_, _) >> {path, Reader reader -> IOUtils.copy(reader, new OutputStreamWriter(new NullOutputStream()))}
       1 * legacyLoadRepository.insert(_)
       !tempCsvFile.exists()
       new File(tempDirectory, "eli-test.csv.processed").exists()
    }
 
-   void "process empty csv file" () {
+   void "process empty csv file"() {
       def migrationFinishedEvent = Mock(MigrationFinishedEvent)
       def tempDirectory = temporaryFolder.newFolder()
       def legacyLoadRepository = Mock(LegacyLoadRepository)
       def legacyCsvLoaderProcessor = Mock(LegacyCsvLoaderProcessor)
-      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(),true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor)
+      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(), true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor)
       def tempCsvFile = new File(tempDirectory, "eli-test.csv")
 
       when:

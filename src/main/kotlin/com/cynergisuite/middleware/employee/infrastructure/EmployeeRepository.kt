@@ -11,7 +11,6 @@ import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
-import io.reactivex.Single
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

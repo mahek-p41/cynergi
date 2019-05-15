@@ -26,5 +26,7 @@ object MessageCodes {
       const val NOT_IMPLEMENTED = "system.not.implemented"
       const val LOGGED_IN = "system.logged.in"
       const val NOT_LOGGED_IN = "system.not.logged.in"
+      const val ACCESS_DENIED = "system.access.denied"
+      const val UNKNOWN = "system.word.unknown"
    }
 }
