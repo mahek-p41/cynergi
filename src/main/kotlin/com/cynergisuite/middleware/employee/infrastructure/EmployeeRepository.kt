@@ -143,7 +143,11 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun canEmployeeAccess(assert: String, id: Long): Boolean {
-      return true // TODO do this check once the appropriate data from the menu/modules conversion is in place
+      return if(assert == "check") { // everyone authenticated should be able to access this asset
+         true
+      } else {
+         true // TODO do this check once the appropriate data from the menu/modules conversion is in place
+      }
    }
 }
 

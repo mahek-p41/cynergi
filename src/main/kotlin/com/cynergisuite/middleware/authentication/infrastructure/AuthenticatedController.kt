@@ -14,6 +14,8 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
+import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
+import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import javax.inject.Inject
 
 @Requires(env = ["local", "demo"])
@@ -22,7 +24,7 @@ class AuthenticatedController @Inject constructor(
    private val localizationService: LocalizationService
 ) {
 
-   @Secured("isAnonymous()")
+   @Secured(IS_ANONYMOUS)
    @Get(produces = [APPLICATION_JSON])
    fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
       val locale = httpRequest.findLocaleWithDefault()
@@ -39,5 +41,12 @@ class AuthenticatedController @Inject constructor(
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)
             .body(AuthenticatedUserInformation(loginStatus = message))
       }
+   }
+
+   @Get("/check")
+   @Secured(IS_AUTHENTICATED)
+   @AccessControl("check")
+   fun authenticationCheck(httpRequest: HttpRequest<*>): HttpResponse<Any> {
+      return HttpResponse.ok()
    }
 }
