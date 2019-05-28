@@ -3,28 +3,7 @@ micronaut:
    server:
       port: 10900
       host: localhost
-   security:
-      enabled: true
-      endpoints:
-         login:
-            enabled: true
-            path: /api/login
-         logout:
-            enabled: true
-            path: /api/logout
-      token:
-         jwt:
-            enabled: true
-            generator:
-               access-token-expiration: 43200 # 12 hours
-               refresh-token-expiration: 86400 # 24 hours
-            bearer:
-               enabled: true
-            signatures:
-               secret:
-                  generator:
-                     secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate this secret at deployment time
-                     jws-algorithm: HS256
+   security.token.jwt.signatures.secret.generator.secret: 93ir0939u0u0ujejr0jkfjdmfhalipiuajdfnfeiakrr # TODO generate this secret at deployment time somehow
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:

@@ -15,7 +15,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@Requires(env = ["local", "prod", "demo"])
 class UserAuthenticationProvider @Inject constructor(
    private val employeeService: EmployeeService
 ) : AuthenticationProvider {

@@ -4,9 +4,12 @@ import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.domain.infrastructure.IdentifiableService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.legacy.load.LegacyCsvLoadingService
+import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.validation.Validated
 import io.reactivex.Maybe
 import org.apache.commons.csv.CSVRecord
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import javax.inject.Inject
@@ -17,14 +20,15 @@ import javax.validation.Valid
 class EmployeeService @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val employeeValidator: EmployeeValidator
-) : IdentifiableService<EmployeeValueObject>, CSVParsingService(), LegacyCsvLoadingService {
+) : CSVParsingService(), LegacyCsvLoadingService {
+   private val logger: Logger = LoggerFactory.getLogger(EmployeeService::class.java)
    private val employeeMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-employee*csv")
 
-   override fun fetchById(id: Long): EmployeeValueObject? =
-      employeeRepository.findOne(id = id)?.let { EmployeeValueObject(entity = it) }
+   fun fetchById(id: Long, loc: String): EmployeeValueObject? =
+      employeeRepository.findOne(id = id, loc = loc)?.let { EmployeeValueObject(entity = it) }
 
-   override fun exists(id: Long): Boolean =
-      employeeRepository.exists(id = id)
+   fun exists(id: Long, loc: String): Boolean =
+      employeeRepository.exists(id = id, loc = loc)
 
    @Validated
    fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {
@@ -44,8 +48,10 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   fun canEmployeeAccess(assert: String, employee: EmployeeValueObject): Boolean {
-      return employeeRepository.canEmployeeAccess(assert, employee.id!!)
+   fun canEmployeeAccess(asset: String, employee: EmployeeValueObject): Boolean {
+      logger.debug("Checking if the user {} has access to asset {}", employee, asset)
+
+      return employeeRepository.canEmployeeAccess(employee.loc!!, asset, employee.id!!)
    }
 
    fun findUserByAuthentication(number: Int, passCode: String): Maybe<Employee> =
@@ -57,6 +63,7 @@ class EmployeeService @Inject constructor(
    override fun processCsvRow(record: CSVRecord) {
       create (
          EmployeeValueObject(
+            loc = "int",
             number = record.get("number").toInt(),
             passCode = record.get("pass_code"),
             active = record.get("active")?.toBoolean() ?: true

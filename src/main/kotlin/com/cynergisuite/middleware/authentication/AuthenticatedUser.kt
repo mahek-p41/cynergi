@@ -5,11 +5,13 @@ import io.micronaut.security.authentication.UserDetails
 
 class AuthenticatedUser(
    val id: Long,
+   val loc: String,
    username: String
 ) : UserDetails(username, mutableListOf()) {
    constructor(employee: Employee) :
       this (
          id = employee.id!!,
+         loc = employee.loc,
          username = employee.number.toString()
       )
 }

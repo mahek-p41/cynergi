@@ -1,7 +1,8 @@
 package <%= fullDomainPackage %>.infrastructure
 
-import <%= fullDomainPackage %>.<%= domain %>Validator
+import <%= fullDomainPackage %>.<%= domain %>Service
 import <%= fullDomainPackage %>.<%= domain %>ValueObject
+import <%= pkg %>.<%= appName %>.authentication.infrastructure.AccessControl
 import <%= pkg %>.<%= appName %>.error.ValidationException
 import <%= pkg %>.<%= appName %>.error.NotFoundException
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -11,18 +12,21 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@Secured(IS_AUTHENTICATED) // require access to this controller to at the very least be authenticated
 @Controller("/api/<%= table %>") // TODO CHECK THAT THIS PATH IS CORRECT!!
 class <%= domain %>Controller @Inject constructor(
-   private val <%= repository %>Service: <%= domain %>Service,
-   private val <%= repository %>Validator: <%= domain %>Validator
+   private val <%= repository %>Service: <%= domain %>Service
 ) {
    private val logger: Logger = LoggerFactory.getLogger(<%= domain %>Controller::class.java)
 
    @Throws(NotFoundException::class)
+   @AccessControl("<%= repository %>-fetchOne")
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    fun fetchOne(
       @QueryValue("id") id: Long
@@ -37,13 +41,12 @@ class <%= domain %>Controller @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
+   @AccessControl("<%= repository %>-save")
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
       @Body vo: <%= domain %>ValueObject
    ): <%= domain %>ValueObject {
       logger.info("Requested Save <%= domain %> {}", vo)
-
-      <%= repository %>Validator.validateSave(vo = vo)
 
       val response = <%= repository %>Service.create(vo = vo)
 
@@ -53,13 +56,12 @@ class <%= domain %>Controller @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
+   @AccessControl("<%= repository %>-update")
    @Throws(ValidationException::class, NotFoundException::class)
    fun update(
       @Body vo: <%= domain %>ValueObject
    ): <%= domain %>ValueObject {
       logger.info("Requested Update <%= domain %> {}", vo)
-
-      <%= repository %>Validator.validateUpdate(vo = vo)
 
       val response = <%= repository %>Service.update(vo = vo)
 

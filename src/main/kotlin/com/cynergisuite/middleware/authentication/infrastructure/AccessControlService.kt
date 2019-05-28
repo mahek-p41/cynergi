@@ -1,12 +1,13 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AccessException
+import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.employee.EmployeeService
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.MessageCodes.System.ACCESS_DENIED
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import io.micronaut.security.utils.SecurityService
-import java.util.Objects
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,6 +21,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class AccessControlService @Inject constructor(
+   private val authenticationService: AuthenticationService,
    private val employeeService: EmployeeService,
    private val securityService: SecurityService
 ) : MethodInterceptor<Any, Any> {
@@ -28,7 +30,7 @@ class AccessControlService @Inject constructor(
       val authenticatedUser = securityService.authentication.orElse(null)
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset = accessControl?.values?.get("asset") as String?
-      val employee = authenticatedUser?.attributes?.get("id")?.let { employeeService.fetchById(Objects.toString(it).toLong()) }
+      val employee: EmployeeValueObject? = authenticationService.findEmployee(authenticatedUser)
 
       return if (securityService.isAuthenticated && asset != null && employee != null && employeeService.canEmployeeAccess(asset, employee)) {
          context.proceed()

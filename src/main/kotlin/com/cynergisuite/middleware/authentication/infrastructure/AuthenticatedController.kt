@@ -18,6 +18,7 @@ import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import javax.inject.Inject
 
+@Secured(IS_AUTHENTICATED)
 @Requires(env = ["local", "demo"])
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
@@ -30,12 +31,12 @@ class AuthenticatedController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authentication != null) {
-         val message = localizationService.localize(LOGGED_IN, locale, arrayOf(authentication.name))
+         val message = localizationService.localize(LOGGED_IN, locale, arguments = arrayOf(authentication.name))
 
          HttpResponse
             .ok(AuthenticatedUserInformation(number = authentication.name, loginStatus = message))
       } else {
-         val message = localizationService.localize(NOT_LOGGED_IN, locale, emptyArray())
+         val message = localizationService.localize(NOT_LOGGED_IN, locale, arguments = emptyArray())
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)
@@ -44,7 +45,6 @@ class AuthenticatedController @Inject constructor(
    }
 
    @Get("/check")
-   @Secured(IS_AUTHENTICATED)
    @AccessControl("check")
    fun authenticationCheck(httpRequest: HttpRequest<*>): HttpResponse<Any> {
       return HttpResponse.ok()

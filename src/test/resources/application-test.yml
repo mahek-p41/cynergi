@@ -3,6 +3,7 @@ micronaut:
    http:
       client:
          read-timeout: 3600s
+   security.token.jwt.signatures.secret.generator.secret: kdfjadkdjfioeijfow39302jfojsojf0jdkd9fj
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
@@ -24,6 +25,10 @@ flyway:
          clean-on-validation-error: true
          clean-disabled: false
 cynergi:
+   security:
+      jwt:
+         pem:
+            path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
    legacy:
       import:
          location: "./importEmpty/"

@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const yosay = require('yosay');
 const camelCase = require('camel-case');
 const pascalCase = require('pascal-case');
+const snakeCase = require('snake-case');
 const fs = require('fs');
 const process = require('process');
 const ejs = require('ejs');
@@ -57,7 +58,7 @@ module.exports = class extends Generator {
       const templateValues = {
          repository: camelCase(this.options.table),
          entity: pascalCase(this.options.table),
-         table: this.options.table.toLowerCase()
+         table: snakeCase(this.options.table)
       };
       const templates = {
          'Entity.sql.template': `src/main/resources/db/migration/postgres/V${versionNumber}__${this.options.description}.sql`,

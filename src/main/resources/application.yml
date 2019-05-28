@@ -1,6 +1,31 @@
 micronaut:
    application:
       name: cynergi-middleware
+   caches:
+      user-cache:
+         maximumSize: 50
+         expire-after-write: 3600s
+   security:
+      enabled: true
+      endpoints:
+         login:
+            enabled: true
+            path: /api/login
+         logout:
+            enabled: true
+            path: /api/logout
+      token:
+         jwt:
+            enabled: true
+            generator:
+               access-token-expiration: 43200 # 12 hours
+               refresh-token-expiration: 86400 # 24 hours
+            bearer:
+               enabled: true
+            signatures:
+               secret:
+                  generator:
+                     jws-algorithm: HS256
 jackson:
    serialization:
       writeDatesAsTimestamps: false
