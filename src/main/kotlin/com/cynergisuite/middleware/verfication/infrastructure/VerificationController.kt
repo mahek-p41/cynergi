@@ -12,6 +12,9 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule
+import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.validation.Validated
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,6 +27,7 @@ import javax.validation.Valid
  * @param verificationService defines that the [VerificationService] instance should be injected by the container
  * @param verificationValidator defines that the [VerificationValidator] instance should be injected by the container
  */
+@Secured(IS_ANONYMOUS)
 @Validated
 @Controller("/api/verifications/{companyId}/")
 class VerificationController @Inject constructor(

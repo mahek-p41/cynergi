@@ -1,17 +1,18 @@
 package com.cynergisuite.middleware.employee.infrastructure
 
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.employee.Employee
+import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -25,20 +26,55 @@ import javax.inject.Singleton
 class EmployeeRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val postgresClient: PgPool
-) : Repository<Employee> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
-   private val simpleEmployeeRowMapper = EmployeeRowMapper()
+   private val locUnawareEmployeeRowMapper = LocUnawareEmployeeRowMapper()
+   private val locAwareEmployeeRowMapper = LocAwareEmployeeRowMapper()
 
-   override fun findOne(id: Long): Employee? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM employee WHERE id = :id", mapOf("id" to id), simpleEmployeeRowMapper)
+   @Language("PostgreSQL")
+   val baseQuery = """
+      SELECT *
+      FROM (
+         SELECT id, uu_row_id, time_created, time_updated, number, pass_code, active, loc
+         FROM (
+            SELECT
+               1 AS from_priority,
+               fpie.id AS id,
+               fpie.uu_row_id AS uu_row_id,
+               fpie.time_created AS time_created,
+               fpie.time_updated AS time_updated,
+               fpie.number AS number,
+               fpie.pass_code AS pass_code,
+               fpie.active AS active,
+               'ext' AS loc
+            FROM fastinfo_prod_import.employee_vw fpie
+            UNION
+            SELECT
+               2 AS from_priority,
+               e.id AS id,
+               e.uu_row_id AS uu_row_id,
+               e.time_created AS time_created,
+               e.time_updated AS time_updated,
+               e.number AS number,
+               e.pass_code AS pass_code,
+               e.active AS active,
+               'ext' AS loc
+            FROM employee e
+         ) AS inner_emp
+         ORDER BY from_priority
+      ) AS e
+   """.trimIndent()
+
+   fun findOne(id: Long, loc: String): Employee? {
+      val found = jdbc.findFirstOrNull("$baseQuery\nWHERE e.id = :id AND e.loc = :loc", mapOf("id" to id, "loc" to loc), locAwareEmployeeRowMapper)
 
       logger.trace("Searching for Employee: {} resulted in {}", id, found)
 
       return found
    }
 
-   override fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM employee WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   fun exists(id: Long, loc: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ($baseQuery) AS emp_exists WHERE emp_exists.id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Employee: {} exists resulted in {}", id, exists)
 
@@ -54,29 +90,7 @@ class EmployeeRepository @Inject constructor(
       logger.trace("Checking authentication for {}", number)
 
       return postgresClient.rxPreparedQuery("""
-         SELECT
-            fpie.id AS id,
-            fpie.uu_row_id AS uu_row_id,
-            fpie.time_created AS time_created,
-            fpie.time_updated AS time_update,
-            fpie.number AS number,
-            fpie.pass_code AS pass_code,
-            fpie.active AS active
-         FROM fastinfo_prod_import.employee_vw fpie
-         WHERE fpie.number = $1
-            AND fpie.pass_code = $2
-            AND fpie.active = true
-            AND char_length(fpie.pass_code) > 0
-         UNION
-         SELECT
-            e.id AS id,
-            e.uu_row_id AS uu_row_id,
-            e.time_created AS time_created,
-            e.time_updated AS time_update,
-            e.number AS number,
-            e.pass_code AS pass_code,
-            e.active AS active
-         FROM employee e
+         $baseQuery
          WHERE e.number = $1
             AND e.pass_code = $2
             AND e.active = true
@@ -92,6 +106,7 @@ class EmployeeRepository @Inject constructor(
                uuRowId = row.getUUID("uu_row_id"),
                timeCreated = row.getOffsetDateTime("time_created"),
                timeUpdated = row.getOffsetDateTime("time_updated") ?: OffsetDateTime.now(),
+               loc = row.getString("loc"),
                number = row.getInteger("number"),
                passCode = row.getString("pass_code"),
                active = row.getBoolean("active")
@@ -100,7 +115,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: Employee): Employee {
+   fun insert(entity: Employee): Employee {
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
@@ -114,12 +129,12 @@ class EmployeeRepository @Inject constructor(
             "pass_code" to entity.passCode,
             "active" to entity.active
          ),
-         simpleEmployeeRowMapper
+         locUnawareEmployeeRowMapper
       )
    }
 
    @Transactional
-   override fun update(entity: Employee): Employee {
+   fun update(entity: Employee): Employee {
       logger.debug("Updating employee {}", entity)
 
       return jdbc.updateReturning("""
@@ -138,12 +153,18 @@ class EmployeeRepository @Inject constructor(
             "pass_code" to entity.passCode,
             "active" to entity.active
          ),
-         simpleEmployeeRowMapper
+         locUnawareEmployeeRowMapper
       )
    }
 
-   fun canEmployeeAccess(assert: String, id: Long): Boolean {
-      return if(assert == "check") { // everyone authenticated should be able to access this asset
+   fun mapPrefixedRow(rs: ResultSet, columnPrefix: String = "e_"): Employee? =
+      rs.getString("${columnPrefix}id")?.let { locUnawareEmployeeRowMapper.mapRow(rs = rs, columnPrefix = columnPrefix) }
+
+   @Cacheable("user-cache")
+   fun canEmployeeAccess(loc: String, asset: String, id: Long): Boolean {
+      logger.debug("Check if user {} has access to asset {} via the database", id, asset)
+
+      return if(asset == "check") { // everyone authenticated should be able to access this asset
          true
       } else {
          true // TODO do this check once the appropriate data from the menu/modules conversion is in place
@@ -151,17 +172,36 @@ class EmployeeRepository @Inject constructor(
    }
 }
 
-private class EmployeeRowMapper(
+private class LocUnawareEmployeeRowMapper(
    private val columnPrefix: String = EMPTY
 ) : RowMapper<Employee> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Employee =
-      Employee(
+      mapRow(rs, this.columnPrefix)
+
+   fun mapRow(rs: ResultSet, columnPrefix: String): Employee {
+      return Employee(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         loc = "int",
          number = rs.getInt("${columnPrefix}number"),
          passCode = rs.getString("${columnPrefix}pass_code"),
          active = rs.getBoolean("${columnPrefix}active")
+      )
+   }
+}
+
+private class LocAwareEmployeeRowMapper : RowMapper<Employee> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): Employee =
+      Employee(
+         id = rs.getLong("id"),
+         uuRowId = rs.getUuid("uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("time_created"),
+         timeUpdated = rs.getOffsetDateTime("time_updated"),
+         loc = rs.getString("loc"),
+         number = rs.getInt("number"),
+         passCode = rs.getString("pass_code"),
+         active = rs.getBoolean("active")
       )
 }

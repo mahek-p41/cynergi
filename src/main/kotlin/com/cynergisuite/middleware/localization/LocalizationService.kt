@@ -39,8 +39,8 @@ class LocalizationService @Inject constructor(
     * @param locale the [Locale] instance to be used to localize the message or [Locale.US] as a default
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
-   fun localize(messageKey: String, locale: Locale = Locale.US): String =
-      localize(messageKey, locale, emptyArray())
+   fun localize(messageKey: String, locale: Locale = Locale.US, ifNotFound: String = EMPTY): String =
+      localize(messageKey = messageKey, locale = locale, ifNotFound = ifNotFound, arguments = emptyArray())
 
    /**
     * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided
@@ -50,14 +50,14 @@ class LocalizationService @Inject constructor(
     * @param arguments the arguments to be provided to the messageSource
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
-   fun localize(messageKey: String, locale: Locale = Locale.US, arguments: Array<Any?>): String {
+   fun localize(messageKey: String, locale: Locale = Locale.US, ifNotFound: String = EMPTY, arguments: Array<Any?>): String {
       val cleanMessageKey = messageKey.removeSurrounding("{", "}")
 
       return try {
          messageSource.getMessage(cleanMessageKey, arguments, locale)
       } catch (e: Throwable) {
          logger.error("Unable to convert message using {} for locale {} with arguments {}", messageKey, locale, arguments)
-         EMPTY // return the Java empty string if an error occurred
+         ifNotFound // return the Java empty string if an error occurred
       }
    }
 }

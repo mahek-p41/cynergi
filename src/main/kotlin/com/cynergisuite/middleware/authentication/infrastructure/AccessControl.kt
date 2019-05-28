@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import io.micronaut.aop.Around
 import io.micronaut.context.annotation.Type
 import kotlin.annotation.AnnotationRetention.RUNTIME
+import kotlin.annotation.AnnotationTarget.FUNCTION
 
 /**
  * Annotation that indicates to the Micronaut framework to wrap any method annotated by this annotation in checks
@@ -18,7 +19,7 @@ import kotlin.annotation.AnnotationRetention.RUNTIME
  */
 @MustBeDocumented
 @Retention(RUNTIME)
-@Target(AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
+@Target(FUNCTION)
 @Around
 @Type(AccessControlService::class)
 annotation class AccessControl(

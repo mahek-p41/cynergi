@@ -15,7 +15,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject(989, "studio", true))
+      employeeValidator.validateSave(new EmployeeValueObject( "int", 989, "studio", true))
 
       then:
       notThrown(ValidationException)
@@ -27,7 +27,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject(null, null, null, null))
+      employeeValidator.validateSave(new EmployeeValueObject(null, null, null, null, null))
 
       then:
       notThrown(ValidationException)
@@ -42,10 +42,10 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, 989, "studio", true))
+      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "int", 989, "studio", true))
 
       then:
-      1 * employeeRepository.exists(1L) >> true
+      1 * employeeRepository.exists(1L, "int") >> true
       notThrown(ValidationException)
    }
 
@@ -55,10 +55,10 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, 989, "studio", true))
+      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "int", 989, "studio", true))
 
       then:
-      1 * employeeRepository.exists(1L) >> false
+      1 * employeeRepository.exists(1L, "int") >> false
       def exception = thrown(ValidationException)
       1 == exception.errors.size()
       exception.errors.containsAll([
@@ -72,10 +72,10 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, null, null, null))
+      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "int", null, null, null))
 
       then:
-      1 * employeeRepository.exists(1L) >> true
+      1 * employeeRepository.exists(1L, "int") >> true
       notThrown(ValidationException)
    }
 }

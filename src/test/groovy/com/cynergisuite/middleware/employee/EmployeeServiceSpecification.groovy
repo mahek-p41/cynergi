@@ -13,13 +13,10 @@ import java.nio.file.Paths
 
 @MicronautTest(transactional = false)
 class EmployeeServiceSpecification extends ServiceSpecificationBase {
-   @Rule
-   TemporaryFolder temporaryFolder
+   @Rule TemporaryFolder temporaryFolder
 
-   @Inject
-   EmployeeService employeeService
-   @Inject
-   JdbcTemplate jdbc
+   @Inject EmployeeService employeeService
+   @Inject JdbcTemplate jdbc
 
    void "eli path glob"() {
       expect:

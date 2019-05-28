@@ -9,14 +9,16 @@ data class Employee(
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
+   val loc: String,
    val number: Int,
    val passCode: String,
    val active: Boolean = true
 ) : Entity<Employee> {
 
-   constructor(userId: Int, passCode: String, active: Boolean) :
+   constructor(loc: String, userId: Int, passCode: String, active: Boolean) :
       this(
          id = null,
+         loc = loc,
          number = userId,
          passCode = passCode,
          active = active
@@ -25,6 +27,7 @@ data class Employee(
    constructor(vo: EmployeeValueObject) :
       this(
          id = vo.id,
+         loc = vo.loc!!,
          number = vo.number!!,
          passCode = vo.passCode!!,
          active = vo.active!!

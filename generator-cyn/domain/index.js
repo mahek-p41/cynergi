@@ -16,6 +16,13 @@ module.exports = class extends Generator {
          required: true,
          description: 'Name of the table that the Entity will be managing'
       });
+
+      this.option('existing', {
+         type: String,
+         alias: 'e',
+         default: null,
+         description: 'whether to append a table to existing file or create a new one'
+      });
    }
 
    async prompting() {
@@ -27,6 +34,7 @@ module.exports = class extends Generator {
    }
 
    writing() {
+      const existing = this.options.existing;
       const domain = this.options.domain;
       const appName = this.config.get('name');
       const lineOfBusiness = this.config.get('lob');
@@ -34,7 +42,7 @@ module.exports = class extends Generator {
       const pkgPath = pkg.replace(/\./gi, '/');
       const mainSrc = this.config.get('mainSrc');
       const testSrc = this.config.get('testSrc');
-      const domainPackage = dotCase(camelCase(domain));
+      const domainPackage = this.determineDomainPackage(existing, domain);
       const domainPath = domainPackage.replace(/\./gi, '/');
       const fullDomainPackage = `${pkg}.${appName}.${domainPackage}`;
       const tableName = decamelize(domain);
@@ -70,5 +78,17 @@ module.exports = class extends Generator {
             templateValues
          );
       });
+   }
+
+   determineDomainPackage(existing, domain) {
+      let toReturn;
+
+      if (existing != null && existing.length > 3) {
+         toReturn = existing;
+      } else {
+         toReturn = domain;
+      }
+
+      return dotCase(camelCase(toReturn))
    }
 };

@@ -25,7 +25,9 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
       super.populateWithUserDetails(builder, userDetails)
 
       if (userDetails is AuthenticatedUser) {
-         builder?.claim("id", userDetails.id)
+         builder
+            ?.claim("id", userDetails.id)
+            ?.claim("loc", userDetails.loc)
       }
    }
 }

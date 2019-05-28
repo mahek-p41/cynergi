@@ -1,5 +1,7 @@
 package com.cynergisuite.domain.infrastructure
 
+import com.github.javafaker.Faker
+
 class SpecificationHelpers {
 
    /**
@@ -26,5 +28,17 @@ class SpecificationHelpers {
                (it.value instanceof Collection || it.value instanceof Map) && it.value.size() < 1
             )
       }.size() == 0
+   }
+
+   static long generateRandomLongThatIsNot(long isNot) {
+      def faker = new Faker()
+      def number = faker.number()
+      long num = number.randomNumber()
+
+      while (num == isNot) {
+         num = number.randomNumber()
+      }
+
+      return num
    }
 }

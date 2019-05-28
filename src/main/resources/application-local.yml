@@ -5,31 +5,7 @@ micronaut:
          swagger:
             paths: classpath:META-INF/swagger
             mapping: /swagger/**
-   security:
-      enabled: true
-      endpoints:
-         login:
-            enabled: true
-            path: /api/login
-         logout:
-            enabled: true
-            path: /api/logout
-      token:
-         jwt:
-            enabled: true
-            generator:
-               access-token-expiration: 43200 # 12 hours
-               refresh-token-expiration: 86400 # 24 hours
-            bearer:
-               enabled: true
-            signatures:
-               secret:
-                  generator:
-                     secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
-                     jws-algorithm: HS256
-   views:
-      thymeleaf:
-         cacheable: false
+   security.token.jwt.signatures.secret.generator.secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:

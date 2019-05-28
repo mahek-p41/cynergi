@@ -9,7 +9,7 @@ import javax.validation.Valid
 
 @Singleton
 class <%= domain %>Service @Inject constructor(
-   private val <%= repository %>Repository: <%= domain %>Repository
+   private val <%= repository %>Repository: <%= domain %>Repository,
    private val <%= repository %>Validator: <%= domain %>Validator
 ) : IdentifiableService<<%= domain %>ValueObject> {
    override fun fetchById(id: Long): <%= domain %>ValueObject? =
@@ -29,9 +29,9 @@ class <%= domain %>Service @Inject constructor(
 
    @Validated
    fun update(@Valid vo: <%= domain %>ValueObject): <%= domain %>ValueObject {
-      <%= repository %>Validator.validateSave(vo)
+      <%= repository %>Validator.validateUpdate(vo)
 
-      <%= domain %>ValueObject(
+      return <%= domain %>ValueObject(
          entity = <%= repository %>Repository.update(entity = <%= domain %>(vo = vo))
       )
    }

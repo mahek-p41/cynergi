@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.domain.infrastructure.TypeDomainRepository
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.middleware.notification.NotificationTypeDomain
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -18,9 +16,18 @@ import javax.inject.Singleton
 class NotificationTypeDomainRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) : TypeDomainRepository<NotificationTypeDomain> {
+
    private val logger: Logger = LoggerFactory.getLogger(NotificationTypeDomainRepository::class.java)
    private val simpleNotificationDomainTypeRowMapper = NotificationTypeDomainRowMapper()
    private val prefixedNotificationDomainTypeRowMapper = NotificationTypeDomainRowMapper("ntd_")
+
+   override fun exists(value: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification_type_domain WHERE value = :value)", mapOf("value" to value), Boolean::class.java)!!
+
+      logger.trace("Checking if Audit: {} exists resulted in {}", value, exists)
+
+      return exists
+   }
 
    override fun findOne(id: Long): NotificationTypeDomain? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE id = :id", mapOf("id" to id), simpleNotificationDomainTypeRowMapper)
@@ -51,10 +58,8 @@ private class NotificationTypeDomainRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain =
       NotificationTypeDomain(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          value = rs.getString("${columnPrefix}value"),
-         description = rs.getString("${columnPrefix}description")
+         description = rs.getString("${columnPrefix}description"),
+         localizationCode = rs.getString("${columnPrefix}localization_code")
       )
 }

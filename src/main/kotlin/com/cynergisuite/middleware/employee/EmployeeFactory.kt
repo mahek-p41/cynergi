@@ -20,6 +20,7 @@ object EmployeeFactory {
 
       return IntStream.range(0, number).mapToObj {
          Employee(
+            loc = "int",
             number = numbers.numberBetween(1, 10_000),
             passCode = lorem.characters(3, 6),
             active = bool.bool()

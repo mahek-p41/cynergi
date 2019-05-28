@@ -4,6 +4,7 @@ import <%= pkg %>.<%= appName %>.error.ValidationError
 import <%= pkg %>.<%= appName %>.error.ValidationException
 import <%= pkg %>.<%= appName %>.localization.MessageCodes.System.NOT_FOUND
 import <%= pkg %>.<%= appName %>.localization.MessageCodes.Validation.NOT_NULL
+import <%= fullDomainPackage %>.infrastructure.<%= domain %>Repository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -22,7 +23,7 @@ class <%= domain %>Validator @Inject constructor (
       val errors = doSharedValidation(vo)
 
       if (errors.isNotEmpty()) {
-         logger.debug("Validating Save <%= domain %> {} had errors", vo)
+         logger.debug("Validating Save <%= domain %> {} had errors {}", vo, errors)
 
          throw ValidationException(errors)
       }
@@ -44,7 +45,7 @@ class <%= domain %>Validator @Inject constructor (
       }
 
       if (errors.isNotEmpty()) {
-         logger.debug("Validating Update <%= domain %> {} had errors", vo)
+         logger.debug("Validating Update <%= domain %> {} had errors {}", vo, errors)
 
          throw ValidationException(errors)
       }

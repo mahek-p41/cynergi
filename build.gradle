@@ -118,12 +118,12 @@ jacoco {
 
 allOpen {
    annotation("io.micronaut.aop.Around")
-   annotation("io.micronaut.http.annotation.Controller")
+   annotation("io.micronaut.security.annotation.Secured")
    annotation("javax.inject.Singleton")
 }
 
 noArg {
-   annotation("com.hightouchinc.cynergi.middleware.dto.DataTransferObject")
+   annotation("com.cynergisuite.domain.ValueObject")
    invokeInitializers = true
 }
 

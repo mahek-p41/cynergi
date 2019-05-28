@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.MessageCodes
+import com.cynergisuite.middleware.localization.MessageCodes.System
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.CONVERSION_ERROR
 import com.cynergisuite.middleware.localization.MessageCodes.System.INTERNAL_ERROR
 import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
@@ -46,7 +46,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorValueObject(localizationService.localize(INTERNAL_ERROR, locale, emptyArray())))
+      return serverError(ErrorValueObject(localizationService.localize(messageKey = INTERNAL_ERROR, locale = locale, arguments = emptyArray())))
    }
 
    @Error(global = true, exception = IOException::class)
@@ -66,7 +66,7 @@ class ErrorHandlerController @Inject constructor(
 
       return HttpResponse
          .status<ErrorValueObject>(NOT_IMPLEMENTED)
-         .body(ErrorValueObject(localizationService.localize(MessageCodes.System.NOT_IMPLEMENTED, locale, arrayOf(httpRequest.path))))
+         .body(ErrorValueObject(localizationService.localize(messageKey = System.NOT_IMPLEMENTED, locale = locale, arguments = arrayOf(httpRequest.path))))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
@@ -97,7 +97,7 @@ class ErrorHandlerController @Inject constructor(
 
       return badRequest(
          ErrorValueObject(
-            message = localizationService.localize(exception.messageTemplate, locale, emptyArray()),
+            message = localizationService.localize(messageKey = exception.messageTemplate, locale = locale, arguments = emptyArray()),
             path = exception.path
          )
       )
@@ -106,7 +106,7 @@ class ErrorHandlerController @Inject constructor(
    private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorValueObject> {
       return badRequest(
          ErrorValueObject(
-            message = localizationService.localize(CONVERSION_ERROR, locale, arrayOf(argumentName, argumentValue)),
+            message = localizationService.localize(CONVERSION_ERROR, locale, arguments = arrayOf(argumentName, argumentValue)),
             path = argumentName
          )
       )
@@ -118,7 +118,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return badRequest(ErrorValueObject(localizationService.localize(REQUIRED_ARGUMENT, locale, arrayOf(exception.argument.name))))
+      return badRequest(ErrorValueObject(localizationService.localize(REQUIRED_ARGUMENT, locale, arguments = arrayOf(exception.argument.name))))
    }
 
    @Error(global = true, exception = NotFoundException::class)
@@ -127,7 +127,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return notFound(ErrorValueObject(localizationService.localize(NOT_FOUND, locale, arrayOf(notFoundException.notFound))))
+      return notFound(ErrorValueObject(localizationService.localize(NOT_FOUND, locale, arguments = arrayOf(notFoundException.notFound))))
    }
 
    @Error(global = true, exception = ValidationException::class)
@@ -138,7 +138,7 @@ class ErrorHandlerController @Inject constructor(
 
       return badRequest(
          validationException.errors.map {
-            ErrorValueObject(message = localizationService.localize(it.messageTemplate, locale, it.arguments.toTypedArray()), path = it.path)
+            ErrorValueObject(message = localizationService.localize(it.messageTemplate, locale, arguments = it.arguments.toTypedArray()), path = it.path)
          }
       )
    }
@@ -154,20 +154,21 @@ class ErrorHandlerController @Inject constructor(
             val field = buildPropertyPath(rootPath = it.propertyPath)
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
 
-            ErrorValueObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arrayOf(field, value)), path = field)
+            ErrorValueObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value)), path = field)
          }
       )
    }
 
+   @Error(global = true, exception = AccessException::class)
    fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorValueObject> {
-      logger.info("Unauthorized exception")
+      logger.info("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val username: String = accessException.user ?: localizationService.localize(UNKNOWN, locale, emptyArray())
+      val username: String = accessException.user ?: localizationService.localize(UNKNOWN, locale, arguments = emptyArray())
 
       return HttpResponse
          .status<ErrorValueObject>(FORBIDDEN)
-         .body(ErrorValueObject(localizationService.localize(accessException.errorMessage, locale, arrayOf(username))))
+         .body(ErrorValueObject(localizationService.localize(accessException.errorMessage, locale, arguments = arrayOf(username))))
    }
 
 
@@ -179,6 +180,7 @@ class ErrorHandlerController @Inject constructor(
                && it.name != "update"
                && it.name != "dto"
                && it.name != "vo"
+               && it.name != "fetchAll"
                && !it.name.startsWith("arg")
          }
          .joinToString(".")

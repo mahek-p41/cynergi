@@ -9,10 +9,10 @@ import javax.inject.Singleton
 
 object NotificationTypeDomainTestDataLoader {
    private val typeDomainValues = listOf(
-      NotificationTypeDomain(1, "S", "Store"),
-      NotificationTypeDomain(2, "E", "Employee"),
-      NotificationTypeDomain(3, "D", "Department"),
-      NotificationTypeDomain(4, "A", "All")
+      NotificationTypeDomain(1, "S", "Store", "notification.store"),
+      NotificationTypeDomain(2, "E", "Employee", "notification.employee"),
+      NotificationTypeDomain(3, "D", "Department", "notification.department"),
+      NotificationTypeDomain(4, "A", "All", "notification.all")
    )
 
    @JvmStatic

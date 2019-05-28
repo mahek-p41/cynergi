@@ -8,7 +8,7 @@ import static com.cynergisuite.middleware.localization.MessageCodes.Validation.N
 
 class LocalizationServiceSpecification extends Specification {
 
-   void "check english locale" () {
+   void "check english locale"() {
       given:
       final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])
       final def localizationService = new LocalizationService(resourceBundleMessageSource)
@@ -23,18 +23,19 @@ class LocalizationServiceSpecification extends Specification {
       englishLocale.getISOCountries().contains("US")
    }
 
-   void "localize english messages" () {
+   void "localize english messages"() {
       given:
       final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])
       final def localizationService = new LocalizationService(resourceBundleMessageSource)
       final def englishLocale = localizationService.localeFor("en")
 
       expect:
-      localizationService.localize(messageKey, englishLocale, args) == message
+      localizationService.localize(messageKey, englishLocale, "", args) == message
 
       where:
-      messageKey | args                 || message
-      NOT_NULL   | ["name"] as Object[] || "name is required"
-      NOT_FOUND  | [1] as Object[]      || "Resource 1 was unable to be found"
+      messageKey     | args                 || message
+      NOT_NULL       | ["name"] as Object[] || "name is required"
+      NOT_FOUND      | [1] as Object[]      || "Resource 1 was unable to be found"
+      "i.dont.exist" | []                   || ""
    }
 }

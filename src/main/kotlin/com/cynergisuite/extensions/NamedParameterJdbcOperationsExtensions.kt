@@ -53,3 +53,7 @@ fun <ENTITY> NamedParameterJdbcOperations.insertReturning(query: String, params:
 fun <ENTITY> NamedParameterJdbcOperations.updateReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
    return this.queryForObject(query, params, rowMapper)!!
 }
+
+fun <ENTITY> NamedParameterJdbcOperations.deleteReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY? {
+   return this.findFirstOrNull(query, params, rowMapper)
+}

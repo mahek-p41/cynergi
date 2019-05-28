@@ -38,7 +38,7 @@ class EmployeeValidator @Inject constructor (
 
       if (id == null) {
          errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
-      } else if ( !employeeRepository.exists(id = id) ) {
+      } else if ( !employeeRepository.exists(id = id, loc = vo.loc!!) ) {
          errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
       }
 
