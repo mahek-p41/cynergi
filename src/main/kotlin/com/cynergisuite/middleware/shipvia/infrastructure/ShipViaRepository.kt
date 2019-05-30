@@ -4,7 +4,6 @@ import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.shipvia.ShipVia
 import io.micronaut.spring.tx.annotation.Transactional
-import io.reactiverse.reactivex.pgclient.PgPool
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
