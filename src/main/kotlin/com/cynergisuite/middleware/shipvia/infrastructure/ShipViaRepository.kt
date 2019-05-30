@@ -64,6 +64,7 @@ class ShipViaRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
+            "id" to entity.id,
             "ship_via_name" to entity.shipViaName,
             "ship_via_description" to entity.shipViaDescription
          ),
