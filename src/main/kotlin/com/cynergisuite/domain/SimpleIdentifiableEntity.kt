@@ -1,8 +1,5 @@
 package com.cynergisuite.domain
 
-import com.cynergisuite.domain.IdentifiableValueObject
-import com.cynergisuite.domain.IdentifiableEntity
-
 data class SimpleIdentifiableEntity(
    private val id: Long
 ) : IdentifiableEntity {
@@ -10,7 +7,7 @@ data class SimpleIdentifiableEntity(
       this(id = identifiableEntity.entityId()!!)
 
    constructor(identifiableDto: IdentifiableValueObject):
-      this(id = identifiableDto.dtoId()!!)
+      this(id = identifiableDto.valueObjectId()!!)
 
    override fun entityId(): Long? = id
 

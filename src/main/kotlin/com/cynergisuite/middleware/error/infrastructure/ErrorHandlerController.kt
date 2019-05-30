@@ -12,7 +12,9 @@ import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.CONVERSION_
 import com.cynergisuite.middleware.localization.MessageCodes.System.INTERNAL_ERROR
 import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
 import com.cynergisuite.middleware.localization.MessageCodes.System.REQUIRED_ARGUMENT
+import com.cynergisuite.middleware.localization.MessageCodes.System.UNABLE_TO_PARSE_JSON
 import com.cynergisuite.middleware.localization.MessageCodes.System.UNKNOWN
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
@@ -47,6 +49,19 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return serverError(ErrorValueObject(localizationService.localize(messageKey = INTERNAL_ERROR, locale = locale, arguments = emptyArray())))
+   }
+
+   @Error(global = true, exception = JsonParseException::class)
+   fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorValueObject> {
+      logger.error("Unable to parse request body", exception)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return badRequest(
+         ErrorValueObject(
+            message = localizationService.localize(UNABLE_TO_PARSE_JSON, locale, arguments = arrayOf(exception.localizedMessage))
+         )
+      )
    }
 
    @Error(global = true, exception = IOException::class)

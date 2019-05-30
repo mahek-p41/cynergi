@@ -71,5 +71,5 @@ data class VerificationLandlordValueObject (
 
    override fun copyMe(): VerificationLandlordValueObject = copy()
 
-   override fun dtoId(): Long? = id
+   override fun valueObjectId(): Long? = id
 }

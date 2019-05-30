@@ -25,7 +25,7 @@ data class NotificationTypeDomainValueObject (
          description = entity.description
       )
 
-   override fun dtoId(): Long? = id
+   override fun valueObjectId(): Long? = id
 
    override fun copyMe(): NotificationTypeDomainValueObject = copy()
 }

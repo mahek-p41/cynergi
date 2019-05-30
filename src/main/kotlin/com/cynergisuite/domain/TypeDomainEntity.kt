@@ -6,7 +6,7 @@ import java.util.Locale
 
 interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>> {
 
-   fun entityId(): Long?
+   fun entityId(): Long
 
    fun myValue(): String
 

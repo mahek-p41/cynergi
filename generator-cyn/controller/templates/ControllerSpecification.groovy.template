@@ -2,45 +2,40 @@ package <%= fullDomainPackage %>.infrastructure
 
 import <%= pkg %>.domain.infrastructure.ControllerSpecificationBase
 import <%= fullDomainPackage %>.<%= domain %>FactoryService
-import <%= pkg %>.<%= appName %>.error.ErrorValueObject
-import <%= fullDomainPackage %>.<%= domain %>ValueObject
-import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
-import static <%= pkg %>.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmpty
-import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class <%= domain %>ControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/api/<%= table %>"
+   private static final String path = "/<%= table %>"
 
    @Inject <%= domain %>FactoryService <%= repository %>FactoryService
 
-   void "fetch one <%= table %> by id" () {
+   void "fetch one <%= table.replace('_', ' ') %> by id" () {
       given:
-      final def saved<%= domain %> = <%= table %>FactoryService.single()
-      final def <%= table %>ValueObject = new <%= domain %>ValueObject(saved<%= domain %>)
+      final def saved<%= domain %> = <%= repository %>FactoryService.single()
 
       when:
-      def result = client.retrieve(GET("$path/${saved<%= domain %>.id}"), <%= domain %>ValueObject)
+      def result = get("$path/${saved<%= domain %>.id}")
 
       then:
-      result == <%= table %>ValueObject
-      allPropertiesFullAndNotEmpty(result)
+      result.id == saved<%= domain %>.id
       // TODO more testing of the result
    }
 
-   void "fetch one <%= table %> by id not found" () {
+   void "fetch one <%= table.replace('_', ' ') %> by id not found" () {
       when:
-      client.exchange(GET("$path/0"), Argument.of(<%= domain %>ValueObject), Argument.of(ErrorValueObject))
+      get("$path/0")
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource 0 was unable to be found"
+      def response = exception.response.body().with { parseResponse(it) }
+      response.size() == 1
+      response.message == "Resource 0 was unable to be found"
    }
 }

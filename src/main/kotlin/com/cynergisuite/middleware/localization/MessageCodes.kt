@@ -28,5 +28,6 @@ object MessageCodes {
       const val NOT_LOGGED_IN = "system.not.logged.in"
       const val ACCESS_DENIED = "system.access.denied"
       const val UNKNOWN = "system.word.unknown"
+      const val UNABLE_TO_PARSE_JSON = "system.json.unable.parse"
    }
 }

@@ -10,5 +10,5 @@ interface IdentifiableValueObject {
     *
     * @return Long that is the ID/Primary Key of the table assigned to the row that an Entity represents
     */
-   fun dtoId(): Long?
+   fun valueObjectId(): Long?
 }

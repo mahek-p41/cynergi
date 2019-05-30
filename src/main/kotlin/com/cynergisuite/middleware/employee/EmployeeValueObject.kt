@@ -57,6 +57,6 @@ data class EmployeeValueObject(
          active = entity.active
       )
 
-   override fun dtoId(): Long? = id
+   override fun valueObjectId(): Long? = id
    override fun copyMe(): EmployeeValueObject = copy()
 }

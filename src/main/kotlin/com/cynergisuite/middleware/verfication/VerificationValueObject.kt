@@ -68,7 +68,7 @@ data class VerificationValueObject(
 
    override fun copyMe(): VerificationValueObject = this.copy()
 
-   override fun dtoId(): Long? = id
+   override fun valueObjectId(): Long? = id
 }
 
 private fun copyAutoEntityToValueObject(entity: Verification): VerificationAutoValueObject? {

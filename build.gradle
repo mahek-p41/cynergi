@@ -5,7 +5,7 @@ buildscript {
       }
    }
    dependencies {
-      classpath "org.openapitools:openapi-generator-gradle-plugin:3.3.4"
+      classpath "org.openapitools:openapi-generator-gradle-plugin:4.0.0"
    }
 }
 
@@ -143,16 +143,36 @@ compileTestKotlin {
 }
 
 openApiGenerate {
-   generatorName = "typescript-fetch"
    inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
    validateSpec = false
+   skipValidateSpec = false
+}
+
+task buildTypeScriptClient(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+   generatorName = "typescript-fetch"
+   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
+   outputDir = "$buildDir/clients/openapi/fetch".toString()
+   version = releaseVersion.toString()
+   validateSpec = false
+   skipValidateSpec = true
    configOptions = [
       npmName: "cynergi-fetch-client",
       npmVersion: "${releaseVersion}"
    ]
 }
 
-tasks.openApiGenerate.dependsOn(compileKotlin)
+task buildHtmlDocs(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+   generatorName = "html"
+   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
+   outputDir = "$buildDir/reports/openapi/".toString()
+   version = releaseVersion.toString()
+   auth = "Authorization:Bearer \${jwt}".toString()
+   validateSpec = false
+   skipValidateSpec = true
+}
+
+tasks.buildTypeScriptClient.dependsOn(compileKotlin)
+tasks.buildHtmlDocs.dependsOn(compileKotlin)
 
 tasks.withType(JavaExec) {
    // Assign all Java system properties from

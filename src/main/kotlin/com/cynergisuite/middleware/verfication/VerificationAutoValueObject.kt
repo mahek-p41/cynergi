@@ -112,6 +112,6 @@ data class VerificationAutoValueObject(
 
    override fun copyMe(): VerificationAutoValueObject = copy()
 
-   override fun dtoId(): Long? = id
+   override fun valueObjectId(): Long? = id
 }
 
