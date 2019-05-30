@@ -16,8 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ShipViaRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
-   private val postgresClient: PgPool
+   private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<ShipVia> {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
    private val simpleShipViaRowMapper = ShipViaRowMapper()
