@@ -37,14 +37,14 @@ class ShipViaRepository @Inject constructor(
       logger.debug("Inserting shipVia {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO ship_via(ship_via_name, ship_via_description)
-         VALUES (:shipViaName, :shipViaDescription)
+         INSERT INTO ship_via(name, description)
+         VALUES (:name, :description)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "ship_via_name" to entity.shipViaName,
-            "ship_via_description" to entity.shipViaDescription
+            "name" to entity.name,
+            "description" to entity.description
          ),
          simpleShipViaRowMapper
       )
@@ -57,16 +57,16 @@ class ShipViaRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE ship_via
          SET
-            ship_via_name = :shipViaName,
-            ship_via_description = :shipViaDescription
+            name = :name,
+            description = :description
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "ship_via_name" to entity.shipViaName,
-            "ship_via_description" to entity.shipViaDescription
+            "name" to entity.name,
+            "description" to entity.description
          ),
          simpleShipViaRowMapper
       )
@@ -82,7 +82,7 @@ private class ShipViaRowMapper(
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         shipViaName = rs.getString("${columnPrefix}ship_via_name"),
-         shipViaDescription = rs.getString("${columnPrefix}ship_via_description")
+         name = rs.getString("${columnPrefix}name"),
+         description = rs.getString("${columnPrefix}description")
       )
 }
