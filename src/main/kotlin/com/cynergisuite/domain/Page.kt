@@ -10,6 +10,6 @@ data class Page<VO: IdentifiableValueObject>(
    val requested: PageRequest,
    val totalElements: Long,
    val totalPages: Long = Math.ceil(totalElements.toDouble() / (requested.size ?: 10).toDouble()).toLong(),
-   val first: Boolean = requested.page == 0,
-   val last: Boolean = requested.page!! < totalPages
+   val first: Boolean = requested.page == 1,
+   val last: Boolean = requested.page!!.toLong() == totalPages
 )

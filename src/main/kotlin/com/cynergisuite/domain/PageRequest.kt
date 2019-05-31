@@ -13,8 +13,8 @@ import javax.validation.constraints.Pattern.Flag.CASE_INSENSITIVE
 data class PageRequest(
 
    @field:NotNull(message = NOT_NULL)
-   @field:Min(value = 0, message = MIN)
-   var page: Int? = 0,
+   @field:Min(value = 1, message = MIN)
+   var page: Int? = 1,
 
    @field:NotNull(message = NOT_NULL)
    @field:Min(value = 1, message = MIN)
@@ -41,12 +41,13 @@ data class PageRequest(
       return "?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection"
    }
 
-   fun offset(): Int =
-      if ( (page ?: 0) == 0) {
-         0
-      } else {
-         (page ?: 0) * (size ?: 0)
-      }
+   fun offset(): Int {
+      val requestedOffsetPage: Int = page ?: 1
+      val offsetPage = requestedOffsetPage - 1
+      val offsetSize = size ?: 0
+
+      return offsetPage * offsetSize
+   }
 }
 
 enum class PageRequestSortDirection(

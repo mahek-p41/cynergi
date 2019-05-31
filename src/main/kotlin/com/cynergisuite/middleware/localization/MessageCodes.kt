@@ -29,5 +29,6 @@ object MessageCodes {
       const val ACCESS_DENIED = "system.access.denied"
       const val UNKNOWN = "system.word.unknown"
       const val UNABLE_TO_PARSE_JSON = "system.json.unable.parse"
+      const val PAGE_OUT_OF_BOUNDS = "system.page.out.of.bounds"
    }
 }

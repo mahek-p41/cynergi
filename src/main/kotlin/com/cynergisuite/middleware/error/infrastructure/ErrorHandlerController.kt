@@ -5,12 +5,14 @@ import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
+import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.MessageCodes.System
 import com.cynergisuite.middleware.localization.MessageCodes.Cynergi.CONVERSION_ERROR
+import com.cynergisuite.middleware.localization.MessageCodes.System
 import com.cynergisuite.middleware.localization.MessageCodes.System.INTERNAL_ERROR
 import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
+import com.cynergisuite.middleware.localization.MessageCodes.System.PAGE_OUT_OF_BOUNDS
 import com.cynergisuite.middleware.localization.MessageCodes.System.REQUIRED_ARGUMENT
 import com.cynergisuite.middleware.localization.MessageCodes.System.UNABLE_TO_PARSE_JSON
 import com.cynergisuite.middleware.localization.MessageCodes.System.UNKNOWN
@@ -133,7 +135,25 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return badRequest(ErrorValueObject(localizationService.localize(REQUIRED_ARGUMENT, locale, arguments = arrayOf(exception.argument.name))))
+      return badRequest(
+         ErrorValueObject(
+            localizationService.localize(REQUIRED_ARGUMENT, locale, arguments = arrayOf(exception.argument.name))
+         )
+      )
+   }
+
+   @Error(global = true, exception = PageOutOfBoundsException::class)
+   fun pageOutOfBoundsExceptionHandler(httpRequest: HttpRequest<*>, exception: PageOutOfBoundsException): HttpResponse<ErrorValueObject> {
+      logger.error("Page out of bounds was requested {}", exception.toString())
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val pageRequest = exception.pageRequest
+
+      return notFound(
+         ErrorValueObject(
+            localizationService.localize(PAGE_OUT_OF_BOUNDS, locale, arguments = arrayOf(pageRequest.page, pageRequest.size, pageRequest.sortBy, pageRequest.sortDirection, exception.extra ?: EMPTY))
+         )
+      )
    }
 
    @Error(global = true, exception = NotFoundException::class)
@@ -142,7 +162,11 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return notFound(ErrorValueObject(localizationService.localize(NOT_FOUND, locale, arguments = arrayOf(notFoundException.notFound))))
+      return notFound(
+         ErrorValueObject(
+            localizationService.localize(NOT_FOUND, locale, arguments = arrayOf(notFoundException.notFound))
+         )
+      )
    }
 
    @Error(global = true, exception = ValidationException::class)
