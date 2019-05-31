@@ -58,7 +58,7 @@ class EmployeeRepository @Inject constructor(
                e.number AS number,
                e.pass_code AS pass_code,
                e.active AS active,
-               'ext' AS loc
+               'int' AS loc
             FROM employee e
          ) AS inner_emp
          ORDER BY from_priority
@@ -158,7 +158,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun mapPrefixedRow(rs: ResultSet, columnPrefix: String = "e_"): Employee? =
-      rs.getString("${columnPrefix}id")?.let { locUnawareEmployeeRowMapper.mapRow(rs = rs, columnPrefix = columnPrefix) }
+      rs.getString("${columnPrefix}id")?.let { locAwareEmployeeRowMapper.mapRow(rs = rs, columnPrefix = columnPrefix) }
 
    @Cacheable("user-cache")
    fun canEmployeeAccess(loc: String, asset: String, id: Long): Boolean {
@@ -178,8 +178,8 @@ private class LocUnawareEmployeeRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): Employee =
       mapRow(rs, this.columnPrefix)
 
-   fun mapRow(rs: ResultSet, columnPrefix: String): Employee {
-      return Employee(
+   fun mapRow(rs: ResultSet, columnPrefix: String): Employee =
+      Employee(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
@@ -189,19 +189,23 @@ private class LocUnawareEmployeeRowMapper(
          passCode = rs.getString("${columnPrefix}pass_code"),
          active = rs.getBoolean("${columnPrefix}active")
       )
-   }
 }
 
-private class LocAwareEmployeeRowMapper : RowMapper<Employee> {
+private class LocAwareEmployeeRowMapper(
+   private val columnPrefix: String = EMPTY
+) : RowMapper<Employee> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Employee =
+      mapRow(rs, columnPrefix)
+
+   fun mapRow(rs: ResultSet, columnPrefix: String): Employee  =
       Employee(
-         id = rs.getLong("id"),
-         uuRowId = rs.getUuid("uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
-         loc = rs.getString("loc"),
-         number = rs.getInt("number"),
-         passCode = rs.getString("pass_code"),
-         active = rs.getBoolean("active")
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         loc = rs.getString("${columnPrefix}loc"),
+         number = rs.getInt("${columnPrefix}number"),
+         passCode = rs.getString("${columnPrefix}pass_code"),
+         active = rs.getBoolean("${columnPrefix}active")
       )
 }

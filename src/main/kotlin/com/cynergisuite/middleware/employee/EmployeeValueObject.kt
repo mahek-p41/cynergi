@@ -22,20 +22,20 @@ data class EmployeeValueObject(
 
    @field:JsonIgnore
    @field:NotNull(message = NOT_NULL)
-   val loc: String?,
+   var loc: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Min(1, message = MIN)
-   val number: Int?,
+   var number: Int?,
 
    @field:JsonIgnore
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 3, max = 6, message = SIZE)
-   val passCode: String?,
+   var passCode: String?,
 
    @field:JsonIgnore
    @field:NotNull(message = NOT_NULL)
-   val active: Boolean? = true
+   var active: Boolean? = true
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 

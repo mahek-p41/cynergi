@@ -95,6 +95,7 @@ dependencies {
    testCompile "io.micronaut:micronaut-inject-java"
    testRuntime "net.bytebuddy:byte-buddy:1.8.21"
    testRuntime "org.objenesis:objenesis:2.6"
+   testCompile "org.assertj:assertj-core:3.12.2"
 }
 
 test.classpath += configurations.developmentOnly
