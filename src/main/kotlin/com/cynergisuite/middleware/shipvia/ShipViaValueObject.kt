@@ -17,25 +17,25 @@ data class ShipViaValueObject(
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 3, max = 255, message = SIZE)
-   val shipViaName: String?,
+   val name: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 3, max = 500, message = SIZE)
-   val shipViaDescription: String?
+   val description: String?
 
 ) : ValueObjectBase<ShipViaValueObject>() {
-   constructor(shipViaName: String, shipViaDescription: String) :
+   constructor(name: String, description: String) :
       this(
          id = null,
-         shipViaName = shipViaName,
-         shipViaDescription = shipViaDescription
+         name = name,
+         description = description
       )
 
    constructor(entity: ShipVia) :
       this(
-         id = null,
-         shipViaName = entity.shipViaName,
-         shipViaDescription = entity.shipViaDescription
+         id = entity.id,
+         name = entity.name,
+         description = entity.description
       )
 
    override fun dtoId(): Long? = id

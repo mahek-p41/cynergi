@@ -9,22 +9,22 @@ data class ShipVia(
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val shipViaName: String,
-   val shipViaDescription: String
+   val name: String,
+   val description: String
 ) : Entity<ShipVia> {
 
    constructor(name: String, description: String):
       this(
          id = null,
-         shipViaName = name,
-         shipViaDescription = description
+         name = name,
+         description = description
       )
 
    constructor(vo: ShipViaValueObject) :
       this(
          id = vo.id,
-         shipViaName = vo.shipViaName!!,
-         shipViaDescription = vo.shipViaDescription!!
+         name = vo.name!!,
+         description = vo.description!!
       )
 
    override fun entityId(): Long? = id
