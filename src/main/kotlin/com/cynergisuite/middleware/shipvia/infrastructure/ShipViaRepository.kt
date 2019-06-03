@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.shipvia.infrastructure
 
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.Repository
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.shipvia.ShipVia
 import io.micronaut.spring.tx.annotation.Transactional
@@ -70,6 +72,38 @@ class ShipViaRepository @Inject constructor(
          ),
          simpleShipViaRowMapper
       )
+   }
+
+   fun findAll(pageRequest: PageRequest): RepositoryPage<ShipVia> {
+      var totalElements: Long? = null
+      val shipVia = mutableListOf<ShipVia>()
+
+      jdbc.query("""
+         WITH shipVias AS (
+            SELECT * FROM ship_via
+         )
+         SELECT
+            s.*,
+            count(*) OVER() as total_elements
+         FROM shipVias AS s
+         ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
+         LIMIT ${pageRequest.size}
+         OFFSET ${pageRequest.offset()}
+         """.trimIndent(),
+         emptyMap<String, Any>()
+      ) { rs ->
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+
+         shipVia.add(simpleShipViaRowMapper.mapRow(rs,0))
+      }
+
+      return RepositoryPage(
+         elements = shipVia,
+         totalElements = totalElements ?: 0
+      )
+
    }
 }
 
