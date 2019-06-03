@@ -50,11 +50,11 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.collect(Collectors.toList())
-      def pageOne = new PageRequest(1, 5, "id", ASCENDING)
-      def pageTwo = new PageRequest(2, 5, "id", ASCENDING)
-      def pageLast = new PageRequest(4, 5, "id", ASCENDING)
-      def pageFive = new PageRequest(5, 5, "id", ASCENDING)
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.name <=> o2.name }.collect(Collectors.toList())
+      def pageOne = new PageRequest(1, 5, "name", ASCENDING)
+      def pageTwo = new PageRequest(2, 5, "name", ASCENDING)
+      def pageLast = new PageRequest(4, 5, "name", ASCENDING)
+      def pageFive = new PageRequest(5, 5, "name", ASCENDING)
       def firstPageShipVia = twentyShipVias[0..4]
       def secondPageShipVia = twentyShipVias[5..9]
       def lastPageShipVia = twentyShipVias[15..19]
@@ -103,7 +103,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NOT_FOUND
       final def notFoundResult = notFoundException.response.bodyAsJson()
       notFoundResult.size() == 1
-      notFoundResult.message == "Request  with Page 5, Size 5, Sort By id and Sort Direction ASC produced no results"
+      notFoundResult.message == "Request  with Page 5, Size 5, Sort By name and Sort Direction ASC produced no results"
 
    }
 
