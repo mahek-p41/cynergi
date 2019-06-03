@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.shipvia
 
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
+import com.cynergisuite.middleware.localization.SystemCode.NotFound
+import com.cynergisuite.middleware.localization.Validation.NotNull
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,9 +36,9 @@ class ShipViaValidator @Inject constructor(
       val id = vo.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", NOT_NULL, listOf("id")))
+         errors.add(element = ValidationError("id", NotNull, listOf("id")))
       } else if ( !shipViaRepository.exists(id = id) ) {
-         errors.add(ValidationError("id", NOT_FOUND, listOf(id)))
+         errors.add(ValidationError("id", NotFound, listOf(id)))
       }
 
       if (errors.isNotEmpty()) {

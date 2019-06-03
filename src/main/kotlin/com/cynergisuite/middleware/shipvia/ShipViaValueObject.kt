@@ -1,9 +1,6 @@
 package com.cynergisuite.middleware.shipvia
 
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.POSITIVE
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import javax.validation.constraints.NotNull
@@ -12,15 +9,15 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 data class ShipViaValueObject(
-   @field:Positive(message = POSITIVE)
+   @field:Positive
    var id: Long? = null,
 
-   @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 3, max = 255, message = SIZE)
+   @field:NotNull
+   @field:Size(min = 3, max = 255)
    var name: String?,
 
-   @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 3, max = 500, message = SIZE)
+   @field:NotNull
+   @field:Size(min = 3, max = 500)
    var description: String?
 
 ) : ValueObjectBase<ShipViaValueObject>() {
