@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.notification.infrastructure.NotificationRepos
 import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.lang.Exception
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
@@ -56,5 +57,9 @@ class NotificationDataLoaderService @Inject constructor(
       return NotificationTestDataLoader.stream(numberIn, company, startDate, expirationDate, type, sendingEmployee)
          .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id!!)!!.basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
          .map { notificationsRepository.insert(it) }
+   }
+
+   fun single(): Notification {
+      return stream(1).findFirst().orElseThrow { Exception("Unable to create Notification") }
    }
 }

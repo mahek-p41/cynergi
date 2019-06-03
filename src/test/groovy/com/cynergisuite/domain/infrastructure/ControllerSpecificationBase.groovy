@@ -36,43 +36,35 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    }
 
    Object get(String path) throws HttpClientResponseException {
-      final def json = client.exchange(
+      return client.exchange(
          GET("/${path}").header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String) as Argument<String>,
          Argument.of(String) as Argument<String>
-      ).body()
-
-      return jsonSlurper.parseText(json)
+      ).bodyAsJson()
    }
 
    def <BODY extends IdentifiableValueObject> Object post(String path, BODY body) throws HttpClientResponseException {
-      final def json = client.exchange(
+      return client.exchange(
          POST("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),
          Argument.of(String)
-      ).body()
-
-      return jsonSlurper.parseText(json)
+      ).bodyAsJson()
    }
 
    def <BODY extends IdentifiableValueObject> Object put(String path, BODY body) throws HttpClientResponseException {
-      def json = client.exchange(
+      return client.exchange(
          PUT("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),
          Argument.of(String)
-      ).body()
-
-      return jsonSlurper.parseText(json)
+      ).bodyAsJson()
    }
 
    Object delete(String path) throws HttpClientResponseException {
-      final def json = client.exchange(
+      return client.exchange(
          DELETE("/${path}").header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),
          Argument.of(String)
-      ).body()
-
-      return jsonSlurper.parseText(json)
+      ).bodyAsJson()
    }
 
    Object parseResponse(Object responseBody) {

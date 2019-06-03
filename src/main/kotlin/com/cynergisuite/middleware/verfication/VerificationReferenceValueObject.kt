@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.POSITIVE
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import javax.validation.constraints.Positive
@@ -10,7 +9,7 @@ import javax.validation.constraints.Size
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class VerificationReferenceValueObject (
 
-   @field:Positive(message = POSITIVE)
+   @field:Positive
    var id: Long? = null,
 
    @field:JsonProperty("ref_address")

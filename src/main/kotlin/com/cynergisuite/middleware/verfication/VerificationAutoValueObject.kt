@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.POSITIVE
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -14,7 +13,7 @@ import javax.validation.constraints.Size
 @JsonInclude(NON_NULL)
 data class VerificationAutoValueObject(
 
-   @field:Positive(message = POSITIVE)
+   @field:Positive
    var id: Long? = null,
 
    @field:JsonProperty("auto_address")

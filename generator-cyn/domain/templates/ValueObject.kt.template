@@ -9,7 +9,7 @@ import javax.validation.constraints.Positive
 @JsonInclude(NON_NULL)
 data class <%= domain %>ValueObject (
 
-   @field:Positive(message = POSITIVE)
+   @field:Positive
    var id: Long? = null
 
 ) : ValueObjectBase<<%= domain %>ValueObject>() {

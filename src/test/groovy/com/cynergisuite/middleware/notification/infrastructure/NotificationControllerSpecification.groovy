@@ -5,23 +5,23 @@ import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.notification.NotificationDataLoaderService
 import com.cynergisuite.middleware.notification.NotificationRecipientDataLoaderService
 import com.cynergisuite.middleware.notification.NotificationRecipientTestDataLoader
+import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationRequestValueObject
 import com.cynergisuite.middleware.notification.NotificationResponseValueObject
 import com.cynergisuite.middleware.notification.NotificationTestDataLoader
 import com.cynergisuite.middleware.notification.NotificationTypeDomainTestDataLoader
-import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
-import com.cynergisuite.middleware.notification.NotificationValueObject
-import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationTypeDomainValueObject
+import com.cynergisuite.middleware.notification.NotificationValueObject
+import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
-import static com.cynergisuite.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmptyExcept
 import static io.micronaut.http.HttpRequest.DELETE
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
@@ -33,22 +33,31 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 @MicronautTest(transactional = false)
 class NotificationControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/notifications"
+   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
    
    @Inject NotificationRepository notificationRepository
    @Inject NotificationDataLoaderService notificationsDataLoaderService
    @Inject NotificationRecipientDataLoaderService notificationRecipientDataLoaderService
 
+
    void "fetch one notification by id with no recipients" () {
       given:
-      final def savedNotification = notificationsDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final def savedNotification = notificationsDataLoaderService.single()
       final def notificationValueObject = new NotificationResponseValueObject(new NotificationValueObject(savedNotification))
 
       when:
-      def result = client.retrieve(GET("$path/${savedNotification.id}"), NotificationResponseValueObject)
+      def result = get("$path/${savedNotification.id}")
 
       then:
-      result == notificationValueObject
-      allPropertiesFullAndNotEmptyExcept(result.notification, "recipients")
+      result.notification.id == notificationValueObject.notification.id
+      result.notification.dateCreated == notificationValueObject.notification.dateCreated.with { dateFormatter.format(it) }
+      result.notification.startDate == notificationValueObject.notification.startDate.with { dateFormatter.format(it) }
+      result.notification.companyId == notificationValueObject.notification.company
+      result.notification.message == notificationValueObject.notification.message
+      result.notification.sendingEmployee == notificationValueObject.notification.sendingEmployee
+      result.notification.notificationType == notificationValueObject.notification.notificationType.toString()
+      result.notification.recipients != null
+      result.notification.recipients.size() == 0
    }
 
    void "fetch one notification by id with recipients" () {
@@ -285,12 +294,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = new NotificationValueObject(null, null, null, null, null, null, null, null, [])
 
       when:
-      client.retrieve(POST(path, new NotificationRequestValueObject(notification)), Argument.of(NotificationResponseValueObject), Argument.of(ErrorValueObject[]))
+      client.retrieve(POST(path, new NotificationRequestValueObject(notification)), Argument.of(String), Argument.of(String))
 
       then:
-      final exception = thrown(HttpClientResponseException)
+      final def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      final errors = exception.response.getBody(ErrorValueObject[]).get().sort {o1, o2 -> (o1.message <=> o2.message) }
+      final def json = exception.response.bodyAsJson()
+      final def errors = json.collect { new ErrorValueObject(it) }.sort { o1, o2 -> (o1.message <=> o2.message)}
       errors.size() == 6
       errors[0].message == "notification.company is required"
       errors[0].path == "notification.company"

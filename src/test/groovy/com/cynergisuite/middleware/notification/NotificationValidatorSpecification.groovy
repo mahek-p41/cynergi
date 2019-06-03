@@ -8,11 +8,11 @@ import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
 import static com.cynergisuite.middleware.ExternalBeanFactory.DATE_PATTERN
-import static com.cynergisuite.middleware.localization.MessageCodes.Cynergi.END_DATE_BEFORE_START
-import static com.cynergisuite.middleware.localization.MessageCodes.Cynergi.NOTIFICATION_RECIPIENTS_ALL
-import static com.cynergisuite.middleware.localization.MessageCodes.Cynergi.NOTIFICATION_RECIPIENTS_REQUIRED
-import static com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
-import static com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
+import static com.cynergisuite.middleware.localization.Cynergi.EndDateBeforeStart
+import static com.cynergisuite.middleware.localization.Cynergi.NotificationRecipientsRequired
+import static com.cynergisuite.middleware.localization.Cynergi.NotificationRecipientsRequiredAll
+import static com.cynergisuite.middleware.localization.SystemCode.NotFound
+import static com.cynergisuite.middleware.localization.Validation.NotNull
 import static java.time.Month.FEBRUARY
 import static java.time.Month.JANUARY
 
@@ -65,7 +65,7 @@ class NotificationValidatorSpecification extends Specification {
       then:
       final def exception = thrown(ValidationException)
       exception.errors.size() == 1
-      exception.errors[0].messageTemplate == NOTIFICATION_RECIPIENTS_ALL
+      exception.errors[0].localizationCode instanceof NotificationRecipientsRequiredAll
       exception.errors[0].path == "recipients"
       exception.errors[0].arguments.size() == 1
       exception.errors[0].arguments[0] == "A"
@@ -87,7 +87,7 @@ class NotificationValidatorSpecification extends Specification {
       then:
       final def exception = thrown(ValidationException)
       exception.errors.size() == 1
-      exception.errors[0].messageTemplate == NOTIFICATION_RECIPIENTS_REQUIRED
+      exception.errors[0].localizationCode instanceof NotificationRecipientsRequired
       exception.errors[0].path == "recipients"
       exception.errors[0].arguments.size() == 1
       exception.errors[0].arguments[0] == "E:Employee"
@@ -108,7 +108,7 @@ class NotificationValidatorSpecification extends Specification {
       then:
       final def exception = thrown(ValidationException)
       exception.errors.size() == 1
-      exception.errors[0].messageTemplate == END_DATE_BEFORE_START
+      exception.errors[0].localizationCode instanceof EndDateBeforeStart
       exception.errors[0].path == "expirationDate"
       exception.errors[0].arguments.size() == 2
       exception.errors[0].arguments[0] == "01/02/2000"
@@ -149,7 +149,7 @@ class NotificationValidatorSpecification extends Specification {
       then:
       final exception = thrown(ValidationException)
       exception.errors.size() == 1
-      exception.errors[0].messageTemplate == NOT_NULL
+      exception.errors[0].localizationCode instanceof NotNull
       exception.errors[0].path == "id"
       exception.errors[0].arguments.size() == 1
       exception.errors[0].arguments[0] == "id"
@@ -173,7 +173,7 @@ class NotificationValidatorSpecification extends Specification {
       then:
       final exception = thrown(ValidationException)
       exception.errors.size() == 1
-      exception.errors[0].messageTemplate == NOT_FOUND
+      exception.errors[0].localizationCode instanceof NotFound
       exception.errors[0].path == "id"
       exception.errors[0].arguments.size() == 1
       exception.errors[0].arguments[0] == notificationId

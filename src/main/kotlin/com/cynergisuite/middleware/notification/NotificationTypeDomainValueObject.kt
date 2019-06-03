@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.POSITIVE
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import javax.validation.constraints.Positive
@@ -9,7 +8,7 @@ import javax.validation.constraints.Positive
 @JsonInclude(NON_NULL)
 data class NotificationTypeDomainValueObject (
 
-   @field:Positive(message = POSITIVE)
+   @field:Positive
    var id: Long? = null,
 
    val value: String,

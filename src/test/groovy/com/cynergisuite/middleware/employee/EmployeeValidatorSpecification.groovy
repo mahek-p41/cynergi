@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import spock.lang.Specification
 
-import static com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
+import static com.cynergisuite.middleware.localization.SystemCode.NotFound
 
 class EmployeeValidatorSpecification extends Specification {
 
@@ -62,7 +62,7 @@ class EmployeeValidatorSpecification extends Specification {
       def exception = thrown(ValidationException)
       1 == exception.errors.size()
       exception.errors.containsAll([
-         new ValidationError("id", NOT_FOUND, [1L])
+         new ValidationError("id", NotFound.INSTANCE, [1L])
       ])
    }
 
