@@ -17,11 +17,11 @@ data class ShipViaValueObject(
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 3, max = 255, message = SIZE)
-   val name: String?,
+   var name: String?,
 
    @field:NotNull(message = NOT_NULL)
    @field:Size(min = 3, max = 500, message = SIZE)
-   val description: String?
+   var description: String?
 
 ) : ValueObjectBase<ShipViaValueObject>() {
    constructor(name: String, description: String) :
@@ -38,6 +38,6 @@ data class ShipViaValueObject(
          description = entity.description
       )
 
-   override fun dtoId(): Long? = id
+   override fun valueObjectId(): Long? = id
    override fun copyMe(): ShipViaValueObject = copy()
 }

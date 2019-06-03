@@ -1,6 +1,10 @@
 package com.cynergisuite.middleware.shipvia.infrastructure
 
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.shipvia.*
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -32,6 +36,23 @@ class ShipViaController @Inject constructor(
       logger.debug("Fetch ShipVia by {} resulted {}", id, response)
       return response
    }
+
+   @Validated
+   @Throws(PageOutOfBoundsException::class)
+   @AccessControl("company-fetchAll")
+   @Get(value = "{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun fetchAll(
+      @Valid @QueryValue("pageRequest") pageRequest: PageRequest
+   ): Page<ShipViaValueObject> {
+      val page = shipViaService.fetchAll(pageRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
+   }
+
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)

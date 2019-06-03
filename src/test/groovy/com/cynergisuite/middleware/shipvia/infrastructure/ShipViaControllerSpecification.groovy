@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.shipvia.infrastructure
 
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.shipvia.ShipViaFactory
@@ -8,6 +9,9 @@ import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
+import java.util.stream.Collectors
+
+import static com.cynergisuite.domain.PageRequestSortDirection.ASCENDING
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -44,6 +48,32 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.message == "Resource 0 was unable to be found"
    }
 
+   void "fetch all"() {
+      given:
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.collect(Collectors.toList())
+      def pageOne = new PageRequest(1, 5, "name", ASCENDING)
+      def pageTwo = new PageRequest(2, 5, "name", ASCENDING)
+      def pageLast = new PageRequest(4, 5, "name", ASCENDING)
+      def pageFive = new PageRequest(5, 5, "name", ASCENDING)
+      def firstPageShipVia = twentyShipVias[0..4]
+      def secondPageShipVia = twentyShipVias[5..9]
+      def lastPageShipVia = twentyShipVias[15..19]
+
+      when:
+      def pageOneResult = get("$path/${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new PageRequest(it) } == pageOne
+      pageOneResult.totalElements == 20
+      pageOneResult.totalPages == 4
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.collect { new ShipViaValueObject(it) }.containsAll(firstPageShipVia)
+
+
+   }
+
    void "post valid shipVia"() {
       given:
       final def shipVia = ShipViaFactory.single().with {new ShipViaValueObject(it)}
@@ -69,7 +99,13 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.body != null
+
+      def result = exception.response.bodyAsJson()
+      result.size() == 2
+      result.collect { new ErrorValueObject(it)}.containsAll([
+              new ErrorValueObject("description is required", "description"),
+              new ErrorValueObject("name is required", "name")
+      ])
 
    }
 
@@ -85,6 +121,45 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id > 0
       response.name == "test"
       response.description == "test description"
+
+   }
+
+   void "put invalid shipVia"(){
+      given:
+      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(it.id, null, null)}
+
+      when:
+      put("$path/", shipVia)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+
+      def result = exception.response.bodyAsJson()
+      result.size() == 2
+      result.collect { new ErrorValueObject(it)}.containsAll([
+         new ErrorValueObject("description is required", "description"),
+         new ErrorValueObject("name is required", "name")
+      ])
+
+   }
+
+   void "put invalid shipVia missing Id"(){
+      given:
+      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(null, "test", "Gary was here")}
+
+      when:
+      put("$path/", shipVia)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+
+      def result = exception.response.bodyAsJson()
+      result.size() == 1
+      result.collect { new ErrorValueObject(it)}.containsAll([
+         new ErrorValueObject("id is required", "id")
+      ])
 
    }
 }

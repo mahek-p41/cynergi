@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.shipvia
 
 import com.cynergisuite.domain.CSVParsingService
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.IdentifiableService
 import com.cynergisuite.middleware.legacy.load.LegacyCsvLoadingService
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
@@ -52,6 +54,12 @@ class ShipViaService @Inject constructor(
             description = record.get("description")
          )
       )
+   }
+
+   @Validated
+   fun fetchAll(@Valid pageRequest: PageRequest): Page<ShipViaValueObject> {
+      val found = shipViaRepository.findAll(pageRequest)
+      return found.toPage(pageRequest) {ShipViaValueObject(it)}
    }
 
 }
