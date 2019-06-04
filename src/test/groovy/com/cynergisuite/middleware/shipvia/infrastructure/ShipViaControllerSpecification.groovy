@@ -50,7 +50,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.collect(Collectors.toList())
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.name <=> o2.name }.collect(Collectors.toList())
       def pageOne = new PageRequest(1, 5, "name", ASCENDING)
       def pageTwo = new PageRequest(2, 5, "name", ASCENDING)
       def pageLast = new PageRequest(4, 5, "name", ASCENDING)
@@ -71,6 +71,39 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.size() == 5
       pageOneResult.elements.collect { new ShipViaValueObject(it) }.containsAll(firstPageShipVia)
 
+      when:
+      def pageTwoResult = get("$path/${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new PageRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 20
+      pageTwoResult.totalPages == 4
+      pageTwoResult.first == false
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.collect { new ShipViaValueObject(it) }.containsAll(secondPageShipVia)
+
+      when:
+      def pageLastResult = get("$path/${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new PageRequest(it) } == pageLast
+      pageLastResult.totalElements == 20
+      pageLastResult.totalPages == 4
+      pageLastResult.first == false
+      pageLastResult.last == true
+      pageLastResult.elements.size() == 5
+      pageLastResult.elements.collect { new ShipViaValueObject(it) }.containsAll(lastPageShipVia)
+
+      when:
+      get("$path/${pageFive}")
+
+      then:
+      final def notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NOT_FOUND
+      final def notFoundResult = notFoundException.response.bodyAsJson()
+      notFoundResult.size() == 1
+      notFoundResult.message == "Request  with Page 5, Size 5, Sort By name and Sort Direction ASC produced no results"
 
    }
 
@@ -103,8 +136,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       def result = exception.response.bodyAsJson()
       result.size() == 2
       result.collect { new ErrorValueObject(it)}.containsAll([
-              new ErrorValueObject("description is required", "description"),
-              new ErrorValueObject("name is required", "name")
+         new ErrorValueObject("description is required", "description"),
+         new ErrorValueObject("name is required", "name")
       ])
 
    }

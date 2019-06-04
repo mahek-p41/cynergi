@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.MessageCodes.System.LOGGED_IN
-import com.cynergisuite.middleware.localization.MessageCodes.System.NOT_LOGGED_IN
+import com.cynergisuite.middleware.localization.SystemCode.NotLoggedIn
+import com.cynergisuite.middleware.localization.SystemCode.LoggedIn
 import io.micronaut.context.annotation.Requires
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -31,12 +31,12 @@ class AuthenticatedController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authentication != null) {
-         val message = localizationService.localize(LOGGED_IN, locale, arguments = arrayOf(authentication.name))
+         val message = localizationService.localize(localizationCode = LoggedIn, locale = locale, arguments = arrayOf(authentication.name))
 
          HttpResponse
             .ok(AuthenticatedUserInformation(number = authentication.name, loginStatus = message))
       } else {
-         val message = localizationService.localize(NOT_LOGGED_IN, locale, arguments = emptyArray())
+         val message = localizationService.localize(NotLoggedIn, locale, arguments = emptyArray())
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)

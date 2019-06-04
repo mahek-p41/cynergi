@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -16,21 +14,21 @@ import javax.validation.constraints.Size
 data class VerificationValueObject(
    var id: Long?,
 
-   @field:Size(max = 10, message = SIZE)
-   @field:NotNull(message = NOT_NULL)
+   @field:Size(max = 10)
+   @field:NotNull
    @field:JsonProperty("cust_acct")
    var customerAccount: String?,
 
-   @field:Size(max = 255, message = SIZE)
+   @field:Size(max = 255)
    @field:JsonProperty("cust_comments")
    var customerComments: String?,
 
-   @field:Size(max = 50, message = SIZE)
-   @field:NotNull(message = NOT_NULL)
+   @field:Size(max = 50)
+   @field:NotNull
    @field:JsonProperty("cust_verified_by")
    var verifiedBy: String?,
 
-   @field:NotNull(message = NOT_NULL)
+   @field:NotNull
    @field:JsonProperty("cust_verified_date")
    var verifiedTime: LocalDate?,
 

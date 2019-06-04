@@ -1,9 +1,6 @@
 package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.POSITIVE
-import com.cynergisuite.middleware.localization.MessageCodes.Validation.SIZE
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -16,33 +13,33 @@ import javax.validation.constraints.Size
 @JsonInclude(NON_NULL)
 data class NotificationValueObject (
 
-   @field:Positive(message = POSITIVE)
+   @field:Positive
    var id: Long? = null,
 
    @JsonFormat(pattern = "yyyy-MM-dd")
    var dateCreated: LocalDate?,
 
-   @field:NotNull(message = NOT_NULL)
+   @field:NotNull
    var startDate: LocalDate?,
 
-   @field:NotNull(message = NOT_NULL)
+   @field:NotNull
    var expirationDate: LocalDate?,
 
    @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten
-   @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 6, max = 6, message = SIZE)
+   @field:NotNull
+   @field:Size(min = 6, max = 6)
    var company: String?,
 
-   @field:NotNull(message = NOT_NULL)
-   @field:Size(max = 500, message = SIZE)
+   @field:NotNull
+   @field:Size(max = 500)
    var message: String?,
 
-   @field:NotNull(message = NOT_NULL)
-   @field:Size(max = 255, message = SIZE)
+   @field:NotNull
+   @field:Size(max = 255)
    var sendingEmployee: String?,
 
-   @field:NotNull(message = NOT_NULL)
-   @field:Size(min = 1, message = SIZE)
+   @field:NotNull
+   @field:Size(min = 1)
    var notificationType: String?,
 
    var recipients: List<NotificationRecipientValueObject> = emptyList()

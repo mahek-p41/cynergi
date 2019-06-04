@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.localization
 import org.springframework.context.support.ResourceBundleMessageSource
 import spock.lang.Specification
 
-import static com.cynergisuite.middleware.localization.MessageCodes.System.NOT_FOUND
-import static com.cynergisuite.middleware.localization.MessageCodes.Validation.NOT_NULL
+import static com.cynergisuite.middleware.localization.SystemCode.NotFound
+import static com.cynergisuite.middleware.localization.Validation.NotNull
 
 class LocalizationServiceSpecification extends Specification {
 
@@ -33,9 +33,9 @@ class LocalizationServiceSpecification extends Specification {
       localizationService.localize(messageKey, englishLocale, "", args) == message
 
       where:
-      messageKey     | args                 || message
-      NOT_NULL       | ["name"] as Object[] || "name is required"
-      NOT_FOUND      | [1] as Object[]      || "Resource 1 was unable to be found"
-      "i.dont.exist" | []                   || ""
+      messageKey        | args                 || message
+      NotNull.INSTANCE  | ["name"] as Object[] || "name is required"
+      NotFound.INSTANCE | [1] as Object[]      || "Resource 1 was unable to be found"
+      "i.dont.exist"    | []                   || ""
    }
 }

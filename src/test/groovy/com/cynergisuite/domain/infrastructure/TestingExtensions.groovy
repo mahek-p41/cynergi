@@ -4,7 +4,9 @@ import groovy.json.JsonSlurper
 import io.micronaut.http.HttpResponse
 
 class HttpResponseExtension {
+   static JsonSlurper jsonSlurper = new JsonSlurper()
+
    static Object bodyAsJson(final HttpResponse self) {
-      return new JsonSlurper().parseText(self.body())
+      return jsonSlurper.parseText(self.body())
    }
 }
