@@ -23,7 +23,7 @@ class ShipViaRepository @Inject constructor(
    private val simpleShipViaRowMapper = ShipViaRowMapper()
 
    override fun findOne(id: Long): ShipVia? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT id, uu_row_id, time_created, time_updated, name, description FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
       return found
    }
@@ -80,7 +80,7 @@ class ShipViaRepository @Inject constructor(
 
       jdbc.query("""
          WITH shipVias AS (
-            SELECT * FROM ship_via
+            SELECT id, uu_row_id, time_created, time_updated, name, description FROM ship_via
          )
          SELECT
             s.*,
