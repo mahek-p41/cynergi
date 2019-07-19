@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@Schema(name = "Verification", description = "Describes a verification")
 data class VerificationValueObject(
    var id: Long?,
 

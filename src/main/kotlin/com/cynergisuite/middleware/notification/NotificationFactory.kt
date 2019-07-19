@@ -55,7 +55,7 @@ class NotificationDataLoaderService @Inject constructor(
 
    fun stream(numberIn: Int = 1, company: String  = "testco", startDate: LocalDate? = null, expirationDate: LocalDate? = null, type: NotificationTypeDomain? = null, sendingEmployee: String? = null): Stream<Notification> {
       return NotificationTestDataLoader.stream(numberIn, company, startDate, expirationDate, type, sendingEmployee)
-         .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id!!)!!.basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
+         .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id)!!.basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
          .map { notificationsRepository.insert(it) }
    }
 

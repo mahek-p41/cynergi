@@ -1,16 +1,12 @@
 {
-  "cynergi-middleware": {
+  "generator-micronaut-ddd": {
     "promptValues": {
       "name": "middleware",
       "basePkg": "com.cynergisuite",
-      "mainSrc": "src/main/kotlin",
-      "testSrc": "src/test/groovy",
-      "lob": "Cynergi"
+      "lob": "cynergi"
     },
     "name": "middleware",
     "basePkg": "com.cynergisuite",
-    "mainSrc": "src/main/kotlin",
-    "testSrc": "src/test/groovy",
-    "lob": "Cynergi"
+    "lob": "cynergi"
   }
 }

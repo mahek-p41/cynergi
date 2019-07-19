@@ -59,7 +59,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "0 was unable to be found"
    }
 
    void "fetch one verification by customer account" () {
@@ -83,7 +83,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource -1 was unable to be found"
+      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "-1 was unable to be found"
    }
 
    void "post verification successfully" () {
@@ -146,9 +146,9 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       errors.size() == 3
 
       def sortedErrors = errors.sort { o1, o2 -> (o1.message <=> o2.message)}
-      sortedErrors[0].message == "customerAccount is required"
-      sortedErrors[1].message == "verifiedBy is required"
-      sortedErrors[2].message == "verifiedTime is required"
+      sortedErrors[0].message == "Is required"
+      sortedErrors[1].message == "Is required"
+      sortedErrors[2].message == "Is required"
    }
 
    void "post verification with longer than allowed customer comments should result in a failure" () {
@@ -166,7 +166,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
       errors != null
       errors.size() == 1
-      errors[0].message == "size of provided value ${verification.customerComments} is invalid for property customerComments"
+      errors[0].message == "Size of provided value ${verification.customerComments} is invalid"
+      errors[0].path == "customerComments"
    }
 
    void "post verification with no references" () {

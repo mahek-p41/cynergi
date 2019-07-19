@@ -12,14 +12,15 @@ buildscript {
 plugins {
    id "io.spring.dependency-management" version "1.0.6.RELEASE"
    id "com.github.johnrengelman.shadow" version "4.0.3"
-   id "org.jetbrains.kotlin.jvm" version "1.3.31"
-   id "org.jetbrains.kotlin.kapt" version "1.3.31"
-   id "org.jetbrains.kotlin.plugin.allopen" version "1.3.31"
-   id "org.jetbrains.kotlin.plugin.noarg" version "1.3.31"
+   id "org.jetbrains.kotlin.jvm" version "1.3.41"
+   id "org.jetbrains.kotlin.kapt" version "1.3.41"
+   id "org.jetbrains.kotlin.plugin.allopen" version "1.3.41"
+   id "org.jetbrains.kotlin.plugin.noarg" version "1.3.41"
    id 'net.nemerosa.versioning' version '2.8.2'
    id "jacoco"
    id "application"
    id "groovy"
+   id "org.flywaydb.flyway" version "5.2.1"
 }
 
 apply plugin: 'org.openapi.generator'
@@ -28,7 +29,6 @@ version "${releaseVersion}"
 group "com.hightouchinc.cynergi"
 
 repositories {
-   mavenLocal()
    maven {
       url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
    }
@@ -77,7 +77,8 @@ dependencies {
    compile "org.apache.commons:commons-csv:1.6"
    compile "commons-io:commons-io:2.6"
    compile "commons-codec:commons-codec:1.12"
-   
+   compile "com.google.guava:guava:28.0-jre"
+
    kaptTest "io.micronaut:micronaut-inject-java"
 
    runtime "ch.qos.logback:logback-classic:1.2.3"
@@ -141,6 +142,27 @@ compileTestKotlin {
       jvmTarget = '1.8'
       javaParameters = true
    }
+}
+
+task flywayMigrateCynegiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+   url = 'jdbc:postgresql://localhost:6432/cynergidemodb'
+   user = 'postgres'
+   password = 'password'
+   locations = ['filesystem:src/main/resources/db/migration/postgres']
+}
+
+task flywayMigrateCynergiDemoDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+   url = 'jdbc:postgresql://localhost:6432/cynergidemodb'
+   user = 'postgres'
+   password = 'password'
+   locations = ['filesystem:src/main/resources/db/migration/postgres']
+}
+
+task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+   url = 'jdbc:postgresql://localhost:7432/cynergitestdb'
+   user = 'postgres'
+   password = 'password'
+   locations = ['filesystem:src/main/resources/db/migration/postgres']
 }
 
 openApiGenerate {

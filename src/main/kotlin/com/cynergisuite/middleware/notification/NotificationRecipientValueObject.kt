@@ -3,11 +3,13 @@ package com.cynergisuite.middleware.notification
 import com.cynergisuite.domain.ValueObjectBase
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@Schema(name = "NotificationRecipient", description = "The person who a Notification is intended for")
 data class NotificationRecipientValueObject (
 
    @field:Positive

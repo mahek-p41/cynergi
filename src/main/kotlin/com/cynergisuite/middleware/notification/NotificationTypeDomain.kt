@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.domain.TypeDomainEntity
+import io.swagger.v3.oas.annotations.media.Schema
 
+@Schema(name = "NotificationType", description = "The type describing a Notification")
 data class NotificationTypeDomain(
    val id: Long ,
    val value: String,

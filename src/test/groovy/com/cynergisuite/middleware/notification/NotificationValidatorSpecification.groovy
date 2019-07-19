@@ -1,6 +1,11 @@
 package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.EndDateBeforeStart
+import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
+import com.cynergisuite.middleware.localization.NotificationRecipientsRequired
+import com.cynergisuite.middleware.localization.NotificationRecipientsRequiredAll
 import spock.lang.Specification
 
 import java.time.LocalDate
@@ -8,11 +13,6 @@ import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
 import static com.cynergisuite.middleware.ExternalBeanFactory.DATE_PATTERN
-import static com.cynergisuite.middleware.localization.Cynergi.EndDateBeforeStart
-import static com.cynergisuite.middleware.localization.Cynergi.NotificationRecipientsRequired
-import static com.cynergisuite.middleware.localization.Cynergi.NotificationRecipientsRequiredAll
-import static com.cynergisuite.middleware.localization.SystemCode.NotFound
-import static com.cynergisuite.middleware.localization.Validation.NotNull
 import static java.time.Month.FEBRUARY
 import static java.time.Month.JANUARY
 
@@ -67,8 +67,8 @@ class NotificationValidatorSpecification extends Specification {
       exception.errors.size() == 1
       exception.errors[0].localizationCode instanceof NotificationRecipientsRequiredAll
       exception.errors[0].path == "recipients"
-      exception.errors[0].arguments.size() == 1
-      exception.errors[0].arguments[0] == "A"
+      exception.errors[0].localizationCode.arguments.size() == 1
+      exception.errors[0].localizationCode.arguments[0] == "A"
    }
 
    void "validate save invalid NotificationValueObject of type Employee with no recipients" () {
@@ -89,8 +89,8 @@ class NotificationValidatorSpecification extends Specification {
       exception.errors.size() == 1
       exception.errors[0].localizationCode instanceof NotificationRecipientsRequired
       exception.errors[0].path == "recipients"
-      exception.errors[0].arguments.size() == 1
-      exception.errors[0].arguments[0] == "E:Employee"
+      exception.errors[0].localizationCode.arguments.size() == 1
+      exception.errors[0].localizationCode.arguments[0] == "E:Employee"
    }
 
    void "validate save invalid NotificationValueObject of type All where startDate is after expirationDate" () {
@@ -110,9 +110,9 @@ class NotificationValidatorSpecification extends Specification {
       exception.errors.size() == 1
       exception.errors[0].localizationCode instanceof EndDateBeforeStart
       exception.errors[0].path == "expirationDate"
-      exception.errors[0].arguments.size() == 2
-      exception.errors[0].arguments[0] == "01/02/2000"
-      exception.errors[0].arguments[1] == "02/02/2000"
+      exception.errors[0].localizationCode.arguments.size() == 2
+      exception.errors[0].localizationCode.arguments[0] == "01/02/2000"
+      exception.errors[0].localizationCode.arguments[1] == "02/02/2000"
    }
 
    void "validate update valid NotificationValueObject of type all" () {
@@ -151,8 +151,8 @@ class NotificationValidatorSpecification extends Specification {
       exception.errors.size() == 1
       exception.errors[0].localizationCode instanceof NotNull
       exception.errors[0].path == "id"
-      exception.errors[0].arguments.size() == 1
-      exception.errors[0].arguments[0] == "id"
+      exception.errors[0].localizationCode.arguments.size() == 1
+      exception.errors[0].localizationCode.arguments[0] == "id"
       0 * notificationService.exists(_ as long) >> true
    }
 
@@ -175,8 +175,8 @@ class NotificationValidatorSpecification extends Specification {
       exception.errors.size() == 1
       exception.errors[0].localizationCode instanceof NotFound
       exception.errors[0].path == "id"
-      exception.errors[0].arguments.size() == 1
-      exception.errors[0].arguments[0] == notificationId
+      exception.errors[0].localizationCode.arguments.size() == 1
+      exception.errors[0].localizationCode.arguments[0] == notificationId
       1 * notificationService.exists(notificationId) >> false
    }
 }

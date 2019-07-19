@@ -6,17 +6,19 @@ import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
+import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.Cynergi.ConversionError
+import com.cynergisuite.middleware.localization.ConversionError
+import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.SystemCode.InternalError
-import com.cynergisuite.middleware.localization.SystemCode.NotFound
-import com.cynergisuite.middleware.localization.SystemCode.NotImplemented
-import com.cynergisuite.middleware.localization.SystemCode.PageOutOfBounds
-import com.cynergisuite.middleware.localization.SystemCode.RouteError
-import com.cynergisuite.middleware.localization.SystemCode.UnableToParseJson
-import com.cynergisuite.middleware.localization.SystemCode.Unknown
+import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotImplemented
+import com.cynergisuite.middleware.localization.PageOutOfBounds
+import com.cynergisuite.middleware.localization.RouteError
+import com.cynergisuite.middleware.localization.UnableToParseJson
+import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
@@ -50,7 +52,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorValueObject(localizationService.localize(localizationCode = InternalError, locale = locale, arguments = emptyArray())))
+      return serverError(ErrorValueObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
    }
 
    @Error(global = true, exception = JsonParseException::class)
@@ -61,7 +63,7 @@ class ErrorHandlerController @Inject constructor(
 
       return badRequest(
          ErrorValueObject(
-            message = localizationService.localize(localizationCode = UnableToParseJson, locale = locale, arguments = arrayOf(exception.localizedMessage))
+            message = localizationService.localize(localizationCode = UnableToParseJson(exception.localizedMessage), locale = locale)
          )
       )
    }
@@ -83,12 +85,12 @@ class ErrorHandlerController @Inject constructor(
 
       return HttpResponse
          .status<ErrorValueObject>(NOT_IMPLEMENTED)
-         .body(ErrorValueObject(localizationService.localize(localizationCode = NotImplemented, locale = locale, arguments = arrayOf(httpRequest.path))))
+         .body(ErrorValueObject(localizationService.localize(localizationCode = NotImplemented(httpRequest.path), locale = locale)))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
    fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorValueObject> {
-      logger.error("Endpoint not implemented", exception)
+      logger.error("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
       val argument = exception.argument
@@ -98,6 +100,15 @@ class ErrorHandlerController @Inject constructor(
       return when {
          conversionErrorCause is InvalidFormatException && conversionErrorCause.path.size > 0 && conversionErrorCause.value is String -> {
             processBadRequest(conversionErrorCause.path[0].fieldName, conversionErrorCause.value, locale)
+         }
+
+         conversionErrorCause is JsonMappingException -> {
+            badRequest(
+               ErrorValueObject(
+                  message = localizationService.localize(ConversionError(argument.name, conversionError.originalValue.orElse(null)), locale),
+                  path = conversionErrorCause.path.joinToString(".") { it.fieldName }
+               )
+            )
          }
 
          else -> {
@@ -123,7 +134,7 @@ class ErrorHandlerController @Inject constructor(
    private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorValueObject> {
       return badRequest(
          ErrorValueObject(
-            message = localizationService.localize(ConversionError, locale, arguments = arrayOf(argumentName, argumentValue)),
+            message = localizationService.localize(ConversionError(argumentName, argumentValue), locale),
             path = argumentName
          )
       )
@@ -137,7 +148,7 @@ class ErrorHandlerController @Inject constructor(
 
       return badRequest(
          ErrorValueObject(
-            localizationService.localize(localizationCode = RouteError, locale = locale, arguments = arrayOf(exception.argument.name))
+            localizationService.localize(localizationCode = RouteError(exception.argument.name), locale = locale)
          )
       )
    }
@@ -151,7 +162,7 @@ class ErrorHandlerController @Inject constructor(
 
       return notFound(
          ErrorValueObject(
-            localizationService.localize(PageOutOfBounds, locale, arguments = arrayOf(pageRequest.page, pageRequest.size, pageRequest.sortBy, pageRequest.sortDirection, exception.extra ?: EMPTY))
+            localizationService.localize(PageOutOfBounds(pageRequest.page, pageRequest.size, pageRequest.sortBy, pageRequest.sortDirection), locale)
          )
       )
    }
@@ -164,7 +175,7 @@ class ErrorHandlerController @Inject constructor(
 
       return notFound(
          ErrorValueObject(
-            localizationService.localize(localizationCode = NotFound, locale = locale, arguments = arrayOf(notFoundException.notFound))
+            localizationService.localize(localizationCode = NotFound(notFoundException.notFound), locale = locale)
          )
       )
    }
@@ -176,8 +187,8 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         validationException.errors.map {
-            ErrorValueObject(message = localizationService.localize(it.localizationCode, locale, arguments = it.arguments.toTypedArray()), path = it.path)
+         validationException.errors.map { validationError: ValidationError ->
+            ErrorValueObject(message = localizationService.localize(validationError.localizationCode, locale), path = validationError.path)
          }
       )
    }
@@ -203,11 +214,11 @@ class ErrorHandlerController @Inject constructor(
       logger.info("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val username: String = accessException.user ?: localizationService.localize(Unknown, locale, arguments = emptyArray())
+      val username: String = accessException.user ?: localizationService.localize(Unknown(), locale)
 
       return HttpResponse
          .status<ErrorValueObject>(FORBIDDEN)
-         .body(ErrorValueObject(localizationService.localize(localizationCode = accessException.error, locale = locale, arguments = arrayOf(username))))
+         .body(ErrorValueObject(localizationService.localize(localizationCode = accessException.error, locale = locale)))
    }
 
 

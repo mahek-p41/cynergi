@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.Cynergi.Duplicate
-import com.cynergisuite.middleware.localization.Cynergi.NotUpdatable
-import com.cynergisuite.middleware.localization.SystemCode.NotFound
-import com.cynergisuite.middleware.localization.Validation.NotNull
+import com.cynergisuite.middleware.localization.Duplicate
+import com.cynergisuite.middleware.localization.NotUpdatable
+import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
 import javax.inject.Singleton
 
 @Singleton
@@ -16,7 +16,7 @@ class VerificationValidator(
    @Throws(ValidationException::class)
    fun validateSave(vo: VerificationValueObject, parent: String) {
       val errors = if (verificationService.exists(customerAccount = vo.customerAccount!!)) {
-         setOf(ValidationError("cust_acct", Duplicate, listOf(vo.customerAccount)))
+         setOf(ValidationError("cust_acct", Duplicate(vo.customerAccount)))
       } else {
          emptySet()
       }
@@ -32,14 +32,14 @@ class VerificationValidator(
       val id = vo.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", NotNull, listOf("id")))
+         errors.add(element = ValidationError("id", NotNull("id")))
       } else {
          val existingVerification: VerificationValueObject? = verificationService.fetchById(id = id)
 
          if (existingVerification == null) {
-            errors.add(element = ValidationError("id", NotFound, listOf(id)))
+            errors.add(element = ValidationError("id", NotFound(id)))
          } else if (existingVerification.customerAccount != vo.customerAccount) {
-            errors.add(element = ValidationError("cust_acct", NotUpdatable, listOf(vo.customerAccount)))
+            errors.add(element = ValidationError("cust_acct", NotUpdatable(vo.customerAccount)))
          }
       }
 

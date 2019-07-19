@@ -156,7 +156,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "expiration_date" to entity.expirationDate,
-            "notification_type_id" to entity.notificationDomainType.entityId()!!
+            "notification_type_id" to entity.notificationDomainType.entityId()
          ),
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
@@ -194,7 +194,7 @@ class NotificationRepository @Inject constructor(
             "expiration_date" to entity.expirationDate,
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
-            "notification_type_id" to entity.notificationDomainType.entityId()!!
+            "notification_type_id" to entity.notificationDomainType.entityId()
          ),
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )

@@ -11,63 +11,9 @@ such as a built-in HTTP server, Database connection pooling, beans validation an
 system that is intended to handle the 80% of a standard java development and deployment workflow.  You could easily use
 Notepad or VIM to do your development as Gradle handles all the building outside of the development environment.
 
-Currently Java 8 is the target for this application with the plan to move to Java 11 as soon as it is feasible.
-
 ## Setup
-1. For Windows install [Git Bash](https://git-scm.com/download/win) and [Chocolatey](https://chocolatey.org/install)
-   1. For Chocolatey the easiest way is to open up a Powershell Admin prompt and paste in 
-      `Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))`
-	2. Then we need the zip program so run `choco install zip`
-2. Need to checkout the [cynergi-dev-environment](http://gitlab.hightouchinc.com/cynergi2019/cynergi-dev-environment) project.
-3. Install [SDK Man](https://sdkman.io/)
-   1. Easiest way is to open a bash terminal (Git Bash if you are on Windows)
-      1. Make a backup of your bash profile files because sometimes the SDK Man install script seems to break bash on wndows
-         1. `cp ~/.bashrc ~/.bashrc.old`
-         2. `cp ~/.profile ~/.profile.old`
-   2. Execute `curl -s "https://get.sdkman.io" | bash`
-      1. There will be some instructions from the SDK Man installer about opening a new shell or sourcing a script.
-         Either option is fine as long as we now have access to the `sdk` command.
-   3. This does seem to cause a weird issue on Windows with destroying the original bash profile so you'll need to restore
-      the copies made above if when you startup Git Bash it says it can't find a profile and has created a new one.
-      You'll need to restore the `.old` from above and then append the required SDK Man config lines to the end of that 
-      file which you should be able to do with the following command, making sure you put it in the right file.  The 
-      command below points at .profile
-```
-cat > ~/.profile <<EOF
-export SDKMAN_DIR="/c/Users/$USERNAME/.sdkman"
-[[ -s "/c/Users/$USERNAME/.sdkman/bin/sdkman-init.sh" ]] && source "/c/Users/$USERNAME/.sdkman/bin/sdkman-init.sh"
-EOF
-```
-4. Need to have at least a Java 8 SDK installed and on the path.
-   1. Using SDK Man from the command line run `sdk install java 8.0.192-zulu`
-      1. This will install an OpenJDK similar to what will be used when the application is deployed in production called
-         Zulu that is built by a company called Azul Systems
-      2. If you are on a Mac or Linux machine there are several other options to choose from that will give you Java 8
-         but they have different features, but don't be afraid to experiment.  If you have something called **grl** or 
-         **graalvm** it is recommended to use that as it has a different JIT that is more performant when code is
-         written the way it is in the *cyerngi-middleware* project (meaning it uses Lambda's) and will therefore run 
-         more efficiently.  
-   2. Continuing from the command line execute `sdk use java 8.0.192-zulu`
-      1. You may need to run this command on a regular basis if for some reason you attempt to run any of the java
-         tooling and java command can't be found.  SDK Man should remember what the last JDK you instructed it to use
-         was, but there have been times when it hasn't
-      2. Also note for use with Intellij the JDK's that get installed via SDK Man are placed in the *$HOME/.sdkman/candidates/java/*
-         directory.  To help with finding that you can from a bash terminal issue `which java` and note the overall
-         directory structure SDK Man uses.
-   3. To test out the installation run `java -version` which should print out something along the lines of
-      ```
-      openjdk version "1.8.0_192"
-      OpenJDK Runtime Environment (Zulu 8.33.0.1-win64) (build 1.8.0_192-b01)
-      OpenJDK 64-Bit Server VM (Zulu 8.33.0.1-win64) (build 25.192-b01, mixed mode)
-      ```
-5. Install [Intellij](https://www.jetbrains.com/idea/download)
-   1. If you have an Intellij Ultimate License feel free to install and use that
-   2. If you don't have an Intellij Ultimate License you'll want to grab the Community Edition.
-      1. Ultimate Edition has nicer tools in terms of built-in database connectivity, better code analysis and different
-         framework support.  Non of that is strictly necessary and the Community Edition is perfectly fine for this
-         project.
-6. Start Intellij
-7. Configure a default JDK that Intellij will use
+1. For Windows install follow instructions at [Java Dev Setup](http://gitlab.hightouchinc.com/garym/java-dev-setup)
+2. Configure a default JDK that Intellij will use
    1. Assuming you have never used Intellij before it will come up with the "Welcome to Intellij IDEA" screen
    2. From the "Welcome" screen down in the lower right hand corner there is a "Configure" drop-down
    3. Click "Configure > Project Defaults > Project Structure" which will bring up the "Project Structure for New Projects"
@@ -77,7 +23,7 @@ EOF
    5. Under the "Project SDK" section the JDK needs to be configured.  (There may already be one configured or it might say "<NO SDK>")
    6. Click the "New... > +JDK" button next to the JDK selection drop-down
    7. Navigate to where the JDK was installed from earlier and choose the directory that is where you pointed your JAVA_HOME
-      environment variable from Bash earlier.  On Windows it will be something like **C:\Users\whoami\.sdkman\candidates\java\8.0.192-zulu**
+      environment variable from Bash earlier.  On Windows it will be something like **C:\Program Files\AdoptOpenJDK\jdk8u-somethingorother**
 	  1. When choosing this make sure you choose the root of the directory as the way the tooling works the JDK is laid out in a 
 	     specific way.  Don't worry as Intellij checks to make sure it is valid before it makes that JDK available by 
 	     verbally abusing you with a message like "No a valid JDK installation"
@@ -92,6 +38,106 @@ EOF
     projects depending on how they are managed.
     1. File > Settings > Build, Execution, Deployment > Gradle > Runner
     2. Check the "Delegate IDE build/run actions to gradle"
+
+## Run the database via Docker
+
+### Local Database
+The Local database runs Postgres 9.3 via docker with 2 databases.  One is the **cynergidb** which is intended to survive
+restarts of the cynergi-middleware application.  The other is the **cynergidemodb** and is intended to be refreshed by the
+cynergi-middleware everytime it restarts.
+
+To run the local databases change directory to the */support* directory and execute the `./cynergi-dev-db.sh` script. 
+
+#### cynergidb
+Local semi-persistent PostgreSQL database hosted by docker.  States of the database can be
+captured via the pg_dump command.
+1. Connection information
+   1. port: 6432
+   2. host: localhost
+   3. database: cynergidb
+   4. user: postgres
+   5. password: password
+2. Capturing snapshots
+   1. Within the */support* directory run the `./cynergi-dev-db-snapshot.sh` script
+   2. Snapshots are placed in the */support/docker/db/DatabaseDumps* directory
+3. Connecting to the database via psql
+   1. Within the */support* directory run the `./cynergi-dev-db-psql.sh` script
+   2. This script by default will connect you to the cynergidb database as the postgres user.
+   
+##### Some test data
+Within the */support/docker/db/DatabaseDumps* directory there are some files that you can use to get some test data
+if you don't want to deal with or don't have a fastinfo_production dump.
+
+1. stores.csv
+   1. Open a psql prompt by running the `./cynergi-dev-db-psql.sh`
+   2. Run the following SQL
+      ```sql
+      \c fastinfo_production
+      DELETE FROM corrto.level2_stores;
+      COPY corrto.level2_stores(loc_tran_loc,loc_transfer_desc) 
+      FROM '/tmp/dumps/stores.csv' DELIMITER ',' CSV HEADER;
+      ```
+2. employees.csv
+   1. Open a psql prompt by running the `./cynergi-dev-db-psql.sh`
+   2. Run the following SQL
+      ```sql
+      \c fastinfo_production
+      DELETE FROM corrto.level1_loc_emps;
+      COPY corrto.level1_loc_emps(emp_nbr,emp_last_name,emp_first_name_mi,emp_pass_1,emp_pass_2,emp_pass_3,emp_pass_4,emp_pass_5,emp_pass_6,emp_store_nbr) 
+      FROM '/tmp/dumps/employees.csv' DELIMITER ',' CSV HEADER;
+      ```
+3. products.csv
+   1. Open a psql prompt by running the `./cynergi-dev-db-psql.sh`
+   2. Run the following SQL
+      ```sql
+      \c fastinfo_production
+      DELETE FROM corrto.level1_ninvrecs;
+      COPY corrto.level1_ninvrecs(inv_serial_nbr_key, inv_alt_id, inv_location_rec_1, inv_status, inv_mk_model_nbr, inv_model_nbr_category, inv_desc) 
+      FROM '/tmp/dumps/products.csv' DELIMITER ',' CSV HEADER;
+      ```
+
+#### cynergidemodb
+1. Connection Information
+   1. port: 6432
+   2. host: localhost
+   3. database: cynergidemodb
+   4. user: postgres
+   5. password: password
+
+#### Managing Database state
+The scripts that manage the docker database manage states through restarts by reading for dump files housed in the 
+*/support/docker/db/DatabaseDumps* directory.
+
+##### Dumps
+1. cynergidb.dump
+   1. This dump will be read when the db is started up.  It captures the previous state from when the 
+      `./cynergi-dev-db-snapshot.sh` script was ran.
+   2. If this file doesn't exist the cynergidb database will be empty after each successive restart of the docker
+      container
+2. fastinfo.dump
+   1. This dump will be read when the db is started up.  It captures the state of fastinfo from an external source.
+      The external source is most likely a CST machine (probably CST 137).  If this dump does not exist the database
+      initialization scripts make a best effort to create tables that will stand-in for the tables required by the 
+      *cynergi-middleware*.
+   2. If this file doesn't exist the fastinfo_production database will be put into a basic state that full fills the
+      requirements of the cynergi-middleware SQL code. 
+
+### Test Database
+A separate test database is used for integration testing via the Micronaut testing harness.  It runs in memory to 
+facilitate quicker loading and unloading test data during a test run.  This database does not provide the ability to 
+read snapshots of any kind as it is intended to be ephemeral. 
+
+To run the local databases change directory to the */support* directory and execute the `./cynergi-test-db.sh` script.
+
+1. Connection information
+   1. port: 7432
+   2. host: localhost
+   3. database: cynergidb
+   4. user: postgres
+   5. password: password
+2. Connecting to the database via psql
+   1. Within the */support* directory run the `./cynergi-test-db-psql.sh ` script
+   2. This script by default will connect you to the cynergitestdb database as the postgres user.
 
 ## To run from Intellij
 1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*

@@ -23,7 +23,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       check == employeeService.canProcess(path)
 
       where:
-      path                                                     | check
+      path                                                          | check
       Paths.get("import/eli-employee-new-stuff.csv")           | true
       Paths.get("import/eli-address.csv")                      | false
       Paths.get("import/eli-employee-new-stuff.csv.processed") | false
@@ -77,12 +77,13 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.findUserByAuthentication(123, "tryme").blockingGet()
+      final def employee = employeeService.findUserByAuthentication(123, "tryme", null).blockingGet()
 
       then:
       null != employee
       123 == employee.number
       "tryme" == employee.passCode
+      1 == employee.store.number
       employee.active
 
       cleanup:
@@ -99,7 +100,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.findUserByAuthentication(989, "studio")
+      final def employee = employeeService.findUserByAuthentication(989, "studio", null)
 
       then:
       employee.isEmpty()

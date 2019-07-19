@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.employee
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.SystemCode.NotFound
-import com.cynergisuite.middleware.localization.Validation.NotNull
+import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -37,9 +37,9 @@ class EmployeeValidator @Inject constructor (
       val id = vo.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", NotNull, listOf("id")))
+         errors.add(element = ValidationError("id", NotNull("id")))
       } else if ( !employeeRepository.exists(id = id, loc = vo.loc!!) ) {
-         errors.add(ValidationError("id", NotFound, listOf(id)))
+         errors.add(ValidationError("id", NotFound(id)))
       }
 
       if (errors.isNotEmpty()) {

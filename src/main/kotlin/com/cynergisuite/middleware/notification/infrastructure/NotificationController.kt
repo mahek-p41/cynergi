@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
+import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.notification.NotificationRequestValueObject
@@ -23,6 +24,15 @@ import io.micronaut.http.annotation.Status
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.validation.Validated
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,7 +41,7 @@ import javax.validation.Valid
 
 @Secured(IS_ANONYMOUS)
 @Validated
-@Controller("/api/notifications") // TODO make company a first class part of this controller by defining it here
+@Controller("/api/notifications") // TODO make company a first class part of this controller by defining it here, and remove the pluralness
 class NotificationController @Inject constructor(
    private val notificationService: NotificationService,
    private val notificationValidator: NotificationValidator
@@ -40,8 +50,14 @@ class NotificationController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @Get("/{id}", produces = [APPLICATION_JSON])
+   @Operation(summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "notification-fetchOne")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "The Notifcation was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "404", description = "The requested Notification was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    fun fetchOne(
-      @QueryValue("id") id: Long
+      @Parameter(name = "id", description = "The Notification ID to lookup", required = true, `in` = PATH) @QueryValue("id") id: Long
    ): NotificationResponseValueObject {
       logger.info("Fetching Notification by {}", id)
 
@@ -53,11 +69,16 @@ class NotificationController @Inject constructor(
    }
 
    @Get(produces = [APPLICATION_JSON])
+   @Operation(summary = "Fetch a listing of Notifications", description = "Fetch a listing of Notifications by it's system generated primary key", operationId = "notification-fetchOne", deprecated = true)
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    @Deprecated(message = "Needs to be removed for a path based endpoint rather than header base", replaceWith = ReplaceWith("fetchAllByCompany and fetchAllByCompanyAndUser"))
    fun fetchAll(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
-      @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
-      @QueryValue(value = "type", defaultValue = "E") type: String
+      @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once the front-end is using the framework's JWT
+      @Parameter(name = "type", description = "The type of notifications to be loaded", required = false, `in` = QUERY) @QueryValue(value = "type", defaultValue = "E") type: String
    ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
       logger.info("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
 
@@ -73,6 +94,11 @@ class NotificationController @Inject constructor(
    }
 
    @Get("/admin", produces = [APPLICATION_JSON])
+   @Operation(summary = "Fetch a listing of Notifications as an Admin", description = "Fetch a listing of Notifications by it's Company and User", operationId = "notificationAdmin-fetchAll", deprecated = true)
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    @Deprecated(message = "Needs to be removed for a path based endpoint rather than header base", replaceWith = ReplaceWith("fetchAllByCompany and fetchAllByCompanyAndUser"))
    fun fetchAllAdmin(
       @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
@@ -88,6 +114,11 @@ class NotificationController @Inject constructor(
    }
 
    @Get("/permissions", produces = [APPLICATION_JSON])
+   @Operation(summary = "Fetch a listing of Notification Permissions", description = "Fetch a listing of Notification Permissions", operationId = "notificationPermissions-fetchAll", deprecated = true)
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "Listing of permissions was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    @Deprecated(message = "This is here for the original front-end for looking up permissions by department", replaceWith = ReplaceWith("something that handles this as yet TBD"))
    fun fetchPermissions(): Map<String, Any> {
       val response = mapOf(
@@ -100,6 +131,11 @@ class NotificationController @Inject constructor(
       return response
    }
 
+   @Operation(summary = "Fetch a listing of Notification Types", description = "Fetch a listing of valid Notification Types defined by the system", operationId = "notificationTypes-fetchAll", deprecated = true)
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    @Get("/types", produces = [APPLICATION_JSON])
    fun fetchAllTypes(): List<NotificationTypeDomainValueObject> {
       logger.info("Fetching All Notification Type Domains")

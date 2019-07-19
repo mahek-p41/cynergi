@@ -82,7 +82,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "Resource 0 was unable to be found"
+      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "0 was unable to be found"
    }
 
    void "fetch all by sending employee and company through the admin path" () {
@@ -297,23 +297,18 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       client.retrieve(POST(path, new NotificationRequestValueObject(notification)), Argument.of(String), Argument.of(String))
 
       then:
-      final def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      final def json = exception.response.bodyAsJson()
-      final def errors = json.collect { new ErrorValueObject(it) }.sort { o1, o2 -> (o1.message <=> o2.message)}
-      errors.size() == 6
-      errors[0].message == "notification.company is required"
-      errors[0].path == "notification.company"
-      errors[1].message == "notification.expirationDate is required"
-      errors[1].path == "notification.expirationDate"
-      errors[2].message == "notification.message is required"
-      errors[2].path == "notification.message"
-      errors[3].message == "notification.notificationType is required"
-      errors[3].path == "notification.notificationType"
-      errors[4].message == "notification.sendingEmployee is required"
-      errors[4].path == "notification.sendingEmployee"
-      errors[5].message == "notification.startDate is required"
-      errors[5].path == "notification.startDate"
+      final json = exception.response.bodyAsJson()
+      json.size() == 6
+      json.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorValueObject("Is required", "notification.company"),
+         new ErrorValueObject("Is required", "notification.expirationDate"),
+         new ErrorValueObject("Is required", "notification.message"),
+         new ErrorValueObject("Is required", "notification.notificationType"),
+         new ErrorValueObject("Is required", "notification.sendingEmployee"),
+         new ErrorValueObject("Is required", "notification.startDate")
+      ].sort { o1, o2 -> o1 <=> o2 }
    }
 
    void "put valid notification of type all" () {
@@ -399,24 +394,25 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       updatedNotification.message = null
       updatedNotification.sendingEmployee = null
       updatedNotification.notificationType = null
-      client.retrieve(PUT("$path/${savedNotification.id}", new NotificationRequestValueObject(updatedNotification)), Argument.of(NotificationResponseValueObject), Argument.of(ErrorValueObject[]))
+      client.exchange(
+         PUT("$path/${savedNotification.id}", new NotificationRequestValueObject(updatedNotification)),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
 
       then:
       final exception = thrown(HttpClientResponseException)
-      final errors = exception.response.getBody(ErrorValueObject[]).get().sort {o1, o2 -> (o1.message <=> o2.message) }
+      final errors = exception.response.bodyAsJson()
       errors.size() == 6
-      errors[0].message == "notification.company is required"
-      errors[0].path == "notification.company"
-      errors[1].message == "notification.expirationDate is required"
-      errors[1].path == "notification.expirationDate"
-      errors[2].message == "notification.message is required"
-      errors[2].path == "notification.message"
-      errors[3].message == "notification.notificationType is required"
-      errors[3].path == "notification.notificationType"
-      errors[4].message == "notification.sendingEmployee is required"
-      errors[4].path == "notification.sendingEmployee"
-      errors[5].message == "notification.startDate is required"
-      errors[5].path == "notification.startDate"
+
+      errors.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorValueObject("Is required", "notification.company"),
+         new ErrorValueObject("Is required", "notification.expirationDate"),
+         new ErrorValueObject("Is required", "notification.message"),
+         new ErrorValueObject("Is required", "notification.notificationType"),
+         new ErrorValueObject("Is required", "notification.sendingEmployee"),
+         new ErrorValueObject("Is required", "notification.startDate"),
+      ].sort { o1, o2 -> o1 <=> o2 }
    }
 
    void "put invalid notification of type all without an ID" () {

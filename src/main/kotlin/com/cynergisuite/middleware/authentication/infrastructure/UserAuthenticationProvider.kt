@@ -1,13 +1,17 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.UsernamePasswordStoreCredentials
 import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.context.annotation.Requires
 import io.micronaut.security.authentication.AuthenticationFailed
+import io.micronaut.security.authentication.AuthenticationFailureReason
+import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
 import io.micronaut.security.authentication.AuthenticationProvider
 import io.micronaut.security.authentication.AuthenticationRequest
 import io.micronaut.security.authentication.AuthenticationResponse
 import io.reactivex.Flowable
+import io.reactivex.Flowable.just
 import org.reactivestreams.Publisher
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,11 +27,16 @@ class UserAuthenticationProvider @Inject constructor(
    override fun authenticate(authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
       logger.debug("Authentication requested for user {}", authenticationRequest?.identity)
 
-      return if (authenticationRequest != null && authenticationRequest.identity != null && authenticationRequest.secret != null) {
-         employeeService.findUserByAuthentication((authenticationRequest.identity as String).toInt(), authenticationRequest.secret as String)
-            .flatMapPublisher { Flowable.just(AuthenticatedUser(it)) }
+      val identity = (authenticationRequest?.identity as String?)?.toInt()
+      val secret = authenticationRequest?.secret as String?
+      val storeNumber = if (authenticationRequest is UsernamePasswordStoreCredentials) authenticationRequest.storeNumber else null
+
+      return if (identity != null && secret != null) {
+         employeeService
+            .findUserByAuthentication(identity, secret, storeNumber)
+            .flatMapPublisher { just(AuthenticatedUser(it)) }
       } else {
-         Flowable.just<AuthenticationResponse>(AuthenticationFailed())
+         just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       }
    }
 }

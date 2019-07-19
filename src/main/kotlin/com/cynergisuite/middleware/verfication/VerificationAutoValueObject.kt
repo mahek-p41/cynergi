@@ -4,6 +4,7 @@ import com.cynergisuite.domain.ValueObjectBase
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.validation.constraints.Digits
@@ -11,6 +12,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@Schema(name = "VerificationAuto", description = "A verification for an automobile")
 data class VerificationAutoValueObject(
 
    @field:Positive

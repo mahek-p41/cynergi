@@ -35,17 +35,6 @@ class LocalizationService @Inject constructor(
     * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided.  Assumption with
     * this method is that the message does not take any parameters.
     *
-    * @param localizationCode the key of the message to be looked up and localized
-    * @param locale the [Locale] instance to be used to localize the message or [Locale.US] as a default
-    * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
-    */
-   fun localize(localizationCode: LocalizationCode, locale: Locale = Locale.US, ifNotFound: String = EMPTY): String =
-      localize(localizationCode.code, locale, ifNotFound)
-
-   /**
-    * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided.  Assumption with
-    * this method is that the message does not take any parameters.
-    *
     * @param messageKey the key of the message to be looked up and localized
     * @param locale the [Locale] instance to be used to localize the message or [Locale.US] as a default
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
@@ -61,8 +50,8 @@ class LocalizationService @Inject constructor(
     * @param arguments the arguments to be provided to the messageSource
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
-   fun localize(localizationCode: LocalizationCode, locale: Locale = Locale.US, ifNotFound: String = EMPTY, arguments: Array<Any?>): String =
-      localize(localizationCode.code, locale, ifNotFound, arguments)
+   fun localize(localizationCode: LocalizationCode, locale: Locale = Locale.US, ifNotFound: String = EMPTY): String =
+      localize(localizationCode.getCode(), locale, ifNotFound, localizationCode.getArguments())
 
    /**
     * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided

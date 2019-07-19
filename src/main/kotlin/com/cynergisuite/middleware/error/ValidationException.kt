@@ -9,6 +9,5 @@ class ValidationException(
 
 data class ValidationError(
    val path: String,
-   val localizationCode: LocalizationCode,
-   val arguments: List<*> = emptyList<Any>()
+   val localizationCode: LocalizationCode
 )

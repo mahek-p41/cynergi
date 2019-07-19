@@ -3,9 +3,6 @@ package com.cynergisuite.middleware.localization
 import org.springframework.context.support.ResourceBundleMessageSource
 import spock.lang.Specification
 
-import static com.cynergisuite.middleware.localization.SystemCode.NotFound
-import static com.cynergisuite.middleware.localization.Validation.NotNull
-
 class LocalizationServiceSpecification extends Specification {
 
    void "check english locale"() {
@@ -30,12 +27,21 @@ class LocalizationServiceSpecification extends Specification {
       final def englishLocale = localizationService.localeFor("en")
 
       expect:
-      localizationService.localize(messageKey, englishLocale, "", args) == message
+      localizationService.localize(messageKey, englishLocale, "") == message
 
       where:
-      messageKey        | args                 || message
-      NotNull.INSTANCE  | ["name"] as Object[] || "name is required"
-      NotFound.INSTANCE | [1] as Object[]      || "Resource 1 was unable to be found"
-      "i.dont.exist"    | []                   || ""
+      messageKey                        || message
+      new NotNull("name") || "Is required"
+      new NotFound(1)         || "1 was unable to be found"
+   }
+
+   void "localize a messageKey that can't be found" () {
+      given:
+      final def resourceBundleMessageSource = new ResourceBundleMessageSource([basename: "i18n/messages"])
+      final def localizationService = new LocalizationService(resourceBundleMessageSource)
+      final def englishLocale = localizationService.localeFor("en")
+
+      expect:
+      localizationService.localize("missing.message", englishLocale, "MISSING MESSAGE") == "MISSING MESSAGE"
    }
 }

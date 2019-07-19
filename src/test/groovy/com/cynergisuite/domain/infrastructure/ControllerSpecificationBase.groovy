@@ -30,7 +30,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
 
    void setup() {
       client = httpClient.toBlocking()
-      authenticatedEmployee = employeeService.findUserByAuthentication(123, 'pass').blockingGet()
+      authenticatedEmployee = employeeService.findUserByAuthentication(123, 'pass', null).blockingGet()
       cynergiAccessToken = client.exchange(POST("/login", new UsernamePasswordCredentials('123', 'pass')), BearerAccessRefreshToken).body().accessToken
       jsonSlurper = new JsonSlurper()
    }
@@ -38,8 +38,8 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    Object get(String path) throws HttpClientResponseException {
       return client.exchange(
          GET("/${path}").header("Authorization", "Bearer $cynergiAccessToken"),
-         Argument.of(String) as Argument<String>,
-         Argument.of(String) as Argument<String>
+         Argument.of(String),
+         Argument.of(String)
       ).bodyAsJson()
    }
 
