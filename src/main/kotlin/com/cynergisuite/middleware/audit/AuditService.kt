@@ -79,7 +79,7 @@ class AuditService @Inject constructor(
 
       existingAudit.actions.add(
          AuditAction(
-            status = auditStatusService.fetchByValue(audit.status!!.value!!)!!,
+            status = auditStatusService.fetchByValue(audit.status!!.value)!!,
             changedBy = Employee(employee)
          )
       )

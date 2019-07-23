@@ -214,7 +214,6 @@ class ErrorHandlerController @Inject constructor(
       logger.info("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val username: String = accessException.user ?: localizationService.localize(Unknown(), locale)
 
       return HttpResponse
          .status<ErrorValueObject>(FORBIDDEN)

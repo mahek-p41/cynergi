@@ -8,7 +8,6 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
-import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -136,9 +135,9 @@ class AuditRepository @Inject constructor(
             $selectBase
          )
          SELECT p.*,
-            (select count(id) FROM audit ${if (whereBuilder.isNotBlank()) whereBuilder else ""}) AS total_elements
+            (select count(id) FROM audit ${if (whereBuilder.isNotBlank()) whereBuilder.toString() else ""}) AS total_elements
          FROM paged AS p
-         ${if (whereBuilder.isNotBlank()) whereBuilder else ""}
+         ${if (whereBuilder.isNotBlank()) whereBuilder.toString() else ""}
          ORDER BY ${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
          LIMIT ${pageRequest.size}
             OFFSET ${pageRequest.offset()}
@@ -191,7 +190,7 @@ class AuditRepository @Inject constructor(
          """.trimIndent(),
          mapOf("store_number" to storeNumber),
          Int::class.java
-      )
+      )!!
 
    @Transactional
    override fun insert(entity: Audit): Audit {

@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.detail
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.IdentifiableEntity
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.employee.Employee
 import java.time.OffsetDateTime

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-cd docker
+cd development
 
 docker-compose rm -f cynergidevdb
 
