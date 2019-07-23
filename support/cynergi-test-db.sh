@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-cd docker
+cd development
 
 docker-compose stop cynergitestdb
 docker-compose rm -f cynergitestdb

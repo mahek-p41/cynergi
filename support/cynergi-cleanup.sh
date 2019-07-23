@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd docker
+cd development
 
 docker-compose down
 docker-compose rm -f -v

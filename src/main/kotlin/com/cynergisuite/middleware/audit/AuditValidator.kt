@@ -68,7 +68,7 @@ class AuditValidator @Inject constructor(
 
       val errors = mutableSetOf<ValidationError>()
       val id = audit.id
-      val requestedStatus = auditStatusService.fetchByValue(audit.status!!.value!!)
+      val requestedStatus = auditStatusService.fetchByValue(audit.status!!.value)
 
       if (id == null) {
          errors.add(element = ValidationError("id", NotNull("id")))
@@ -94,7 +94,7 @@ class AuditValidator @Inject constructor(
             }
          } else {
             errors.add(
-               ValidationError("status", AuditStatusNotFound(audit.status!!.value!!))
+               ValidationError("status", AuditStatusNotFound(audit.status!!.value))
             )
          }
       }
