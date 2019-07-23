@@ -2,14 +2,28 @@ package com.cynergisuite.domain
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS
+import io.swagger.v3.oas.annotations.media.Schema
 
 @ValueObject
 @JsonInclude(ALWAYS)
+@Schema(name = "Page", description = "A sub listing or a large result set")
 data class Page<VO: IdentifiableValueObject>(
+
+   @field:Schema(name = "elements", description = "The elements up to 100 returned by the query", required = true)
    val elements: List<VO> = emptyList(),
+
+   @field:Schema(name = "requested", description = "The page request used when calculating the number of results to return", required = true)
    val requested: PageRequest,
+
+   @field:Schema(name = "totalElements", description = "The total number of elements that can possibly be returned at the time this query was executed", required = true)
    val totalElements: Long,
+
+   @field:Schema(name = "totalPages", description = "The total number of pages that can possibly be returned at the time this query was executed", required = true)
    val totalPages: Long = Math.ceil(totalElements.toDouble() / (requested.size ?: 10).toDouble()).toLong(),
+
+   @field:Schema(name = "first", description = "Boolean value to show whether or not this is the first page", required = true)
    val first: Boolean = requested.page == 1,
+
+   @field:Schema(name = "last", description = "Boolean value to show whether or not this is the last page", required = true)
    val last: Boolean = requested.page!!.toLong() == totalPages
 )

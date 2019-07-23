@@ -19,7 +19,7 @@
     <logger name="io.micronaut.http.client" level="TRACE"/>
     <logger name="com.hightouchinc" level="TRACE"/>
 
-    <root level="DEBUG">
+    <root level="TRACE">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

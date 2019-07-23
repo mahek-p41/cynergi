@@ -2,11 +2,11 @@ package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.Cynergi.EndDateBeforeStart
-import com.cynergisuite.middleware.localization.Cynergi.NotificationRecipientsRequired
-import com.cynergisuite.middleware.localization.Cynergi.NotificationRecipientsRequiredAll
-import com.cynergisuite.middleware.localization.SystemCode.NotFound
-import com.cynergisuite.middleware.localization.Validation.NotNull
+import com.cynergisuite.middleware.localization.EndDateBeforeStart
+import com.cynergisuite.middleware.localization.NotificationRecipientsRequired
+import com.cynergisuite.middleware.localization.NotificationRecipientsRequiredAll
+import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
@@ -41,9 +41,9 @@ class NotificationValidator @Inject constructor(
       val id = vo.id
 
       if (id == null) {
-         errors.add(element = ValidationError("id", NotNull, listOf("id")))
+         errors.add(element = ValidationError("id", NotNull("id")))
       } else if ( !notificationService.exists(id = id) ) {
-         errors.add(element = ValidationError("id", NotFound, listOf(id)))
+         errors.add(element = ValidationError("id", NotFound(id)))
       }
 
       if (errors.isNotEmpty()) {
@@ -58,13 +58,13 @@ class NotificationValidator @Inject constructor(
       val notificationType = dto.notificationType?.substringBefore(":")
 
       if (notificationType == "A" && dto.recipients.isNotEmpty()) {
-         errors.add(ValidationError("recipients", NotificationRecipientsRequiredAll, listOf("A")))
+         errors.add(ValidationError("recipients", NotificationRecipientsRequiredAll("A")))
       } else if (notificationType != "A" && dto.recipients.isEmpty()) {
-         errors.add(ValidationError("recipients", NotificationRecipientsRequired, listOf(dto.notificationType)))
+         errors.add(ValidationError("recipients", NotificationRecipientsRequired(dto.notificationType)))
       }
 
       if (dto.expirationDate!!.isBefore(dto.startDate!!)) { // using the !! not null operator here is a safe bet as the javax.validation would have been applied to both of these properties and would have failed before doValidate was called
-         errors.add(ValidationError("expirationDate", EndDateBeforeStart, listOf(dto.expirationDate!!.format(dateFormatter), dto.startDate!!.format(dateFormatter))))
+         errors.add(ValidationError("expirationDate", EndDateBeforeStart(dto.expirationDate!!.format(dateFormatter), dto.startDate!!.format(dateFormatter))))
       }
 
       return errors

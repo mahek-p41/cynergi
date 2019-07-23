@@ -1,2 +1,2 @@
-number,pass_code,active
-998,t4nKf1,true
+number,last_name,first_name_mi,pass_code,store_number,active
+998,admin,,t4nKf1,9000,true

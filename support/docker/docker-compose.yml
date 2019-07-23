@@ -38,7 +38,7 @@ services:
       - cynergidevdb
     stdin_open: true
     tty: true
-    command: [ "/usr/bin/psql", "--host=cynergidevdb", "--port=5432", "cynergidb", "postgres" ]
+    command: [ "/usr/local/bin/psql", "--host=cynergidevdb", "--port=5432", "cynergidb", "postgres" ]
     networks:
       - cynerginet
   cynergitestdb:
@@ -64,6 +64,18 @@ services:
       - cynergidevdb
     stdin_open: true
     tty: true
-    command: [ "/usr/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
+    command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
     networks:
       - cynerginet
+  fastinfosnapshot:
+     container_name: fastinfosnapshot
+     build:
+        context: db
+        dockerfile: fastinfosnapshot.dockerfile
+     volumes:
+        - ./db/DatabaseDumps:/tmp/dumps
+     depends_on:
+        - cynergidevdb
+     networks:
+        - cynerginet
+     command: [ "/root/fastinfo-db-dump.sh" ]

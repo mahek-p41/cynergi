@@ -1,33 +1,50 @@
 package com.cynergisuite.middleware.localization
 
-sealed class LocalizationCode(val code: String)
-
-sealed class Validation(code: String): LocalizationCode(code) {
-   object NotNull : Validation("javax.validation.constraints.NotNull.message")
-   object Size : Validation("javax.validation.constraints.Size.message")
-   object Positive : Validation("javax.validation.constraints.Positive.message")
-   object Min : Validation("javax.validation.constraints.Min.message")
-   object Max : Validation("javax.validation.constraints.Max.message")
+interface LocalizationCode {
+   fun getCode(): String
+   fun getArguments(): Array<Any?>
 }
 
-sealed class Cynergi(code: String): LocalizationCode(code) {
-   object Duplicate : Cynergi("cynergi.validation.duplicate")
-   object NotUpdatable : Cynergi("cynergi.validation.not.updatable")
-   object EndDateBeforeStart : Cynergi("cynergi.validation.end.date.before.start")
-   object NotificationRecipientsRequiredAll : Cynergi("cynergi.validation.notification.recipients.not.required")
-   object NotificationRecipientsRequired : Cynergi("cynergi.validation.notification.recipients.required")
-   object ConversionError : Cynergi("cynergi.conversion.error")
+open class LocalizationCodeImpl(
+   private val code: String,
+   private val arguments: Array<Any?>
+) : LocalizationCode {
+   override fun getCode(): String = code
+   override fun getArguments(): Array<Any?> = arguments
 }
 
-sealed class SystemCode(code: String): LocalizationCode(code) {
-   object NotFound: SystemCode("system.not.found")
-   object InternalError: SystemCode("system.internal.error")
-   object RouteError: SystemCode("system.route.error")
-   object NotImplemented: SystemCode("system.not.implemented")
-   object LoggedIn: SystemCode("system.logged.in")
-   object NotLoggedIn: SystemCode("system.not.logged.in")
-   object AccessDenied: SystemCode("system.access.denied")
-   object Unknown: SystemCode("system.word.unknown")
-   object UnableToParseJson: SystemCode("system.json.unable.parse")
-   object PageOutOfBounds: SystemCode("system.page.out.of.bounds")
-}
+open class Validation(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
+class NotNull(notNullProperty: String) : Validation("javax.validation.constraints.NotNull.message", arrayOf(notNullProperty))
+class Size : Validation("javax.validation.constraints.Size.message", emptyArray())
+class Positive : Validation("javax.validation.constraints.Positive.message", emptyArray())
+class Min : Validation("javax.validation.constraints.Min.message", emptyArray())
+class Max : Validation("javax.validation.constraints.Max.message", emptyArray())
+class Pattern : Validation("javax.validation.constraints.Pattern.message", emptyArray())
+
+open class Cynergi(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
+class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", arrayOf(duplicateValue))
+class NotUpdatable(notUpdatableValue: Any?) : Cynergi("cynergi.validation.not.updatable", arrayOf(notUpdatableValue))
+class EndDateBeforeStart(endDate: String, startDate: String) : Cynergi("cynergi.validation.end.date.before.start", arrayOf(endDate, startDate))
+class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cynergi.validation.notification.recipients.not.required", arrayOf(notificationType))
+class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
+class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
+
+class AuditStatusNotFound(auditStatus: String):  Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
+class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String): Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
+class AuditMustBeInProgressDetails(auditId: Long): Cynergi("cynergi.audit.must.be.in.progress.details", arrayOf(auditId))
+class AuditMustBeInProgressDiscrepancy(auditId: Long): Cynergi("cynergi.audit.must.be.in.progress.discrepancy", arrayOf(auditId))
+class AuditScanAreaNotFound(scanArea: String?): Cynergi("cynergi.audit.scan.area.not.found", arrayOf(scanArea))
+class AuditOpenAtStore(storeNumber: Int): Cynergi("cynergi.audit.open.at.store", arrayOf(storeNumber))
+
+
+open class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
+class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable))
+class InternalError: SystemCode("system.internal.error", emptyArray())
+class RouteError(routeArgument: String): SystemCode("system.route.error", arrayOf(routeArgument))
+class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
+class LoggedIn(user: String): SystemCode("system.logged.in", arrayOf(user))
+class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())
+class AccessDenied(user: String): SystemCode("system.access.denied", arrayOf(user))
+class Unknown: SystemCode("system.word.unknown", arrayOf())
+class UnableToParseJson(jsonParseErrorMessage: String): SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
+class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?): SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))

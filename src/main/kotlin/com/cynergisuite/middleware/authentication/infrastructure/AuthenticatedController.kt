@@ -3,9 +3,8 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.SystemCode.NotLoggedIn
-import com.cynergisuite.middleware.localization.SystemCode.LoggedIn
-import io.micronaut.context.annotation.Requires
+import com.cynergisuite.middleware.localization.LoggedIn
+import com.cynergisuite.middleware.localization.NotLoggedIn
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -19,7 +18,6 @@ import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Requires(env = ["local", "demo"])
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
    private val localizationService: LocalizationService
@@ -31,12 +29,11 @@ class AuthenticatedController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authentication != null) {
-         val message = localizationService.localize(localizationCode = LoggedIn, locale = locale, arguments = arrayOf(authentication.name))
+         val message = localizationService.localize(localizationCode = LoggedIn(authentication.name), locale = locale)
 
-         HttpResponse
-            .ok(AuthenticatedUserInformation(number = authentication.name, loginStatus = message))
+         HttpResponse.ok(AuthenticatedUserInformation(number = authentication.name, loginStatus = message, store = authentication.attributes["storeNumber"]?.toString()?.toInt()))
       } else {
-         val message = localizationService.localize(NotLoggedIn, locale, arguments = emptyArray())
+         val message = localizationService.localize(NotLoggedIn(), locale)
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)
@@ -46,7 +43,7 @@ class AuthenticatedController @Inject constructor(
 
    @Get("/check")
    @AccessControl("check")
-   fun authenticationCheck(httpRequest: HttpRequest<*>): HttpResponse<Any> {
+   fun authenticationCheck(): HttpResponse<Any> {
       return HttpResponse.ok()
    }
 }

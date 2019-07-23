@@ -3,9 +3,10 @@ package com.cynergisuite.middleware.employee
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.store.StoreFactory
+import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.localization.NotFound
 import spock.lang.Specification
-
-import static com.cynergisuite.middleware.localization.SystemCode.NotFound
 
 class EmployeeValidatorSpecification extends Specification {
 
@@ -13,9 +14,10 @@ class EmployeeValidatorSpecification extends Specification {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
+      def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject( "int", 989, "studio", true))
+      employeeValidator.validateSave(new EmployeeValueObject([loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
       notThrown(ValidationException)
@@ -27,7 +29,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject(null, null, null, null, null))
+      employeeValidator.validateSave(new EmployeeValueObject(null, null, null, null, null, null, null, null))
 
       then:
       notThrown(ValidationException)
@@ -40,9 +42,10 @@ class EmployeeValidatorSpecification extends Specification {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
+      def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "int", 989, "studio", true))
+      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
       1 * employeeRepository.exists(1L, "int") >> true
@@ -53,26 +56,29 @@ class EmployeeValidatorSpecification extends Specification {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
+      def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "int", 989, "studio", true))
+      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
       1 * employeeRepository.exists(1L, "int") >> false
       def exception = thrown(ValidationException)
-      1 == exception.errors.size()
-      exception.errors.containsAll([
-         new ValidationError("id", NotFound.INSTANCE, [1L])
-      ])
+      exception.errors.size() == 1
+      exception.errors[0].localizationCode instanceof NotFound
+      exception.errors[0].localizationCode.arguments.size() == 1
+      exception.errors[0].localizationCode.arguments[0] == 1L
+      exception.errors[0].path == "id"
    }
 
    void "invalid employee to be updated that does exist"() {
       given:
       def employeeRepository = Mock(EmployeeRepository)
       def employeeValidator = new EmployeeValidator(employeeRepository)
+      def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject(1L, "int", null, null, null))
+      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
       1 * employeeRepository.exists(1L, "int") >> true

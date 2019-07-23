@@ -1,7 +1,7 @@
 {
   "name": "cynergi-middleware",
   "version": "0.0.1",
-  "description": "api for accessing cynerig data and applying business rules",
+  "description": "api for accessing cynergi data and applying business rules",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,11 +17,12 @@
     "chalk": "2.4.2",
     "decamelize": "3.2.0",
     "dot-case": "2.1.1",
+    "generator-micronaut-ddd": "0.0.9",
     "mkdirp": "0.5.1",
     "pascal-case": "2.0.1",
     "snake-case": "2.1.0",
-    "yeoman-generator": "4.0.0",
-    "yo": "2.0.6",
+    "yeoman-generator": "4.0.1",
+    "yo": "3.1.0",
     "yosay": "2.0.2"
   }
 }

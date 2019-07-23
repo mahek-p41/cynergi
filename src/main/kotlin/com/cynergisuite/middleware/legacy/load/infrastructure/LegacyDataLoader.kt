@@ -50,6 +50,7 @@ class LegacyDataLoader @Inject constructor(
          directoryStream.asSequence()
             .filter { path -> path.toFile().isFile } // filter out anything that isn't a file
             .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
+            .sortedBy { path -> path.fileName }
             .filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
             .filter { path -> path.toFile().length() > 0 }
             .map { path -> processFile(path) } // read in file and save to appropriate table in the database

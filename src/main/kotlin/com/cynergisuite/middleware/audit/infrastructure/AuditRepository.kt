@@ -1,0 +1,259 @@
+package com.cynergisuite.middleware.audit.infrastructure
+
+import com.cynergisuite.domain.infrastructure.Repository
+import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
+import com.cynergisuite.middleware.audit.status.AuditStatus
+import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils.EMPTY
+import org.intellij.lang.annotations.Language
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.lang.StringBuilder
+import java.sql.ResultSet
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class AuditRepository @Inject constructor(
+   private val auditActionRepository: AuditActionRepository,
+   private val auditStatusRepository: AuditStatusRepository,
+   employeeRepository: EmployeeRepository,
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val storeRepository: StoreRepository
+) : Repository<Audit> {
+   private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
+
+   @Language("PostgreSQL")
+   private val selectBase = """
+      WITH employees AS ( 
+         ${employeeRepository.selectBase}
+      )
+      SELECT
+         a.id AS id,
+         a.id AS a_id,
+         a.uu_row_id AS a_uu_row_id,
+         a.time_created AS a_time_created,
+         a.time_updated AS a_time_updated,
+         a.store_number AS store_number,
+         (SELECT csastd.value
+          FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
+          WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
+         ) AS current_status,
+         aa.id AS aa_id,
+         aa.uu_row_id AS aa_uu_row_id,
+         aa.time_created AS aa_time_created,
+         aa.time_updated AS aa_time_updated,
+         astd.id AS astd_id,
+         astd.value AS astd_value,
+         astd.description AS astd_description,
+         astd.localization_code AS astd_localization_code,
+         aer.e_id AS aer_id,
+         aer.e_time_created AS aer_time_created,
+         aer.e_time_updated AS aer_time_updated,
+         aer.e_number AS aer_number,
+         aer.e_last_name AS aer_last_name,
+         aer.e_first_name_mi AS aer_first_name_mi,
+         aer.e_pass_code AS aer_pass_code,
+         aer.e_active AS aer_active,
+         aer.e_loc AS aer_loc,
+         s.id AS s_id,
+         s.time_created AS s_time_created,
+         s.time_updated AS s_time_updated,
+         s.name AS s_name,
+         s.number AS s_number,
+         s.dataset AS s_dataset,
+         se.id AS se_id,
+         se.time_created AS se_time_created,
+         se.time_updated AS se_time_updated,
+         se.name AS se_name,
+         se.dataset AS s_dataset
+      FROM audit a
+           JOIN audit_action aa
+               ON a.id = aa.audit_id
+           JOIN audit_status_type_domain astd
+               ON aa.status_id = astd.id
+           JOIN employees aer
+               ON aa.changed_by = aer.e_number
+           JOIN fastinfo_prod_import.store_vw s
+               ON a.store_number = s.number
+           JOIN fastinfo_prod_import.store_vw se
+               ON aer.s_number = se.number
+   """.trimMargin()
+
+   override fun findOne(id: Long): Audit? {
+      val found = jdbc.findFirstOrNullWithCrossJoin("$selectBase\nWHERE a.id = :id", mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: Audit, rs ->
+         auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+      }
+
+      if (found != null) {
+         loadNextStates(found)
+      }
+
+      logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
+
+      return found
+   }
+
+   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<Audit> {
+      var totalElements: Long? = null
+      var currentId: Long = -1
+      var currentParentEntity: Audit? = null
+      val resultList: MutableList<Audit> = mutableListOf()
+      val params = mutableMapOf<String, Any>()
+      val storeNumber = pageRequest.storeNumber
+      val status = pageRequest.status
+      val whereBuilder = StringBuilder()
+      var and = EMPTY
+      var where = "WHERE"
+
+      if (storeNumber != null) {
+         params["store_number"] = storeNumber
+         whereBuilder.append(where).append(" store_number = :store_number ")
+         and = "AND"
+         where = EMPTY
+      }
+
+      if (status != null) {
+         params["current_status"] = status
+         whereBuilder.append(where).append(and).append(" current_status = :current_status ")
+      }
+
+      logger.trace("Finding all audits for {} using {}", pageRequest, params)
+
+      jdbc.query("""
+         WITH paged AS (
+            $selectBase
+         )
+         SELECT p.*,
+            (select count(id) FROM audit ${if (whereBuilder.isNotBlank()) whereBuilder else ""}) AS total_elements
+         FROM paged AS p
+         ${if (whereBuilder.isNotBlank()) whereBuilder else ""}
+         ORDER BY ${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+         LIMIT ${pageRequest.size}
+            OFFSET ${pageRequest.offset()}
+      """.trimIndent(),
+         params
+      ) { rs ->
+         val tempId = rs.getLong("id")
+         val tempParentEntity: Audit = if (tempId != currentId) {
+            currentId = tempId
+            currentParentEntity = mapRow(rs)
+            resultList.add(currentParentEntity!!)
+            currentParentEntity!!
+         } else {
+            currentParentEntity!!
+         }
+
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+
+         tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
+      }
+
+      resultList.forEach(this::loadNextStates)
+
+      return RepositoryPage(
+         elements = resultList,
+         totalElements = totalElements ?: 0
+      )
+   }
+
+   override fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if Audit: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
+
+   fun countAuditsNotClosed(storeNumber: Int): Int =
+      jdbc.queryForObject("""
+         SELECT count(*)
+         FROM audit a
+              JOIN audit_action aa
+                ON a.id = aa.audit_id
+              JOIN audit_status_type_domain astd
+                ON aa.status_id = astd.id
+         WHERE astd.value <> 'CLOSED'
+               AND a.store_number = :store_number
+         """.trimIndent(),
+         mapOf("store_number" to storeNumber),
+         Int::class.java
+      )
+
+   @Transactional
+   override fun insert(entity: Audit): Audit {
+      logger.debug("Inserting audit {}", entity)
+
+      val audit = jdbc.insertReturning(
+         """
+         INSERT INTO audit(store_number)
+         VALUES (:store_number)
+         RETURNING
+            *
+         """.trimMargin(),
+         mapOf("store_number" to entity.store.number),
+         RowMapper { rs, _ ->
+            Audit(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               store = entity.store
+            )
+         }
+      )
+
+      entity.actions.asSequence()
+         .map { auditActionRepository.insert(audit, it) }
+         .forEach { audit.actions.add(it) }
+
+      return audit
+   }
+
+   @Transactional
+   override fun update(entity: Audit): Audit {
+      logger.debug("Updating Audit {}", entity)
+
+      // Since it isn't really necessary to update a store number for an audit as they can just cancel the audit and create a new one, just upsert the actions
+      val actions = entity.actions.asSequence()
+         .map { auditActionRepository.upsert(entity, it) }
+         .toMutableSet()
+
+      return entity.copy(actions = actions)
+   }
+
+   private fun mapRow(rs: ResultSet): Audit =
+      Audit(
+         id = rs.getLong("a_id"),
+         uuRowId = rs.getUuid("a_uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("a_time_created"),
+         timeUpdated = rs.getOffsetDateTime("a_time_updated"),
+         store = storeRepository.mapRow(rs, "s_")
+      )
+
+   private fun loadNextStates(audit: Audit) {
+      val actions = audit.actions.map { action ->
+         val actionStatus = auditStatusRepository.findOne(action.status.id)!!
+
+         val changed = action.copy(status = actionStatus)
+
+         changed
+      }
+
+      audit.actions.clear()
+      audit.actions.addAll(actions)
+   }
+}

@@ -1,26 +1,31 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.middleware.store.Store
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class Employee(
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val loc: String,
    val number: Int,
+   val lastName: String,
+   val firstNameMi: String?,
    val passCode: String,
+   val store: Store,
    val active: Boolean = true
-) : Entity<Employee> {
+) : IdentifiableEntity {
 
-   constructor(loc: String, userId: Int, passCode: String, active: Boolean) :
+   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: Store, active: Boolean) :
       this(
          id = null,
          loc = loc,
-         number = userId,
+         number = number,
+         lastName = lastName,
+         firstNameMi = firstNameMi,
          passCode = passCode,
+         store = store,
          active = active
       )
 
@@ -29,11 +34,13 @@ data class Employee(
          id = vo.id,
          loc = vo.loc!!,
          number = vo.number!!,
+         lastName = vo.lastName!!,
+         firstNameMi = vo.firstNameMi,
          passCode = vo.passCode!!,
+         store = Store(vo.store!!),
          active = vo.active!!
       )
 
    override fun entityId(): Long? = id
-   override fun rowId(): UUID = uuRowId
-   override fun copyMe(): Employee = copy()
+   fun copyMe(): Employee = copy()
 }

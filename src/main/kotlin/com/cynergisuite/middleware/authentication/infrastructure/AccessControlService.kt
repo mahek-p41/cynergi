@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.localization.AccessDenied
 import com.cynergisuite.middleware.localization.SystemCode
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
@@ -35,7 +36,9 @@ class AccessControlService @Inject constructor(
       return if (securityService.isAuthenticated && asset != null && employee != null && employeeService.canEmployeeAccess(asset, employee)) {
          context.proceed()
       } else {
-         throw AccessException(SystemCode.AccessDenied, securityService.username().orElse(null))
+         val username = securityService.username().orElse(null)
+
+         throw AccessException(AccessDenied(username), username)
       }
    }
 }

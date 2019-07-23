@@ -1,13 +1,12 @@
 package com.cynergisuite.middleware.verification
 
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.verfication.VerificationService
 import com.cynergisuite.middleware.verfication.VerificationTestDataLoader
 import com.cynergisuite.middleware.verfication.VerificationValidator
 import com.cynergisuite.middleware.verfication.VerificationValueObject
 import spock.lang.Specification
-
-import static com.cynergisuite.middleware.localization.Cynergi.Duplicate
 
 class VerificationValidatorSpecification extends Specification {
 
@@ -38,7 +37,8 @@ class VerificationValidatorSpecification extends Specification {
       1 * verificationService.exists(verificationValueObject.customerAccount) >> true
       final def validationException = thrown(ValidationException)
       validationException.errors.size() == 1
-      validationException.errors[0].arguments == [verificationValueObject.customerAccount]
+      validationException.errors[0].localizationCode.arguments.size() == 1
+      validationException.errors[0].localizationCode.arguments[0] == verificationValueObject.customerAccount
       validationException.errors[0].path == "cust_acct"
       validationException.errors[0].localizationCode instanceof Duplicate
    }

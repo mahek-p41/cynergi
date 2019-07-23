@@ -28,6 +28,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
          builder
             ?.claim("id", userDetails.id)
             ?.claim("loc", userDetails.loc)
+            ?.claim("storeNumber", userDetails.storeNumber)
       }
    }
 }

@@ -42,7 +42,7 @@ class NotificationTypeDomainDataLoaderService @Inject constructor(
 
    fun stream(numberIn: Int = 1): Stream<NotificationTypeDomain> {
       return NotificationTypeDomainTestDataLoader.stream(numberIn)
-         .map { notificationTypeDomainRepository.findOne(it.id!!)!! } // since these are already saved in the database via a migration script just take the hard coded ones and look them up
+         .map { notificationTypeDomainRepository.findOne(it.id)!! } // since these are already saved in the database via a migration script just take the hard coded ones and look them up
          .filter { it != null } // filter any that weren't found
    }
 }
