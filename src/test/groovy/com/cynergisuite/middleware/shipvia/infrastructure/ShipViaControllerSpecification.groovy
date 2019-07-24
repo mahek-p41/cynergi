@@ -11,7 +11,6 @@ import io.micronaut.test.annotation.MicronautTest
 
 import java.util.stream.Collectors
 
-import static com.cynergisuite.domain.PageRequestSortDirection.ASCENDING
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -33,7 +32,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == shipVia.id
-
    }
 
    void "fetch one shipvia by id not found" () {
@@ -45,16 +43,16 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.body().with {parseResponse(it)}
       response.size()== 1
-      response.message == "Resource 0 was unable to be found"
+      response.message == "0 was unable to be found"
    }
 
    void "fetch all"() {
       given:
       def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.name <=> o2.name }.collect(Collectors.toList())
-      def pageOne = new PageRequest(1, 5, "name", ASCENDING)
-      def pageTwo = new PageRequest(2, 5, "name", ASCENDING)
-      def pageLast = new PageRequest(4, 5, "name", ASCENDING)
-      def pageFive = new PageRequest(5, 5, "name", ASCENDING)
+      def pageOne = new PageRequest(1, 5, "name", "ASC")
+      def pageTwo = new PageRequest(2, 5, "name", "ASC")
+      def pageLast = new PageRequest(4, 5, "name", "ASC")
+      def pageFive = new PageRequest(5, 5, "name", "ASC")
       def firstPageShipVia = twentyShipVias[0..4]
       def secondPageShipVia = twentyShipVias[5..9]
       def lastPageShipVia = twentyShipVias[15..19]
@@ -69,7 +67,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.collect { new ShipViaValueObject(it) }.containsAll(firstPageShipVia)
+      pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
 
       when:
       def pageTwoResult = get("$path/${pageTwo}")
@@ -81,7 +79,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.first == false
       pageTwoResult.last == false
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.collect { new ShipViaValueObject(it) }.containsAll(secondPageShipVia)
+      pageTwoResult.elements.collect { new ShipViaValueObject(it) } == secondPageShipVia
 
       when:
       def pageLastResult = get("$path/${pageLast}")
@@ -93,7 +91,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.first == false
       pageLastResult.last == true
       pageLastResult.elements.size() == 5
-      pageLastResult.elements.collect { new ShipViaValueObject(it) }.containsAll(lastPageShipVia)
+      pageLastResult.elements.collect { new ShipViaValueObject(it) } == lastPageShipVia
 
       when:
       get("$path/${pageFive}")
@@ -103,13 +101,13 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NOT_FOUND
       final def notFoundResult = notFoundException.response.bodyAsJson()
       notFoundResult.size() == 1
-      notFoundResult.message == "Request  with Page 5, Size 5, Sort By name and Sort Direction ASC produced no results"
+      notFoundResult.message == "Request with Page 5, Size 5, Sort By name and Sort Direction ASC produced no results"
 
    }
 
    void "post valid shipVia"() {
       given:
-      final def shipVia = ShipViaFactory.single().with {new ShipViaValueObject(it)}
+      final def shipVia = ShipViaFactory.single().with { new ShipViaValueObject(it) }
 
       when:
       def response = post("$path/", shipVia)
@@ -135,10 +133,10 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 2
-      result.collect { new ErrorValueObject(it)}.containsAll([
-         new ErrorValueObject("description is required", "description"),
-         new ErrorValueObject("name is required", "name")
-      ])
+      result.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorValueObject("Is required", "description"),
+         new ErrorValueObject("Is required", "name")
+      ]
 
    }
 
@@ -154,7 +152,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id > 0
       response.name == "test"
       response.description == "test description"
-
    }
 
    void "put invalid shipVia"(){
@@ -170,11 +167,10 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 2
-      result.collect { new ErrorValueObject(it)}.containsAll([
-         new ErrorValueObject("description is required", "description"),
-         new ErrorValueObject("name is required", "name")
-      ])
-
+      result.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorValueObject("Is required", "description"),
+         new ErrorValueObject("Is required", "name")
+      ]
    }
 
    void "put invalid shipVia missing Id"(){
@@ -190,9 +186,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 1
-      result.collect { new ErrorValueObject(it)}.containsAll([
-         new ErrorValueObject("id is required", "id")
-      ])
-
+      result.collect { new ErrorValueObject(it) } == [
+         new ErrorValueObject("Is required", "id")
+      ]
    }
 }
