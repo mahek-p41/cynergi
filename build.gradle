@@ -212,12 +212,29 @@ def currentCommit = {
    }
 }
 
+def currentBranch = {
+   try {
+      def branchStdOut = new ByteArrayOutputStream()
+
+      exec {
+         commandLine "git", "rev-parse", "--abbrev-ref", "HEAD"
+         standardOutput = branchStdOut
+      }
+
+      return branchStdOut.toString().trim()
+   } catch(e) {
+      println("Unable to determine branch")
+      return "N/A"
+   }
+}
+
 jar {
    manifest {
       attributes(
          'HT-Built-By'       : System.properties['user.name'],
          'HT-Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
          'HT-Build-Revision' : currentCommit(),
+         'HT-Source-Branch'  : currentBranch(),
          'HT-Created-By'     : "Gradle ${gradle.gradleVersion}",
          'HT-Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
          'HT-Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
