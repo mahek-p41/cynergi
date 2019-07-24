@@ -21,10 +21,10 @@ data class AuditActionValueObject (
    var id: Long? = null,
 
    @field:Schema(name = "timeCreated", required = false, description = "UTC Timestamp when the Audit was created")
-   val timeCreated: OffsetDateTime? = null,
+   var timeCreated: OffsetDateTime? = null,
 
    @field:Schema(name = "timeCreated", required = false, description = "UTC Timestamp when the Audit was last updated")
-   val timeUpdated: OffsetDateTime? = null,
+   var timeUpdated: OffsetDateTime? = null,
 
    @field:NotNull
    @field:Schema(name = "status", description = "A valid status to be associated with this AuditAction", required = true)

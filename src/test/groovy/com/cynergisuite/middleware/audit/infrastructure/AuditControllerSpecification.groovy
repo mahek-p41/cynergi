@@ -5,14 +5,13 @@ import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
+import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreValueObject
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -265,10 +264,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id == audit.id
       result.store.storeNumber == store.number
       result.actions.size() == 2
-      result.actions[0].status.value == 'OPENED'
-      result.actions[0].changedBy.number == audit.actions[0].changedBy.number
-      result.actions[1].status.value == 'IN-PROGRESS'
-      result.actions[1].changedBy.number == authenticatedEmployee.number
+      def resultActions = result.actions
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      resultActions[0].id != null
+      resultActions[0].id > 0
+      resultActions[0].status.value == "OPENED"
+      resultActions[0].status.description == "Opened"
+      resultActions[0].changedBy.number == audit.actions[0].changedBy.number
+      resultActions[1].id != null
+      resultActions[1].id > 0
+      resultActions[1].id > resultActions[0].id
+      resultActions[1].status.value == "IN-PROGRESS"
+      resultActions[1].status.description == "In Progress"
+      resultActions[1].changedBy.number == authenticatedEmployee.number
    }
 
    void "update opened audit to canceled" () {
@@ -280,13 +291,26 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      result.id != null
       result.id == audit.id
       result.store.storeNumber == audit.store.number
       result.actions.size() == 2
-      result.actions[0].status.value == 'OPENED'
-      result.actions[0].changedBy.number == audit.actions[0].changedBy.number
-      result.actions[1].status.value == 'CANCELED'
-      result.actions[1].changedBy.number == authenticatedEmployee.number
+      def resultActions = result.actions
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      resultActions[0].id != null
+      resultActions[0].id > 0
+      resultActions[0].status.value == "OPENED"
+      resultActions[0].status.description == "Opened"
+      resultActions[0].changedBy.number == audit.actions[0].changedBy.number
+      resultActions[1].id != null
+      resultActions[1].id > 0
+      resultActions[1].id > resultActions[0].id
+      resultActions[1].status.value == "CANCELED"
+      resultActions[1].status.description == "Canceled"
+      resultActions[1].changedBy.number == authenticatedEmployee.number
    }
 
    void "update opened to completed" () {
@@ -389,7 +413,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      def result = put("/$path", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'INVALID'])]))
+      put("/$path", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'INVALID'])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -410,9 +434,16 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.id > 0
       openedResult.store.storeNumber == 3
       openedResult.actions.size() == 1
-      openedResult.actions[0].status.value == "OPENED"
-      openedResult.actions[0].status.description == "Opened"
-      openedResult.actions[0].changedBy.number == authenticatedEmployee.number
+      def openActions = openedResult.actions
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      openActions[0].id != null
+      openActions[0].id > 0
+      openActions[0].status.value == "OPENED"
+      openActions[0].status.description == "Opened"
+      openActions[0].changedBy.number == authenticatedEmployee.number
 
       when:
       def inProgressResult = put("/$path", new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
@@ -423,12 +454,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.id > 0
       inProgressResult.store.storeNumber == 3
       inProgressResult.actions.size() == 2
-      inProgressResult.actions[0].status.value == "OPENED"
-      inProgressResult.actions[0].status.description == "Opened"
-      inProgressResult.actions[0].changedBy.number == authenticatedEmployee.number
-      inProgressResult.actions[1].status.value == "IN-PROGRESS"
-      inProgressResult.actions[1].status.description == "In Progress"
-      inProgressResult.actions[1].changedBy.number == authenticatedEmployee.number
+      def inProgressActions = inProgressResult.actions
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      inProgressActions[0].id != null
+      inProgressActions[0].id > 0
+      inProgressActions[0].status.value == "OPENED"
+      inProgressActions[0].status.description == "Opened"
+      inProgressActions[0].changedBy.number == authenticatedEmployee.number
+      inProgressActions[1].id != null
+      inProgressActions[1].id > 0
+      inProgressActions[1].id > inProgressActions[0].id
+      inProgressActions[1].status.value == "IN-PROGRESS"
+      inProgressActions[1].status.description == "In Progress"
+      inProgressActions[1].changedBy.number == authenticatedEmployee.number
 
       when:
       def completedResult = put("/$path", new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
@@ -439,14 +480,27 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.id > 0
       completedResult.store.storeNumber == 3
       completedResult.actions.size() == 3
-      completedResult.actions[0].status.value == "OPENED"
-      completedResult.actions[0].status.description == "Opened"
-      completedResult.actions[0].changedBy.number == authenticatedEmployee.number
-      completedResult.actions[1].status.value == "IN-PROGRESS"
-      completedResult.actions[1].status.description == "In Progress"
-      completedResult.actions[1].changedBy.number == authenticatedEmployee.number
-      completedResult.actions[2].status.value == "COMPLETED"
-      completedResult.actions[2].status.description == "Completed"
-      completedResult.actions[2].changedBy.number == authenticatedEmployee.number
+      def completedActions = completedResult.actions
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      completedActions[0].id != null
+      completedActions[0].id > 0
+      completedActions[0].status.value == "OPENED"
+      completedActions[0].status.description == "Opened"
+      completedActions[0].changedBy.number == authenticatedEmployee.number
+      completedActions[1].id != null
+      completedActions[1].id > 0
+      completedActions[1].id > completedActions[0].id
+      completedActions[1].status.value == "IN-PROGRESS"
+      completedActions[1].status.description == "In Progress"
+      completedActions[1].changedBy.number == authenticatedEmployee.number
+      completedActions[2].id != null
+      completedActions[2].id > 0
+      completedActions[2].id > completedActions[1].id
+      completedActions[2].status.value == "COMPLETED"
+      completedActions[2].status.description == "Completed"
+      completedActions[2].changedBy.number == authenticatedEmployee.number
    }
 }
