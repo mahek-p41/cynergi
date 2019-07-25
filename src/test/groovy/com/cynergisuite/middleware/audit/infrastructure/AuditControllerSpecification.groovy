@@ -503,4 +503,28 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedActions[2].status.description == "Completed"
       completedActions[2].changedBy.number == authenticatedEmployee.number
    }
+
+   void "create new audit after existing open audit was COMPLETED" () {
+      given:
+      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+
+      when:
+      put("/$path", new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def result = post("/$path", new AuditValueObject())
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > audit.id
+      result.store.storeNumber == authenticatedEmployee.store.number
+      result.actions.size() == 1
+      result.actions[0].status.value == "OPENED"
+      result.actions[0].status.description == "Opened"
+      result.actions[0].changedBy.number == authenticatedEmployee.number
+   }
 }
