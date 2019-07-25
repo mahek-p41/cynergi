@@ -177,7 +177,7 @@ class AuditRepository @Inject constructor(
       return exists
    }
 
-   fun countAuditsNotClosed(storeNumber: Int): Int =
+   fun countAuditsNotCompleted(storeNumber: Int): Int =
       jdbc.queryForObject("""
          SELECT count(*)
          FROM audit a
@@ -185,7 +185,7 @@ class AuditRepository @Inject constructor(
                 ON a.id = aa.audit_id
               JOIN audit_status_type_domain astd
                 ON aa.status_id = astd.id
-         WHERE astd.value <> 'CLOSED'
+         WHERE astd.value <> 'COMPLETED'
                AND a.store_number = :store_number
          """.trimIndent(),
          mapOf("store_number" to storeNumber),

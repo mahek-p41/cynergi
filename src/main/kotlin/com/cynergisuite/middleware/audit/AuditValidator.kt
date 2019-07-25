@@ -51,7 +51,7 @@ class AuditValidator @Inject constructor(
          errors.add(ValidationError("storeNumber", NotFound(storeNumber)))
       }
 
-      if (storeNumber != null && auditRepository.countAuditsNotClosed(storeNumber = storeNumber) > 0) {
+      if (storeNumber != null && auditRepository.countAuditsNotCompleted(storeNumber = storeNumber) > 0) {
          errors.add(ValidationError("storeNumber", AuditOpenAtStore(storeNumber)))
       }
 
