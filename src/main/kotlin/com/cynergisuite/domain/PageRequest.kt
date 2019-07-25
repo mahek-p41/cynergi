@@ -1,6 +1,8 @@
 package com.cynergisuite.domain
 
-import com.google.common.base.CaseFormat
+import com.cynergisuite.extensions.isAllSameCase
+import com.google.common.base.CaseFormat.LOWER_CAMEL
+import com.google.common.base.CaseFormat.LOWER_UNDERSCORE
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -62,8 +64,15 @@ open class PageRequest {
    @ValidPageSortBy("id")
    open fun sortByMe() : String = sortBy
 
-   fun camelizeSortBy(): String =
-      CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, sortByMe())
+   fun camelizeSortBy(): String {
+      val sortByMe = sortByMe()
+
+      return if (sortByMe.isAllSameCase()) {
+         sortBy
+      } else {
+         LOWER_CAMEL.to(LOWER_UNDERSCORE, sortByMe())
+      }
+   }
 
    override fun equals(other: Any?): Boolean =
       if (other is PageRequest) {

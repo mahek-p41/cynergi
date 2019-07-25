@@ -54,7 +54,6 @@ sourceSets {
 
 dependencies {
    compile "io.micronaut.configuration:micronaut-jdbc-hikari"
-   compile "io.micronaut:micronaut-http-client"
    compile "io.micronaut.configuration:micronaut-flyway:1.0.0.RC3"
    compile "io.micronaut:micronaut-http-server-netty"
    compile "io.micronaut.configuration:micronaut-hibernate-validator"
@@ -72,11 +71,9 @@ dependencies {
 
    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
-   
-   compile "org.codehaus.groovy:groovy-all:2.5.6"
-   
+
    compile "org.springframework:spring-jdbc:5.1.5.RELEASE"
-   
+
    compile "io.swagger.core.v3:swagger-annotations"
    runtime "org.postgresql:postgresql:42.2.5"
 
@@ -84,7 +81,9 @@ dependencies {
    compile "org.apache.commons:commons-csv:1.6"
    compile "commons-io:commons-io:2.6"
    compile "commons-codec:commons-codec:1.12"
-   compile "com.google.guava:guava:28.0-jre"
+   compile ("com.google.guava:guava:28.0-jre") {
+      transitive = false
+   }
 
    kaptTest "io.micronaut:micronaut-inject-java"
 
@@ -93,9 +92,9 @@ dependencies {
 
    compile "com.github.javafaker:javafaker:0.16"
 
-   testCompile("org.spockframework:spock-core") {
-      exclude group: "org.codehaus.groovy", module: "groovy-all"
-   }
+   testCompile "org.codehaus.groovy:groovy-all:2.5.7"
+   testCompile "org.spockframework:spock-core"
+   testCompile "io.micronaut:micronaut-http-client"
    testCompile "io.micronaut:micronaut-inject-groovy"
    testCompile "io.micronaut.test:micronaut-test-spock"
    testCompile "io.micronaut.test:micronaut-test-junit5"
@@ -199,12 +198,12 @@ tasks.withType(JavaExec) {
 def currentCommit = {
    try {
       def hashStdOut = new ByteArrayOutputStream()
-      
+
       exec {
          commandLine "git", "rev-parse", "--verify", "HEAD"
          standardOutput = hashStdOut
       }
-      
+
       return hashStdOut.toString().trim()
    } catch(e) {
       println("Unable to determine commit")

@@ -8,3 +8,12 @@ fun String?.trimToNull(): String? =
 
 fun String?.isDigits(): Boolean =
    NumberUtils.isDigits(this)
+
+fun String.isAllUpperCase(): Boolean =
+   StringUtils.isAllUpperCase(this)
+
+fun String.isAllLowerCase(): Boolean =
+   StringUtils.isAllLowerCase(this)
+
+fun String.isAllSameCase(): Boolean =
+   this.isAllUpperCase() || this.isAllLowerCase()
