@@ -21,6 +21,12 @@ object Application {
 
    @JvmStatic
    fun main(args: Array<String>) {
+      val systemProps = System.getProperties()
+
+      if (systemProps["micronaut.environments"] == "prod" && !systemProps.containsKey("logback.configurationFile")) {
+         System.setProperty("logback.configurationFile", "logback-prod.xml")
+      }
+
       Micronaut.build()
          .args(*args)
          .packages("com.cynergisuite.middleware")
