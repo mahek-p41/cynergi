@@ -16,6 +16,7 @@ import java.io.InputStreamReader
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.LinkOption.NOFOLLOW_LINKS
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.security.DigestOutputStream
@@ -44,21 +45,25 @@ class LegacyDataLoader @Inject constructor(
 
    @Transactional
    fun processLegacyImports(importLocation: Path) {
-      logger.info("Loading Legacy Data")
+      try {
+         logger.info("Loading Legacy Data")
 
-      Files.newDirectoryStream(importLocation).use { directoryStream ->
-         directoryStream.asSequence()
-            .filter { path -> path.toFile().isFile } // filter out anything that isn't a file
-            .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
-            .sortedBy { path -> path.fileName }
-            .filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
-            .filter { path -> path.toFile().length() > 0 }
-            .map { path -> processFile(path) } // read in file and save to appropriate table in the database
-            .onEach { processed -> saveInLegacyImport(processed) } // safe file and meta in database
-            .forEach { processed -> moveProcessedFile(processed) } // move the file to processed
+         Files.newDirectoryStream(importLocation).use { directoryStream ->
+            directoryStream.asSequence()
+               .filter { path -> path.toFile().isFile } // filter out anything that isn't a file
+               .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
+               .sortedBy { path -> path.fileName }
+               .filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
+               .filter { path -> path.toFile().length() > 0 }
+               .map { path -> processFile(path) } // read in file and save to appropriate table in the database
+               .onEach { processed -> saveInLegacyImport(processed) } // safe file and meta in database
+               .forEach { processed -> moveProcessedFile(processed) } // move the file to processed
+         }
+
+         logger.info("Finished loading Legacy Data")
+      } catch (e: NoSuchFileException) {
+         logger.error("Unable to find import location.  Unable to load legacy data", e)
       }
-
-      logger.info("Finished loading Legacy Data")
    }
 
    private fun processFile(path: Path): Pair<Path, String> {
