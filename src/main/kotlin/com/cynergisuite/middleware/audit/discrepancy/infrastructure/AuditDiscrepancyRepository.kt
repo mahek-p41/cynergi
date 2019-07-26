@@ -102,17 +102,9 @@ class AuditDiscrepancyRepository @Inject constructor(
          params
       ) { rs ->
          val tempId = rs.getLong("ad_id")
+         val scannedBy = employeeRepository.mapRow(rs, "e_")
 
-         if (tempId != currentId) {
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
-
-            currentId = tempId
-            currentParentEntity = mapRow(rs, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_")
-            resultList.add(currentParentEntity!!)
-            currentParentEntity!!
-         } else {
-            currentParentEntity!!
-         }
+         resultList.add(mapRow(rs, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_"))
 
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
