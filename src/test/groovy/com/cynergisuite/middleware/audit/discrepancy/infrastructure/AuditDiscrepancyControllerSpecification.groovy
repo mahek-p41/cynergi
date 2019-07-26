@@ -96,6 +96,23 @@ class AuditDiscrepancyControllerSpecification extends ControllerSpecificationBas
       auditNotFoundResult.message == "${audit.id + 1} was unable to be found"
    }
 
+   void "fetch all audit discrepancies when more than one audit exists" () {
+      given:
+      final store = authenticatedEmployee.store
+      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditOneDiscrepancy = auditDiscrepancyFactoryService.single(auditOne, authenticatedEmployee)
+      final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final List<AuditDiscrepancyValueObject> threeAuditDiscrepanciesAuditTwo = auditDiscrepancyFactoryService.stream(3, auditTwo, authenticatedEmployee).map { new AuditDiscrepancyValueObject(it) }.toList()
+
+      when:
+      def pageOneResult = get("/audit/${auditTwo.id}/discrepancy")
+
+      then:
+      notThrown(HttpClientResponseException)
+      pageOneResult.elements.size() == 3
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect { new AuditDiscrepancyValueObject(it) }.toSorted { o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
+   }
+
    void "fetch one audit discrepancy by id not found" () {
       when:
       get("/audit/discrepancy/0")

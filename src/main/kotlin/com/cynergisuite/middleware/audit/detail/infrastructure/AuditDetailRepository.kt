@@ -90,8 +90,6 @@ class AuditDetailRepository @Inject constructor(
 
    fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDetail> {
       var totalElements: Long? = null
-      var currentId: Long = -1
-      var currentParentEntity: AuditDetail? = null
       val resultList: MutableList<AuditDetail> = mutableListOf()
 
       jdbc.query("""
@@ -108,19 +106,10 @@ class AuditDetailRepository @Inject constructor(
       """.trimIndent(),
       mutableMapOf("audit_id" to audit.id)
       ) { rs ->
-         val tempId = rs.getLong("ad_id")
+         val scannedBy = employeeRepository.mapRow(rs, "e_")
+         val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
-         if (tempId != currentId) {
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
-            val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
-
-            currentId = tempId
-            currentParentEntity = mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_")
-            resultList.add(currentParentEntity!!)
-            currentParentEntity!!
-         } else {
-            currentParentEntity!!
-         }
+         resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_"))
 
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")

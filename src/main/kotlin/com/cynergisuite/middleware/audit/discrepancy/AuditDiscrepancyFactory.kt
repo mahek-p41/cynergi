@@ -81,6 +81,10 @@ class AuditDiscrepancyFactoryService @Inject constructor(
    }
 
    fun single(auditIn: Audit): AuditDiscrepancy {
-      return stream(1, auditIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
+      return single(auditIn, null)
+   }
+
+   fun single(auditIn: Audit, employeeIn: Employee?): AuditDiscrepancy {
+      return stream(1, auditIn, employeeIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
    }
 }
