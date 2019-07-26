@@ -83,10 +83,7 @@ class AuditDiscrepancyRepository @Inject constructor(
 
    fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDiscrepancy> {
       var totalElements: Long? = null
-      var currentId: Long = -1
-      var currentParentEntity: AuditDiscrepancy? = null
       val resultList: MutableList<AuditDiscrepancy> = mutableListOf()
-      val params = mutableMapOf<String, Any>()
 
       jdbc.query("""
          WITH paged AS (
@@ -96,12 +93,12 @@ class AuditDiscrepancyRepository @Inject constructor(
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
+          WHERE p.ad_audit_id = :audit_id
          ORDER by ad_${page.camelizeSortBy()} ${page.sortDirection}
          LIMIT ${page.size} OFFSET ${page.offset()}
       """.trimIndent(),
-         params
+         mutableMapOf("audit_id" to audit.id)
       ) { rs ->
-         val tempId = rs.getLong("ad_id")
          val scannedBy = employeeRepository.mapRow(rs, "e_")
 
          resultList.add(mapRow(rs, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_"))
