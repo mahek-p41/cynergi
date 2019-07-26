@@ -179,14 +179,21 @@ class AuditRepository @Inject constructor(
 
    fun countAuditsNotCompleted(storeNumber: Int): Int =
       jdbc.queryForObject("""
-         SELECT count(*)
-         FROM audit a
-              JOIN audit_action aa
-                ON a.id = aa.audit_id
-              JOIN audit_status_type_domain astd
-                ON aa.status_id = astd.id
-         WHERE astd.value <> 'COMPLETED'
-               AND a.store_number = :store_number
+         SELECT COUNT (*) 
+         FROM (
+            SELECT * 
+            FROM (
+                  SELECT a.id, MAX(aa.status_id) AS max_status
+                  FROM audit a
+                      JOIN audit_action aa
+                        ON a.id = aa.audit_id
+                  WHERE a.store_number = :store_number
+                  GROUP BY a.id
+            ) b
+            JOIN audit_status_type_domain astd
+              ON b.max_status = astd.id
+            WHERE astd.VALUE <> 'COMPLETED'
+         ) c
          """.trimIndent(),
          mapOf("store_number" to storeNumber),
          Int::class.java
