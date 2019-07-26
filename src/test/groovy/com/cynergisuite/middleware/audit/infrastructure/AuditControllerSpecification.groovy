@@ -29,6 +29,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final Locale locale = Locale.US
 
    @Inject AuditFactoryService auditFactoryService
+   @Inject AuditRepository auditRepository
    @Inject LocalizationService localizationService
    @Inject StoreFactoryService storeFactoryService
 
@@ -506,13 +507,14 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit after existing open audit was COMPLETED" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(authenticatedEmployee.store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
 
       when:
       put("/$path", new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       notThrown(HttpClientResponseException)
+      auditRepository.countAuditsNotCompleted(audit.store.number) == 0
 
       when:
       def result = post("/$path", new AuditValueObject())
