@@ -100,6 +100,7 @@ class AuditDiscrepancyControllerSpecification extends ControllerSpecificationBas
       given:
       final store = authenticatedEmployee.store
       final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditOneDiscrepancy = auditDiscrepancyFactoryService.single(auditOne, authenticatedEmployee)
       final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
       final List<AuditDiscrepancyValueObject> threeAuditDiscrepanciesAuditTwo = auditDiscrepancyFactoryService.stream(3, auditTwo, authenticatedEmployee).map { new AuditDiscrepancyValueObject(it) }.toList()
 
@@ -108,6 +109,7 @@ class AuditDiscrepancyControllerSpecification extends ControllerSpecificationBas
 
       then:
       notThrown(HttpClientResponseException)
+      pageOneResult.elements.size() == 3
       pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect { new AuditDiscrepancyValueObject(it) }.toSorted { o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
    }
 
