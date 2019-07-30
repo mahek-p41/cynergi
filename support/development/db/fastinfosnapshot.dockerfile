@@ -1,6 +1,7 @@
 FROM postgres:9.3.25-alpine
 
-COPY .pgpass /root/.pgpass
+COPY pgpass /root/.pgpass
+COPY psqlrc /root/.psqlrc
 COPY fastinfo-db-dump.sh /root/fastinfo-db-dump.sh
 RUN chmod 0600 /root/.pgpass
 RUN chmod u+x /root/fastinfo-db-dump.sh

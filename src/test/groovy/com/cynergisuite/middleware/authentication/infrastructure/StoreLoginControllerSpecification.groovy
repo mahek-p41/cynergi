@@ -13,6 +13,7 @@ import spock.lang.Specification
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.HEAD
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
@@ -42,7 +43,7 @@ class StoreLoginControllerSpecification extends Specification {
       when:
       httpClient.toBlocking()
          .exchange(
-            GET("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
             Argument.of(String),
             Argument.of(String)
          )
