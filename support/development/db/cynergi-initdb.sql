@@ -251,7 +251,6 @@ CREATE USER MAPPING FOR postgres
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    id BIGINT,
-   uu_row_id UUID,
    time_created TIMESTAMPTZ,
    time_updated TIMESTAMPTZ,
    number INTEGER,
