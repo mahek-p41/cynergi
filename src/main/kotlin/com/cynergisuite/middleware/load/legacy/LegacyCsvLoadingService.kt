@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.legacy.load
+package com.cynergisuite.middleware.load.legacy
 
 import java.io.Reader
 import java.nio.file.Path

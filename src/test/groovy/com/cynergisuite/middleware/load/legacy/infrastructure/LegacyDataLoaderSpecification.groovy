@@ -1,6 +1,6 @@
-package com.cynergisuite.middleware.legacy.load.infrastructure
+package com.cynergisuite.middleware.load.legacy.infrastructure
 
-import com.cynergisuite.middleware.legacy.load.LegacyCsvLoaderProcessor
+import com.cynergisuite.middleware.load.load.LegacyCsvLoaderProcessor
 import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils

@@ -77,7 +77,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.findUserByAuthentication(123, "tryme", null).blockingGet()
+      final def employee = employeeService.fetchUserByAuthentication(123, "tryme", null).blockingGet()
 
       then:
       null != employee
@@ -100,7 +100,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.findUserByAuthentication(989, "studio", null)
+      final def employee = employeeService.fetchUserByAuthentication(989, "studio", null)
 
       then:
       employee.isEmpty()

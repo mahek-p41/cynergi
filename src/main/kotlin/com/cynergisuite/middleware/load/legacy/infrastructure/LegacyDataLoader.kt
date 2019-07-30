@@ -1,10 +1,12 @@
-package com.cynergisuite.middleware.legacy.load.infrastructure
+package com.cynergisuite.middleware.load.legacy.infrastructure
 
-import com.cynergisuite.middleware.legacy.load.LegacyCsvLoaderProcessor
-import com.cynergisuite.middleware.legacy.load.LegacyLoad
+import com.cynergisuite.middleware.load.legacy.LegacyCsvLoaderProcessor
+import com.cynergisuite.middleware.load.legacy.LegacyLoad
+import com.cynergisuite.middleware.load.legacy.LegacyLoadFinishedEvent
 import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.event.ApplicationEventListener
+import io.micronaut.context.event.ApplicationEventPublisher
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.io.input.TeeInputStream
@@ -31,7 +33,8 @@ class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.rename-extension}") private val renameExtension: String = "processed",
    @Value("\${cynergi.legacy.import.process-startup}") private val processImportsOnStartup: Boolean = true,
    private val legacyLoadRepository: LegacyLoadRepository,
-   private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor
+   private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor,
+   private val applicationEventPublisher: ApplicationEventPublisher
 ) : ApplicationEventListener<MigrationFinishedEvent> {
    private val logger: Logger = LoggerFactory.getLogger(LegacyDataLoader::class.java)
    private val fileSystem = FileSystems.getDefault()
@@ -64,6 +67,8 @@ class LegacyDataLoader @Inject constructor(
       } catch (e: NoSuchFileException) {
          logger.error("Unable to find import location.  Unable to load legacy data", e)
       }
+
+      applicationEventPublisher.publishEvent(LegacyLoadFinishedEvent(legacyImportLocation))
    }
 
    private fun processFile(path: Path): Pair<Path, String> {

@@ -30,7 +30,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
 
    void setup() {
       client = httpClient.toBlocking()
-      authenticatedEmployee = employeeService.findUserByAuthentication(123, 'pass', null).blockingGet()
+      authenticatedEmployee = employeeService.fetchUserByAuthentication(123, 'pass', null).blockingGet()
       cynergiAccessToken = client.exchange(POST("/login", new UsernamePasswordCredentials('123', 'pass')), BearerAccessRefreshToken).body().accessToken
       jsonSlurper = new JsonSlurper()
    }
