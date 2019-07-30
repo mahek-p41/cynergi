@@ -11,6 +11,7 @@ import io.micronaut.http.HttpStatus.UNAUTHORIZED
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Head
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
@@ -41,7 +42,7 @@ class AuthenticatedController @Inject constructor(
       }
    }
 
-   @Get("/check")
+   @Head("/check")
    @AccessControl("check")
    fun authenticationCheck(): HttpResponse<Any> {
       return HttpResponse.ok()
