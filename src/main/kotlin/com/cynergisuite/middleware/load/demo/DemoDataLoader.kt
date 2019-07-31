@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.load.demo
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
+import com.cynergisuite.middleware.audit.discrepancy.AuditDiscrepancyFactoryService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.load.legacy.LegacyLoadFinishedEvent
 import com.cynergisuite.middleware.store.StoreFactoryService
@@ -12,12 +13,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.streams.toList
 
 @Singleton
 @Requires(env = ["demo"])
 class DemoDataLoader @Inject constructor(
    private val auditDetailFactoryService: AuditDetailFactoryService,
+   private val auditDiscrepancyFactoryService: AuditDiscrepancyFactoryService,
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val employeeRepository: EmployeeRepository,
@@ -34,9 +35,12 @@ class DemoDataLoader @Inject constructor(
       val warehouse = auditScanAreaFactoryService.warehouse()
       val showroom = auditScanAreaFactoryService.showroom()
       val storeroom = auditScanAreaFactoryService.storeroom()
-      val auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, employee, warehouse).toList()
-      val auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, employee, showroom).toList()
-      val auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, employee, storeroom).toList()
+
+      auditDetailFactoryService.stream(11, audit, employee, warehouse).forEach { logger.debug("Loaded audit detail {}", it) }
+      auditDetailFactoryService.stream(5, audit, employee, showroom).forEach { logger.debug("Loaded audit detail {}", it) }
+      auditDetailFactoryService.stream(5, audit, employee, storeroom).forEach { logger.debug("Loaded audit detail {}", it) }
+
+      auditDiscrepancyFactoryService.stream(25, audit, employee).forEach { logger.debug("Loaded audit discrepancy {}", it) }
 
       logger.info("Finished loading demo data")
    }
