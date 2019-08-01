@@ -37,48 +37,45 @@ CREATE TABLE IF NOT EXISTS  corrnr.level1_loc_emps ( -- create stand-in table th
    emp_store_nbr     INTEGER
 );
 
-CREATE OR REPLACE VIEW employee_vw AS
-   SELECT
-      id AS id,
-      created_at AT TIME ZONE 'UTC' AS time_created,
-      updated_at AT TIME ZONE 'UTC' AS time_updated,
-      emp_nbr AS number,
-      emp_last_name AS last_name,
-      emp_first_name_mi AS first_name_mi,
-      TRIM(BOTH FROM
-           CAST(emp_pass_1 AS TEXT) ||
-           CAST(emp_pass_2 AS TEXT) ||
-           CAST(emp_pass_3 AS TEXT) ||
-           CAST(emp_pass_4 AS TEXT) ||
-           CAST(emp_pass_5 AS TEXT) ||
-           CAST(emp_pass_6 AS TEXT)
-         ) AS pass_code,
-      emp_store_nbr AS store_number,
-      'corrto' AS dataset,
-      true AS active
-   FROM corrto.level1_loc_emps
-   WHERE emp_nbr IS NOT NULL
-   UNION ALL
-   SELECT
-      id AS id,
-      created_at AT TIME ZONE 'UTC' AS time_created,
-      updated_at AT TIME ZONE 'UTC' AS time_updated,
-      emp_nbr AS number,
-      emp_last_name AS last_name,
-      emp_first_name_mi AS first_name_mi,
-      TRIM(BOTH FROM
-           CAST(emp_pass_1 AS TEXT) ||
-           CAST(emp_pass_2 AS TEXT) ||
-           CAST(emp_pass_3 AS TEXT) ||
-           CAST(emp_pass_4 AS TEXT) ||
-           CAST(emp_pass_5 AS TEXT) ||
-           CAST(emp_pass_6 AS TEXT)
-         ) AS pass_code,
-      emp_store_nbr AS store_number,
-      'corrnr' AS dataset,
-      true AS active
-   FROM corrnr.level1_loc_emps
-   ORDER BY number;
+DO $$
+   DECLARE r record;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW employee_vw AS';
+   unionAll := '';
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata where schema_name not LIKE 'pg%' and schema_name NOT IN ('public', 'information_schema', 'alles')
+   LOOP
+      sqlToExec := sqlToExec || ' ' ||
+      unionAll ||
+      'SELECT ' ||
+      '   id AS id, ' ||
+      '   emp_nbr AS number, ' ||
+      '   emp_store_nbr AS store_number, ' ||
+      '   ''' || r.schema_name || ''' AS dataset, ' ||
+      '   emp_last_name AS last_name, ' ||
+      '   emp_first_name_mi AS first_name_mi, ' ||
+      '   TRIM(BOTH FROM ' ||
+      '        CAST(emp_pass_1 AS TEXT) || ' ||
+      '        CAST(emp_pass_2 AS TEXT) || ' ||
+      '        CAST(emp_pass_3 AS TEXT) || ' ||
+      '        CAST(emp_pass_4 AS TEXT) || ' ||
+      '        CAST(emp_pass_5 AS TEXT) || ' ||
+      '        CAST(emp_pass_6 AS TEXT) ' ||
+      '      ) AS pass_code, ' ||
+      '   true AS active, ' ||
+      '   created_at AT TIME ZONE ''UTC'' AS time_created, ' ||
+      '   updated_at AT TIME ZONE ''UTC'' AS time_updated ' ||
+      'FROM ' || r.schema_name || '.level1_loc_emps ' ||
+      'WHERE emp_nbr IS NOT NULL ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
 --- END EMPLOYEES SETUP
 
 --- BEGIN STORES SETUP
@@ -192,11 +189,13 @@ CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 DROP SERVER IF EXISTS fastinfo CASCADE;
 
 CREATE SERVER fastinfo
-   FOREIGN DATA WRAPPER postgres_fdw
-   OPTIONS (host 'localhost', dbname 'fastinfo_production', updatable 'false');
-CREATE USER MAPPING FOR postgres
-   SERVER fastinfo
-   OPTIONS (USER 'postgres', PASSWORD 'password');
+    FOREIGN DATA WRAPPER postgres_fdw
+    OPTIONS (host 'localhost', dbname 'fastinfo_production', updatable 'false');
+CREATE USER MAPPING FOR CURRENT_USER
+    SERVER fastinfo
+    OPTIONS (USER 'postgres', PASSWORD 'password');
+GRANT USAGE ON SCHEMA fastinfo_prod_import TO postgres;
+GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO postgres;
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    id BIGINT,
@@ -245,9 +244,11 @@ DROP SERVER IF EXISTS fastinfo CASCADE;
 CREATE SERVER fastinfo
    FOREIGN DATA WRAPPER postgres_fdw
    OPTIONS (host 'localhost', dbname 'fastinfo_production', updatable 'false');
-CREATE USER MAPPING FOR postgres
-   SERVER fastinfo
-   OPTIONS (USER 'postgres', PASSWORD 'password');
+CREATE USER MAPPING FOR CURRENT_USER
+    SERVER fastinfo
+    OPTIONS (USER 'postgres', PASSWORD 'password');
+GRANT USAGE ON SCHEMA fastinfo_prod_import TO postgres;
+GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO postgres;
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    id BIGINT,

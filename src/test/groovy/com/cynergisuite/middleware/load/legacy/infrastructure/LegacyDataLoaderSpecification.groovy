@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.load.legacy.infrastructure
 
 import com.cynergisuite.middleware.load.legacy.LegacyCsvLoaderProcessor
 import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
+import io.micronaut.context.event.ApplicationEventPublisher
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.NullOutputStream
@@ -16,10 +17,11 @@ class LegacyDataLoaderSpecification extends Specification {
    void "process valid csv file"() {
       given:
       def migrationFinishedEvent = Mock(MigrationFinishedEvent)
+      def applicationEventPublisher = Mock(ApplicationEventPublisher)
       def tempDirectory = temporaryFolder.newFolder()
       def legacyLoadRepository = Mock(LegacyLoadRepository)
       def legacyCsvLoaderProcessor = Mock(LegacyCsvLoaderProcessor)
-      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(), true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor)
+      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(), true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor, applicationEventPublisher)
       def tempCsvFile = new File(tempDirectory, "eli-test.csv")
 
       when:
@@ -35,10 +37,11 @@ class LegacyDataLoaderSpecification extends Specification {
 
    void "process empty csv file"() {
       def migrationFinishedEvent = Mock(MigrationFinishedEvent)
+      def applicationEventPublisher = Mock(ApplicationEventPublisher)
       def tempDirectory = temporaryFolder.newFolder()
       def legacyLoadRepository = Mock(LegacyLoadRepository)
       def legacyCsvLoaderProcessor = Mock(LegacyCsvLoaderProcessor)
-      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(), true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor)
+      def legacyLoader = new LegacyDataLoader(tempDirectory.getAbsolutePath(), true, "processed", true, legacyLoadRepository, legacyCsvLoaderProcessor, applicationEventPublisher)
       def tempCsvFile = new File(tempDirectory, "eli-test.csv")
 
       when:

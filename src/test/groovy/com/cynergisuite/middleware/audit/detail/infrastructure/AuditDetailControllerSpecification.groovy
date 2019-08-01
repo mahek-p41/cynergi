@@ -135,9 +135,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final showroom = auditScanAreaFactoryService.showroom()
       final storeroom = auditScanAreaFactoryService.storeroom()
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.opened()] as Set)
-      final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, employee, warehouse).toList()
-      final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, employee, showroom).toList()
-      final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, employee, storeroom).toList()
+      final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, employee, warehouse).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
+      final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, employee, showroom).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
+      final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, employee, storeroom).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
 
       when:
       def result = get("/audit/${audit.id}/detail${pageOne}")
@@ -148,7 +148,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == 10
       result.totalElements == 21
       result.totalPages == 3
-      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) } == auditDetailsWarehouse[0..9]
+      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
    }
 
    void "fetch one audit detail by id not found" () {
