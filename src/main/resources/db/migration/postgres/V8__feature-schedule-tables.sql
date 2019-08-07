@@ -18,7 +18,7 @@ CREATE TABLE schedule (
    description       VARCHAR(256),
    schedule          VARCHAR(592)                                          NOT NULL,
    command           VARCHAR(1024)                                         NOT NULL,
-   type_id           INTEGER        REFERENCES schedule_type_domain (id)   NOT NULL,
+   type_id           INTEGER        REFERENCES schedule_type_domain (id)   NOT NULL
 );
 CREATE TRIGGER update_schedule_trg
    BEFORE UPDATE
