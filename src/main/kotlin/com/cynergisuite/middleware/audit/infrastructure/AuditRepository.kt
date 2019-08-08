@@ -27,71 +27,69 @@ import javax.inject.Singleton
 class AuditRepository @Inject constructor(
    private val auditActionRepository: AuditActionRepository,
    private val auditStatusRepository: AuditStatusRepository,
-   employeeRepository: EmployeeRepository,
+   private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate,
    private val storeRepository: StoreRepository
 ) : Repository<Audit> {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
-   @Language("PostgreSQL")
-   private val selectBase = """
-      WITH employees AS ( 
-         ${employeeRepository.selectBase}
-      )
-      SELECT
-         a.id AS id,
-         a.id AS a_id,
-         a.uu_row_id AS a_uu_row_id,
-         a.time_created AS a_time_created,
-         a.time_updated AS a_time_updated,
-         a.store_number AS store_number,
-         (SELECT csastd.value
-          FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
-          WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
-         ) AS current_status,
-         aa.id AS aa_id,
-         aa.uu_row_id AS aa_uu_row_id,
-         aa.time_created AS aa_time_created,
-         aa.time_updated AS aa_time_updated,
-         astd.id AS astd_id,
-         astd.value AS astd_value,
-         astd.description AS astd_description,
-         astd.localization_code AS astd_localization_code,
-         aer.e_id AS aer_id,
-         aer.e_time_created AS aer_time_created,
-         aer.e_time_updated AS aer_time_updated,
-         aer.e_number AS aer_number,
-         aer.e_last_name AS aer_last_name,
-         aer.e_first_name_mi AS aer_first_name_mi,
-         aer.e_pass_code AS aer_pass_code,
-         aer.e_active AS aer_active,
-         aer.e_loc AS aer_loc,
-         s.id AS s_id,
-         s.time_created AS s_time_created,
-         s.time_updated AS s_time_updated,
-         s.name AS s_name,
-         s.number AS s_number,
-         s.dataset AS s_dataset,
-         se.id AS se_id,
-         se.time_created AS se_time_created,
-         se.time_updated AS se_time_updated,
-         se.name AS se_name,
-         se.dataset AS s_dataset
-      FROM audit a
-           JOIN audit_action aa
-               ON a.id = aa.audit_id
-           JOIN audit_status_type_domain astd
-               ON aa.status_id = astd.id
-           JOIN employees aer
-               ON aa.changed_by = aer.e_number
-           JOIN fastinfo_prod_import.store_vw s
-               ON a.store_number = s.number
-           JOIN fastinfo_prod_import.store_vw se
-               ON aer.s_number = se.number
-   """.trimMargin()
-
    override fun findOne(id: Long): Audit? {
-      val found = jdbc.findFirstOrNullWithCrossJoin("$selectBase\nWHERE a.id = :id", mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: Audit, rs ->
+      val found = jdbc.findFirstOrNullWithCrossJoin("""
+         WITH employees AS ( 
+            ${employeeRepository.selectBase}
+         )
+         SELECT
+            a.id AS id,
+            a.id AS a_id,
+            a.uu_row_id AS a_uu_row_id,
+            a.time_created AS a_time_created,
+            a.time_updated AS a_time_updated,
+            a.store_number AS store_number,
+            (SELECT csastd.value
+             FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
+             WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
+            ) AS current_status,
+            aa.id AS aa_id,
+            aa.uu_row_id AS aa_uu_row_id,
+            aa.time_created AS aa_time_created,
+            aa.time_updated AS aa_time_updated,
+            astd.id AS astd_id,
+            astd.value AS astd_value,
+            astd.description AS astd_description,
+            astd.localization_code AS astd_localization_code,
+            aer.e_id AS aer_id,
+            aer.e_time_created AS aer_time_created,
+            aer.e_time_updated AS aer_time_updated,
+            aer.e_number AS aer_number,
+            aer.e_last_name AS aer_last_name,
+            aer.e_first_name_mi AS aer_first_name_mi,
+            aer.e_pass_code AS aer_pass_code,
+            aer.e_active AS aer_active,
+            aer.e_loc AS aer_loc,
+            s.id AS s_id,
+            s.time_created AS s_time_created,
+            s.time_updated AS s_time_updated,
+            s.name AS s_name,
+            s.number AS s_number,
+            s.dataset AS s_dataset,
+            se.id AS se_id,
+            se.time_created AS se_time_created,
+            se.time_updated AS se_time_updated,
+            se.name AS se_name,
+            se.dataset AS s_dataset
+         FROM audit a
+              JOIN audit_action aa
+                  ON a.id = aa.audit_id
+              JOIN audit_status_type_domain astd
+                  ON aa.status_id = astd.id
+              JOIN employees aer
+                  ON aa.changed_by = aer.e_number
+              JOIN fastinfo_prod_import.store_vw s
+                  ON a.store_number = s.number
+              JOIN fastinfo_prod_import.store_vw se
+                  ON aer.s_number = se.number
+         WHERE a.id = :id
+      """.trimMargin(), mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: Audit, rs ->
          auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
       }
 
@@ -125,26 +123,96 @@ class AuditRepository @Inject constructor(
 
       if (status != null) {
          params["current_status"] = status
-         whereBuilder.append(where).append(and).append(" current_status = :current_status ")
+         whereBuilder.append(where).append(and).append(""" current_status = :current_status """)
       }
 
-      logger.trace("Finding all audits for {} using {}", pageRequest, params)
-
-      jdbc.query("""
-         WITH paged AS (
-            $selectBase
+      @Language("PostgreSQL")
+      val sql = """
+         WITH employees AS ( 
+            ${employeeRepository.selectBase}
+         ), audits AS (
+            WITH status AS (
+               SELECT csastd.value AS current_status, csaa.audit_id AS audit_id, csaa.id
+               FROM audit_action csaa
+                    JOIN audit_status_type_domain csastd
+                         ON csaa.status_id = csastd.id
+            ), maxStatus AS (
+               SELECT MAX(id) AS current_status_id, audit_id
+               FROM audit_action
+               GROUP BY audit_id
+            )
+            SELECT
+               a.id AS id,
+               a.uu_row_id AS uu_row_id,
+               a.time_created AS time_created,
+               a.time_updated AS time_updated,
+               a.store_number AS store_number,
+               s.current_status AS current_status,
+               (SELECT count(id) FROM audit $whereBuilder) AS total_elements
+            FROM audit a
+                 JOIN status s
+                      ON s.audit_id = a.id
+                 JOIN maxStatus ms
+                      ON s.id = ms.current_status_id
+            $whereBuilder
+            ORDER BY ${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+            LIMIT ${pageRequest.size}
+               OFFSET ${pageRequest.offset()}
          )
-         SELECT p.*,
-            (select count(id) FROM audit ${if (whereBuilder.isNotBlank()) whereBuilder.toString() else ""}) AS total_elements
-         FROM paged AS p
-         ${if (whereBuilder.isNotBlank()) whereBuilder.toString() else ""}
-         ORDER BY ${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
-         LIMIT ${pageRequest.size}
-            OFFSET ${pageRequest.offset()}
-      """.trimIndent(),
-         params
-      ) { rs ->
-         val tempId = rs.getLong("id")
+         SELECT
+            a.id AS a_id,
+            a.uu_row_id AS a_uu_row_id,
+            a.time_created AS a_time_created,
+            a.time_updated AS a_time_updated,
+            a.store_number AS store_number,
+            a.current_status AS current_status,
+            aa.id AS aa_id,
+            aa.uu_row_id AS aa_uu_row_id,
+            aa.time_created AS aa_time_created,
+            aa.time_updated AS aa_time_updated,
+            astd.id AS astd_id,
+            astd.value AS astd_value,
+            astd.description AS astd_description,
+            astd.localization_code AS astd_localization_code,
+            aer.e_id AS aer_id,
+            aer.e_time_created AS aer_time_created,
+            aer.e_time_updated AS aer_time_updated,
+            aer.e_number AS aer_number,
+            aer.e_last_name AS aer_last_name,
+            aer.e_first_name_mi AS aer_first_name_mi,
+            aer.e_pass_code AS aer_pass_code,
+            aer.e_active AS aer_active,
+            aer.e_loc AS aer_loc,
+            s.id AS s_id,
+            s.time_created AS s_time_created,
+            s.time_updated AS s_time_updated,
+            s.name AS s_name,
+            s.number AS s_number,
+            s.dataset AS s_dataset,
+            se.id AS se_id,
+            se.time_created AS se_time_created,
+            se.time_updated AS se_time_updated,
+            se.name AS se_name,
+            se.dataset AS s_dataset,
+            total_elements AS total_elements
+         FROM audits a
+              JOIN audit_action aa
+                  ON a.id = aa.audit_id
+              JOIN audit_status_type_domain astd
+                  ON aa.status_id = astd.id
+              JOIN employees aer
+                  ON aa.changed_by = aer.e_number
+              JOIN fastinfo_prod_import.store_vw s
+                  ON a.store_number = s.number
+              JOIN fastinfo_prod_import.store_vw se
+                  ON aer.s_number = se.number
+         ORDER BY a_${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+      """.trimIndent()
+
+      logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
+
+      jdbc.query(sql, params) { rs ->
+         val tempId = rs.getLong("a_id")
          val tempParentEntity: Audit = if (tempId != currentId) {
             currentId = tempId
             currentParentEntity = mapRow(rs)

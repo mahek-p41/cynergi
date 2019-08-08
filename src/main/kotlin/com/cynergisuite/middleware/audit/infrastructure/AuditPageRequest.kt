@@ -22,15 +22,6 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
    @field:Schema(description = "One of the available statuses for an Audit provided by the system")
    var status: String? = null
 
-   constructor(pageRequest: AuditPageRequest, storeNumber: Int) : this(pageRequest) {
-      this.storeNumber = storeNumber
-      this.status = pageRequest.status
-   }
-
-   constructor(pageRequest: PageRequest, storeNumber: Int) : this(pageRequest) {
-      this.storeNumber = storeNumber
-   }
-
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy
 

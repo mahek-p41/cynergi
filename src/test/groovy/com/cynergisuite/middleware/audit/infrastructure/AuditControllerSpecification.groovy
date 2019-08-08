@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -183,9 +184,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final storeOne = storeFactoryService.store(1)
       final storeThree = storeFactoryService.store(3)
-      final def storeOneOpenAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
-      final def storeThreeOpenAuditOne = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
-      final def storeThreeInProgressAudit = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+      final storeOneOpenAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+      final storeThreeOpenAuditOne = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+      final storeThreeInProgressAudit = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
 
       when:
       def openedResult = get("$path" + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: 'OPENED']))
@@ -204,6 +205,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.elements != null
       inProgressResult.elements.size() == 1
       inProgressResult.elements.collect { it.id } == [storeThreeInProgressAudit.id]
+   }
+
+   void "fetch all when each audit has multiple statuses" () {
+      given:
+      final storeOne = storeFactoryService.store(1)
+      final sixAudits = auditFactoryService.stream(6, storeOne, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set).map { new AuditValueObject(it, locale, localizationService) }.toList()
+
+      when:
+      def firstFiveAudits = get("${path}${new PageRequest([page: 1, size: 5, sortBy: 'id'])}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      firstFiveAudits.elements != null
+      firstFiveAudits.elements.size() == 5
+      firstFiveAudits.totalElements == 6
+      firstFiveAudits.totalPages == 2
    }
 
    void "create new audit" () {
