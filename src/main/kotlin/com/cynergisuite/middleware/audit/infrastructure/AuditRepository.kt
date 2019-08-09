@@ -123,7 +123,7 @@ class AuditRepository @Inject constructor(
 
       if (status != null) {
          params["current_status"] = status
-         whereBuilder.append(where).append(and).append(""" current_status = :current_status """)
+         whereBuilder.append(where).append(and).append(" current_status = :current_status ")
       }
 
       @Language("PostgreSQL")
