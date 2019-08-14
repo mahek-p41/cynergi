@@ -58,11 +58,20 @@ class AuditScanAreaFactoryService @Inject constructor(
 ) {
 
    fun stream(numberIn: Int = 1): Stream<AuditScanArea> {
-      return AuditStatusFactory.stream(numberIn)
+      return AuditScanAreaFactory.stream(numberIn)
          .map { auditScanAreaTypeDomainRepository.findOne(it.value)!! }
    }
 
    fun single(): AuditScanArea {
       return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditScanAreaTypeDomain") }
    }
+
+   fun showroom(): AuditScanArea =
+      AuditScanAreaFactory.showroom()
+
+   fun warehouse(): AuditScanArea =
+      AuditScanAreaFactory.warehouse()
+
+   fun storeroom(): AuditScanArea =
+      AuditScanAreaFactory.storeroom()
 }

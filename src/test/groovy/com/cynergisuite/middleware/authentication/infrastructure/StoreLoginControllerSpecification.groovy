@@ -25,7 +25,7 @@ class StoreLoginControllerSpecification extends Specification {
 
    void "login successful"() {
       given:
-      final employee = employeeService.findUserByAuthentication(123, 'pass', null).blockingGet()
+      final employee = employeeService.fetchUserByAuthentication(123, 'pass', null).blockingGet()
       final store = storeService.fetchByNumber(3)
 
       when:
@@ -68,7 +68,7 @@ class StoreLoginControllerSpecification extends Specification {
 
    void "login failure due to invalid store" () {
       given:
-      final validEmployee = employeeService.findUserByAuthentication(123, 'pass', null).blockingGet()
+      final validEmployee = employeeService.fetchUserByAuthentication(123, 'pass', null).blockingGet()
 
       when:
       httpClient.toBlocking()

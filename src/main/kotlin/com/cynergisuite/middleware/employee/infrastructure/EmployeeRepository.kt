@@ -101,6 +101,14 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
+   fun findOne(number: Int, loc: String): Employee? {
+      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.number = :number AND loc = :loc", mapOf("number" to number, "loc" to loc), RowMapper { rs, _ -> mapRow(rs) })
+
+      logger.trace("Searching for Employee: {} {} resulted in {}", number, loc, found)
+
+      return found
+   }
+
    fun findOne(id: Long, loc: String, storeNumber: Int): Employee? {
       val found = jdbc.findFirstOrNull("$selectBaseWithoutEmployeeStoreJoin\nON s.s_number = :store_number\nWHERE e.id = :id AND e.loc = :loc", mapOf("id" to id, "loc" to loc, "store_number" to storeNumber), RowMapper { rs, _ -> mapRow(rs)})
 

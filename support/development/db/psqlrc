@@ -1,5 +1,5 @@
 \timing on
 \pset linestyle unicode
 \pset border 2
-\setenv PAGER 'pspg --no-mouse -bX --no-commandbar --no-topbar'
+\setenv PAGER 'pspg --no-mouse -bX'
 \set HISTSIZE 100000

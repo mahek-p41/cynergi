@@ -6,7 +6,14 @@
         </encoder>
     </appender>
 
-    <root level="info">
+    <logger name="org" level="ERROR" />
+    <logger name="com.zaxxer" level="ERROR" />
+    <logger name="io.netty" level="ERROR" />
+    <logger name="io.micronaut" level="INFO" />
+    <logger name="com.hightouchinc" level="TRACE" />
+    <logger name="org.flywaydb" level="INFO" />
+
+    <root level="TRACE">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

@@ -1,6 +1,6 @@
-package com.cynergisuite.middleware.legacy.load.infrastructure
+package com.cynergisuite.middleware.load.legacy.infrastructure
 
-import com.cynergisuite.middleware.legacy.load.LegacyLoad
+import com.cynergisuite.middleware.load.legacy.LegacyLoad
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

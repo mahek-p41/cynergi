@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.audit.detail.AuditDetailFactory
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -29,9 +30,10 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit/detail"
 
-   @Inject AuditService auditService
-   @Inject AuditFactoryService auditFactoryService
    @Inject AuditDetailFactoryService auditDetailFactoryService
+   @Inject AuditFactoryService auditFactoryService
+   @Inject AuditService auditService
+   @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject StoreFactoryService storeFactoryService
 
@@ -122,6 +124,31 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == 10
       result.totalElements == 12
       result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
+   }
+
+   void "fetch all audit details related to an audit where there are 2 different scan areas" () {
+      given:
+      final pageOne = new PageRequest(1, 10, "ID", "ASC")
+      final employee = employeeFactoryService.single()
+      final store = storeFactoryService.store(1)
+      final warehouse = auditScanAreaFactoryService.warehouse()
+      final showroom = auditScanAreaFactoryService.showroom()
+      final storeroom = auditScanAreaFactoryService.storeroom()
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.opened()] as Set)
+      final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, employee, warehouse).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
+      final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, employee, showroom).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
+      final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, employee, storeroom).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
+
+      when:
+      def result = get("/audit/${audit.id}/detail${pageOne}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.elements != null
+      result.elements.size() == 10
+      result.totalElements == 21
+      result.totalPages == 3
+      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
    }
 
    void "fetch one audit detail by id not found" () {

@@ -4,7 +4,7 @@ import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.legacy.load.LegacyCsvLoadingService
+import com.cynergisuite.middleware.load.legacy.LegacyCsvLoadingService
 import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.validation.Validated
 import io.reactivex.Maybe
@@ -28,6 +28,9 @@ class EmployeeService @Inject constructor(
 
    fun fetchById(id: Long, loc: String): EmployeeValueObject? =
       employeeRepository.findOne(id = id, loc = loc)?.let { EmployeeValueObject(entity = it) }
+
+   fun fetchByNumberAndLoc(number: Int, loc: String): EmployeeValueObject? =
+      employeeRepository.findOne(number, loc)?.let { EmployeeValueObject(entity = it) }
 
    fun exists(id: Long, loc: String): Boolean =
       employeeRepository.exists(id = id, loc = loc)
@@ -56,7 +59,7 @@ class EmployeeService @Inject constructor(
       return employeeRepository.canEmployeeAccess(employee.loc!!, asset, employee.id!!)
    }
 
-   fun findUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<Employee> =
+   fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<Employee> =
       employeeRepository.findUserByAuthentication(number, passCode, storeNumber)
 
    override fun canProcess(path: Path): Boolean =

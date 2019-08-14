@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.legacy.load
+package com.cynergisuite.middleware.load.legacy
 
 import com.cynergisuite.domain.Entity
 import java.nio.file.Path
