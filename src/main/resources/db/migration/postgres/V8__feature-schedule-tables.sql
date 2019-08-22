@@ -27,13 +27,13 @@ CREATE TRIGGER update_schedule_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE schedule_arg (
-   id                INTEGER                                               NOT NULL PRIMARY KEY,
+   id                BIGSERIAL                                             NOT NULL PRIMARY KEY,
    uu_row_id         UUID           DEFAULT uuid_generate_v1()             NOT NULL,
    time_created      TIMESTAMPTZ    DEFAULT clock_timestamp()              NOT NULL,
    time_updated      TIMESTAMPTZ    DEFAULT clock_timestamp()              NOT NULL,
    value             VARCHAR(256)                                          NOT NULL,
    description       VARCHAR(256),
-   schedule_id       BIGSERIAL      REFERENCES schedule (id)               NOT NULL
+   schedule_id       BIGINT         REFERENCES schedule (id)               NOT NULL
 );
 CREATE TRIGGER update_schedule_arg_trg
    BEFORE UPDATE
