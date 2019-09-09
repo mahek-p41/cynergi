@@ -15,6 +15,14 @@ interface TypeDomainRepository<ENTITY> {
    fun exists(value: String): Boolean
 
    /**
+    * The inverse of the exists method
+    *
+    * @param value the value to search for in the value column in the database (note this search is required to be case insensitive by implementing classes)
+    * @return true|false depending on whether it does not exist in the database
+    */
+   fun doesNotExist(value: String): Boolean = !exists(value)
+
+   /**
     * Return a row in the database defined by ENTITY based on it's ID if it exists otherwise null is returned
     *
     * @param id the ID to be used to look up the entity

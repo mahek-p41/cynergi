@@ -14,7 +14,7 @@ data class Store(
 
    constructor(store: StoreValueObject) :
       this(
-         id = store.id!!,
+         id = store.id,
          number = store.number!!,
          name = store.name!!,
          dataset = store.dataset!!

@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
@@ -45,7 +46,7 @@ class AuditDetailController @Inject constructor(
    @Throws(NotFoundException::class)
    @AccessControl("auditDetail-fetchOne")
    @Get(uri = "/detail/{id}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a single AuditDetail", description = "Fetch a single AuditDetail by it's system generated primary key", operationId = "auditDetail-fetchOne")
+   @Operation(tags = ["AuditDetailEndpoints"], summary = "Fetch a single AuditDetail", description = "Fetch a single AuditDetail by it's system generated primary key", operationId = "auditDetail-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditDetailValueObject::class))]),
       ApiResponse(responseCode = "404", description = "The requested AuditDetail was unable to be found"),
@@ -67,7 +68,7 @@ class AuditDetailController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @AccessControl("auditDetail-fetchAll")
    @Get(uri = "/{auditId}/detail{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a listing of AuditDetails", description = "Fetch a paginated listing of AuditDetails based on a parent Audit", operationId = "auditDetail-fetchAll")
+   @Operation(tags = ["AuditDetailEndpoints"], summary = "Fetch a listing of AuditDetails", description = "Fetch a paginated listing of AuditDetails based on a parent Audit", operationId = "auditDetail-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found, or the result is empty"),
@@ -91,49 +92,25 @@ class AuditDetailController @Inject constructor(
    @Post(uri = "/{auditId}/detail", processes = [APPLICATION_JSON])
    @AccessControl("auditDetail-save")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(summary = "Create a single AuditDetail", description = "Save a single AuditDetail. The logged in Employee is used for the scannedBy property", operationId = "auditDetail-save")
+   @Operation(tags = ["AuditDetailEndpoints"], summary = "Create a single AuditDetail", description = "Create a single AuditDetail. The logged in Employee is used for the scannedBy property", operationId = "auditDetail-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditDetailValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The parent Audit was unable to be found, or the scanArea was unknown"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun save(
+   fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Body vo: AuditDetailValueObject,
+      @Body vo: AuditDetailCreateValueObject,
       authentication: Authentication?,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
-      logger.info("Requested Save AuditDetail {}", vo)
+      logger.info("Requested Create AuditDetail {}", vo)
 
       val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
-      val response = auditDetailService.create(vo.copy(audit = SimpleIdentifiableValueObject(auditId), scannedBy = employee), httpRequest.findLocaleWithDefault())
+      val response = auditDetailService.create(auditId, vo, employee, httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Save AuditDetail {} resulted in {}", vo, response)
-
-      return response
-   }
-
-   @Put(uri = "/{auditId}/detail", processes = [APPLICATION_JSON])
-   @AccessControl("auditDetail-update")
-   @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(summary = "Update a single AuditDetail", description = "Update a single AuditDetail", operationId = "auditDetail-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditDetailValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested AuditDetail was unable to be found or the scanArea was unknown"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
-   fun update(
-      @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Body vo: AuditDetailValueObject,
-      httpRequest: HttpRequest<*>
-   ): AuditDetailValueObject {
-      logger.info("Requested Update AuditDetail {}", vo)
-
-      val response = auditDetailService.update(vo.copy(audit = SimpleIdentifiableValueObject(auditId)), httpRequest.findLocaleWithDefault())
-
-      logger.debug("Requested Update AuditDetail {} resulted in {}", vo, response)
+      logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
 
       return response
    }

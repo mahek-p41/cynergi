@@ -34,7 +34,7 @@ class StoreController @Inject constructor(
    @Throws(NotFoundException::class)
    @AccessControl("store-fetchOne")
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
+   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreValueObject::class))]),
       ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
@@ -55,7 +55,7 @@ class StoreController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @AccessControl("store-fetchAll")
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
+   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "404", description = "The the result is empty"),

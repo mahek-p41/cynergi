@@ -10,7 +10,7 @@ import javax.validation.constraints.Size
 
 @ValueObject
 @JsonInclude(NON_NULL)
-@Schema(name = "AuditStatus", description = "The associated status of an Audit")
+@Schema(name = "AuditStatus", title = "Status definition associated", description = "Status definition associated with an audit action")
 data class AuditStatusValueObject (
 
    @field:NotNull
@@ -18,7 +18,6 @@ data class AuditStatusValueObject (
    @field:Schema(description = "This is a database driven with the original values being OPENED, IN-PROGRESS, COMPLETED and CANCELED", required = true)
    var value: String,
 
-   @field:Nullable
    @field:Size(min = 3, max = 50)
    @field:Schema(description = "A localized description suitable for showing the user", required = false)
    var description: String? = null

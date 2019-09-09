@@ -22,6 +22,11 @@ interface Repository<ENTITY> {
    fun exists(id: Long): Boolean
 
    /**
+    * Inverse of the exists function.  Check if an item does not exist
+    */
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
+   /**
     * insert a row defined by the entity parameter
     *
     * @param entity the row to insert in the database

@@ -1,6 +1,6 @@
 package com.cynergisuite.domain.infrastructure
 
-import com.cynergisuite.domain.IdentifiableValueObject
+
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeService
 import groovy.json.JsonSlurper
@@ -43,7 +43,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       ).bodyAsJson()
    }
 
-   def <BODY extends IdentifiableValueObject> Object post(String path, BODY body) throws HttpClientResponseException {
+   Object post(String path, Object body) throws HttpClientResponseException {
       return client.exchange(
          POST("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),
@@ -51,7 +51,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       ).bodyAsJson()
    }
 
-   def <BODY extends IdentifiableValueObject> Object put(String path, BODY body) throws HttpClientResponseException {
+   Object put(String path, Object body) throws HttpClientResponseException {
       return client.exchange(
          PUT("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),

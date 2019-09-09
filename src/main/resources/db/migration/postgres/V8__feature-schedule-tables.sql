@@ -20,6 +20,7 @@ CREATE TABLE schedule (
    command           VARCHAR(1024)                                         NOT NULL,
    type_id           INTEGER        REFERENCES schedule_type_domain (id)   NOT NULL
 );
+CREATE INDEX schedule_type_id_idx ON schedule (type_id);
 CREATE TRIGGER update_schedule_trg
    BEFORE UPDATE
    ON schedule
@@ -35,6 +36,7 @@ CREATE TABLE schedule_arg (
    description       VARCHAR(256),
    schedule_id       BIGINT         REFERENCES schedule (id)               NOT NULL
 );
+CREATE INDEX schedule_arg_schedule_id_idx ON schedule_arg (schedule_id);
 CREATE TRIGGER update_schedule_arg_trg
    BEFORE UPDATE
    ON schedule_arg

@@ -13,7 +13,7 @@ import java.util.Locale
 import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Audit", description = "A single audit for a store")
+@Schema(name = "Audit", title = "Single Audit associated with a single Store", description = "A single audit for a store on a specified date along with it's current state")
 data class AuditValueObject (
 
    @field:Positive

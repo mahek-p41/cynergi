@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull
 data class SimpleIdentifiableValueObject(
 
    @field:NotNull
+   @field:Schema(name = "id", description = "The system generated ID (aka primary key) for the associated item", required = true)
    var id: Long? = null
 
 ) : IdentifiableValueObject {
@@ -16,6 +17,11 @@ data class SimpleIdentifiableValueObject(
    constructor(identifiableEntity: IdentifiableEntity) :
       this(
          id = identifiableEntity.entityId()
+      )
+
+   constructor(identifiableValueObject: IdentifiableValueObject) :
+      this (
+         id = identifiableValueObject.valueObjectId()
       )
 
    @JsonIgnore

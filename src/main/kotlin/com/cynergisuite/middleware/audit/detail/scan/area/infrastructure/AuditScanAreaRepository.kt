@@ -20,7 +20,7 @@ class AuditScanAreaRepository @Inject constructor(
    private val simpleAuditScanAreaRowMapper = AuditScanAreaRowMapper()
 
    override fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_scan_area_type_domain WHERE value = :value)", mapOf("value" to value), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_scan_area_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
 
       logger.trace("Checking if Audit: {} exists resulted in {}", value, exists)
 
@@ -48,6 +48,13 @@ class AuditScanAreaRepository @Inject constructor(
 
    fun mapPrefixedRow(rs: ResultSet, prefix: String = "ad_"): AuditScanArea =
       simpleAuditScanAreaRowMapper.mapRow(rs, prefix)
+
+   fun mapPrefixedRowOrNull(rs: ResultSet, prefix: String): AuditScanArea? =
+      if (rs.getString("${prefix}id") != null) {
+         mapPrefixedRow(rs, prefix)
+      } else {
+         null
+      }
 }
 
 private class AuditScanAreaRowMapper(

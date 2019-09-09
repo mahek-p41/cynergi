@@ -20,8 +20,8 @@ class NotificationService @Inject constructor(
    fun fetchAllByRecipient(companyId: String, sendingEmployee: String, type: String): List<NotificationValueObject> =
       notificationRepository.findAllByRecipient(companyId = companyId, recipientId = sendingEmployee, type = type).map { NotificationValueObject(it) }
 
-   fun findAllTypes(): List<NotificationTypeDomainValueObject> =
-      notificationRepository.findAllTypes().map { NotificationTypeDomainValueObject(it) }
+   fun findAllTypes(): List<NotificationTypeValueObject> =
+      notificationRepository.findAllTypes().map { NotificationTypeValueObject(it) }
 
    /**
     * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the

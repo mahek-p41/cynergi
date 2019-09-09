@@ -1,22 +1,36 @@
 package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
-import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
+import com.cynergisuite.middleware.localization.LocalizationService
+import java.util.Locale
 import javax.inject.Singleton
 
 @Singleton
 class InventoryService(
-   private val inventoryRepository: InventoryRepository
+   private val inventoryRepository: InventoryRepository,
+   private val localizationService: LocalizationService
 ) {
-   fun fetchAll(pageRequest: InventoryPageRequest): Page<InventoryValueObject> {
+   fun fetchAll(pageRequest: InventoryPageRequest, locale: Locale): Page<InventoryValueObject> {
       val inventory = inventoryRepository.findAll(pageRequest)
 
       return inventory.toPage(pageRequest) { item ->
-         InventoryValueObject(item)
+         InventoryValueObject(
+            item,
+            InventoryLocationTypeValueObject(item.locationType, item.locationType.localizeMyDescription(locale, localizationService))
+         )
       }
    }
+
+   fun fetchByLookupKey(lookupKey: String, locale: Locale): InventoryValueObject? {
+      return inventoryRepository.findByLookupKey(lookupKey)?.let { map(it, locale) }
+   }
+
+   private fun map(inventory: Inventory, locale: Locale) : InventoryValueObject =
+      InventoryValueObject(
+         inventory,
+         InventoryLocationTypeValueObject(inventory.locationType, inventory.locationType.localizeMyDescription(locale, localizationService))
+      )
 }

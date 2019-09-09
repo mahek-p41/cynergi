@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.load.demo
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
-import com.cynergisuite.middleware.audit.discrepancy.AuditDiscrepancyFactoryService
+import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.load.legacy.LegacyLoadFinishedEvent
 import com.cynergisuite.middleware.store.StoreFactoryService
@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @Requires(env = ["demo"])
 class DemoDataLoader @Inject constructor(
    private val auditDetailFactoryService: AuditDetailFactoryService,
-   private val auditDiscrepancyFactoryService: AuditDiscrepancyFactoryService,
+   private val auditDiscrepancyFactoryService: AuditExceptionFactoryService,
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val employeeRepository: EmployeeRepository,

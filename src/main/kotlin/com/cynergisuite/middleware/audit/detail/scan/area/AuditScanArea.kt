@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.audit.detail.scan.area
 
 import com.cynergisuite.domain.TypeDomainEntity
-import java.time.OffsetDateTime
-import java.util.UUID
 
 data class AuditScanArea(
    val id: Long,

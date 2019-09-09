@@ -33,7 +33,7 @@ class StoreLoginController(
 
    @Post
    @Consumes(APPLICATION_JSON)
-   @Operation(summary = "Login with a username, password and store number", description = "Allows for a different login process where the store associated with the user by default can be overridden", operationId = "store-login")
+   @Operation(tags = ["AuthenticationEndpoints"], summary = "Login with a username, password and store number", description = "Allows for a different login process where the store associated with the user by default can be overridden", operationId = "store-login")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If the login was successful"),

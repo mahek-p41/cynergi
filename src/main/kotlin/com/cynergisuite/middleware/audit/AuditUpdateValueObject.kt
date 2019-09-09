@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "AuditUpdate", description = "Use this when updating the status of an Audit")
+@Schema(name = "AuditUpdate", title = "Requirements for updating an Audit", description = "Defines the requirements for updating and Audit's status")
 data class AuditUpdateValueObject(
 
    @field:NotNull

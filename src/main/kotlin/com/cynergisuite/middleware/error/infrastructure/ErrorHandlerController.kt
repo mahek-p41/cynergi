@@ -69,11 +69,12 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = IOException::class)
-   fun inputOutputExceptionhandler(httpRequest: HttpRequest<*>, exception: IOException) {
-      if (exception.message?.trim() == "An existing connection was forcibly closed by the remote host") {
-         logger.error("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
-      } else {
-         logger.error("Unknown IOException occurred during request processing", exception)
+   fun inputOutputExceptionHandler(httpRequest: HttpRequest<*>, exception: IOException) {
+      when (exception.message?.trim()?.toLowerCase()) {
+         "an existing connection was forcibly closed by the remote host", "connection reset by peer" ->
+            logger.warn("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
+         else ->
+            logger.error("Unknown IOException occurred during request processing", exception)
       }
    }
 

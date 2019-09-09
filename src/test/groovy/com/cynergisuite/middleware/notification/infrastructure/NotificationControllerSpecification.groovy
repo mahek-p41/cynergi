@@ -10,7 +10,7 @@ import com.cynergisuite.middleware.notification.NotificationRequestValueObject
 import com.cynergisuite.middleware.notification.NotificationResponseValueObject
 import com.cynergisuite.middleware.notification.NotificationTestDataLoader
 import com.cynergisuite.middleware.notification.NotificationTypeDomainTestDataLoader
-import com.cynergisuite.middleware.notification.NotificationTypeDomainValueObject
+import com.cynergisuite.middleware.notification.NotificationTypeValueObject
 import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import io.micronaut.core.type.Argument
@@ -34,7 +34,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class NotificationControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/notifications"
    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-   
+
    @Inject NotificationRepository notificationRepository
    @Inject NotificationDataLoaderService notificationsDataLoaderService
    @Inject NotificationRecipientDataLoaderService notificationRecipientDataLoaderService
@@ -194,7 +194,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all types" () {
       when:
-      final def types = client.retrieve(GET("${path}/types"), NotificationTypeDomainValueObject[])
+      final def types = client.retrieve(GET("${path}/types"), NotificationTypeValueObject[])
 
       then:
       types.size() == 4
@@ -210,7 +210,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "attempt to fetch all types with typo results in bad request status" () {
       when:
-      client.retrieve(GET("${path}/type"), Argument.of(NotificationTypeDomainValueObject[]), Argument.of(ErrorValueObject))
+      client.retrieve(GET("${path}/type"), Argument.of(NotificationTypeValueObject[]), Argument.of(ErrorValueObject))
 
       then:
       final exception = thrown(HttpClientResponseException)

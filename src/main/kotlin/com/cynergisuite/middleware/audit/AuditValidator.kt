@@ -41,8 +41,8 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateSave(audit: AuditValueObject) {
-      logger.debug("Validating Save Audit {}", audit)
+   fun validateCreate(audit: AuditValueObject) {
+      logger.debug("Validating Create Audit {}", audit)
 
       val errors = mutableSetOf<ValidationError>()
       val storeNumber = audit.store?.number
@@ -56,7 +56,7 @@ class AuditValidator @Inject constructor(
       }
 
       if (errors.isNotEmpty()) {
-         logger.debug("Validating Save Audit {} had errors {}", audit, errors)
+         logger.debug("Validating Create Audit {} had errors {}", audit, errors)
 
          throw ValidationException(errors)
       }

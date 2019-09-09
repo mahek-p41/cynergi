@@ -48,19 +48,3 @@ object AuditStatusFactory {
       return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditStatusTypeDomain") }
    }
 }
-
-@Singleton
-@Requires(env = ["demo", "test"])
-class AuditStatusFactoryService @Inject constructor(
-   private val auditStatusTypeDomainRepository: AuditStatusRepository
-) {
-
-   fun stream(numberIn: Int = 1): Stream<AuditStatus> {
-      return AuditStatusFactory.stream(numberIn)
-         .map { auditStatusTypeDomainRepository.findOne(it.value)!! }
-   }
-
-   fun single(): AuditStatus {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditStatusTypeDomain") }
-   }
-}

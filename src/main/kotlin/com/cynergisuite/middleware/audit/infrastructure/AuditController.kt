@@ -44,7 +44,7 @@ class AuditController @Inject constructor(
    @Throws(NotFoundException::class)
    @AccessControl("audit-fetchOne")
    @Get(uri = "/{id}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
@@ -66,7 +66,7 @@ class AuditController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @AccessControl("audit-fetchAll")
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audits that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found, or the result is empty"),
@@ -89,26 +89,26 @@ class AuditController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @AccessControl("audit-save")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(summary = "Create a single audit", description = "Save a single audit in he OPENED state. The logged in Employee is used for the openedBy property", operationId = "audit-save")
+   @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in he OPENED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to save Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun save(
+   fun create(
       @Body audit: AuditValueObject,
       authentication: Authentication?,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
-      logger.info("Requested Save Audit {}", audit)
+      logger.info("Requested Create Audit {}", audit)
 
       val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = employee.store)
 
       val response = auditService.create(vo = auditToCreate, employee = employee, locale = httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Save Audit {} resulted in {}", audit, response)
+      logger.debug("Requested Create Audit {} resulted in {}", audit, response)
 
       return response
    }
@@ -116,7 +116,7 @@ class AuditController @Inject constructor(
    @Put(processes = [APPLICATION_JSON])
    @AccessControl("audit-update")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-update")
+   @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-update")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),

@@ -28,10 +28,7 @@ class AuditService @Inject constructor(
       auditRepository.findOne(id)?.let { AuditValueObject(it, locale, localizationService) }
 
    @Validated
-   fun fetchAll(
-      @Valid pageRequest: AuditPageRequest,
-      locale: Locale
-   ): Page<AuditValueObject> {
+   fun fetchAll(@Valid pageRequest: AuditPageRequest, locale: Locale): Page<AuditValueObject> {
       auditValidator.validateFetchAll(pageRequest)
 
       val found: RepositoryPage<Audit> = auditRepository.findAll(pageRequest = pageRequest)
@@ -45,12 +42,8 @@ class AuditService @Inject constructor(
       auditRepository.exists(id = id)
 
    @Validated
-   fun create(
-      @Valid vo: AuditValueObject,
-      @Valid employee: EmployeeValueObject,
-      locale: Locale
-   ): AuditValueObject {
-      auditValidator.validateSave(vo)
+   fun create(@Valid vo: AuditValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
+      auditValidator.validateCreate(vo)
 
       val audit = auditRepository.insert(
          Audit(
@@ -68,11 +61,7 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun update(
-      @Valid audit: AuditUpdateValueObject,
-      @Valid employee: EmployeeValueObject,
-      locale: Locale
-   ): AuditValueObject {
+   fun update(@Valid audit: AuditUpdateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
       auditValidator.validateUpdate(audit, locale)
 
       val existingAudit = auditRepository.findOne(audit.id!!)!!

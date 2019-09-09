@@ -6,17 +6,11 @@ import org.springframework.context.MessageSource
 import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatter.ofPattern
 import javax.inject.Singleton
 import javax.sql.DataSource
 
 @Factory
 class ExternalBeanFactory {
-
-   companion object {
-      const val DATE_PATTERN = "MM/dd/yyyy"
-   }
 
    @Bean
    @Singleton
@@ -35,8 +29,4 @@ class ExternalBeanFactory {
 
       return resourceBundleMessageSource
    }
-
-   @Bean
-   @Singleton
-   fun dateFormatter(): DateTimeFormatter = ofPattern(DATE_PATTERN)
 }

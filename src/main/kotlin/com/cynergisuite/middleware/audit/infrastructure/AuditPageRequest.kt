@@ -9,7 +9,11 @@ import javax.annotation.Nullable
 import javax.validation.constraints.Min
 import javax.validation.constraints.Positive
 
-@Schema(name = "AuditPageRequest", description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=OPENED")
+@Schema(
+   name = "AuditPageRequest",
+   title = "Specialized paging for listing audits",
+   description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=OPENED"
+)
 class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
 
    @field:Nullable

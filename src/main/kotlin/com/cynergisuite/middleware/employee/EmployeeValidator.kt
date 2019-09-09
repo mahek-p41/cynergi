@@ -17,13 +17,13 @@ class EmployeeValidator @Inject constructor (
    private val logger: Logger = LoggerFactory.getLogger(EmployeeValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateSave(vo: EmployeeValueObject) {
-      logger.trace("Validating Save Employee {}", vo)
+   fun validateCreate(vo: EmployeeValueObject) {
+      logger.trace("Validating Create Employee {}", vo)
 
       val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer
 
       if (errors.isNotEmpty()) {
-         logger.debug("Validating Save Employee {} had errors", vo)
+         logger.debug("Validating Create Employee {} had errors", vo)
 
          throw ValidationException(errors)
       }

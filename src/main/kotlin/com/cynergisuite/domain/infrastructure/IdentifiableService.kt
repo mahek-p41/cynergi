@@ -21,7 +21,15 @@ interface IdentifiableService<DTO> {
     * search for the DTO via some underlying mechanism by an ID defined as a Long
     *
     * @param id the ID of the DTO to be searched for
-    * @return Boolean with true if a DTO could be found using the provided ID or false if it could not
+    * @return Boolean with true if a Identifieable could be found using the provided ID or false if it could not
     */
    fun exists(id: Long): Boolean
+
+   /**
+    * Inverse of the exists function.  Checks if an ID does not exist
+    *
+    * @param id the ID of the DTO to be searched for
+    * @return Boolean with true if a Identifiable could not be found using the provided ID or false if it could
+    */
+   fun doesNotExist(id: Long): Boolean = !exists(id)
 }

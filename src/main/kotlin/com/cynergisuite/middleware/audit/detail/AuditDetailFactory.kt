@@ -29,18 +29,18 @@ object AuditDetailFactory {
       val commerce = faker.commerce()
       val company = faker.company()
       val idNumber = faker.idNumber()
-      val lorem = faker.lorem()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
 
       return IntStream.range(0, number).mapToObj {
          AuditDetail(
             scanArea = scanArea,
-            barCode = barcode.asin(),
-            inventoryId = idNumber.valid(),
+            barcode = barcode.asin(),
+            productCode = commerce.productName(),
+            altId = barcode.asin(),
+            serialNumber = idNumber.valid(),
             inventoryBrand = company.name(),
             inventoryModel = commerce.productName(),
             scannedBy = scannedBy,
-            inventoryStatus = lorem.fixedString(10),
             audit = SimpleIdentifiableEntity(audit)
          )
       }

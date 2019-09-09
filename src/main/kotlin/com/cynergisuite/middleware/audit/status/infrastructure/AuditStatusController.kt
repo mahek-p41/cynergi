@@ -30,7 +30,7 @@ class AuditStatusController @Inject constructor(
 
    @Get
    @AccessControl("auditStatus-fetchAll")
-   @Operation(summary = "Fetch a list of valid audit statuses", description = "Fetch a listing of supported audit statuses", operationId = "auditStatus-fetchAll")
+   @Operation(tags = ["AuditStatusEndpoints"], summary = "Fetch a list of valid audit statuses", description = "Fetch a listing of supported audit statuses", operationId = "auditStatus-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "Successfully loaded a listing of possible Audit Statuses", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusValueObject>::class))])
    ])

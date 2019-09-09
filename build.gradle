@@ -12,10 +12,10 @@ buildscript {
 plugins {
    id "io.spring.dependency-management" version "1.0.6.RELEASE"
    id "com.github.johnrengelman.shadow" version "4.0.3"
-   id "org.jetbrains.kotlin.jvm" version "1.3.41"
-   id "org.jetbrains.kotlin.kapt" version "1.3.41"
-   id "org.jetbrains.kotlin.plugin.allopen" version "1.3.41"
-   id "org.jetbrains.kotlin.plugin.noarg" version "1.3.41"
+   id "org.jetbrains.kotlin.jvm" version "1.3.50"
+   id "org.jetbrains.kotlin.kapt" version "1.3.50"
+   id "org.jetbrains.kotlin.plugin.allopen" version "1.3.50"
+   id "org.jetbrains.kotlin.plugin.noarg" version "1.3.50"
    id "jacoco"
    id "application"
    id "groovy"
@@ -151,7 +151,7 @@ compileTestKotlin {
 }
 
 task flywayMigrateCynegiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = 'jdbc:postgresql://localhost:6432/cynergidemodb'
+   url = 'jdbc:postgresql://localhost:6432/cynergidb'
    user = 'postgres'
    password = 'password'
    locations = ['filesystem:src/main/resources/db/migration/postgres']
@@ -162,6 +162,8 @@ task flywayMigrateCynergiDemoDb(type: org.flywaydb.gradle.task.FlywayMigrateTask
    user = 'postgres'
    password = 'password'
    locations = ['filesystem:src/main/resources/db/migration/postgres']
+   cleanDisabled = false
+   cleanOnValidationError = true
 }
 
 task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
@@ -169,6 +171,8 @@ task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask
    user = 'postgres'
    password = 'password'
    locations = ['filesystem:src/main/resources/db/migration/postgres']
+   cleanDisabled = false
+   cleanOnValidationError = true
 }
 
 openApiGenerate {

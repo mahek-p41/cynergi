@@ -8,7 +8,7 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "NotificationType", description = "Describes what type a notification is.  These values are driven from the database and therefore have no fixed listing")
-data class NotificationTypeDomainValueObject (
+data class NotificationTypeValueObject (
 
    @field:Positive
    var id: Long? = null,
@@ -17,7 +17,7 @@ data class NotificationTypeDomainValueObject (
 
    val description: String
 
-) : ValueObjectBase<NotificationTypeDomainValueObject>() {
+) : ValueObjectBase<NotificationTypeValueObject>() {
 
    constructor(entity: NotificationTypeDomain) :
       this(
@@ -28,5 +28,5 @@ data class NotificationTypeDomainValueObject (
 
    override fun valueObjectId(): Long? = id
 
-   override fun copyMe(): NotificationTypeDomainValueObject = copy()
+   override fun copyMe(): NotificationTypeValueObject = copy()
 }
