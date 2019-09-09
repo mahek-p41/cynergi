@@ -87,7 +87,7 @@ class AuditController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("audit-save")
+   @AccessControl("audit-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in he OPENED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [

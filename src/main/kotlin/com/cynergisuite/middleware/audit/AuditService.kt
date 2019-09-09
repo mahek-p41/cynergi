@@ -29,8 +29,6 @@ class AuditService @Inject constructor(
 
    @Validated
    fun fetchAll(@Valid pageRequest: AuditPageRequest, locale: Locale): Page<AuditValueObject> {
-      auditValidator.validateFetchAll(pageRequest)
-
       val found: RepositoryPage<Audit> = auditRepository.findAll(pageRequest = pageRequest)
 
       return found.toPage(pageRequest) {

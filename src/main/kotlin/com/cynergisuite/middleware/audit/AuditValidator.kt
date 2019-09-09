@@ -28,19 +28,6 @@ class AuditValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateFetchAll(auditPageRequest: AuditPageRequest) {
-      logger.debug("Validation Audit fetch all {}", auditPageRequest)
-
-      val errors = mutableSetOf<ValidationError>()
-
-      if (errors.isNotEmpty()) {
-         logger.debug("Validating Audit fetch all {} had errors {}", auditPageRequest, errors)
-
-         throw ValidationException(errors)
-      }
-   }
-
-   @Throws(ValidationException::class)
    fun validateCreate(audit: AuditValueObject) {
       logger.debug("Validating Create Audit {}", audit)
 
