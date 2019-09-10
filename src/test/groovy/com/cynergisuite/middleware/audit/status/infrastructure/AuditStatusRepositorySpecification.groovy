@@ -32,12 +32,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[0].nextStates.size() == 1
       result.nextStates[0].nextStates[0].nextStates[0].id == 5
       result.nextStates[0].nextStates[0].nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates.size() == 1
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].id == 6
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[0].nextStates[0].nextStates[0].nextStates.empty
       result.nextStates[0].nextStates[1].id == 4
       result.nextStates[0].nextStates[1].value == "CANCELED"
       result.nextStates[0].nextStates[1].description == "Canceled"
@@ -45,12 +40,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[1].nextStates.size() == 1
       result.nextStates[0].nextStates[1].nextStates[0].id == 5
       result.nextStates[0].nextStates[1].nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates.size() == 1
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].id == 6
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[0].nextStates[1].nextStates[0].nextStates.empty
       result.nextStates[1].id == 4
       result.nextStates[1].value == "CANCELED"
       result.nextStates[1].description == "Canceled"
@@ -60,12 +50,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[1].nextStates[0].value == "SIGNED-OFF"
       result.nextStates[1].nextStates[0].description == "Signed Off"
       result.nextStates[1].nextStates[0].localizationCode == "audit.status.signed-off"
-      result.nextStates[1].nextStates[0].nextStates.size() == 1
-      result.nextStates[1].nextStates[0].nextStates[0].id == 6
-      result.nextStates[1].nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[1].nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[1].nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[1].nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[1].nextStates[0].nextStates.empty
 
       when:
       result = auditStatusRepository.findOne("opened")
@@ -89,12 +74,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[0].nextStates.size() == 1
       result.nextStates[0].nextStates[0].nextStates[0].id == 5
       result.nextStates[0].nextStates[0].nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates.size() == 1
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].id == 6
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[0].nextStates[0].nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[0].nextStates[0].nextStates[0].nextStates.empty
       result.nextStates[0].nextStates[1].id == 4
       result.nextStates[0].nextStates[1].value == "CANCELED"
       result.nextStates[0].nextStates[1].description == "Canceled"
@@ -102,12 +82,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[1].nextStates.size() == 1
       result.nextStates[0].nextStates[1].nextStates[0].id == 5
       result.nextStates[0].nextStates[1].nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates.size() == 1
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].id == 6
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[0].nextStates[1].nextStates[0].nextStates.empty
       result.nextStates[1].id == 4
       result.nextStates[1].value == "CANCELED"
       result.nextStates[1].description == "Canceled"
@@ -117,12 +92,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[1].nextStates[0].value == "SIGNED-OFF"
       result.nextStates[1].nextStates[0].description == "Signed Off"
       result.nextStates[1].nextStates[0].localizationCode == "audit.status.signed-off"
-      result.nextStates[1].nextStates[0].nextStates.size() == 1
-      result.nextStates[1].nextStates[0].nextStates[0].id == 6
-      result.nextStates[1].nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[1].nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[1].nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[1].nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[1].nextStates[0].nextStates.empty
    }
 
    void "find in-progress" () {
@@ -160,12 +130,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].value == "SIGNED-OFF"
       result.nextStates[0].description == "Signed Off"
       result.nextStates[0].localizationCode == "audit.status.signed-off"
-      result.nextStates[0].nextStates.size() == 1
-      result.nextStates[0].nextStates[0].id == 6
-      result.nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[0].nextStates.empty
    }
 
    void "find canceled" () {
@@ -183,11 +148,6 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].value == "SIGNED-OFF"
       result.nextStates[0].description == "Signed Off"
       result.nextStates[0].localizationCode == "audit.status.signed-off"
-      result.nextStates[0].nextStates.size() == 1
-      result.nextStates[0].nextStates[0].id == 6
-      result.nextStates[0].nextStates[0].value == "CLOSED"
-      result.nextStates[0].nextStates[0].description == "Closed"
-      result.nextStates[0].nextStates[0].localizationCode == "audit.status.closed"
-      result.nextStates[0].nextStates[0].nextStates.isEmpty()
+      result.nextStates[0].nextStates.empty
    }
 }
