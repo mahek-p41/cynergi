@@ -94,18 +94,19 @@ dependencies {
 
    implementation "com.github.javafaker:javafaker:0.16"
 
-   testImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
-   testImplementation "org.codehaus.groovy:groovy-all:2.5.7"
-   testImplementation "org.spockframework:spock-core"
-   testImplementation "io.micronaut:micronaut-http-client"
-   testImplementation "io.micronaut:micronaut-inject-groovy"
-   testImplementation "io.micronaut.test:micronaut-test-spock"
-   testImplementation "io.micronaut.test:micronaut-test-junit5"
-   testImplementation "io.micronaut:micronaut-inject-java"
-   testRuntimeOnly "net.bytebuddy:byte-buddy:1.8.21"
-   testRuntimeOnly "org.objenesis:objenesis:2.6"
-   testCompileOnly "org.assertj:assertj-core:3.12.2"
-   testRuntimeOnly "org.junit.vintage:junit-vintage-engine:5.5.2"
+   testCompile platform("io.micronaut:micronaut-bom:$micronautVersion")
+   testCompile "org.junit.jupiter:junit-jupiter:5.5.2"
+   testCompile "org.codehaus.groovy:groovy-all:2.5.7"
+   testCompile "org.spockframework:spock-core"
+   testCompile "io.micronaut:micronaut-http-client"
+   testCompile "io.micronaut:micronaut-inject-groovy"
+   testCompile "io.micronaut.test:micronaut-test-spock"
+   testCompile "io.micronaut.test:micronaut-test-junit5"
+   testCompile "io.micronaut:micronaut-inject-java"
+   testRuntime "net.bytebuddy:byte-buddy:1.8.21"
+   testRuntime "org.objenesis:objenesis:2.6"
+   testCompile "org.assertj:assertj-core:3.12.2"
+   testRuntime "org.junit.vintage:junit-vintage-engine:5.5.2"
 }
 
 test.classpath += configurations.developmentOnly
