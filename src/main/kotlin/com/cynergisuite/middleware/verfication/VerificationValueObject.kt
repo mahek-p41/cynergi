@@ -50,7 +50,7 @@ data class VerificationValueObject(
    @field:Size(max = 6)
    @field:JsonDeserialize(contentAs = VerificationReferenceValueObject::class)
    @field:JsonProperty("checklist_references")
-   val references: MutableList<VerificationReferenceValueObject> = mutableListOf()
+   var references: MutableList<VerificationReferenceValueObject> = mutableListOf()
 
 ) : ValueObjectBase<VerificationValueObject>() {
    constructor(entity: Verification) :
