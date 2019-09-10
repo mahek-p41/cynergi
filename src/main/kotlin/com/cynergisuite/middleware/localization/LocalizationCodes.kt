@@ -36,6 +36,7 @@ class AuditMustBeInProgressDiscrepancy(auditId: Long): Cynergi("cynergi.audit.mu
 class AuditScanAreaNotFound(scanArea: String?): Cynergi("cynergi.audit.scan.area.not.found", arrayOf(scanArea))
 class AuditOpenAtStore(storeNumber: Int): Cynergi("cynergi.audit.open.at.store", arrayOf(storeNumber))
 class AuditExceptionMustHaveInventoryOrBarcode(): Cynergi("cynergi.audit.exception.inventory.or.barcode", emptyArray())
+class AuditHasBeenSignedOffNoNewNotesAllowed(auditId: Long): Cynergi("cynergi.audit.has.been.signed.off.no.new.notes.allowed", arrayOf(auditId))
 
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)

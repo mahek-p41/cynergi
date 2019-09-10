@@ -19,10 +19,10 @@ import javax.inject.Singleton
 object AuditFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, storeIn: Store? = null, changedByIn: Employee? = null, statusesIn: MutableSet<AuditStatus>? = null): Stream<Audit> {
+   fun stream(numberIn: Int = 1, storeIn: Store? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>? = null): Stream<Audit> {
       val number = if (numberIn > 0) numberIn else 1
       val store = storeIn?: StoreFactory.random()
-      val statuses: MutableSet<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.opened())
+      val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.opened())
       val changedBy = changedByIn ?: EmployeeFactory.testEmployee()
 
       return IntStream.range(0, number).mapToObj {
@@ -55,7 +55,7 @@ class AuditFactoryService @Inject constructor(
    fun stream(numberIn: Int = 1, storeIn: Store? = null): Stream<Audit> =
       stream(numberIn, storeIn, null, null)
 
-   fun stream(numberIn: Int = 1, storeIn: Store? = null, changedByIn: Employee? = null, statusesIn: MutableSet<AuditStatus>?): Stream<Audit> {
+   fun stream(numberIn: Int = 1, storeIn: Store? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>?): Stream<Audit> {
       val store = storeIn ?: storeFactoryService.random()
       val changedBy = changedByIn ?: employeeFactoryService.single()
 
@@ -71,9 +71,9 @@ class AuditFactoryService @Inject constructor(
    fun single(storeIn: Store? = null): Audit =
       stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 
-   fun single(storeIn: Store? = null, changedByIn: Employee?, statusesIn: MutableSet<AuditStatus>?): Audit =
+   fun single(storeIn: Store? = null, changedByIn: Employee?, statusesIn: Set<AuditStatus>?): Audit =
       stream(storeIn = storeIn, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 
-   fun single(statusesIn: MutableSet<AuditStatus>?): Audit =
+   fun single(statusesIn: Set<AuditStatus>?): Audit =
       stream(1, null, null, statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 }
