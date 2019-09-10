@@ -259,10 +259,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) }.containsAll(
-         [
-            new ErrorValueObject("Audit ${audit.id} must be In Progress to modify its details", "audit.status")
-         ]
-      )
+      response.collect { new ErrorValueObject(it) } == [
+         new ErrorValueObject("Audit ${audit.id} must be In Progress to modify its details", "audit.status")
+      ]
    }
 }

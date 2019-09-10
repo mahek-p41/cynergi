@@ -23,7 +23,6 @@ import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import org.apache.commons.lang3.RandomUtils
-import org.apache.tools.ant.taskdefs.condition.Http
 
 import javax.inject.Inject
 import java.time.OffsetDateTime
