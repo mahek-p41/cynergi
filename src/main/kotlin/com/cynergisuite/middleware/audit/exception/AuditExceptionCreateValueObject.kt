@@ -8,7 +8,7 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-@Schema(name = "AuditExceptionCreate", description = "Payload required to create an AuditException entity")
+@Schema(name = "AuditExceptionCreate", title = "Create an AuditException", description = "Payload required to create an AuditException entity")
 data class AuditExceptionCreateValueObject(
 
    @field:Valid

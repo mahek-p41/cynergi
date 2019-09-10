@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
 @Deprecated("This just needs to be removed when notifications gets moved to cynergi-client")
 @ValueObject
 @JsonInclude(NON_NULL)
-@Schema(name = "NotificationRequest", description = "Wrapper around a single Notification")
+@Schema(name = "NotificationRequest", title = "Wrapper around a single Notification", description = "Wrapper around a single Notification")
 data class NotificationRequestValueObject(
 
    @field:Valid
