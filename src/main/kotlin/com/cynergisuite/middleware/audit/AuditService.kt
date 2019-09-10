@@ -40,7 +40,7 @@ class AuditService @Inject constructor(
       auditRepository.exists(id = id)
 
    @Validated
-   fun create(@Valid vo: AuditValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
+   fun create(@Valid vo: AuditCreateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
       auditValidator.validateCreate(vo)
 
       val audit = auditRepository.insert(

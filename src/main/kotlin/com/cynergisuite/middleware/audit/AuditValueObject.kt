@@ -34,13 +34,6 @@ data class AuditValueObject (
 
 ) : ValueObjectBase<AuditValueObject>() {
 
-   constructor(store: StoreValueObject) :
-      this(
-         id = null,
-         store = store,
-         actions = mutableSetOf()
-      )
-
    constructor(entity: Audit, locale: Locale, localizationService: LocalizationService) :
       this (
          id = entity.id,
@@ -55,5 +48,9 @@ data class AuditValueObject (
    override fun valueObjectId(): Long? = id
    override fun copyMe(): AuditValueObject = copy()
 
-   fun getCurrentStatus(): AuditStatusValueObject? = actions.asSequence().sortedBy { it.id }.map { it.status }.lastOrNull()
+   fun getCurrentStatus(): AuditStatusValueObject? =
+      actions.asSequence()
+         .sortedBy { it.id }
+         .map { it.status }
+         .lastOrNull()
 }
