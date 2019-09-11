@@ -48,6 +48,7 @@ data class AuditValueObject (
    override fun valueObjectId(): Long? = id
    override fun copyMe(): AuditValueObject = copy()
 
+   @Schema(name = "currentStatus", description = "The current AuditStatus of the referenced Audit")
    fun getCurrentStatus(): AuditStatusValueObject? =
       actions.asSequence()
          .sortedBy { it.id }
