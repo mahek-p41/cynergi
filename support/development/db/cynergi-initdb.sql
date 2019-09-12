@@ -53,6 +53,56 @@ BEGIN
 END $$;
 --- END STORES SETUP
 
+-- BEGIN DEPARTMENT SETUP
+CREATE TABLE IF NOT EXISTS corrto.level2_departments (
+    id                        BIGSERIAL                           NOT NULL PRIMARY KEY,
+    loc_dept_code             VARCHAR(2)                          NOT NULL,
+    loc_dept_desc             VARCHAR(12),
+    loc_dept_security_profile INTEGER,
+    loc_dept_default_menu     VARCHAR(8),
+    created_at                TIMESTAMP DEFAULT clock_timestamp() NOT NULL,
+    updated_at                TIMESTAMP DEFAULT clock_timestamp() NOT NULL
+);
+
+DO $$
+   DECLARE r RECORD;
+   sqlToExec VARCHAR;
+   unionStr VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW department_vw AS';
+   unionStr := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'department_vw') THEN
+      DROP VIEW department_vw;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata where schema_name not LIKE 'pg%' and schema_name NOT IN ('public', 'information_schema', 'alles')
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionStr
+      || 'SELECT '
+      || '   id AS id, '
+      || '   loc_dept_code AS code, '
+      || '   loc_dept_desc AS description, '
+      || '   loc_dept_security_profile AS security_profile, '
+      || '   loc_dept_default_menu AS default_menu, '
+      || '   created_at AT TIME ZONE ''UTC'' AS time_created, '
+      || '   updated_at AT TIME ZONE ''UTC'' AS time_updated '
+      || 'FROM ' || r.schema_name || '.level2_departments '
+      || 'WHERE loc_dept_code IS NOT NULL '
+      || '      AND loc_dept_desc IS NOT NULL '
+      || '      AND loc_dept_security_profile IS NOT NULL '
+      || '      AND loc_dept_default_menu IS NOT NULL '
+      ;
+
+      unionStr := ' UNION ';
+   END LOOP;
+
+   EXECUTE sqlToExec;
+END $$;
+-- END DEPARTMENT SETUP
+
 --- BEGIN EMPLOYEES SETUP
 CREATE TABLE IF NOT EXISTS  corrto.level1_loc_emps ( -- create stand-in table that should exist in fastinfo if a dump isn't used
    id                BIGSERIAL                           NOT NULL PRIMARY KEY,
@@ -224,6 +274,16 @@ CREATE USER MAPPING FOR CURRENT_USER
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO postgres;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO postgres;
 
+CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
+  id BIGINT,
+  code VARCHAR,
+  description VARCHAR,
+  security_profile INTEGER,
+  default_menu VARCHAR,
+  time_created TIMESTAMPTZ,
+  time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
+
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    id BIGINT,
    number INTEGER,
@@ -294,6 +354,16 @@ CREATE USER MAPPING FOR CURRENT_USER
     OPTIONS (USER 'postgres', PASSWORD 'password');
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO postgres;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO postgres;
+
+CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
+    id BIGINT,
+    code VARCHAR,
+    description VARCHAR,
+    security_profile INTEGER,
+    default_menu VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    id BIGINT,

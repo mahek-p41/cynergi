@@ -14,10 +14,11 @@ data class Employee(
    val firstNameMi: String?,
    val passCode: String,
    val store: Store,
-   val active: Boolean = true
+   val active: Boolean = true,
+   val department: String? = null
 ) : IdentifiableEntity {
 
-   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: Store, active: Boolean) :
+   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: Store, active: Boolean, department: String? = null) :
       this(
          id = null,
          loc = loc,
@@ -26,7 +27,8 @@ data class Employee(
          firstNameMi = firstNameMi,
          passCode = passCode,
          store = store,
-         active = active
+         active = active,
+         department = department
       )
 
    constructor(vo: EmployeeValueObject) :

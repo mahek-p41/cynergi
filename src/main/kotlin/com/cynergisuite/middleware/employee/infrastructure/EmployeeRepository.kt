@@ -5,6 +5,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
@@ -30,7 +31,7 @@ class EmployeeRepository @Inject constructor(
 
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, loc
+         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, loc
          FROM (
             SELECT 1 AS from_priority,
                fpie.id AS id,
@@ -42,6 +43,7 @@ class EmployeeRepository @Inject constructor(
                fpie.pass_code AS pass_code,
                fpie.store_number AS store_number,
                fpie.active AS active,
+               fpie.department AS department,
                'ext' AS loc
             FROM fastinfo_prod_import.employee_vw fpie
             WHERE coalesce(trim(fpie.pass_code), '') <> ''
@@ -56,6 +58,7 @@ class EmployeeRepository @Inject constructor(
                e.pass_code AS pass_code,
                e.store_number AS store_number,
                e.active AS active,
+               e.department AS department,
                'int' AS loc
             FROM employee e
             WHERE coalesce(trim(e.pass_code), '') <> ''
@@ -80,6 +83,7 @@ class EmployeeRepository @Inject constructor(
          first_name_mi AS e_first_name_mi,
          pass_code AS e_pass_code,
          active AS e_active,
+         department AS e_department,
          loc AS e_loc,
          s.s_id AS s_id,
          s.s_time_created AS s_time_created,
@@ -199,18 +203,7 @@ class EmployeeRepository @Inject constructor(
             "active" to entity.active
          ),
          RowMapper { rs, _ ->
-            Employee(
-               id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               loc = "int",
-               number = rs.getInt("number"),
-               lastName = rs.getString("last_name"),
-               firstNameMi = rs.getString("first_name_mi"),
-               passCode = rs.getString("pass_code"),
-               store = entity.store,
-               active = rs.getBoolean("active")
-            )
+            mapDDLRow(rs, entity.store)
          }
       )
    }
@@ -242,21 +235,26 @@ class EmployeeRepository @Inject constructor(
             "active" to entity.active
          ),
          RowMapper { rs, _ ->
-            Employee(
-               id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               loc = "int",
-               number = rs.getInt("number"),
-               lastName = rs.getString("last_name"),
-               firstNameMi = rs.getString("first_name_mi"),
-               passCode = rs.getString("pass_code"),
-               store = entity.store,
-               active = rs.getBoolean("active")
-            )
+            mapDDLRow(rs, entity.store)
          }
       )
    }
+
+   private fun mapDDLRow(rs: ResultSet, store: Store) : Employee =
+      Employee(
+         id = rs.getLong("id"),
+         timeCreated = rs.getOffsetDateTime("time_created"),
+         timeUpdated = rs.getOffsetDateTime("time_updated"),
+         loc = "int",
+         number = rs.getInt("number"),
+         lastName = rs.getString("last_name"),
+         firstNameMi = rs.getString("first_name_mi"),
+         passCode = rs.getString("pass_code"),
+         store = store,
+         active = rs.getBoolean("active"),
+         department = rs.getString("department")
+      )
+
 
    @Cacheable("user-cache")
    fun canEmployeeAccess(loc: String, asset: String, id: Long): Boolean {
@@ -280,6 +278,7 @@ class EmployeeRepository @Inject constructor(
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),
          passCode = rs.getString("${columnPrefix}pass_code"),
          store = storeRepository.mapRow(rs, "s_"),
-         active = rs.getBoolean("${columnPrefix}active")
+         active = rs.getBoolean("${columnPrefix}active"),
+         department = rs.getString("${columnPrefix}department")
       )
 }
