@@ -12,16 +12,13 @@ class AuditStatusControllerSpecification extends ControllerSpecificationBase {
       final response = get "/audit/status"
 
       then:
-      response.size() == 6
-      response.collect { new AuditStatusValueObject(it) }.containsAll(
-         [
-             new AuditStatusValueObject("OPENED", "Opened"),
-             new AuditStatusValueObject("IN-PROGRESS", "In Progress"),
-             new AuditStatusValueObject("COMPLETED", "Completed"),
-             new AuditStatusValueObject("CANCELED", "Canceled"),
-             new AuditStatusValueObject("SIGNED-OFF", "Signed Off"),
-             new AuditStatusValueObject("CLOSED", "Closed"),
-         ]
-      )
+      response.size() == 5
+      response.collect { new AuditStatusValueObject(it) }.sort { o1, o2 -> o1.value <=> o2.value } == [
+          new AuditStatusValueObject("OPENED", "Opened"),
+          new AuditStatusValueObject("IN-PROGRESS", "In Progress"),
+          new AuditStatusValueObject("COMPLETED", "Completed"),
+          new AuditStatusValueObject("CANCELED", "Canceled"),
+          new AuditStatusValueObject("SIGNED-OFF", "Signed Off"),
+      ].sort { o1, o2 -> o1.value <=> o2.value }
    }
 }

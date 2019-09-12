@@ -22,7 +22,7 @@ object AuditExceptionNoteFactory {
 
       return IntStream.range(0, number).mapToObj {
          AuditExceptionNote(
-            note = lorem.characters(3, 200),
+            note = lorem.characters(4, 200),
             auditException = auditException
          )
       }

@@ -28,7 +28,7 @@ data class AuditExceptionNoteValueObject(
    var timeUpdated: OffsetDateTime? = null,
 
    @field:NotNull
-   @field:Size(min = 5, max = 200)
+   @field:Size(min = 4, max = 200)
    @field:Schema(name = "note", description = "One of possibly many notes to be associated with an AuditException")
    var note: String? = null
 

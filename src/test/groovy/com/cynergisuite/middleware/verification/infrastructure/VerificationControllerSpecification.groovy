@@ -91,9 +91,10 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      final def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
+      def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
 
       then:
+      notThrown(HttpClientResponseException)
       savedVerification.id != null
       savedVerification.id > 0
       savedVerification.customerAccount == verification.customerAccount
@@ -107,9 +108,10 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def verification = VerificationTestDataLoader.stream(1, false, false, false, false).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      final def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
+      def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
 
       then:
+      notThrown(HttpClientResponseException)
       savedVerification.id != null
       savedVerification.id > 0
       savedVerification.customerAccount == verification.customerAccount
@@ -175,9 +177,10 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def verification = VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      final def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
+      def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
 
       then:
+      notThrown(HttpClientResponseException)
       savedVerification.id != null
       savedVerification.id > 0
       savedVerification.customerAccount == verification.customerAccount
@@ -214,9 +217,10 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
       when:
       toUpdateVerification.customerComments = "Updated comments"
-      final def updatedVerification = client.retrieve(PUT(path, toUpdateVerification), VerificationValueObject)
+      def updatedVerification = client.retrieve(PUT(path, toUpdateVerification), VerificationValueObject)
 
       then:
+      notThrown(HttpClientResponseException)
       updatedVerification == toUpdateVerification
    }
 
@@ -229,9 +233,10 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       toUpdate.references.add(VerificationReferenceTestDataLoader.stream(1, toUpdate).findFirst().orElseThrow { new Exception("Unable to create VerificationReference") })
 
       when:
-      final def updatedVerification = client.retrieve(PUT(path, new VerificationValueObject(toUpdate)), VerificationValueObject)
+      def updatedVerification = client.retrieve(PUT(path, new VerificationValueObject(toUpdate)), VerificationValueObject)
 
       then:
+      notThrown(HttpClientResponseException)
       updatedVerification.id != null
       updatedVerification.id > 0
       updatedVerification.customerAccount == verification.customerAccount
@@ -250,10 +255,11 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       savedVerification.references.remove(5) // remove the last one
 
       when:
-      final def updatedVerification = client.retrieve(PUT(path, savedVerification), VerificationValueObject)
-      final def dbReferences = verificationReferenceRepository.findAll(verification)
+      def updatedVerification = client.retrieve(PUT(path, savedVerification), VerificationValueObject)
+      def dbReferences = verificationReferenceRepository.findAll(verification)
 
       then:
+      notThrown(HttpClientResponseException)
       updatedVerification.id != null
       updatedVerification.id > 0
       updatedVerification.customerAccount == savedVerification.customerAccount
@@ -276,10 +282,11 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       savedVerification.references.remove(1)
 
       when:
-      final def updatedVerification = client.retrieve(PUT(path, savedVerification), VerificationValueObject)
-      final def dbReferences = verificationReferenceRepository.findAll(verification) // query the db for what it actually has
+      def updatedVerification = client.retrieve(PUT(path, savedVerification), VerificationValueObject)
+      def dbReferences = verificationReferenceRepository.findAll(verification) // query the db for what it actually has
 
       then:
+      notThrown(HttpClientResponseException)
       updatedVerification.id != null
       updatedVerification.id > 0
       updatedVerification.customerAccount == savedVerification.customerAccount

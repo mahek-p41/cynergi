@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
-@Schema(name = "AuditDetailCreate", description = "Payload required to create an audit detail entity")
+@Schema(name = "AuditDetailCreate", title = "Requirements for creating an Audit Detail", description = "Payload required to create an audit detail entity")
 data class AuditDetailCreateValueObject(
 
    @field:Valid

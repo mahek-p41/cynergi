@@ -29,8 +29,6 @@ class AuditService @Inject constructor(
 
    @Validated
    fun fetchAll(@Valid pageRequest: AuditPageRequest, locale: Locale): Page<AuditValueObject> {
-      auditValidator.validateFetchAll(pageRequest)
-
       val found: RepositoryPage<Audit> = auditRepository.findAll(pageRequest = pageRequest)
 
       return found.toPage(pageRequest) {
@@ -42,7 +40,7 @@ class AuditService @Inject constructor(
       auditRepository.exists(id = id)
 
    @Validated
-   fun create(@Valid vo: AuditValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
+   fun create(@Valid vo: AuditCreateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
       auditValidator.validateCreate(vo)
 
       val audit = auditRepository.insert(

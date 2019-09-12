@@ -1,6 +1,22 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE SCHEMA fastinfo_prod_import;
 
+CREATE TABLE fastinfo_prod_import.department_vw (
+    id               BIGSERIAL                              NOT NULL PRIMARY KEY,
+    code             VARCHAR(2)                             NOT NULL,
+    description      VARCHAR(12)                            NOT NULL,
+    security_profile INTEGER                                NOT NULL,
+    default_menu     VARCHAR(8)                             NOT NULL,
+    time_created     TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
+    time_updated     TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL
+);
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('OF', 'OFFICE', 90001, 'RSSSMENU');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('MG', 'MANAGEMENT', 90000, 'RSSSMENU');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('DM', 'DISTRICT MGR', 90002, 'MENUR2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('SM', 'STORE MANAGE', 90003, 'MENUR2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('AM', 'ACCOUNT MGR', 90004, 'MENUR2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES (' S', 'ASST MGR', 90006, 'MENUR2');
+
 CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that will be created by the cynergi-data-migration project
     id            BIGSERIAL                                           NOT NULL PRIMARY KEY,
     number        INTEGER     CHECK( number > 0 )                     NOT NULL,
@@ -8,6 +24,7 @@ CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that wi
     last_name     VARCHAR(15) CHECK( char_length(last_name) > 1)      NOT NULL,
     first_name_mi VARCHAR(15) CHECK( char_length(first_name_mi) > 1)  NOT NULL,
     pass_code     VARCHAR(6)  CHECK( char_length(pass_code) > 0 )     NOT NULL,
+    department    VARCHAR(2),
     active        BOOLEAN     DEFAULT TRUE                            NOT NULL,
     time_created  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
     time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL

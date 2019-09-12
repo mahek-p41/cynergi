@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
@@ -225,7 +226,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit" () {
       when:
-      def result = post("/$path", new AuditValueObject())
+      def result = post("/$path", new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)
@@ -240,7 +241,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit with invalid store" () {
       when:
-      post("/$path", new AuditValueObject(new StoreValueObject([number: 13])))
+      post("/$path", new AuditCreateValueObject([store:  new StoreValueObject([number: 13])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -255,8 +256,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       given:
       final store = storeFactoryService.store(1)
-      auditFactoryService.single(store)
-      final newAudit = AuditFactory.single(store).with { new AuditValueObject(it, locale, localizationService) }
+      final existingAudit = auditFactoryService.single(store)
+      final newAudit = AuditFactory.single(store).with { new AuditCreateValueObject([store: new StoreValueObject(it.store)]) }
 
       when:
       post("/$path", newAudit)
@@ -275,7 +276,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      def result = put("/$path", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'IN-PROGRESS'])]))
+      def result = put("/$path", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'IN-PROGRESS'])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -444,7 +445,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "process audit from OPENED to IN-PROGRESS finally to COMPLETED" () {
       when:
-      def openedResult = post("/$path", new AuditValueObject([store: new StoreValueObject(number: 3)]))
+      def openedResult = post("/$path", new AuditCreateValueObject([store: new StoreValueObject(number: 3)]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -534,7 +535,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditRepository.countAuditsNotCompleted(audit.store.number) == 0
 
       when:
-      def result = post("/$path", new AuditValueObject())
+      def result = post("/$path", new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)

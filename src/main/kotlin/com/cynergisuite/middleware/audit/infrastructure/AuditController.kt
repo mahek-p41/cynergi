@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
@@ -87,7 +88,7 @@ class AuditController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("audit-save")
+   @AccessControl("audit-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in he OPENED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [
@@ -97,7 +98,7 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body audit: AuditValueObject,
+      @Body audit: AuditCreateValueObject,
       authentication: Authentication?,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {

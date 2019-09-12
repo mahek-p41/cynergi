@@ -9,7 +9,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "NotificationRecipient", description = "The person who a Notification is intended for")
+@Schema(name = "NotificationRecipient", title = "Employee receiving a Notification", description = "The person who a Notification is intended for")
 data class NotificationRecipientValueObject (
 
    @field:Positive

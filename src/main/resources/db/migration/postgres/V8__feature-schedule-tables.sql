@@ -7,7 +7,7 @@ CREATE TABLE schedule_type_domain (
 );
 CREATE UNIQUE INDEX schedule_type_domain_value ON schedule_type_domain (value);
 
-INSERT INTO schedule_type_domain(id, value, description, localization_code) VALUES (1, 'CRON', 'Cron style schedule', 'schedule.cron');
+INSERT INTO schedule_type_domain(id, value, description, localization_code) VALUES (1, 'HOURLY', 'Hourly', 'schedule.hourly');
 
 CREATE TABLE schedule (
    id                BIGSERIAL                                             NOT NULL PRIMARY KEY,

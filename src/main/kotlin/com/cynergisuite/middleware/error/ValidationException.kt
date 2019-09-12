@@ -8,6 +8,6 @@ class ValidationException(
 ): Exception()
 
 data class ValidationError(
-   val path: String,
+   val path: String?,
    val localizationCode: LocalizationCode
 )

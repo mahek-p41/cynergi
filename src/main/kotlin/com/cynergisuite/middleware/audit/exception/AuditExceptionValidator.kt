@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.AuditExceptionMustHaveInventoryOrBarcode
+import com.cynergisuite.middleware.localization.AuditHasBeenSignedOffNoNewNotesAllowed
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
 import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
 import com.cynergisuite.middleware.localization.NotFound
@@ -72,10 +73,17 @@ class AuditExceptionValidator @Inject constructor (
    fun validateAddNote(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
       val auditExceptionId = auditExceptionUpdate.id!!
       val errors = doSharedValidation(auditId)
+      val audit: Audit = auditRepository.findOne(auditId)!!
 
       if (auditExceptionsRepository.doesNotExist(auditExceptionId)) {
          errors.add(
             ValidationError("id", NotFound(auditExceptionId))
+         )
+      }
+
+      if (audit.currentStatus().value == "SIGNED-OFF") {
+         errors.add(
+            ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
          )
       }
 

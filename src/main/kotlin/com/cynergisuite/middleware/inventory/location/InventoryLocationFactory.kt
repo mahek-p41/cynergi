@@ -9,7 +9,8 @@ object InventoryLocationFactory {
       InventoryLocationType(5, "LOANER", "Item is on loan from the manufacturer", "inventory.value.loaner"),
       InventoryLocationType(6, "SERVICE", "Item is being serviced", "inventory.value.service"),
       InventoryLocationType(7, "STOLEN", "Item has been stolen", "inventory.value.stolen"),
-      InventoryLocationType(8, "CHARGEOFF", "Item has been charged off", "inventory.value.chargeoff")
+      InventoryLocationType(8, "CHARGEOFF", "Item has been charged off", "inventory.value.chargeoff"),
+      InventoryLocationType(9, "ON-RENT", "Item has been rented out", "inventory.value.on-rent")
    )
 
    @JvmStatic

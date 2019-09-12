@@ -472,4 +472,22 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes[0].note == noteText
       result.audit.id == savedAuditException.audit.entityId()
    }
+
+   void "update audit exception that has been signed-off" () {
+      given:
+      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit)
+
+      when:
+      put("/audit/${audit.entityId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
+
+      then:
+      def e = thrown(HttpClientResponseException)
+      e.status == BAD_REQUEST
+      final response = e.response.bodyAsJson()
+      response.size() == 1
+      response.collect { new ErrorValueObject(it) } == [
+         new ErrorValueObject("Audit ${audit.id} has already been Signed Off. No new notes allowed", null)
+      ]
+   }
 }
