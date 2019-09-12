@@ -14,9 +14,11 @@ data class InventoryLocationTypeValueObject(
 
    @field:NotNull
    @field:Size(min = 3, max = 15)
+   @field:Schema(name = "value", description = "System interpretable value, most likely all caps", example = "STORE")
    var value: String,
 
    @field:Size(min = 3, max = 50)
+   @field:Schema(name = "description", description = "Human readable description that is good for detailed display", example = "Store")
    var description: String? = null
 ) {
    constructor(entity: InventoryLocationType, localizedDescription: String) :

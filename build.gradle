@@ -95,7 +95,7 @@ dependencies {
    implementation "com.github.javafaker:javafaker:0.16"
 
    testCompile platform("io.micronaut:micronaut-bom:$micronautVersion")
-   testCompile "org.junit.jupiter:junit-jupiter:5.5.2"
+   testCompile "org.junit.jupiter:junit-jupiter:$junitVersion"
    testCompile "org.codehaus.groovy:groovy-all:2.5.7"
    testCompile "org.spockframework:spock-core"
    testCompile "io.micronaut:micronaut-http-client"
@@ -106,7 +106,7 @@ dependencies {
    testRuntime "net.bytebuddy:byte-buddy:1.8.21"
    testRuntime "org.objenesis:objenesis:2.6"
    testCompile "org.assertj:assertj-core:3.12.2"
-   testRuntime "org.junit.vintage:junit-vintage-engine:5.5.2"
+   testRuntime "org.junit.vintage:junit-vintage-engine:$junitVersion"
 }
 
 test.classpath += configurations.developmentOnly
