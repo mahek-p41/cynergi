@@ -100,10 +100,11 @@ class StoreRepository @Inject constructor(
    }
 
    fun maybeMapRow(rs: ResultSet, columnPrefix: String): Store? =
-      if (rs.getString("${columnPrefix}id") != null)
+      if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix)
-      else
+      } else {
          null
+      }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): Store =
       simpleStoreRowMapper.mapRow(rs, columnPrefix)

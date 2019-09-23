@@ -71,7 +71,7 @@ class AuditExceptionService @Inject constructor(
 
       val auditException = auditExceptionRepository.findOne(vo.id!!)!!
 
-      auditException.notes.add(AuditExceptionNote(vo.note!!, auditException))
+      auditException.notes.add(AuditExceptionNote(vo.note!!, employee, auditException))
 
       return transformEntity(
          auditExceptionRepository.update(auditException),

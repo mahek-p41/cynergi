@@ -4,6 +4,9 @@ import com.cynergisuite.middleware.audit.exception.AuditException
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
+import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeFactory
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -14,15 +17,17 @@ import javax.inject.Singleton
 object AuditExceptionNoteFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditException? = null): Stream<AuditExceptionNote> {
+   fun stream(numberIn: Int = 1, auditExceptionIn: AuditException? = null, enteredByIn: Employee? = null): Stream<AuditExceptionNote> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val auditException = auditExceptionIn ?: AuditExceptionFactory.single()
+      val enteredBy = enteredByIn ?: EmployeeFactory.single()
       val lorem = faker.lorem()
 
       return IntStream.range(0, number).mapToObj {
          AuditExceptionNote(
             note = lorem.characters(4, 200),
+            enteredBy = enteredBy,
             auditException = auditException
          )
       }
@@ -37,12 +42,14 @@ object AuditExceptionNoteFactory {
 @Requires(env = ["demo", "test"])
 class AuditExceptionNoteFactoryService @Inject constructor(
    private val auditExceptionFactoryService: AuditExceptionFactoryService,
-   private val auditExceptionNoteRepository: AuditExceptionNoteRepository
+   private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
+   private val employeeFactoryService: EmployeeFactoryService
 ) {
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditException? = null): Stream<AuditExceptionNote> {
+   fun stream(numberIn: Int = 1, auditExceptionIn: AuditException? = null, enteredByIn: Employee? = null): Stream<AuditExceptionNote> {
       val auditException = auditExceptionIn ?: auditExceptionFactoryService.single()
+      val enteredBy = enteredByIn ?: employeeFactoryService.single()
 
-      return AuditExceptionNoteFactory.stream(numberIn, auditException)
+      return AuditExceptionNoteFactory.stream(numberIn, auditException, enteredBy)
          .map {
             auditExceptionNoteRepository.insert(it)
          }

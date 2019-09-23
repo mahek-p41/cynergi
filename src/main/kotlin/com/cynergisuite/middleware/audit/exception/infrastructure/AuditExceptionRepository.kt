@@ -80,7 +80,24 @@ class AuditExceptionRepository @Inject constructor(
             aen.time_created AS aen_time_created,
             aen.time_updated AS aen_time_updated,
             aen.note AS aen_note,
-            aen.audit_exception_id AS aen_audit_exception_id
+            aen.entered_by AS aen_entered_by,
+            aen.audit_exception_id AS aen_audit_exception_id,
+            noteEmployee.e_id AS noteEmployee_id,
+            noteEmployee.e_time_created AS noteEmployee_time_created,
+            noteEmployee.e_time_updated AS noteEmployee_time_updated,
+            noteEmployee.e_number AS noteEmployee_number,
+            noteEmployee.e_last_name AS noteEmployee_last_name,
+            noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
+            noteEmployee.e_pass_code AS noteEmployee_pass_code,
+            noteEmployee.e_active AS noteEmployee_active,
+            noteEmployee.e_department AS noteEmployee_department,
+            noteEmployee.e_loc AS noteEmployee_loc,
+            noteEmployee.s_id AS noteEmployee_store_id,
+            noteEmployee.s_time_created AS noteEmployee_store_time_created,
+            noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
+            noteEmployee.s_number AS noteEmployee_store_number,
+            noteEmployee.s_name AS noteEmployee_store_name,
+            noteEmployee.s_dataset AS noteEmployee_store_dataset
          FROM audit_exception ae
               JOIN ae_employees e
                 ON ae.scanned_by = e.e_number
@@ -88,15 +105,21 @@ class AuditExceptionRepository @Inject constructor(
                 ON ae.scan_area_id = asatd.id
               LEFT OUTER JOIN audit_exception_note aen
                 ON ae.id = aen.audit_exception_id
+              LEFT OUTER JOIN ae_employees noteEmployee
+                ON aen.entered_by = noteEmployee.e_number
          WHERE ae.id = :id""".trimIndent(), mapOf("id" to id),
          RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
+            val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
 
             mapRow(rs, scanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
          }
       ) { auditException, rs ->
-         auditExceptionNoteRepository.mapRow(rs, "aen_")?.also { auditException.notes.add(it) }
+         val enteredBy = employeeRepository.maybeMapRow(rs, "noteEmployee_", "noteEmployee_store_")
+
+         if (enteredBy != null) {
+            auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
+         }
       }
 
       logger.trace("Searching for AuditException: {} resulted in {}", id, found)
@@ -162,10 +185,28 @@ class AuditExceptionRepository @Inject constructor(
                aen.time_created AS aen_time_created,
                aen.time_updated AS aen_time_updated,
                aen.note AS aen_note,
-               aen.audit_exception_id AS aen_audit_exception_id
+               aen.audit_exception_id AS aen_audit_exception_id,
+               noteEmployee.e_id AS noteEmployee_id,
+               noteEmployee.e_time_created AS noteEmployee_time_created,
+               noteEmployee.e_time_updated AS noteEmployee_time_updated,
+               noteEmployee.e_number AS noteEmployee_number,
+               noteEmployee.e_last_name AS noteEmployee_last_name,
+               noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
+               noteEmployee.e_pass_code AS noteEmployee_pass_code,
+               noteEmployee.e_active AS noteEmployee_active,
+               noteEmployee.e_department AS noteEmployee_department,
+               noteEmployee.e_loc AS noteEmployee_loc,
+               noteEmployee.s_id AS noteEmployee_store_id,
+               noteEmployee.s_time_created AS noteEmployee_store_time_created,
+               noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
+               noteEmployee.s_number AS noteEmployee_store_number,
+               noteEmployee.s_name AS noteEmployee_store_name,
+               noteEmployee.s_dataset AS noteEmployee_store_dataset
             FROM audit_exceptions ae
                  LEFT OUTER JOIN audit_exception_note aen
                    ON ae.ae_id = aen.audit_exception_id
+                 LEFT OUTER JOIN ae_employees noteEmployee
+                   ON aen.entered_by = noteEmployee.e_number
             ORDER BY ae.ae_id, aen.id ASC
          )
          SELECT p.* FROM paged AS p
@@ -184,7 +225,11 @@ class AuditExceptionRepository @Inject constructor(
             mapRow(rs, scanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
          }
       ) { auditException, rs ->
-         auditExceptionNoteRepository.mapRow(rs, "aen_")?.also { auditException.notes.add(it) }
+         val enteredBy = employeeRepository.maybeMapRow(rs, "noteEmployee_", "noteEmployee_store_")
+
+         if (enteredBy != null) {
+            auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
+         }
       }
 
       return RepositoryPage(

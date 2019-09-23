@@ -267,7 +267,7 @@ class EmployeeRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "e_"): Employee  =
+   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): Employee  =
       Employee(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
@@ -277,8 +277,15 @@ class EmployeeRepository @Inject constructor(
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),
          passCode = rs.getString("${columnPrefix}pass_code"),
-         store = storeRepository.mapRow(rs, "s_"),
+         store = storeRepository.mapRow(rs, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = rs.getString("${columnPrefix}department")
       )
+
+   fun maybeMapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): Employee?  =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, columnPrefix)
+      } else {
+         null
+      }
 }

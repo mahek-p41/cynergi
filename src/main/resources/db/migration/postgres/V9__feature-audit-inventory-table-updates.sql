@@ -81,6 +81,7 @@ CREATE TABLE audit_exception_note (
     time_created       TIMESTAMPTZ  DEFAULT clock_timestamp()       NOT NULL,
     time_updated       TIMESTAMPTZ  DEFAULT clock_timestamp()       NOT NULL,
     note               VARCHAR(200) CHECK ( char_length(note) > 3 ) NOT NULL,
+    entered_by         INTEGER      CHECK ( entered_by > -1 )       NOT NULL,
     audit_exception_id BIGINT       REFERENCES audit_exception(id)  NOT NULL
 );
 CREATE INDEX audit_exception_note_audit_exception_id_idx ON audit_exception_note (audit_exception_id);

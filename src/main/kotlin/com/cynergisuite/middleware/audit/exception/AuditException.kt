@@ -43,7 +43,7 @@ data class AuditException(
          scannedBy = Employee(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
-         notes = vo.notes.asSequence().map { AuditExceptionNote(it, vo.audit!!.valueObjectId()!!) }.toMutableList(),
+         notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.valueObjectId()!!) }.toMutableList(),
          audit = SimpleIdentifiableEntity(vo.audit!!)
       )
 
