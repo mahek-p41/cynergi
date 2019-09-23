@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS  corrto.level1_loc_emps ( -- create stand-in table th
    emp_pass_4        VARCHAR(1),
    emp_pass_5        VARCHAR(1),
    emp_pass_6        VARCHAR(1),
+   emp_dept          VARCHAR(2),
    created_at        TIMESTAMP DEFAULT clock_timestamp() NOT NULL,
    updated_at        TIMESTAMP DEFAULT clock_timestamp() NOT NULL
 );
