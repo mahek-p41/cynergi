@@ -43,6 +43,8 @@ data class AuditExceptionNoteValueObject(
    constructor(entity: AuditExceptionNote) :
       this(
          id = entity.id,
+         timeCreated = entity.timeCreated,
+         timeUpdated = entity.timeUpdated,
          enteredBy = EmployeeValueObject(entity.enteredBy),
          note = entity.note
       )

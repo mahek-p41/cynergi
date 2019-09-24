@@ -79,6 +79,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes[0].id == auditNote.id
       result.notes[0].note == auditNote.note
       result.notes[0].enteredBy.number == auditNote.enteredBy.number
+      result.notes[0].timeCreated.with { OffsetDateTime.parse(it) } == auditNote.timeCreated
+      result.notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == auditNote.timeUpdated
    }
 
    void "fetch one audit exception with a two attached notes" () {
@@ -95,7 +97,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes.size() == 2
       result.id == auditException.id
       result.audit.id == auditException.audit.entityId()
-      result.notes.collect { new AuditExceptionNoteValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditNotes
+      result.notes
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect { new AuditExceptionNoteValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditNotes
    }
 
    void "fetch all exceptions for a single audit" () {
@@ -180,61 +185,61 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneAuditExceptions[0].notes.size() == 2
       pageOneAuditExceptions[0].notes[0].id == firstFiveDiscrepancies[0].notes[0].id
       pageOneAuditExceptions[0].notes[0].note == firstFiveDiscrepancies[0].notes[0].note
-      pageOneAuditExceptions[0].notes[0].timeCreated == firstFiveDiscrepancies[0].notes[0].timeCreated
-      pageOneAuditExceptions[0].notes[0].timeUpdated == firstFiveDiscrepancies[0].notes[0].timeUpdated
+      pageOneAuditExceptions[0].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[0].timeCreated
+      pageOneAuditExceptions[0].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[0].timeUpdated
       pageOneAuditExceptions[0].notes[0].enteredBy.number == authenticatedEmployee.number
       pageOneAuditExceptions[0].notes[1].id == firstFiveDiscrepancies[0].notes[1].id
       pageOneAuditExceptions[0].notes[1].note == firstFiveDiscrepancies[0].notes[1].note
-      pageOneAuditExceptions[0].notes[1].timeCreated == firstFiveDiscrepancies[0].notes[0].timeCreated
-      pageOneAuditExceptions[0].notes[1].timeUpdated == firstFiveDiscrepancies[0].notes[0].timeUpdated
+      pageOneAuditExceptions[0].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[1].timeCreated
+      pageOneAuditExceptions[0].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[1].timeUpdated
       pageOneAuditExceptions[0].notes[1].enteredBy.number == authenticatedEmployee.number
 
       pageOneAuditExceptions[1].notes.size() == 2
       pageOneAuditExceptions[1].notes[0].id == firstFiveDiscrepancies[1].notes[0].id
       pageOneAuditExceptions[1].notes[0].note == firstFiveDiscrepancies[1].notes[0].note
-      pageOneAuditExceptions[1].notes[0].timeCreated == firstFiveDiscrepancies[1].notes[0].timeCreated
-      pageOneAuditExceptions[1].notes[0].timeUpdated == firstFiveDiscrepancies[1].notes[0].timeUpdated
+      pageOneAuditExceptions[1].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[0].timeCreated
+      pageOneAuditExceptions[1].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[0].timeUpdated
       pageOneAuditExceptions[1].notes[0].enteredBy.number == authenticatedEmployee.number
       pageOneAuditExceptions[1].notes[1].id == firstFiveDiscrepancies[1].notes[1].id
       pageOneAuditExceptions[1].notes[1].note == firstFiveDiscrepancies[1].notes[1].note
-      pageOneAuditExceptions[1].notes[1].timeCreated == firstFiveDiscrepancies[1].notes[0].timeCreated
-      pageOneAuditExceptions[1].notes[1].timeUpdated == firstFiveDiscrepancies[1].notes[0].timeUpdated
+      pageOneAuditExceptions[1].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[1].timeCreated
+      pageOneAuditExceptions[1].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[1].timeUpdated
       pageOneAuditExceptions[1].notes[1].enteredBy.number == authenticatedEmployee.number
 
       pageOneAuditExceptions[2].notes.size() == 2
       pageOneAuditExceptions[2].notes[0].id == firstFiveDiscrepancies[2].notes[0].id
       pageOneAuditExceptions[2].notes[0].note == firstFiveDiscrepancies[2].notes[0].note
-      pageOneAuditExceptions[2].notes[0].timeCreated == firstFiveDiscrepancies[2].notes[0].timeCreated
-      pageOneAuditExceptions[2].notes[0].timeUpdated == firstFiveDiscrepancies[2].notes[0].timeUpdated
+      pageOneAuditExceptions[2].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[0].timeCreated
+      pageOneAuditExceptions[2].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[0].timeUpdated
       pageOneAuditExceptions[2].notes[0].enteredBy.number == authenticatedEmployee.number
       pageOneAuditExceptions[2].notes[1].id == firstFiveDiscrepancies[2].notes[1].id
       pageOneAuditExceptions[2].notes[1].note == firstFiveDiscrepancies[2].notes[1].note
-      pageOneAuditExceptions[2].notes[1].timeCreated == firstFiveDiscrepancies[2].notes[0].timeCreated
-      pageOneAuditExceptions[2].notes[1].timeUpdated == firstFiveDiscrepancies[2].notes[0].timeUpdated
+      pageOneAuditExceptions[2].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[1].timeCreated
+      pageOneAuditExceptions[2].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[1].timeUpdated
       pageOneAuditExceptions[2].notes[1].enteredBy.number == authenticatedEmployee.number
 
       pageOneAuditExceptions[3].notes.size() == 2
       pageOneAuditExceptions[3].notes[0].id == firstFiveDiscrepancies[3].notes[0].id
       pageOneAuditExceptions[3].notes[0].note == firstFiveDiscrepancies[3].notes[0].note
-      pageOneAuditExceptions[3].notes[0].timeCreated == firstFiveDiscrepancies[3].notes[0].timeCreated
-      pageOneAuditExceptions[3].notes[0].timeUpdated == firstFiveDiscrepancies[3].notes[0].timeUpdated
+      pageOneAuditExceptions[3].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[0].timeCreated
+      pageOneAuditExceptions[3].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[0].timeUpdated
       pageOneAuditExceptions[3].notes[0].enteredBy.number == authenticatedEmployee.number
       pageOneAuditExceptions[3].notes[1].id == firstFiveDiscrepancies[3].notes[1].id
       pageOneAuditExceptions[3].notes[1].note == firstFiveDiscrepancies[3].notes[1].note
-      pageOneAuditExceptions[3].notes[1].timeCreated == firstFiveDiscrepancies[3].notes[0].timeCreated
-      pageOneAuditExceptions[3].notes[1].timeUpdated == firstFiveDiscrepancies[3].notes[0].timeUpdated
+      pageOneAuditExceptions[3].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[1].timeCreated
+      pageOneAuditExceptions[3].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[1].timeUpdated
       pageOneAuditExceptions[3].notes[1].enteredBy.number == authenticatedEmployee.number
 
       pageOneAuditExceptions[4].notes.size() == 2
       pageOneAuditExceptions[4].notes[0].id == firstFiveDiscrepancies[4].notes[0].id
       pageOneAuditExceptions[4].notes[0].note == firstFiveDiscrepancies[4].notes[0].note
-      pageOneAuditExceptions[4].notes[0].timeCreated == firstFiveDiscrepancies[4].notes[0].timeCreated
-      pageOneAuditExceptions[4].notes[0].timeUpdated == firstFiveDiscrepancies[4].notes[0].timeUpdated
+      pageOneAuditExceptions[4].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[0].timeCreated
+      pageOneAuditExceptions[4].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[0].timeUpdated
       pageOneAuditExceptions[4].notes[0].enteredBy.number == authenticatedEmployee.number
       pageOneAuditExceptions[4].notes[1].id == firstFiveDiscrepancies[4].notes[1].id
       pageOneAuditExceptions[4].notes[1].note == firstFiveDiscrepancies[4].notes[1].note
-      pageOneAuditExceptions[4].notes[1].timeCreated == firstFiveDiscrepancies[4].notes[0].timeCreated
-      pageOneAuditExceptions[4].notes[1].timeUpdated == firstFiveDiscrepancies[4].notes[0].timeUpdated
+      pageOneAuditExceptions[4].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[1].timeCreated
+      pageOneAuditExceptions[4].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[1].timeUpdated
       pageOneAuditExceptions[4].notes[1].enteredBy.number == authenticatedEmployee.number
    }
 
