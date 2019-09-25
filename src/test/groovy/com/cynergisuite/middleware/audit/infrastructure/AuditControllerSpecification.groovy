@@ -95,6 +95,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].store.id == store.id
       pageOneResult.elements[0].actions.size() == 1
       pageOneResult.elements[0].actions[0].status.value == "OPENED"
+      pageOneResult.elements[0].actions[0].status.color == "FF0000"
       pageOneResult.elements[0].actions[0].id == firstFiveAudits[0].actions[0].id
 
       when:
@@ -107,6 +108,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements[0].actions.size() == 1
       pageTwoResult.elements[0].actions[0].status.value == "OPENED"
+      pageTwoResult.elements[0].actions[0].status.color == "FF0000"
       pageTwoResult.elements[0].id == secondFiveAudits[0].id
 
       when:

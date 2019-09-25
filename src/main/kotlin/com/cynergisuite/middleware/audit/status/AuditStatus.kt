@@ -8,6 +8,7 @@ data class AuditStatus(
    val value: String,
    val description: String,
    val localizationCode: String,
+   val color: String,
    val nextStates: MutableSet<AuditStatus> = LinkedHashSet()
 ) : TypeDomainEntity<AuditStatus> {
    private val myHashCode: Int = HashCodeBuilder()

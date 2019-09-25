@@ -14,11 +14,11 @@ class AuditStatusControllerSpecification extends ControllerSpecificationBase {
       then:
       response.size() == 5
       response.collect { new AuditStatusValueObject(it) }.sort { o1, o2 -> o1.value <=> o2.value } == [
-          new AuditStatusValueObject("OPENED", "Opened"),
-          new AuditStatusValueObject("IN-PROGRESS", "In Progress"),
-          new AuditStatusValueObject("COMPLETED", "Completed"),
-          new AuditStatusValueObject("CANCELED", "Canceled"),
-          new AuditStatusValueObject("SIGNED-OFF", "Signed Off"),
+          new AuditStatusValueObject("OPENED", "Opened", "FF0000"),
+          new AuditStatusValueObject("IN-PROGRESS", "In Progress", "FF6600"),
+          new AuditStatusValueObject("COMPLETED", "Completed", "FFCC00"),
+          new AuditStatusValueObject("CANCELED", "Canceled", "CCFF00"),
+          new AuditStatusValueObject("SIGNED-OFF", "Signed Off", "66FF00"),
       ].sort { o1, o2 -> o1.value <=> o2.value }
    }
 }

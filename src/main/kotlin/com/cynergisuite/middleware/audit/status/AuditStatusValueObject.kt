@@ -19,13 +19,18 @@ data class AuditStatusValueObject (
 
    @field:Size(min = 3, max = 50)
    @field:Schema(name = "description", description = "A localized description suitable for showing the user")
-   var description: String? = null
+   var description: String? = null,
+
+   @field:Size(min = 6, max = 6)
+   @field:Schema(name= "color", description = "A hex color code describing what color to be used when displaying this status")
+   var color: String? = null
 
 ) {
 
    constructor(entity: AuditStatus, localizedDescription: String) :
       this(
          value = entity.value,
-         description = localizedDescription
+         description = localizedDescription,
+         color = entity.color
       )
 }
