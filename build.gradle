@@ -136,6 +136,7 @@ allOpen {
 
 noArg {
    annotation("com.cynergisuite.domain.ValueObject")
+   annotation("com.cynergisuite.domain.DataTransferObject")
    invokeInitializers = true
 }
 

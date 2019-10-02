@@ -7,7 +7,10 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditStatusReportDataTransferObject
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
+import com.cynergisuite.middleware.audit.status.AuditStatus
+import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -20,6 +23,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.lang.StringBuilder
 import java.sql.ResultSet
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -247,6 +251,52 @@ class AuditRepository @Inject constructor(
       logger.trace("Checking if Audit: {} exists resulted in {}", id, exists)
 
       return exists
+   }
+
+   fun generateReport(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusReportDataTransferObject> {
+      return jdbc.query("""
+         WITH status AS (
+            SELECT
+               csastd.value AS current_status,
+               csastd.description AS current_status_description,
+               csastd.localization_code AS current_status_localization_code,
+               csastd.color AS current_status_color,
+               csaa.audit_id AS audit_id,
+               csaa.id
+            FROM audit_action csaa
+               JOIN audit_status_type_domain csastd
+                 ON csaa.status_id = csastd.id
+            ),
+            maxStatus AS (
+               SELECT MAX(id) AS current_status_id, audit_id
+               FROM audit_action
+               GROUP BY audit_id
+            )
+         SELECT
+            status.current_status AS current_status,
+            status.current_status_description AS current_status_description,
+            status.current_status_localization_code AS current_status_localization_code,
+            status.current_status_color AS current_status_localization_code,
+            count(*)
+         FROM audit a
+            JOIN status status ON status.audit_id = a.id
+            JOIN maxStatus ms ON status.id = ms.current_status_id
+            JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number
+         WHERE a.time_created BETWEEN :from AND :thru
+            AND statuses IN (:statuses)
+         GROUP BY current_status,
+                  current_status_description,
+                  current_status_localization_code,
+                  current_status_localization_code
+         """.trimIndent(),
+         mapOf(
+            "from" to from,
+            "thru" to thru,
+            "statuses" to statuses.asSequence().map { it.value }.toList()
+         )
+      ) { rs, _ ->
+         AuditStatusReportDataTransferObject(1, AuditStatusValueObject("test", "todo", "todo")) // TODO flesh this out, fix the statuses part of the query above
+      }
    }
 
    fun countAuditsNotCompleted(storeNumber: Int): Int =
