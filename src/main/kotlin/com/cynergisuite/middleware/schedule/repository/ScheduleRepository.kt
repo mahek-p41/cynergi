@@ -1,0 +1,77 @@
+package com.cynergisuite.middleware.schedule.repository
+
+import com.cynergisuite.domain.infrastructure.Repository
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.middleware.schedule.Schedule
+import com.cynergisuite.middleware.schedule.ScheduleType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
+
+class ScheduleRepository(
+   private val jdbc: NamedParameterJdbcTemplate
+) : Repository<Schedule> {
+   private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
+
+   override fun findOne(id: Long): Schedule? {
+      logger.trace("Searching for Schedule with id {}", id)
+
+      val schedule = jdbc.findFirstOrNull("""
+         SELECT
+            sched.id AS sched_id,
+            sched.uu_row_id AS sched_uu_row_id,
+            sched.time_created AS sched_time_created,
+            sched.time_updated AS sched_time_updated,
+            sched.title AS sched_title,
+            sched.description AS sched_description,
+            sched.schedule AS sched_schedule,
+            sched.command AS sched_command,
+            schedType.id AS schedType_id,
+            schedType.value AS schedType_value,
+            schedType.description AS schedType_description,
+            schedType.localization_code AS schedType_localization_code
+         FROM schedule sched
+              JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
+         WHERE sched.id = :id
+         """.trimIndent(),
+         mapOf("id" to id),
+         RowMapper { rs: ResultSet, rowNum: Int ->
+            Schedule(
+               id = rs.getLong("sched_id"),
+               uuRowId = rs.getUuid("sched_uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("sched_time_created"),
+               timeUpdated = rs.getOffsetDateTime("sched_time_updated"),
+               title = rs.getString("sched_title"),
+               description = rs.getString("sched_description"),
+               schedule = rs.getString("sched_schedule"),
+               command = rs.getString("sched_command"),
+               type = ScheduleType(
+                  id = rs.getLong("schedType_id"),
+                  value = rs.getString("schedType_value"),
+                  description = rs.getString("schedType_description"),
+                  localizationCode = rs.getString("schedType_localization_code")
+               )
+            )
+         })
+
+      logger.trace("Searched for Schedule {} resulted in {}", id, schedule)
+
+      return schedule
+   }
+
+   override fun exists(id: Long): Boolean {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
+
+   override fun insert(entity: Schedule): Schedule {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
+
+   override fun update(entity: Schedule): Schedule {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
+}
