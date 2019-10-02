@@ -63,4 +63,16 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       !found.is(schedule)
       found == schedule
    }
+
+   void "not found is null" () {
+      given:
+      final List<Schedule> schedules = scheduleFactoryService.stream(3, null).toList()
+      final Schedule schedule = schedules[0]
+
+      when:
+      Schedule found = scheduleRepository.findOne(-1)
+
+      then:
+      found == null
+   }
 }
