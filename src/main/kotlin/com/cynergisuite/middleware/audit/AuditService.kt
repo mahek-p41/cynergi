@@ -5,12 +5,14 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.middleware.audit.action.AuditAction
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.validation.Validated
+import java.time.OffsetDateTime
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,6 +40,9 @@ class AuditService @Inject constructor(
 
    fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
+
+   fun generateAuditStatusReport(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusReportDataTransferObject> =
+      auditRepository.generateAuditStatusReport(from, thru, statuses)
 
    @Validated
    fun create(@Valid vo: AuditCreateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {

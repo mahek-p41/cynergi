@@ -253,7 +253,7 @@ class AuditRepository @Inject constructor(
       return exists
    }
 
-   fun generateReport(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusReportDataTransferObject> {
+   fun generateAuditStatusReport(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusReportDataTransferObject> {
       return jdbc.query("""
          WITH status AS (
             SELECT
@@ -266,6 +266,8 @@ class AuditRepository @Inject constructor(
             FROM audit_action csaa
                JOIN audit_status_type_domain csastd
                  ON csaa.status_id = csastd.id
+            WHERE cssa.time_created BETWEEN :from AND :thru
+                 AND csastd.value IN (:statuses)
             ),
             maxStatus AS (
                SELECT MAX(id) AS current_status_id, audit_id
@@ -282,8 +284,6 @@ class AuditRepository @Inject constructor(
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number
-         WHERE a.time_created BETWEEN :from AND :thru
-            AND statuses IN (:statuses)
          GROUP BY current_status,
                   current_status_description,
                   current_status_localization_code,
