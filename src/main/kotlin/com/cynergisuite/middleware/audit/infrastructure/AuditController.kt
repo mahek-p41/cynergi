@@ -88,8 +88,18 @@ class AuditController @Inject constructor(
       return page
    }
 
+   @Throws(ValidationException::class)
+   @AccessControl("audit-fetchAllStatusCounts")
+   @Get(uri = "/counts{?auditStatusCountRequest}", processes = [APPLICATION_JSON])
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAuditStatusCounts(
+      @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequest: AuditStatusCountRequest
+   ): List<AuditStatusCountDataTransferObject> {
 
-   fun fetchAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest): List<AuditStatusCountDataTransferObject> {
       return auditService.findAuditStatusCounts(auditStatusCountRequest)
    }
 
