@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
@@ -34,7 +35,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-@Secured(IS_AUTHENTICATED) // require access to this controller to at the very least be authenticated
+@Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
@@ -85,6 +86,11 @@ class AuditController @Inject constructor(
       }
 
       return page
+   }
+
+
+   fun fetchAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest): List<AuditStatusCountDataTransferObject> {
+      return auditService.findAuditStatusCounts(auditStatusCountRequest)
    }
 
    @Post(processes = [APPLICATION_JSON])

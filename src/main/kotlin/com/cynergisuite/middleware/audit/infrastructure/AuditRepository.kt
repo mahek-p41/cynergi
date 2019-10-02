@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
-import com.cynergisuite.middleware.audit.AuditStatusReportDataTransferObject
+import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
@@ -253,7 +253,7 @@ class AuditRepository @Inject constructor(
       return exists
    }
 
-   fun generateAuditStatusReport(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusReportDataTransferObject> {
+   fun findAuditStatusCounts(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusCountDataTransferObject> {
       return jdbc.query("""
          WITH status AS (
             SELECT
@@ -295,7 +295,7 @@ class AuditRepository @Inject constructor(
             "statuses" to statuses.asSequence().map { it.value }.toList()
          )
       ) { rs, _ ->
-         AuditStatusReportDataTransferObject(1, AuditStatusValueObject("test", "todo", "todo")) // TODO flesh this out, fix the statuses part of the query above
+         AuditStatusCountDataTransferObject(1, AuditStatusValueObject("test", "todo", "todo")) // TODO flesh this out, fix the statuses part of the query above
       }
    }
 

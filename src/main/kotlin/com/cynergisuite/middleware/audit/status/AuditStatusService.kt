@@ -23,6 +23,9 @@ class AuditStatusService(
    override fun fetchAll(): List<AuditStatus> =
       auditStatusRepository.findAll()
 
+   fun fetchAllByValues(values: Set<String>) =
+      auditStatusRepository.fetchAllByValues(values)
+
    fun requestedStatusIsValid(currentStatus: AuditStatus, requestedStatus: AuditStatus) : Boolean {
       return currentStatus.nextStates.contains(requestedStatus)
    }

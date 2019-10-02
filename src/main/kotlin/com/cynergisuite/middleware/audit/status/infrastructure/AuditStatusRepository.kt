@@ -117,6 +117,10 @@ class AuditStatusRepository @Inject constructor(
 
       return root
    }
+
+   fun fetchAllByValues(values: Set<String>): Set<AuditStatus> {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
 }
 
 private class AuditStatusRowMapper(
