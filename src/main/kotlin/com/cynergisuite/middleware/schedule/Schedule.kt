@@ -15,6 +15,17 @@ data class Schedule(
    val command: String,
    val type: ScheduleType
 ) : Entity<Schedule> {
+
+   constructor(title: String, description: String?, schedule: String, command: String, type: ScheduleType) :
+      this(
+         id = null,
+         title = title,
+         description = description,
+         schedule = schedule,
+         command = command,
+         type = type
+      )
+
    override fun entityId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): Schedule = copy()

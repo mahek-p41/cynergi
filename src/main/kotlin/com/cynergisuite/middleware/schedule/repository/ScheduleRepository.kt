@@ -4,15 +4,20 @@ import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleType
+import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ScheduleRepository(
+@Singleton
+class ScheduleRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) : Repository<Schedule> {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
@@ -39,7 +44,7 @@ class ScheduleRepository(
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id),
-         RowMapper { rs: ResultSet, rowNum: Int ->
+         RowMapper { rs: ResultSet, _: Int ->
             Schedule(
                id = rs.getLong("sched_id"),
                uuRowId = rs.getUuid("sched_uu_row_id"),
@@ -64,13 +69,48 @@ class ScheduleRepository(
    }
 
    override fun exists(id: Long): Boolean {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM schedule WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if Schedule: {} exists resulted in {}", id, exists)
+
+      return exists
    }
 
+   @Transactional
    override fun insert(entity: Schedule): Schedule {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      logger.debug("Inserting Schedule {}", entity)
+
+      return jdbc.insertReturning(
+         """
+         INSERT INTO schedule(title, description, schedule, command, type_id)
+         VALUES(:title, :description, :schedule, :command, :type_id)
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "title" to entity.title,
+            "description" to entity.description,
+            "schedule" to entity.schedule,
+            "command" to entity.command,
+            "type_id" to entity.type.id
+         ),
+         RowMapper { rs, _ ->
+            Schedule(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               title = rs.getString("title"),
+               description = rs.getString("description"),
+               schedule = rs.getString("schedule"),
+               command = rs.getString("command"),
+               type = entity.type
+            )
+         }
+      )
    }
 
+   @Transactional
    override fun update(entity: Schedule): Schedule {
       TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
    }
