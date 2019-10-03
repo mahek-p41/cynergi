@@ -5,12 +5,17 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @ValueObject
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditStatus", title = "Status definition associated", description = "Status definition associated with an audit action")
 data class AuditStatusValueObject (
+
+   @field:Positive
+   @field:Schema(name = "value", description = "This is a database driven primary key value defining the id of the status")
+   var id: Long? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 15)
@@ -26,9 +31,14 @@ data class AuditStatusValueObject (
    var color: String? = null
 
 ) {
-
+   constructor(entity: AuditStatus) :
+      this(
+         entity = entity,
+         localizedDescription = entity.description
+      )
    constructor(entity: AuditStatus, localizedDescription: String) :
       this(
+         id = entity.id,
          value = entity.value,
          description = localizedDescription,
          color = entity.color

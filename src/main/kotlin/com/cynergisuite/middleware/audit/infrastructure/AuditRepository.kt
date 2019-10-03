@@ -7,10 +7,9 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
-import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
-import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
+import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -21,7 +20,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.lang.StringBuilder
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -253,10 +251,11 @@ class AuditRepository @Inject constructor(
       return exists
    }
 
-   fun findAuditStatusCounts(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusCountDataTransferObject> {
+   fun findAuditStatusCounts(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusCount> {
       return jdbc.query("""
          WITH status AS (
             SELECT
+               csastd.id AS current_status_id,
                csastd.value AS current_status,
                csastd.description AS current_status_description,
                csastd.localization_code AS current_status_localization_code,
@@ -266,7 +265,7 @@ class AuditRepository @Inject constructor(
             FROM audit_action csaa
                JOIN audit_status_type_domain csastd
                  ON csaa.status_id = csastd.id
-            WHERE cssa.time_created BETWEEN :from AND :thru
+            WHERE csaa.time_created BETWEEN :from AND :thru
                  AND csastd.value IN (:statuses)
             ),
             maxStatus AS (
@@ -275,19 +274,21 @@ class AuditRepository @Inject constructor(
                GROUP BY audit_id
             )
          SELECT
+            status.current_status_id AS current_status_id,
             status.current_status AS current_status,
             status.current_status_description AS current_status_description,
             status.current_status_localization_code AS current_status_localization_code,
-            status.current_status_color AS current_status_localization_code,
-            count(*)
+            status.current_status_color AS current_status_color,
+            count(*) AS current_status_count
          FROM audit a
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number
-         GROUP BY current_status,
-                  current_status_description,
-                  current_status_localization_code,
-                  current_status_localization_code
+         GROUP BY status.current_status,
+                  status.current_status_description,
+                  status.current_status_localization_code,
+                  status.current_status_color,
+                  status.current_status_id
          """.trimIndent(),
          mapOf(
             "from" to from,
@@ -295,7 +296,14 @@ class AuditRepository @Inject constructor(
             "statuses" to statuses.asSequence().map { it.value }.toList()
          )
       ) { rs, _ ->
-         AuditStatusCountDataTransferObject(1, AuditStatusValueObject("test", "todo", "todo")) // TODO flesh this out, fix the statuses part of the query above
+         AuditStatusCount(
+            id = rs.getLong("current_status_id"),
+            value = rs.getString("current_status"),
+            description = rs.getString("current_status_description"),
+            localizationCode = rs.getString("current_status_localization_code"),
+            color = rs.getString("current_status_color"),
+            count = rs.getInt("current_status_count")
+         )
       }
    }
 

@@ -9,5 +9,9 @@ import java.time.OffsetDateTime
 data class AuditStatusCountRequest(
    val from: OffsetDateTime = OffsetDateTime.now().sunday(),
    val thru: OffsetDateTime = OffsetDateTime.now().saturday(),
-   val statuses: MutableSet<String> = mutableSetOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
-)
+   val statuses: Set<String> = setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+) {
+   override fun toString(): String {
+      return "?from=$from&thru=$thru&statuses=${statuses.joinToString(",")}"
+   }
+}

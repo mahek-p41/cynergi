@@ -19,6 +19,9 @@ object AuditStatusFactory {
    fun inProgress(): AuditStatus = statuses.first { it.value == "IN-PROGRESS" }
 
    @JvmStatic
+   fun canceled(): AuditStatus = statuses.first { it.value == "CANCELED" }
+
+   @JvmStatic
    fun completed(): AuditStatus = statuses.first { it.value == "COMPLETED" }
 
    @JvmStatic

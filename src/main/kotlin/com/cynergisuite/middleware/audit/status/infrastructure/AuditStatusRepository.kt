@@ -35,6 +35,10 @@ class AuditStatusRepository @Inject constructor(
    override fun findAll(): List<AuditStatus> =
       jdbc.query("SELECT * FROM audit_status_type_domain ORDER BY value", simpleAuditStatusRowMapper)
 
+
+   fun fetchAllByValues(values: Set<String>): Set<AuditStatus> =
+      jdbc.query("SELECT * FROM audit_status_type_domain WHERE value IN (:values) ORDER BY value", mapOf("values" to values), simpleAuditStatusRowMapper).toSet()
+
    fun mapRow(rs: ResultSet, rowPrefix: String = "astd_"): AuditStatus =
       simpleAuditStatusRowMapper.mapRow(rs, rowPrefix)
 
@@ -116,10 +120,6 @@ class AuditStatusRepository @Inject constructor(
 
 
       return root
-   }
-
-   fun fetchAllByValues(values: Set<String>): Set<AuditStatus> {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
    }
 }
 

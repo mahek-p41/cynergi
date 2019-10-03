@@ -6,14 +6,12 @@ import com.cynergisuite.middleware.audit.action.AuditAction
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditStatusCountRequest
-import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.validation.Validated
-import java.time.OffsetDateTime
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,10 +40,14 @@ class AuditService @Inject constructor(
    infix fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest): List<AuditStatusCountDataTransferObject> {
+   fun findAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {
       auditValidator.validateFindAuditStatusCounts(auditStatusCountRequest)
 
-      return auditRepository.findAuditStatusCounts(auditStatusCountRequest.from, auditStatusCountRequest.thru, auditStatusService.fetchAllByValues(auditStatusCountRequest.statuses))
+      return auditRepository
+         .findAuditStatusCounts(auditStatusCountRequest.from, auditStatusCountRequest.thru, auditStatusService.fetchAllByValues(auditStatusCountRequest.statuses))
+         .map { auditStatusCount ->
+            AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
+         }
    }
 
    @Validated

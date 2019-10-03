@@ -65,6 +65,10 @@ class AuditFactoryService @Inject constructor(
          }
    }
 
+   fun generate(numberIn: Int = 1, storeIn: Store? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>?) {
+      stream(numberIn, storeIn, changedByIn, statusesIn).forEach {  } // exercise the stream with the terminal forEach
+   }
+
    fun single(): Audit =
       single(storeIn = null)
 
