@@ -1,10 +1,9 @@
 package com.cynergisuite.middleware.schedule.repository
 
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.domain.infrastructure.Repository
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleType
 import io.micronaut.spring.tx.annotation.Transactional
@@ -113,5 +112,47 @@ class ScheduleRepository @Inject constructor(
    @Transactional
    override fun update(entity: Schedule): Schedule {
       TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
+
+   fun fetchAll(): List<Schedule> {
+      logger.trace("Fetching All")
+
+      val scheduleList = jdbc.query(
+         """
+         SELECT
+            s.id           AS s_id,
+            s.uu_row_id    AS s_uu_row_id,
+            s.time_created AS s_time_created,
+            s.time_updated AS s_time_updated,
+            s.title        AS s_title,
+            s.description  AS s_description,
+            s.schedule     AS s_schedule,
+            s.command      AS s_command
+         FROM     schedule s
+         ORDER by s.id asc
+         """.trimIndent(),
+         emptyMap<String, Any>()
+      ) { rs: ResultSet, _: Int ->
+            Schedule(
+               id =          rs.getLong("s_id"),
+               uuRowId =     rs.getUuid("s_uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("s_time_created"),
+               timeUpdated = rs.getOffsetDateTime("s_time_updated"),
+               title =       rs.getString("s_title"),
+               description = rs.getString("s_description"),
+               schedule =    rs.getString("s_schedule"),
+               command =     rs.getString("s_command"),
+               type = ScheduleType(
+                  id =               rs.getLong("stype_id"),
+                  value =            rs.getString("stype_value"),
+                  description =      rs.getString("stype_description"),
+                  localizationCode = rs.getString("stype_localization_code")
+               )
+            )
+         }
+
+      logger.trace("fetchAll resulted in size {}, {}", scheduleList.size, scheduleList)
+
+      return scheduleList
    }
 }

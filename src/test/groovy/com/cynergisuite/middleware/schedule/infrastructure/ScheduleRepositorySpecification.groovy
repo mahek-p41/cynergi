@@ -122,4 +122,16 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       found != null
       found == schedule
    }
+
+   void "fetch all test" () {
+      setup:
+      scheduleFactoryService.stream(5, null).toList()
+
+      when:
+      List<Schedule> foundAll = scheduleRepository.fetchAll()
+
+      then:
+      notThrown(Exception)
+      foundAll != null
+   }
 }
