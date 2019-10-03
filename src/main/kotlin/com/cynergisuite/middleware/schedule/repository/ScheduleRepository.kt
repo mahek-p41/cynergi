@@ -1,7 +1,5 @@
 package com.cynergisuite.middleware.schedule.repository
 
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.schedule.Schedule
@@ -127,8 +125,14 @@ class ScheduleRepository @Inject constructor(
             s.title        AS s_title,
             s.description  AS s_description,
             s.schedule     AS s_schedule,
-            s.command      AS s_command
+            s.command      AS s_command,
+            stype.id                AS stype_id,
+            stype.value             AS stype_value,
+            stype.description       AS stype_description,
+            stype.localization_code AS stype_localization_code
          FROM     schedule s
+         JOIN     schedule_type_domain stype
+           ON     s.type_id = stype.id
          ORDER by s.id asc
          """.trimIndent(),
          emptyMap<String, Any>()

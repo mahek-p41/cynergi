@@ -38,18 +38,6 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       inserted.type == type
    }
 
-   void "insert schedule when schedule_type doesnt exist" () {
-      setup:
-      final ScheduleType badType = null
-
-      when:
-      scheduleRepository.insert(new Schedule("Test", "Test schedule", "Jan1st", "runYearly", badType))
-
-      then:
-      def exception = thrown(IllegalArgumentException)
-      exception.message.contains("Parameter specified as non-null is null")
-   }
-
    void "insert single daily schedule is good" () {
       setup:
       final def type = new ScheduleType(2, "DAILY", "Daily", "schedule.daily")
@@ -125,7 +113,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "fetch all test" () {
       setup:
-      scheduleFactoryService.stream(5, null).toList()
+      scheduleFactoryService.stream(6, null).toList()
 
       when:
       List<Schedule> foundAll = scheduleRepository.fetchAll()
@@ -133,5 +121,6 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       then:
       notThrown(Exception)
       foundAll != null
+      foundAll.size == 6
    }
 }
