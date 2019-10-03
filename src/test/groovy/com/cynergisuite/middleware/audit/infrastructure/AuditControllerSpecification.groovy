@@ -226,6 +226,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       firstFiveAudits.totalPages == 2
    }
 
+   void "fetch audit status counts" () {
+      given
+   }
+
    void "create new audit" () {
       when:
       def result = post("/$path", new AuditCreateValueObject())

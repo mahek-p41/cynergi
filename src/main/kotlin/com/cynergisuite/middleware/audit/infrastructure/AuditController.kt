@@ -99,7 +99,6 @@ class AuditController @Inject constructor(
    fun fetchAuditStatusCounts(
       @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequest: AuditStatusCountRequest
    ): List<AuditStatusCountDataTransferObject> {
-
       return auditService.findAuditStatusCounts(auditStatusCountRequest)
    }
 
