@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.validation.Valid
 
 @Singleton
 class AuditValidator @Inject constructor(
@@ -87,8 +88,8 @@ class AuditValidator @Inject constructor(
 
    fun validateFindAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest) {
       doValidation { errors ->
-         if (auditStatusCountRequest.thru.isBefore(auditStatusCountRequest.from)) {
-            errors.add(ValidationError("from", ThruDateIsBeforeFrom(auditStatusCountRequest.from, auditStatusCountRequest.thru)))
+         if (auditStatusCountRequest.thru!!.isBefore(auditStatusCountRequest.from)) {
+            errors.add(ValidationError("from", ThruDateIsBeforeFrom(auditStatusCountRequest.from!!, auditStatusCountRequest.thru!!)))
          }
       }
    }

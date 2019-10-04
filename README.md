@@ -163,8 +163,8 @@ Note: This option is useful if you just want to run the application but aren't i
    1. Will want to do this in a new terminal window separate from where the *cynergi-dev-middleware.sh* script is being run
 3. For local mode execute from the terminal 
    1. `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*-all.jar`
-4. For demo mode execute from the terminal 
-   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=demo -jar ./build/libs/cynergi-middleware*-all.jar`
+4. For develop mode execute from the terminal 
+   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=develop -jar ./build/libs/cynergi-middleware*-all.jar`
 4. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
 
 

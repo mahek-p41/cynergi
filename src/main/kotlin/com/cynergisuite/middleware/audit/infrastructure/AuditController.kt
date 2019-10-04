@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.extensions.saturday
+import com.cynergisuite.extensions.sunday
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
@@ -33,6 +35,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
@@ -100,8 +104,12 @@ class AuditController @Inject constructor(
       @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditStatusCountRequest?,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
-      val auditStatusCount = auditStatusCountRequestIn ?: AuditStatusCountRequest()
       val locale = httpRequest.findLocaleWithDefault()
+      val statusesIn = auditStatusCountRequestIn?.status
+      val from = auditStatusCountRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).sunday()
+      val thru = auditStatusCountRequestIn?.thru ?: from.saturday()
+      val statuses = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+      val auditStatusCount = auditStatusCountRequestIn?.copy(from = from, thru = thru, status = statuses) ?: AuditStatusCountRequest()
 
       logger.debug("Fetching Audit status counts {}", auditStatusCount)
 

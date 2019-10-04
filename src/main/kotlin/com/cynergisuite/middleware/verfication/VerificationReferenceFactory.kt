@@ -37,7 +37,7 @@ object VerificationReferenceTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class VerificationReferenceDataLoaderService @Inject constructor(
    val verificationDataLoaderService: VerificationDataLoaderService,
    val verificationReferenceRepository: VerificationReferenceRepository

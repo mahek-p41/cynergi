@@ -228,7 +228,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch audit status counts using defaults for request parameters" () {
-      setup:
+      given:
       auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.opened()] as Set)
       auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
       auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
@@ -247,6 +247,51 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
          new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
          new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.signedOff()))
+      ]
+   }
+
+   void "fetch audit status counts using specified from" () {
+      given:
+      final def from = OffsetDateTime.now().minusDays(1)
+      auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.opened()] as Set)
+      auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
+      auditFactoryService.generate(4, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(5, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+
+      then:
+      notThrown(HttpClientResponseException)
+      counts.size() == 5
+      counts == [
+         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.opened())),
+         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+         new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
+         new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
+         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.signedOff()))
+      ]
+   }
+
+   void "fetch audit status counts using specified from and statuses" () {
+      given:
+      final def from = OffsetDateTime.now().minusDays(1)
+      auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.opened()] as Set)
+      auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
+      auditFactoryService.generate(4, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(5, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def counts = get("${path}/counts?from=${from}&status=OPENED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+
+      then:
+      notThrown(HttpClientResponseException)
+      counts.size() == 2
+      counts == [
+         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.opened())),
+         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
       ]
    }
 

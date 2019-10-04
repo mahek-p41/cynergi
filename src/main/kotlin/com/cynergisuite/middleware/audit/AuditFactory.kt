@@ -45,7 +45,7 @@ object AuditFactory {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class AuditFactoryService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val employeeFactoryService: EmployeeFactoryService,

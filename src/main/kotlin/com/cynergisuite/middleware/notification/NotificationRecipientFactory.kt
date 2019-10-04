@@ -29,7 +29,7 @@ object NotificationRecipientTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class NotificationRecipientDataLoaderService @Inject constructor(
    private val notificationRecipientRepository: NotificationRecipientRepository,
    private val notificationDataLoaderService: NotificationDataLoaderService

@@ -39,7 +39,7 @@ object AuditExceptionNoteFactory {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class AuditExceptionNoteFactoryService @Inject constructor(
    private val auditExceptionFactoryService: AuditExceptionFactoryService,
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,

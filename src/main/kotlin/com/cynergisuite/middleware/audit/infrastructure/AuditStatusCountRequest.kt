@@ -1,17 +1,24 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.DataTransferObject
-import com.cynergisuite.extensions.saturday
-import com.cynergisuite.extensions.sunday
 import java.time.OffsetDateTime
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 
 @DataTransferObject
 data class AuditStatusCountRequest(
-   val from: OffsetDateTime = OffsetDateTime.now().sunday(),
-   val thru: OffsetDateTime = OffsetDateTime.now().saturday(),
-   val statuses: Set<String> = setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+
+   @field:NotNull
+   val from: OffsetDateTime? = null,
+
+   @field:NotNull
+   val thru: OffsetDateTime? = null,
+
+   @field:NotNull
+   @field:NotEmpty
+   val status: Set<String>? = emptySet()
 ) {
    override fun toString(): String {
-      return "?from=$from&thru=$thru&statuses=${statuses.joinToString(",")}"
+      return "?from=$from&thru=$thru&statuses=${status?.joinToString(",")}"
    }
 }

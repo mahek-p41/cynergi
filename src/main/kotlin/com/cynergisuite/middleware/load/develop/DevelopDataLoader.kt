@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.load.demo
+package com.cynergisuite.middleware.load.develop
 
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
@@ -15,8 +15,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@Requires(env = ["demo"])
-class DemoDataLoader @Inject constructor(
+@Requires(env = ["develop"])
+class DevelopDataLoader @Inject constructor(
    private val auditDetailFactoryService: AuditDetailFactoryService,
    private val auditDiscrepancyFactoryService: AuditExceptionFactoryService,
    private val auditFactoryService: AuditFactoryService,
@@ -24,10 +24,10 @@ class DemoDataLoader @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val storeFactoryService: StoreFactoryService
 ) : ApplicationEventListener<LegacyLoadFinishedEvent> {
-   private val logger: Logger = LoggerFactory.getLogger(DemoDataLoader::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
    override fun onApplicationEvent(event: LegacyLoadFinishedEvent?) {
-      logger.info("Loading demo data")
+      logger.info("Loading develop data")
 
       val store = storeFactoryService.store(1)
       val audit = auditFactoryService.single(store)
@@ -42,6 +42,6 @@ class DemoDataLoader @Inject constructor(
 
       auditDiscrepancyFactoryService.stream(25, audit, employee).forEach { logger.debug("Loaded audit discrepancy {}", it) }
 
-      logger.info("Finished loading demo data")
+      logger.info("Finished loading develop data")
    }
 }

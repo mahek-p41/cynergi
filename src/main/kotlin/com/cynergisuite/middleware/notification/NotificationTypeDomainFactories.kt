@@ -35,7 +35,7 @@ object NotificationTypeDomainTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class NotificationTypeDomainDataLoaderService @Inject constructor(
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository
 ) {

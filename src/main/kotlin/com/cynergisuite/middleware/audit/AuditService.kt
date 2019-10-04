@@ -40,11 +40,11 @@ class AuditService @Inject constructor(
    infix fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {
+   fun findAuditStatusCounts(@Valid auditStatusCountRequest: AuditStatusCountRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {
       auditValidator.validateFindAuditStatusCounts(auditStatusCountRequest)
 
       return auditRepository
-         .findAuditStatusCounts(auditStatusCountRequest.from, auditStatusCountRequest.thru, auditStatusService.fetchAllByValues(auditStatusCountRequest.statuses))
+         .findAuditStatusCounts(auditStatusCountRequest.from!!, auditStatusCountRequest.thru!!, auditStatusService.fetchAllByValues(auditStatusCountRequest.status!!))
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }

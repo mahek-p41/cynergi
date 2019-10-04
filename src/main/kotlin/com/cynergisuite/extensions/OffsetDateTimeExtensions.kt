@@ -5,7 +5,11 @@ import java.time.OffsetDateTime
 fun OffsetDateTime.sunday(): OffsetDateTime {
    val weekday = this.dayOfWeek.value.toLong()
 
-   return this.minusDays(weekday).minusNanos(this.nano.toLong())
+   return this.minusDays(weekday)
+      .minusHours(this.hour.toLong())
+      .minusMinutes(this.minute.toLong())
+      .minusSeconds(this.second.toLong())
+      .minusNanos(this.nano.toLong())
 }
 
 fun OffsetDateTime.saturday(): OffsetDateTime =
