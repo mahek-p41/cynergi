@@ -2,8 +2,8 @@
 
 #sed -ri "s/#log_statement = 'none'/log_statement = 'all'/g" /var/lib/postgresql/data/postgresql.conf
 
-dropdb --if-exists cynergidemodb
-createdb cynergidemodb
+dropdb --if-exists cynergidevelopdb
+createdb cynergidevelopdb
 
 dropdb --if-exists cynergidb
 createdb cynergidb

@@ -3,11 +3,11 @@ networks:
   cynerginet:
     name: cynerginet
 services:
-  cynergidevdb:
-    container_name: cynergidevdb
+  cynergidb:
+    container_name: cynergidb
     build:
       context: db
-      dockerfile: cynergidevdb.dockerfile
+      dockerfile: cynergidb.dockerfile
     ports:
       - "6432:5432"
     volumes:
@@ -17,30 +17,42 @@ services:
     restart: always
     networks:
       - cynerginet
-  cynergidevdbsnapshot:
-    container_name: cynergidevdbsnapshot
+  cynergidbsnapshot:
+    container_name: cynergidbsnapshot
     build:
       context: db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      dockerfile: cynergidbsnapshot.dockerfile
     volumes:
       - ./db/DatabaseDumps:/tmp/dumps
     depends_on:
-      - cynergidevdb
+      - cynergidb
     networks:
       - cynerginet
     command: [ "/root/cynergi-dev-db-dump.sh" ]
-  cynergidevdbpsql:
+  cynergidbpsql:
     build:
       context: db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
-    container_name: cynergidevdbpsql
+      dockerfile: cynergidbsnapshot.dockerfile
+    container_name: cynergidbpsql
     depends_on:
-      - cynergidevdb
+      - cynergidb
     stdin_open: true
     tty: true
-    command: [ "/usr/local/bin/psql", "--host=cynergidevdb", "--port=5432", "cynergidb", "postgres" ]
+    command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "postgres" ]
     networks:
       - cynerginet
+  cynergidevelopdbpsql:
+     build:
+        context: db
+        dockerfile: cynergidbsnapshot.dockerfile
+     container_name: cynergidbpsql
+     depends_on:
+        - cynergidb
+     stdin_open: true
+     tty: true
+     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "postgres" ]
+     networks:
+        - cynerginet
   cynergitestdb:
     build:
       context: db
@@ -58,10 +70,10 @@ services:
   cynergitestdbpsql:
     build:
       context: db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      dockerfile: db/cynergidbsnapshot.dockerfile
     container_name: cynergitestdbpsql
     depends_on:
-      - cynergidevdb
+      - cynergidb
     stdin_open: true
     tty: true
     command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
@@ -75,7 +87,7 @@ services:
      volumes:
         - ./db/DatabaseDumps:/tmp/dumps
      depends_on:
-        - cynergidevdb
+        - cynergidb
      networks:
         - cynerginet
      command: [ "/root/fastinfo-db-dump.sh" ]

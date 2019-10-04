@@ -340,8 +340,8 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
 -- END cynergidb SETUP
 
--- BEGIN cynergidemodb SETUP
-\c cynergidemodb
+-- BEGIN cynergidevelopdb SETUP
+\c cynergidevelopdb
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 
@@ -419,4 +419,4 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     time_created TIMESTAMPTZ,
     time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
--- BEGIN cynergidemodb SETUP
+-- BEGIN cynergidevelopdb SETUP
