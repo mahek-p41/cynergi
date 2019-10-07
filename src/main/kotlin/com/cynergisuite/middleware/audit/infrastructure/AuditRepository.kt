@@ -125,9 +125,9 @@ class AuditRepository @Inject constructor(
          where = EMPTY
       }
 
-      if (status != null) {
+      if (status != null && status.isNotEmpty()) {
          params["current_status"] = status
-         whereBuilder.append(where).append(and).append(" current_status = :current_status ")
+         whereBuilder.append(where).append(and).append(" current_status IN (:current_status) ")
       }
 
       @Language("PostgreSQL")
@@ -251,7 +251,26 @@ class AuditRepository @Inject constructor(
       return exists
    }
 
-   fun findAuditStatusCounts(from: OffsetDateTime, thru: OffsetDateTime, statuses: Set<AuditStatus>): List<AuditStatusCount> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest): List<AuditStatusCount> {
+      val status = pageRequest.status
+      val params = mutableMapOf<String, Any?>()
+      val whereBuilder = StringBuilder()
+      var where = " WHERE "
+      var whereAnd = ""
+
+      if (pageRequest.from != null && pageRequest.thru != null) {
+         params["from"] = pageRequest.from
+         params["thru"] = pageRequest.thru
+         whereBuilder.append(where).append(" csaa.time_created BETWEEN :from AND :thru ")
+         where = ""
+         whereAnd = " AND "
+      }
+
+      if ( !status.isNullOrEmpty() ) {
+         params["statuses"] = status.asSequence().toList()
+         whereBuilder.append(where).append(whereAnd).append(" csastd.value IN (:statuses) ")
+      }
+
       return jdbc.query("""
          WITH status AS (
             SELECT
@@ -265,8 +284,7 @@ class AuditRepository @Inject constructor(
             FROM audit_action csaa
                JOIN audit_status_type_domain csastd
                  ON csaa.status_id = csastd.id
-            WHERE csaa.time_created BETWEEN :from AND :thru
-                 AND csastd.value IN (:statuses)
+            $whereBuilder
             ),
             maxStatus AS (
                SELECT MAX(id) AS current_status_id, audit_id
@@ -290,11 +308,7 @@ class AuditRepository @Inject constructor(
                   status.current_status_color,
                   status.current_status_id
          """.trimIndent(),
-         mapOf(
-            "from" to from,
-            "thru" to thru,
-            "statuses" to statuses.asSequence().map { it.value }.toList()
-         )
+         params
       ) { rs, _ ->
          AuditStatusCount(
             id = rs.getLong("current_status_id"),

@@ -28,9 +28,7 @@ object AuditStatusFactory {
    fun signedOff(): AuditStatus = statuses.first { it .value == "SIGNED-OFF" }
 
    @JvmStatic
-   fun values(): List<AuditStatus> {
-      return statuses
-   }
+   fun values(): List<AuditStatus> = statuses
 
    @JvmStatic
    fun random(): AuditStatus {

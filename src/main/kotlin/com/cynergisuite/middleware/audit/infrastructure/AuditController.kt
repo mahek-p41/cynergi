@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.extensions.saturday
-import com.cynergisuite.extensions.sunday
+import com.cynergisuite.extensions.endOfWeek
+import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
@@ -79,10 +79,11 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
-      logger.info("Fetching all audits {} {}", pageRequest)
+      logger.info("Fetching all audits {} {}", pageRequestIn)
+      val pageRequest = buildPageRequest(pageRequestIn)
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -101,15 +102,11 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditStatusCountRequest?,
+      @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
       val locale = httpRequest.findLocaleWithDefault()
-      val statusesIn = auditStatusCountRequestIn?.status
-      val from = auditStatusCountRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).sunday()
-      val thru = auditStatusCountRequestIn?.thru ?: from.saturday()
-      val statuses = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
-      val auditStatusCount = auditStatusCountRequestIn?.copy(from = from, thru = thru, status = statuses) ?: AuditStatusCountRequest()
+      val auditStatusCount = buildPageRequest(auditStatusCountRequestIn)
 
       logger.debug("Fetching Audit status counts {}", auditStatusCount)
 
@@ -166,5 +163,14 @@ class AuditController @Inject constructor(
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   private fun buildPageRequest(pageRequestIn: AuditPageRequest?): AuditPageRequest {
+      val statusesIn = pageRequestIn?.status
+      val from = pageRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
+      val thru = pageRequestIn?.thru ?: from.endOfWeek()
+      val statuses = if (!statusesIn.isNullOrEmpty()) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+
+      return AuditPageRequest(pageRequestIn, from = from, thru = thru, status = statuses)
    }
 }

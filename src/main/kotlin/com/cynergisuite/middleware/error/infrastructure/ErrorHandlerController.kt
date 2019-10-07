@@ -16,7 +16,6 @@ import com.cynergisuite.middleware.localization.NotImplemented
 import com.cynergisuite.middleware.localization.PageOutOfBounds
 import com.cynergisuite.middleware.localization.RouteError
 import com.cynergisuite.middleware.localization.UnableToParseJson
-import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException

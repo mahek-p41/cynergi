@@ -15,7 +15,7 @@ abstract class ValidatorBase {
       validator(errors)
 
       if (errors.isNotEmpty()) {
-         logger.warn("Validation encountered errors", errors)
+         logger.warn("Validation encountered errors {}", errors)
 
          throw ValidationException(errors)
       }

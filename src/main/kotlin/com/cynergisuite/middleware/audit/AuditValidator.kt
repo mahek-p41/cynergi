@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.infrastructure.AuditStatusCountRequest
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class AuditValidator @Inject constructor(
@@ -86,10 +85,13 @@ class AuditValidator @Inject constructor(
       }
    }
 
-   fun validateFindAuditStatusCounts(auditStatusCountRequest: AuditStatusCountRequest) {
+   fun validateFindAuditStatusCounts(auditStatusCountRequest: AuditPageRequest) {
       doValidation { errors ->
-         if (auditStatusCountRequest.thru!!.isBefore(auditStatusCountRequest.from)) {
-            errors.add(ValidationError("from", ThruDateIsBeforeFrom(auditStatusCountRequest.from!!, auditStatusCountRequest.thru!!)))
+         val from = auditStatusCountRequest.from!!
+         val thru = auditStatusCountRequest.thru!!
+
+         if (thru.isBefore(from)) {
+            errors.add(ValidationError("from", ThruDateIsBeforeFrom(from, thru)))
          }
       }
    }

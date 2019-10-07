@@ -5,7 +5,6 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.middleware.audit.action.AuditAction
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.infrastructure.AuditStatusCountRequest
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -40,11 +39,11 @@ class AuditService @Inject constructor(
    infix fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(@Valid auditStatusCountRequest: AuditStatusCountRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {
+   fun findAuditStatusCounts(@Valid auditStatusCountRequest: AuditPageRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {
       auditValidator.validateFindAuditStatusCounts(auditStatusCountRequest)
 
       return auditRepository
-         .findAuditStatusCounts(auditStatusCountRequest.from!!, auditStatusCountRequest.thru!!, auditStatusService.fetchAllByValues(auditStatusCountRequest.status!!))
+         .findAuditStatusCounts(auditStatusCountRequest)
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }

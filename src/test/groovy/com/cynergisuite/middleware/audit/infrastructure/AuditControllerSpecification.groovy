@@ -77,10 +77,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    void "fetch all audits for store 1" () {
       given:
       final store = storeFactoryService.store(1)
+      final statuses = AuditStatusFactory.values().collect { it.value }
       final def twentyAudits = auditFactoryService.stream(20, store).collect { new AuditValueObject(it, locale, localizationService) }
-      final def pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number])
-      final def pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number])
-      final def pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number])
+      final def pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number, status: statuses])
+      final def pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
+      final def pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
       final def firstFiveAudits = twentyAudits[0..4]
       final def secondFiveAudits = twentyAudits[5..9]
 
@@ -193,7 +194,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeThreeInProgressAudit = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def openedResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: 'OPENED']))
+      def openedResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['OPENED'] as Set]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -202,7 +203,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id, storeThreeOpenAuditOne.id]
 
       when:
-      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3, status: 'IN-PROGRESS']))
+      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3, status: ['IN-PROGRESS'] as Set]))
 
       then:
       notThrown(HttpClientResponseException)
