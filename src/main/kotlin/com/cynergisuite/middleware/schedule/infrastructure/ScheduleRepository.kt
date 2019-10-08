@@ -234,6 +234,11 @@ class ScheduleRepository @Inject constructor(
          uuRowId = rs.getUuid("s_uu_row_id"),
          timeCreated = rs.getOffsetDateTime("s_time_created"),
          timeUpdated = rs.getOffsetDateTime("s_time_updated"),
-         title = scheduleRepository.mapRow(rs, "s_")
+         //title = scheduleRepository.mapRow(rs, "s_title").toString(),
+         title = scheduleRepository.mapRow(rs, "s_title"),
+         description = scheduleRepository.mapRow(rs, "s_"),
+         schedule = scheduleRepository.mapRow(rs, "s_"),
+         command = scheduleRepository.mapRow(rs, "s_"),
+         type = scheduleRepository.mapRow(rs, "s_")
       )
 }

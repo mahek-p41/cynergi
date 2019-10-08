@@ -116,7 +116,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       scheduleFactoryService.stream(6, null).toList()
 
       when:
-      List<Schedule> foundAll = scheduleRepository.fetchAll()
+      List<Schedule> foundAll = scheduleRepository.fetchAllOLD()
 
       then:
       notThrown(Exception)
