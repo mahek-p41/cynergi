@@ -64,6 +64,14 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
       val storeNumber = this.storeNumber
       val status = this.status
 
+      if (from != null) {
+         stringBuilder.append("&from=").append(from)
+      }
+
+      if (thru != null) {
+         stringBuilder.append("&thru=").append(thru)
+      }
+
       if (storeNumber != null) {
          stringBuilder.append("&storeNumber=").append(storeNumber)
       }

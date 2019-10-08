@@ -105,12 +105,14 @@ class AuditController @Inject constructor(
       @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
+      logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
+
       val locale = httpRequest.findLocaleWithDefault()
-      val auditStatusCount = buildPageRequest(auditStatusCountRequestIn)
+      val auditStatusCountRequest = buildPageRequest(auditStatusCountRequestIn)
 
-      logger.debug("Fetching Audit status counts {}", auditStatusCount)
+      logger.debug("Fetching Audit status counts after build {}", auditStatusCountRequest)
 
-      return auditService.findAuditStatusCounts(auditStatusCount, locale)
+      return auditService.findAuditStatusCounts(auditStatusCountRequest, locale)
    }
 
    @Post(processes = [APPLICATION_JSON])

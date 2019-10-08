@@ -8,7 +8,6 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
-import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
-import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -115,14 +113,24 @@ class AuditRepository @Inject constructor(
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder()
+      val from = pageRequest.from
+      val thru = pageRequest.thru
+      var where = " WHERE "
       var and = EMPTY
-      var where = "WHERE"
 
       if (storeNumber != null) {
          params["store_number"] = storeNumber
          whereBuilder.append(where).append(" store_number = :store_number ")
-         and = "AND"
          where = EMPTY
+         and = " AND "
+      }
+
+      if (from != null && thru != null) {
+         params["from"] = from
+         params["thru"] = thru
+         whereBuilder.append(where).append(" a.time_created BETWEEN :from AND :thru ")
+         where = EMPTY
+         and = " AND "
       }
 
       if (status != null && status.isNotEmpty()) {
@@ -253,22 +261,24 @@ class AuditRepository @Inject constructor(
 
    fun findAuditStatusCounts(pageRequest: AuditPageRequest): List<AuditStatusCount> {
       val status = pageRequest.status
-      val params = mutableMapOf<String, Any?>()
+      val params = mutableMapOf<String, Any>()
       val whereBuilder = StringBuilder()
+      val from = pageRequest.from
+      val thru = pageRequest.thru
       var where = " WHERE "
-      var whereAnd = ""
+      var and = EMPTY
 
-      if (pageRequest.from != null && pageRequest.thru != null) {
-         params["from"] = pageRequest.from
-         params["thru"] = pageRequest.thru
+      if (from != null && thru != null) {
+         params["from"] = from
+         params["thru"] = thru
          whereBuilder.append(where).append(" csaa.time_created BETWEEN :from AND :thru ")
-         where = ""
-         whereAnd = " AND "
+         where = EMPTY
+         and = " AND "
       }
 
       if ( !status.isNullOrEmpty() ) {
          params["statuses"] = status.asSequence().toList()
-         whereBuilder.append(where).append(whereAnd).append(" csastd.value IN (:statuses) ")
+         whereBuilder.append(where).append(and).append(" csastd.value IN (:statuses) ")
       }
 
       return jdbc.query("""
