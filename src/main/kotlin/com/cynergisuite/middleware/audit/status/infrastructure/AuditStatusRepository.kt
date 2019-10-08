@@ -35,7 +35,6 @@ class AuditStatusRepository @Inject constructor(
    override fun findAll(): List<AuditStatus> =
       jdbc.query("SELECT * FROM audit_status_type_domain ORDER BY value", simpleAuditStatusRowMapper)
 
-
    fun fetchAllByValues(values: Set<String>): Set<AuditStatus> =
       jdbc.query("SELECT * FROM audit_status_type_domain WHERE value IN (:values) ORDER BY value", mapOf("values" to values), simpleAuditStatusRowMapper).toSet()
 
@@ -60,7 +59,7 @@ class AuditStatusRepository @Inject constructor(
                asttd.status_to AS nxt
             FROM audit_status_type_domain astd
                  LEFT OUTER JOIN audit_status_transitions_type_domain asttd
-                               ON astd.id = asttd.status_from
+                              ON astd.id = asttd.status_from
             $whereClause
             UNION
             SELECT

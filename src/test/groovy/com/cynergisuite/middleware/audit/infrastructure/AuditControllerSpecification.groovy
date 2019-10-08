@@ -78,12 +78,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final store = storeFactoryService.store(1)
       final statuses = AuditStatusFactory.values().collect { it.value }
-      final def twentyAudits = auditFactoryService.stream(20, store).collect { new AuditValueObject(it, locale, localizationService) }
-      final def pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number, status: statuses])
-      final def pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
-      final def pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
-      final def firstFiveAudits = twentyAudits[0..4]
-      final def secondFiveAudits = twentyAudits[5..9]
+      final twentyAudits = auditFactoryService.stream(20, store).collect { new AuditValueObject(it, locale, localizationService) }
+      final pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number, status: statuses])
+      final pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
+      final pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
+      final firstFiveAudits = twentyAudits[0..4]
+      final secondFiveAudits = twentyAudits[5..9]
 
       when:
       def pageOneResult = get("${path}${pageOne}")
@@ -117,9 +117,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       get("${path}${pageFive}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
-      final def notFoundResult = notFoundException.response.bodyAsJson()
+      final notFoundResult = notFoundException.response.bodyAsJson()
       notFoundResult.size() == 1
       notFoundResult.message == "Request with Page 5, Size 5, Sort By id and Sort Direction ASC produced no results"
    }
@@ -355,7 +355,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id == audit.id
       result.store.storeNumber == store.number
       result.actions.size() == 2
-      def resultActions = result.actions
+      final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
@@ -386,7 +386,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id == audit.id
       result.store.storeNumber == audit.store.number
       result.actions.size() == 2
-      def resultActions = result.actions
+      final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
@@ -473,9 +473,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       put(path, new AuditUpdateValueObject([status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
-      final def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
-      final def response = exception.response.bodyAsJson()
+      final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "audit.id"
       response[0].message == "Is required"
@@ -483,16 +483,16 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit with a non-existent id" () {
       given:
-      final def savedAudit = auditFactoryService.single()
-      final def missingId = savedAudit.id * 100
+      final savedAudit = auditFactoryService.single()
+      final missingId = savedAudit.id * 100
 
       when:
       put(path, new AuditUpdateValueObject([id: missingId, status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
-      final def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
-      final def response = exception.response.bodyAsJson()
+      final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "id"
       response[0].message == "${String.format("%,d", missingId)} was unable to be found"
@@ -525,7 +525,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.id > 0
       openedResult.store.storeNumber == 3
       openedResult.actions.size() == 1
-      def openActions = openedResult.actions
+      final openActions = openedResult.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
@@ -545,7 +545,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.id > 0
       inProgressResult.store.storeNumber == 3
       inProgressResult.actions.size() == 2
-      def inProgressActions = inProgressResult.actions
+      final inProgressActions = inProgressResult.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
@@ -571,7 +571,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.id > 0
       completedResult.store.storeNumber == 3
       completedResult.actions.size() == 3
-      def completedActions = completedResult.actions
+      final completedActions = completedResult.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }

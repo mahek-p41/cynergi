@@ -36,6 +36,7 @@ data class AuditStatusValueObject (
          entity = entity,
          localizedDescription = entity.description
       )
+
    constructor(entity: AuditStatus, localizedDescription: String) :
       this(
          id = entity.id,

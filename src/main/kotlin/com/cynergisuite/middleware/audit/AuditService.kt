@@ -36,7 +36,7 @@ class AuditService @Inject constructor(
       }
    }
 
-   infix fun exists(id: Long): Boolean =
+   fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
    fun findAuditStatusCounts(@Valid auditStatusCountRequest: AuditPageRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {

@@ -9,6 +9,7 @@ abstract class ValidatorBase {
    companion object {
       val logger: Logger = LoggerFactory.getLogger(ValidatorBase::class.java)
    }
+
    protected fun doValidation(validator: (MutableSet<ValidationError>) -> Unit) {
       val errors = mutableSetOf<ValidationError>()
 

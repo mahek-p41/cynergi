@@ -27,7 +27,7 @@ data class AuditStatus(
 
    override fun equals(other: Any?): Boolean =
       if (other is AuditStatus) {
-         basicEquality(other)
+         basicEquality(other) && other.color == this.color
       } else {
          false
       }
