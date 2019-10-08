@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleType
 import com.cynergisuite.middleware.schedule.ScheduleTypeFactory
-import com.cynergisuite.middleware.schedule.repository.ScheduleRepository
+import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.github.javafaker.Faker
 import io.micronaut.test.annotation.MicronautTest
 import org.springframework.dao.DataIntegrityViolationException

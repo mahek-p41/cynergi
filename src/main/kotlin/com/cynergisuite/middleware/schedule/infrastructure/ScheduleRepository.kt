@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.schedule.repository
+package com.cynergisuite.middleware.schedule.infrastructure
 
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -6,6 +6,8 @@ import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleType
 import io.micronaut.spring.tx.annotation.Transactional
+import org.intellij.lang.annotations.Language
+import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -14,11 +16,14 @@ import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 @Singleton
 class ScheduleRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val scheduleRepository: ScheduleRepository
 ) : Repository<Schedule> {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
+
 
    override fun findOne(id: Long): Schedule? {
       logger.trace("Searching for Schedule with id {}", id)
@@ -116,6 +121,63 @@ class ScheduleRepository @Inject constructor(
    fun fetchAll(pageRequest: SchedulePageRequest): RepositoryPage<Schedule> {
       logger.trace("Fetching All")
 
+      var totalElements: Long? = null
+      var currentId: Long = -1
+      //var currentParentEntity: Schedule? = null
+      val resultList: MutableList<Schedule> = mutableListOf()
+      val params = mutableMapOf<String, Any>()
+      val id = pageRequest.id
+      //val storeNumber = pageRequest.storeNumber
+      //val whereBuilder = StringBuilder()
+      //var and = EMPTY
+      //var where = "WHERE"
+
+      @Language("PostgreSQL")
+      val sql = """
+        SELECT
+        s.id           AS s_id,
+        s.uu_row_id    AS s_uu_row_id,
+        s.time_created AS s_time_created,
+        s.time_updated AS s_time_updated,
+        s.title        AS s_title,
+        s.description  AS s_description,
+        s.schedule     AS s_schedule,
+        s.command      AS s_command,
+        stype.id                AS stype_id,
+        stype.value             AS stype_value,
+        stype.description       AS stype_description,
+        stype.localization_code AS stype_localization_code
+        FROM     schedule s
+        JOIN     schedule_type_domain stype
+        ON     s.type_id = stype.id
+           ORDER by ${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+           LIMIT ${pageRequest.size}
+             OFFSET ${pageRequest.offset()}
+             """.trimIndent()
+
+      jdbc.query(sql, params) { rs ->
+         val tempId = rs.getLong("s_id")
+         val tempParentEntity: Schedule = if (tempId != currentId) {
+            currentId = tempId
+            currentParentEntity = mapRow(rs)
+            resultList.add(currentParentEntity!!)
+            currentParentEntity!!
+         } else {
+            currentParentEntity!!
+         }
+
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+
+         tempParentEntity.actions.add(schedleActionRepository.mapRow(rs))
+      }
+
+      return RepositoryPage(
+         elements = resultList,
+         totalElements = totalElements ?: 0
+      )
+
    }
 
    fun fetchAllOLD(): List<Schedule> {
@@ -165,4 +227,13 @@ class ScheduleRepository @Inject constructor(
 
       return scheduleList
    }
+
+   private fun mapRow(rs: ResultSet): Schedule =
+      Schedule(
+         id = rs.getLong("s_id"),
+         uuRowId = rs.getUuid("s_uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("s_time_created"),
+         timeUpdated = rs.getOffsetDateTime("s_time_updated"),
+         title = scheduleRepository.mapRow(rs, "s_")
+      )
 }

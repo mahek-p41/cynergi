@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.schedule
 
-import com.cynergisuite.middleware.schedule.repository.ScheduleRepository
+import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
