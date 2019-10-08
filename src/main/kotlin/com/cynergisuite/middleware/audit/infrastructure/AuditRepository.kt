@@ -128,7 +128,7 @@ class AuditRepository @Inject constructor(
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         whereBuilder.append(where).append(" a.time_created BETWEEN :from AND :thru ")
+         whereBuilder.append(where).append(and).append(" a.time_created BETWEEN :from AND :thru ")
          where = EMPTY
          and = " AND "
       }
