@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.schedule.repository
 
 import com.cynergisuite.domain.infrastructure.Repository
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleType
@@ -112,7 +113,12 @@ class ScheduleRepository @Inject constructor(
       TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
    }
 
-   fun fetchAll(): List<Schedule> {
+   fun fetchAll(pageRequest: SchedulePageRequest): RepositoryPage<Schedule> {
+      logger.trace("Fetching All")
+
+   }
+
+   fun fetchAllOLD(): List<Schedule> {
       logger.trace("Fetching All")
 
       val scheduleList = jdbc.query(
