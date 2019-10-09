@@ -229,7 +229,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch audit status counts using defaults for request parameters" () {
-      given:
+      setup:
       auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.opened()] as Set)
       auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
       auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
@@ -252,7 +252,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch audit status counts using specified from" () {
-      given:
+      setup:
       final def from = OffsetDateTime.now().minusDays(1)
       auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.opened()] as Set)
       auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
@@ -276,7 +276,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch audit status counts using specified from and statuses" () {
-      given:
+      setup:
       final def from = OffsetDateTime.now().minusDays(1)
       auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.opened()] as Set)
       auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)

@@ -141,7 +141,7 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
-   fun unsatisifedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorValueObject> {
+   fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorValueObject> {
       logger.trace("Unsatisfied Route Error", exception)
 
       val locale = httpRequest.findLocaleWithDefault()

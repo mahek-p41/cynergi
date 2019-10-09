@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @Requires(env = ["develop"])
 class DevelopDataLoader @Inject constructor(
    private val auditDetailFactoryService: AuditDetailFactoryService,
-   private val auditDiscrepancyFactoryService: AuditExceptionFactoryService,
+   private val auditExceptionFactoryService: AuditExceptionFactoryService,
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val employeeRepository: EmployeeRepository,
@@ -40,7 +40,7 @@ class DevelopDataLoader @Inject constructor(
       auditDetailFactoryService.stream(5, audit, employee, showroom).forEach { logger.debug("Loaded audit detail {}", it) }
       auditDetailFactoryService.stream(5, audit, employee, storeroom).forEach { logger.debug("Loaded audit detail {}", it) }
 
-      auditDiscrepancyFactoryService.stream(25, audit, employee).forEach { logger.debug("Loaded audit discrepancy {}", it) }
+      auditExceptionFactoryService.stream(25, audit, employee).forEach { logger.debug("Loaded audit discrepancy {}", it) }
 
       logger.info("Finished loading develop data")
    }

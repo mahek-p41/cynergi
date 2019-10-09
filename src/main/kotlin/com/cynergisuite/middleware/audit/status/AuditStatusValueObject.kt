@@ -14,7 +14,7 @@ import javax.validation.constraints.Size
 data class AuditStatusValueObject (
 
    @field:Positive
-   @field:Schema(name = "value", description = "This is a database driven primary key value defining the id of the status")
+   @field:Schema(name = "id", description = "This is a database driven primary key value defining the id of the status")
    var id: Long? = null,
 
    @field:NotNull
