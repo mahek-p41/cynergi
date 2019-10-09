@@ -64,6 +64,7 @@ dependencies {
    implementation "io.micronaut.configuration:micronaut-postgres-reactive"
    implementation "io.micronaut:micronaut-security"
    implementation "io.micronaut:micronaut-security-jwt"
+   implementation 'io.micronaut:micronaut-management'
    implementation 'io.micronaut.configuration:micronaut-hibernate-validator'
    kapt platform("io.micronaut:micronaut-bom:$micronautVersion")
    kapt 'io.micronaut:micronaut-validation'
