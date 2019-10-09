@@ -144,7 +144,8 @@ class AuditRepository @Inject constructor(
             ${employeeRepository.selectBase}
          ), audits AS (
             WITH status AS (
-               SELECT csastd.value AS current_status, csaa.audit_id AS audit_id, csaa.id
+               SELECT csastd.value AS current_status, 
+                      csaa.audit_id AS audit_id, csaa.id
                FROM audit_action csaa
                     JOIN audit_status_type_domain csastd
                          ON csaa.status_id = csastd.id
@@ -160,7 +161,13 @@ class AuditRepository @Inject constructor(
                a.time_updated AS time_updated,
                a.store_number AS store_number,
                s.current_status AS current_status,
-               (SELECT count(id) FROM audit $whereBuilder) AS total_elements
+               (SELECT count(a.id) 
+                FROM audit a
+                    JOIN status s
+                      ON s.audit_id = a.id
+                    JOIN maxStatus ms
+                      ON s.id = ms.current_status_id
+                $whereBuilder) AS total_elements
             FROM audit a
                  JOIN status s
                       ON s.audit_id = a.id

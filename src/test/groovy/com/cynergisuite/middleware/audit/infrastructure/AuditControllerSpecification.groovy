@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.extensions.OffsetDateTimeExtensionsKt
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -9,8 +10,12 @@ import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
+import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreFactoryService
@@ -22,6 +27,8 @@ import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
 import java.time.OffsetDateTime
 
+import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
+import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -31,8 +38,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit"
    private static final Locale locale = Locale.US
 
+   @Inject AuditDetailFactoryService auditDetailFactoryService
+   @Inject AuditExceptionFactoryService auditExceptionFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditRepository auditRepository
+   @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
+   @Inject EmployeeFactoryService employeeFactoryService
    @Inject LocalizationService localizationService
    @Inject StoreFactoryService storeFactoryService
 
@@ -210,6 +221,61 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.elements != null
       inProgressResult.elements.size() == 1
       inProgressResult.elements.collect { it.id } == [storeThreeInProgressAudit.id]
+   }
+
+   void "fetch all opened audits with from thru" () {
+      setup:
+      final storeOne = storeFactoryService.store(1)
+      final storeThree = storeFactoryService.store(3)
+      final storeOneEmployee = employeeFactoryService.single(storeOne)
+      final storeThreeEmployee = employeeFactoryService.single(storeThree)
+      final warehouse = auditScanAreaFactoryService.warehouse()
+      final showroom = auditScanAreaFactoryService.showroom()
+      final storeroom = auditScanAreaFactoryService.storeroom()
+
+      // setup store one open audit
+      final openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee)
+      auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
+      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee, null)
+
+      // setup store three open audit
+      final openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
+      auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
+      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee, null)
+
+      // setup store one canceled audit
+      auditFactoryService.single(storeOne, storeOneEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.canceled()] as Set)
+
+      // setup store three canceled audit
+      auditFactoryService.single(storeThree, storeThreeEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.canceled()] as Set)
+
+      // setup store one completed off audits
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      // setup store three completed off audits
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      // setup store one signed off audits
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      // setup store three signed off audits
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def twoOpenedAudits = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', from: beginningOfWeek(OffsetDateTime.now()), thru: endOfWeek(OffsetDateTime.now()), status: [AuditStatusFactory.opened().value] as Set]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      twoOpenedAudits.elements != null
+      twoOpenedAudits.elements.size() == 2
+      twoOpenedAudits.totalElements == 2
+      twoOpenedAudits.totalPages == 1
+      twoOpenedAudits.first == true
+      twoOpenedAudits.last == true
    }
 
    void "fetch all when each audit has multiple statuses" () {

@@ -39,13 +39,13 @@ object AuditExceptionFactory {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
-      val audit = auditIn ?: AuditFactory.single()
       val scannedBy = scannedByIn ?: EmployeeFactory.single()
       val barcode =  faker.code()
       val commerce = faker.commerce()
       val company = faker.company()
       val idNumber = faker.idNumber()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
+      val audit = auditIn ?: AuditFactory.single()
 
       return IntStream.range(0, number).mapToObj {
          AuditException(
@@ -98,15 +98,15 @@ class AuditExceptionFactoryService @Inject constructor(
          }
    }
 
-   fun single(): AuditException {
-      return single(auditFactoryService.single())
-   }
+   fun generate(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null) =
+      stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
 
-   fun single(auditIn: Audit): AuditException {
-      return single(auditIn, null)
-   }
+   fun single(): AuditException =
+      single(auditFactoryService.single())
 
-   fun single(auditIn: Audit, scannedByIn: Employee?): AuditException {
-      return stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
-   }
+   fun single(auditIn: Audit): AuditException =
+      single(auditIn, null)
+
+   fun single(auditIn: Audit, scannedByIn: Employee?): AuditException =
+      stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
 }

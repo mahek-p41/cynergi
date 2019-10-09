@@ -78,6 +78,10 @@ class EmployeeFactoryService @Inject constructor(
    }
 
    fun single(): Employee {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create Employee") }
+      return single(null)
+   }
+
+   fun single(storeIn: Store? = null): Employee {
+      return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Employee") }
    }
 }

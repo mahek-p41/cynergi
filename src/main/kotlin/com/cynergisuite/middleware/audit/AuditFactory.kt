@@ -75,6 +75,9 @@ class AuditFactoryService @Inject constructor(
    fun single(storeIn: Store? = null): Audit =
       stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 
+   fun single(storeIn: Store? = null, changedByIn: Employee? = null): Audit =
+      single(storeIn = storeIn, changedByIn = changedByIn, statusesIn = null)
+
    fun single(storeIn: Store? = null, changedByIn: Employee?, statusesIn: Set<AuditStatus>?): Audit =
       stream(storeIn = storeIn, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 

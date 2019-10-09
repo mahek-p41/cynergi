@@ -70,6 +70,9 @@ class AuditDetailFactoryService @Inject constructor(
          }
    }
 
+   fun generate(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null) =
+      stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
+
    fun single(): AuditDetail {
       return single(null, null)
    }
