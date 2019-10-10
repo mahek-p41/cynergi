@@ -96,12 +96,12 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "Query a random schedule" () {
       setup:
-      def faker = new Faker()
-      def random = faker.random()
-      def number = random.nextInt(0,4)
+      final def faker = new Faker()
+      final def random = faker.random()
+      final def number = random.nextInt(0,4)
       final List<Schedule> schedules = scheduleFactoryService.stream(5, null).toList()
       final Schedule schedule = schedules[number]
-      final Integer i = schedule.id
+      final Long i = schedule.id
 
       when:
       Schedule found = scheduleRepository.findOne(i)
@@ -114,7 +114,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "fetch all test" () {
       setup:
-      def savedSchedules = scheduleFactoryService.stream(6, null).toList()
+      final def savedSchedules = scheduleFactoryService.stream(6, null).toList()
 
       when:
       RepositoryPage<Schedule> foundAll = scheduleRepository.fetchAll(new PageRequest())
@@ -128,7 +128,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "get page one" () {
       setup:
-      def savedSchedules = scheduleFactoryService.stream(50, null).toList()
+      final def savedSchedules = scheduleFactoryService.stream(50, null).toList()
 
       when:
       RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(1, 10, "id", "ASC"))
@@ -143,14 +143,14 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "get random page" () {
       setup:
-      def maxElements = 100
-      def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
-      def faker = new Faker()
-      def random = faker.random()
-      def pageNumber = random.nextInt(1,3)
-      def pageSize = random.nextInt(10,30)
-      def firstRow = (pageNumber - 1) * pageSize
-      def lastRow = firstRow + (pageSize - 1)
+      final def maxElements = 100
+      final def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
+      final def faker = new Faker()
+      final def random = faker.random()
+      final def pageNumber = random.nextInt(1,3)
+      final def pageSize = random.nextInt(10,30)
+      final def firstRow = (pageNumber - 1) * pageSize
+      final def lastRow = firstRow + (pageSize - 1)
 
       when:
       RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(pageNumber, pageSize, "id", "ASC"))
@@ -166,14 +166,13 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "out of bounds check" () {
       setup:
-      def savedSchedules = scheduleFactoryService.stream(10, null).toList()
+      scheduleFactoryService.stream(10, null).toList()
 
       when:
       RepositoryPage<Schedule> foundAll = scheduleRepository.fetchAll(new PageRequest(2, 10, "id", "ASC"))
 
       then:
       notThrown(Exception)
-      foundAll == null
       foundAll.elements.size == 0
    }
 
