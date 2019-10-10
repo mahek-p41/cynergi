@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.schedule.infrastructure
 
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleFactoryService
@@ -113,14 +115,15 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "fetch all test" () {
       setup:
-      scheduleFactoryService.stream(6, null).toList()
+      def savedSchedules = scheduleFactoryService.stream(6, null).toList()
 
       when:
-      List<Schedule> foundAll = scheduleRepository.fetchAllOLD()
+      RepositoryPage<Schedule> foundAll = scheduleRepository.fetchAll(new PageRequest())
 
       then:
       notThrown(Exception)
       foundAll != null
-      foundAll.size == 6
+      foundAll.elements.size == 6
+      foundAll.elements == savedSchedules
    }
 }
