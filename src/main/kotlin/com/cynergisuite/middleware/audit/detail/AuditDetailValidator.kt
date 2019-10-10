@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.detail
 
+import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -23,29 +24,24 @@ class AuditDetailValidator @Inject constructor (
    private val auditRepository: AuditRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val inventoryRepository: InventoryRepository
-) {
+) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailValidator::class.java)
 
    @Throws(ValidationException::class)
    fun validateCreate(auditId: Long, auditDetailCreate: AuditDetailCreateValueObject) {
       logger.debug("Validating Create AuditDetail {}", auditDetailCreate)
 
-      val errors = mutableSetOf<ValidationError>()
-      val inventoryId = auditDetailCreate.inventory!!.id!!
+      doValidation { errors ->
+         val inventoryId = auditDetailCreate.inventory!!.id!!
 
-      validateAudit(auditId, errors)
-      validateScanArea(auditDetailCreate.scanArea!!.value!!, errors)
+         validateAudit(auditId, errors)
+         validateScanArea(auditDetailCreate.scanArea!!.value!!, errors)
 
-      if (inventoryRepository.doesNotExist(inventoryId)) {
-         errors.add(
-            ValidationError("inventory.id", NotFound(inventoryId))
-         )
-      }
-
-      if (errors.isNotEmpty()) {
-         logger.debug("Validating Create AuditDetail {} had errors {}", auditDetailCreate, errors)
-
-         throw ValidationException(errors)
+         if (inventoryRepository.doesNotExist(inventoryId)) {
+            errors.add(
+               ValidationError("inventory.id", NotFound(inventoryId))
+            )
+         }
       }
    }
 
@@ -53,23 +49,18 @@ class AuditDetailValidator @Inject constructor (
    fun validateUpdate(vo: AuditDetailValueObject) {
       logger.debug("Validating Update AuditDetail {}", vo)
 
-      val errors = mutableSetOf<ValidationError>()
-      val auditId = vo.audit!!.valueObjectId()!!
-      val id = vo.id
+      doValidation { errors ->
+         val auditId = vo.audit!!.valueObjectId()!!
+         val id = vo.id
 
-      validateAudit(auditId, errors)
-      validateScanArea(vo.scanArea!!.value!!, errors)
+         validateAudit(auditId, errors)
+         validateScanArea(vo.scanArea!!.value!!, errors)
 
-      if (id == null) {
-         errors.add(element = ValidationError("id", NotNull("id")))
-      } else if ( !auditDetailRepository.exists(id = id) ) {
-         errors.add(ValidationError("id", NotFound(id)))
-      }
-
-      if (errors.isNotEmpty()) {
-         logger.debug("Validating Update AuditDetail {} had errors {}", vo, errors)
-
-         throw ValidationException(errors)
+         if (id == null) {
+            errors.add(element = ValidationError("id", NotNull("id")))
+         } else if ( auditDetailRepository.doesNotExist(id) /*!auditDetailRepository.exists(id = id)*/ ) {
+            errors.add(ValidationError("id", NotFound(id)))
+         }
       }
    }
 

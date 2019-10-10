@@ -16,7 +16,6 @@ import com.cynergisuite.middleware.localization.NotImplemented
 import com.cynergisuite.middleware.localization.PageOutOfBounds
 import com.cynergisuite.middleware.localization.RouteError
 import com.cynergisuite.middleware.localization.UnableToParseJson
-import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
@@ -142,7 +141,7 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
-   fun unsatisifedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorValueObject> {
+   fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorValueObject> {
       logger.trace("Unsatisfied Route Error", exception)
 
       val locale = httpRequest.findLocaleWithDefault()

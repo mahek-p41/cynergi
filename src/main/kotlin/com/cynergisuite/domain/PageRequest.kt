@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Pattern.Flag.CASE_INSENSITIVE
 
-@ValueObject
+@DataTransferObject
 @Schema(name = "PageRequest", title = "How to query for a paged set of items", description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC")
 open class PageRequest {
 

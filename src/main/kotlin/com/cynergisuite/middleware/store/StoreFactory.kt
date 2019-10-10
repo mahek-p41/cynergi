@@ -42,7 +42,7 @@ object StoreFactory {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class StoreFactoryService (
    private val storeRepository: StoreRepository
 ) {

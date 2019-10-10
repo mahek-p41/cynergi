@@ -65,7 +65,7 @@ object EmployeeFactory {
 }
 
 @Singleton
-@Requires(env = ["test", "demo"])
+@Requires(env = ["develop", "test"])
 class EmployeeFactoryService @Inject constructor(
    private val employeeRepository: EmployeeRepository
 ) {
@@ -78,6 +78,10 @@ class EmployeeFactoryService @Inject constructor(
    }
 
    fun single(): Employee {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create Employee") }
+      return single(null)
+   }
+
+   fun single(storeIn: Store? = null): Employee {
+      return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Employee") }
    }
 }

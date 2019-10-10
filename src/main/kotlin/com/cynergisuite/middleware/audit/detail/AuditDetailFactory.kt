@@ -53,7 +53,7 @@ object AuditDetailFactory {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class AuditDetailFactoryService @Inject constructor(
    private val auditFactoryService: AuditFactoryService,
    private val auditDetailRepository: AuditDetailRepository,
@@ -69,6 +69,9 @@ class AuditDetailFactoryService @Inject constructor(
             auditDetailRepository.insert(it)
          }
    }
+
+   fun generate(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null) =
+      stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
 
    fun single(): AuditDetail {
       return single(null, null)

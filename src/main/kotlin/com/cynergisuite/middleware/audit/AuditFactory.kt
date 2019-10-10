@@ -45,7 +45,7 @@ object AuditFactory {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class AuditFactoryService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val employeeFactoryService: EmployeeFactoryService,
@@ -65,11 +65,18 @@ class AuditFactoryService @Inject constructor(
          }
    }
 
+   fun generate(numberIn: Int = 1, storeIn: Store? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>?) {
+      stream(numberIn, storeIn, changedByIn, statusesIn).forEach {  } // exercise the stream with the terminal forEach
+   }
+
    fun single(): Audit =
       single(storeIn = null)
 
    fun single(storeIn: Store? = null): Audit =
       stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
+
+   fun single(storeIn: Store? = null, changedByIn: Employee? = null): Audit =
+      single(storeIn = storeIn, changedByIn = changedByIn, statusesIn = null)
 
    fun single(storeIn: Store? = null, changedByIn: Employee?, statusesIn: Set<AuditStatus>?): Audit =
       stream(storeIn = storeIn, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }

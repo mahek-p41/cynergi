@@ -40,7 +40,7 @@ object VerificationLandlordTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class VerificationLandlordDataLoaderService @Inject constructor(
    private val verificationLandlordRepository: VerificationLandlordRepository,
    private val verificationDataLoaderService: VerificationDataLoaderService

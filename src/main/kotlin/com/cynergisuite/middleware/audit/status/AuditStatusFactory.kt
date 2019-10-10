@@ -5,11 +5,11 @@ import java.util.stream.Stream
 
 object AuditStatusFactory {
    private val statuses = listOf(
-      AuditStatus(1, "OPENED", "Opened", "audit.status.opened"),
-      AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress"),
-      AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed"),
-      AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled"),
-      AuditStatus(5, "SIGNED-OFF", "Signed Off", "audit.status.signed-off")
+      AuditStatus(1, "OPENED", "Opened", "audit.status.opened", "FF0000"),
+      AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress", "FF6600"),
+      AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed", "FFCC00"),
+      AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled", "CCFF00"),
+      AuditStatus(5, "SIGNED-OFF", "Signed Off", "audit.status.signed-off", "66FF00")
    )
 
    @JvmStatic
@@ -19,15 +19,16 @@ object AuditStatusFactory {
    fun inProgress(): AuditStatus = statuses.first { it.value == "IN-PROGRESS" }
 
    @JvmStatic
+   fun canceled(): AuditStatus = statuses.first { it.value == "CANCELED" }
+
+   @JvmStatic
    fun completed(): AuditStatus = statuses.first { it.value == "COMPLETED" }
 
    @JvmStatic
    fun signedOff(): AuditStatus = statuses.first { it .value == "SIGNED-OFF" }
 
    @JvmStatic
-   fun values(): List<AuditStatus> {
-      return statuses
-   }
+   fun values(): List<AuditStatus> = statuses
 
    @JvmStatic
    fun random(): AuditStatus {

@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
+import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -18,7 +19,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.lang.StringBuilder
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,6 +56,7 @@ class AuditRepository @Inject constructor(
             astd.id AS astd_id,
             astd.value AS astd_value,
             astd.description AS astd_description,
+            astd.color AS astd_color,
             astd.localization_code AS astd_localization_code,
             aer.e_id AS aer_id,
             aer.e_time_created AS aer_time_created,
@@ -112,19 +113,29 @@ class AuditRepository @Inject constructor(
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder()
+      val from = pageRequest.from
+      val thru = pageRequest.thru
+      var where = " WHERE "
       var and = EMPTY
-      var where = "WHERE"
 
       if (storeNumber != null) {
          params["store_number"] = storeNumber
          whereBuilder.append(where).append(" store_number = :store_number ")
-         and = "AND"
          where = EMPTY
+         and = " AND "
       }
 
-      if (status != null) {
+      if (from != null && thru != null) {
+         params["from"] = from
+         params["thru"] = thru
+         whereBuilder.append(where).append(and).append(" a.time_created BETWEEN :from AND :thru ")
+         where = EMPTY
+         and = " AND "
+      }
+
+      if (status != null && status.isNotEmpty()) {
          params["current_status"] = status
-         whereBuilder.append(where).append(and).append(" current_status = :current_status ")
+         whereBuilder.append(where).append(and).append(" current_status IN (:current_status) ")
       }
 
       @Language("PostgreSQL")
@@ -133,7 +144,8 @@ class AuditRepository @Inject constructor(
             ${employeeRepository.selectBase}
          ), audits AS (
             WITH status AS (
-               SELECT csastd.value AS current_status, csaa.audit_id AS audit_id, csaa.id
+               SELECT csastd.value AS current_status, 
+                      csaa.audit_id AS audit_id, csaa.id
                FROM audit_action csaa
                     JOIN audit_status_type_domain csastd
                          ON csaa.status_id = csastd.id
@@ -149,7 +161,13 @@ class AuditRepository @Inject constructor(
                a.time_updated AS time_updated,
                a.store_number AS store_number,
                s.current_status AS current_status,
-               (SELECT count(id) FROM audit $whereBuilder) AS total_elements
+               (SELECT count(a.id) 
+                FROM audit a
+                    JOIN status s
+                      ON s.audit_id = a.id
+                    JOIN maxStatus ms
+                      ON s.id = ms.current_status_id
+                $whereBuilder) AS total_elements
             FROM audit a
                  JOIN status s
                       ON s.audit_id = a.id
@@ -174,6 +192,7 @@ class AuditRepository @Inject constructor(
             astd.id AS astd_id,
             astd.value AS astd_value,
             astd.description AS astd_description,
+            astd.color AS astd_color,
             astd.localization_code AS astd_localization_code,
             aer.e_id AS aer_id,
             aer.e_time_created AS aer_time_created,
@@ -245,6 +264,78 @@ class AuditRepository @Inject constructor(
       logger.trace("Checking if Audit: {} exists resulted in {}", id, exists)
 
       return exists
+   }
+
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest): List<AuditStatusCount> {
+      val status = pageRequest.status
+      val params = mutableMapOf<String, Any>()
+      val whereBuilder = StringBuilder()
+      val from = pageRequest.from
+      val thru = pageRequest.thru
+      var where = " WHERE "
+      var and = EMPTY
+
+      if (from != null && thru != null) {
+         params["from"] = from
+         params["thru"] = thru
+         whereBuilder.append(where).append(" csaa.time_created BETWEEN :from AND :thru ")
+         where = EMPTY
+         and = " AND "
+      }
+
+      if ( !status.isNullOrEmpty() ) {
+         params["statuses"] = status.asSequence().toList()
+         whereBuilder.append(where).append(and).append(" csastd.value IN (:statuses) ")
+      }
+
+      return jdbc.query("""
+         WITH status AS (
+            SELECT
+               csastd.id AS current_status_id,
+               csastd.value AS current_status,
+               csastd.description AS current_status_description,
+               csastd.localization_code AS current_status_localization_code,
+               csastd.color AS current_status_color,
+               csaa.audit_id AS audit_id,
+               csaa.id
+            FROM audit_action csaa
+               JOIN audit_status_type_domain csastd
+                 ON csaa.status_id = csastd.id
+            $whereBuilder
+            ),
+            maxStatus AS (
+               SELECT MAX(id) AS current_status_id, audit_id
+               FROM audit_action
+               GROUP BY audit_id
+            )
+         SELECT
+            status.current_status_id AS current_status_id,
+            status.current_status AS current_status,
+            status.current_status_description AS current_status_description,
+            status.current_status_localization_code AS current_status_localization_code,
+            status.current_status_color AS current_status_color,
+            count(*) AS current_status_count
+         FROM audit a
+            JOIN status status ON status.audit_id = a.id
+            JOIN maxStatus ms ON status.id = ms.current_status_id
+            JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number
+         GROUP BY status.current_status,
+                  status.current_status_description,
+                  status.current_status_localization_code,
+                  status.current_status_color,
+                  status.current_status_id
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         AuditStatusCount(
+            id = rs.getLong("current_status_id"),
+            value = rs.getString("current_status"),
+            description = rs.getString("current_status_description"),
+            localizationCode = rs.getString("current_status_localization_code"),
+            color = rs.getString("current_status_color"),
+            count = rs.getInt("current_status_count")
+         )
+      }
    }
 
    fun countAuditsNotCompleted(storeNumber: Int): Int =

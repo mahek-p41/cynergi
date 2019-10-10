@@ -64,6 +64,7 @@ dependencies {
    implementation "io.micronaut.configuration:micronaut-postgres-reactive"
    implementation "io.micronaut:micronaut-security"
    implementation "io.micronaut:micronaut-security-jwt"
+   implementation 'io.micronaut:micronaut-management'
    implementation 'io.micronaut.configuration:micronaut-hibernate-validator'
    kapt platform("io.micronaut:micronaut-bom:$micronautVersion")
    kapt 'io.micronaut:micronaut-validation'
@@ -77,7 +78,7 @@ dependencies {
    implementation "org.springframework:spring-jdbc:5.1.5.RELEASE"
 
    implementation "io.swagger.core.v3:swagger-annotations"
-   runtimeOnly "org.postgresql:postgresql:42.2.5"
+   compile "org.postgresql:postgresql:42.2.5"
 
    implementation "org.apache.commons:commons-lang3:3.8.1"
    implementation "org.apache.commons:commons-csv:1.6"
@@ -136,6 +137,7 @@ allOpen {
 
 noArg {
    annotation("com.cynergisuite.domain.ValueObject")
+   annotation("com.cynergisuite.domain.DataTransferObject")
    invokeInitializers = true
 }
 
@@ -161,8 +163,8 @@ task flywayMigrateCynegiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    locations = ['filesystem:src/main/resources/db/migration/postgres']
 }
 
-task flywayMigrateCynergiDemoDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = 'jdbc:postgresql://localhost:6432/cynergidemodb'
+task flywayMigrateCynergiDevelopDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+   url = 'jdbc:postgresql://localhost:6432/cynergidevelopdb'
    user = 'postgres'
    password = 'password'
    locations = ['filesystem:src/main/resources/db/migration/postgres']

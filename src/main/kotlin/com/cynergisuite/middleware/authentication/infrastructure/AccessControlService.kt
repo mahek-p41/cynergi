@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.AccessDenied
-import com.cynergisuite.middleware.localization.SystemCode
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import io.micronaut.security.utils.SecurityService

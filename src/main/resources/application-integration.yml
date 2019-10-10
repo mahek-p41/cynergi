@@ -1,17 +1,15 @@
 micronaut:
-   environment: demo
-   router:
-      static-resources:
-         swagger:
-            paths: classpath:META-INF/swagger
-            mapping: /swagger/**
-   security.token.jwt.signatures.secret.generator.secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
+   environment: integration
+   http:
+      client:
+         read-timeout: 3600s
+   security.token.jwt.signatures.secret.generator.secret: kdfjadkdjfioeijfow39302jfojsojf0jdkd9fj
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:
       client:
-         port: 6432
+         port: 7432
          host: localhost
-         database: cynergidemodb
+         database: cynergitestdb
          user: postgres
          password: password
          maxSize: 1
@@ -24,6 +22,7 @@ datasources:
 flyway:
    datasources:
       default:
+         clean-on-validation-error: true
          clean-disabled: false
          clean-schema: true
 cynergi:
@@ -33,5 +32,6 @@ cynergi:
             path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
    legacy:
       import:
-         location: "./import/"
-         rename: false
+         location: "./importEmpty/"
+         rename: true
+         process-startup: false

@@ -52,7 +52,7 @@ object VerificationAutoTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class VerificationAutoDataLoaderService @Inject constructor(
    val verificationAutoRepository: VerificationAutoRepository,
    val verificationDataLoaderService: VerificationDataLoaderService

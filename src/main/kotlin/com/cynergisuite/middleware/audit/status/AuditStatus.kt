@@ -8,6 +8,7 @@ data class AuditStatus(
    val value: String,
    val description: String,
    val localizationCode: String,
+   val color: String,
    val nextStates: MutableSet<AuditStatus> = LinkedHashSet()
 ) : TypeDomainEntity<AuditStatus> {
    private val myHashCode: Int = HashCodeBuilder()
@@ -26,7 +27,7 @@ data class AuditStatus(
 
    override fun equals(other: Any?): Boolean =
       if (other is AuditStatus) {
-         basicEquality(other)
+         basicEquality(other) && other.color == this.color
       } else {
          false
       }

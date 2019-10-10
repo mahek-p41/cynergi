@@ -43,7 +43,7 @@ Notepad or VIM to do your development as Gradle handles all the building outside
 
 ### Local Database
 The Local database runs Postgres 9.3 via docker with 2 databases.  One is the **cynergidb** which is intended to survive
-restarts of the cynergi-middleware application.  The other is the **cynergidemodb** and is intended to be refreshed by the
+restarts of the cynergi-middleware application.  The other is the **cynergidevelopdb** and is intended to be refreshed by the
 cynergi-middleware everytime it restarts.
 
 To run the local databases change directory to the */support* directory and execute the `./cynergi-dev-db.sh` script. 
@@ -96,11 +96,11 @@ if you don't want to deal with or don't have a fastinfo_production dump.
       FROM '/tmp/dumps/products.csv' DELIMITER ',' CSV HEADER;
       ```
 
-#### cynergidemodb
+#### cynergidevelopdb
 1. Connection Information
    1. port: 6432
    2. host: localhost
-   3. database: cynergidemodb
+   3. database: cynergidevelopdb
    4. user: postgres
    5. password: password
 
@@ -124,8 +124,8 @@ The scripts that manage the docker database manage states through restarts by re
 
 ### Test Database
 A separate test database is used for integration testing via the Micronaut testing harness.  It runs in memory to 
-facilitate quicker loading and unloading test data during a test run.  This database does not provide the ability to 
-read snapshots of any kind as it is intended to be ephemeral. 
+do quicker loading and unloading of test data during a test run.  This database does not provide the ability to 
+read snapshots of any kind as it is intended to be completely ephemeral. 
 
 To run the local databases change directory to the */support* directory and execute the `./cynergi-test-db.sh` script.
 
@@ -163,8 +163,8 @@ Note: This option is useful if you just want to run the application but aren't i
    1. Will want to do this in a new terminal window separate from where the *cynergi-dev-middleware.sh* script is being run
 3. For local mode execute from the terminal 
    1. `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*-all.jar`
-4. For demo mode execute from the terminal 
-   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=demo -jar ./build/libs/cynergi-middleware*-all.jar`
+4. For develop mode execute from the terminal 
+   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=develop -jar ./build/libs/cynergi-middleware*-all.jar`
 4. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
 
 
@@ -181,74 +181,7 @@ Code that will be deployed with the final application is all housed in the `src/
 in this directory will be compiled to Java bytecode via the Kotlin compiler that is configured in the gradle build
 script.  The primary language used for writing the business logic is [Kotlin](https://kotlinlang.org/).
 
-###### Code Conventions
-1. Top Level Package *(namespace)*
-   1. [com.hightouchinc.cynergi.middleware](./src/main/kotlin/com/hightouchinc/cynergi/middleware)
-      1. All code will live under this package (and by extension directories on the file system)
-2. Primary Subpackages - The packages are were the bulk of the code will reside.
-   1. [Entity](./src/main/kotlin/com/hightouchinc/cynergi/middleware/entity)
-      1. Start here.  The first thing that should be done is the design of the Java Class that will represent a single
-         row in the database AKA an "Entity".
-      2. These should be a [Kotlin Data Class](https://kotlinlang.org/docs/reference/data-classes.html) which are a nice
-         way of defining simple classes that really only operate as data holders.  Advantages are that you get a nice
-         _copy_ method that makes a copy of that data class and allows for the changing of values when that copy is done.
-         Also _equals_, _hashCode_and _toString_ methods are generated in a standard way allowing for reduced maintenance
-         burden on the developer.
-         1. Additionally it is probably a good idea to define a data transfer object (aka DTO) that will be used to give
-            shape to JSON responses to clients that interact with the HTTP endpoints.
-         2. The simplest way to start out a DTO is to define another data class that is similar to the `entity`, but 
-            has various Jackson and javax.validation annotations on it that will be evaluated during the web
-            marshalling and unmarshalling process.
-   2. [Repository](./src/main/kotlin/com/hightouchinc/cynergi/middleware/repository)
-      1. Next define how the Entity will interact with the database via a Repository.  Place all SQL queries here as 
-         well as the mapping code (usually via a Spring RowMapper implementation)
-      2. To make dealing with JDBC easier the Spring Frameworks JdbcTemplate and NamedParameterJdbcTemplate have been
-         configured in the container.  Simply express a dependency on one or both beans in the `@Inject constructor` to
-         get access to them.
-   3. [Service](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service)
-      1. It is now time to define the class(es) that will define the business logic that interacts with the `entity`
-         defined earlier.
-      2. All business logic should be housed in a `service` and should implement the following interface
-         1. [com.hightouchinc.cynergi.middleware.service.IdentifiableService](./src/main/kotlin/com/hightouchinc/cynergi/middleware/service/IdentifiableService.kt) 
-            when dealing with an `entity` that has a primary key that is auto incrementing and some sort of integral type.
-      3. If multiple interactions with the database are required it will be in the service where this will be managed.
-         That might also include one service depending on another such as the `StoreService` depending on some 
-         functionality that is provided by the `CompanyService`
-   4. [Controller](./src/main/kotlin/com/hightouchinc/cynergi/middleware/controller)
-      1. The next to last class that will need to be created is a `controller`.
-      2. All controllers should have two annotations at the top of them
-         1. `io.micronaut.validation.Validated`
-            1. This tells the Micronaut framework that HTTP Request Bodies should be validated against the javax.validation
-               annotations defined on their properties.
-            2. These annotations are used by the framework to determine if the payload from the HTTP client is even
-               somewhat close to valid, and is the first line of defense the API uses to ensure data integrity 
-         2. `io.micronaut.http.annotation.Controller`
-            1. This annotation tells the Micronaut framework that public methods defined in this class and annotated
-               with annotations such as `io.micronaut.http.annotation.Get` and `io.micronaut.http.annotation.Post` will
-               provide HTTP endpoints that can be interacted with via an HTTP client of some kind such as cURL or 
-               a web browser.
-            2. A `value` will need to be provided that is the HTTP path through which the methods defined on this call
-               can be reached.  This `value` on the `Controller` annotation is the root of the path for this method.
-               The HTTP verb annotations also can define paths via the `value` attribute which will be appended to the
-               path defined on the `value` of the `Controller` annotation.
-      3. Controllers are how the application is interacted with and as such act as routers to the business logic that 
-         are housed in one or more `service` implementations.  A good rule of thumb is that it will be a one-to-one 
-         mapping of `controller` to `service`
-      4. Controllers also act as the gatekeeper to the business logic applying all validation first through the
-         standardized javax.validation system, and second through validators.
-   5. [Validator](./src/main/kotlin/com/hightouchinc/cynergi/middleware/validator)
-      1. Finally a `validator` will need to be defined.  This validator is the next line of defense that the API will
-         use to protect data integrity typically by checking that states are valid based on the data being passed. 
-      2. There will always need to be at the very least a `validateSave` and a `validateUpdate` method implemented
-         1. `validateSave` will need to be called by the controller when a POST is made to the server that will be 
-            creating new rows in the database and as such won't have an ID assigned to them yet.
-         2. `validateUpdate` will need to be called by the controller when a PUT is made to the server that will
-            be updating rows in the database.
-      3. Additional methods can be defined on implementations that need to different validation other than the basic
-         CREATE and UPDATE processes.
-      4. Also user validation can be done here to determine if a user has access to be applying the changes they are 
-         attempting to apply.  The current interfaces will need to be extended to handle user validation as they have
-         not currently been defined with that ability.
+##### Coding Conventions TODO
 
 ##### Resources 
 Resources as defined in the scope of this application are plain text files that are not compiled, but loaded by the 
@@ -302,3 +235,24 @@ API is actually fulfilling that contract.
   * Will append the table skeleton described above to an already existing migration script rather than creating a new one
 * `TABLE_NAME=new_table bash -c 'npx yo cyn:entity $TABLE_NAME && npx yo cyn:controller $TABLE_NAME && npx yo cyn:migration $TABLE_NAME feature-new-stuff-cynXXX'`
 * `./gradlew clean assemble openApiGenerate`
+
+## Support Scripts
+This project provides several scripts to make it easier to interact with the different Docker hosted databases.
+
+### Convention used for naming scripts
+There is a convention for these scripts that is hierarchical in nature starting with a root.
+1. `cynergi` - Intended as the "root" of a command structure
+1. `cleanup` - provides a cleanup functionality
+1. `db` - Will interact with one of the provided databases
+   1. `database`- Will interact with a defined database environment
+      1. `subcommand` - Execute a type of subcommand against that database environment
+         * If there is no environment specified in the script name before the `subcommand` to execute is provided it will be executed against the default database
+
+### Scripts
+1. `cynergi-db.sh` - Starts a Postgres Docker container that will host cynergidb, cynergidevelopdb, and fastinfo_production
+1. `cynergi-db-psql.sh` - Starts a Docker container with a psql prompt connected to the cynergidb database
+1. `cynergi-db-snapshot.sh` - Runs a Docker container that will execute a pg_dump against the cynergidb database and store the result in /support/development/db/DatabaseDumps/cynergidb.dump
+1. `cynergi-db-develop-psql.sh` - Starts a Docker container with a psql prompt connected to the cynergidevelopdb database
+1. `cynergi-db-fastinfo-snapshot.sh` - Runs a Docker container that will execute a pg_dump against the fastinfo_production database and store the result in /support/develoopment/db/DatabaseDumps/fastinfo.dump
+1. `cynergi-db-test.sh` - Starts a Postgres Docker container that will host the cynergitestdb and fastinfo_production databases in memory
+1. `cynergi-db.-test-psql.sh` - Starts a Docker container with the psql prompt connected to the cynergidtestdb database 

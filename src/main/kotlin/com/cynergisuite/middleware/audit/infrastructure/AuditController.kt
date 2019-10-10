@@ -2,8 +2,11 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.extensions.endOfWeek
+import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
@@ -32,9 +35,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import javax.inject.Inject
 
-@Secured(IS_AUTHENTICATED) // require access to this controller to at the very least be authenticated
+@Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
@@ -44,7 +49,7 @@ class AuditController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @AccessControl("audit-fetchOne")
-   @Get(uri = "/{id}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
@@ -74,10 +79,11 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
-      logger.info("Fetching all audits {} {}", pageRequest)
+      logger.info("Fetching all audits {} {}", pageRequestIn)
+      val pageRequest = buildPageRequest(pageRequestIn)
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -85,6 +91,28 @@ class AuditController @Inject constructor(
       }
 
       return page
+   }
+
+   @Throws(ValidationException::class)
+   @AccessControl("audit-fetchAllStatusCounts")
+   @Get(uri = "/counts{?auditStatusCountRequest*}", processes = [APPLICATION_JSON])
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAuditStatusCounts(
+      @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
+      httpRequest: HttpRequest<*>
+   ): List<AuditStatusCountDataTransferObject> {
+      logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val auditStatusCountRequest = buildPageRequest(auditStatusCountRequestIn)
+
+      logger.debug("Fetching Audit status counts after build {}", auditStatusCountRequest)
+
+      return auditService.findAuditStatusCounts(auditStatusCountRequest, locale)
    }
 
    @Post(processes = [APPLICATION_JSON])
@@ -137,5 +165,14 @@ class AuditController @Inject constructor(
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   private fun buildPageRequest(pageRequestIn: AuditPageRequest?): AuditPageRequest {
+      val statusesIn = pageRequestIn?.status
+      val from = pageRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
+      val thru = pageRequestIn?.thru ?: from.endOfWeek()
+      val statuses = if (!statusesIn.isNullOrEmpty()) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+
+      return AuditPageRequest(pageRequestIn, from = from, thru = thru, status = statuses)
    }
 }

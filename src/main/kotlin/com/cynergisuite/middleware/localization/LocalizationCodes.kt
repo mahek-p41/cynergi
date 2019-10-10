@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.localization
 
+import java.time.OffsetDateTime
+
 interface LocalizationCode {
    fun getCode(): String
    fun getArguments(): Array<Any?>
@@ -28,6 +30,7 @@ class EndDateBeforeStart(endDate: String, startDate: String) : Cynergi("cynergi.
 class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cynergi.validation.notification.recipients.not.required", arrayOf(notificationType))
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
+class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
 
 class AuditStatusNotFound(auditStatus: String):  Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String): Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
