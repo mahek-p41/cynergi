@@ -117,13 +117,13 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       final def savedSchedules = scheduleFactoryService.stream(6, null).toList()
 
       when:
-      RepositoryPage<Schedule> foundAll = scheduleRepository.fetchAll(new PageRequest())
+      RepositoryPage<Schedule> onePage = scheduleRepository.fetchAll(new PageRequest())
 
       then:
       notThrown(Exception)
-      foundAll != null
-      foundAll.elements.size == 6
-      foundAll.elements == savedSchedules
+      onePage != null
+      onePage.elements.size == 6
+      onePage.elements == savedSchedules
    }
 
    void "get page one" () {
@@ -169,11 +169,11 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       scheduleFactoryService.stream(10, null).toList()
 
       when:
-      RepositoryPage<Schedule> foundAll = scheduleRepository.fetchAll(new PageRequest(2, 10, "id", "ASC"))
+      RepositoryPage<Schedule> onePage = scheduleRepository.fetchAll(new PageRequest(2, 10, "id", "ASC"))
 
       then:
       notThrown(Exception)
-      foundAll.elements.size == 0
+      onePage.elements.size == 0
    }
 
 }
