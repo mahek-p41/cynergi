@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleType
 import com.cynergisuite.middleware.schedule.ScheduleTypeFactory
-import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.github.javafaker.Faker
 import io.micronaut.test.annotation.MicronautTest
 import org.springframework.dao.DataIntegrityViolationException
@@ -126,4 +125,56 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       foundAll.elements.size == 6
       foundAll.elements == savedSchedules
    }
+
+   void "get page one" () {
+      setup:
+      def savedSchedules = scheduleFactoryService.stream(50, null).toList()
+
+      when:
+      RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(1, 10, "id", "ASC"))
+
+      then:
+      notThrown(Exception)
+      currentPage != null
+      currentPage.elements.size == 10
+      currentPage.elements[0] == savedSchedules[0]
+      currentPage.elements[9] == savedSchedules[9]
+   }
+
+   void "get random page" () {
+      setup:
+      def maxElements = 100
+      def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
+      def faker = new Faker()
+      def random = faker.random()
+      def pageNumber = random.nextInt(1,3)
+      def pageSize = random.nextInt(10,30)
+      def firstRow = (pageNumber - 1) * pageSize
+      def lastRow = firstRow + (pageSize - 1)
+
+      when:
+      RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(pageNumber, pageSize, "id", "ASC"))
+
+      then:
+      notThrown(Exception)
+      currentPage != null
+      currentPage.elements.size == pageSize
+      currentPage.totalElements == maxElements.toLong()
+      currentPage.elements[0] == savedSchedules[firstRow]
+      currentPage.elements[pageSize - 1] == savedSchedules[lastRow]
+   }
+
+   void "out of bounds check" () {
+      setup:
+      def savedSchedules = scheduleFactoryService.stream(10, null).toList()
+
+      when:
+      RepositoryPage<Schedule> foundAll = scheduleRepository.fetchAll(new PageRequest(2, 10, "id", "ASC"))
+
+      then:
+      notThrown(Exception)
+      foundAll == null
+      foundAll.elements.size == 0
+   }
+
 }
