@@ -91,23 +91,23 @@ class ScheduleRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "title" to entity.title,
+            "title"       to entity.title,
             "description" to entity.description,
-            "schedule" to entity.schedule,
-            "command" to entity.command,
-            "type_id" to entity.type.id
+            "schedule"    to entity.schedule,
+            "command"     to entity.command,
+            "type_id"     to entity.type.id
          ),
          RowMapper { rs, _ ->
             Schedule(
-               id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
+               id =          rs.getLong("id"),
+               uuRowId =     rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
-               title = rs.getString("title"),
+               title =       rs.getString("title"),
                description = rs.getString("description"),
-               schedule = rs.getString("schedule"),
-               command = rs.getString("command"),
-               type = entity.type
+               schedule =    rs.getString("schedule"),
+               command =     rs.getString("command"),
+               type =        entity.type
             )
          }
       )
@@ -115,7 +115,8 @@ class ScheduleRepository @Inject constructor(
 
    @Transactional
    override fun update(entity: Schedule): Schedule {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      logger.debug("Updating Schedule {}", entity)
+      return entity
    }
 
    fun fetchAll(pageRequest: PageRequest): RepositoryPage<Schedule> {

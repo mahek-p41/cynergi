@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleType
 import com.cynergisuite.middleware.schedule.ScheduleTypeFactory
-import com.github.javafaker.Faker
 import io.micronaut.test.annotation.MicronautTest
+import org.apache.commons.lang3.RandomUtils
 import org.springframework.dao.DataIntegrityViolationException
 
 import javax.inject.Inject
@@ -96,9 +96,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "Query a random schedule" () {
       setup:
-      final def faker = new Faker()
-      final def random = faker.random()
-      final def number = random.nextInt(0,4)
+      final def number = RandomUtils.nextInt(0,4)
       final List<Schedule> schedules = scheduleFactoryService.stream(5, null).toList()
       final Schedule schedule = schedules[number]
       final Long i = schedule.id
@@ -143,12 +141,10 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "get random page" () {
       setup:
-      final def maxElements = 100
+      final def maxElements = RandomUtils.nextInt(100,110)
       final def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
-      final def faker = new Faker()
-      final def random = faker.random()
-      final def pageNumber = random.nextInt(1,3)
-      final def pageSize = random.nextInt(10,30)
+      final def pageNumber = RandomUtils.nextInt(1,3)
+      final def pageSize = RandomUtils.nextInt(10,30)
       final def firstRow = (pageNumber - 1) * pageSize
       final def lastRow = firstRow + (pageSize - 1)
 
