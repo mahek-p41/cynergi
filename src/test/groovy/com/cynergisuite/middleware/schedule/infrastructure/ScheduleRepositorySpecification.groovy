@@ -65,6 +65,43 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       exception.message.contains("ERROR: insert or update on table \"schedule\" violates foreign key constraint \"schedule_type_id_fkey\"")
    }
 
+   void "update a schedule where all five fields changed" () {
+      given:
+      final ScheduleType st2 = ScheduleTypeFactory.types.get(2)
+      final ScheduleType st3 = ScheduleTypeFactory.types.get(3)
+      ScheduleType typeValue = null
+
+      final List<Schedule> schedules = scheduleFactoryService.stream(3, null).toList()
+      final Schedule one = schedules[RandomUtils.nextInt(0,2)]
+      final String titleValue = "New Title"
+      final String descValue = "New Description"
+      final String scheduleValue = "New Schedule"
+      final String commandValue = "New Command"
+      if(one.type == st2)
+         typeValue = st3
+      else
+         typeValue = st2
+
+      final Schedule temp = new Schedule(one.id, one.uuRowId, one.timeCreated, one.timeUpdated,
+                                         titleValue, descValue, scheduleValue, commandValue, typeValue)
+
+      when:
+      Schedule returnedSchedule = scheduleRepository.update(temp)
+
+      then:
+      notThrown(Exception)
+      returnedSchedule != null
+      returnedSchedule.id          == one.id
+      returnedSchedule.uuRowId     == one.uuRowId
+      returnedSchedule.timeCreated == one.timeCreated
+      returnedSchedule.timeUpdated.isAfter(one.timeUpdated)
+      returnedSchedule.title       == titleValue
+      returnedSchedule.description == descValue
+      returnedSchedule.schedule    == scheduleValue
+      returnedSchedule.command     == commandValue
+      returnedSchedule.type        == typeValue
+   }
+
    void "find one is found" () {
       setup:
       final List<Schedule> schedules = scheduleFactoryService.stream(3, null).toList()
@@ -110,18 +147,19 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       found == schedule
    }
 
-   void "fetch all test" () {
+   void "get one page that isnt a full page" () {
       setup:
       final def savedSchedules = scheduleFactoryService.stream(6, null).toList()
 
       when:
-      RepositoryPage<Schedule> onePage = scheduleRepository.fetchAll(new PageRequest())
+      RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest())
 
       then:
       notThrown(Exception)
-      onePage != null
-      onePage.elements.size == 6
-      onePage.elements == savedSchedules
+      currentPage != null
+      currentPage.elements.size == 6
+      currentPage.elements[0] == savedSchedules[0]
+      currentPage.elements[5] == savedSchedules[5]
    }
 
    void "get page one" () {
@@ -139,7 +177,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       currentPage.elements[9] == savedSchedules[9]
    }
 
-   void "get random page" () {
+   void "get random page and random page size" () {
       setup:
       final def maxElements = RandomUtils.nextInt(100,110)
       final def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()

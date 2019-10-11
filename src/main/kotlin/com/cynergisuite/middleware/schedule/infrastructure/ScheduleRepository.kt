@@ -116,7 +116,40 @@ class ScheduleRepository @Inject constructor(
    @Transactional
    override fun update(entity: Schedule): Schedule {
       logger.debug("Updating Schedule {}", entity)
-      return entity
+      return jdbc.updateReturning("""
+         UPDATE schedule
+         SET
+            title = :title,
+            description = :description,
+            schedule = :schedule,
+            command = :command,
+            type_id = :type_id
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id"          to entity.id,
+            "title"       to entity.title,
+            "description" to entity.description,
+            "schedule"    to entity.schedule,
+            "command"     to entity.command,
+            "type_id"     to entity.type.id
+          ),
+          RowMapper { rs, _ ->
+             Schedule(
+                id =          rs.getLong("id"),
+                uuRowId =     rs.getUuid("uu_row_id"),
+                timeCreated = rs.getOffsetDateTime("time_created"),
+                timeUpdated = rs.getOffsetDateTime("time_updated"),
+                title =       rs.getString("title"),
+                description = rs.getString("description"),
+                schedule =    rs.getString("schedule"),
+                command =     rs.getString("command"),
+                type =        entity.type
+             )
+          }
+      )
    }
 
    fun fetchAll(pageRequest: PageRequest): RepositoryPage<Schedule> {
