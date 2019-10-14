@@ -1,8 +1,13 @@
--- to execute this run as postgres user `psql -f /opt/cyn/v01/cynmid/data/setup-database.sql -v fastinfoUserName= -v fastinfoPassword=
+-- to execute this run as postgres user `psql -f /opt/cyn/v01/cynmid/data/setup-database.sql -v fastinfoUserName= -v fastinfoPassword= -v datasets=
 -- Begin fastinfo setup
+
 \c fastinfo_production
+SET args.datasets TO :'datasets';
+
 DO $$
-   DECLARE r RECORD;
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
@@ -13,7 +18,7 @@ BEGIN
       DROP VIEW store_vw;
    END IF;
 
-   FOR r IN SELECT schema_name FROM information_schema.schemata where schema_name not LIKE 'pg%' and schema_name NOT IN ('public', 'information_schema', 'alles')
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name =  ANY(argsDatasets)
    LOOP
       sqlToExec := sqlToExec
       || ' '
@@ -36,7 +41,9 @@ BEGIN
 END $$;
 
 DO $$
-   DECLARE r RECORD;
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
    sqlToExec VARCHAR;
    unionStr VARCHAR;
 BEGIN
@@ -47,7 +54,7 @@ BEGIN
       DROP VIEW department_vw;
    END IF;
 
-   FOR r IN SELECT schema_name FROM information_schema.schemata where schema_name not LIKE 'pg%' and schema_name NOT IN ('public', 'information_schema', 'alles')
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name =  ANY(argsDatasets)
    LOOP
       sqlToExec := sqlToExec
       || ' '
@@ -74,7 +81,9 @@ BEGIN
 END $$;
 
 DO $$
-   DECLARE r RECORD;
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
@@ -85,7 +94,7 @@ BEGIN
       DROP VIEW employee_vw;
    END IF;
 
-   FOR r IN SELECT schema_name FROM information_schema.schemata where schema_name not LIKE 'pg%' and schema_name NOT IN ('public', 'information_schema', 'alles')
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name =  ANY(argsDatasets)
    LOOP
       sqlToExec := sqlToExec
       || ' '
@@ -128,7 +137,9 @@ BEGIN
 END $$;
 
 DO $$
-   DECLARE r RECORD;
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
@@ -139,7 +150,7 @@ BEGIN
       DROP VIEW inventory_vw;
    END IF;
 
-   FOR r IN SELECT schema_name FROM information_schema.schemata where schema_name not LIKE 'pg%' and schema_name NOT IN ('public', 'information_schema', 'alles')
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name =  ANY(argsDatasets)
    LOOP
       sqlToExec := sqlToExec
       || ' '
