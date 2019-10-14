@@ -14,9 +14,17 @@ services:
     - ./db/DatabaseDumps:/tmp/dumps
     environment:
       - POSTGRES_PASSWORD=password
-    restart: always
+    restart: 'no'
     networks:
       - cynerginet
+  cynergidbready:
+     container_name: cynergidbready
+     build:
+        context: db
+        dockerfile: cynergidbsnapshot.dockerfile
+     networks:
+       - cynerginet
+     command: [ "/tmp/cynergi-db-ready.sh" ]
   cynergidbsnapshot:
     container_name: cynergidbsnapshot
     build:
@@ -38,9 +46,9 @@ services:
       - cynergidb
     stdin_open: true
     tty: true
-    command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "postgres" ]
     networks:
       - cynerginet
+    command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "postgres" ]
   cynergidevelopdbpsql:
      build:
         context: db
@@ -50,9 +58,9 @@ services:
         - cynergidb
      stdin_open: true
      tty: true
-     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "postgres" ]
      networks:
         - cynerginet
+     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "postgres" ]
   cynergitestdb:
     build:
       context: db
@@ -63,7 +71,7 @@ services:
     environment:
       - POSTGRES_DB=cynergitestdb
       - POSTGRES_PASSWORD=password
-    restart: always
+    restart: 'no'
     container_name: cynergitestdb
     networks:
       - cynerginet
@@ -76,9 +84,9 @@ services:
       - cynergidb
     stdin_open: true
     tty: true
-    command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
     networks:
       - cynerginet
+    command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
   fastinfosnapshot:
      container_name: fastinfosnapshot
      build:

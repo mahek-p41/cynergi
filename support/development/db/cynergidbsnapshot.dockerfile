@@ -3,6 +3,7 @@ FROM postgres:9.3.25-alpine
 COPY pgpass /root/.pgpass
 COPY psqlrc /root/.psqlrc
 COPY cynergi-dev-db-dump.sh /root/cynergi-dev-db-dump.sh
+COPY cynergi-db-ready.sh /tmp/cynergi-db-ready.sh
 RUN chmod 0600 /root/.pgpass
 RUN chmod u+x /root/cynergi-dev-db-dump.sh
 RUN dos2unix /root/cynergi-dev-db-dump.sh

@@ -44,5 +44,7 @@ ProxyPassReverse "/api/" "http://127.0.0.1:10900/api/"
 
 EOF
 
+mkdir -p /opt/cyn/v01/cynmid/data/
+cp /home/jenkins/cynergi-middleware/support/deployment/setup-database.sql /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware*-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
 tar -c --to-stdout /opt/cyn | xz -6 - > /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz
