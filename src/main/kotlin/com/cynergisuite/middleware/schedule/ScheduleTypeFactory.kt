@@ -14,5 +14,14 @@ object ScheduleTypeFactory {
    fun hourly(): ScheduleType = types.first { it.value == "HOURLY" }
 
    @JvmStatic
+   fun daily(): ScheduleType = types.first { it.value == "DAILY" }
+
+   @JvmStatic
+   fun weekly(): ScheduleType = types.first { it.value == "WEEKLY" }
+
+   @JvmStatic
+   fun monthly(): ScheduleType = types.first { it.value == "MONTHLY" }
+
+   @JvmStatic
    fun random(): ScheduleType = types[RandomUtils.nextInt(0, types.size)]
 }

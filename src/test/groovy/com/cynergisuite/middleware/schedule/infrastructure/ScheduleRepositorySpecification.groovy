@@ -58,7 +58,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       final def schedule = new Schedule("Test", "Test schedule", "ONCE PER DAY", "runDailyJob", type)
 
       when:
-      def inserted = scheduleRepository.insert(schedule)
+      scheduleRepository.insert(schedule)
 
       then:
       def exception = thrown(DataIntegrityViolationException)
@@ -67,20 +67,21 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "update a schedule where all five fields changed" () {
       given:
-      final ScheduleType st2 = ScheduleTypeFactory.types.get(2)
-      final ScheduleType st3 = ScheduleTypeFactory.types.get(3)
-      ScheduleType typeValue = null
+      final ScheduleType hourly = ScheduleTypeFactory.hourly()
+      final ScheduleType monthly = ScheduleTypeFactory.monthly()
+      ScheduleType typeValue
 
       final List<Schedule> schedules = scheduleFactoryService.stream(3, null).toList()
-      final Schedule one = schedules[RandomUtils.nextInt(0,2)]
+      final Schedule one = schedules[RandomUtils.nextInt(0, 2)]
       final String titleValue = "New Title"
       final String descValue = "New Description"
       final String scheduleValue = "New Schedule"
       final String commandValue = "New Command"
-      if(one.type == st2)
-         typeValue = st3
-      else
-         typeValue = st2
+      if (one.type == hourly) {
+         typeValue = monthly
+      } else {
+         typeValue = hourly
+      }
 
       final Schedule temp = new Schedule(one.id, one.uuRowId, one.timeCreated, one.timeUpdated,
                                          titleValue, descValue, scheduleValue, commandValue, typeValue)
@@ -183,8 +184,8 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       final def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
       final def pageNumber = RandomUtils.nextInt(1,3)
       final def pageSize = RandomUtils.nextInt(10,30)
-      final def firstRow = (pageNumber - 1) * pageSize
-      final def lastRow = firstRow + (pageSize - 1)
+      final Integer firstRow = (pageNumber - 1) * pageSize
+      final Integer lastRow = firstRow + (pageSize - 1)
 
       when:
       RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(pageNumber, pageSize, "id", "ASC"))
@@ -209,5 +210,43 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       onePage.elements.size == 0
    }
+
+   void "delete 1 schedule" () {
+      setup:
+      final List<Schedule> buildSchedules = scheduleFactoryService.stream(5, null).toList()
+      final Schedule oneSchedule = buildSchedules[1]
+      final Long deleteId = oneSchedule.id
+      final Schedule original = scheduleRepository.findOne(deleteId)
+
+      when:
+      Integer deleteCount = scheduleRepository.delete(deleteId)
+
+      then:
+      notThrown(Exception)
+      scheduleRepository.findOne(deleteId) == null
+      oneSchedule == original
+      deleteCount != 0
+   }
+
+   void "delete schedules" () {
+      setup:
+      final List<Schedule> buildSchedules = scheduleFactoryService.stream(10, null).toList()
+      List<Schedule> deleteSchedules = new ArrayList<Schedule>()
+      deleteSchedules.add(buildSchedules[1])
+      deleteSchedules.add(buildSchedules[3])
+      deleteSchedules.add(buildSchedules[8])
+
+      when:
+      Integer deleteCount = scheduleRepository.deleteList(deleteSchedules)
+
+      then:
+      notThrown(Exception)
+      deleteCount == 3
+      scheduleRepository.findOne(buildSchedules[0].id) != null
+      scheduleRepository.findOne(buildSchedules[1].id) == null
+      scheduleRepository.findOne(buildSchedules[3].id) == null
+      scheduleRepository.findOne(buildSchedules[8].id) == null
+   }
+
 
 }

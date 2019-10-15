@@ -7,8 +7,6 @@ import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.ScheduleType
 import io.micronaut.spring.tx.annotation.Transactional
-import org.intellij.lang.annotations.Language
-import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -150,6 +148,23 @@ class ScheduleRepository @Inject constructor(
              )
           }
       )
+   }
+
+   @Transactional
+   fun delete(id: Long): Int {
+      logger.trace("Delete one Schedule with id {}", id)
+      return jdbc.update("DELETE from schedule WHERE id = :id", mapOf("id" to id))
+   }
+
+   fun deleteList(schedules: List<Schedule>): Int {
+      logger.trace("Delete a list of Schedules {}", schedules.size)
+      var counter = 0
+      val iterator = schedules.listIterator()
+      while(iterator.hasNext()) {
+         val deleteId: Long? = iterator.next().id
+         if(this.delete(deleteId!!) == 1) { counter++ }
+      }
+      return counter
    }
 
    fun fetchAll(pageRequest: PageRequest): RepositoryPage<Schedule> {
