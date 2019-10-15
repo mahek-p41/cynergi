@@ -243,6 +243,13 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       deleteCount == 3
       scheduleRepository.findOne(buildSchedules[0].id) != null
+      scheduleRepository.findOne(buildSchedules[2].id) != null
+      scheduleRepository.findOne(buildSchedules[4].id) != null
+      scheduleRepository.findOne(buildSchedules[5].id) != null
+      scheduleRepository.findOne(buildSchedules[6].id) != null
+      scheduleRepository.findOne(buildSchedules[7].id) != null
+      scheduleRepository.findOne(buildSchedules[9].id) != null
+
       scheduleRepository.findOne(buildSchedules[1].id) == null
       scheduleRepository.findOne(buildSchedules[3].id) == null
       scheduleRepository.findOne(buildSchedules[8].id) == null
