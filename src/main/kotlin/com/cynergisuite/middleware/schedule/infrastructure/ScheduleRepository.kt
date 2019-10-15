@@ -156,15 +156,10 @@ class ScheduleRepository @Inject constructor(
       return jdbc.update("DELETE from schedule WHERE id = :id", mapOf("id" to id))
    }
 
+   @Transactional
    fun deleteList(schedules: List<Schedule>): Int {
-      logger.trace("Delete a list of Schedules {}", schedules.size)
-      var counter = 0
-      val iterator = schedules.listIterator()
-      while(iterator.hasNext()) {
-         val deleteId: Long? = iterator.next().id
-         if(this.delete(deleteId!!) == 1) { counter++ }
-      }
-      return counter
+      logger.trace("Delete a list of Schedules {}", schedules)
+      return jdbc.update("DELETE from schedule where id in (:ids)", mapOf("ids" to schedules.map {it.id}))
    }
 
    fun fetchAll(pageRequest: PageRequest): RepositoryPage<Schedule> {
