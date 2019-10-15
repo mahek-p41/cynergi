@@ -180,12 +180,12 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "get random page and random page size" () {
       setup:
-      final def maxElements = RandomUtils.nextInt(100,110)
+      final int maxElements = RandomUtils.nextInt(100,110)
       final def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
-      final def pageNumber = RandomUtils.nextInt(1,3)
-      final def pageSize = RandomUtils.nextInt(10,30)
-      final Integer firstRow = (pageNumber - 1) * pageSize
-      final Integer lastRow = firstRow + (pageSize - 1)
+      final int pageNumber = RandomUtils.nextInt(1,3)
+      final int pageSize = RandomUtils.nextInt(10,30)
+      final int firstRow = (pageNumber - 1) * pageSize
+      final int lastRow = firstRow + (pageSize - 1)
 
       when:
       RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(pageNumber, pageSize, "id", "ASC"))
