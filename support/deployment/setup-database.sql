@@ -216,11 +216,9 @@ DROP SERVER IF EXISTS fastinfo CASCADE;
 CREATE SERVER fastinfo
     FOREIGN DATA WRAPPER postgres_fdw
     OPTIONS (host 'localhost', dbname 'fastinfo_production', updatable 'false');
-CREATE USER MAPPING FOR CURRENT_USER
+CREATE USER MAPPING FOR cynergiuser
     SERVER fastinfo
     OPTIONS (USER :'fastinfoUserName', PASSWORD :'fastinfoPassword');
-GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
-GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
 
 CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
   id BIGINT,
@@ -285,4 +283,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     time_created TIMESTAMPTZ,
     time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
+
+GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
+GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
 -- End cynergidb setup

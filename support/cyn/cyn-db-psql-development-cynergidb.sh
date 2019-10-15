@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-## description: connect a psql prompt to the cynergidb
+## description: connect a psql prompt to the Postgres hosted cynergidb database
 
 cd development
 
