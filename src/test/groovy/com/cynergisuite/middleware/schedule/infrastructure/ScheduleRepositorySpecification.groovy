@@ -71,7 +71,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       final ScheduleType monthly = ScheduleTypeFactory.monthly()
       ScheduleType typeValue
 
-      final List<Schedule> schedules = scheduleFactoryService.stream(3, null).toList()
+      final List<Schedule> schedules = scheduleFactoryService.stream(3, null, 1).toList()
       final Schedule one = schedules[RandomUtils.nextInt(0, 2)]
       final String titleValue = "New Title"
       final String descValue = "New Description"
@@ -84,7 +84,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       }
 
       final Schedule temp = new Schedule(one.id, one.uuRowId, one.timeCreated, one.timeUpdated,
-                                         titleValue, descValue, scheduleValue, commandValue, typeValue)
+                                         titleValue, descValue, scheduleValue, commandValue, typeValue, [])
 
       when:
       Schedule returnedSchedule = scheduleRepository.update(temp)
@@ -105,7 +105,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "find one is found" () {
       setup:
-      final List<Schedule> schedules = scheduleFactoryService.stream(3, null).toList()
+      final List<Schedule> schedules = scheduleFactoryService.stream(3, null, 1).toList()
       final Schedule schedule = schedules[0]
 
       when:
@@ -120,7 +120,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "not found is null" () {
       setup:
-      final List<Schedule> schedules = scheduleFactoryService.stream(5, null).toList()
+      final List<Schedule> schedules = scheduleFactoryService.stream(5, null, 1).toList()
       final Schedule schedule = schedules[4]
       final Long i = schedule.id + 1
 
@@ -135,7 +135,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
    void "Query a random schedule" () {
       setup:
       final def number = RandomUtils.nextInt(0,4)
-      final List<Schedule> schedules = scheduleFactoryService.stream(5, null).toList()
+      final List<Schedule> schedules = scheduleFactoryService.stream(5, null, 1).toList()
       final Schedule schedule = schedules[number]
       final Long i = schedule.id
 
@@ -150,7 +150,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "get one page that isnt a full page" () {
       setup:
-      final def savedSchedules = scheduleFactoryService.stream(6, null).toList()
+      final def savedSchedules = scheduleFactoryService.stream(6, null, 1).toList()
 
       when:
       RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest())
@@ -165,7 +165,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "get page one" () {
       setup:
-      final def savedSchedules = scheduleFactoryService.stream(50, null).toList()
+      final def savedSchedules = scheduleFactoryService.stream(50, null, 1).toList()
 
       when:
       RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(1, 10, "id", "ASC"))
@@ -181,7 +181,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
    void "get random page and random page size" () {
       setup:
       final int maxElements = RandomUtils.nextInt(100,110)
-      final def savedSchedules = scheduleFactoryService.stream(maxElements, null).toList()
+      final def savedSchedules = scheduleFactoryService.stream(maxElements, null, 1).toList()
       final int pageNumber = RandomUtils.nextInt(1,3)
       final int pageSize = RandomUtils.nextInt(10,30)
       final int firstRow = (pageNumber - 1) * pageSize
@@ -201,7 +201,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "out of bounds check" () {
       setup:
-      scheduleFactoryService.stream(10, null).toList()
+      scheduleFactoryService.stream(10, null, 1).toList()
 
       when:
       RepositoryPage<Schedule> onePage = scheduleRepository.fetchAll(new PageRequest(2, 10, "id", "ASC"))
@@ -213,7 +213,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "delete 1 schedule" () {
       setup:
-      final List<Schedule> buildSchedules = scheduleFactoryService.stream(5, null).toList()
+      final List<Schedule> buildSchedules = scheduleFactoryService.stream(5, null, 1).toList()
       final Schedule oneSchedule = buildSchedules[1]
       final Long deleteId = oneSchedule.id
       final Schedule original = scheduleRepository.findOne(deleteId)
@@ -230,7 +230,7 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
 
    void "delete schedules" () {
       setup:
-      final List<Schedule> buildSchedules = scheduleFactoryService.stream(10, null).toList()
+      final List<Schedule> buildSchedules = scheduleFactoryService.stream(10, null, 1).toList()
       List<Schedule> deleteSchedules = new ArrayList<Schedule>()
       deleteSchedules.add(buildSchedules[1])
       deleteSchedules.add(buildSchedules[3])

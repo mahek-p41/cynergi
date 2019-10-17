@@ -5,10 +5,12 @@ import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.schedule.Schedule
+import com.cynergisuite.middleware.schedule.ScheduleArg
 import com.cynergisuite.middleware.schedule.ScheduleType
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -26,43 +28,65 @@ class ScheduleRepository @Inject constructor(
    override fun findOne(id: Long): Schedule? {
       logger.trace("Searching for Schedule with id {}", id)
 
-      val schedule = jdbc.findFirstOrNull("""
+      var schedule: Schedule? = null
+
+      jdbc.query("""
          SELECT
-            sched.id AS sched_id,
-            sched.uu_row_id AS sched_uu_row_id,
+            sched.id           AS sched_id,
+            sched.uu_row_id    AS sched_uu_row_id,
             sched.time_created AS sched_time_created,
             sched.time_updated AS sched_time_updated,
-            sched.title AS sched_title,
-            sched.description AS sched_description,
-            sched.schedule AS sched_schedule,
-            sched.command AS sched_command,
-            schedType.id AS schedType_id,
-            schedType.value AS schedType_value,
-            schedType.description AS schedType_description,
-            schedType.localization_code AS schedType_localization_code
+            sched.title        AS sched_title,
+            sched.description  AS sched_description,
+            sched.schedule     AS sched_schedule,
+            sched.command      AS sched_command,
+            schedType.id                AS schedType_id,
+            schedType.value             AS schedType_value,
+            schedType.description       AS schedType_description,
+            schedType.localization_code AS schedType_localization_code,
+            sa.id                 AS sa_id,
+            sa.uu_row_id          AS sa_uu_row_id,
+            sa.time_created        AS sa_time_created,
+            sa.time_updated        AS sa_time_updated,
+            sa.value              AS sa_value,
+            sa.description        AS sa_description
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
+              LEFT OUTER JOIN SCHEDULE_ARG sa ON sched.id = sa.schedule_id
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id),
-         RowMapper { rs: ResultSet, _: Int ->
-            Schedule(
-               id = rs.getLong("sched_id"),
-               uuRowId = rs.getUuid("sched_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("sched_time_created"),
-               timeUpdated = rs.getOffsetDateTime("sched_time_updated"),
-               title = rs.getString("sched_title"),
-               description = rs.getString("sched_description"),
-               schedule = rs.getString("sched_schedule"),
-               command = rs.getString("sched_command"),
-               type = ScheduleType(
-                  id = rs.getLong("schedType_id"),
-                  value = rs.getString("schedType_value"),
-                  description = rs.getString("schedType_description"),
-                  localizationCode = rs.getString("schedType_localization_code")
-               )
+         RowCallbackHandler { rs: ResultSet ->
+            val localSchedule = schedule ?: Schedule(
+                       id = rs.getLong("sched_id"),
+                       uuRowId = rs.getUuid("sched_uu_row_id"),
+                       timeCreated = rs.getOffsetDateTime("sched_time_created"),
+                       timeUpdated = rs.getOffsetDateTime("sched_time_updated"),
+                       title = rs.getString("sched_title"),
+                       description = rs.getString("sched_description"),
+                       schedule = rs.getString("sched_schedule"),
+                       command = rs.getString("sched_command"),
+                       type = ScheduleType(
+                          id = rs.getLong("schedType_id"),
+                          value = rs.getString("schedType_value"),
+                          description = rs.getString("schedType_description"),
+                          localizationCode = rs.getString("schedType_localization_code")
+                       )
+                    )
+            localSchedule.arguments.add(
+                  ScheduleArg(
+                     id =          rs.getLong("sa_id"),
+                     uuRowId =     rs.getUuid("sa_uu_row_id"),
+                     timeCreated = rs.getOffsetDateTime("sa_time_created"),
+                     timeUpdated = rs.getOffsetDateTime("sa_time_updated"),
+                     value =       rs.getString("sa_value"),
+                     description = rs.getString("sa_description")
+                  )
+
             )
-         })
+            schedule = localSchedule
+         }
+      )
 
       logger.trace("Searched for Schedule {} resulted in {}", id, schedule)
 

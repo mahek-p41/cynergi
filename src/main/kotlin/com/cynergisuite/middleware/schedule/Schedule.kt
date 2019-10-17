@@ -13,7 +13,8 @@ data class Schedule(
    val description: String?,
    val schedule: String,
    val command: String,
-   val type: ScheduleType
+   val type: ScheduleType,
+   val arguments: MutableList<ScheduleArg> = mutableListOf()
 ) : Entity<Schedule> {
 
    constructor(title: String, description: String?, schedule: String, command: String, type: ScheduleType) :

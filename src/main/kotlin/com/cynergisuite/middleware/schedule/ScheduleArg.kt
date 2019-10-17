@@ -10,16 +10,14 @@ data class ScheduleArg(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val value: String,
-   val description: String?,
-   val schedule: Schedule
+   val description: String?
 ) : Entity<ScheduleArg> {
 
-   constructor(value: String, description: String?, schedule: Schedule) :
+   constructor(value: String, description: String?) :
       this(
          id = null,
          value = value,
-         description = description,
-         schedule = schedule
+         description = description
       )
 
    override fun entityId(): Long? = id
