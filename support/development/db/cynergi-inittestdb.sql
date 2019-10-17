@@ -22,7 +22,7 @@ CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that wi
     number        INTEGER     CHECK( number > 0 )                     NOT NULL,
     store_number  INTEGER                                             NOT NULL,
     last_name     VARCHAR(15) CHECK( char_length(last_name) > 1)      NOT NULL,
-    first_name_mi VARCHAR(15) CHECK( char_length(first_name_mi) > 1)  NOT NULL,
+    first_name_mi VARCHAR(15) CHECK( first_name_mi IS NOT NULL AND char_length(first_name_mi) > 1),
     pass_code     VARCHAR(6)  CHECK( char_length(pass_code) > 0 )     NOT NULL,
     department    VARCHAR(2),
     active        BOOLEAN     DEFAULT TRUE                            NOT NULL,

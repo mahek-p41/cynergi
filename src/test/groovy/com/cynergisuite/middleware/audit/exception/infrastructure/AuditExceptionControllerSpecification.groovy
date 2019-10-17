@@ -15,7 +15,9 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactor
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ErrorValueObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -23,12 +25,15 @@ import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import org.apache.commons.lang3.RandomUtils
+import org.apache.commons.lang3.StringUtils
+import org.assertj.core.data.Offset
 
 import javax.inject.Inject
 import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static org.apache.commons.lang3.StringUtils.EMPTY
 
 @MicronautTest(transactional = false)
 class AuditExceptionControllerSpecification extends ControllerSpecificationBase {
@@ -37,6 +42,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    @Inject AuditExceptionNoteRepository auditExceptionNoteRepository
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
+   @Inject EmployeeRepository employeeRepository
    @Inject InventoryService inventoryService
 
    void "fetch one audit exception by id with no attached notes" () {
@@ -286,6 +292,41 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
       when:
       def result = post("/audit/${audit.id}/exception", exception)
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.timeCreated != null
+      result.timeUpdated != null
+      result.scanArea.value == scanArea.value
+      result.scanArea.description == scanArea.description
+      result.barcode == inventoryItem.barcode
+      result.productCode == inventoryItem.productCode
+      result.altId == inventoryItem.altId
+      result.serialNumber == inventoryItem.serialNumber
+      result.inventoryBrand == inventoryItem.brand
+      result.inventoryModel == inventoryItem.modelNumber
+      result.exceptionCode == exceptionCode
+      result.signedOff == false
+      result.notes.size() == 0
+      result.audit.id == audit.id
+   }
+
+   void "create audit exception using employee that doesn't have a first name" () {
+      given:
+      final noFirstNameGuy = employeeRepository.insert(new Employee(null, OffsetDateTime.now(), OffsetDateTime.now(), "int", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, null))
+      final authToken = loginEmployee(noFirstNameGuy)
+      final locale = Locale.US
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final scanArea = AuditScanAreaFactory.random()
+      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
+
+      when:
+      def result = post("/audit/${audit.id}/exception", exception, authToken)
 
       then:
       notThrown(HttpClientResponseException)

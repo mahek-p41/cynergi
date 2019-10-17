@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.employee.infrastructure
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.store.Store
@@ -21,6 +22,11 @@ import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/*
+ * Notes for the future
+ * 1. Due to current practices in the data for employees first_name_mi can be blank rather than null.  This should be
+ *    fixed so that it is more consistent in the database and is not smoothed over by the business logic.
+ */
 @Singleton
 class EmployeeRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
@@ -80,7 +86,7 @@ class EmployeeRepository @Inject constructor(
          time_updated AS e_time_updated,
          number AS e_number,
          last_name AS e_last_name,
-         first_name_mi AS e_first_name_mi,
+         NULLIF(TRIM(first_name_mi), '') AS e_first_name_mi,
          pass_code AS e_pass_code,
          active AS e_active,
          department AS e_department,
@@ -197,7 +203,7 @@ class EmployeeRepository @Inject constructor(
          mapOf(
             "number" to entity.number,
             "last_name" to entity.lastName,
-            "first_name_mi" to entity.firstNameMi,
+            "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to entity.passCode,
             "store_number" to entity.store.number,
             "active" to entity.active
@@ -229,7 +235,7 @@ class EmployeeRepository @Inject constructor(
             "id" to entity.id,
             "number" to entity.number,
             "last_name" to entity.lastName,
-            "first_name_mi" to entity.firstNameMi,
+            "first_name_mi" to entity.firstNameMi.trimToNull(),  // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to entity.passCode,
             "store_number" to entity.store.number,
             "active" to entity.active
@@ -248,7 +254,7 @@ class EmployeeRepository @Inject constructor(
          loc = "int",
          number = rs.getInt("number"),
          lastName = rs.getString("last_name"),
-         firstNameMi = rs.getString("first_name_mi"),
+         firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),
          store = store,
          active = rs.getBoolean("active"),
@@ -275,7 +281,7 @@ class EmployeeRepository @Inject constructor(
          loc = rs.getString("${columnPrefix}loc"),
          number = rs.getInt("${columnPrefix}number"),
          lastName = rs.getString("${columnPrefix}last_name"),
-         firstNameMi = rs.getString("${columnPrefix}first_name_mi"),
+         firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
          store = storeRepository.mapRow(rs, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
