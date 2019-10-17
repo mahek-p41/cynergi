@@ -255,5 +255,19 @@ class ScheduleRepositorySpecification extends ServiceSpecificationBase {
       scheduleRepository.findOne(buildSchedules[8].id) == null
    }
 
+   void "Get page one with two arguments" () {
+      setup:
+      final def savedSchedules = scheduleFactoryService.stream(1, null, 1).toList()
+
+      when:
+      RepositoryPage<Schedule> currentPage = scheduleRepository.fetchAll(new PageRequest(1, 10, "id", "ASC"))
+
+      then:
+      notThrown(Exception)
+      currentPage != null
+      currentPage.elements.size == 10
+      currentPage.elements[0] == savedSchedules[0]
+      currentPage.elements[9] == savedSchedules[9]
+   }
 
 }

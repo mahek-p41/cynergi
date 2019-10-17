@@ -20,7 +20,8 @@ import javax.inject.Singleton
 
 @Singleton
 class ScheduleRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val scheduleArgRepository: ScheduleArgRepository
 ) : Repository<Schedule> {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
 
@@ -46,8 +47,8 @@ class ScheduleRepository @Inject constructor(
             schedType.localization_code AS schedType_localization_code,
             sa.id                 AS sa_id,
             sa.uu_row_id          AS sa_uu_row_id,
-            sa.time_created        AS sa_time_created,
-            sa.time_updated        AS sa_time_updated,
+            sa.time_created       AS sa_time_created,
+            sa.time_updated       AS sa_time_updated,
             sa.value              AS sa_value,
             sa.description        AS sa_description
          FROM schedule sched
@@ -73,17 +74,19 @@ class ScheduleRepository @Inject constructor(
                           localizationCode = rs.getString("schedType_localization_code")
                        )
                     )
-            localSchedule.arguments.add(
+            if(rs.getString("sa_id") != null) {
+               localSchedule.arguments.add(
                   ScheduleArg(
-                     id =          rs.getLong("sa_id"),
-                     uuRowId =     rs.getUuid("sa_uu_row_id"),
+                     id = rs.getLong("sa_id"),
+                     uuRowId = rs.getUuid("sa_uu_row_id"),
                      timeCreated = rs.getOffsetDateTime("sa_time_created"),
                      timeUpdated = rs.getOffsetDateTime("sa_time_updated"),
-                     value =       rs.getString("sa_value"),
+                     value = rs.getString("sa_value"),
                      description = rs.getString("sa_description")
                   )
 
-            )
+               )
+            }
             schedule = localSchedule
          }
       )
@@ -105,7 +108,7 @@ class ScheduleRepository @Inject constructor(
    override fun insert(entity: Schedule): Schedule {
       logger.debug("Inserting Schedule {}", entity)
 
-      return jdbc.insertReturning(
+      val inserted =  jdbc.insertReturning(
          """
          INSERT INTO schedule(title, description, schedule, command, type_id)
          VALUES(:title, :description, :schedule, :command, :type_id)
@@ -133,6 +136,10 @@ class ScheduleRepository @Inject constructor(
             )
          }
       )
+      entity.arguments.asSequence()
+         .map { scheduleArgRepository.insert(inserted,it) }
+         .forEach { inserted.arguments.add(it) }
+      return inserted
    }
 
    @Transactional
@@ -190,6 +197,7 @@ class ScheduleRepository @Inject constructor(
       logger.trace("Fetching All")
       var totalElement: Long? = null
       val elements = mutableListOf<Schedule>()
+      var currentSchedule: Schedule? = null
 
       jdbc.query(
          """
@@ -206,20 +214,65 @@ class ScheduleRepository @Inject constructor(
                  schedType.value    AS schedType_value,
                  schedType.description AS schedType_description,
                  schedType.localization_code AS schedType_localization_code,
-                 (SELECT count(*) FROM schedule) AS total_elements
-              FROM schedule sched
-                 JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
-              ORDER BY sched_${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+                 (SELECT count(*) FROM schedule) AS total_elements,
+                 sa.id                 AS sa_id,
+                sa.uu_row_id          AS sa_uu_row_id,
+                sa.time_created       AS sa_time_created,
+                sa.time_updated       AS sa_time_updated,
+                sa.value              AS sa_value,
+                sa.description        AS sa_description
+             FROM schedule sched
+                  JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
+                  LEFT OUTER JOIN SCHEDULE_ARG sa ON sched.id = sa.schedule_id
+                ORDER BY sched_${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
                     LIMIT ${pageRequest.size}
                     OFFSET ${pageRequest.offset()}
          """.trimIndent()
       )
       {rs ->
-         elements.add(mapRow(rs))
+         var localSchedule = currentSchedule
+         val currentId = rs.getLong("sched_id")
+
+         localSchedule = if(localSchedule == null || localSchedule.id != currentId) {
+            val created = Schedule(
+               id = rs.getLong("sched_id"),
+               uuRowId = rs.getUuid("sched_uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("sched_time_created"),
+               timeUpdated = rs.getOffsetDateTime("sched_time_updated"),
+               title = rs.getString("sched_title"),
+               description = rs.getString("sched_description"),
+               schedule = rs.getString("sched_schedule"),
+               command = rs.getString("sched_command"),
+               type = ScheduleType(
+                  id = rs.getLong("schedType_id"),
+                  value = rs.getString("schedType_value"),
+                  description = rs.getString("schedType_description"),
+                  localizationCode = rs.getString("schedType_localization_code")
+               )
+            )
+            elements.add(created)
+            created
+         } else {
+            localSchedule
+         }
+         if(rs.getString("sa_id") != null) {
+            localSchedule.arguments.add(
+               ScheduleArg(
+                  id = rs.getLong("sa_id"),
+                  uuRowId = rs.getUuid("sa_uu_row_id"),
+                  timeCreated = rs.getOffsetDateTime("sa_time_created"),
+                  timeUpdated = rs.getOffsetDateTime("sa_time_updated"),
+                  value = rs.getString("sa_value"),
+                  description = rs.getString("sa_description")
+               )
+
+            )
+         }
          if(totalElement == null) {
             totalElement = rs.getLong("total_elements")
          }
       }
+
       return RepositoryPage(
          elements = elements,
          totalElements = totalElement ?: 0
