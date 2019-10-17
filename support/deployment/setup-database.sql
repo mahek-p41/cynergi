@@ -105,7 +105,7 @@ BEGIN
       || '   emp_store_nbr AS store_number, '
       || '   ''' || r.schema_name || ''' AS dataset, '
       || '   emp_last_name AS last_name, '
-      || '   NULLIF(TRIM(emp_first_name_mi), '') AS first_name_mi, '
+      || '   NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi, '
       || '   emp_dept AS department, '
       || '   TRIM(BOTH FROM '
       || '        CAST(emp_pass_1 AS TEXT) || '
