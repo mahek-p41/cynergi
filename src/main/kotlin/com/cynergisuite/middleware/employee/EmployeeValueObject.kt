@@ -35,7 +35,6 @@ data class EmployeeValueObject(
    @field:Schema(name = "lastName", description = "Employee's family name", minLength = 2, maxLength = 15, required = true, nullable = false)
    var lastName: String?,
 
-   @field:Size(min = 2, max = 15)
    @field:Schema(name = "firstNameMi", description = "Employee's given name", minLength = 2, maxLength = 15, required = true, nullable = false)
    var firstNameMi: String?,
 
