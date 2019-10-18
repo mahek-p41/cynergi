@@ -39,5 +39,4 @@ class ScheduleFactoryService @Inject constructor(
       return ScheduleFactory.stream(numberIn, scheduleTypeIn)
          .map { scheduleRepository.insert(it) }
    }
-
 }
