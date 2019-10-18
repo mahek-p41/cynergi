@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
+import com.cynergisuite.middleware.schedule.type.ScheduleType
+import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -27,6 +29,11 @@ object ScheduleFactory {
          )
       }
    }
+
+   @JvmStatic
+   fun single(scheduleTypeIn: ScheduleType? = null) : Schedule {
+      return stream(1, scheduleTypeIn).findFirst().orElseThrow{ Exception("Unable to create Schedule") }
+   }
 }
 
 @Singleton
@@ -38,5 +45,9 @@ class ScheduleFactoryService @Inject constructor(
    fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null): Stream<Schedule> {
       return ScheduleFactory.stream(numberIn, scheduleTypeIn)
          .map { scheduleRepository.insert(it) }
+   }
+
+   fun single(): Schedule {
+      return stream(1).findFirst().orElseThrow { Exception("Unable to create Schedule") }
    }
 }

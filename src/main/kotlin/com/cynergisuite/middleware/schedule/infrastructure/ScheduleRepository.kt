@@ -3,18 +3,17 @@ package com.cynergisuite.middleware.schedule.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.Schedule
-import com.cynergisuite.middleware.schedule.ScheduleType
-import com.cynergisuite.middleware.schedule.argument.ScheduleArgument
+import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
+import com.cynergisuite.middleware.schedule.type.ScheduleType
+import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -24,7 +23,9 @@ import javax.inject.Singleton
 
 @Singleton
 class ScheduleRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val scheduleArgumentRepository: ScheduleArgumentRepository,
+   private val scheduleTypeRepository: ScheduleTypeRepository
 ) : Repository<Schedule> {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
 
@@ -34,14 +35,14 @@ class ScheduleRepository @Inject constructor(
 
       jdbc.query("""
          SELECT
-            sched.id           AS sched_id,
-            sched.uu_row_id    AS sched_uu_row_id,
-            sched.time_created AS sched_time_created,
-            sched.time_updated AS sched_time_updated,
-            sched.title        AS sched_title,
-            sched.description  AS sched_description,
-            sched.schedule     AS sched_schedule,
-            sched.command      AS sched_command,
+            sched.id                    AS sched_id,
+            sched.uu_row_id             AS sched_uu_row_id,
+            sched.time_created          AS sched_time_created,
+            sched.time_updated          AS sched_time_updated,
+            sched.title                 AS sched_title,
+            sched.description           AS sched_description,
+            sched.schedule              AS sched_schedule,
+            sched.command               AS sched_command,
             schedType.id                AS schedType_id,
             schedType.value             AS schedType_value,
             schedType.description       AS schedType_description,
@@ -59,34 +60,7 @@ class ScheduleRepository @Inject constructor(
          """.trimIndent(),
          mapOf("id" to id)
       ) { rs: ResultSet ->
-         val localSchedule: Schedule = schedule ?: Schedule(
-            id = rs.getLong("sched_id"),
-            uuRowId = rs.getUuid("sched_uu_row_id"),
-            timeCreated = rs.getOffsetDateTime("sched_time_created"),
-            timeUpdated = rs.getOffsetDateTime("sched_time_updated"),
-            title = rs.getString("sched_title"),
-            description = rs.getString("sched_description"),
-            schedule = rs.getString("sched_schedule"),
-            command = rs.getString("sched_command"),
-            type = ScheduleType(
-               id = rs.getLong("schedType_id"),
-               value = rs.getString("schedType_value"),
-               description = rs.getString("schedType_description"),
-               localizationCode = rs.getString("schedType_localization_code")
-            )
-         )
-         if (rs.getString("sa_id") != null) {
-            val argument = ScheduleArgument(
-               id = rs.getLong("sa_id"),
-               uuRowId = rs.getUuid("sa_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("sa_time_created"),
-               timeUpdated = rs.getOffsetDateTime("sa_time_updated"),
-               value = rs.getString("sa_value"),
-               description = rs.getString("sa_description")
-            )
-
-            localSchedule.arguments.add(argument)
-         }
+         mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }
       }
 
       logger.trace("Searched for Schedule {} resulted in {}", id, schedule)
@@ -124,41 +98,12 @@ class ScheduleRepository @Inject constructor(
          val currentScheduleId = rs.getLong("sched_id")
 
          val localSchedule = if (currentSchedule?.id != currentScheduleId) {
-            val created = Schedule(
-               id = rs.getLong("sched_id"),
-               uuRowId = rs.getUuid("sched_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("sched_time_created"),
-               timeUpdated = rs.getOffsetDateTime("sched_time_updated"),
-               title = rs.getString("sched_title"),
-               description = rs.getString("sched_description"),
-               schedule = rs.getString("sched_schedule"),
-               command = rs.getString("sched_command"),
-               type = ScheduleType(
-                  id = rs.getLong("schedType_id"),
-                  value = rs.getString("schedType_value"),
-                  description = rs.getString("schedType_description"),
-                  localizationCode = rs.getString("schedType_localization_code")
-               )
-            )
-
-            elements.add(created)
-            created
+            mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }.also { elements.add(it) }
          } else {
             currentSchedule
          }
 
-         if (rs.getString("sa_id") != null) {
-            val argument = ScheduleArgument(
-               id = rs.getLong("sa_id"),
-               uuRowId = rs.getUuid("sa_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("sa_time_created"),
-               timeUpdated = rs.getOffsetDateTime("sa_time_updated"),
-               value = rs.getString("sa_value"),
-               description = rs.getString("sa_description")
-            )
-
-            localSchedule.arguments.add(argument)
-         }
+         scheduleArgumentRepository.mapRow(rs, "sa_")?.also { localSchedule.arguments.add(it) }
 
          if (totalElement == null) {
             totalElement = rs.getLong("total_elements")
@@ -169,7 +114,6 @@ class ScheduleRepository @Inject constructor(
          elements = elements,
          totalElements = totalElement ?: 0
       )
-
    }
 
    override fun exists(id: Long): Boolean {
@@ -184,8 +128,7 @@ class ScheduleRepository @Inject constructor(
    override fun insert(entity: Schedule): Schedule {
       logger.debug("Inserting Schedule {}", entity)
 
-      val inserted = jdbc.insertReturning(
-         """
+      val inserted = jdbc.insertReturning("""
          INSERT INTO schedule(title, description, schedule, command, type_id)
          VALUES(:title, :description, :schedule, :command, :type_id)
          RETURNING
@@ -199,19 +142,13 @@ class ScheduleRepository @Inject constructor(
             "type_id" to entity.type.id
          ),
          RowMapper { rs, _ ->
-            Schedule(
-               id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               title = rs.getString("title"),
-               description = rs.getString("description"),
-               schedule = rs.getString("schedule"),
-               command = rs.getString("command"),
-               type = entity.type
-            )
+            mapRow(rs, entity)
          }
       )
+
+      entity.arguments
+         .map { scheduleArgumentRepository.insert(inserted, it) }
+         .forEach { inserted.arguments.add(it) }
 
       return inserted
    }
@@ -219,7 +156,8 @@ class ScheduleRepository @Inject constructor(
    @Transactional
    override fun update(entity: Schedule): Schedule {
       logger.debug("Updating Schedule {}", entity)
-      return jdbc.updateReturning("""
+
+      val updated = jdbc.updateReturning("""
          UPDATE schedule
          SET
             title = :title,
@@ -240,18 +178,30 @@ class ScheduleRepository @Inject constructor(
             "type_id" to entity.type.id
          ),
          RowMapper { rs, _ ->
-            Schedule(
-               id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               title = rs.getString("title"),
-               description = rs.getString("description"),
-               schedule = rs.getString("schedule"),
-               command = rs.getString("command"),
-               type = entity.type
-            )
+            mapRow(rs, entity)
          }
+      )
+
+
+
+      return updated
+   }
+
+   private fun mapRow(rs: ResultSet, entity: Schedule): Schedule {
+      return mapRow(rs) { entity.type }
+   }
+
+   private fun mapRow(rs: ResultSet, scheduleTypeProvider: (rs: ResultSet) -> ScheduleType): Schedule {
+      return Schedule(
+         id = rs.getLong("id"),
+         uuRowId = rs.getUuid("uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("time_created"),
+         timeUpdated = rs.getOffsetDateTime("time_updated"),
+         title = rs.getString("title"),
+         description = rs.getString("description"),
+         schedule = rs.getString("schedule"),
+         command = rs.getString("command"),
+         type = scheduleTypeProvider(rs)
       )
    }
 }

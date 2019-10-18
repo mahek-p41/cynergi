@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.schedule
+package com.cynergisuite.middleware.schedule.type
 
 import org.apache.commons.lang3.RandomUtils
 

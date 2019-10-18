@@ -3,14 +3,13 @@ package com.cynergisuite.middleware.schedule.argument.infrastructure
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.Schedule
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgument
-import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import io.micronaut.spring.tx.annotation.Transactional
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,12 +29,12 @@ class ScheduleArgumentRepository @Inject constructor(
          mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id),
          RowMapper { rs, _ ->
             ScheduleArgument(
-               id = rs.getLong("sa_id"),
-               uuRowId = rs.getUuid("sa_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("sa_time_created"),
-               timeUpdated = rs.getOffsetDateTime("sa_time_updated"),
-               value = rs.getString("sa_value"),
-               description = rs.getString("sa_description")
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               value = rs.getString("value"),
+               description = rs.getString("description")
             )
          }
       )
@@ -43,6 +42,52 @@ class ScheduleArgumentRepository @Inject constructor(
 
    @Transactional
    fun update(entity: ScheduleArgument): ScheduleArgument {
-      TODO("Implement Me")
+      return jdbc.updateReturning("""
+         UPDATE schedule_arg
+         SET value = :value,
+             description = :description
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "value" to entity.value,
+            "description" to entity.description
+         ),
+         RowMapper { rs, _ ->
+            ScheduleArgument(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               value = rs.getString("value"),
+               description = rs.getString("description")
+            )
+         }
+      )
+   }
+
+   @Transactional
+   fun upsert(parent: Schedule, scheduleArgument: ScheduleArgument): ScheduleArgument {
+      return if (scheduleArgument.id == null) {
+         insert(parent, scheduleArgument)
+      } else {
+         update(scheduleArgument)
+      }
+   }
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgument? {
+      return if (rs.getString("${columnPrefix}id") != null) {
+         ScheduleArgument(
+            id = rs.getLong("${columnPrefix}id"),
+            uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+            timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+            timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+            value = rs.getString("${columnPrefix}value"),
+            description = rs.getString("${columnPrefix}description")
+         )
+      } else {
+         null
+      }
    }
 }

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgument
+import com.cynergisuite.middleware.schedule.type.ScheduleType
 import java.time.OffsetDateTime
 import java.util.UUID
 

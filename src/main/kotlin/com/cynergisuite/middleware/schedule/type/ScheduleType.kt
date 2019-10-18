@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.schedule
+package com.cynergisuite.middleware.schedule.type
 
 import com.cynergisuite.domain.TypeDomainEntity
 
