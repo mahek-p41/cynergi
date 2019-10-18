@@ -78,7 +78,7 @@ services:
   cynergitestdbpsql:
     build:
       context: db
-      dockerfile: db/cynergidbsnapshot.dockerfile
+      dockerfile: cynergidbsnapshot.dockerfile
     container_name: cynergitestdbpsql
     depends_on:
       - cynergidb
