@@ -8,6 +8,7 @@ import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Singleton
+import kotlin.streams.asSequence
 
 object ScheduleArgumentFactory {
 
@@ -17,6 +18,8 @@ object ScheduleArgumentFactory {
       val faker = Faker()
       val code = faker.team()
 
+      0..number
+
       return IntStream.range(0, number).mapToObj {
          ScheduleArgument(
             id = null,
@@ -24,6 +27,11 @@ object ScheduleArgumentFactory {
             description = code.creature()
          )
       }
+   }
+
+   @JvmStatic
+   fun single(): ScheduleArgument {
+      return stream(1).findFirst().orElseThrow { Exception("Unable to create ScheduleArgument") }
    }
 }
 
@@ -39,5 +47,9 @@ class ScheduleArgumentFactoryService(
 
       return ScheduleArgumentFactory.stream(1)
          .map { scheduleArgumentRepository.insert(schedule, it) }
+   }
+
+   fun single(scheduleIn: Schedule? = null): ScheduleArgument {
+      return stream(1, scheduleIn).findFirst().orElseThrow { Exception("Unable to create ScheduleArgument") }
    }
 }
