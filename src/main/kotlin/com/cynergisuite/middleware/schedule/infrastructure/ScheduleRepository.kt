@@ -92,7 +92,7 @@ class ScheduleRepository @Inject constructor(
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
-         ORDER BY sched_${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+         ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
                LIMIT ${pageRequest.size}
                OFFSET ${pageRequest.offset()}
       """.trimIndent()) { rs ->

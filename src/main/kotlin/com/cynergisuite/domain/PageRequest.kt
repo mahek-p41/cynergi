@@ -64,7 +64,7 @@ open class PageRequest {
    @ValidPageSortBy("id")
    open fun sortByMe() : String = sortBy
 
-   fun camelizeSortBy(): String {
+   fun snakeSortBy(): String {
       val sortByMe = sortByMe()
 
       return if (sortByMe.isAllSameCase()) {

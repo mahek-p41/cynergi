@@ -175,7 +175,7 @@ class AuditExceptionRepository @Inject constructor(
                     LEFT OUTER JOIN audit_scan_area_type_domain asatd
                       ON ae.scan_area_id = asatd.id
                WHERE ae.audit_id = :audit_id
-               ORDER by ae_${page.camelizeSortBy()} ${page.sortDirection}
+               ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
                LIMIT ${page.size} OFFSET ${page.offset()}
             )
             SELECT 

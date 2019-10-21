@@ -102,7 +102,7 @@ class AuditDetailRepository @Inject constructor(
             count(*) OVER() as total_elements
          FROM paged AS p
          WHERE p.ad_audit_id = :audit_id
-         ORDER by ad_${page.camelizeSortBy()} ${page.sortDirection}
+         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection}
          LIMIT ${page.size} OFFSET ${page.offset()}
       """.trimIndent(),
       mutableMapOf("audit_id" to audit.id)

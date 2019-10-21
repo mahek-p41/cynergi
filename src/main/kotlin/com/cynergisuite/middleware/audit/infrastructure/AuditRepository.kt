@@ -171,7 +171,7 @@ class AuditRepository @Inject constructor(
                  JOIN maxStatus ms
                       ON s.id = ms.current_status_id
             $whereBuilder
-            ORDER BY ${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
             LIMIT ${pageRequest.size}
                OFFSET ${pageRequest.offset()}
          )
@@ -224,7 +224,7 @@ class AuditRepository @Inject constructor(
                   ON a.store_number = s.number
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
-         ORDER BY a_${pageRequest.camelizeSortBy()} ${pageRequest.sortDirection}
+         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
       """.trimIndent()
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
