@@ -10,12 +10,17 @@ CREATE TABLE fastinfo_prod_import.department_vw (
     time_created     TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
     time_updated     TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL
 );
-INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('OF', 'OFFICE', 90001, 'RSSSMENU');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('MG', 'MANAGEMENT', 90000, 'RSSSMENU');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('DM', 'DISTRICT MGR', 90002, 'MENUR2');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('SM', 'STORE MANAGE', 90003, 'MENUR2');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('AM', 'ACCOUNT MGR', 90004, 'MENUR2');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES (' S', 'ASST MGR', 90006, 'MENUR2');
+
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('RM', 'REGIONAL MGR', 90001, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('MM', 'MARKET MGR', 90002, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('SM', 'STORE MGR', 90003, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('AM', 'ASST MGR', 90004, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('AR', 'ACCOUNT REP', 90005, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('SA', 'SALES ASSOC', 90006, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('DE', 'DELIVERY DVR', 90007, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('EX', 'EXECUTIVE', 90000, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('TE', 'TERMINATED E', 90008, 'HOMEHT');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, security_profile, default_menu) VALUES ('CY', 'CYNERGI EMP', 0, 'HOMEHT');
 
 CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that will be created by the cynergi-data-migration project
     id            BIGSERIAL                                           NOT NULL PRIMARY KEY,

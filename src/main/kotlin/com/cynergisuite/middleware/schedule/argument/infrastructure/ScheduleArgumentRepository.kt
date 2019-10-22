@@ -4,8 +4,8 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.schedule.Schedule
-import com.cynergisuite.middleware.schedule.argument.ScheduleArgument
+import com.cynergisuite.middleware.schedule.ScheduleEntity
+import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -19,7 +19,7 @@ class ScheduleArgumentRepository @Inject constructor(
 ) {
 
    @Transactional
-   fun insert(parent: Schedule, entity: ScheduleArgument): ScheduleArgument {
+   fun insert(parent: ScheduleEntity, entity: ScheduleArgumentEntity): ScheduleArgumentEntity {
       return jdbc.insertReturning("""
          INSERT INTO schedule_arg(value, description, schedule_id)
          VALUES (:value, :description, :schedule_id)
@@ -28,7 +28,7 @@ class ScheduleArgumentRepository @Inject constructor(
          """.trimIndent(),
          mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id),
          RowMapper { rs, _ ->
-            ScheduleArgument(
+            ScheduleArgumentEntity(
                id = rs.getLong("id"),
                uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
@@ -41,7 +41,7 @@ class ScheduleArgumentRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: ScheduleArgument): ScheduleArgument {
+   fun update(entity: ScheduleArgumentEntity): ScheduleArgumentEntity {
       return jdbc.updateReturning("""
          UPDATE schedule_arg
          SET value = :value,
@@ -55,7 +55,7 @@ class ScheduleArgumentRepository @Inject constructor(
             "description" to entity.description
          ),
          RowMapper { rs, _ ->
-            ScheduleArgument(
+            ScheduleArgumentEntity(
                id = rs.getLong("id"),
                uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
@@ -68,7 +68,7 @@ class ScheduleArgumentRepository @Inject constructor(
    }
 
    @Transactional
-   fun upsert(parent: Schedule, scheduleArgument: ScheduleArgument): ScheduleArgument {
+   fun upsert(parent: ScheduleEntity, scheduleArgument: ScheduleArgumentEntity): ScheduleArgumentEntity {
       return if (scheduleArgument.id == null) {
          insert(parent, scheduleArgument)
       } else {
@@ -76,9 +76,9 @@ class ScheduleArgumentRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgument? {
+   fun mapRow(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgumentEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
-         ScheduleArgument(
+         ScheduleArgumentEntity(
             id = rs.getLong("${columnPrefix}id"),
             uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
             timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

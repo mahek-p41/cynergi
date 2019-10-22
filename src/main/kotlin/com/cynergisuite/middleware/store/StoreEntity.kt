@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.store
 import com.cynergisuite.domain.IdentifiableEntity
 import java.time.OffsetDateTime
 
-data class Store(
+data class StoreEntity(
    val id: Long,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,

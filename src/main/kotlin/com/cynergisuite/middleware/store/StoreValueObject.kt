@@ -29,7 +29,7 @@ data class StoreValueObject (
 
 ) : ValueObjectBase<StoreValueObject>() {
 
-   constructor(entity: Store) :
+   constructor(entity: StoreEntity) :
       this(
          id = entity.id,
          number = entity.number,

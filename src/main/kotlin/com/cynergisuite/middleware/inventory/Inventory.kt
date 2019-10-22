@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.IdentifiableEntity
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -32,9 +32,9 @@ data class Inventory(
    val idleDays: Int,
    val condition: String?,
    val returnedDate: LocalDate?,
-   val location: Store?,
+   val location: StoreEntity?,
    val status: String,
-   val primaryLocation: Store,
+   val primaryLocation: StoreEntity,
    val locationType: InventoryLocationType
 ) : IdentifiableEntity {
    override fun entityId(): Long? = id

@@ -1,12 +1,12 @@
-package com.cynergisuite.middleware.store.infrastructure
+package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.department.DepartmentService
+import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
-import com.cynergisuite.middleware.store.StoreService
-import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -25,37 +25,37 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/store")
-class StoreController @Inject constructor(
-   private val storeService: StoreService
+@Controller("/api/department")
+class DepartmentController @Inject constructor(
+   private val departmentService: DepartmentService
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(StoreController::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("store-fetchOne")
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
+   @AccessControl("department-fetchOne")
+   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreValueObject::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
+      ApiResponse(responseCode = "200", description = "If the department was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = DepartmentValueObject::class))]),
+      ApiResponse(responseCode = "404", description = "The requested department was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @QueryValue("id") id: Long
-   ): StoreValueObject {
-      logger.info("Fetching Store by {}", id)
+      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long
+   ): DepartmentValueObject {
+      logger.info("Fetching department by {}", id)
 
-      val response = storeService.fetchById(id = id) ?: throw NotFoundException(id)
+      val response = departmentService.fetchOne(id) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Store by {} resulted in {}", id, response)
+      logger.debug("Fetching department by {} resulted in {}", id, response)
 
       return response
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("store-fetchAll")
+   @AccessControl("department-fetchAll")
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
+   @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a listing of departments", description = "Fetch a paginated listing of departments", operationId = "department-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "404", description = "The the result is empty"),
@@ -63,10 +63,10 @@ class StoreController @Inject constructor(
    ])
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest
-   ): Page<StoreValueObject> {
-      logger.info("Fetching all stores {}", pageRequest)
+   ): Page<DepartmentValueObject> {
+      logger.info("Fetching all departments {}", pageRequest)
 
-      val page = storeService.fetchAll(pageRequest)
+      val page = departmentService.fetchAll(pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

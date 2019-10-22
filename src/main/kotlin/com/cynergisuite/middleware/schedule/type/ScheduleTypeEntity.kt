@@ -2,12 +2,12 @@ package com.cynergisuite.middleware.schedule.type
 
 import com.cynergisuite.domain.TypeDomainEntity
 
-data class ScheduleType(
+data class ScheduleTypeEntity(
    val id: Long,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<ScheduleType> {
+) : TypeDomainEntity<ScheduleTypeEntity> {
    override fun entityId(): Long = id
    override fun myValue(): String = value
    override fun myDescription(): String = description

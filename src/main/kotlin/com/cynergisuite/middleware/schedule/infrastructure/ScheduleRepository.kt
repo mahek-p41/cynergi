@@ -7,9 +7,9 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.schedule.Schedule
+import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
-import com.cynergisuite.middleware.schedule.type.ScheduleType
+import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
@@ -26,12 +26,12 @@ class ScheduleRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val scheduleArgumentRepository: ScheduleArgumentRepository,
    private val scheduleTypeRepository: ScheduleTypeRepository
-) : Repository<Schedule> {
+) : Repository<ScheduleEntity> {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
 
-   override fun findOne(id: Long): Schedule? {
+   override fun findOne(id: Long): ScheduleEntity? {
       logger.trace("Searching for Schedule with id {}", id)
-      val schedule: Schedule? = null
+      val schedule: ScheduleEntity? = null
 
       jdbc.query("""
          SELECT
@@ -68,11 +68,11 @@ class ScheduleRepository @Inject constructor(
       return schedule
    }
 
-   fun fetchAll(pageRequest: PageRequest): RepositoryPage<Schedule> {
+   fun fetchAll(pageRequest: PageRequest): RepositoryPage<ScheduleEntity> {
       logger.trace("Fetching All")
       var totalElement: Long? = null
-      val elements = mutableListOf<Schedule>()
-      val currentSchedule: Schedule? = null
+      val elements = mutableListOf<ScheduleEntity>()
+      val currentSchedule: ScheduleEntity? = null
 
       jdbc.query("""
          SELECT
@@ -126,7 +126,7 @@ class ScheduleRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: Schedule): Schedule {
+   override fun insert(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Inserting Schedule {}", entity)
 
       val inserted = jdbc.insertReturning("""
@@ -155,7 +155,7 @@ class ScheduleRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: Schedule): Schedule {
+   override fun update(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Updating Schedule {}", entity)
 
       val updated = jdbc.updateReturning("""
@@ -190,12 +190,12 @@ class ScheduleRepository @Inject constructor(
       return updated
    }
 
-   private fun mapRow(rs: ResultSet, entity: Schedule): Schedule {
+   private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity {
       return mapRow(rs) { entity.type }
    }
 
-   private fun mapRow(rs: ResultSet, scheduleTypeProvider: (rs: ResultSet) -> ScheduleType): Schedule {
-      return Schedule(
+   private fun mapRow(rs: ResultSet, scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity): ScheduleEntity {
+      return ScheduleEntity(
          id = rs.getLong("id"),
          uuRowId = rs.getUuid("uu_row_id"),
          timeCreated = rs.getOffsetDateTime("time_created"),

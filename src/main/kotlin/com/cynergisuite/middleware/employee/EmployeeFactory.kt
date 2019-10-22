@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -14,7 +14,7 @@ import javax.inject.Singleton
 object EmployeeFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, storeIn: Store? = null): Stream<Employee> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<Employee> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -51,7 +51,7 @@ object EmployeeFactory {
          lastName = "user",
          firstNameMi = "test",
          passCode = "pass",
-         store = Store(
+         store = StoreEntity(
             id = 1,
             timeCreated = OffsetDateTime.now(),
             timeUpdated = OffsetDateTime.now(),
@@ -70,7 +70,7 @@ class EmployeeFactoryService @Inject constructor(
    private val employeeRepository: EmployeeRepository
 ) {
 
-   fun stream(numberIn: Int = 1, storeIn: Store? = null): Stream<Employee> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<Employee> {
       return EmployeeFactory.stream(numberIn, storeIn)
          .map {
             employeeRepository.insert(it)
@@ -81,7 +81,7 @@ class EmployeeFactoryService @Inject constructor(
       return single(null)
    }
 
-   fun single(storeIn: Store? = null): Employee {
+   fun single(storeIn: StoreEntity? = null): Employee {
       return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Employee") }
    }
 }
