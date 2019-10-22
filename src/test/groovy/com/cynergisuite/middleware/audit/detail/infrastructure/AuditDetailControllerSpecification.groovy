@@ -14,7 +14,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.store.StoreFactoryService
@@ -205,9 +205,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorValueObject("Is required", "inventory"),
-         new ErrorValueObject("Is required", "scanArea"),
+      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDataTransferObject("Is required", "inventory"),
+         new ErrorDataTransferObject("Is required", "scanArea"),
       ].sort { o1, o2 -> o1 <=> o2 }
 
       when:
@@ -218,9 +218,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       secondException.status == BAD_REQUEST
       final secondResponse = secondException.response.bodyAsJson()
       secondResponse.size() == 2
-      secondResponse.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorValueObject("Is required", "inventory.id"),
-         new ErrorValueObject("Is required", "scanArea.value"),
+      secondResponse.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDataTransferObject("Is required", "inventory.id"),
+         new ErrorDataTransferObject("Is required", "scanArea.value"),
       ].sort { o1, o2 -> o1 <=> o2 }
 
       when: // an unknown audit id
@@ -230,7 +230,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final auditNotFoundException = thrown(HttpClientResponseException)
       auditNotFoundException.status == NOT_FOUND
       final auditNotFoundResponse = auditNotFoundException.response.bodyAsJson()
-      new ErrorValueObject(auditNotFoundResponse) == new ErrorValueObject("${audit.id + 1} was unable to be found", null)
+      new ErrorDataTransferObject(auditNotFoundResponse) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
 
       when: // an unknown Inventory item
       post("/audit/${audit.id}/detail", thirdDetail)
@@ -240,7 +240,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == BAD_REQUEST
       final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
       inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorValueObject(it) } == [ new ErrorValueObject("-1 was unable to be found", "inventory.id") ]
+      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("-1 was unable to be found", "inventory.id") ]
    }
 
    void "create audit detail when audit is in state OPENED" () {
@@ -259,8 +259,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Audit ${audit.id} must be In Progress to modify its details", "audit.status")
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Audit ${audit.id} must be In Progress to modify its details", "audit.status")
       ]
    }
 }

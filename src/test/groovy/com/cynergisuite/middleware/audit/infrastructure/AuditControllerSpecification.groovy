@@ -15,7 +15,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreValueObject
@@ -440,7 +440,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [new ErrorValueObject("Store ${store.number} has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Store ${store.number} has an audit already in progress", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {

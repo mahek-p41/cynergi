@@ -11,7 +11,7 @@ import com.cynergisuite.middleware.verfication.VerificationReferenceTestDataLoad
 import com.cynergisuite.middleware.verfication.VerificationTestDataLoader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -54,12 +54,12 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by id not found" () {
       when:
-      client.exchange(GET("$path/0"), Argument.of(VerificationValueObject), Argument.of(ErrorValueObject))
+      client.exchange(GET("$path/0"), Argument.of(VerificationValueObject), Argument.of(ErrorDataTransferObject))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "0 was unable to be found"
+      exception.response.getBody(ErrorDataTransferObject).orElse(null)?.message == "0 was unable to be found"
    }
 
    void "fetch one verification by customer account" () {
@@ -78,12 +78,12 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by customer account not found" () {
       when:
-      client.exchange(GET("$path/account/-1"), Argument.of(VerificationValueObject), Argument.of(ErrorValueObject))
+      client.exchange(GET("$path/account/-1"), Argument.of(VerificationValueObject), Argument.of(ErrorDataTransferObject))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorValueObject).orElse(null)?.message == "-1 was unable to be found"
+      exception.response.getBody(ErrorDataTransferObject).orElse(null)?.message == "-1 was unable to be found"
    }
 
    void "post verification successfully" () {
@@ -137,13 +137,13 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       )
 
       when:
-      client.retrieve(POST(path, verification), Argument.of(VerificationValueObject), Argument.of(ErrorValueObject[]))
+      client.retrieve(POST(path, verification), Argument.of(VerificationValueObject), Argument.of(ErrorDataTransferObject[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
       errors != null
       errors.size() == 3
 
@@ -159,13 +159,13 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final def verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
-      client.exchange(POST(path, verification), Argument.of(VerificationValueObject), Argument.of(ErrorValueObject[]))
+      client.exchange(POST(path, verification), Argument.of(VerificationValueObject), Argument.of(ErrorDataTransferObject[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "Size of provided value ${verification.customerComments} is invalid"
@@ -198,13 +198,13 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
       when:
       verificationJson["cust_verified_date"] = "2019-02-30"
-      client.exchange(POST(path, verificationJson), Argument.of(VerificationValueObject), Argument.of(ErrorValueObject[]))
+      client.exchange(POST(path, verificationJson), Argument.of(VerificationValueObject), Argument.of(ErrorDataTransferObject[]))
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorValueObject[]).orElse(null)
+      final def errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "Failed to convert argument [cust_verified_date] for value [2019-02-30]"

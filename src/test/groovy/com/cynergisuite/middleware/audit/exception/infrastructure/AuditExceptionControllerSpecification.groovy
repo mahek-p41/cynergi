@@ -18,15 +18,13 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import org.apache.commons.lang3.RandomUtils
-import org.apache.commons.lang3.StringUtils
-import org.assertj.core.data.Offset
 
 import javax.inject.Inject
 import java.time.OffsetDateTime
@@ -392,9 +390,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorValueObject("Cannot be blank", "exceptionCode"),
-         new ErrorValueObject("Is required", "exceptionCode"),
+      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDataTransferObject("Cannot be blank", "exceptionCode"),
+         new ErrorDataTransferObject("Is required", "exceptionCode"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -412,7 +410,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorValueObject(notFoundResponse) == new ErrorValueObject("-1 was unable to be found", null)
+      new ErrorDataTransferObject(notFoundResponse) == new ErrorDataTransferObject("-1 was unable to be found", null)
    }
 
    void "create audit exception where inventory id is null" () {
@@ -428,7 +426,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [ new ErrorValueObject("Is required", "inventory.id") ]
+      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Is required", "inventory.id") ]
    }
 
    void "create audit exception when audit is in state OPENED" () {
@@ -448,8 +446,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Audit ${audit.id} must be In Progress to modify its exceptions", "audit.status")
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Audit ${audit.id} must be In Progress to modify its exceptions", "audit.status")
       ]
    }
 
@@ -494,8 +492,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Must provide either an Inventory item or a barcode", "barcode")
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Must provide either an Inventory item or a barcode", "barcode")
       ]
    }
 
@@ -543,8 +541,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Audit ${audit.id} has already been Signed Off. No new notes allowed", null)
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Audit ${audit.id} has already been Signed Off. No new notes allowed", null)
       ]
    }
 }
