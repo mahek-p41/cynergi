@@ -16,6 +16,15 @@ data class AuditScheduleEntity(
    val departmentAccess: DepartmentEntity,
    val schedule: ScheduleEntity
 ) : Entity<AuditScheduleEntity> {
+
+   constructor(store: StoreEntity, departmentAccess: DepartmentEntity, schedule: ScheduleEntity) :
+      this(
+         id = null,
+         store = store,
+         departmentAccess = departmentAccess,
+         schedule = schedule
+      )
+
    override fun entityId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): AuditScheduleEntity = copy()

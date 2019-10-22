@@ -76,7 +76,7 @@ class ScheduleArgumentRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgumentEntity? {
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgumentEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
          ScheduleArgumentEntity(
             id = rs.getLong("${columnPrefix}id"),

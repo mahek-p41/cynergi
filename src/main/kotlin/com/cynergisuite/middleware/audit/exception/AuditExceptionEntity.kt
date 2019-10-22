@@ -11,7 +11,7 @@ import com.cynergisuite.middleware.inventory.Inventory
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class AuditException(
+data class AuditExceptionEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -28,7 +28,7 @@ data class AuditException(
    val signedOff: Boolean = false,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
    val audit: IdentifiableEntity
-) : Entity<AuditException> {
+) : Entity<AuditExceptionEntity> {
 
    constructor(vo: AuditExceptionValueObject, scanArea: AuditScanArea?) :
       this (
@@ -76,6 +76,6 @@ data class AuditException(
       )
 
    override fun rowId(): UUID = uuRowId
-   override fun copyMe(): AuditException = copy()
+   override fun copyMe(): AuditExceptionEntity = copy()
    override fun entityId(): Long? = id
 }

@@ -55,8 +55,7 @@ object AuditScheduleFactory {
    }
 
    @JvmStatic
-   fun randomDayOfWeek(): DayOfWeek =
-      DayOfWeek.values().random()
+   fun randomDayOfWeek(): DayOfWeek = DayOfWeek.values().random()
 }
 
 @Singleton

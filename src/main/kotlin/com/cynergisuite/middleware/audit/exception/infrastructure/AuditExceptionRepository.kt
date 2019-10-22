@@ -13,7 +13,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
-import com.cynergisuite.middleware.audit.exception.AuditException
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -33,10 +33,10 @@ class AuditExceptionRepository @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<AuditException> {
+) : Repository<AuditExceptionEntity> {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   override fun findOne(id: Long): AuditException? {
+   override fun findOne(id: Long): AuditExceptionEntity? {
       val found = jdbc.findFirstOrNullWithCrossJoin("""
          WITH ae_employees AS (
             ${employeeRepository.selectBase}
@@ -127,7 +127,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditException> {
+   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
       var totalElements: Long? = null
       val sql = """
          WITH paged AS (
@@ -247,7 +247,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: AuditException): AuditException {
+   override fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning("""
@@ -276,7 +276,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: AuditException): AuditException {
+   override fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Updating audit_exception {}", entity)
 
       val notes = entity.notes
@@ -287,8 +287,8 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: IdentifiableEntity, columnPrefix: String = EMPTY): AuditException =
-      AuditException(
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: IdentifiableEntity, columnPrefix: String = EMPTY): AuditExceptionEntity =
+      AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

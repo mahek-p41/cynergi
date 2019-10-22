@@ -79,7 +79,7 @@ class DepartmentRepository @Inject constructor(
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
-            default_menu AS d_default_menu
+            default_menu AS d_default_menu,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw) AS total_elements
          FROM fastinfo_prod_import.department_vw
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
@@ -100,6 +100,14 @@ class DepartmentRepository @Inject constructor(
       )
    }
 
+   fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM department WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if department: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
+
    fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "d_"): DepartmentEntity? =
       if (rs.getString("d_id") != null) {
          mapRow(rs, columnPrefix)
@@ -107,7 +115,7 @@ class DepartmentRepository @Inject constructor(
          null
       }
 
-   private fun mapRow(rs: ResultSet, columnPrefix: String = "d_"): DepartmentEntity =
+   fun mapRow(rs: ResultSet, columnPrefix: String = "d_"): DepartmentEntity =
       DepartmentEntity(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

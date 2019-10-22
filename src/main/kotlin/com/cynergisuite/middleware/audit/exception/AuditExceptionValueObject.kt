@@ -91,7 +91,7 @@ data class AuditExceptionValueObject (
    var audit: IdentifiableValueObject? = null
 
 ) : ValueObjectBase<AuditExceptionValueObject>() {
-   constructor(entity: AuditException, scanArea: AuditScanAreaValueObject?) :
+   constructor(entity: AuditExceptionEntity, scanArea: AuditScanAreaValueObject?) :
       this(
          id = entity.id,
          timeCreated = entity.timeCreated,

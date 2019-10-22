@@ -25,6 +25,9 @@ object DepartmentFactory {
 
    @JvmStatic
    fun random() = departments.random()
+
+   @JvmStatic
+   fun all(): List<DepartmentEntity> = ArrayList(departments)
 }
 
 @Singleton

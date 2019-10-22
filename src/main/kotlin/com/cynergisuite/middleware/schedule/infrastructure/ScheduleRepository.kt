@@ -31,7 +31,8 @@ class ScheduleRepository @Inject constructor(
 
    override fun findOne(id: Long): ScheduleEntity? {
       logger.trace("Searching for Schedule with id {}", id)
-      val schedule: ScheduleEntity? = null
+
+      var found: ScheduleEntity? = null
 
       jdbc.query("""
          SELECT
@@ -60,35 +61,46 @@ class ScheduleRepository @Inject constructor(
          """.trimIndent(),
          mapOf("id" to id)
       ) { rs: ResultSet ->
-         mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }
+         val localSchedule = found ?: mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }
+
+         scheduleArgumentRepository.mapRowOrNull(rs, "sa_")?.also { localSchedule.arguments.add(it) }
+
+         found = localSchedule
       }
 
-      logger.trace("Searched for Schedule {} resulted in {}", id, schedule)
+      logger.trace("Searched for Schedule {} resulted in {}", id, found)
 
-      return schedule
+      return found
    }
 
    fun fetchAll(pageRequest: PageRequest): RepositoryPage<ScheduleEntity> {
-      logger.trace("Fetching All")
+      logger.trace("Fetching All schedules {}", pageRequest)
+
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
-      val currentSchedule: ScheduleEntity? = null
+      var currentSchedule: ScheduleEntity? = null
 
       jdbc.query("""
          SELECT
-            sched.id           AS sched_id,
-            sched.uu_row_id    AS sched_uu_row_id,
-            sched.time_created AS sched_time_created,
-            sched.time_updated AS sched_time_updated,
-            sched.title        AS sched_title,
-            sched.description  AS sched_description,
-            sched.schedule     AS sched_schedule,
-            sched.command      AS sched_command,
-            schedType.id       AS schedType_id,
-            schedType.value    AS schedType_value,
-            schedType.description AS schedType_description,
-            schedType.localization_code AS schedType_localization_code,
-            (SELECT count(*) FROM schedule) AS total_elements
+            sched.id                        AS sched_id,
+            sched.uu_row_id                 AS sched_uu_row_id,
+            sched.time_created              AS sched_time_created,
+            sched.time_updated              AS sched_time_updated,
+            sched.title                     AS sched_title,
+            sched.description               AS sched_description,
+            sched.schedule                  AS sched_schedule,
+            sched.command                   AS sched_command,
+            schedType.id                    AS schedType_id,
+            schedType.value                 AS schedType_value,
+            schedType.description           AS schedType_description,
+            schedType.localization_code     AS schedType_localization_code,
+            sa.id                           AS sa_id,
+            sa.uu_row_id                    AS sa_uu_row_id,
+            sa.time_created                 AS sa_time_created,
+            sa.time_updated                 AS sa_time_updated,
+            sa.value                        AS sa_value,
+            sa.description                  AS sa_description,
+            (SELECT count(id) FROM schedule) AS total_elements
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
@@ -96,15 +108,19 @@ class ScheduleRepository @Inject constructor(
                LIMIT ${pageRequest.size}
                OFFSET ${pageRequest.offset()}
       """.trimIndent()) { rs ->
-         val currentScheduleId = rs.getLong("sched_id")
+         val dbScheduleId = rs.getLong("sched_id")
 
-         val localSchedule = if (currentSchedule?.id != currentScheduleId) {
-            mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }.also { elements.add(it) }
+         val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {
+            val created = mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }.also { elements.add(it) }
+
+            currentSchedule = created
+
+            created
          } else {
-            currentSchedule
+            currentSchedule!!
          }
 
-         scheduleArgumentRepository.mapRow(rs, "sa_")?.also { localSchedule.arguments.add(it) }
+         scheduleArgumentRepository.mapRowOrNull(rs, "sa_")?.also { localSchedule.arguments.add(it) }
 
          if (totalElement == null) {
             totalElement = rs.getLong("total_elements")
@@ -190,21 +206,22 @@ class ScheduleRepository @Inject constructor(
       return updated
    }
 
-   private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity {
-      return mapRow(rs) { entity.type }
-   }
+   fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeColumnPrefix: String = "schedType_"): ScheduleEntity =
+      mapRow(rs, scheduleColumnPrefix) { scheduleTypeRepository.mapRow(it, scheduleTypeColumnPrefix) }
 
-   private fun mapRow(rs: ResultSet, scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity): ScheduleEntity {
-      return ScheduleEntity(
-         id = rs.getLong("id"),
-         uuRowId = rs.getUuid("uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
-         title = rs.getString("title"),
-         description = rs.getString("description"),
-         schedule = rs.getString("schedule"),
-         command = rs.getString("command"),
+   private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =
+      mapRow(rs, "") { entity.type }
+
+   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity): ScheduleEntity =
+      ScheduleEntity(
+         id = rs.getLong("${scheduleColumnPrefix}id"),
+         uuRowId = rs.getUuid("${scheduleColumnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${scheduleColumnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${scheduleColumnPrefix}time_updated"),
+         title = rs.getString("${scheduleColumnPrefix}title"),
+         description = rs.getString("${scheduleColumnPrefix}description"),
+         schedule = rs.getString("${scheduleColumnPrefix}schedule"),
+         command = rs.getString("${scheduleColumnPrefix}command"),
          type = scheduleTypeProvider(rs)
       )
-   }
 }

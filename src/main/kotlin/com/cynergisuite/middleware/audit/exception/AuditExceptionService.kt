@@ -52,13 +52,13 @@ class AuditExceptionService @Inject constructor(
       return transformEntity(auditException, locale)
    }
 
-   private fun createAuditException(auditId: Long, scannedBy: EmployeeValueObject, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditException {
+   private fun createAuditException(auditId: Long, scannedBy: EmployeeValueObject, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
       return if (inventoryId != null) {
          val inventory = inventoryRepository.findOne(inventoryId)!!
 
-         AuditException(auditId, inventory, createScanArea(scanArea), scannedBy, exceptionCode)
+         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), scannedBy, exceptionCode)
       } else {
-         AuditException(auditId, barcode!!, createScanArea(scanArea), scannedBy, exceptionCode)
+         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), scannedBy, exceptionCode)
       }
    }
 
@@ -79,7 +79,7 @@ class AuditExceptionService @Inject constructor(
       )
    }
 
-   private fun transformEntity(auditException: AuditException, locale: Locale): AuditExceptionValueObject {
+   private fun transformEntity(auditException: AuditExceptionEntity, locale: Locale): AuditExceptionValueObject {
       val scanArea = auditException.scanArea?.localizeMyDescription(locale, localizationService)?.let { AuditScanAreaValueObject(auditException.scanArea, it) }
 
       return AuditExceptionValueObject(auditException, scanArea)
