@@ -5,11 +5,11 @@ import com.cynergisuite.domain.ValueObjectBase
 
 @ValueObject
 data class DepartmentValueObject(
-   val id: Long,
-   val code: String,
-   val description: String,
-   val securityProfile: Int,
-   val defaultMenu: String
+   var id: Long,
+   var code: String,
+   var description: String,
+   var securityProfile: Int,
+   var defaultMenu: String
 ) : ValueObjectBase<DepartmentValueObject>() {
 
    constructor(entity: DepartmentEntity) :

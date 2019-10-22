@@ -25,8 +25,8 @@ class DepartmentRepository @Inject constructor(
       val found = jdbc.findFirstOrNull("""
          SELECT 
             id AS d_id,
-            time_created AS time_created,
-            time_updated AS time_updated,
+            time_created AS d_time_created,
+            time_updated AS d_time_updated,
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
