@@ -14,6 +14,7 @@ import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgu
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -166,6 +167,7 @@ class AuditScheduleRepository(
       )
    }
 
+   @Transactional
    override fun insert(entity: AuditScheduleEntity): AuditScheduleEntity {
       logger.debug("Inserting audit schedule {}", entity)
 
@@ -189,6 +191,7 @@ class AuditScheduleRepository(
       return inserted
    }
 
+   @Transactional
    override fun update(entity: AuditScheduleEntity): AuditScheduleEntity {
       logger.debug("Updating audit schedule {}", entity)
 

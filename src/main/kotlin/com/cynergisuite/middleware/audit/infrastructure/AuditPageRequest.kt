@@ -2,12 +2,14 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.ValidPageSortBy
+import com.cynergisuite.extensions.beginningOfWeek
+import com.cynergisuite.extensions.endOfWeek
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import javax.validation.constraints.Min
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @Schema(
@@ -37,6 +39,14 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
       this.storeNumber = pageRequest?.storeNumber
       this.status = status.toSet()
    }
+
+   constructor(pageRequestIn: AuditPageRequest? = null) :
+      this(
+         pageRequest = pageRequestIn,
+         from = pageRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek(),
+         thru = pageRequestIn?.thru ?: OffsetDateTime.now(ZoneId.of("UTC")).endOfWeek(),
+         status = pageRequestIn?.status ?: setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+      )
 
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy
