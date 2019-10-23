@@ -4,6 +4,12 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations
 import java.sql.ResultSet
 
+fun <ENTITY> NamedParameterJdbcOperations.findFirst(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
+   val resultList: List<ENTITY> = this.query(query, params, rowMapper)
+
+   return resultList.first()
+}
+
 fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNull(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY? {
    val resultList: List<ENTITY> = this.query(query, params, rowMapper)
 

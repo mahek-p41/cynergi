@@ -18,7 +18,7 @@ class AuditScheduleValidator(
    fun validateCreate(auditScheduleCreate: AuditScheduleCreateDataTransferObject): AuditScheduleEntity {
       val storeId = auditScheduleCreate.store.id!!
       val departmentId = auditScheduleCreate.departmentAccess.id!!
-      val scheduleTypeId = auditScheduleCreate.schedule.type.id!!
+      val scheduleTypeId = auditScheduleCreate.schedule.type!!.id!!
 
       doValidation { errors ->
          if ( !storeRepository.exists(storeId) ) {
@@ -29,18 +29,20 @@ class AuditScheduleValidator(
             errors.add(ValidationError("departmentAccess", NotFound(departmentId)))
          }
 
-         if ( !scheduleTypeRepository.exists())
+         if ( !scheduleTypeRepository.exists(scheduleTypeId) ) {
+            errors.add(ValidationError("departmentAccess", NotFound(departmentId)))
+         }
       }
 
       return AuditScheduleEntity(
          store = storeRepository.findOne(storeId)!!,
-         departmentAccess = departmentRepository.findOne(departmentId),
+         departmentAccess = departmentRepository.findOne(departmentId)!!,
          schedule = ScheduleEntity(
             title = auditScheduleCreate.schedule.title!!,
             description = auditScheduleCreate.schedule.description!!,
-            schedule = auditScheduleCreate.schedule!!,
+            schedule = auditScheduleCreate.schedule.schedule!!,
             command = "AuditCreator",
-            type =
+            type = scheduleTypeRepository.findOne(scheduleTypeId)
          )
       )
    }

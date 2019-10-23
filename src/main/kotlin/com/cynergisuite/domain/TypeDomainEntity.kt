@@ -4,9 +4,7 @@ import com.cynergisuite.middleware.localization.LocalizationService
 import org.apache.commons.lang3.builder.CompareToBuilder
 import java.util.Locale
 
-interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>> {
-
-   fun entityId(): Long
+interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, IdentifiableEntity {
 
    fun myValue(): String
 

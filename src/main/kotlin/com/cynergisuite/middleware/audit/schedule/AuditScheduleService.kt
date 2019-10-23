@@ -27,7 +27,11 @@ class AuditScheduleService(
    }
 
    @Validated
-   fun create(@Valid auditScheduleCreate: AuditScheduleCreateDataTransferObject): AuditScheduleValueObject {
+   fun create(@Valid auditScheduleCreate: AuditScheduleCreateDataTransferObject, locale: Locale): AuditScheduleValueObject {
       val auditScheduleEntity = auditScheduleValidator.validateCreate(auditScheduleCreate)
+
+      val inserted = auditScheduleRepository.insert(auditScheduleEntity)
+
+      return AuditScheduleValueObject(inserted, locale, localizationService)
    }
 }
