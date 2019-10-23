@@ -38,7 +38,7 @@ class ScheduleTypeRepository(
    }
 
    fun findAll(pageRequest: PageRequest): RepositoryPage<ScheduleTypeEntity> {
-      
+
    }
 
    fun exists(id: Long): Boolean {
