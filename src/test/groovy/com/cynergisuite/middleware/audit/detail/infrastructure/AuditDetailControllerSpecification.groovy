@@ -195,7 +195,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
       final detail = new AuditDetailCreateValueObject(null, null)
       final secondDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: null]), new AuditScanAreaValueObject([value: null]))
-      final thirdDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: -1]), new AuditScanAreaValueObject(scanArea))
+      final thirdDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: 800000]), new AuditScanAreaValueObject(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -240,7 +240,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == BAD_REQUEST
       final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
       inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("-1 was unable to be found", "inventory.id") ]
+      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
    }
 
    void "create audit detail when audit is in state OPENED" () {

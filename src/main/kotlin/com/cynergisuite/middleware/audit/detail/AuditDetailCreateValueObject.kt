@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.ValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
+@ValueObject
 @Schema(name = "AuditDetailCreate", title = "Requirements for creating an Audit Detail", description = "Payload required to create an audit detail entity")
 data class AuditDetailCreateValueObject(
 

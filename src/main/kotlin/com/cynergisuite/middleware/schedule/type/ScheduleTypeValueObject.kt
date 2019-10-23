@@ -2,12 +2,21 @@ package com.cynergisuite.middleware.schedule.type
 
 import com.cynergisuite.domain.ValueObject
 import com.cynergisuite.domain.ValueObjectBase
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Positive
 
 @ValueObject
 data class ScheduleTypeValueObject(
-   var id: Long,
-   var value: String,
-   var description: String
+
+   @field:Positive
+   var id: Long? = null,
+
+   @field:NotNull
+   var value: String? = null,
+
+   @field:NotNull
+   var description: String? = null
+
 ) : ValueObjectBase<ScheduleTypeValueObject>() {
 
    constructor(entity: ScheduleTypeEntity, localizedDescription: String) :
