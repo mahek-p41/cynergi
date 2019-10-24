@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.schedule.infrastructure
 
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getOffsetDateTime
@@ -85,12 +84,20 @@ class ScheduleRepository @Inject constructor(
       return found
    }
 
-   fun fetchAll(pageRequest: PageRequest): RepositoryPage<ScheduleEntity> {
+   fun fetchAll(pageRequest: SchedulePageRequest): RepositoryPage<ScheduleEntity> {
       logger.trace("Fetching All schedules {}", pageRequest)
 
+      val command = pageRequest.command
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
+      var whereClause: String = ""
+      val params = mutableMapOf<String, Any>()
+
+      if (command != null) {
+         whereClause = " WHERE sctd.value = :sctd_value"
+         params["sctd_value"] = command
+      }
 
       jdbc.query("""
          SELECT
@@ -116,7 +123,7 @@ class ScheduleRepository @Inject constructor(
             sa.time_updated                 AS sa_time_updated,
             sa.value                        AS sa_value,
             sa.description                  AS sa_description,
-            (SELECT count(id) FROM schedule) AS total_elements
+            (SELECT count(id) FROM schedule $whereClause) AS total_elements
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
               JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
@@ -124,7 +131,8 @@ class ScheduleRepository @Inject constructor(
          ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
                LIMIT ${pageRequest.size}
                OFFSET ${pageRequest.offset()}
-      """.trimIndent()) { rs ->
+         $whereClause
+      """.trimIndent(), params) { rs ->
          val dbScheduleId = rs.getLong("sched_id")
 
          val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {

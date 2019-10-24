@@ -85,6 +85,16 @@ open class PageRequest {
       }
    }
 
+   fun nextPage() = myNextPage(this.page + 1, this.size, this.sortByMe(), this.sortDirection)
+
+   open protected fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String) =
+      PageRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection
+      )
+
    override fun equals(other: Any?): Boolean =
       if (other is PageRequest) {
          EqualsBuilder()

@@ -31,6 +31,17 @@ data class ScheduleEntity(
          type = type
       )
 
+   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleTypeEntity, arguments: MutableList<ScheduleArgumentEntity>) :
+      this(
+         id = null,
+         title = title,
+         description = description ?: title,
+         schedule = schedule,
+         command = command,
+         type = type,
+         arguments = arguments
+      )
+
    override fun entityId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): ScheduleEntity = copy()

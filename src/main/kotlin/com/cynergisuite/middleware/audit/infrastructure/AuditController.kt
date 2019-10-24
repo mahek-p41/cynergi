@@ -27,6 +27,7 @@ import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.*
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -53,7 +54,7 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
@@ -75,7 +76,7 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {} {}", pageRequestIn)
@@ -98,7 +99,7 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
       logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
