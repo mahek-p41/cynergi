@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.schedule
 
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
@@ -13,18 +15,19 @@ import javax.inject.Singleton
 object ScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleTypeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleTypeEntity? = null, commandIn: ScheduleCommandTypeEntity? = null): Stream<ScheduleEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val scheduleType = scheduleTypeIn ?: ScheduleTypeFactory.random()
       val faker = Faker()
       val team = faker.team()
+      val command = commandIn ?: ScheduleCommandTypeFactory.random()
 
       return IntStream.range(0, number).mapToObj {
          ScheduleEntity(
             title = team.name(),
             description = team.sport(),
             schedule = team.creature(),
-            command = team.state(),
+            command = command,
             type = scheduleType
          )
       }

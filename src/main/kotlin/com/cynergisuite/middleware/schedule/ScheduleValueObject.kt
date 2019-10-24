@@ -1,8 +1,10 @@
 package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.domain.ValueObject
+import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentValueObject
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeValueObject
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.Locale
@@ -32,22 +34,26 @@ data class ScheduleValueObject(
 
    @field:NotNull
    @field:Size(min = 5, max = 1024)
-   var command: String,
+   var command: ScheduleCommandTypeValueObject,
 
    @field:NotNull
    @field:Valid
    var type: ScheduleTypeValueObject,
 
    var arguments: MutableList<ScheduleArgumentValueObject> = mutableListOf()
-) {
+) : ValueObjectBase<ScheduleValueObject>() {
+
    constructor(entity: ScheduleEntity, locale: Locale, localizationService: LocalizationService) :
       this(
          id = entity.id,
          title = entity.title,
          description = entity.description,
          schedule = entity.schedule,
-         command = entity.command,
+         command = ScheduleCommandTypeValueObject(entity.command, locale, localizationService),
          type = ScheduleTypeValueObject(entity.type, entity.type.localizeMyDescription(locale, localizationService)),
          arguments = entity.arguments.asSequence().map { ScheduleArgumentValueObject(it) }.toMutableList()
       )
+
+   override fun valueObjectId(): Long? = id
+   override fun copyMe(): ScheduleValueObject = copy()
 }

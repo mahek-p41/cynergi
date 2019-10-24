@@ -4,16 +4,16 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations
 import java.sql.ResultSet
 
-fun <ENTITY> NamedParameterJdbcOperations.findFirst(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
-   val resultList: List<ENTITY> = this.query(query, params, rowMapper)
-
-   return resultList.first()
-}
-
 fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNull(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY? {
    val resultList: List<ENTITY> = this.query(query, params, rowMapper)
 
    return resultList.firstOrNull()
+}
+
+fun <ENTITY> NamedParameterJdbcOperations.findFirst(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
+   val resultList: List<ENTITY> = this.query(query, params, rowMapper)
+
+   return resultList.first()
 }
 
 @Deprecated(message = "You should not be using this as it is more complicated to use that just doing the iteration yourself, and only fits a single use case")

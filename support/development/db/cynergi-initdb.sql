@@ -83,7 +83,7 @@ BEGIN
       || unionStr
       || 'SELECT '
       || '   id AS id, '
-      || '   loc_dept_code AS code, '
+      || '   TRIM(loc_dept_code) AS code, '
       || '   loc_dept_desc AS description, '
       || '   loc_dept_security_profile AS security_profile, '
       || '   loc_dept_default_menu AS default_menu, '

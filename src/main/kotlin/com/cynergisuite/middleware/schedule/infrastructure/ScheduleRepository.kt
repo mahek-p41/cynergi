@@ -9,6 +9,8 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
+import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -25,6 +27,7 @@ import javax.inject.Singleton
 class ScheduleRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val scheduleArgumentRepository: ScheduleArgumentRepository,
+   private val scheduleCommandTypeRepository: ScheduleCommandTypeRepository,
    private val scheduleTypeRepository: ScheduleTypeRepository
 ) : Repository<ScheduleEntity> {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
@@ -43,11 +46,15 @@ class ScheduleRepository @Inject constructor(
             sched.title                 AS sched_title,
             sched.description           AS sched_description,
             sched.schedule              AS sched_schedule,
-            sched.command               AS sched_command,
+            sched.enabled               AS sched_enabled,
             schedType.id                AS schedType_id,
             schedType.value             AS schedType_value,
             schedType.description       AS schedType_description,
             schedType.localization_code AS schedType_localization_code,
+            sctd.id                     AS sctd_id,
+            sctd.value                  AS sctd_value,
+            sctd.description            AS sctd_description,
+            sctd.localization_code      AS sctd_localization_code,
             sa.id                       AS sa_id,
             sa.uu_row_id                AS sa_uu_row_id,
             sa.time_created             AS sa_time_created,
@@ -56,12 +63,17 @@ class ScheduleRepository @Inject constructor(
             sa.description              AS sa_description
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
+              JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id)
       ) { rs: ResultSet ->
-         val localSchedule = found ?: mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }
+         val localSchedule = found ?: mapRow(
+            rs = rs,
+            scheduleTypeProvider = { scheduleTypeRepository.mapRow(rs, "schedType_") },
+            scheduleCommandProvider = { scheduleCommandTypeRepository.mapRow(rs, "sctd_") }
+         )
 
          scheduleArgumentRepository.mapRowOrNull(rs, "sa_")?.also { localSchedule.arguments.add(it) }
 
@@ -94,6 +106,10 @@ class ScheduleRepository @Inject constructor(
             schedType.value                 AS schedType_value,
             schedType.description           AS schedType_description,
             schedType.localization_code     AS schedType_localization_code,
+            sctd.id                         AS sctd_id,
+            sctd.value                      AS sctd_value,
+            sctd.description                AS sctd_description,
+            sctd.localization_code          AS sctd_localization_code,
             sa.id                           AS sa_id,
             sa.uu_row_id                    AS sa_uu_row_id,
             sa.time_created                 AS sa_time_created,
@@ -103,6 +119,7 @@ class ScheduleRepository @Inject constructor(
             (SELECT count(id) FROM schedule) AS total_elements
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
+              JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
          ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
                LIMIT ${pageRequest.size}
@@ -111,7 +128,12 @@ class ScheduleRepository @Inject constructor(
          val dbScheduleId = rs.getLong("sched_id")
 
          val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {
-            val created = mapRow(rs) { scheduleTypeRepository.mapRow(rs, "schedType_") }.also { elements.add(it) }
+            val created = mapRow(
+               rs = rs,
+               scheduleTypeProvider = { scheduleTypeRepository.mapRow(rs, "schedType_") },
+               scheduleCommandProvider = { scheduleCommandTypeRepository.mapRow(rs, "sctd_") }
+            )
+            .also { elements.add(it) }
 
             currentSchedule = created
 
@@ -146,8 +168,8 @@ class ScheduleRepository @Inject constructor(
       logger.debug("Inserting Schedule {}", entity)
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO schedule(title, description, schedule, command, type_id)
-         VALUES(:title, :description, :schedule, :command, :type_id)
+         INSERT INTO schedule(title, description, schedule, command, enabled, type_id)
+         VALUES(:title, :description, :schedule, :command, :enabled, :type_id)
          RETURNING
             *
          """.trimIndent(),
@@ -156,6 +178,7 @@ class ScheduleRepository @Inject constructor(
             "description" to entity.description,
             "schedule" to entity.schedule,
             "command" to entity.command,
+            "enabled" to entity.enabled,
             "type_id" to entity.type.id
          ),
          RowMapper { rs, _ ->
@@ -181,6 +204,7 @@ class ScheduleRepository @Inject constructor(
             description = :description,
             schedule = :schedule,
             command = :command,
+            enabled = :enabled,
             type_id = :type_id
          WHERE id = :id
          RETURNING
@@ -192,6 +216,7 @@ class ScheduleRepository @Inject constructor(
             "description" to entity.description,
             "schedule" to entity.schedule,
             "command" to entity.command,
+            "enabled" to entity.enabled,
             "type_id" to entity.type.id
          ),
          RowMapper { rs, _ ->
@@ -206,13 +231,10 @@ class ScheduleRepository @Inject constructor(
       return updated
    }
 
-   fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeColumnPrefix: String = "schedType_"): ScheduleEntity =
-      mapRow(rs, scheduleColumnPrefix) { scheduleTypeRepository.mapRow(it, scheduleTypeColumnPrefix) }
-
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =
-      mapRow(rs, "") { entity.type }
+      mapRow(rs, "", { entity.type }, { entity.command })
 
-   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity): ScheduleEntity =
+   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandTypeEntity): ScheduleEntity =
       ScheduleEntity(
          id = rs.getLong("${scheduleColumnPrefix}id"),
          uuRowId = rs.getUuid("${scheduleColumnPrefix}uu_row_id"),
@@ -221,7 +243,8 @@ class ScheduleRepository @Inject constructor(
          title = rs.getString("${scheduleColumnPrefix}title"),
          description = rs.getString("${scheduleColumnPrefix}description"),
          schedule = rs.getString("${scheduleColumnPrefix}schedule"),
-         command = rs.getString("${scheduleColumnPrefix}command"),
+         enabled = rs.getBoolean("${scheduleColumnPrefix}enabled"),
+         command = scheduleCommandProvider(rs),
          type = scheduleTypeProvider(rs)
       )
 }

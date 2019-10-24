@@ -4,18 +4,21 @@ CREATE UNIQUE INDEX schedule_type_domain_value ON schedule_type_domain(UPPER(val
 DELETE FROM schedule_type_domain WHERE id = 1;
 INSERT INTO schedule_type_domain(id, value, description, localization_code) VALUES (1, 'WEEKLY', 'Weekly', 'schedule.weekly');
 
-CREATE TABLE audit_schedule (
-    id                BIGSERIAL                                               NOT NULL PRIMARY KEY,
-    uu_row_id         UUID        DEFAULT uuid_generate_v1()                  NOT NULL,
-    time_created      TIMESTAMPTZ DEFAULT clock_timestamp()                   NOT NULL,
-    time_updated      TIMESTAMPTZ DEFAULT clock_timestamp()                   NOT NULL,
-    store_number      INTEGER CHECK ( store_number > 0 )                      NOT NULL,
-    department_access VARCHAR(2) CHECK ( char_length(department_access) = 2 ) NOT NULL,
-    schedule_id       BIGINT REFERENCES schedule(id)                          NOT NULL
+CREATE TABLE schedule_command_type_domain (
+    id                INTEGER                                            NOT NULL PRIMARY KEY,
+    value             VARCHAR(25) CHECK ( CHAR_LENGTH(TRIM(VALUE)) > 0 ) NOT NULL,
+    description       VARCHAR(50)                                        NOT NULL,
+    localization_code VARCHAR(50)                                        NOT NULL
 );
-CREATE TRIGGER audit_schedule_trg
-    BEFORE UPDATE
-    ON audit_schedule
-    FOR EACH ROW
-EXECUTE PROCEDURE last_updated_column_fn();
-CREATE INDEX audit_schedule_schedule_id ON audit_schedule(schedule_id);
+CREATE UNIQUE INDEX schedule_command_type_domain_value ON schedule_command_type_domain(UPPER(value));
+INSERT INTO schedule_command_type_domain(id, value, description, localization_code) VALUES (1, 'ScheduleAudit', 'Scheduling audits for stores', 'schedule.command.schedule.audit');
+
+ALTER TABLE schedule
+    ALTER COLUMN command SET DATA TYPE INTEGER USING (command::INTEGER);
+ALTER TABLE schedule
+    RENAME command TO command_id;
+ALTER TABLE schedule
+    ADD CONSTRAINT schedule_schedule_command_type_domain_fk FOREIGN KEY (command_id) REFERENCES schedule_command_type_domain (id);
+
+ALTER TABLE schedule
+    ADD COLUMN enabled BOOLEAN DEFAULT TRUE NOT NULL;
