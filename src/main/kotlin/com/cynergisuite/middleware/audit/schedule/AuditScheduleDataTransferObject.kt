@@ -13,7 +13,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @ValueObject
-data class AuditScheduleValueObject(
+data class AuditScheduleDataTransferObject(
 
    @field:Positive
    val id: Long? = null, // equates to Schedule.id
@@ -40,7 +40,7 @@ data class AuditScheduleValueObject(
    @field:Valid
    @field:NotNull
    val type: ScheduleTypeValueObject? = null
-) : ValueObjectBase<AuditScheduleValueObject>() {
+) : ValueObjectBase<AuditScheduleDataTransferObject>() {
    override fun valueObjectId(): Long? = id
-   override fun copyMe(): AuditScheduleValueObject = copy()
+   override fun copyMe(): AuditScheduleDataTransferObject = copy()
 }

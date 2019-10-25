@@ -24,7 +24,7 @@ class AuditScheduleService @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
 
-   fun fetchById(id: Long): AuditScheduleValueObject? {
+   fun fetchById(id: Long): AuditScheduleDataTransferObject? {
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
@@ -35,18 +35,18 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun fetchAll(@Valid pageRequest: PageRequest): Page<AuditScheduleValueObject> {
+   fun fetchAll(@Valid pageRequest: PageRequest): Page<AuditScheduleDataTransferObject> {
       val repoPage = scheduleRepository.fetchAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
 
       return repoPage.toPage(pageRequest) { buildAuditScheduleValueObjectFromSchedule(it) }
    }
 
    @Validated
-   fun create(@Valid auditScheduleDto: AuditScheduleCreateDataTransferObject): AuditScheduleValueObject {
+   fun create(@Valid auditScheduleDto: AuditScheduleCreateDataTransferObject): AuditScheduleDataTransferObject {
       val (schedule, stores, department) = auditScheduleValidator.validateCreate(auditScheduleDto)
       val inserted = scheduleRepository.insert(schedule)
 
-      return AuditScheduleValueObject(
+      return AuditScheduleDataTransferObject(
          id = inserted.id,
          title = inserted.title,
          description = inserted.description,
@@ -56,7 +56,7 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity): AuditScheduleValueObject {
+   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity): AuditScheduleDataTransferObject {
       val stores = mutableListOf<StoreValueObject>()
       var department: DepartmentValueObject? = null
 
@@ -72,7 +72,7 @@ class AuditScheduleService @Inject constructor(
          }
       }
 
-      return AuditScheduleValueObject(
+      return AuditScheduleDataTransferObject(
          id = schedule.id,
          title = schedule.title,
          description = schedule.description,
