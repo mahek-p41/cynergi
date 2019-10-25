@@ -14,7 +14,7 @@ class SchedulePageRequest(
 
 ) : PageRequest(page, size, sortBy, sortDirection) {
 
-   constructor(pageRequest: PageRequest, command: String = "AuditSchedule"):
+   constructor(pageRequest: PageRequest, command: String):
       this(
          page = pageRequest.page,
          size = pageRequest.size,
