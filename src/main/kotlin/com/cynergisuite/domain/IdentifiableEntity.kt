@@ -3,6 +3,7 @@ package com.cynergisuite.domain
 /**
  * Defines a contract where the implementing entity will be required to provide an ID that is a Long
  */
+@Deprecated(message = "This class really seems to serve no purpose other than to act as a marker interface.", replaceWith = ReplaceWith("Identifiable", imports = ["com.cynergisuite.domain.Identifiable"]))
 interface IdentifiableEntity: Identifiable {
 
    /**

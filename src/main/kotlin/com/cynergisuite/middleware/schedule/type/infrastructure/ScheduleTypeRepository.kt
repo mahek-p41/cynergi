@@ -37,6 +37,26 @@ class ScheduleTypeRepository(
       return found
    }
 
+   fun findByValue(value: String): ScheduleTypeEntity {
+      logger.debug("Search for schedule type by value {}", value)
+
+      val found = jdbc.findFirst("""
+         SELECT
+            id AS std_id,
+            value AS std_value,
+            description AS std_description,
+            localization_code AS localization_code
+         FROM schedule_type_domain std
+         WHERE value = :value
+         """.trimIndent(),
+         mapOf("value" to value),
+         RowMapper { rs, _ -> mapRow(rs) })
+
+      logger.trace("Searching for schedule type by value {} resulted in {}", value, found)
+
+      return found
+   }
+
    fun findAll(pageRequest: PageRequest): RepositoryPage<ScheduleTypeEntity> {
       var totalElements: Long? = null
       val elements = mutableListOf<ScheduleTypeEntity>()

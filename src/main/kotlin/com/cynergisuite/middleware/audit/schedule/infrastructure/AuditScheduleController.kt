@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.audit.schedule.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -16,7 +16,8 @@ import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -42,7 +43,7 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit Schedule with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the Audit Schedule with", `in` = PATH) @QueryValue("id") id: Long
    ): AuditScheduleDataTransferObject {
       logger.info("Fetching Audit Schedule by {}", id)
 
@@ -63,7 +64,7 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?
    ): Page<AuditScheduleDataTransferObject> {
       logger.info("Fetching all audit schedules {} {}", pageRequestIn)
       val pageRequest = PageRequest(pageRequestIn) // copy the result applying defaults if they are missing

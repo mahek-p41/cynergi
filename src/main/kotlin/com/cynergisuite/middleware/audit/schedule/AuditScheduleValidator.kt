@@ -51,7 +51,7 @@ class AuditScheduleValidator(
             description = dto.description,
             schedule = dto.schedule!!.name,
             command = scheduleCommandTypeRepository.findByValue("AuditSchedule"),
-            type = scheduleTypeRepository.findOne(dto.type!!.id!!),
+            type = scheduleTypeRepository.findByValue("WEEKLY"),
             arguments = arguments
          ),
          stores,

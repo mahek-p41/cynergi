@@ -32,10 +32,6 @@ data class AuditScheduleCreateDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   val departmentAccess: SimpleIdentifiableDataTransferObject? = null,
-
-   @field:Valid
-   @field:NotNull
-   val type: SimpleIdentifiableDataTransferObject? = null
+   val departmentAccess: SimpleIdentifiableDataTransferObject? = null
 
 )

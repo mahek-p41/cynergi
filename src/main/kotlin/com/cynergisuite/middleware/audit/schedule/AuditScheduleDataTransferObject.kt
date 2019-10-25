@@ -40,6 +40,7 @@ data class AuditScheduleDataTransferObject(
    @field:Valid
    @field:NotNull
    val type: ScheduleTypeValueObject? = null
+
 ) : ValueObjectBase<AuditScheduleDataTransferObject>() {
    override fun valueObjectId(): Long? = id
    override fun copyMe(): AuditScheduleDataTransferObject = copy()
