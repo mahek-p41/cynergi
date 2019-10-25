@@ -16,15 +16,16 @@ data class StoreValueObject (
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
    var id: Long = 0,
 
+   @field:Positive
    @field:NotNull
    @field:JsonProperty("storeNumber")
    @field:Schema(name = "number", minimum = "1", required = true, nullable = false, description = "Store number")
    var number: Int? = null,
 
-   @field:Schema(name = "name", minimum = "1", required = false, nullable = true, description = "Human readable name for a store")
+   @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a store")
    var name: String? = null,
 
-   @field:Schema(name = "dataset", minimum = "1", required = false, nullable = true, description = "Dataset that this store belongs to")
+   @field:Schema(name = "dataset", required = false, nullable = true, description = "Dataset that this store belongs to")
    var dataset: String? = null
 
 ) : ValueObjectBase<StoreValueObject>() {
