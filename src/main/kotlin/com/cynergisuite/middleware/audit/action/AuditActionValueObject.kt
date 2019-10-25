@@ -46,6 +46,6 @@ data class AuditActionValueObject (
          changedBy = EmployeeValueObject(entity.changedBy)
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditActionValueObject = copy()
 }

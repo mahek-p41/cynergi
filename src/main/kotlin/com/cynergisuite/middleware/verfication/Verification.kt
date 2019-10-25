@@ -37,7 +37,7 @@ data class Verification(
       dto.references.asSequence().map { VerificationReference(it, this) }.forEach { this.references.add(it) }
    }
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 

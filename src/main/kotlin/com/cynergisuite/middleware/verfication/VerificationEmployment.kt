@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -17,9 +17,9 @@ data class VerificationEmployment(
    val name: String?,
    val reliable: Boolean?,
    val title: String?,
-   val verification: IdentifiableEntity
+   val verification: Identifiable
 ) : Entity<VerificationEmployment> {
-   constructor(dto: VerificationEmploymentValueObject, verification: IdentifiableEntity) :
+   constructor(dto: VerificationEmploymentValueObject, verification: Identifiable) :
       this(
          id = dto.id,
          department = dto.department,
@@ -31,13 +31,13 @@ data class VerificationEmployment(
          verification = verification
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): VerificationEmployment = copy()
 
    override fun toString(): String {
-      return "VerificationEmployment(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, department=$department, hireDate=$hireDate, leaveMessage=$leaveMessage, name=$name, reliable=$reliable, title=$title, verification=${verification.entityId()})"
+      return "VerificationEmployment(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, department=$department, hireDate=$hireDate, leaveMessage=$leaveMessage, name=$name, reliable=$reliable, title=$title, verification=${verification.myId()})"
    }
 }

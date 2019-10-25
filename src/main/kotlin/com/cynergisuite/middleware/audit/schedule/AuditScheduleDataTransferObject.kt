@@ -42,6 +42,6 @@ data class AuditScheduleDataTransferObject(
    val type: ScheduleTypeValueObject? = null
 
 ) : ValueObjectBase<AuditScheduleDataTransferObject>() {
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditScheduleDataTransferObject = copy()
 }

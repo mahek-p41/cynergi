@@ -41,10 +41,12 @@ data class Notification (
          notificationDomainType = notificationDomainType
       ) {
 
-      dto.recipients.asSequence().map { NotificationRecipient(it, this) }.forEach { this.recipients.add(it) }
+      dto.recipients.asSequence()
+         .map { NotificationRecipient(it, this) }
+         .forEach { this.recipients.add(it) }
    }
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 

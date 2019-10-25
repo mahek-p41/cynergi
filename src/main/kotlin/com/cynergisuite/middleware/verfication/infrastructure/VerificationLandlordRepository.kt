@@ -62,7 +62,7 @@ class VerificationLandlordRepository(
             "phone" to entity.phone,
             "reliable" to entity.reliable,
             "rent" to entity.rent,
-            "verification_id" to entity.verification.entityId()
+            "verification_id" to entity.verification.myId()
          ),
          simpleVerificationLandlordRowMapper
       )

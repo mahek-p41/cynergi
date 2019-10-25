@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.Repository
@@ -267,7 +267,7 @@ class AuditExceptionRepository @Inject constructor(
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
-            "audit_id" to entity.audit.entityId()
+            "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, rowNum ->
             mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
@@ -287,7 +287,7 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: IdentifiableEntity, columnPrefix: String = EMPTY): AuditExceptionEntity =
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),

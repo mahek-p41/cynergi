@@ -45,7 +45,7 @@ data class AuditValueObject (
          }.toMutableSet()
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditValueObject = copy()
 
    @Schema(name = "currentStatus", description = "The current AuditStatus of the referenced Audit")

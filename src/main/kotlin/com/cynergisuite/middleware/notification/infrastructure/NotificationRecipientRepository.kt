@@ -55,7 +55,7 @@ class NotificationRecipientRepository @Inject constructor(
          mapOf(
             "description" to entity.description,
             "recipient" to entity.recipient,
-            "notification_id" to entity.notification.entityId()
+            "notification_id" to entity.notification.myId()
          ),
          simpleNotificationRecipientRowMapper
       )
@@ -79,7 +79,7 @@ class NotificationRecipientRepository @Inject constructor(
             "id" to entity.id,
             "description" to entity.description,
             "recipient" to entity.recipient,
-            "notification_id" to entity.notification.entityId()
+            "notification_id" to entity.notification.myId()
          ),
          simpleNotificationRecipientRowMapper
       )

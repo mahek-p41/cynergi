@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.employee.Employee
@@ -22,7 +22,7 @@ data class AuditDetail(
    val inventoryBrand: String?,
    val inventoryModel: String,
    val scannedBy: Employee,
-   val audit: IdentifiableEntity
+   val audit: Identifiable
 ) : Entity<AuditDetail> {
 
    constructor(inventory: Inventory, audit: SimpleIdentifiableEntity, scanArea: AuditScanArea, scannedBy: Employee) :
@@ -38,7 +38,7 @@ data class AuditDetail(
          audit = audit
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): AuditDetail = copy()
 }

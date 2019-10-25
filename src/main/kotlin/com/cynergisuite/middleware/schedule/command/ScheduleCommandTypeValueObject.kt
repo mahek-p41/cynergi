@@ -27,6 +27,6 @@ data class ScheduleCommandTypeValueObject(
          description = entity.localizeMyDescription(locale, localizationService)
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): ScheduleCommandTypeValueObject = copy()
 }

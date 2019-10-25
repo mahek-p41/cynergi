@@ -8,7 +8,7 @@ data class ScheduleTypeEntity(
    val description: String,
    val localizationCode: String
 ) : TypeDomainEntity<ScheduleTypeEntity> {
-   override fun entityId(): Long = id
+   override fun myId(): Long = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode

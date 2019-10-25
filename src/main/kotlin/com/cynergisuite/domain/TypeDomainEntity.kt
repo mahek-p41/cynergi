@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.localization.LocalizationService
 import org.apache.commons.lang3.builder.CompareToBuilder
 import java.util.Locale
 
-interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, IdentifiableEntity {
+interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Identifiable {
 
    fun myValue(): String
 
@@ -16,14 +16,14 @@ interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Ident
       localizationService.localize(messageKey = myLocalizationCode(), locale = locale, ifNotFound = myDescription())
 
    fun basicEquality(typeDomainEntity: TypeDomainEntity<ENTITY>): Boolean =
-      this.entityId() == typeDomainEntity.entityId() &&
+      this.myId() == typeDomainEntity.myId() &&
       this.myValue() == typeDomainEntity.myValue() &&
       this.myDescription() == typeDomainEntity.myDescription() &&
       this.myLocalizationCode() == typeDomainEntity.myLocalizationCode()
 
    override fun compareTo(other: TypeDomainEntity<ENTITY>): Int =
       CompareToBuilder()
-         .append(entityId(), other.entityId())
+         .append(myId(), other.myId())
          .append(myValue(), other.myValue())
          .append(myDescription(), other.myDescription())
          .append(myLocalizationCode(), other.myLocalizationCode())

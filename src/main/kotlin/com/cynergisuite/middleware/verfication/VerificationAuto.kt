@@ -1,7 +1,8 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
+
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -31,9 +32,9 @@ data class VerificationAuto(
    val previousLoan: Boolean?,
    val purchaseDate: LocalDate?,
    val related: String?,
-   val verification: IdentifiableEntity
+   val verification: Identifiable
 ) : Entity<VerificationAuto> {
-   constructor(dto: VerificationAutoValueObject, verification: IdentifiableEntity) :
+   constructor(dto: VerificationAutoValueObject, verification: Identifiable) :
       this(
          id = dto.id,
          address = dto.address,
@@ -58,13 +59,13 @@ data class VerificationAuto(
          verification = verification
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 
    override fun copyMe(): VerificationAuto = copy()
 
    override fun toString(): String {
-      return "VerificationAuto(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, comment=$comment, dealerPhone=$dealerPhone, diffAddress=$diffAddress, diffEmployee=$diffEmployee, diffPhone=$diffPhone, dmvVerify=$dmvVerify, employer=$employer, lastPayment=$lastPayment, name=$name, nextPayment=$nextPayment, note=$note, paymentFrequency=$paymentFrequency, payment=$payment, pendingAction=$pendingAction, phone=$phone, previousLoan=$previousLoan, purchaseDate=$purchaseDate, related=$related, verification=${verification.entityId()})"
+      return "VerificationAuto(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, comment=$comment, dealerPhone=$dealerPhone, diffAddress=$diffAddress, diffEmployee=$diffEmployee, diffPhone=$diffPhone, dmvVerify=$dmvVerify, employer=$employer, lastPayment=$lastPayment, name=$name, nextPayment=$nextPayment, note=$note, paymentFrequency=$paymentFrequency, payment=$payment, pendingAction=$pendingAction, phone=$phone, previousLoan=$previousLoan, purchaseDate=$purchaseDate, related=$related, verification=${verification.myId()})"
    }
 }

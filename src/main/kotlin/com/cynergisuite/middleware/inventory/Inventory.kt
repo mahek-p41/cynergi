@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.inventory
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.store.StoreEntity
 import java.math.BigDecimal
@@ -36,6 +36,6 @@ data class Inventory(
    val status: String,
    val primaryLocation: StoreEntity,
    val locationType: InventoryLocationType
-) : IdentifiableEntity {
-   override fun entityId(): Long? = id
+) : Identifiable {
+   override fun myId(): Long? = id
 }

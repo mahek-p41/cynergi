@@ -27,6 +27,6 @@ data class AuditExceptionUpdateValueObject(
    var note: AuditExceptionNoteValueObject? = null
 
 )  : ValueObjectBase<AuditExceptionUpdateValueObject>() {
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditExceptionUpdateValueObject = copy()
 }

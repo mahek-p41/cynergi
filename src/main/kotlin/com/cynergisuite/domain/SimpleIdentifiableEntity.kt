@@ -2,14 +2,11 @@ package com.cynergisuite.domain
 
 data class SimpleIdentifiableEntity(
    private val id: Long
-) : IdentifiableEntity {
-   constructor(identifiableEntity: IdentifiableEntity) :
-      this(id = identifiableEntity.entityId()!!)
+) : Identifiable {
+   constructor(identifiableEntity: Identifiable) :
+      this(id = identifiableEntity.myId()!!)
 
-   constructor(identifiableDto: IdentifiableValueObject):
-      this(id = identifiableDto.valueObjectId()!!)
-
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun toString(): String {
       return "$id"

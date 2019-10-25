@@ -50,5 +50,5 @@ data class VerificationEmploymentValueObject(
 
    override fun copyMe(): VerificationEmploymentValueObject = copy()
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }

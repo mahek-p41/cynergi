@@ -49,6 +49,6 @@ data class AuditExceptionNoteValueObject(
          note = entity.note
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditExceptionNoteValueObject = copy()
 }

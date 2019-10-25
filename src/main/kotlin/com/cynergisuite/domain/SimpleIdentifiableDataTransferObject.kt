@@ -13,6 +13,6 @@ data class SimpleIdentifiableDataTransferObject(
    @field:Schema(name = "id", description = "System managed ID that points to a valid instance")
    var id: Long? = null
 
-): IdentifiableDataTransferObject {
-   override fun dtoId(): Long? = id
+): Identifiable {
+   override fun myId(): Long? = id
 }

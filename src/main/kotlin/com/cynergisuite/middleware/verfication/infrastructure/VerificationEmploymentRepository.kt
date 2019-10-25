@@ -59,7 +59,7 @@ class VerificationEmploymentRepository(
             "name" to entity.name,
             "reliable" to entity.reliable,
             "title" to entity.title,
-            "verification_id" to entity.verification.entityId()
+            "verification_id" to entity.verification.myId()
          ),
          simpleVerificationEmploymentRowMapper
       )

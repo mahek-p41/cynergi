@@ -4,7 +4,6 @@ import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.swagger.v3.oas.annotations.media.Schema
-import org.hibernate.validator.constraints.ScriptAssert
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -121,6 +120,6 @@ data class InventoryValueObject(
          locationType = locationType
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): InventoryValueObject = copy()
 }

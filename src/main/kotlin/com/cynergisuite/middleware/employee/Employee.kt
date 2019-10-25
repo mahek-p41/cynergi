@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 
@@ -16,7 +16,7 @@ data class Employee(
    val store: StoreEntity,
    val active: Boolean = true,
    val department: String? = null
-) : IdentifiableEntity {
+) : Identifiable {
 
    constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, department: String? = null) :
       this(
@@ -43,6 +43,6 @@ data class Employee(
          active = vo.active!!
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    fun copyMe(): Employee = copy()
 }

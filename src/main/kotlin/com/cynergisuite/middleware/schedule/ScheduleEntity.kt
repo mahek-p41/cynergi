@@ -42,7 +42,7 @@ data class ScheduleEntity(
          arguments = arguments
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): ScheduleEntity = copy()
 }

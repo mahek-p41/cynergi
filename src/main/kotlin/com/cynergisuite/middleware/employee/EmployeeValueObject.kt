@@ -81,7 +81,7 @@ data class EmployeeValueObject(
          active = entity.active
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): EmployeeValueObject = copy()
 
    override fun equals(other: Any?): Boolean =

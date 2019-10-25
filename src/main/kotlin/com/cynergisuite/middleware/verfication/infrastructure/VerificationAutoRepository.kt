@@ -73,7 +73,7 @@ class VerificationAutoRepository(
             "previousLoan" to entity.previousLoan,
             "purchaseDate" to entity.purchaseDate,
             "related" to entity.related,
-            "verification_id" to entity.verification.entityId()
+            "verification_id" to entity.verification.myId()
          ),
          simpleVerificationAutoRowMapper
       )

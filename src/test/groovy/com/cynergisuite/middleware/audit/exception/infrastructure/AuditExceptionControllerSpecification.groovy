@@ -66,7 +66,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.scannedBy.lastName == auditException.scannedBy.lastName
       result.scannedBy.firstNameMi == auditException.scannedBy.firstNameMi
       result.notes.size() == 0
-      result.audit.id == auditException.audit.entityId()
+      result.audit.id == auditException.audit.myId()
    }
 
    void "fetch one audit exception with a single attached note" () {
@@ -74,11 +74,11 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditNote = auditExceptionNoteFactoryService.single()
 
       when:
-      def result = get("/audit/exception/${auditNote.auditException.entityId()}")
+      def result = get("/audit/exception/${auditNote.auditException.myId()}")
 
       then:
       notThrown(HttpClientResponseException)
-      result.id == auditNote.auditException.entityId()
+      result.id == auditNote.auditException.myId()
       result.notes.size() == 1
       result.notes[0].id == auditNote.id
       result.notes[0].note == auditNote.note
@@ -91,7 +91,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final auditException = auditExceptionFactoryService.single()
       final auditNotes = auditExceptionNoteFactoryService.stream(2, auditException, authenticatedEmployee).map { new AuditExceptionNoteValueObject(it) }.sorted{ o1, o2 -> o1.id <=> o2.id  }.toList()
-      final auditExceptionId = auditException.entityId()
+      final auditExceptionId = auditException.myId()
 
       when:
       def result = get("/audit/exception/${auditExceptionId}")
@@ -100,7 +100,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       notThrown(HttpClientResponseException)
       result.notes.size() == 2
       result.id == auditException.id
-      result.audit.id == auditException.audit.entityId()
+      result.audit.id == auditException.audit.myId()
       result.notes
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
@@ -476,7 +476,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.scannedBy.number == authenticatedEmployee.number
       result.scannedBy.lastName == authenticatedEmployee.lastName
       result.scannedBy.firstNameMi == authenticatedEmployee.firstNameMi
-      result.audit.id == audit.entityId()
+      result.audit.id == audit.myId()
    }
 
    void "create audit exception where no inventory.id and no barcode is passed" () {
@@ -504,7 +504,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final noteText = "Test Note"
 
       when:
-      def result = put("/audit/${audit.entityId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -525,7 +525,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes[0].id != null
       result.notes[0].id > 0
       result.notes[0].note == noteText
-      result.audit.id == savedAuditException.audit.entityId()
+      result.audit.id == savedAuditException.audit.myId()
    }
 
    void "update audit exception that has been signed-off" () {
@@ -534,7 +534,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit)
 
       when:
-      put("/audit/${audit.entityId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
 
       then:
       def e = thrown(HttpClientResponseException)

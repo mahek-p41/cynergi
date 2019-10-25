@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.store
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
 
 data class StoreEntity(
@@ -10,7 +10,7 @@ data class StoreEntity(
    val number: Int,
    val name: String,
    val dataset: String
-) : IdentifiableEntity {
+) : Identifiable {
 
    constructor(store: StoreValueObject) :
       this(
@@ -20,5 +20,5 @@ data class StoreEntity(
          dataset = store.dataset!!
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 }

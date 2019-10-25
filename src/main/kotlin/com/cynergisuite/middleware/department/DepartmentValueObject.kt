@@ -41,6 +41,6 @@ data class DepartmentValueObject(
          defaultMenu = entity.defaultMenu
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): DepartmentValueObject = copy()
 }

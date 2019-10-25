@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception
 
-import com.cynergisuite.domain.IdentifiableValueObject
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
@@ -88,7 +88,7 @@ data class AuditExceptionValueObject (
 
    @field:Valid
    @field:Schema(name = "audit", description = "The Audit this exception is associated with", implementation = SimpleIdentifiableValueObject::class)
-   var audit: IdentifiableValueObject? = null
+   var audit: Identifiable? = null
 
 ) : ValueObjectBase<AuditExceptionValueObject>() {
    constructor(entity: AuditExceptionEntity, scanArea: AuditScanAreaValueObject?) :
@@ -110,6 +110,6 @@ data class AuditExceptionValueObject (
          audit = SimpleIdentifiableValueObject(entity.audit)
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditExceptionValueObject = copy()
 }

@@ -50,7 +50,7 @@ class AuditDetailValidator @Inject constructor (
       logger.debug("Validating Update AuditDetail {}", vo)
 
       doValidation { errors ->
-         val auditId = vo.audit!!.valueObjectId()!!
+         val auditId = vo.audit!!.myId()!!
          val id = vo.id
 
          validateAudit(auditId, errors)

@@ -156,7 +156,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "expiration_date" to entity.expirationDate,
-            "notification_type_id" to entity.notificationDomainType.entityId()
+            "notification_type_id" to entity.notificationDomainType.myId()
          ),
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
@@ -194,7 +194,7 @@ class NotificationRepository @Inject constructor(
             "expiration_date" to entity.expirationDate,
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
-            "notification_type_id" to entity.notificationDomainType.entityId()
+            "notification_type_id" to entity.notificationDomainType.myId()
          ),
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
@@ -229,7 +229,7 @@ class NotificationRepository @Inject constructor(
 
    private fun doRecipientUpdates(entity: Notification, existing: Notification) =
       entity.recipients.asSequence()
-         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.entityId() == n.notification.entityId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
+         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.myId() == n.notification.myId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
 }

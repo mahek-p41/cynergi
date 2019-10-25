@@ -38,6 +38,6 @@ data class StoreValueObject (
          dataset = entity.dataset
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): StoreValueObject = copy()
 }

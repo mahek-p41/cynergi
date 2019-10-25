@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
@@ -27,7 +27,7 @@ data class AuditExceptionEntity(
    val exceptionCode: String,
    val signedOff: Boolean = false,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
-   val audit: IdentifiableEntity
+   val audit: Identifiable
 ) : Entity<AuditExceptionEntity> {
 
    constructor(vo: AuditExceptionValueObject, scanArea: AuditScanArea?) :
@@ -43,7 +43,7 @@ data class AuditExceptionEntity(
          scannedBy = Employee(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
-         notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.valueObjectId()!!) }.toMutableList(),
+         notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.myId()!!) }.toMutableList(),
          audit = SimpleIdentifiableEntity(vo.audit!!)
       )
 
@@ -77,5 +77,5 @@ data class AuditExceptionEntity(
 
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): AuditExceptionEntity = copy()
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 }

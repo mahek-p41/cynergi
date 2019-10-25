@@ -31,7 +31,7 @@ data class NotificationRecipientValueObject (
          recipient = entity.recipient
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun copyMe(): NotificationRecipientValueObject = copy()
 }

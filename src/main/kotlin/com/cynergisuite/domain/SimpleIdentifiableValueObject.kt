@@ -14,18 +14,13 @@ data class SimpleIdentifiableValueObject(
    @field:Schema(name = "id", description = "The system generated ID (aka primary key) for the associated item", required = true)
    var id: Long? = null
 
-) : IdentifiableValueObject {
+) : Identifiable {
 
-   constructor(identifiableEntity: IdentifiableEntity) :
+   constructor(identifiableEntity: Identifiable) :
       this(
-         id = identifiableEntity.entityId()
-      )
-
-   constructor(identifiableValueObject: IdentifiableValueObject) :
-      this (
-         id = identifiableValueObject.valueObjectId()
+         id = identifiableEntity.myId()
       )
 
    @JsonIgnore
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }

@@ -54,6 +54,6 @@ data class ScheduleValueObject(
          arguments = entity.arguments.asSequence().map { ScheduleArgumentValueObject(it) }.toMutableList()
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): ScheduleValueObject = copy()
 }

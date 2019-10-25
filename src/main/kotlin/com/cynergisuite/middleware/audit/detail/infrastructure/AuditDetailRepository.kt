@@ -1,11 +1,15 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.detail.AuditDetail
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
@@ -150,7 +154,7 @@ class AuditDetailRepository @Inject constructor(
             "inventory_brand" to entity.inventoryBrand,
             "inventory_model" to entity.inventoryModel,
             "scanned_by" to entity.scannedBy.number,
-            "audit_id" to entity.audit.entityId()
+            "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, _ ->
             mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
@@ -194,7 +198,7 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: IdentifiableEntity, columnPrefix: String = EMPTY): AuditDetail {
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetail {
       return AuditDetail(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),

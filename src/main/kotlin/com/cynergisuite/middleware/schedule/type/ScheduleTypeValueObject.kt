@@ -27,5 +27,5 @@ data class ScheduleTypeValueObject(
       )
 
    override fun copyMe(): ScheduleTypeValueObject = copy()
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }
