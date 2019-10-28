@@ -11,7 +11,7 @@ CREATE TABLE schedule_command_type_domain (
     localization_code VARCHAR(50)                                        NOT NULL
 );
 CREATE UNIQUE INDEX schedule_command_type_domain_value ON schedule_command_type_domain(UPPER(value));
-INSERT INTO schedule_command_type_domain(id, value, description, localization_code) VALUES (1, 'ScheduleAudit', 'Scheduling audits for stores', 'schedule.command.schedule.audit');
+INSERT INTO schedule_command_type_domain(id, value, description, localization_code) VALUES (1, 'AuditSchedule', 'Scheduling audits for stores', 'schedule.command.audit');
 
 ALTER TABLE schedule
     ALTER COLUMN command SET DATA TYPE INTEGER USING (command::INTEGER);

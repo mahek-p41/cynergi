@@ -40,7 +40,7 @@ object AuditScheduleFactory {
             title = lorem.characters(3, 64),
             description = lorem.characters(3, 256),
             schedule = dayOfWeek.name,
-            command = ScheduleCommandTypeFactory.scheduleAudit(),
+            command = ScheduleCommandTypeFactory.auditSchedule(),
             type = ScheduleTypeFactory.weekly(),
             arguments = arguments
          )
@@ -62,5 +62,9 @@ class AuditScheduleFactoryService @Inject constructor(
 
       return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, department)
          .map { scheduleRepository.insert(it) }
+   }
+
+   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null) :ScheduleEntity {
+      return stream(1, dayOfWeekIn, storesIn, departmentIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
    }
 }

@@ -90,7 +90,7 @@ class ScheduleRepository @Inject constructor(
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
-      var whereClause: String = ""
+      var whereClause = ""
       val params = mutableMapOf<String, Any>()
 
       if (command != null) {
@@ -99,38 +99,43 @@ class ScheduleRepository @Inject constructor(
       }
 
       jdbc.query("""
-         SELECT
-            sched.id                        AS sched_id,
-            sched.uu_row_id                 AS sched_uu_row_id,
-            sched.time_created              AS sched_time_created,
-            sched.time_updated              AS sched_time_updated,
-            sched.title                     AS sched_title,
-            sched.description               AS sched_description,
-            sched.schedule                  AS sched_schedule,
-            sched.command                   AS sched_command,
-            schedType.id                    AS schedType_id,
-            schedType.value                 AS schedType_value,
-            schedType.description           AS schedType_description,
-            schedType.localization_code     AS schedType_localization_code,
-            sctd.id                         AS sctd_id,
-            sctd.value                      AS sctd_value,
-            sctd.description                AS sctd_description,
-            sctd.localization_code          AS sctd_localization_code,
-            sa.id                           AS sa_id,
-            sa.uu_row_id                    AS sa_uu_row_id,
-            sa.time_created                 AS sa_time_created,
-            sa.time_updated                 AS sa_time_updated,
-            sa.value                        AS sa_value,
-            sa.description                  AS sa_description,
-            (SELECT count(id) FROM schedule $whereClause) AS total_elements
-         FROM schedule sched
-              JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
-              JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
-              LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
-         ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
+         WITH schedules AS (
+            SELECT
+               sched.id                                                        AS sched_id,
+               sched.uu_row_id                                                 AS sched_uu_row_id,
+               sched.time_created                                              AS sched_time_created,
+               sched.time_updated                                              AS sched_time_updated,
+               sched.title                                                     AS sched_title,
+               sched.description                                               AS sched_description,
+               sched.schedule                                                  AS sched_schedule,
+               sched.enabled                                                   AS sched_enabled,
+               schedType.id                                                    AS schedType_id,
+               schedType.value                                                 AS schedType_value,
+               schedType.description                                           AS schedType_description,
+               schedType.localization_code                                     AS schedType_localization_code,
+               sctd.id                                                         AS sctd_id,
+               sctd.value                                                      AS sctd_value,
+               sctd.description                                                AS sctd_description,
+               sctd.localization_code                                          AS sctd_localization_code,
+               (SELECT count(id) FROM schedule $whereClause) AS total_elements
+            FROM schedule sched
+               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
+               JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
+            $whereClause
+            ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
                LIMIT ${pageRequest.size}
                OFFSET ${pageRequest.offset()}
-         $whereClause
+         )
+         SELECT
+            sched.*,
+            sa.id                                                              AS sa_id,
+            sa.uu_row_id                                                       AS sa_uu_row_id,
+            sa.time_created                                                    AS sa_time_created,
+            sa.time_updated                                                    AS sa_time_updated,
+            sa.value                                                           AS sa_value,
+            sa.description                                                     AS sa_description
+         FROM schedules sched
+              LEFT OUTER JOIN schedule_arg sa ON sched_id = sa.schedule_id
       """.trimIndent(), params) { rs ->
          val dbScheduleId = rs.getLong("sched_id")
 
@@ -140,8 +145,8 @@ class ScheduleRepository @Inject constructor(
                scheduleTypeProvider = { scheduleTypeRepository.mapRow(rs, "schedType_") },
                scheduleCommandProvider = { scheduleCommandTypeRepository.mapRow(rs, "sctd_") }
             )
-            .also { elements.add(it) }
 
+            elements.add(created)
             currentSchedule = created
 
             created
@@ -175,8 +180,8 @@ class ScheduleRepository @Inject constructor(
       logger.debug("Inserting Schedule {}", entity)
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO schedule(title, description, schedule, command, enabled, type_id)
-         VALUES(:title, :description, :schedule, :command, :enabled, :type_id)
+         INSERT INTO schedule(title, description, schedule, command_id, enabled, type_id)
+         VALUES(:title, :description, :schedule, :command_id, :enabled, :type_id)
          RETURNING
             *
          """.trimIndent(),
@@ -184,7 +189,7 @@ class ScheduleRepository @Inject constructor(
             "title" to entity.title,
             "description" to entity.description,
             "schedule" to entity.schedule,
-            "command" to entity.command,
+            "command_id" to entity.command.id,
             "enabled" to entity.enabled,
             "type_id" to entity.type.id
          ),
@@ -210,7 +215,7 @@ class ScheduleRepository @Inject constructor(
             title = :title,
             description = :description,
             schedule = :schedule,
-            command = :command,
+            command_id = :command_id,
             enabled = :enabled,
             type_id = :type_id
          WHERE id = :id
@@ -222,7 +227,7 @@ class ScheduleRepository @Inject constructor(
             "title" to entity.title,
             "description" to entity.description,
             "schedule" to entity.schedule,
-            "command" to entity.command,
+            "command_id" to entity.command.id,
             "enabled" to entity.enabled,
             "type_id" to entity.type.id
          ),

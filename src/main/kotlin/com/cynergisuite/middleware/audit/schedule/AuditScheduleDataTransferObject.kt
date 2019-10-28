@@ -16,30 +16,30 @@ import javax.validation.constraints.Size
 data class AuditScheduleDataTransferObject(
 
    @field:Positive
-   val id: Long? = null, // equates to Schedule.id
+   var id: Long? = null, // equates to Schedule.id
 
    @field:NotNull
    @field:Size(min = 3, max = 64)
-   val title: String? = null, // equates to Schedule.title
+   var title: String? = null, // equates to Schedule.title
 
    @field:NotNull
    @field:Size(min = 3, max = 256)
-   val description: String? = null, // equates to Schedule.description
+   var description: String? = null, // equates to Schedule.description
 
    @field:NotNull
-   val schedule: DayOfWeek? = null, // equates to Schedule.schedule
+   var schedule: DayOfWeek? = null, // equates to Schedule.schedule
 
    @field:Valid
    @field:NotEmpty
-   val stores: List<StoreValueObject> = mutableListOf(), // is from a schedule argument that is collected together
+   var stores: List<StoreValueObject> = mutableListOf(), // is from a schedule argument that is collected together
 
    @field:Valid
    @field:NotNull
-   val departmentAccess: DepartmentValueObject? = null,
+   var departmentAccess: DepartmentValueObject? = null,
 
    @field:Valid
    @field:NotNull
-   val type: ScheduleTypeValueObject? = null
+   var type: ScheduleTypeValueObject? = null
 
 ) : ValueObjectBase<AuditScheduleDataTransferObject>() {
    override fun myId(): Long? = id
