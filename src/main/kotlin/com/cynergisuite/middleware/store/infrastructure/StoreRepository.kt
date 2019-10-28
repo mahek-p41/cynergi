@@ -99,6 +99,8 @@ class StoreRepository @Inject constructor(
       return exists
    }
 
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
    fun maybeMapRow(rs: ResultSet, columnPrefix: String): StoreEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix)

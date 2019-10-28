@@ -32,17 +32,29 @@ object StoreFactory {
 
    @JvmStatic
    fun findByNumber(number: Int): StoreEntity = stores.first { it.number == number }
+
+   @JvmStatic
+   fun storeOne(): StoreEntity = findByNumber(1)
+
+   @JvmStatic
+   fun storeThree(): StoreEntity = findByNumber(3)
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class StoreFactoryService (
+class StoreFactoryService(
    private val storeRepository: StoreRepository
 ) {
 
-   fun store(number: Int) : StoreEntity =
+   fun store(number: Int): StoreEntity =
       storeRepository.findOneByNumber(number) ?: throw Exception("Unable to find store $number")
 
-   fun random() : StoreEntity =
+   fun random(): StoreEntity =
       storeRepository.findOneByNumber(StoreFactory.random().number) ?: throw Exception("Unable to find random Store")
+
+   fun storeOne(): StoreEntity =
+      storeRepository.findOneByNumber(StoreFactory.storeOne().number) ?: throw Exception("Unable to find Store 1")
+
+   fun storeThree(): StoreEntity =
+      storeRepository.findOneByNumber(StoreFactory.storeThree().number) ?: throw Exception("Unable to find Store 3")
 }

@@ -4,6 +4,8 @@ import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
@@ -21,8 +23,16 @@ class AuditScheduleValidator(
 ) : ValidatorBase() {
 
    fun validateCreate(dto: AuditScheduleCreateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
-      doValidation {
+      doValidation { errors ->
+         if (departmentRepository.doesNotExist(dto.departmentAccess!!.id!!)) {
+            errors.add(ValidationError("departmentAccess.id", NotFound(dto.departmentAccess.id!!)))
+         }
 
+         for ((i, store) in dto.stores.withIndex()) {
+            if (storeRepository.doesNotExist(store.id!!)) {
+               errors.add(ValidationError("store[$i].id", NotFound(store.id!!)))
+            }
+         }
       }
 
       val stores = mutableListOf<StoreEntity>()
