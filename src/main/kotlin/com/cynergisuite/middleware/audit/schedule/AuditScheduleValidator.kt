@@ -24,8 +24,8 @@ class AuditScheduleValidator(
 
    fun validateCreate(dto: AuditScheduleCreateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
       doValidation { errors ->
-         if (departmentRepository.doesNotExist(dto.departmentAccess!!.id!!)) {
-            errors.add(ValidationError("departmentAccess.id", NotFound(dto.departmentAccess.id!!)))
+         if (departmentRepository.doesNotExist(dto.department!!.id!!)) {
+            errors.add(ValidationError("department.id", NotFound(dto.department.id!!)))
          }
 
          for ((i, store) in dto.stores.withIndex()) {
@@ -36,11 +36,11 @@ class AuditScheduleValidator(
       }
 
       val stores = mutableListOf<StoreEntity>()
-      val department: DepartmentEntity = departmentRepository.findOne(dto.departmentAccess!!.id!!)!!
+      val department: DepartmentEntity = departmentRepository.findOne(dto.department!!.id!!)!!
       val arguments = mutableListOf(
          ScheduleArgumentEntity(
             department.code,
-            "departmentAccess"
+            "department"
          )
       )
 

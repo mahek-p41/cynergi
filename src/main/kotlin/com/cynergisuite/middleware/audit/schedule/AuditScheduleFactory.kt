@@ -29,7 +29,7 @@ object AuditScheduleFactory {
       val dayOfWeek = dayOfWeekIn ?: DayOfWeek.values().random()
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
       val department = departmentIn ?: DepartmentFactory.random()
-      val arguments = mutableListOf(ScheduleArgumentEntity(value = department.code, description = "departmentAccess"))
+      val arguments = mutableListOf(ScheduleArgumentEntity(value = department.code, description = "department"))
 
       for (store in stores) {
          arguments.add(ScheduleArgumentEntity(value = store.number.toString(), description = "storeNumber"))

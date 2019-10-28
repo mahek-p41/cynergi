@@ -38,7 +38,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "FRIDAY"
       result.stores.size() == 1
       result.stores[0].storeNumber == store.number
-      result.departmentAccess.code == department.code
+      result.department.code == department.code
    }
 
    void "fetch one two stores"() {
@@ -59,7 +59,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 2
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
-      result.departmentAccess.code == department.code
+      result.department.code == department.code
    }
 
    void "fetch all"() {
@@ -89,8 +89,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].schedule == auditSchedules[0].schedule
       pageOneResult.elements[0].stores.size() == 1
       pageOneResult.elements[0].stores[0].storeNumber == store.number
-      pageOneResult.elements[0].departmentAccess.id == department.id
-      pageOneResult.elements[0].departmentAccess.code == department.code
+      pageOneResult.elements[0].department.id == department.id
+      pageOneResult.elements[0].department.code == department.code
       pageOneResult.elements[4].id == auditSchedules[4].id
       pageOneResult.elements[4].schedule == "FRIDAY"
       pageOneResult.elements[4].title == auditSchedules[4].title
@@ -98,8 +98,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[4].schedule == auditSchedules[4].schedule
       pageOneResult.elements[4].stores.size() == 1
       pageOneResult.elements[4].stores[0].storeNumber == store.number
-      pageOneResult.elements[4].departmentAccess.id == department.id
-      pageOneResult.elements[4].departmentAccess.code == department.code
+      pageOneResult.elements[4].department.id == department.id
+      pageOneResult.elements[4].department.code == department.code
 
       when:
       def pageTwoResult = get("/audit/schedule${pageTwo}")
@@ -119,8 +119,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[0].schedule == auditSchedules[5].schedule
       pageTwoResult.elements[0].stores.size() == 1
       pageTwoResult.elements[0].stores[0].storeNumber == store.number
-      pageTwoResult.elements[0].departmentAccess.id == department.id
-      pageTwoResult.elements[0].departmentAccess.code == department.code
+      pageTwoResult.elements[0].department.id == department.id
+      pageTwoResult.elements[0].department.code == department.code
       pageTwoResult.elements[4].id == auditSchedules[9].id
       pageOneResult.elements[4].schedule == "FRIDAY"
       pageTwoResult.elements[4].title == auditSchedules[9].title
@@ -128,8 +128,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[4].schedule == auditSchedules[9].schedule
       pageTwoResult.elements[4].stores.size() == 1
       pageTwoResult.elements[4].stores[0].storeNumber == store.number
-      pageTwoResult.elements[4].departmentAccess.id == department.id
-      pageTwoResult.elements[4].departmentAccess.code == department.code
+      pageTwoResult.elements[4].department.id == department.id
+      pageTwoResult.elements[4].department.code == department.code
 
       when:
       get("/audit/schedule${pageThree}")
@@ -169,8 +169,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].schedule == auditSchedules[0].schedule
       pageOneResult.elements[0].stores.size() == 2
       pageOneResult.elements[0].stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
-      pageOneResult.elements[0].departmentAccess.id == department.id
-      pageOneResult.elements[0].departmentAccess.code == department.code
+      pageOneResult.elements[0].department.id == department.id
+      pageOneResult.elements[0].department.code == department.code
       pageOneResult.elements[4].id == auditSchedules[4].id
       pageOneResult.elements[4].schedule == "TUESDAY"
       pageOneResult.elements[4].title == auditSchedules[4].title
@@ -178,8 +178,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[4].schedule == auditSchedules[4].schedule
       pageOneResult.elements[4].stores.size() == 2
       pageOneResult.elements[4].stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
-      pageOneResult.elements[4].departmentAccess.id == department.id
-      pageOneResult.elements[4].departmentAccess.code == department.code
+      pageOneResult.elements[4].department.id == department.id
+      pageOneResult.elements[4].department.code == department.code
 
       when:
       get("/audit/schedule${pageThree}")

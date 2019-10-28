@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
@@ -10,10 +11,8 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @DataTransferObject
+@Schema(name = "AuditScheduleCreate", description = "Payload for creating a schedule for an audit associated with what stores and which department is supposed to do the audit")
 data class AuditScheduleCreateDataTransferObject(
-
-   @field:Positive
-   val id: Long? = null, // equates to Schedule.id
 
    @field:NotNull
    @field:Size(min = 3, max = 64)
@@ -32,6 +31,6 @@ data class AuditScheduleCreateDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   val departmentAccess: SimpleIdentifiableDataTransferObject? = null
+   val department: SimpleIdentifiableDataTransferObject? = null
 
 )

@@ -52,7 +52,7 @@ class AuditScheduleService @Inject constructor(
          description = inserted.description,
          schedule = DayOfWeek.valueOf(inserted.schedule),
          stores = stores.map { StoreValueObject(it) },
-         departmentAccess = DepartmentValueObject(department)
+         department = DepartmentValueObject(department)
       )
    }
 
@@ -78,7 +78,7 @@ class AuditScheduleService @Inject constructor(
          description = schedule.description,
          schedule = DayOfWeek.valueOf(schedule.schedule),
          stores = stores,
-         departmentAccess = department
+         department = department
       )
    }
 }

@@ -35,7 +35,7 @@ data class AuditScheduleDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   var departmentAccess: DepartmentValueObject? = null,
+   var department: DepartmentValueObject? = null,
 
    @field:Valid
    @field:NotNull
