@@ -12,4 +12,14 @@ data class ScheduleCommandTypeEntity(
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
+
+   override fun equals(other: Any?): Boolean {
+      return if (other != null && other is ScheduleCommandTypeEntity) {
+         super.basicEquality(other)
+      } else {
+         false
+      }
+   }
+
+   override fun hashCode(): Int = super.basicHashCode()
 }

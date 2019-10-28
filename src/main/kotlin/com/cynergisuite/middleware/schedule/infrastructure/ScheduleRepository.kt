@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.schedule.infrastructure
 
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
@@ -28,10 +27,10 @@ class ScheduleRepository @Inject constructor(
    private val scheduleArgumentRepository: ScheduleArgumentRepository,
    private val scheduleCommandTypeRepository: ScheduleCommandTypeRepository,
    private val scheduleTypeRepository: ScheduleTypeRepository
-) : Repository<ScheduleEntity> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
 
-   override fun findOne(id: Long): ScheduleEntity? {
+   fun findOne(id: Long): ScheduleEntity? {
       logger.trace("Searching for Schedule with id {}", id)
 
       var found: ScheduleEntity? = null
@@ -163,7 +162,7 @@ class ScheduleRepository @Inject constructor(
       )
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM schedule WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Schedule: {} exists resulted in {}", id, exists)
@@ -172,7 +171,7 @@ class ScheduleRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: ScheduleEntity): ScheduleEntity {
+   fun insert(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Inserting Schedule {}", entity)
 
       val inserted = jdbc.insertReturning("""
@@ -202,7 +201,7 @@ class ScheduleRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: ScheduleEntity): ScheduleEntity {
+   fun update(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Updating Schedule {}", entity)
 
       val updated = jdbc.updateReturning("""

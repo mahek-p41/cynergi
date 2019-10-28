@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.exception.infrastructure
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findAllWithCrossJoin
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
@@ -33,10 +32,10 @@ class AuditExceptionRepository @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<AuditExceptionEntity> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   override fun findOne(id: Long): AuditExceptionEntity? {
+   fun findOne(id: Long): AuditExceptionEntity? {
       val found = jdbc.findFirstOrNullWithCrossJoin("""
          WITH ae_employees AS (
             ${employeeRepository.selectBase}
@@ -238,7 +237,7 @@ class AuditExceptionRepository @Inject constructor(
       )
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if AuditException: {} exists resulted in {}", id, exists)
@@ -246,8 +245,10 @@ class AuditExceptionRepository @Inject constructor(
       return exists
    }
 
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
    @Transactional
-   override fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
+   fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning("""
@@ -276,7 +277,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
+   fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Updating audit_exception {}", entity)
 
       val notes = entity.notes

@@ -2,6 +2,7 @@ package com.cynergisuite.domain
 
 import com.cynergisuite.middleware.localization.LocalizationService
 import org.apache.commons.lang3.builder.CompareToBuilder
+import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.util.Locale
 
 interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Identifiable {
@@ -20,6 +21,14 @@ interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Ident
       this.myValue() == typeDomainEntity.myValue() &&
       this.myDescription() == typeDomainEntity.myDescription() &&
       this.myLocalizationCode() == typeDomainEntity.myLocalizationCode()
+
+   fun basicHashCode() : Int =
+      HashCodeBuilder()
+         .append(myId())
+         .append(myValue())
+         .append(myDescription())
+         .append(myLocalizationCode())
+         .toHashCode()
 
    override fun compareTo(other: TypeDomainEntity<ENTITY>): Int =
       CompareToBuilder()

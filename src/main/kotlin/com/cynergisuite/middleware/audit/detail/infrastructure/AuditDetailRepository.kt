@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
@@ -31,7 +30,7 @@ class AuditDetailRepository @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<AuditDetail> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
    private val selectBase = """
       WITH ad_employees AS (
@@ -76,7 +75,7 @@ class AuditDetailRepository @Inject constructor(
              ON ad.scan_area_id = asatd.id
    """.trimIndent()
 
-   override fun findOne(id: Long): AuditDetail? {
+   fun findOne(id: Long): AuditDetail? {
       val found = jdbc.findFirstOrNull(
          "$selectBase\nWHERE ad.id = :id",
          mapOf("id" to id),
@@ -127,7 +126,7 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_detail WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if AuditDetail: {} exists resulted in {}", id, exists)
@@ -135,8 +134,10 @@ class AuditDetailRepository @Inject constructor(
       return exists
    }
 
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
    @Transactional
-   override fun insert(entity: AuditDetail): AuditDetail {
+   fun insert(entity: AuditDetail): AuditDetail {
       logger.debug("Inserting audit_detail {}", entity)
 
       return jdbc.insertReturning("""
@@ -163,7 +164,7 @@ class AuditDetailRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: AuditDetail): AuditDetail {
+   fun update(entity: AuditDetail): AuditDetail {
       logger.debug("Updating audit_detail {}", entity)
 
       return jdbc.updateReturning("""

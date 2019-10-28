@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
@@ -21,12 +20,12 @@ import javax.inject.Singleton
 @Singleton
 class VerificationAutoRepository(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<VerificationAuto> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper()
    private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(columnPrefix = "va_")
 
-   override fun findOne(id: Long): VerificationAuto? {
+   fun findOne(id: Long): VerificationAuto? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto WHERE id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
 
       logger.trace("Searching for VerificationAuto: {} resulted in {}", id, found)
@@ -34,7 +33,7 @@ class VerificationAutoRepository(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if VerificationAuto: {} exists resulted in {}", id, exists)
@@ -43,7 +42,7 @@ class VerificationAutoRepository(
    }
 
    @Transactional
-   override fun insert(entity: VerificationAuto): VerificationAuto {
+   fun insert(entity: VerificationAuto): VerificationAuto {
       logger.debug("Inserting verification_auto {}", entity)
 
       return jdbc.insertReturning(
@@ -80,7 +79,7 @@ class VerificationAutoRepository(
    }
 
    @Transactional
-   override fun update(entity: VerificationAuto): VerificationAuto {
+   fun update(entity: VerificationAuto): VerificationAuto {
       logger.debug("Updating verification_auto {}", entity)
 
       return jdbc.updateReturning(

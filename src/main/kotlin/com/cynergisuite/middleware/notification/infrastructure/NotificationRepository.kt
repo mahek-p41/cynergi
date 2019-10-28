@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findAllWithCrossJoin
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getLocalDate
@@ -27,7 +26,7 @@ class NotificationRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository,
    private val notificationRecipientRepository: NotificationRecipientRepository
-) : Repository<Notification> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
    private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
@@ -60,7 +59,7 @@ class NotificationRepository @Inject constructor(
            ON n.id = nr.notification_id
    """.trimIndent()
 
-   override fun findOne(id: Long): Notification? {
+   fun findOne(id: Long): Notification? {
       val found: Notification? = jdbc.findFirstOrNullWithCrossJoin("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id), fullNotificationRowMapper) { notification, rs ->
          notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also { notification.recipients.add(it) }
       }
@@ -70,7 +69,7 @@ class NotificationRepository @Inject constructor(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Notification: {} exists resulted in {}", id, exists)
@@ -140,7 +139,7 @@ class NotificationRepository @Inject constructor(
       }
 
    @Transactional
-   override fun insert(entity: Notification): Notification {
+   fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
       val inserted = jdbc.insertReturning("""
@@ -169,7 +168,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: Notification): Notification {
+   fun update(entity: Notification): Notification {
       logger.debug("Updating notification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!

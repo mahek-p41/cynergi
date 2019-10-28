@@ -1,7 +1,5 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.infrastructure.PagedResultSetExtractor
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getOffsetDateTime
@@ -31,10 +29,10 @@ class AuditRepository @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate,
    private val storeRepository: StoreRepository
-) : Repository<Audit> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
-   override fun findOne(id: Long): Audit? {
+   fun findOne(id: Long): Audit? {
       val found = jdbc.findFirstOrNullWithCrossJoin("""
          WITH employees AS ( 
             ${employeeRepository.selectBase}
@@ -251,13 +249,15 @@ class AuditRepository @Inject constructor(
       return repoPage.copy(elements = repoPage.elements.onEach(this::loadNextStates))
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Audit: {} exists resulted in {}", id, exists)
 
       return exists
    }
+
+   fun doesNotExist(id: Long): Boolean = !exists(id)
 
    fun findAuditStatusCounts(pageRequest: AuditPageRequest): List<AuditStatusCount> {
       val status = pageRequest.status
@@ -354,7 +354,7 @@ class AuditRepository @Inject constructor(
       )!!
 
    @Transactional
-   override fun insert(entity: Audit): Audit {
+   fun insert(entity: Audit): Audit {
       logger.debug("Inserting audit {}", entity)
 
       val audit = jdbc.insertReturning(
@@ -384,7 +384,7 @@ class AuditRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: Audit): Audit {
+   fun update(entity: Audit): Audit {
       logger.debug("Updating Audit {}", entity)
 
       // Since it isn't really necessary to update a store number for an audit as they can just cancel the audit and create a new one, just upsert the actions

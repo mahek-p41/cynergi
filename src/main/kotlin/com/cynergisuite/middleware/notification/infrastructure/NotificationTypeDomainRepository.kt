@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.domain.infrastructure.TypeDomainRepository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.notification.NotificationTypeDomain
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -15,13 +14,13 @@ import javax.inject.Singleton
 @Singleton
 class NotificationTypeDomainRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : TypeDomainRepository<NotificationTypeDomain> {
+) {
 
    private val logger: Logger = LoggerFactory.getLogger(NotificationTypeDomainRepository::class.java)
    private val simpleNotificationDomainTypeRowMapper = NotificationTypeDomainRowMapper()
    private val prefixedNotificationDomainTypeRowMapper = NotificationTypeDomainRowMapper("ntd_")
 
-   override fun exists(value: String): Boolean {
+   fun exists(value: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification_type_domain WHERE value = :value)", mapOf("value" to value), Boolean::class.java)!!
 
       logger.trace("Checking if Audit: {} exists resulted in {}", value, exists)
@@ -29,7 +28,7 @@ class NotificationTypeDomainRepository @Inject constructor(
       return exists
    }
 
-   override fun findOne(id: Long): NotificationTypeDomain? {
+   fun findOne(id: Long): NotificationTypeDomain? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE id = :id", mapOf("id" to id), simpleNotificationDomainTypeRowMapper)
 
       logger.trace("Searching for NotificationTypeDomain: {} resulted in {}", id, found)
@@ -37,7 +36,7 @@ class NotificationTypeDomainRepository @Inject constructor(
       return found
    }
 
-   override fun findOne(value: String): NotificationTypeDomain? {
+   fun findOne(value: String): NotificationTypeDomain? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE value = :value", mapOf("value" to value), simpleNotificationDomainTypeRowMapper)
 
       logger.trace("searching for NotificationTypeDomain: {} resulted in {}", value, found)
@@ -45,7 +44,7 @@ class NotificationTypeDomainRepository @Inject constructor(
       return found
    }
 
-   override fun findAll(): List<NotificationTypeDomain> =
+   fun findAll(): List<NotificationTypeDomain> =
       jdbc.query("SELECT * FROM notification_type_domain ORDER BY value", simpleNotificationDomainTypeRowMapper)
 
    fun mapPrefixedRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain? =

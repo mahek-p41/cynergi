@@ -1,0 +1,25 @@
+#!/bin/sh -e
+
+### BEGIN INIT INFO
+# Provides:          postgresql-started
+# Required-Start:    $postgresql-9.3
+# Default-Start:     2 3 4 5
+# Short-Description: send upstart signal after starting postgresql-9.3
+# Description:       postgresql-9.3 needs to run before some upstart services can run
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+        log_daemon_msg "Signaling myservice started..." "myservice-started"
+        initctl emit myservice-started --no-wait
+    ;;
+
+    *)
+        log_action_msg "Usage: /etc/init.d/myservice-started start"
+        exit 1
+    ;;
+esac
+
+exit 0

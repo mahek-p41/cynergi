@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
@@ -22,12 +21,12 @@ import javax.inject.Singleton
 @Singleton
 class VerificationReferenceRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<VerificationReference> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationReferenceRepository::class.java)
    private val simpleVerificationReferenceRowMapper = VerificationReferenceRowMapper()
    private val prefixedVerificationReferenceRowMapper = VerificationReferenceRowMapper("vr_")
 
-   override fun findOne(id: Long): VerificationReference? {
+   fun findOne(id: Long): VerificationReference? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference WHERE id = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
 
       logger.trace("searching for VerificationLandlord: {} resulted in {}", id, found)
@@ -48,7 +47,7 @@ class VerificationReferenceRepository @Inject constructor(
       return result
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if VerificationLandlord: {} exists resulted in {}", id, exists)
@@ -57,7 +56,7 @@ class VerificationReferenceRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: VerificationReference): VerificationReference {
+   fun insert(entity: VerificationReference): VerificationReference {
       logger.trace("Inserting verification_reference {}", entity)
 
       return jdbc.insertReturning("""
@@ -83,7 +82,7 @@ class VerificationReferenceRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: VerificationReference): VerificationReference {
+   fun update(entity: VerificationReference): VerificationReference {
       logger.trace("Updating verification_reference {}", entity)
 
       return jdbc.updateReturning("""

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.infrastructure.IdentifiableService
 import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
 import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import javax.inject.Inject
@@ -10,8 +9,8 @@ import javax.inject.Singleton
 class NotificationService @Inject constructor(
    private val notificationRepository: NotificationRepository,
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository
-) : IdentifiableService<NotificationValueObject> {
-   override fun fetchById(id: Long): NotificationValueObject? =
+) {
+   fun fetchById(id: Long): NotificationValueObject? =
       notificationRepository.findOne(id = id)?.let { NotificationValueObject(entity = it) }
 
    fun fetchAllByCompany(companyId: String, type: String): List<NotificationValueObject> =
@@ -70,7 +69,7 @@ class NotificationService @Inject constructor(
          notifications = fetchAllByRecipient(companyId = companyId, sendingEmployee = sendingEmployee, type = type)
       )
 
-   override fun exists(id: Long): Boolean =
+   fun exists(id: Long): Boolean =
       notificationRepository.exists(id = id)
 
    fun create(dto: NotificationValueObject): NotificationValueObject {

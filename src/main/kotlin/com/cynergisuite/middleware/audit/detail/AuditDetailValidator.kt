@@ -58,7 +58,7 @@ class AuditDetailValidator @Inject constructor (
 
          if (id == null) {
             errors.add(element = ValidationError("id", NotNull("id")))
-         } else if ( auditDetailRepository.doesNotExist(id) /*!auditDetailRepository.exists(id = id)*/ ) {
+         } else if ( auditDetailRepository.doesNotExist(id)) {
             errors.add(ValidationError("id", NotFound(id)))
          }
       }
