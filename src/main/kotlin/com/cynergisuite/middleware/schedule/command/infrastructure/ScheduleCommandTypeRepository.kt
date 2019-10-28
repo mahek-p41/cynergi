@@ -24,8 +24,8 @@ class ScheduleCommandTypeRepository(
             value AS sctd_value,
             description AS sctd_description,
             localization_code AS sctd_localization_code
-         FROM scheduled_command_type_domain
-         WHERE value = UPPER(:value)
+         FROM schedule_command_type_domain
+         WHERE UPPER(value) = UPPER(:value)
          """.trimIndent(),
          mapOf("value" to value),
          RowMapper { rs, _ ->  mapRow(rs) }

@@ -35,11 +35,7 @@ data class AuditScheduleDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   var department: DepartmentValueObject? = null,
-
-   @field:Valid
-   @field:NotNull
-   var type: ScheduleTypeValueObject? = null
+   var department: DepartmentValueObject? = null
 
 ) : ValueObjectBase<AuditScheduleDataTransferObject>() {
    override fun myId(): Long? = id

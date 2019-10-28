@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -11,6 +13,7 @@ import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.TUESDAY
@@ -191,4 +194,40 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       notFoundResult.size() == 1
       notFoundResult.message == "Request with Page 3, Size 5, Sort By id and Sort Direction ASC produced no results"
    }
+
+   void "create audit schedule"() {
+      given:
+      final store = storeFactoryService.random()
+      final department= departmentFactoryService.random()
+
+      when:
+      def result = post("/audit/schedule", new AuditScheduleCreateDataTransferObject("test schedule", "test schedule description", TUESDAY, [new SimpleIdentifiableDataTransferObject(store.id)], new SimpleIdentifiableDataTransferObject(department.id)))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.title == "test schedule"
+      result.description == "test schedule description"
+      result.schedule == "TUESDAY"
+      result.stores.size() == 1
+      result.stores[0].storeNumber == store.number
+      result.department.code == department.code
+   }
+
+   void "create audit schedule with invalid store and department" () {
+      when:
+      post("/audit/schedule", new AuditScheduleCreateDataTransferObject("test schedule", "test schedule description", TUESDAY, [new SimpleIdentifiableDataTransferObject(42)], new SimpleIdentifiableDataTransferObject(43)))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 2
+      response[0].path == "department.id"
+      response[0].message == "43 was unable to be found"
+      response[1].path == "store[0].id"
+      response[1].message == "42 was unable to be found"
+   }
+
 }

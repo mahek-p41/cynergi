@@ -101,7 +101,7 @@ class DepartmentRepository @Inject constructor(
    }
 
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM department WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.department_vw WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if department: {} exists resulted in {}", id, exists)
 

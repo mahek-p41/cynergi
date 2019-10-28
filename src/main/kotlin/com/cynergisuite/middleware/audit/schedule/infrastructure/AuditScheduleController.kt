@@ -2,16 +2,17 @@ package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
+import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
@@ -67,6 +68,7 @@ class AuditScheduleController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?
    ): Page<AuditScheduleDataTransferObject> {
       logger.info("Fetching all audit schedules {} {}", pageRequestIn)
+
       val pageRequest = PageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditScheduleService.fetchAll(pageRequest)
 
@@ -75,5 +77,26 @@ class AuditScheduleController @Inject constructor(
       }
 
       return page
+   }
+
+   @Post(processes = [APPLICATION_JSON])
+   @AccessControl("auditSchedule-create")
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "audit-create")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun create(
+      @Body auditSchedule: AuditScheduleCreateDataTransferObject
+   ): AuditScheduleDataTransferObject {
+      logger.info("Requested Create Audit Schedule {}", auditSchedule)
+
+      val response = auditScheduleService.create(auditSchedule)
+
+      logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
+
+      return response
    }
 }

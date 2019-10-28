@@ -45,11 +45,13 @@ class AuditScheduleValidator(
       )
 
       for (storeIn: SimpleIdentifiableDataTransferObject in dto.stores) {
-         val store = storeRepository.findOne(storeIn.myId()!!)
+         val store = storeRepository.findOne(storeIn.myId()!!)!!
+
+         stores.add(store)
 
          arguments.add(
             ScheduleArgumentEntity(
-               store!!.number.toString(),
+               store.number.toString(),
                "storeNumber"
             )
          )

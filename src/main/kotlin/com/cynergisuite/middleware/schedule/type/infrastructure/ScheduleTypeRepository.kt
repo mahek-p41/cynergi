@@ -45,7 +45,7 @@ class ScheduleTypeRepository(
             id AS std_id,
             value AS std_value,
             description AS std_description,
-            localization_code AS localization_code
+            localization_code AS std_localization_code
          FROM schedule_type_domain std
          WHERE value = :value
          """.trimIndent(),
