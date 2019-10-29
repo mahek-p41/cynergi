@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
+import com.cynergisuite.middleware.reportal.ReportalService
 import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
@@ -16,7 +17,8 @@ import javax.validation.Valid
 class AuditService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditValidator: AuditValidator,
-   private val localizationService: LocalizationService
+   private val localizationService: LocalizationService,
+   private val reportalService: ReportalService
 ) {
    fun fetchById(id: Long, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id)?.let { AuditValueObject(it, locale, localizationService) }
@@ -59,6 +61,14 @@ class AuditService @Inject constructor(
 
       existingAudit.actions.add(validAuditAction)
 
-      return AuditValueObject(auditRepository.update(existingAudit), locale, localizationService)
+      val updated = auditRepository.update(existingAudit)
+
+      if (updated.currentStatus().value == "CLOSED") {
+         reportalService.generateReportalDocument { reportalOutputStream ->
+            TODO()
+         }
+      }
+
+      return AuditValueObject(updated, locale, localizationService)
    }
 }
