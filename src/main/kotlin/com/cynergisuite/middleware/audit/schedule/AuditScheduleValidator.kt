@@ -25,7 +25,7 @@ class AuditScheduleValidator(
 ) : ValidatorBase() {
 
    fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
-      doSharedValidation(dto)
+      doValidation { errors -> doSharedValidation(dto, errors) }
 
       val stores = mutableListOf<StoreEntity>()
       val department: DepartmentEntity = departmentRepository.findOne(dto.department!!.id!!)!!
@@ -64,7 +64,17 @@ class AuditScheduleValidator(
    }
 
    fun validateUpdate(dto: AuditScheduleCreateUpdateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
-      doSharedValidation(dto)
+      doValidation { errors ->
+         val scheduleId = dto.id
+
+         if (scheduleId == null) {
+            errors.add(ValidationError("id", NotNull("id")))
+         } else if (scheduleRepository.doesNotExist(scheduleId)) {
+            errors.add(ValidationError("id", NotFound(scheduleId)))
+         }
+
+         doSharedValidation(dto, errors)
+      }
 
       val stores = mutableListOf<StoreEntity>()
       val schedule = scheduleRepository.findOne(dto.id!!)!!
@@ -80,7 +90,7 @@ class AuditScheduleValidator(
          .toList()
       val argsToUpdate = mutableListOf<ScheduleArgumentEntity>()
 
-      for(updateStore in updateStores) {
+      for (updateStore in updateStores) {
          val location = existingStores.binarySearch { it.second.id.compareTo(updateStore.id) }
          val store = if (location > -1) {
             stores.add(existingStores[location].second)
@@ -108,22 +118,14 @@ class AuditScheduleValidator(
       )
    }
 
-   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDataTransferObject) {
-      doValidation { errors ->
-         val scheduleId = dto.id
+   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDataTransferObject, errors: MutableSet<ValidationError>) {
+      if (departmentRepository.doesNotExist(dto.department!!.id!!)) {
+         errors.add(ValidationError("department.id", NotFound(dto.department.id!!)))
+      }
 
-         if (scheduleId != null && scheduleRepository.doesNotExist(scheduleId)) {
-            errors.add(ValidationError("id", NotNull("id")))
-         }
-
-         if (departmentRepository.doesNotExist(dto.department!!.id!!)) {
-            errors.add(ValidationError("department.id", NotFound(dto.department.id!!)))
-         }
-
-         for ((i, store) in dto.stores.withIndex()) {
-            if (storeRepository.doesNotExist(store.id!!)) {
-               errors.add(ValidationError("store[$i].id", NotFound(store.id!!)))
-            }
+      for ((i, store) in dto.stores.withIndex()) {
+         if (storeRepository.doesNotExist(store.id!!)) {
+            errors.add(ValidationError("store[$i].id", NotFound(store.id!!)))
          }
       }
    }

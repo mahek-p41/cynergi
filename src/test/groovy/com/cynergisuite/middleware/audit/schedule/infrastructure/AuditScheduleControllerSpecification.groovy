@@ -272,4 +272,43 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.department.id == salesAssociateDepartment.id
       result.enabled == true
    }
+
+   void "update audit schedule remove store" () {
+      given:
+      def storeOne = storeFactoryService.storeOne()
+      def storeThree = storeFactoryService.storeThree()
+      def storeManagerDepartment = departmentFactoryService.department("SM")
+      def salesAssociateDepartment = departmentFactoryService.department("SA")
+      def schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], storeManagerDepartment)
+
+      when:
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set, salesAssociateDepartment))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.title == "Updated title"
+      result.description == "Updated description"
+      result.schedule == "TUESDAY"
+      result.stores.size() == 1
+      result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
+      result.department.id == salesAssociateDepartment.id
+      result.enabled == true
+   }
+
+   void "update audit schedule without id" () {
+      given:
+      final store = storeFactoryService.random()
+      final department= departmentFactoryService.random()
+
+      when:
+      put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [store] as Set, department))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "id"
+      response[0].message == "Is required"
+   }
 }
