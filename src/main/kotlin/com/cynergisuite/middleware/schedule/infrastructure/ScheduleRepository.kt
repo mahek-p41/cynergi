@@ -175,6 +175,8 @@ class ScheduleRepository @Inject constructor(
       return exists
    }
 
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
    @Transactional
    fun insert(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Inserting Schedule {}", entity)
@@ -259,4 +261,5 @@ class ScheduleRepository @Inject constructor(
          command = scheduleCommandProvider(rs),
          type = scheduleTypeProvider(rs)
       )
+
 }

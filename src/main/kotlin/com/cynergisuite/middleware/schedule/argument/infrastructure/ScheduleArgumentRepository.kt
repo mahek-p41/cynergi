@@ -51,6 +51,7 @@ class ScheduleArgumentRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
+            "id" to entity.id,
             "value" to entity.value,
             "description" to entity.description
          ),

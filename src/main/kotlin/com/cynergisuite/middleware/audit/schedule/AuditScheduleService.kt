@@ -42,8 +42,8 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun create(@Valid auditScheduleDto: AuditScheduleCreateDataTransferObject): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateCreate(auditScheduleDto)
+   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject): AuditScheduleDataTransferObject {
+      val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto)
       val inserted = scheduleRepository.insert(schedule)
 
       return AuditScheduleDataTransferObject(
@@ -52,7 +52,24 @@ class AuditScheduleService @Inject constructor(
          description = inserted.description,
          schedule = DayOfWeek.valueOf(inserted.schedule),
          stores = stores.map { StoreValueObject(it) },
-         department = DepartmentValueObject(department)
+         department = DepartmentValueObject(department),
+         enabled = inserted.enabled
+      )
+   }
+
+   @Validated
+   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject): AuditScheduleDataTransferObject {
+      val (schedule, stores, department) = auditScheduleValidator.validateUpdate(dto)
+      val updated = scheduleRepository.update(schedule)
+
+      return AuditScheduleDataTransferObject(
+         id = updated.id,
+         title = updated.title,
+         description = updated.description,
+         schedule = DayOfWeek.valueOf(schedule.schedule),
+         stores = stores.map { StoreValueObject(it) },
+         department = DepartmentValueObject(department),
+         enabled = updated.enabled
       )
    }
 
@@ -78,7 +95,8 @@ class AuditScheduleService @Inject constructor(
          description = schedule.description,
          schedule = DayOfWeek.valueOf(schedule.schedule),
          stores = stores,
-         department = department
+         department = department,
+         enabled = schedule.enabled
       )
    }
 }

@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateDataTransferObject
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -15,8 +14,7 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static java.time.DayOfWeek.FRIDAY
-import static java.time.DayOfWeek.TUESDAY
+import static java.time.DayOfWeek.*
 
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
@@ -42,6 +40,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.size() == 1
       result.stores[0].storeNumber == store.number
       result.department.code == department.code
+      result.enabled == true
    }
 
    void "fetch one two stores"() {
@@ -63,6 +62,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.size() == 2
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
       result.department.code == department.code
+      result.enabled == true
    }
 
    void "fetch all"() {
@@ -94,6 +94,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].stores[0].storeNumber == store.number
       pageOneResult.elements[0].department.id == department.id
       pageOneResult.elements[0].department.code == department.code
+      pageOneResult.elements[0].enabled == true
       pageOneResult.elements[4].id == auditSchedules[4].id
       pageOneResult.elements[4].schedule == "FRIDAY"
       pageOneResult.elements[4].title == auditSchedules[4].title
@@ -103,6 +104,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[4].stores[0].storeNumber == store.number
       pageOneResult.elements[4].department.id == department.id
       pageOneResult.elements[4].department.code == department.code
+      pageOneResult.elements[4].enabled == true
 
       when:
       def pageTwoResult = get("/audit/schedule${pageTwo}")
@@ -124,6 +126,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[0].stores[0].storeNumber == store.number
       pageTwoResult.elements[0].department.id == department.id
       pageTwoResult.elements[0].department.code == department.code
+      pageTwoResult.elements[0].enabled == true
       pageTwoResult.elements[4].id == auditSchedules[9].id
       pageOneResult.elements[4].schedule == "FRIDAY"
       pageTwoResult.elements[4].title == auditSchedules[9].title
@@ -133,6 +136,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[4].stores[0].storeNumber == store.number
       pageTwoResult.elements[4].department.id == department.id
       pageTwoResult.elements[4].department.code == department.code
+      pageTwoResult.elements[4].enabled == true
 
       when:
       get("/audit/schedule${pageThree}")
@@ -201,7 +205,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final department= departmentFactoryService.random()
 
       when:
-      def result = post("/audit/schedule", new AuditScheduleCreateDataTransferObject("test schedule", "test schedule description", TUESDAY, [new SimpleIdentifiableDataTransferObject(store.id)], new SimpleIdentifiableDataTransferObject(department.id)))
+      def result = post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [store] as Set, department))
 
       then:
       notThrown(HttpClientResponseException)
@@ -213,11 +217,12 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.size() == 1
       result.stores[0].storeNumber == store.number
       result.department.code == department.code
+      result.enabled == true
    }
 
    void "create audit schedule with invalid store and department" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateDataTransferObject("test schedule", "test schedule description", TUESDAY, [new SimpleIdentifiableDataTransferObject(42)], new SimpleIdentifiableDataTransferObject(43)))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [42] as Set,43))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -230,4 +235,41 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       response[1].message == "42 was unable to be found"
    }
 
+   void "create audit schedule with no stores" () {
+      given:
+      final department= departmentFactoryService.random()
+
+      when:
+      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [] as Set, department))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "stores"
+      response[0].message == "Is not allowed to be empty"
+   }
+
+   void "update audit schedule add store change department" () {
+      given:
+      def storeOne = storeFactoryService.storeOne()
+      def storeThree = storeFactoryService.storeThree()
+      def storeManagerDepartment = departmentFactoryService.department("SM")
+      def salesAssociateDepartment = departmentFactoryService.department("SA")
+      def schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], storeManagerDepartment)
+
+      when:
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne, storeThree] as Set, salesAssociateDepartment))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.title == "Updated title"
+      result.description == "Updated description"
+      result.schedule == "TUESDAY"
+      result.stores.size() == 2
+      result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
+      result.department.id == salesAssociateDepartment.id
+      result.enabled == true
+   }
 }

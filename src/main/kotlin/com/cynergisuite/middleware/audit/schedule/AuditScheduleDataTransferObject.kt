@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.audit.schedule
 
-import com.cynergisuite.domain.ValueObject
+import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.department.DepartmentValueObject
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject
 import com.cynergisuite.middleware.store.StoreValueObject
 import java.time.DayOfWeek
 import javax.validation.Valid
@@ -12,7 +11,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-@ValueObject
+@DataTransferObject
 data class AuditScheduleDataTransferObject(
 
    @field:Positive
@@ -35,7 +34,10 @@ data class AuditScheduleDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   var department: DepartmentValueObject? = null
+   var department: DepartmentValueObject? = null,
+
+   @field:NotNull
+   var enabled: Boolean? = true
 
 ) : ValueObjectBase<AuditScheduleDataTransferObject>() {
    override fun myId(): Long? = id

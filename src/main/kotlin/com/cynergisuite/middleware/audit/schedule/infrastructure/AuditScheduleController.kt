@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateDataTransferObject
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
@@ -89,13 +89,35 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body auditSchedule: AuditScheduleCreateDataTransferObject
+      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject
    ): AuditScheduleDataTransferObject {
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
       val response = auditScheduleService.create(auditSchedule)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
+
+      return response
+   }
+
+   @Put(processes = [APPLICATION_JSON])
+   @AccessControl("auditSchedule-update")
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun update(
+      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject
+   ) : AuditScheduleDataTransferObject {
+      logger.info("Requested update audit schedule {}", auditSchedule)
+
+      val response = auditScheduleService.update(auditSchedule)
+
+      logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)
 
       return response
    }

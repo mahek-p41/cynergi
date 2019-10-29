@@ -15,4 +15,13 @@ data class SimpleIdentifiableDataTransferObject(
 
 ): Identifiable {
    override fun myId(): Long? = id
+
+   override fun hashCode(): Int = id.hashCode()
+   override fun equals(other: Any?): Boolean {
+      return if (other is SimpleIdentifiableDataTransferObject) {
+         other.id == this.id
+      } else {
+         false
+      }
+   }
 }
