@@ -14,6 +14,8 @@ import com.lowagie.text.PageSize
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.*
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -88,7 +90,7 @@ class AuditService @Inject constructor(
       val table = PdfPTable(10)
 
       auditExceptionRepository.forEach(audit) { exception: AuditException ->
-
+         table.addCell(exception.scanArea?.myDescription() ?: EMPTY)
       }
 
       return table
