@@ -147,6 +147,7 @@ class InventoryRepository(
       }
 
       return RepositoryPage(
+         requested = pageRequest,
          elements = elements,
          totalElements = totalElements ?: 0
       )

@@ -232,6 +232,7 @@ class AuditExceptionRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = page,
          elements = resultList,
          totalElements = totalElements ?: 0
       )
@@ -306,4 +307,8 @@ class AuditExceptionRepository @Inject constructor(
          signedOff = rs.getBoolean("${columnPrefix}signed_off"),
          audit = audit
       )
+
+   fun forEach(audit: Audit, callback: (AuditException) -> Unit) {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
 }

@@ -35,3 +35,8 @@ cynergi:
          location: "./importEmpty/"
          rename: true
          process-startup: false
+   worker:
+      pool:
+         size: 5
+   reportal:
+      file-location: "/tmp/reportal"

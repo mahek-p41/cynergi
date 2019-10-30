@@ -2,11 +2,17 @@ package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.middleware.audit.exception.AuditException
+import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
+import com.lowagie.text.Document
+import com.lowagie.text.PageSize
+import com.lowagie.text.pdf.PdfPTable
+import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
@@ -16,6 +22,7 @@ import javax.validation.Valid
 @Singleton
 class AuditService @Inject constructor(
    private val auditRepository: AuditRepository,
+   private val auditExceptionRepository: AuditExceptionRepository,
    private val auditValidator: AuditValidator,
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
@@ -28,7 +35,7 @@ class AuditService @Inject constructor(
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest)
       val found: RepositoryPage<Audit> = auditRepository.findAll(validaPageRequest)
 
-      return found.toPage(pageRequest) {
+      return found.toPage {
          AuditValueObject(it, locale, localizationService)
       }
    }
@@ -65,10 +72,25 @@ class AuditService @Inject constructor(
 
       if (updated.currentStatus().value == "CLOSED") {
          reportalService.generateReportalDocument { reportalOutputStream ->
-            TODO()
+            Document(PageSize.LEGAL).use { document ->
+               PdfWriter.getInstance(document, reportalOutputStream)
+
+               document.open()
+               document.add(buildExceptionReport(updated))
+            }
          }
       }
 
       return AuditValueObject(updated, locale, localizationService)
+   }
+
+   private fun buildExceptionReport(audit: Audit): PdfPTable {
+      val table = PdfPTable(10)
+
+      auditExceptionRepository.forEach(audit) { exception: AuditException ->
+
+      }
+
+      return table
    }
 }

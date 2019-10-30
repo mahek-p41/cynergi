@@ -2,6 +2,7 @@ package com.cynergisuite.middleware
 
 import io.micronaut.context.annotation.Bean
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -37,11 +38,12 @@ class ExternalBeanFactory {
 
    @Bean
    @Singleton
-   fun threadPool(): ExecutorService {
+   fun threadPool(@Value("\${cynergi.worker.pool.size}") workerPoolSize: Int): ExecutorService {
       val logger: Logger = LoggerFactory.getLogger("CynergiWorkerThreadUncaughtExceptionLogger")
+
       return Executors
          .newFixedThreadPool(
-            4,
+            workerPoolSize,
             BasicThreadFactory.Builder()
                .daemon(true)
                .namingPattern("cynergi-worker-thread")

@@ -6,10 +6,11 @@ import com.cynergisuite.domain.PageRequest
 
 data class RepositoryPage<ENTITY: Identifiable>(
    val elements: List<ENTITY>,
-   val totalElements: Long
+   val totalElements: Long,
+   val requested: PageRequest
 ) {
 
-   fun <VO: Identifiable> toPage(requested: PageRequest, elementTransformer: (e: ENTITY) -> VO): Page<VO> {
+   fun <VO: Identifiable> toPage(elementTransformer: (e: ENTITY) -> VO): Page<VO> {
       val transformedElements = elements.map { elementTransformer(it) }
 
       return Page(

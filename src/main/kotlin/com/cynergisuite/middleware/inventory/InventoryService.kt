@@ -16,7 +16,7 @@ class InventoryService(
    fun fetchAll(pageRequest: InventoryPageRequest, locale: Locale): Page<InventoryValueObject> {
       val inventory = inventoryRepository.findAll(pageRequest)
 
-      return inventory.toPage(pageRequest) { item ->
+      return inventory.toPage  { item ->
          InventoryValueObject(
             item,
             InventoryLocationTypeValueObject(item.locationType, item.locationType.localizeMyDescription(locale, localizationService))
