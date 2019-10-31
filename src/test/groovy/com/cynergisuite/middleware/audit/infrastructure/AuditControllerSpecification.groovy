@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.extensions.OffsetDateTimeExtensionsKt
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -23,6 +22,7 @@ import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 import javax.inject.Inject
 import java.time.OffsetDateTime
@@ -44,6 +44,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditRepository auditRepository
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
+   @Inject NamedParameterJdbcTemplate jdbc
    @Inject LocalizationService localizationService
    @Inject StoreFactoryService storeFactoryService
 
@@ -221,6 +222,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.elements != null
       inProgressResult.elements.size() == 1
       inProgressResult.elements.collect { it.id } == [storeThreeInProgressAudit.id]
+   }
+
+   void "fetch all open audits from last week" () {
+      given:
+      final storeOne = storeFactoryService.store(1)
+      final storeOneOpenAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+
+      when:
+      def updated = jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: storeOneOpenAuditOne.timeCreated.minusDays(8), id: storeOneOpenAuditOne.id])
+      def openedResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['OPENED'] as Set]))
+
+      then:
+      notThrown(Exception)
+      updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
+      openedResult.elements != null
+      openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id]
    }
 
    void "fetch all opened audits with from thru" () {

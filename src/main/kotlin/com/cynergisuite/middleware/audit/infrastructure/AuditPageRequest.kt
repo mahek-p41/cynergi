@@ -31,7 +31,7 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
    @field:Schema(name = "status", description = "Collection of statues that an audit must be in")
    var status: Set<String>? = emptySet()
 
-   constructor(pageRequest: AuditPageRequest?, from: OffsetDateTime, thru: OffsetDateTime, status: Set<String>) : this(pageRequest ?: PageRequest()) {
+   constructor(pageRequest: AuditPageRequest?, from: OffsetDateTime?, thru: OffsetDateTime?, status: Set<String>) : this(pageRequest ?: PageRequest()) {
       this.from = from
       this.thru = thru
       this.storeNumber = pageRequest?.storeNumber

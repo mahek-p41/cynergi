@@ -169,10 +169,30 @@ class AuditController @Inject constructor(
 
    private fun buildPageRequest(pageRequestIn: AuditPageRequest?): AuditPageRequest {
       val statusesIn = pageRequestIn?.status
-      val from = pageRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
-      val thru = pageRequestIn?.thru ?: from.endOfWeek()
       val statuses = if (!statusesIn.isNullOrEmpty()) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+      val from = buildFrom(statuses, pageRequestIn)
+      val thru = buildThru(from, statuses, pageRequestIn)
 
       return AuditPageRequest(pageRequestIn, from = from, thru = thru, status = statuses)
+   }
+
+   private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
+      val fromIn = pageRequestIn?.from
+
+      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && fromIn == null) {
+         null
+      } else {
+         fromIn ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
+      }
+   }
+
+   private fun buildThru(from: OffsetDateTime?, statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
+      val thruIn = pageRequestIn?.thru ?: from?.endOfWeek()
+
+      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && thruIn == null) {
+         null
+      } else {
+         thruIn
+      }
    }
 }

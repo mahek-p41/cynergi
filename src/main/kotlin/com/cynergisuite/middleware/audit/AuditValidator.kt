@@ -35,10 +35,10 @@ class AuditValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validationFetchAll(pageRequest: AuditPageRequest): AuditPageRequest {
       doValidation { errors ->
-         val from = pageRequest.from!!
-         val thru = pageRequest.thru!!
+         val from = pageRequest.from
+         val thru = pageRequest.thru
 
-         if (thru.isBefore(from)) {
+         if (thru != null && from != null && thru.isBefore(from)) {
             errors.add(ValidationError("from", ThruDateIsBeforeFrom(from, thru)))
          }
       }

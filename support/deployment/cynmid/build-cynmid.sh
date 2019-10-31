@@ -17,6 +17,7 @@ cp /home/jenkins/cynergi-middleware/support/deployment/cyndsets-parse.sh /opt/cy
 chmod u+x /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
 cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.httpd.conf /opt/cyn/v01/cynmid/cynergi-middleware.httpd.conf
 sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g" /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.conf > /opt/cyn/v01/cynmid/cynergi-middleware.conf
+cp /home/jenkins/cynergi-middleware/support/deployment/postgres-started.service /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/support/deployment/setup-database.sql /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware*-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
 tar -c --owner=0 --group=0 --to-stdout /opt/cyn | xz -6 - > /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz
