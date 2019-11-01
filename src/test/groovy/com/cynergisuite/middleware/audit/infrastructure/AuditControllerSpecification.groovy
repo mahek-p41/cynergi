@@ -238,6 +238,24 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
       openedResult.elements != null
       openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id]
+      openedResult.elements[0].timeCreated.with { OffsetDateTime.parse(it) } == storeOneOpenAuditOne.timeCreated.minusDays(8)
+   }
+
+   void "fetch in-progress audits from last week" () {
+      given:
+      final storeOne = storeFactoryService.store(1)
+      final storeOneInProgressAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+
+      when:
+      def updated = jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: storeOneInProgressAuditOne.timeCreated.minusDays(8), id: storeOneInProgressAuditOne.id])
+      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['IN-PROGRESS'] as Set]))
+
+      then:
+      notThrown(Exception)
+      updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
+      inProgressResult.elements != null
+      inProgressResult.elements.collect { it.id } == [storeOneInProgressAuditOne.id]
+      inProgressResult.elements[0].timeCreated.with { OffsetDateTime.parse(it) } == storeOneInProgressAuditOne.timeCreated.minusDays(8)
    }
 
    void "fetch all opened audits with from thru" () {
