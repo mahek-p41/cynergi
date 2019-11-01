@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
+import com.cynergisuite.domain.infrastructure.PagedResultSetExtractor
 import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
@@ -105,10 +106,6 @@ class AuditRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: AuditPageRequest): RepositoryPage<Audit> {
-      var totalElements: Long? = null
-      var currentId: Long = -1
-      var currentParentEntity: Audit? = null
-      val resultList: MutableList<Audit> = mutableListOf()
       val params = mutableMapOf<String, Any>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
@@ -232,30 +229,26 @@ class AuditRepository @Inject constructor(
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      jdbc.query(sql, params) { rs ->
-         val tempId = rs.getLong("a_id")
-         val tempParentEntity: Audit = if (tempId != currentId) {
-            currentId = tempId
-            currentParentEntity = mapRow(rs)
-            resultList.add(currentParentEntity!!)
-            currentParentEntity!!
-         } else {
-            currentParentEntity!!
-         }
+      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<Audit> { rs, elements ->
+         var currentId: Long = -1
+         var currentParentEntity: Audit? = null
 
-         if (totalElements == null) {
-            totalElements = rs.getLong("total_elements")
-         }
+         do {
+            val tempId = rs.getLong("a_id")
+            val tempParentEntity: Audit = if (tempId != currentId) {
+               currentId = tempId
+               currentParentEntity = mapRow(rs)
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
+            }
 
-         tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
-      }
+            tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
+         } while(rs.next())
+      })
 
-      resultList.forEach(this::loadNextStates)
-
-      return RepositoryPage(
-         elements = resultList,
-         totalElements = totalElements ?: 0
-      )
+      return repoPage.copy(elements = repoPage.elements.onEach(this::loadNextStates))
    }
 
    override fun exists(id: Long): Boolean {
