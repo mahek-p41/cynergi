@@ -10,7 +10,7 @@ data class AuditStatusCount(
    val color: String,
    val count: Int
 ) : TypeDomainEntity<AuditStatusCount> {
-   override fun entityId(): Long = id
+   override fun myId(): Long = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode

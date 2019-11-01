@@ -61,6 +61,6 @@ data class VerificationReferenceValueObject (
 
    override fun copyMe(): VerificationReferenceValueObject = copy()
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }
 

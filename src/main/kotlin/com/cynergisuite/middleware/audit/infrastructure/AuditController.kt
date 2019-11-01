@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.extensions.endOfWeek
-import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
@@ -29,14 +27,13 @@ import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.*
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.OffsetDateTime
-import java.time.ZoneId
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
@@ -57,14 +54,14 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
 
       val response = auditService.fetchById(id = id, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Audit by {} resulted in", id, response)
+      logger.debug("Fetching Audit by {} resulted in {}", id, response)
 
       return response
    }
@@ -79,11 +76,11 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {} {}", pageRequestIn)
-      val pageRequest = buildPageRequest(pageRequestIn)
+      val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -102,13 +99,13 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
       logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val auditStatusCountRequest = buildPageRequest(auditStatusCountRequestIn)
+      val auditStatusCountRequest = AuditPageRequest(auditStatusCountRequestIn)
 
       logger.debug("Fetching Audit status counts after build {}", auditStatusCountRequest)
 
@@ -165,34 +162,5 @@ class AuditController @Inject constructor(
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 
       return response
-   }
-
-   private fun buildPageRequest(pageRequestIn: AuditPageRequest?): AuditPageRequest {
-      val statusesIn = pageRequestIn?.status
-      val statuses = if (!statusesIn.isNullOrEmpty()) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
-      val from = buildFrom(statuses, pageRequestIn)
-      val thru = buildThru(from, statuses, pageRequestIn)
-
-      return AuditPageRequest(pageRequestIn, from = from, thru = thru, status = statuses)
-   }
-
-   private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
-      val fromIn = pageRequestIn?.from
-
-      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && fromIn == null) {
-         null
-      } else {
-         fromIn ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
-      }
-   }
-
-   private fun buildThru(from: OffsetDateTime?, statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
-      val thruIn = pageRequestIn?.thru ?: from?.endOfWeek()
-
-      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && thruIn == null) {
-         null
-      } else {
-         thruIn
-      }
    }
 }

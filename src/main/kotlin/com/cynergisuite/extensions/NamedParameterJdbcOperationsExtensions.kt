@@ -10,6 +10,13 @@ fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNull(query: String, params:
    return resultList.firstOrNull()
 }
 
+fun <ENTITY> NamedParameterJdbcOperations.findFirst(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
+   val resultList: List<ENTITY> = this.query(query, params, rowMapper)
+
+   return resultList.first()
+}
+
+@Deprecated(message = "You should not be using this as it is more complicated to use that just doing the iteration yourself, and only fits a single use case")
 fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNullWithCrossJoin(query: String, params: Map<String, *>, primaryRowMapper: RowMapper<ENTITY>, childRowCallbackHandler: (ENTITY, ResultSet) -> Unit = { _: ENTITY, _: ResultSet ->}): ENTITY? {
    var found: ENTITY? = null
 
@@ -24,6 +31,7 @@ fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNullWithCrossJoin(query: St
    return found
 }
 
+@Deprecated(message = "You should not be using this as it is more complicated to use that just doing the iteration yourself, and only fits a single use case")
 fun <ENTITY> NamedParameterJdbcOperations.findAllWithCrossJoin(query: String, params: Map<String, *>, parentIdColumn: String, primaryRowMapper: RowMapper<ENTITY>, childRowCallbackHandler: (ENTITY, ResultSet) -> Unit): List<ENTITY> {
    var currentId: Long = -1
    var currentParentEntity: ENTITY? = null

@@ -1,13 +1,16 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.Audit
-import com.cynergisuite.middleware.audit.detail.AuditDetail
+import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.employee.Employee
@@ -27,7 +30,7 @@ class AuditDetailRepository @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<AuditDetail> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
    private val selectBase = """
       WITH ad_employees AS (
@@ -72,7 +75,7 @@ class AuditDetailRepository @Inject constructor(
              ON ad.scan_area_id = asatd.id
    """.trimIndent()
 
-   override fun findOne(id: Long): AuditDetail? {
+   fun findOne(id: Long): AuditDetailEntity? {
       val found = jdbc.findFirstOrNull(
          "$selectBase\nWHERE ad.id = :id",
          mapOf("id" to id),
@@ -89,9 +92,9 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDetail> {
+   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDetailEntity> {
       var totalElements: Long? = null
-      val resultList: MutableList<AuditDetail> = mutableListOf()
+      val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
       jdbc.query("""
          WITH paged AS (
@@ -102,7 +105,7 @@ class AuditDetailRepository @Inject constructor(
             count(*) OVER() as total_elements
          FROM paged AS p
          WHERE p.ad_audit_id = :audit_id
-         ORDER by ad_${page.camelizeSortBy()} ${page.sortDirection}
+         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection}
          LIMIT ${page.size} OFFSET ${page.offset()}
       """.trimIndent(),
       mutableMapOf("audit_id" to audit.id)
@@ -123,7 +126,7 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_detail WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if AuditDetail: {} exists resulted in {}", id, exists)
@@ -131,8 +134,10 @@ class AuditDetailRepository @Inject constructor(
       return exists
    }
 
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
    @Transactional
-   override fun insert(entity: AuditDetail): AuditDetail {
+   fun insert(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Inserting audit_detail {}", entity)
 
       return jdbc.insertReturning("""
@@ -150,7 +155,7 @@ class AuditDetailRepository @Inject constructor(
             "inventory_brand" to entity.inventoryBrand,
             "inventory_model" to entity.inventoryModel,
             "scanned_by" to entity.scannedBy.number,
-            "audit_id" to entity.audit.entityId()
+            "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, _ ->
             mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
@@ -159,7 +164,7 @@ class AuditDetailRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: AuditDetail): AuditDetail {
+   fun update(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Updating audit_detail {}", entity)
 
       return jdbc.updateReturning("""
@@ -194,8 +199,8 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: IdentifiableEntity, columnPrefix: String = EMPTY): AuditDetail {
-      return AuditDetail(
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
+      return AuditDetailEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

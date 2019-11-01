@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findAllWithCrossJoin
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
@@ -13,7 +12,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
-import com.cynergisuite.middleware.audit.exception.AuditException
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -33,10 +32,10 @@ class AuditExceptionRepository @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<AuditException> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   override fun findOne(id: Long): AuditException? {
+   fun findOne(id: Long): AuditExceptionEntity? {
       val found = jdbc.findFirstOrNullWithCrossJoin("""
          WITH ae_employees AS (
             ${employeeRepository.selectBase}
@@ -127,7 +126,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditException> {
+   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
       var totalElements: Long? = null
       val sql = """
          WITH paged AS (
@@ -175,7 +174,7 @@ class AuditExceptionRepository @Inject constructor(
                     LEFT OUTER JOIN audit_scan_area_type_domain asatd
                       ON ae.scan_area_id = asatd.id
                WHERE ae.audit_id = :audit_id
-               ORDER by ae_${page.camelizeSortBy()} ${page.sortDirection}
+               ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
                LIMIT ${page.size} OFFSET ${page.offset()}
             )
             SELECT 
@@ -238,7 +237,7 @@ class AuditExceptionRepository @Inject constructor(
       )
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if AuditException: {} exists resulted in {}", id, exists)
@@ -246,8 +245,10 @@ class AuditExceptionRepository @Inject constructor(
       return exists
    }
 
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
    @Transactional
-   override fun insert(entity: AuditException): AuditException {
+   fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning("""
@@ -267,7 +268,7 @@ class AuditExceptionRepository @Inject constructor(
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
-            "audit_id" to entity.audit.entityId()
+            "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, rowNum ->
             mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
@@ -276,7 +277,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: AuditException): AuditException {
+   fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Updating audit_exception {}", entity)
 
       val notes = entity.notes
@@ -287,8 +288,8 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: IdentifiableEntity, columnPrefix: String = EMPTY): AuditException =
-      AuditException(
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
+      AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

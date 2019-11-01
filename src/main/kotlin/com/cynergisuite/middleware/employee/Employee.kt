@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.IdentifiableEntity
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 
 data class Employee(
@@ -13,12 +13,12 @@ data class Employee(
    val lastName: String,
    val firstNameMi: String?,
    val passCode: String,
-   val store: Store,
+   val store: StoreEntity,
    val active: Boolean = true,
    val department: String? = null
-) : IdentifiableEntity {
+) : Identifiable {
 
-   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: Store, active: Boolean, department: String? = null) :
+   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, department: String? = null) :
       this(
          id = null,
          loc = loc,
@@ -39,10 +39,10 @@ data class Employee(
          lastName = vo.lastName!!,
          firstNameMi = vo.firstNameMi,
          passCode = vo.passCode!!,
-         store = Store(vo.store!!),
+         store = StoreEntity(vo.store!!),
          active = vo.active!!
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    fun copyMe(): Employee = copy()
 }

@@ -7,7 +7,6 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.domain.infrastructure.Repository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
@@ -21,12 +20,12 @@ import javax.inject.Singleton
 @Singleton
 class NotificationRecipientRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<NotificationRecipient> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRecipientRepository::class.java)
    private val simpleNotificationRecipientRowMapper = NotificationRecipientRowMapper()
    private val prefixedNotificationRecipientRowMapper = NotificationRecipientRowMapper(columnPrefix = "nr_")
 
-   override fun findOne(id: Long): NotificationRecipient? {
+   fun findOne(id: Long): NotificationRecipient? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_recipient WHERE id = :id", mapOf("id" to id), simpleNotificationRecipientRowMapper)
 
       logger.trace("Searching for NotificationRecipient: {} resulted in {}", id, found)
@@ -34,7 +33,7 @@ class NotificationRecipientRepository @Inject constructor(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification_recipient WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if NotificationRecipient: {} exists resulted in {}", id, exists)
@@ -43,7 +42,7 @@ class NotificationRecipientRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: NotificationRecipient): NotificationRecipient {
+   fun insert(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Inserting notification_recipient {}", entity)
 
       return jdbc.insertReturning("""
@@ -55,14 +54,14 @@ class NotificationRecipientRepository @Inject constructor(
          mapOf(
             "description" to entity.description,
             "recipient" to entity.recipient,
-            "notification_id" to entity.notification.entityId()
+            "notification_id" to entity.notification.myId()
          ),
          simpleNotificationRecipientRowMapper
       )
    }
 
    @Transactional
-   override fun update(entity: NotificationRecipient): NotificationRecipient {
+   fun update(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Updating notification_recipient {}", entity)
 
       return jdbc.updateReturning("""
@@ -79,7 +78,7 @@ class NotificationRecipientRepository @Inject constructor(
             "id" to entity.id,
             "description" to entity.description,
             "recipient" to entity.recipient,
-            "notification_id" to entity.notification.entityId()
+            "notification_id" to entity.notification.myId()
          ),
          simpleNotificationRecipientRowMapper
       )

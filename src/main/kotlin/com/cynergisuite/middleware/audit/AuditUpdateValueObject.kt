@@ -24,5 +24,5 @@ data class AuditUpdateValueObject(
 ) : ValueObjectBase<AuditUpdateValueObject>() {
 
    override fun copyMe() = copy()
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }

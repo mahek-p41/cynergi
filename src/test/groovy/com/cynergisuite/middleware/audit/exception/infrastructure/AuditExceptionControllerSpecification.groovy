@@ -18,15 +18,13 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import org.apache.commons.lang3.RandomUtils
-import org.apache.commons.lang3.StringUtils
-import org.assertj.core.data.Offset
 
 import javax.inject.Inject
 import java.time.OffsetDateTime
@@ -68,7 +66,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.scannedBy.lastName == auditException.scannedBy.lastName
       result.scannedBy.firstNameMi == auditException.scannedBy.firstNameMi
       result.notes.size() == 0
-      result.audit.id == auditException.audit.entityId()
+      result.audit.id == auditException.audit.myId()
    }
 
    void "fetch one audit exception with a single attached note" () {
@@ -76,11 +74,11 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditNote = auditExceptionNoteFactoryService.single()
 
       when:
-      def result = get("/audit/exception/${auditNote.auditException.entityId()}")
+      def result = get("/audit/exception/${auditNote.auditException.myId()}")
 
       then:
       notThrown(HttpClientResponseException)
-      result.id == auditNote.auditException.entityId()
+      result.id == auditNote.auditException.myId()
       result.notes.size() == 1
       result.notes[0].id == auditNote.id
       result.notes[0].note == auditNote.note
@@ -93,7 +91,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final auditException = auditExceptionFactoryService.single()
       final auditNotes = auditExceptionNoteFactoryService.stream(2, auditException, authenticatedEmployee).map { new AuditExceptionNoteValueObject(it) }.sorted{ o1, o2 -> o1.id <=> o2.id  }.toList()
-      final auditExceptionId = auditException.entityId()
+      final auditExceptionId = auditException.myId()
 
       when:
       def result = get("/audit/exception/${auditExceptionId}")
@@ -102,7 +100,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       notThrown(HttpClientResponseException)
       result.notes.size() == 2
       result.id == auditException.id
-      result.audit.id == auditException.audit.entityId()
+      result.audit.id == auditException.audit.myId()
       result.notes
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
@@ -392,9 +390,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorValueObject("Cannot be blank", "exceptionCode"),
-         new ErrorValueObject("Is required", "exceptionCode"),
+      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDataTransferObject("Cannot be blank", "exceptionCode"),
+         new ErrorDataTransferObject("Is required", "exceptionCode"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -412,7 +410,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorValueObject(notFoundResponse) == new ErrorValueObject("-1 was unable to be found", null)
+      new ErrorDataTransferObject(notFoundResponse) == new ErrorDataTransferObject("-1 was unable to be found", null)
    }
 
    void "create audit exception where inventory id is null" () {
@@ -428,7 +426,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [ new ErrorValueObject("Is required", "inventory.id") ]
+      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Is required", "inventory.id") ]
    }
 
    void "create audit exception when audit is in state OPENED" () {
@@ -448,8 +446,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Audit ${audit.id} must be In Progress to modify its exceptions", "audit.status")
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Audit ${audit.id} must be In Progress to modify its exceptions", "audit.status")
       ]
    }
 
@@ -478,7 +476,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.scannedBy.number == authenticatedEmployee.number
       result.scannedBy.lastName == authenticatedEmployee.lastName
       result.scannedBy.firstNameMi == authenticatedEmployee.firstNameMi
-      result.audit.id == audit.entityId()
+      result.audit.id == audit.myId()
    }
 
    void "create audit exception where no inventory.id and no barcode is passed" () {
@@ -494,8 +492,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Must provide either an Inventory item or a barcode", "barcode")
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Must provide either an Inventory item or a barcode", "barcode")
       ]
    }
 
@@ -506,7 +504,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final noteText = "Test Note"
 
       when:
-      def result = put("/audit/${audit.entityId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -527,7 +525,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes[0].id != null
       result.notes[0].id > 0
       result.notes[0].note == noteText
-      result.audit.id == savedAuditException.audit.entityId()
+      result.audit.id == savedAuditException.audit.myId()
    }
 
    void "update audit exception that has been signed-off" () {
@@ -536,15 +534,15 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit)
 
       when:
-      put("/audit/${audit.entityId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
 
       then:
       def e = thrown(HttpClientResponseException)
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Audit ${audit.id} has already been Signed Off. No new notes allowed", null)
+      response.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Audit ${audit.id} has already been Signed Off. No new notes allowed", null)
       ]
    }
 }

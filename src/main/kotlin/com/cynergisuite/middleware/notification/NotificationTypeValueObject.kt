@@ -26,7 +26,7 @@ data class NotificationTypeValueObject (
          description = entity.description
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun copyMe(): NotificationTypeValueObject = copy()
 }

@@ -113,6 +113,6 @@ data class VerificationAutoValueObject(
 
    override fun copyMe(): VerificationAutoValueObject = copy()
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }
 

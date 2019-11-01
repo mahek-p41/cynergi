@@ -50,7 +50,7 @@ class AuditDetailValidator @Inject constructor (
       logger.debug("Validating Update AuditDetail {}", vo)
 
       doValidation { errors ->
-         val auditId = vo.audit!!.valueObjectId()!!
+         val auditId = vo.audit!!.myId()!!
          val id = vo.id
 
          validateAudit(auditId, errors)
@@ -58,7 +58,7 @@ class AuditDetailValidator @Inject constructor (
 
          if (id == null) {
             errors.add(element = ValidationError("id", NotNull("id")))
-         } else if ( auditDetailRepository.doesNotExist(id) /*!auditDetailRepository.exists(id = id)*/ ) {
+         } else if ( auditDetailRepository.doesNotExist(id)) {
             errors.add(ValidationError("id", NotFound(id)))
          }
       }

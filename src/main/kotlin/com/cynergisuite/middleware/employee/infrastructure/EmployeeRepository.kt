@@ -6,7 +6,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.employee.Employee
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
@@ -246,7 +246,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   private fun mapDDLRow(rs: ResultSet, store: Store) : Employee =
+   private fun mapDDLRow(rs: ResultSet, store: StoreEntity) : Employee =
       Employee(
          id = rs.getLong("id"),
          timeCreated = rs.getOffsetDateTime("time_created"),

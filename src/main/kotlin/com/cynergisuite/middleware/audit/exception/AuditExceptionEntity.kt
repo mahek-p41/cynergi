@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
@@ -11,7 +11,7 @@ import com.cynergisuite.middleware.inventory.Inventory
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class AuditException(
+data class AuditExceptionEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -27,8 +27,8 @@ data class AuditException(
    val exceptionCode: String,
    val signedOff: Boolean = false,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
-   val audit: IdentifiableEntity
-) : Entity<AuditException> {
+   val audit: Identifiable
+) : Entity<AuditExceptionEntity> {
 
    constructor(vo: AuditExceptionValueObject, scanArea: AuditScanArea?) :
       this (
@@ -43,7 +43,7 @@ data class AuditException(
          scannedBy = Employee(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
-         notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.valueObjectId()!!) }.toMutableList(),
+         notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.myId()!!) }.toMutableList(),
          audit = SimpleIdentifiableEntity(vo.audit!!)
       )
 
@@ -76,6 +76,6 @@ data class AuditException(
       )
 
    override fun rowId(): UUID = uuRowId
-   override fun copyMe(): AuditException = copy()
-   override fun entityId(): Long? = id
+   override fun copyMe(): AuditExceptionEntity = copy()
+   override fun myId(): Long? = id
 }

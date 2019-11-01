@@ -26,7 +26,7 @@ class AuditExceptionNoteRepository(
          mapOf(
             "note" to note.note,
             "entered_by" to note.enteredBy.number,
-            "audit_exception_id" to note.auditException.entityId()
+            "audit_exception_id" to note.auditException.myId()
          ),
          RowMapper { rs, _ -> mapRow(rs, note.enteredBy)!! }
       )

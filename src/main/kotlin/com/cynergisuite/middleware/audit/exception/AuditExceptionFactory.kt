@@ -35,7 +35,7 @@ object AuditExceptionFactory {
    }
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditException> {
+   fun stream(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditExceptionEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
@@ -48,7 +48,7 @@ object AuditExceptionFactory {
       val audit = auditIn ?: AuditFactory.single()
 
       return IntStream.range(0, number).mapToObj {
-         AuditException(
+         AuditExceptionEntity(
             scanArea = scanArea,
             barcode = barcode.asin(),
             productCode = if(random.nextBoolean()) commerce.productName() else null,
@@ -65,17 +65,17 @@ object AuditExceptionFactory {
    }
 
    @JvmStatic
-   fun single(): AuditException {
+   fun single(): AuditExceptionEntity {
       return single(AuditFactory.single())
    }
 
    @JvmStatic
-   fun single(auditIn: Audit): AuditException {
+   fun single(auditIn: Audit): AuditExceptionEntity {
       return single(auditIn, scannedByIn = null)
    }
 
    @JvmStatic
-   fun single(auditIn: Audit, scannedByIn: Employee?): AuditException {
+   fun single(auditIn: Audit, scannedByIn: Employee?): AuditExceptionEntity {
       return stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
    }
 }
@@ -88,7 +88,7 @@ class AuditExceptionFactoryService @Inject constructor(
    private val employeeFactoryService: EmployeeFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditException> {
+   fun stream(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditExceptionEntity> {
       val audit = auditIn ?: auditFactoryService.single()
       val scannedBy = scannedByIn ?: employeeFactoryService.single()
 
@@ -101,12 +101,12 @@ class AuditExceptionFactoryService @Inject constructor(
    fun generate(numberIn: Int = 1, auditIn: Audit? = null, scannedByIn: Employee? = null, scanAreaIn: AuditScanArea? = null) =
       stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
 
-   fun single(): AuditException =
+   fun single(): AuditExceptionEntity =
       single(auditFactoryService.single())
 
-   fun single(auditIn: Audit): AuditException =
+   fun single(auditIn: Audit): AuditExceptionEntity =
       single(auditIn, null)
 
-   fun single(auditIn: Audit, scannedByIn: Employee?): AuditException =
+   fun single(auditIn: Audit, scannedByIn: Employee?): AuditExceptionEntity =
       stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
 }

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
 import java.util.Objects
 import java.util.UUID
@@ -20,9 +20,9 @@ data class VerificationReference (
    val reliable: Boolean?,
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
-   val verification: IdentifiableEntity
+   val verification: Identifiable
 ) : Entity<VerificationReference> {
-   constructor(dto: VerificationReferenceValueObject, parent: IdentifiableEntity) :
+   constructor(dto: VerificationReferenceValueObject, parent: Identifiable) :
       this(
          id = dto.id,
          address = dto.address,
@@ -37,7 +37,7 @@ data class VerificationReference (
          verification = parent
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun rowId(): UUID = uuRowId
 
@@ -54,6 +54,6 @@ data class VerificationReference (
    }
 
    override fun toString(): String {
-      return "VerificationReference(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, hasHomePhone=$hasHomePhone, known=$known, leaveMessage=$leaveMessage, rating=$rating, relationship=$relationship, reliable=$reliable, timeFrame=$timeFrame, verifyPhone=$verifyPhone, verification=${verification.entityId()})"
+      return "VerificationReference(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, hasHomePhone=$hasHomePhone, known=$known, leaveMessage=$leaveMessage, rating=$rating, relationship=$relationship, reliable=$reliable, timeFrame=$timeFrame, verifyPhone=$verifyPhone, verification=${verification.myId()})"
    }
 }

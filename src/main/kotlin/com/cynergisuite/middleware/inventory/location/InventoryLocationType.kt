@@ -16,7 +16,7 @@ data class InventoryLocationType(
       .append(localizationCode)
       .toHashCode()
 
-   override fun entityId(): Long = id
+   override fun myId(): Long = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception.note
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -15,7 +15,7 @@ data class AuditExceptionNote(
    val timeUpdated: OffsetDateTime = timeCreated,
    val note: String,
    val enteredBy: Employee,
-   val auditException: IdentifiableEntity
+   val auditException: Identifiable
 ) : Entity<AuditExceptionNote> {
 
    constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeValueObject, auditId: Long) :
@@ -25,15 +25,15 @@ data class AuditExceptionNote(
          enteredBy = Employee(enteredBy),
          auditException = SimpleIdentifiableEntity(auditId)
       )
-   
-   constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeValueObject, auditException: IdentifiableEntity) :
+
+   constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeValueObject, auditException: Identifiable) :
       this(
          vo = vo,
          enteredBy = enteredBy,
-         auditId = auditException.entityId()!!
+         auditId = auditException.myId()!!
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): AuditExceptionNote = copy()
 }

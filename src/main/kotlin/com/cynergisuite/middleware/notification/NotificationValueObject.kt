@@ -95,7 +95,7 @@ data class NotificationValueObject (
          recipients = entity.recipients.map { NotificationRecipientValueObject(it) }
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun copyMe(): NotificationValueObject = copy()
 }

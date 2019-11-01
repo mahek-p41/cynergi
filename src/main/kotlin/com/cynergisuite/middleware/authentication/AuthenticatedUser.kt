@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.authentication
 
 import com.cynergisuite.middleware.employee.Employee
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.security.authentication.UserDetails
 
 class AuthenticatedUser(
@@ -18,7 +18,7 @@ class AuthenticatedUser(
          username = employee.number.toString()
       )
 
-   constructor(employee: Employee, overrideStore: Store) :
+   constructor(employee: Employee, overrideStore: StoreEntity) :
       this (
          id = employee.id!!,
          loc = employee.loc,

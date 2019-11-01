@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.status.infrastructure
 
-import com.cynergisuite.domain.infrastructure.TypeDomainRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -14,11 +13,11 @@ import javax.inject.Singleton
 @Singleton
 class AuditStatusRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : TypeDomainRepository<AuditStatus> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditStatusRepository::class.java)
    private val simpleAuditStatusRowMapper = AuditStatusRowMapper()
 
-   override fun exists(value: String): Boolean {
+   fun exists(value: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_status_type_domain WHERE value = :value)", mapOf("value" to value), Boolean::class.java)!!
 
       logger.trace("Checking if Audit: {} exists resulted in {}", value, exists)
@@ -26,13 +25,13 @@ class AuditStatusRepository @Inject constructor(
       return exists
    }
 
-   override fun findOne(id: Long): AuditStatus? =
+   fun findOne(id: Long): AuditStatus? =
       executeFindQuery(mapOf("id" to id))
 
-   override fun findOne(value: String): AuditStatus? =
+   fun findOne(value: String): AuditStatus? =
       executeFindQuery(mapOf("value" to value))
 
-   override fun findAll(): List<AuditStatus> =
+   fun findAll(): List<AuditStatus> =
       jdbc.query("SELECT * FROM audit_status_type_domain ORDER BY value", simpleAuditStatusRowMapper)
 
    fun fetchAllByValues(values: Set<String>): Set<AuditStatus> =

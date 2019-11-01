@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.audit.detail
 
-import com.cynergisuite.domain.IdentifiableValueObject
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -59,25 +58,18 @@ data class AuditDetailValueObject (
    var scannedBy: EmployeeValueObject?,
 
    @field:NotNull
-   var audit: IdentifiableValueObject?
+   var audit: Identifiable?
 
 ) : ValueObjectBase<AuditDetailValueObject>() {
 
-   constructor(entity: AuditDetail, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
       this(
          entity = entity,
          audit = SimpleIdentifiableValueObject(entity.audit),
          auditScanArea = auditScanArea
       )
 
-   constructor(entity: AuditDetail, audit: IdentifiableValueObject? = null, auditScanArea: AuditScanArea) :
-      this(
-         entity = entity,
-         audit = audit,
-         auditScanArea = AuditScanAreaValueObject(auditScanArea)
-      )
-
-   constructor(entity: AuditDetail, audit: IdentifiableValueObject? = null, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaValueObject) :
       this(
          id = entity.id,
          scanArea = auditScanArea,
@@ -91,6 +83,6 @@ data class AuditDetailValueObject (
          audit = audit
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditDetailValueObject = copy()
 }

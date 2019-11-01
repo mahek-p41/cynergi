@@ -67,7 +67,7 @@ class AuditValidator @Inject constructor(
       }
 
       return Audit(
-         store = storeRepository.findByNumber(number = audit.store!!.number!!)!!,
+         store = storeRepository.findOneByNumber(number = audit.store!!.number!!)!!,
          actions = mutableSetOf(
             AuditAction(
                status = auditStatusService.fetchOpened(),
