@@ -1,10 +1,10 @@
 package com.cynergisuite.domain.infrastructure
 
-import com.cynergisuite.domain.IdentifiableEntity
+import com.cynergisuite.domain.Identifiable
 import org.springframework.jdbc.core.ResultSetExtractor
 import java.sql.ResultSet
 
-class PagedResultSetExtractor<T : IdentifiableEntity>(
+class PagedResultSetExtractor<T : Identifiable>(
    private val mapper: (rs: ResultSet, elements: MutableList<T>) -> Unit
 ) : ResultSetExtractor<RepositoryPage<T>> {
 

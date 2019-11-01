@@ -33,20 +33,14 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
    @field:Schema(name = "status", description = "Collection of statues that an audit must be in")
    var status: Set<String>? = emptySet()
 
-   constructor(pageRequest: AuditPageRequest?, from: OffsetDateTime?, thru: OffsetDateTime?, status: Set<String>) : this(pageRequest ?: PageRequest()) {
-      this.from = from
-      this.thru = thru
-      this.storeNumber = pageRequest?.storeNumber
-      this.status = status.toSet()
-   }
+   constructor(pageRequestIn: AuditPageRequest? = null) : this(pageRequestIn ?: PageRequest()) {
+      val statusesIn = pageRequestIn?.status
 
-   constructor(pageRequestIn: AuditPageRequest? = null) :
-      this(
-         pageRequest = pageRequestIn,
-         from = pageRequestIn?.from ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek(),
-         thru = pageRequestIn?.thru ?: OffsetDateTime.now(ZoneId.of("UTC")).endOfWeek(),
-         status = pageRequestIn?.status ?: setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
-      )
+      this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+      this.from = buildFrom(this.status!!, pageRequestIn)
+      this.thru = buildThru(from, this.status!!, pageRequestIn)
+      this.storeNumber = pageRequestIn?.storeNumber
+   }
 
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy
@@ -91,5 +85,25 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
       }
 
       return stringBuilder.toString()
+   }
+
+   private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
+      val fromIn = pageRequestIn?.from
+
+      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && fromIn == null) {
+         null
+      } else {
+         fromIn ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
+      }
+   }
+
+   private fun buildThru(from: OffsetDateTime?, statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
+      val thruIn = pageRequestIn?.thru ?: from?.endOfWeek()
+
+      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && thruIn == null) {
+         null
+      } else {
+         thruIn
+      }
    }
 }
