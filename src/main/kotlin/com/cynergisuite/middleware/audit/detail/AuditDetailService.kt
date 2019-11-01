@@ -49,7 +49,7 @@ class AuditDetailService @Inject constructor(
       val inventory = inventoryRepository.findOne(vo.inventory!!.id!!)!!
 
       val auditDetail = auditDetailRepository.insert(
-         AuditDetail(
+         AuditDetailEntity(
             inventory,
             scanArea = scanArea,
             scannedBy = Employee(scannedBy),
@@ -74,7 +74,7 @@ class AuditDetailService @Inject constructor(
       return transformEntity(auditDetailUpdated, locale)
    }
 
-   private fun transformEntity(auditDetail: AuditDetail, locale: Locale): AuditDetailValueObject {
+   private fun transformEntity(auditDetail: AuditDetailEntity, locale: Locale): AuditDetailValueObject {
       val localizedDescription = auditDetail.scanArea.localizeMyDescription(locale, localizationService)
 
       return AuditDetailValueObject(entity = auditDetail, auditScanArea = AuditScanAreaValueObject(auditDetail.scanArea, localizedDescription))

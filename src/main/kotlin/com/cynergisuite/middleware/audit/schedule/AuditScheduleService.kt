@@ -82,7 +82,7 @@ class AuditScheduleService @Inject constructor(
             val store = storeRepository.findOneByNumber(arg.value.toInt())!!
 
             stores.add(StoreValueObject(store))
-         } else {
+         } else if (arg.description == "department") {
             val dept = departmentRepository.findOneByCode(arg.value)!!
 
             department = DepartmentValueObject(dept)

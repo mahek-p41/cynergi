@@ -32,7 +32,12 @@ object AuditScheduleFactory {
       val arguments = mutableListOf(ScheduleArgumentEntity(value = department.code, description = "department"))
 
       for (store in stores) {
-         arguments.add(ScheduleArgumentEntity(value = store.number.toString(), description = "storeNumber"))
+         arguments.add(
+            ScheduleArgumentEntity(
+               value = store.number.toString(),
+               description = "storeNumber"
+            )
+         )
       }
 
       return IntStream.range(0, number).mapToObj {

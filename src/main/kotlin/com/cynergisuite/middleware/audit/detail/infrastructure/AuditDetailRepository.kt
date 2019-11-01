@@ -10,7 +10,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.Audit
-import com.cynergisuite.middleware.audit.detail.AuditDetail
+import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.employee.Employee
@@ -75,7 +75,7 @@ class AuditDetailRepository @Inject constructor(
              ON ad.scan_area_id = asatd.id
    """.trimIndent()
 
-   fun findOne(id: Long): AuditDetail? {
+   fun findOne(id: Long): AuditDetailEntity? {
       val found = jdbc.findFirstOrNull(
          "$selectBase\nWHERE ad.id = :id",
          mapOf("id" to id),
@@ -92,9 +92,9 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDetail> {
+   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDetailEntity> {
       var totalElements: Long? = null
-      val resultList: MutableList<AuditDetail> = mutableListOf()
+      val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
       jdbc.query("""
          WITH paged AS (
@@ -137,7 +137,7 @@ class AuditDetailRepository @Inject constructor(
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
    @Transactional
-   fun insert(entity: AuditDetail): AuditDetail {
+   fun insert(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Inserting audit_detail {}", entity)
 
       return jdbc.insertReturning("""
@@ -164,7 +164,7 @@ class AuditDetailRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: AuditDetail): AuditDetail {
+   fun update(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Updating audit_detail {}", entity)
 
       return jdbc.updateReturning("""
@@ -199,8 +199,8 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetail {
-      return AuditDetail(
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
+      return AuditDetailEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

@@ -62,14 +62,14 @@ data class AuditDetailValueObject (
 
 ) : ValueObjectBase<AuditDetailValueObject>() {
 
-   constructor(entity: AuditDetail, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
       this(
          entity = entity,
          audit = SimpleIdentifiableValueObject(entity.audit),
          auditScanArea = auditScanArea
       )
 
-   constructor(entity: AuditDetail, audit: Identifiable? = null, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaValueObject) :
       this(
          id = entity.id,
          scanArea = auditScanArea,
