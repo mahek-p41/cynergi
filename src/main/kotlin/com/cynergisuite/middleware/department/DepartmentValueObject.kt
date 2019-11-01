@@ -7,7 +7,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @ValueObject
-@Schema(name = "Department", description = "A department within a company")
+@Schema(name = "Department", title = "A Cynergi Department", description = "A department within a company")
 data class DepartmentValueObject(
 
    @field:Positive
