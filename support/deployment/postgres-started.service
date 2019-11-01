@@ -12,12 +12,12 @@
 
 case "$1" in
     start)
-        log_daemon_msg "Signaling postgres-9.3 started..." "postgres-started"
+        echo "Signaling postgres-9.3 started..." "postgres-started"
         initctl emit postgres-started --no-wait
     ;;
 
     *)
-        log_action_msg "Usage: /etc/init.d/postgres-started start"
+        echo "Usage: /etc/init.d/postgres-started start"
         exit 1
     ;;
 esac
