@@ -308,7 +308,7 @@ class AuditExceptionRepository @Inject constructor(
          audit = audit
       )
 
-   fun forEach(audit: Audit, callback: (AuditException) -> Unit) {
+   fun forEach(audit: Audit, callback: (AuditExceptionEntity) -> Unit) {
       TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
    }
 }

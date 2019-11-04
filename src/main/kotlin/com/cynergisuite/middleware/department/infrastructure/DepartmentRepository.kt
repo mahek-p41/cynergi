@@ -95,6 +95,7 @@ class DepartmentRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = pageRequest,
          elements = elements,
          totalElements = totalElements ?: 0
       )

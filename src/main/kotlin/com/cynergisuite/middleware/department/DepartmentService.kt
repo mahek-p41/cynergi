@@ -20,6 +20,6 @@ class DepartmentService @Inject constructor(
    fun fetchAll(pageRequest: PageRequest): Page<DepartmentValueObject> {
       val departments = departmentRepository.findAll(pageRequest)
 
-      return departments.toPage(pageRequest) { DepartmentValueObject(it) }
+      return departments.toPage { DepartmentValueObject(it) }
    }
 }

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.middleware.audit.exception.AuditException
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
@@ -14,8 +14,7 @@ import com.lowagie.text.PageSize
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
-import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.StringUtils.*
+import org.apache.commons.lang3.StringUtils.EMPTY
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -89,7 +88,7 @@ class AuditService @Inject constructor(
    private fun buildExceptionReport(audit: Audit): PdfPTable {
       val table = PdfPTable(10)
 
-      auditExceptionRepository.forEach(audit) { exception: AuditException ->
+      auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity ->
          table.addCell(exception.scanArea?.myDescription() ?: EMPTY)
       }
 

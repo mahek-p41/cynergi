@@ -38,7 +38,7 @@ class AuditScheduleService @Inject constructor(
    fun fetchAll(@Valid pageRequest: PageRequest): Page<AuditScheduleDataTransferObject> {
       val repoPage = scheduleRepository.fetchAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
 
-      return repoPage.toPage(pageRequest) { buildAuditScheduleValueObjectFromSchedule(it) }
+      return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it) }
    }
 
    @Validated
