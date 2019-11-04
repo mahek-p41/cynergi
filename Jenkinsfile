@@ -89,6 +89,7 @@ pipeline {
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
             sh "cp -rv * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
          }
+         junit 'build/reports/test-results/**/*.xml'
       }
    }
 
