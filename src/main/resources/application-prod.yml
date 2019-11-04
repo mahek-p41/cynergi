@@ -32,4 +32,5 @@ cynergi:
       pool:
          size: 5
    reportal:
-      file-location: "/tmp/reportal"
+      file:
+         location: "/tmp/reportal"

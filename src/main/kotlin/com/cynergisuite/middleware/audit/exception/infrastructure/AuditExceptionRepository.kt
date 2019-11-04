@@ -238,6 +238,15 @@ class AuditExceptionRepository @Inject constructor(
       )
    }
 
+   fun forEach(audit: Audit, callback: (AuditExceptionEntity) -> Unit) {
+      var result = findAll(audit, PageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+
+      while(result.elements.isNotEmpty()){
+         result.elements.forEach(callback)
+         result = findAll(audit, result.requested.nextPage())
+      }
+   }
+
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
@@ -307,8 +316,4 @@ class AuditExceptionRepository @Inject constructor(
          signedOff = rs.getBoolean("${columnPrefix}signed_off"),
          audit = audit
       )
-
-   fun forEach(audit: Audit, callback: (AuditExceptionEntity) -> Unit) {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-   }
 }

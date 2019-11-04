@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.nio.file.Files
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,6 +17,10 @@ class ReportalService @Inject constructor(
    @Value("\${cynergi.reportal.file.location}") private val reportalFileLocation: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ReportalService::class.java)
+
+   init {
+      File(reportalFileLocation).mkdirs()
+   }
 
    fun generateReportalDocument(generator: (reportalOutputStream: OutputStream) -> Unit) {
       logger.debug("Generating reportal document using {}", generator)
@@ -31,8 +36,12 @@ class ReportalService @Inject constructor(
             reportalOutputStream.flush()
          }
 
-         // TODO copy doc to reportal location
-         logger.debug("Deleting tempFile {} was successful: {}", tempFile, tempFile.delete())
+         val reportalFile = File(File(reportalFileLocation), "${tempFile.name}.pdf")
+
+         logger.debug("Moving file {} to {}", tempFile, reportalFile)
+         Files.move(tempFile.toPath(), reportalFile.toPath()) // TODO copy doc to reportal location
+
+         logger.debug("Moving tempFile {} was successful: {}", tempFile, reportalFile.exists())
       }
    }
 }
