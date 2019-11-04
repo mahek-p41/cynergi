@@ -12,12 +12,12 @@
 
 case "$1" in
     start)
-        log_daemon_msg "Signaling myservice started..." "myservice-started"
+        echo "Signaling myservice started..." "myservice-started"
         initctl emit myservice-started --no-wait
     ;;
 
     *)
-        log_action_msg "Usage: /etc/init.d/myservice-started start"
+        echo "Usage: /etc/init.d/myservice-started start"
         exit 1
     ;;
 esac

@@ -13,6 +13,8 @@ Notepad or VIM to do your development as Gradle handles all the building outside
 
 ## Setup
 1. For Windows install follow instructions at [Java Dev Setup](http://gitlab.hightouchinc.com/garym/java-dev-setup)
+   1. This should have installed __adoptopenjdk8openj9__, if for some reason it did not open an admin
+      Powershell window and run `choco install adoptopenjdk8openj9`
 2. Configure a default JDK that Intellij will use
    1. Assuming you have never used Intellij before it will come up with the "Welcome to Intellij IDEA" screen
    2. From the "Welcome" screen down in the lower right hand corner there is a "Configure" drop-down
@@ -23,7 +25,7 @@ Notepad or VIM to do your development as Gradle handles all the building outside
    5. Under the "Project SDK" section the JDK needs to be configured.  (There may already be one configured or it might say "<NO SDK>")
    6. Click the "New... > +JDK" button next to the JDK selection drop-down
    7. Navigate to where the JDK was installed from earlier and choose the directory that is where you pointed your JAVA_HOME
-      environment variable from Bash earlier.  On Windows it will be something like **C:\Program Files\AdoptOpenJDK\jdk8u-somethingorother**
+      environment variable from Bash earlier.  On Windows it will be something like **C:\Program Files\AdoptOpenJDK\jdk-someversion-openj9**
 	  1. When choosing this make sure you choose the root of the directory as the way the tooling works the JDK is laid out in a 
 	     specific way.  Don't worry as Intellij checks to make sure it is valid before it makes that JDK available by 
 	     verbally abusing you with a message like "No a valid JDK installation"
