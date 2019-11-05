@@ -10,11 +10,15 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.lowagie.text.Document
+import com.lowagie.text.FontFactory
 import com.lowagie.text.PageSize
+import com.lowagie.text.Phrase
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
 import org.apache.commons.lang3.StringUtils.EMPTY
+import java.awt.Color
+import java.awt.Font
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
@@ -82,7 +86,7 @@ class AuditService @Inject constructor(
                PdfWriter.getInstance(document, reportalOutputStream)
 
                document.open()
-               document.add(buildExceptionReport(updated))
+               document.add(buildExceptionReport(updated, document.pageSize.width))
             }
          }
       }
@@ -90,33 +94,42 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
-   private fun buildExceptionReport(audit: Audit): PdfPTable {
+   private fun buildExceptionReport(audit: Audit, pageWidth: Float): PdfPTable {
       val table = PdfPTable(10)
+      val evenColor = Color(204, 204, 204)
+      val oddColor = Color.WHITE
+      val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
+      val rowFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.PLAIN)
 
-      table.totalWidth = 1000F
+      table.totalWidth = pageWidth - 10
+      table.isLockedWidth = true
       table.headerRows = 1
-      table.addCell("Scan Area")
-      table.addCell("Product Code")
-      table.addCell("Brand")
-      table.addCell("Model #")
-      table.addCell("Bar Code")
-      table.addCell("Alt ID")
-      table.addCell("Serial #")
-      table.addCell("Employee")
-      table.addCell("Scanned")
-      table.addCell("Exception")
+      table.defaultCell.border = 0
 
-      auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity ->
-         table.addCell(exception.scanArea?.myDescription() ?: EMPTY)
-         table.addCell(exception.productCode ?: EMPTY)
-         table.addCell(exception.inventoryBrand ?: EMPTY)
-         table.addCell(exception.inventoryModel ?: EMPTY)
-         table.addCell(exception.barcode)
-         table.addCell(exception.altId ?: EMPTY)
-         table.addCell(exception.serialNumber ?: EMPTY)
-         table.addCell(exception.scannedBy.displayName())
-         table.addCell(exception.timeCreated.format(REPORT_CREATED_TIME_FORMAT))
-         table.addCell(exception.exceptionCode)
+      table.addCell(Phrase("Scan Area", headerFont))
+      table.addCell(Phrase("Product Code", headerFont))
+      table.addCell(Phrase("Brand", headerFont))
+      table.addCell(Phrase("Model #", headerFont))
+      table.addCell(Phrase("Bar Code", headerFont))
+      table.addCell(Phrase("Alt ID", headerFont))
+      table.addCell(Phrase("Serial #", headerFont))
+      table.addCell(Phrase("Employee", headerFont))
+      table.addCell(Phrase("Scanned", headerFont))
+      table.addCell(Phrase("Exception", headerFont))
+
+      auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity, even: Boolean ->
+         table.defaultCell.backgroundColor = if (even) evenColor else oddColor
+
+         table.addCell(Phrase(exception.scanArea?.myDescription() ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.productCode ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.inventoryBrand ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.inventoryModel ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.barcode, rowFont))
+         table.addCell(Phrase(exception.altId ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.serialNumber ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.scannedBy.displayName(), rowFont))
+         table.addCell(Phrase(exception.timeCreated.format(REPORT_CREATED_TIME_FORMAT), rowFont))
+         table.addCell(Phrase(exception.exceptionCode, rowFont))
       }
 
       return table

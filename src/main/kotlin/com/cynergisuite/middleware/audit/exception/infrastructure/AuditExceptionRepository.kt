@@ -238,11 +238,15 @@ class AuditExceptionRepository @Inject constructor(
       )
    }
 
-   fun forEach(audit: Audit, callback: (AuditExceptionEntity) -> Unit) {
+   fun forEach(audit: Audit, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
       var result = findAll(audit, PageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      var index = 0
 
       while(result.elements.isNotEmpty()){
-         result.elements.forEach(callback)
+         result.elements.forEach { auditException ->
+            callback(auditException, index % 2 == 0)
+            index++
+         }
          result = findAll(audit, result.requested.nextPage())
       }
    }
