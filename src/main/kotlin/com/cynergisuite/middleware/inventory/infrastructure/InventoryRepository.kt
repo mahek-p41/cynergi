@@ -69,12 +69,9 @@ class InventoryRepository(
          iltd.description AS location_type_description,
          iltd.localization_code AS location_type_localization_code
       FROM fastinfo_prod_import.inventory_vw i
-           JOIN fastinfo_prod_import.store_vw primaryStore
-             ON i.primary_location = primaryStore.number
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore
-             ON i.location = currentStore.number
-           JOIN inventory_location_type_domain iltd
-             ON i.location_type = iltd.id
+           JOIN fastinfo_prod_import.store_vw primaryStore ON i.primary_location = primaryStore.number
+           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON i.location = currentStore.number
+           JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
    """.trimIndent()
 
    fun findOne(id: Long): Inventory? {
