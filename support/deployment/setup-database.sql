@@ -22,16 +22,17 @@ BEGIN
    LOOP
       sqlToExec := sqlToExec
       || ' '
-      || unionAll
-      || 'SELECT '
-      || '   id AS id, '
-      || '   loc_tran_loc AS number, '
-      || '   loc_transfer_desc AS name, '
-      || '   ''' || r.schema_name || ''' AS dataset, '
-      || '   created_at AT TIME ZONE ''UTC'' AS time_created, '
-      || '   updated_at AT TIME ZONE ''UTC'' AS time_updated '
-      || 'FROM ' || r.schema_name || '.level2_stores '
-      || 'WHERE loc_transfer_desc IS NOT NULL ';
+      || unionAll || '
+         SELECT
+            id AS id,
+            loc_tran_loc AS number,
+            loc_transfer_desc AS name,
+            ''' || r.schema_name || ''' AS dataset,
+            created_at AT TIME ZONE ''UTC'' AS time_created,
+            updated_at AT TIME ZONE ''UTC'' AS time_updated
+         FROM ' || r.schema_name || '.level2_stores
+         WHERE loc_transfer_desc IS NOT NULL
+      ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
@@ -58,21 +59,21 @@ BEGIN
    LOOP
       sqlToExec := sqlToExec
       || ' '
-      || unionStr
-      || 'SELECT '
-      || '   id AS id, '
-      || '   TRIM(loc_dept_code) AS code, '
-      || '   loc_dept_desc AS description, '
-      || '   loc_dept_security_profile AS security_profile, '
-      || '   loc_dept_default_menu AS default_menu, '
-      || '   created_at AT TIME ZONE ''UTC'' AS time_created, '
-      || '   updated_at AT TIME ZONE ''UTC'' AS time_updated '
-      || 'FROM ' || r.schema_name || '.level2_departments '
-      || 'WHERE loc_dept_code IS NOT NULL '
-      || '      AND loc_dept_desc IS NOT NULL '
-      || '      AND loc_dept_security_profile IS NOT NULL '
-      || '      AND loc_dept_default_menu IS NOT NULL '
-      ;
+      || unionStr || '
+         SELECT
+            id AS id,
+            TRIM(loc_dept_code) AS code,
+            loc_dept_desc AS description,
+            loc_dept_security_profile AS security_profile,
+            loc_dept_default_menu AS default_menu,
+            created_at AT TIME ZONE ''UTC'' AS time_created,
+            updated_at AT TIME ZONE ''UTC'' AS time_updated
+         FROM ' || r.schema_name || '.level2_departments
+         WHERE loc_dept_code IS NOT NULL
+               AND loc_dept_desc IS NOT NULL
+               AND loc_dept_security_profile IS NOT NULL
+               AND loc_dept_default_menu IS NOT NULL
+      ';
 
       unionStr := ' UNION ';
    END LOOP;
@@ -98,36 +99,37 @@ BEGIN
    LOOP
       sqlToExec := sqlToExec
       || ' '
-      || unionAll
-      || 'SELECT '
-      || '   id AS id, '
-      || '   emp_nbr AS number, '
-      || '   emp_store_nbr AS store_number, '
-      || '   ''' || r.schema_name || ''' AS dataset, '
-      || '   emp_last_name AS last_name, '
-      || '   NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi, '
-      || '   emp_dept AS department, '
-      || '   TRIM(BOTH FROM '
-      || '        CAST(emp_pass_1 AS TEXT) || '
-      || '        CAST(emp_pass_2 AS TEXT) || '
-      || '        CAST(emp_pass_3 AS TEXT) || '
-      || '        CAST(emp_pass_4 AS TEXT) || '
-      || '        CAST(emp_pass_5 AS TEXT) || '
-      || '        CAST(emp_pass_6 AS TEXT) '
-      || '      ) AS pass_code, '
-      || '   true AS active, '
-      || '   created_at AT TIME ZONE ''UTC'' AS time_created, '
-      || '   updated_at AT TIME ZONE ''UTC'' AS time_updated '
-      || 'FROM ' || r.schema_name || '.level1_loc_emps '
-      || 'WHERE emp_nbr IS NOT NULL '
-      || '      AND TRIM(BOTH FROM '
-      || '            CAST(emp_pass_1 AS TEXT) || '
-      || '            CAST(emp_pass_2 AS TEXT) || '
-      || '            CAST(emp_pass_3 AS TEXT) || '
-      || '            CAST(emp_pass_4 AS TEXT) || '
-      || '            CAST(emp_pass_5 AS TEXT) || '
-      || '            CAST(emp_pass_6 AS TEXT) '
-      || '          ) <> ''''';
+      || unionAll || '
+         SELECT
+            id AS id,
+            emp_nbr AS number,
+            emp_store_nbr AS store_number,
+            ''' || r.schema_name || ''' AS dataset,
+            emp_last_name AS last_name,
+            NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
+            emp_dept AS department,
+            TRIM(BOTH FROM
+                 CAST(emp_pass_1 AS TEXT) ||
+                 CAST(emp_pass_2 AS TEXT) ||
+                 CAST(emp_pass_3 AS TEXT) ||
+                 CAST(emp_pass_4 AS TEXT) ||
+                 CAST(emp_pass_5 AS TEXT) ||
+                 CAST(emp_pass_6 AS TEXT)
+               ) AS pass_code,
+            true AS active,
+            created_at AT TIME ZONE ''UTC'' AS time_created,
+            updated_at AT TIME ZONE ''UTC'' AS time_updated
+         FROM ' || r.schema_name || '.level1_loc_emps
+         WHERE emp_nbr IS NOT NULL
+               AND TRIM(BOTH FROM
+                     CAST(emp_pass_1 AS TEXT) ||
+                     CAST(emp_pass_2 AS TEXT) ||
+                     CAST(emp_pass_3 AS TEXT) ||
+                     CAST(emp_pass_4 AS TEXT) ||
+                     CAST(emp_pass_5 AS TEXT) ||
+                     CAST(emp_pass_6 AS TEXT)
+                   ) <> ''''
+      ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
@@ -154,49 +156,50 @@ BEGIN
    LOOP
       sqlToExec := sqlToExec
       || ' '
-      || unionAll
-      || 'SELECT
-             inv_recs.id AS id,
-             inv_recs.inv_serial_nbr_key AS serial_number,
-             CASE
-                WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN inv_recs.inv_alt_id
-                ELSE inv_recs.inv_serial_nbr_key
-             END AS lookup_key,
-             CASE
-                WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN ''BARCODE''
-                ELSE ''SERIAL''
-             END AS lookup_key_type,
-             inv_recs.inv_serial_nbr_key AS barcode,
-             inv_recs.inv_alt_id AS alt_id,
-             manufacturer.manufile_manu_name AS brand,
-             inv_recs.inv_mk_model_nbr AS model_number,
-             LEFT(inv_recs.inv_mk_model_nbr, 1) || ''-'' || inv_recs.inv_desc AS product_code,
-             inv_recs.inv_desc AS description,
-             inv_recs.inv_date_received AS received_date,
-             inv_recs.inv_original_cost AS original_cost,
-             inv_recs.inv_actual_cost AS actual_cost,
-             inv_recs.inv_model_nbr_category AS model_category,
-             inv_recs.inv_total_times_rented AS times_rented,
-             inv_recs.inv_total_revenue AS total_revenue,
-             inv_recs.inv_remain_bk_value AS remaining_value,
-             inv_recs.inv_sell_price AS sell_price,
-             inv_recs.inv_assigned_value AS assigned_value,
-             inv_recs.inv_nbr_idle_days AS idle_days,
-             inv_recs.inv_condition AS condition,
-             CASE
-                WHEN inv_recs.inv_status = ''R'' AND inv_recs.inv_date_returned IS NOT NULL THEN inv_recs.inv_date_returned
-                ELSE NULL
-             END AS returned_date,
-             inv_recs.inv_location_rec_1 AS location,
-             inv_recs.inv_status AS status,
-             loc_trans.loc_tran_primary_loc AS primary_location,
-             loc_trans2.loc_transfer_loc_type AS location_type,
-             loc_trans2.created_at AT TIME ZONE ''UTC'' AS time_created,
-             inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated
-          FROM ' || r.schema_name || '.level1_ninvrecs inv_recs '
+      || unionAll || '
+         SELECT
+            inv_recs.id AS id,
+            inv_recs.inv_serial_nbr_key AS serial_number,
+            CASE
+               WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN inv_recs.inv_alt_id
+               ELSE inv_recs.inv_serial_nbr_key
+            END AS lookup_key,
+            CASE
+               WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN ''BARCODE''
+               ELSE ''SERIAL''
+            END AS lookup_key_type,
+            inv_recs.inv_serial_nbr_key AS barcode,
+            inv_recs.inv_alt_id AS alt_id,
+            manufacturer.manufile_manu_name AS brand,
+            inv_recs.inv_mk_model_nbr AS model_number,
+            LEFT(inv_recs.inv_mk_model_nbr, 1) || ''-'' || inv_recs.inv_desc AS product_code,
+            inv_recs.inv_desc AS description,
+            inv_recs.inv_date_received AS received_date,
+            inv_recs.inv_original_cost AS original_cost,
+            inv_recs.inv_actual_cost AS actual_cost,
+            inv_recs.inv_model_nbr_category AS model_category,
+            inv_recs.inv_total_times_rented AS times_rented,
+            inv_recs.inv_total_revenue AS total_revenue,
+            inv_recs.inv_remain_bk_value AS remaining_value,
+            inv_recs.inv_sell_price AS sell_price,
+            inv_recs.inv_assigned_value AS assigned_value,
+            inv_recs.inv_nbr_idle_days AS idle_days,
+            inv_recs.inv_condition AS condition,
+            CASE
+               WHEN inv_recs.inv_status = ''R'' AND inv_recs.inv_date_returned IS NOT NULL THEN inv_recs.inv_date_returned
+               ELSE NULL
+            END AS returned_date,
+            inv_recs.inv_location_rec_1 AS location,
+            inv_recs.inv_status AS status,
+            loc_trans.loc_tran_primary_loc AS primary_location,
+            loc_trans2.loc_transfer_loc_type AS location_type,
+            loc_trans2.created_at AT TIME ZONE ''UTC'' AS time_created,
+            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated
+         FROM ' || r.schema_name || '.level1_ninvrecs inv_recs '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans ON inv_location_rec_1 = loc_trans.loc_tran_loc '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2 ON loc_trans.loc_tran_primary_loc = loc_trans2.loc_tran_loc '
-      || '     LEFT JOIN ' || r.schema_name || '.level1_manufiles manufacturer ON SUBSTRING(inv_mk_model_nbr, 3, 3) = manufile_manu_code_an3 ';
+      || '     LEFT JOIN ' || r.schema_name || '.level1_manufiles manufacturer ON SUBSTRING(inv_mk_model_nbr, 3, 3) = manufile_manu_code_an3
+      ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
@@ -207,6 +210,7 @@ END $$;
 
 -- Begin cynergidb setup
 \c cynergidb
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 
