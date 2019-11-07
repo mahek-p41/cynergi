@@ -20,4 +20,6 @@ sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g" /home/jenkins/cynergi-middleware/suppo
 cp /home/jenkins/cynergi-middleware/support/deployment/postgres-started.service /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/support/deployment/setup-database.sql /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware*-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
+mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
+cp -r /opt/java/openjdk/jre/. /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}
 tar -c --owner=0 --group=0 --to-stdout /opt/cyn | xz -6 - > /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz

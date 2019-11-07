@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8-openj9:jdk8u202-b08_openj9-0.12.1
+FROM adoptopenjdk/openjdk8-openj9:jdk8u222-b10_openj9-0.15.1
 
 ARG USER_ID
 ARG GROUP_ID
