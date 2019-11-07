@@ -10,15 +10,21 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.lowagie.text.Document
+import com.lowagie.text.Element
+import com.lowagie.text.Font
 import com.lowagie.text.FontFactory
 import com.lowagie.text.PageSize
+import com.lowagie.text.Paragraph
 import com.lowagie.text.Phrase
+import com.lowagie.text.Rectangle
+import com.lowagie.text.pdf.PdfPCell
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
 import org.apache.commons.lang3.StringUtils.EMPTY
 import java.awt.Color
-import java.awt.Font
+import java.time.LocalDate
+//import java.awt.Font
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
@@ -86,6 +92,7 @@ class AuditService @Inject constructor(
                PdfWriter.getInstance(document, reportalOutputStream)
 
                document.open()
+               document.add(buildHeader(updated, document.pageSize.width))
                document.add(buildExceptionReport(updated, document.pageSize.width))
             }
          }
@@ -94,28 +101,98 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
+   private fun buildHeader(audit: Audit, pageWidth: Float): PdfPTable {
+      val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
+      val padding = 0f
+      val leading = headerFont.getSize() * 1.2F
+      val ascender = true
+      val descender = true
+      val currentDate = LocalDate.now()
+
+      val headerBorder = Rectangle(0f, 0f)
+      headerBorder.borderWidthLeft = 0f
+      headerBorder.borderWidthBottom = 0f
+      headerBorder.borderWidthRight = 0f
+      headerBorder.borderWidthTop = 0f
+      headerBorder.borderColorLeft = Color.BLACK
+      headerBorder.borderColorBottom = Color.BLACK
+      headerBorder.borderColorRight = Color.BLACK
+      headerBorder.borderColorTop = Color.BLACK
+
+      val header = PdfPTable(3)
+      header.totalWidth = pageWidth - 10
+      header.isLockedWidth = true
+      header.headerRows = 0
+      header.defaultCell.border = 0
+      header.setWidthPercentage(100f)
+
+      val headerString = "DATE: " + currentDate.toString()
+      header.addCell(makeCell(headerString, Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.addCell(makeCell("BOLIN RENTAL PURCHASE", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.addCell(makeCell("PAGE", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender))
+
+      header.addCell(makeCell("TIME", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.addCell(makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.addCell(makeCell("BCIDLERP", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender))
+
+      val locationString = "LOCATION: " + audit.store.toString()
+      header.addCell(makeCell(locationString, Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.addCell(makeCell("(By Product)", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.addCell(makeCell("(Final-Reprint)", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender))
+
+      header.addCell(Phrase(EMPTY, headerFont))
+      header.addCell(Phrase(EMPTY, headerFont))
+      header.addCell(Phrase(EMPTY, headerFont))
+
+      return header
+   }
+
    private fun buildExceptionReport(audit: Audit, pageWidth: Float): PdfPTable {
+      val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
+      val rowFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.NORMAL)
+
       val table = PdfPTable(10)
       val evenColor = Color(204, 204, 204)
       val oddColor = Color.WHITE
-      val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
-      val rowFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.PLAIN)
+      val padding = 0f
+      val leading = headerFont.getSize() * 1.2F
+      val ascender = true
+      val descender = true
+
+      val border = Rectangle(0f, 0f)
+      border.borderWidthLeft = 0f
+      border.borderWidthBottom = 2f
+      border.borderWidthRight = 0f
+      border.borderWidthTop = 0f
+      border.borderColorLeft = Color.BLACK
+      border.borderColorBottom = Color.BLACK
+      border.borderColorRight = Color.BLACK
+      border.borderColorTop = Color.BLACK
 
       table.totalWidth = pageWidth - 10
       table.isLockedWidth = true
       table.headerRows = 1
       table.defaultCell.border = 0
+      table.setWidthPercentage(100f)
 
-      table.addCell(Phrase("Scan Area", headerFont))
-      table.addCell(Phrase("Product Code", headerFont))
-      table.addCell(Phrase("Brand", headerFont))
-      table.addCell(Phrase("Model #", headerFont))
-      table.addCell(Phrase("Bar Code", headerFont))
-      table.addCell(Phrase("Alt ID", headerFont))
-      table.addCell(Phrase("Serial #", headerFont))
-      table.addCell(Phrase("Employee", headerFont))
-      table.addCell(Phrase("Scanned", headerFont))
-      table.addCell(Phrase("Exception", headerFont))
+      val widthPercentage: Float = (pageWidth - 10) / 10
+      val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
+      //widths[0] = widths[0] / 2
+      //widths[9] = widths[9] * 2
+      table.setWidths(widths)
+
+      //table.addCell(Phrase("Scan Area", headerFont))
+      table.addCell(makeCell("Scan Area", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Product Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Brand", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Model #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Bar Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Alt ID", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Serial #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Employee", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Scanned", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      table.addCell(makeCell("Exception", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
+      //table.addCell(Phrase("Exception", headerFont))
 
       auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity, even: Boolean ->
          table.defaultCell.backgroundColor = if (even) evenColor else oddColor
@@ -133,5 +210,21 @@ class AuditService @Inject constructor(
       }
 
       return table
+   }
+
+   private fun makeCell(text: String, vAlignment: Int, hAlignment: Int, font: Font, leading: Float, padding: Float, borders: Rectangle, ascender: Boolean, descender: Boolean): PdfPCell {
+      val p = Paragraph(text, font)
+      p.setLeading(leading)
+
+      val cell = PdfPCell(p)
+      cell.setLeading(leading, 0f)
+      cell.setVerticalAlignment(vAlignment)
+      cell.setHorizontalAlignment(hAlignment)
+      cell.cloneNonPositionParameters(borders)
+      cell.setUseAscender(ascender)
+      cell.setUseDescender(descender)
+      cell.setUseBorderPadding(true)
+      cell.setPadding(padding)
+      return cell
    }
 }
