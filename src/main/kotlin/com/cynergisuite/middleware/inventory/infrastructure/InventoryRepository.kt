@@ -108,7 +108,7 @@ class InventoryRepository(
    fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<Inventory> {
       var totalElements: Long? = null
       val elements = mutableListOf<Inventory>()
-      val statuses: List<String> = pageRequest.inventoryStatus ?: emptyList()
+      val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
       val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!)
 
       logger.debug("Finding all Inventory with {} and {}", pageRequest, params)

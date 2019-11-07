@@ -23,7 +23,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       pageOneResult.locationType == null
       pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
-      pageOneResult.requested.inventoryStatus == ["N", "O", "R", "D"]
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 764
@@ -69,7 +69,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
       pageOneResult.requested.locationType == "STORE"
-      pageOneResult.requested.inventoryStatus == ["N", "O", "R", "D"]
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 764
@@ -165,7 +165,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
-      pageOneResult.requested.inventoryStatus == ["N", "O", "R", "D"]
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 764
