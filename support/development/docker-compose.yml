@@ -48,7 +48,7 @@ services:
     tty: true
     networks:
       - cynerginet
-    command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "postgres" ]
+    command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "cynergiuser" ]
   cynergidevelopdbpsql:
      build:
         context: db
@@ -60,7 +60,7 @@ services:
      tty: true
      networks:
         - cynerginet
-     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "postgres" ]
+     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "cynergiuser" ]
   cynergitestdb:
     build:
       context: db

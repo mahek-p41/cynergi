@@ -12,7 +12,7 @@ postgres: # postgres reactive client is configured for use by reactive parts of 
          port: 6432
          host: localhost
          database: cynergidevelopdb
-         user: postgres
+         user: cynergiuser
          password: password
          maxSize: 1
 datasources:
