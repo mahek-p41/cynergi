@@ -27,5 +27,5 @@ services:
       - cynergideploynet
     links:
       - cynergitestdeploydb
-    #command: ["/home/jenkins/cynergi-middleware/support/deployment/cynmid/build-cynmid.sh"]
-    command: ["/bin/bash"]
+    command: ["/home/jenkins/cynergi-middleware/support/deployment/cynmid/build-cynmid.sh"]
+    #command: ["/bin/bash"]
