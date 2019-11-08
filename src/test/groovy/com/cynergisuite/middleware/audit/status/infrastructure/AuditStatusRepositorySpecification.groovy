@@ -16,9 +16,9 @@ class AuditStatusRepositorySpecification extends Specification {
       then:
       result != null
       result.id == 1
-      result.value == "OPENED"
-      result.description == "Opened"
-      result.localizationCode == "audit.status.opened"
+      result.value == "CREATED"
+      result.description == "Created"
+      result.localizationCode == "audit.status.created"
       result.nextStates.size() == 2
       result.nextStates[0].id == 2
       result.nextStates[0].value == "IN-PROGRESS"
@@ -53,14 +53,14 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[1].nextStates[0].nextStates.empty
 
       when:
-      result = auditStatusRepository.findOne("opened")
+      result = auditStatusRepository.findOne("created")
 
       then:
       result != null
       result.id == 1
-      result.value == "OPENED"
-      result.description == "Opened"
-      result.localizationCode == "audit.status.opened"
+      result.value == "CREATED"
+      result.description == "Created"
+      result.localizationCode == "audit.status.created"
       result.nextStates.size() == 2
       result.nextStates[0].id == 2
       result.nextStates[0].value == "IN-PROGRESS"

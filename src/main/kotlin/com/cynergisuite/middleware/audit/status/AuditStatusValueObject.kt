@@ -19,7 +19,7 @@ data class AuditStatusValueObject (
 
    @field:NotNull
    @field:Size(min = 3, max = 15)
-   @field:Schema(name = "value", description = "This is a database driven with the original values being OPENED, IN-PROGRESS, COMPLETED, CANCELED and SIGNED-OFF")
+   @field:Schema(name = "value", description = "This is a database driven with the original values being CREATED, IN-PROGRESS, COMPLETED, CANCELED and SIGNED-OFF")
    var value: String,
 
    @field:Size(min = 3, max = 50)

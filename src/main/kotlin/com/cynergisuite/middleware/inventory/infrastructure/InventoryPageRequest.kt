@@ -21,7 +21,7 @@ class InventoryPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) 
    var storeNumber: Int? = null
 
    @field:Schema(name = "inventoryStatus", description = "Set of inventory statues to be queried for", allowableValues = ["N", "O", "R", "D"], required = false, nullable = true)
-   var inventoryStatus: Set<String>? = setOf("N", "R", "D")
+   var inventoryStatus: Set<String>? = setOf("N", "R")
 
    @field:Schema(name = "locationType", description = "Allows for choosing where the inventory is located to be chosen.  If this property is not filled out then all items are returned", allowableValues = ["STORE", "WAREHOUSE", "PEDNING", "CUSTOM", "LOANER", "SERVICE", "STOLEN", "CHARGEOFF"], required = false, nullable = true)
    var locationType: String? = null

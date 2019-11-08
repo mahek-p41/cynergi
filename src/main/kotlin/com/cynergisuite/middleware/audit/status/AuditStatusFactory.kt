@@ -5,27 +5,27 @@ import java.util.stream.Stream
 
 object AuditStatusFactory {
    private val statuses = listOf(
-      AuditStatus(1, "OPENED", "Opened", "audit.status.opened", "FF0000"),
-      AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress", "FF6600"),
-      AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed", "FFCC00"),
-      AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled", "CCFF00"),
-      AuditStatus(5, "SIGNED-OFF", "Signed Off", "audit.status.signed-off", "66FF00")
+      CREATED,
+      IN_PROGRESS,
+      COMPLETED,
+      CANCELED,
+      SIGNED_OFF
    )
 
    @JvmStatic
-   fun opened(): AuditStatus = statuses.first { it.value == "OPENED" }
+   fun created(): AuditStatus = statuses.first { it == CREATED }
 
    @JvmStatic
-   fun inProgress(): AuditStatus = statuses.first { it.value == "IN-PROGRESS" }
+   fun inProgress(): AuditStatus = statuses.first { it == IN_PROGRESS }
 
    @JvmStatic
-   fun canceled(): AuditStatus = statuses.first { it.value == "CANCELED" }
+   fun canceled(): AuditStatus = statuses.first { it == CANCELED }
 
    @JvmStatic
-   fun completed(): AuditStatus = statuses.first { it.value == "COMPLETED" }
+   fun completed(): AuditStatus = statuses.first { it == COMPLETED }
 
    @JvmStatic
-   fun signedOff(): AuditStatus = statuses.first { it .value == "SIGNED-OFF" }
+   fun signedOff(): AuditStatus = statuses.first { it == SIGNED_OFF }
 
    @JvmStatic
    fun values(): List<AuditStatus> = statuses

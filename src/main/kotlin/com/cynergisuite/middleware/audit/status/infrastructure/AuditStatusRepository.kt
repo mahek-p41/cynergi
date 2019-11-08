@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.audit.status.infrastructure
 
 import com.cynergisuite.middleware.audit.status.AuditStatus
+import com.cynergisuite.middleware.audit.status.AuditStatusEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,9 +34,6 @@ class AuditStatusRepository @Inject constructor(
 
    fun findAll(): List<AuditStatus> =
       jdbc.query("SELECT * FROM audit_status_type_domain ORDER BY value", simpleAuditStatusRowMapper)
-
-   fun fetchAllByValues(values: Set<String>): Set<AuditStatus> =
-      jdbc.query("SELECT * FROM audit_status_type_domain WHERE value IN (:values) ORDER BY value", mapOf("values" to values), simpleAuditStatusRowMapper).toSet()
 
    fun mapRow(rs: ResultSet, rowPrefix: String = "astd_"): AuditStatus =
       simpleAuditStatusRowMapper.mapRow(rs, rowPrefix)
@@ -128,7 +126,7 @@ private class AuditStatusRowMapper(
       mapRow(rs, columnPrefix)
 
    fun mapRow(rs: ResultSet, columnPrefix: String): AuditStatus =
-      AuditStatus(
+      AuditStatusEntity(
          id = rs.getLong("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),

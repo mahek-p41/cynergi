@@ -5,6 +5,8 @@ import com.cynergisuite.middleware.audit.action.AuditAction
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
+import com.cynergisuite.middleware.audit.status.CREATED
+import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ValidationError
@@ -70,7 +72,7 @@ class AuditValidator @Inject constructor(
          store = storeRepository.findOneByNumber(number = audit.store!!.number!!)!!,
          actions = mutableSetOf(
             AuditAction(
-               status = auditStatusService.fetchOpened(),
+               status = CREATED,
                changedBy = Employee(employee)
             )
          )

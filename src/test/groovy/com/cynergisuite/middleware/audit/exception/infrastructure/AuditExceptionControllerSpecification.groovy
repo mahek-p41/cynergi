@@ -250,8 +250,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "fetch all audit exceptions when more than one audit exists" () {
       given:
       final store = authenticatedEmployee.store
-      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
@@ -283,7 +283,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
@@ -318,7 +318,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
@@ -351,7 +351,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), exceptionCode: exceptionCode])
 
@@ -379,7 +379,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create invalid audit exception" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exception = new AuditExceptionCreateValueObject()
 
       when:
@@ -415,7 +415,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception where inventory id is null" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
 
       when:
@@ -455,7 +455,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final barcode = "12345689521028"
       final scanArea = AuditScanAreaFactory.random().with { new AuditScanAreaValueObject(it) }
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
       def result = post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([scanArea: scanArea, barcode: barcode, exceptionCode: "Not found in inventory"]))
@@ -482,7 +482,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create audit exception where no inventory.id and no barcode is passed" () {
       given:
       final scanArea = AuditScanAreaFactory.random().with { new AuditScanAreaValueObject(it) }
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
       post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([scanArea: scanArea, exceptionCode: "Not found in inventory"]))
@@ -530,7 +530,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit exception that has been signed-off" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
       final auditException = auditExceptionFactoryService.single(audit)
 
       when:

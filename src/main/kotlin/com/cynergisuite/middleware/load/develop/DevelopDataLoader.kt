@@ -58,25 +58,25 @@ class DevelopDataLoader @Inject constructor(
       auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
 
       // setup store one canceled audit
-      auditFactoryService.single(storeOne, storeOneEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.canceled()))
+      auditFactoryService.single(storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
 
       // setup store three canceled audit
-      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.canceled()))
+      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
 
       // setup store three in-progress audit
-      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.inProgress()))
+      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress()))
 
       // setup store one completed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
       // setup store three completed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
       // setup store one signed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
       // setup store three signed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
       logger.info("Finished loading develop data")
       logger.info("Admin employee {}", admin)

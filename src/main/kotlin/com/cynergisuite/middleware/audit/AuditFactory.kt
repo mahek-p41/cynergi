@@ -22,7 +22,7 @@ object AuditFactory {
    fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>? = null): Stream<Audit> {
       val number = if (numberIn > 0) numberIn else 1
       val store = storeIn?: StoreFactory.random()
-      val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.opened())
+      val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.created())
       val changedBy = changedByIn ?: EmployeeFactory.testEmployee()
 
       return IntStream.range(0, number).mapToObj {

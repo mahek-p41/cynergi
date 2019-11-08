@@ -26,8 +26,8 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.enums.ParameterIn.*
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -115,7 +115,7 @@ class AuditController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @AccessControl("audit-create")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in he OPENED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
+   @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in the CREATED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to save Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),

@@ -4,6 +4,11 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.ValidPageSortBy
 import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.extensions.endOfWeek
+import com.cynergisuite.middleware.audit.status.CANCELED
+import com.cynergisuite.middleware.audit.status.COMPLETED
+import com.cynergisuite.middleware.audit.status.CREATED
+import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -15,7 +20,7 @@ import javax.validation.constraints.Positive
 @Schema(
    name = "AuditPageRequest",
    title = "Specialized paging for listing audits",
-   description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=OPENED&status=IN-PROGRESS"
+   description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=CREATED&status=IN-PROGRESS"
 )
 class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
 
@@ -36,7 +41,7 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
    constructor(pageRequestIn: AuditPageRequest? = null) : this(pageRequestIn ?: PageRequest()) {
       val statusesIn = pageRequestIn?.status
 
-      this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf("OPENED", "IN-PROGRESS", "COMPLETED", "CANCELED", "SIGNED-OFF")
+      this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf(CREATED.value, IN_PROGRESS.value, COMPLETED.value, CANCELED.value, SIGNED_OFF.value)
       this.from = buildFrom(this.status!!, pageRequestIn)
       this.thru = buildThru(from, this.status!!, pageRequestIn)
       this.storeNumber = pageRequestIn?.storeNumber
@@ -90,7 +95,7 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
    private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
       val fromIn = pageRequestIn?.from
 
-      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && fromIn == null) {
+      return if (statuses.size < 3 && (statuses.contains(CREATED.value) || statuses.contains(IN_PROGRESS.value)) && fromIn == null) {
          null
       } else {
          fromIn ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
@@ -100,7 +105,7 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
    private fun buildThru(from: OffsetDateTime?, statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
       val thruIn = pageRequestIn?.thru ?: from?.endOfWeek()
 
-      return if (statuses.size < 3 && (statuses.contains("OPENED") || statuses.contains("IN-PROGRESS")) && thruIn == null) {
+      return if (statuses.size < 3 && (statuses.contains(CREATED.value) || statuses.contains(IN_PROGRESS.value)) && thruIn == null) {
          null
       } else {
          thruIn
