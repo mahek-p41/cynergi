@@ -18,4 +18,6 @@ data class AuditAction (
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): AuditAction = copy()
+
+   fun getEmpName() : String = changedBy.firstNameMi + " " + changedBy.lastName
 }

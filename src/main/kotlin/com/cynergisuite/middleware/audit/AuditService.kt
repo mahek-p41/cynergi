@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.makeCell
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
@@ -19,11 +20,14 @@ import com.lowagie.text.Phrase
 import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfPCell
 import com.lowagie.text.pdf.PdfPTable
+import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
+import io.reactiverse.kotlin.pgclient.data.intervalOf
 import org.apache.commons.lang3.StringUtils.EMPTY
 import java.awt.Color
 import java.time.LocalDate
+import java.time.LocalDateTime
 //import java.awt.Font
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -88,11 +92,11 @@ class AuditService @Inject constructor(
 
       if (updated.currentStatus().value == "SIGNED-OFF") {
          reportalService.generateReportalDocument { reportalOutputStream ->
-            Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 36F, 0.25F).use { document ->
-               PdfWriter.getInstance(document, reportalOutputStream)
+            Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
+               val writer = PdfWriter.getInstance(document, reportalOutputStream)
 
+               writer.pageEvent = object : PdfPageEventHelper() { override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(updated, writer, document) }
                document.open()
-               document.add(buildHeader(updated, document.pageSize.width))
                document.add(buildExceptionReport(updated, document.pageSize.width))
             }
          }
@@ -101,13 +105,25 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
-   private fun buildHeader(audit: Audit, pageWidth: Float): PdfPTable {
+   private fun buildHeader(audit: Audit, writer: PdfWriter, document: Document) {
       val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
       val padding = 0f
       val leading = headerFont.getSize() * 1.2F
       val ascender = true
       val descender = true
       val currentDate = LocalDate.now()
+
+      val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+      val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+      val beginAction =  audit.actions.asSequence()
+         .first { it.status.value == "IN-PROGRESS"}
+      val beginDate = dateFormatter.format(beginAction.timeCreated)
+
+      val endAction =  audit.actions.asSequence()
+         .first { it.status.value == "COMPLETED"}
+      val endDate = dateFormatter.format(endAction.timeCreated)
+      val endEmployee = endAction.getEmpName()
 
       val headerBorder = Rectangle(0f, 0f)
       headerBorder.borderWidthLeft = 0f
@@ -120,31 +136,42 @@ class AuditService @Inject constructor(
       headerBorder.borderColorTop = Color.BLACK
 
       val header = PdfPTable(3)
-      header.totalWidth = pageWidth - 10
+      header.totalWidth = document.pageSize.width - 10
       header.isLockedWidth = true
       header.headerRows = 0
       header.defaultCell.border = 0
       header.setWidthPercentage(100f)
 
-      val headerString = "DATE: " + currentDate.toString()
-      header.addCell(makeCell(headerString, Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender))
-      header.addCell(makeCell("BOLIN RENTAL PURCHASE", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender))
-      header.addCell(makeCell("PAGE", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.makeCell("DATE: ${currentDate}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("BOLIN RENTAL PURCHASE", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("PAGE ${document.pageNumber}", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      header.addCell(makeCell("TIME", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender))
-      header.addCell(makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender))
-      header.addCell(makeCell("BCIDLERP", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender))
+      //header.makeCell("TIME: ${LocalDateTime.now()}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("BCIDLERP", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      val locationString = "LOCATION: " + audit.store.toString()
-      header.addCell(makeCell(locationString, Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender))
-      header.addCell(makeCell("(By Product)", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender))
-      header.addCell(makeCell("(Final-Reprint)", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender))
+      header.makeCell("Location: ${audit.printLocation()}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("(By Product)", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("(Final-Reprint)", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Started: ${beginDate}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Completed: ${endDate}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Employee: ${endEmployee}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.addCell(Phrase(EMPTY, headerFont))
       header.addCell(Phrase(EMPTY, headerFont))
       header.addCell(Phrase(EMPTY, headerFont))
 
-      return header
+      header.writeSelectedRows(0,-1,5f,document.pageSize.height-5,writer.directContent)
    }
 
    private fun buildExceptionReport(audit: Audit, pageWidth: Float): PdfPTable {
@@ -175,24 +202,26 @@ class AuditService @Inject constructor(
       table.defaultCell.border = 0
       table.setWidthPercentage(100f)
 
+      val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
       val widthPercentage: Float = (pageWidth - 10) / 10
       val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
-      //widths[0] = widths[0] / 2
-      //widths[9] = widths[9] * 2
+      widths[0] = widths[0] - 25 //Shortening Scan Area
+      widths[3] = widths[3] + 25 //Lengthening Model
+      widths[9] = widths[9] + 25 //Lengthening Exception
+      widths[0] = widths[5] - 25 //Shortening Alt ID
       table.setWidths(widths)
 
-      //table.addCell(Phrase("Scan Area", headerFont))
-      table.addCell(makeCell("Scan Area", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Product Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Brand", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Model #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Bar Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Alt ID", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Serial #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Employee", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Scanned", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      table.addCell(makeCell("Exception", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender))
-      //table.addCell(Phrase("Exception", headerFont))
+      table.makeCell("Scan Area", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Product Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Brand", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Model #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Bar Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Alt ID", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Serial #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Employee", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Scanned", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Exception", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
 
       auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity, even: Boolean ->
          table.defaultCell.backgroundColor = if (even) evenColor else oddColor
@@ -205,26 +234,11 @@ class AuditService @Inject constructor(
          table.addCell(Phrase(exception.altId ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.serialNumber ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.scannedBy.displayName(), rowFont))
-         table.addCell(Phrase(exception.timeCreated.format(REPORT_CREATED_TIME_FORMAT), rowFont))
+         table.addCell(Phrase(dateTimeFormatter.format(exception.timeCreated), rowFont))
          table.addCell(Phrase(exception.exceptionCode, rowFont))
       }
 
       return table
    }
 
-   private fun makeCell(text: String, vAlignment: Int, hAlignment: Int, font: Font, leading: Float, padding: Float, borders: Rectangle, ascender: Boolean, descender: Boolean): PdfPCell {
-      val p = Paragraph(text, font)
-      p.setLeading(leading)
-
-      val cell = PdfPCell(p)
-      cell.setLeading(leading, 0f)
-      cell.setVerticalAlignment(vAlignment)
-      cell.setHorizontalAlignment(hAlignment)
-      cell.cloneNonPositionParameters(borders)
-      cell.setUseAscender(ascender)
-      cell.setUseDescender(descender)
-      cell.setUseBorderPadding(true)
-      cell.setPadding(padding)
-      return cell
-   }
 }
