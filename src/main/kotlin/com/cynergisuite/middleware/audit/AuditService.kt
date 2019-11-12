@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import java.awt.Color
 import java.time.LocalDate
 import java.time.LocalDateTime
-//import java.awt.Font
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
@@ -123,7 +122,7 @@ class AuditService @Inject constructor(
       val endAction =  audit.actions.asSequence()
          .first { it.status.value == "COMPLETED"}
       val endDate = dateFormatter.format(endAction.timeCreated)
-      val endEmployee = endAction.getEmpName()
+      val endEmployee = endAction.changedBy.getEmpName()
 
       val headerBorder = Rectangle(0f, 0f)
       headerBorder.borderWidthLeft = 0f
@@ -146,7 +145,6 @@ class AuditService @Inject constructor(
       header.makeCell("BOLIN RENTAL PURCHASE", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("PAGE ${document.pageNumber}", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      //header.makeCell("TIME: ${LocalDateTime.now()}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("BCIDLERP", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
@@ -245,5 +243,4 @@ class AuditService @Inject constructor(
 
       return table
    }
-
 }

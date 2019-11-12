@@ -50,7 +50,7 @@ class DevelopDataLoader @Inject constructor(
       val storeroom = auditScanAreaFactoryService.storeroom()
 
       // setup store one open audit
-      val openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee, statusesIn = setOf(AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      val openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
       auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)

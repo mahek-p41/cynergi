@@ -36,5 +36,5 @@ data class Audit (
          .map { it.status }
          .last()
 
-   fun printLocation() : String = store.number.toString() + " " + store.name
+   fun printLocation() : String = "${store.number}  ${store.name}"
 }
