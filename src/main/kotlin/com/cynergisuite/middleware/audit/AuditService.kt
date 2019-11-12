@@ -207,13 +207,18 @@ class AuditService @Inject constructor(
       val widthPercentage: Float = (pageWidth - 10) / 10
       val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
       widths[0] = widths[0] - 25 //Shortening Scan Area
-      widths[3] = widths[3] + 25 //Lengthening Model
-      widths[9] = widths[9] + 25 //Lengthening Exception
-      widths[0] = widths[5] - 25 //Shortening Alt ID
+      widths[1] = widths[1] - 50 //Shortening Prod Code
+      widths[2] = widths[2] - 50 //Shortening Brand
+      widths[3] = widths[3] + 20 //Lengthening Model
+      widths[4] = widths[4] - 20 //Shortening Bar Code
+      widths[5] = widths[5] - 20 //Shortening Alt ID
+      widths[7] = widths[7] + 35 //Lengthening Employee
+      widths[8] = widths[8] + 35 //Lengthening Scanned
+      widths[9] = widths[9] + 75 //Lengthening Exception
       table.setWidths(widths)
 
       table.makeCell("Scan Area", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
-      table.makeCell("Product Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Prod Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Brand", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Model #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Bar Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)

@@ -39,6 +39,7 @@ object AuditExceptionFactory {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
+      val lorem = faker.lorem()
       val scannedBy = scannedByIn ?: EmployeeFactory.single()
       val barcode =  faker.code()
       val commerce = faker.commerce()
@@ -51,11 +52,18 @@ object AuditExceptionFactory {
          AuditExceptionEntity(
             scanArea = scanArea,
             barcode = barcode.asin(),
-            productCode = if(random.nextBoolean()) commerce.productName() else null,
-            altId = if (random.nextBoolean()) barcode.asin() else null,
-            serialNumber = if (random.nextBoolean()) idNumber.valid() else null,
-            inventoryBrand = if (random.nextBoolean()) company.name() else null,
-            inventoryModel = if (random.nextBoolean()) commerce.productName() else null,
+            //barcode = lorem.characters(10, 10),
+            //productCode = if(random.nextBoolean()) commerce.productName() else null,
+            //productCode = if(random.nextBoolean()) lorem.characters(2, 3) else null,
+            productCode = lorem.characters(2),
+            //altId = if (random.nextBoolean()) barcode.asin() else null,
+            altId = lorem.characters(5, 10),
+            //serialNumber = if (random.nextBoolean()) idNumber.valid() else null,
+            serialNumber = lorem.characters(10, 15),
+            //inventoryBrand = if (random.nextBoolean()) company.name() else null,
+            inventoryBrand = lorem.characters(3),
+            //inventoryModel = if (random.nextBoolean()) commerce.productName() else null,
+            inventoryModel = lorem.characters(10, 18),
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
             signedOff = random.nextBoolean(),
