@@ -45,4 +45,6 @@ data class Employee(
 
    override fun myId(): Long? = id
    fun copyMe(): Employee = copy()
+   fun displayName(): String = "$number - $lastName"
+   fun getEmpName() : String = "$firstNameMi $lastName"
 }

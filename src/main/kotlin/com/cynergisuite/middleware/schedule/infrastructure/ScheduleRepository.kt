@@ -162,6 +162,7 @@ class ScheduleRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = pageRequest,
          elements = elements,
          totalElements = totalElement ?: 0
       )

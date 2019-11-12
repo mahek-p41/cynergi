@@ -34,7 +34,7 @@ class AuditExceptionService @Inject constructor(
       val audit = auditRepository.findOne(auditId) ?: throw NotFoundException(auditId)
       val found = auditExceptionRepository.findAll(audit, pageRequest)
 
-      return found.toPage(pageRequest) { transformEntity(it, locale) }
+      return found.toPage { transformEntity(it, locale) }
    }
 
    fun exists(id: Long): Boolean =

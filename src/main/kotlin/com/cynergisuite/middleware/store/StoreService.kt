@@ -19,7 +19,7 @@ class StoreService @Inject constructor(
    fun fetchAll(pageRequest: PageRequest): Page<StoreValueObject> {
       val stores = storeRepository.findAll(pageRequest)
 
-      return stores.toPage(pageRequest) { store ->
+      return stores.toPage { store ->
          StoreValueObject(store)
       }
    }

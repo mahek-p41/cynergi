@@ -35,4 +35,6 @@ data class Audit (
          .sortedBy { it.id }
          .map { it.status }
          .last()
+
+   fun printLocation() : String = "${store.number}  ${store.name}"
 }

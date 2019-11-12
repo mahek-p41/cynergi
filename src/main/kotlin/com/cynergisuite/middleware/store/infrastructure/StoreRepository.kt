@@ -78,6 +78,7 @@ class StoreRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = pageRequest,
          elements = elements,
          totalElements = totalElements ?: 0
       )

@@ -228,7 +228,7 @@ class AuditRepository @Inject constructor(
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<Audit> { rs, elements ->
+      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<Audit>(pageRequest) { rs, elements ->
          var currentId: Long = -1
          var currentParentEntity: Audit? = null
 

@@ -1,10 +1,12 @@
 package com.cynergisuite.domain.infrastructure
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.PageRequest
 import org.springframework.jdbc.core.ResultSetExtractor
 import java.sql.ResultSet
 
 class PagedResultSetExtractor<T : Identifiable>(
+   private val requested: PageRequest,
    private val mapper: (rs: ResultSet, elements: MutableList<T>) -> Unit
 ) : ResultSetExtractor<RepositoryPage<T>> {
 
@@ -18,6 +20,7 @@ class PagedResultSetExtractor<T : Identifiable>(
       }
 
       return RepositoryPage(
+         requested = requested,
          elements = elements,
          totalElements = totalElements
       )

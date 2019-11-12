@@ -35,3 +35,9 @@ cynergi:
       import:
          location: "./import/"
          rename: false
+   worker:
+      pool:
+         size: 5
+   reportal:
+      file:
+         location: "/tmp/reportal"

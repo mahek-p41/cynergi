@@ -121,6 +121,7 @@ class AuditDetailRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = page,
          elements = resultList,
          totalElements = totalElements ?: 0
       )

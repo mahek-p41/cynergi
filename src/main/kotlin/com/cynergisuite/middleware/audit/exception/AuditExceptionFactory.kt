@@ -39,6 +39,7 @@ object AuditExceptionFactory {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
+      val lorem = faker.lorem()
       val scannedBy = scannedByIn ?: EmployeeFactory.single()
       val barcode =  faker.code()
       val commerce = faker.commerce()
@@ -50,12 +51,12 @@ object AuditExceptionFactory {
       return IntStream.range(0, number).mapToObj {
          AuditExceptionEntity(
             scanArea = scanArea,
-            barcode = barcode.asin(),
-            productCode = if(random.nextBoolean()) commerce.productName() else null,
-            altId = if (random.nextBoolean()) barcode.asin() else null,
-            serialNumber = if (random.nextBoolean()) idNumber.valid() else null,
-            inventoryBrand = if (random.nextBoolean()) company.name() else null,
-            inventoryModel = if (random.nextBoolean()) commerce.productName() else null,
+            barcode = lorem.characters(10).toUpperCase(),
+            productCode = if(random.nextBoolean()) lorem.characters(2, 3).toUpperCase() else null,
+            altId = if (random.nextBoolean()) lorem.characters(5, 10).toUpperCase() else null,
+            serialNumber = if (random.nextBoolean()) lorem.characters(10, 15).toUpperCase() else null,
+            inventoryBrand = lorem.characters(3),
+            inventoryModel = if (random.nextBoolean()) lorem.characters(10, 18) else null,
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
             signedOff = random.nextBoolean(),

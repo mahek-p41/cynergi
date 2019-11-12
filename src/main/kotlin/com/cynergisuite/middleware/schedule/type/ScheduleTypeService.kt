@@ -17,6 +17,6 @@ class ScheduleTypeService @Inject constructor(
    fun fetchAll(pageRequest: PageRequest, locale: Locale): Page<ScheduleTypeValueObject> {
       val found = scheduleTypeRepository.findAll(pageRequest)
 
-      return found.toPage(pageRequest) { ScheduleTypeValueObject(it, it.localizeMyDescription(locale, localizationService)) }
+      return found.toPage { ScheduleTypeValueObject(it, it.localizeMyDescription(locale, localizationService)) }
    }
 }
