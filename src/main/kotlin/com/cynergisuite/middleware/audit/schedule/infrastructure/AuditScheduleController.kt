@@ -84,7 +84,7 @@ class AuditScheduleController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "audit-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleCreateUpdateDataTransferObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -105,7 +105,7 @@ class AuditScheduleController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleCreateUpdateDataTransferObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")

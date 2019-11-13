@@ -92,5 +92,4 @@ pipeline {
          junit 'build/test-results/**/*.xml'
       }
    }
-
 }
