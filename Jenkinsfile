@@ -11,7 +11,6 @@ pipeline {
       NEXUS_JENKINS_CREDENTIALS = credentials('NEXUS_JENKINS_CREDENTIALS')
    }
 
-
    stages {
       stage('Start Postgres Database') {
          steps {

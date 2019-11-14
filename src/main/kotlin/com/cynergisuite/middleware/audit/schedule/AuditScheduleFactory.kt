@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule
 
+import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -13,6 +14,7 @@ import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import org.apache.commons.lang3.StringUtils
 import java.time.DayOfWeek
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -25,6 +27,7 @@ object AuditScheduleFactory {
    fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null): Stream<ScheduleEntity> {
       val faker = Faker()
       val lorem = faker.lorem()
+      val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
       val dayOfWeek = dayOfWeekIn ?: DayOfWeek.values().random()
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
@@ -42,8 +45,8 @@ object AuditScheduleFactory {
 
       return IntStream.range(0, number).mapToObj {
          ScheduleEntity(
-            title = lorem.characters(3, 64),
-            description = lorem.characters(3, 256),
+            title = chuckNorris.fact().truncate(36)!!,
+            description = chuckNorris.fact().truncate(256),
             schedule = dayOfWeek.name,
             command = ScheduleCommandTypeFactory.auditSchedule(),
             type = ScheduleTypeFactory.weekly(),
