@@ -54,6 +54,7 @@ class AuditExceptionRepository @Inject constructor(
             ae.exception_code AS ae_exception_code,
             ae.audit_id AS ae_audit_id,
             ae.signed_off AS ae_signed_off,
+            ae.lookup_key AS ae_lookup_key,
             e.e_id AS e_id,
             e.e_time_created AS e_time_created,
             e.e_time_updated AS e_time_updated,
@@ -147,6 +148,7 @@ class AuditExceptionRepository @Inject constructor(
                   ae.exception_code AS ae_exception_code,
                   ae.audit_id AS ae_audit_id,
                   ae.signed_off AS ae_signed_off,
+                  ae.lookup_key AS ae_lookup_key,
                   e.e_id AS e_id,
                   e.e_time_created AS e_time_created,
                   e.e_time_updated AS e_time_updated,
@@ -266,8 +268,8 @@ class AuditExceptionRepository @Inject constructor(
       logger.debug("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, signed_off, audit_id)
-         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :signed_off, :audit_id)
+         INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, signed_off, lookup_key, audit_id)
+         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :signed_off, :lookup_key, :audit_id)
          RETURNING
             *
          """.trimIndent(),
@@ -282,6 +284,7 @@ class AuditExceptionRepository @Inject constructor(
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
+            "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, rowNum ->
@@ -318,6 +321,7 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy = scannedBy,
          exceptionCode = rs.getString("${columnPrefix}exception_code"),
          signedOff = rs.getBoolean("${columnPrefix}signed_off"),
+         lookupKey = rs.getString("${columnPrefix}lookup_key"),
          audit = audit
       )
 }

@@ -32,6 +32,7 @@ import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class AuditControllerSpecification extends ControllerSpecificationBase {
@@ -130,10 +131,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NOT_FOUND
-      final notFoundResult = notFoundException.response.bodyAsJson()
-      notFoundResult.size() == 1
-      notFoundResult.message == "Request with Page 5, Size 5, Sort By id and Sort Direction ASC produced no results"
+      notFoundException.status == NO_CONTENT
    }
 
    void "fetch all audits by store" () {
@@ -398,6 +396,25 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "create new audit" () {
+      when:
+      def result = post("/$path", new AuditCreateValueObject())
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.store.storeNumber == authenticatedEmployee.store.number
+      result.actions.size() == 1
+      result.actions[0].status.value == "CREATED"
+      result.actions[0].status.description == "Created"
+      result.actions[0].changedBy.number == authenticatedEmployee.number
+   }
+
+   void "create new audit when previous audit was cancelled" () {
+      given:
+      final store = storeFactoryService.random()
+      auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
+
       when:
       def result = post("/$path", new AuditCreateValueObject())
 
@@ -705,7 +722,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      auditRepository.countAuditsNotCompleted(audit.store.number) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number) == 0
 
       when:
       def result = post(path, new AuditCreateValueObject())

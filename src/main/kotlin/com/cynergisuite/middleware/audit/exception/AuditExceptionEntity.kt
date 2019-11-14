@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.inventory.Inventory
+import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -26,6 +26,7 @@ data class AuditExceptionEntity(
    val scannedBy: Employee,
    val exceptionCode: String,
    val signedOff: Boolean = false,
+   val lookupKey: String?,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
    val audit: Identifiable
 ) : Entity<AuditExceptionEntity> {
@@ -43,11 +44,12 @@ data class AuditExceptionEntity(
          scannedBy = Employee(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
+         lookupKey = vo.lookupKey,
          notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.myId()!!) }.toMutableList(),
          audit = SimpleIdentifiableEntity(vo.audit!!)
       )
 
-   constructor(audit: Long, inventory: Inventory, scanArea: AuditScanArea?, scannedBy: EmployeeValueObject, exceptionCode: String) :
+   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeValueObject, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -58,6 +60,7 @@ data class AuditExceptionEntity(
          inventoryModel = inventory.modelNumber,
          scannedBy = Employee(scannedBy),
          exceptionCode = exceptionCode,
+         lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)
       )
 
@@ -72,6 +75,7 @@ data class AuditExceptionEntity(
          inventoryModel = null,
          scannedBy = Employee(scannedBy),
          exceptionCode = exceptionCode,
+         lookupKey = null,
          audit = SimpleIdentifiableEntity(audit)
       )
 

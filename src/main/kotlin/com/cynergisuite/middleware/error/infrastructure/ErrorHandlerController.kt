@@ -23,6 +23,7 @@ import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
+import io.micronaut.http.HttpResponse.noContent
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
 import io.micronaut.http.HttpStatus.FORBIDDEN
@@ -154,17 +155,10 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = PageOutOfBoundsException::class)
-   fun pageOutOfBoundsExceptionHandler(httpRequest: HttpRequest<*>, exception: PageOutOfBoundsException): HttpResponse<ErrorDataTransferObject> {
+   fun pageOutOfBoundsExceptionHandler(exception: PageOutOfBoundsException): HttpResponse<ErrorDataTransferObject> {
       logger.error("Page out of bounds was requested {}", exception.toString())
 
-      val locale = httpRequest.findLocaleWithDefault()
-      val pageRequest = exception.pageRequest
-
-      return notFound(
-         ErrorDataTransferObject(
-            localizationService.localize(PageOutOfBounds(pageRequest.page, pageRequest.size, pageRequest.sortBy, pageRequest.sortDirection), locale)
-         )
-      )
+      return noContent()
    }
 
    @Error(global = true, exception = NotFoundException::class)

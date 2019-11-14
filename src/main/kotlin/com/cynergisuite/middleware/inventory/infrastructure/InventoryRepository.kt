@@ -5,7 +5,7 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.middleware.inventory.Inventory
+import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.intellij.lang.annotations.Language
@@ -74,7 +74,7 @@ class InventoryRepository(
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
    """.trimIndent()
 
-   fun findOne(id: Long): Inventory? {
+   fun findOne(id: Long): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
       val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.id = :id", mapOf("id" to id), RowMapper { rs, _ -> mapRow(rs)})
@@ -95,7 +95,7 @@ class InventoryRepository(
    fun doesNotExist(id: Long): Boolean =
       !exists(id)
 
-   fun findByLookupKey(lookupKey: String): Inventory? {
+   fun findByLookupKey(lookupKey: String): InventoryEntity? {
       logger.debug("Finding Inventory by barcode with {}", lookupKey)
 
       val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.lookup_key = :lookup_key", mapOf("lookup_key" to lookupKey), RowMapper { rs, _ -> mapRow(rs) })
@@ -105,9 +105,9 @@ class InventoryRepository(
       return inventory;
    }
 
-   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<Inventory> {
+   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity> {
       var totalElements: Long? = null
-      val elements = mutableListOf<Inventory>()
+      val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
       val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!)
 
@@ -153,8 +153,8 @@ class InventoryRepository(
       )
    }
 
-   fun mapRow(rs: ResultSet): Inventory =
-      Inventory(
+   fun mapRow(rs: ResultSet): InventoryEntity =
+      InventoryEntity(
          id = rs.getLong("id"),
          timeCreated = rs.getOffsetDateTime("time_created"),
          timeUpdated = rs.getOffsetDateTime("time_updated"),
