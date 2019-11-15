@@ -72,7 +72,7 @@ class AuditController @Inject constructor(
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audits that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(

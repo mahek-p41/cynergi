@@ -58,7 +58,7 @@ class DepartmentController @Inject constructor(
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a listing of departments", description = "Fetch a paginated listing of departments", operationId = "department-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "404", description = "The the result is empty"),
+      ApiResponse(responseCode = "204", description = "The the result is empty"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(

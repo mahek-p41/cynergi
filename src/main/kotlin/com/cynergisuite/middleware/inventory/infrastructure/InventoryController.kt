@@ -44,7 +44,7 @@ class InventoryController(
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "403", description = "If authentication fails"),
-      ApiResponse(responseCode = "404", description = "The the result is empty"),
+      ApiResponse(responseCode = "204", description = "The the result is empty"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
