@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
@@ -12,7 +11,12 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
@@ -82,9 +86,9 @@ class AuditScheduleController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @AccessControl("auditSchedule-create")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "audit-create")
+   @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "auditSchedule-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleCreateUpdateDataTransferObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -105,7 +109,7 @@ class AuditScheduleController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleCreateUpdateDataTransferObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
