@@ -26,13 +26,12 @@ object AuditScheduleFactory {
    @JvmStatic
    fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null): Stream<ScheduleEntity> {
       val faker = Faker()
-      val lorem = faker.lorem()
       val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
       val dayOfWeek = dayOfWeekIn ?: DayOfWeek.values().random()
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
       val department = departmentIn ?: DepartmentFactory.random()
-      val arguments = mutableListOf(ScheduleArgumentEntity(value = department.code, description = "department"))
+      val arguments = mutableSetOf(ScheduleArgumentEntity(value = department.code, description = "department"))
 
       for (store in stores) {
          arguments.add(

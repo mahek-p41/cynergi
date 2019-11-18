@@ -46,7 +46,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
 
    @field:NotNull
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")
-   val enabled: Boolean? = true
+   val enabled: Boolean? = null
 
 ) {
    constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity) :
@@ -55,7 +55,18 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department.id)
+         department = SimpleIdentifiableDataTransferObject(department.id),
+         enabled = true
+      )
+
+   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity, enabled: Boolean = true) :
+      this(
+         title = title,
+         description = description,
+         schedule = schedule,
+         stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
+         department = SimpleIdentifiableDataTransferObject(department.id),
+         enabled = enabled
       )
 
    constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity) :
@@ -65,7 +76,19 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department.id)
+         department = SimpleIdentifiableDataTransferObject(department.id),
+         enabled = true
+      )
+
+   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity, enabled: Boolean = true) :
+      this(
+         id = id,
+         title = title,
+         description = description,
+         schedule = schedule,
+         stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
+         department = SimpleIdentifiableDataTransferObject(department.id),
+         enabled = enabled
       )
 
    constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<Long>, department: Long) :
@@ -74,6 +97,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department)
+         department = SimpleIdentifiableDataTransferObject(department),
+         enabled = true
       )
 }

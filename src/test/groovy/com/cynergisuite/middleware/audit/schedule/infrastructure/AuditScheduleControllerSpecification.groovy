@@ -9,13 +9,14 @@ import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
 
+
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static java.time.DayOfWeek.*
+import static java.time.DayOfWeek.FRIDAY
+import static java.time.DayOfWeek.MONDAY
+import static java.time.DayOfWeek.TUESDAY
 
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
@@ -215,6 +216,27 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == true
    }
 
+   void "create disabled audit schedule" () {
+      given:
+      final store = storeFactoryService.random()
+      final department= departmentFactoryService.random()
+
+      when:
+      def result = post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [store] as Set, department, false))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.title == "test schedule"
+      result.description == "test schedule description"
+      result.schedule == "TUESDAY"
+      result.stores.size() == 1
+      result.stores[0].storeNumber == store.number
+      result.department.code == department.code
+      result.enabled == false
+   }
+
    void "create audit schedule with invalid store and department" () {
       when:
       post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [42] as Set,43))
@@ -248,11 +270,11 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule add store change department" () {
       given:
-      def storeOne = storeFactoryService.storeOne()
-      def storeThree = storeFactoryService.storeThree()
-      def storeManagerDepartment = departmentFactoryService.department("SM")
-      def salesAssociateDepartment = departmentFactoryService.department("SA")
-      def schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], storeManagerDepartment)
+      final storeOne = storeFactoryService.storeOne()
+      final storeThree = storeFactoryService.storeThree()
+      final storeManagerDepartment = departmentFactoryService.department("SM")
+      final salesAssociateDepartment = departmentFactoryService.department("SA")
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], storeManagerDepartment)
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne, storeThree] as Set, salesAssociateDepartment))
@@ -268,19 +290,56 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == true
    }
 
-   void "update audit schedule remove store" () {
+   void "update audit schedule change from enabled to disabled" () {
       given:
-      def storeOne = storeFactoryService.storeOne()
-      def storeThree = storeFactoryService.storeThree()
-      def storeManagerDepartment = departmentFactoryService.department("SM")
-      def salesAssociateDepartment = departmentFactoryService.department("SA")
-      def schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], storeManagerDepartment)
+      final storeOne = storeFactoryService.storeOne()
+      final storeManagerDepartment = departmentFactoryService.department("SM")
+      final salesAssociateDepartment = departmentFactoryService.department("SA")
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], storeManagerDepartment)
+
+      when:
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set, salesAssociateDepartment, false))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id == schedule.id
+      result.title == "Updated title"
+      result.description == "Updated description"
+      result.schedule == "TUESDAY"
+      result.stores.size() == 1
+      result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
+      result.department.id == salesAssociateDepartment.id
+      result.enabled == false
+   }
+
+   void "update audit schedule remove store change department" () {
+      given:
+      final storeOne = storeFactoryService.storeOne()
+      final storeThree = storeFactoryService.storeThree()
+      final storeManagerDepartment = departmentFactoryService.department("SM")
+      final salesAssociateDepartment = departmentFactoryService.department("SA")
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], storeManagerDepartment)
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set, salesAssociateDepartment))
 
       then:
       notThrown(HttpClientResponseException)
+      result.id == schedule.id
+      result.title == "Updated title"
+      result.description == "Updated description"
+      result.schedule == "TUESDAY"
+      result.stores.size() == 1
+      result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
+      result.department.id == salesAssociateDepartment.id
+      result.enabled == true
+
+      when:
+      result = get("/audit/schedule/${schedule.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id == schedule.id
       result.title == "Updated title"
       result.description == "Updated description"
       result.schedule == "TUESDAY"

@@ -29,7 +29,7 @@ class AuditScheduleValidator(
 
       val stores = mutableListOf<StoreEntity>()
       val department: DepartmentEntity = departmentRepository.findOne(dto.department!!.id!!)!!
-      val arguments = mutableListOf(
+      val arguments = mutableSetOf(
          ScheduleArgumentEntity(
             department.code,
             "department"
@@ -56,7 +56,8 @@ class AuditScheduleValidator(
             schedule = dto.schedule!!.name,
             command = scheduleCommandTypeRepository.findByValue("AuditSchedule"),
             type = scheduleTypeRepository.findByValue("WEEKLY"),
-            arguments = arguments
+            arguments = arguments,
+            enabled = dto.enabled!!
          ),
          stores,
          department
@@ -88,7 +89,7 @@ class AuditScheduleValidator(
       val updateStores: List<StoreEntity> = dto.stores.asSequence()
          .map { storeRepository.findOne(it.id!!)!! }
          .toList()
-      val argsToUpdate = mutableListOf<ScheduleArgumentEntity>()
+      val argsToUpdate = mutableSetOf<ScheduleArgumentEntity>()
 
       for (updateStore in updateStores) {
          val location = existingStores.binarySearch { it.second.id.compareTo(updateStore.id) }
