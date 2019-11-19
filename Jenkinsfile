@@ -9,6 +9,7 @@ pipeline {
 
    environment {
       NEXUS_JENKINS_CREDENTIALS = credentials('NEXUS_JENKINS_CREDENTIALS')
+      CYNERGI_DEPLOY_JENKINS = credentials('CYNERGI_DEPLOY_JENKINS_USER')
    }
 
    stages {
@@ -51,6 +52,7 @@ pipeline {
                gradleProps = readProperties file: 'gradle.properties'
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${gradleProps.releaseVersion}.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS' scp ./build/libs/cynergi-middleware.tar.xz /home/jenkins/JENKINS/STAGING/cynergi-middleware.tar.xz"
             }
          }
       }
@@ -63,6 +65,7 @@ pipeline {
                gradleProps = readProperties file: 'gradle.properties'
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${gradleProps.releaseVersion}.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS' scp ./build/libs/cynergi-middleware.tar.xz /home/jenkins/JENKINS/RELEASE/cynergi-middleware.tar.xz"
             }
          }
       }
