@@ -52,7 +52,7 @@ pipeline {
                gradleProps = readProperties file: 'gradle.properties'
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${gradleProps.releaseVersion}.tar.xz"
-               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -v $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 ./build/libs/cynergi-middleware.tar.xz /home/jenkins/JENKINS/STAGING/cynergi-middleware.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -v $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 ./build/libs/cynergi-middleware.tar.xz /home/jenkins/ELIMINATION/STAGING/cynergi-middleware.tar.xz"
             }
          }
       }
@@ -65,7 +65,7 @@ pipeline {
                gradleProps = readProperties file: 'gradle.properties'
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${gradleProps.releaseVersion}.tar.xz"
-               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -v $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17  ./build/libs/cynergi-middleware.tar.xz /home/jenkins/JENKINS/RELEASE/cynergi-middleware.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -v $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17  ./build/libs/cynergi-middleware.tar.xz /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware.tar.xz"
             }
          }
       }
@@ -79,12 +79,12 @@ pipeline {
          dir('./build/reports/tests/test') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
-            sh "cp -rv * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
+            sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
          }
          dir('./build/reports/openapi') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
-            sh "cp -rv * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
+            sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
          }
          dir('./build/reports/jacoco/test/html') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
