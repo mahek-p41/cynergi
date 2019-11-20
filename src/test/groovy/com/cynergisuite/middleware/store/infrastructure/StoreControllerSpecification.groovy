@@ -6,6 +6,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class StoreControllerSpecification extends ControllerSpecificationBase {
@@ -61,9 +62,6 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final def notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NOT_FOUND
-      final def notFoundResult = notFoundException.response.bodyAsJson()
-      notFoundResult.size() == 1
-      notFoundResult.message == "Request with Page 2, Size 5, Sort By id and Sort Direction ASC produced no results"
+      notFoundException.status == NO_CONTENT
    }
 }

@@ -9,6 +9,8 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
+import com.cynergisuite.middleware.audit.status.Canceled
+import com.cynergisuite.middleware.audit.status.Completed
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -332,7 +334,7 @@ class AuditRepository @Inject constructor(
       }
    }
 
-   fun countAuditsNotCompleted(storeNumber: Int): Int =
+   fun countAuditsNotCompletedOrCanceled(storeNumber: Int): Int =
       jdbc.queryForObject("""
          SELECT COUNT (*) 
          FROM (
@@ -347,7 +349,7 @@ class AuditRepository @Inject constructor(
             ) b
             JOIN audit_status_type_domain astd
               ON b.max_status = astd.id
-            WHERE astd.VALUE <> 'COMPLETED'
+            WHERE astd.VALUE NOT IN ('${Completed.value}', '${Canceled.value}')
          ) c
          """.trimIndent(),
          mapOf("store_number" to storeNumber),

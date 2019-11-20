@@ -83,6 +83,10 @@ data class AuditExceptionValueObject (
    @field:Schema(name = "signedOff", description = "Whether this exception has been signed off by the designated employee", example = "true", defaultValue = "false")
    var signedOff: Boolean = false,
 
+   @field:Size(min = 2, max = 200)
+   @field:Schema(name = "lookupKey", description = "The key that can be used to determine what inventory entry lines up with this exception")
+   var lookupKey: String?,
+
    @field:Schema(name = "notes", description = "Listing of notes associated with an AuditException")
    var notes: MutableList<AuditExceptionNoteValueObject> = mutableListOf(),
 
@@ -106,6 +110,7 @@ data class AuditExceptionValueObject (
          scannedBy = EmployeeValueObject(entity.scannedBy),
          exceptionCode = entity.exceptionCode,
          signedOff = entity.signedOff,
+         lookupKey = entity.lookupKey,
          notes = entity.notes.asSequence().map { AuditExceptionNoteValueObject(it) }.toMutableList(),
          audit = SimpleIdentifiableValueObject(entity.audit)
       )

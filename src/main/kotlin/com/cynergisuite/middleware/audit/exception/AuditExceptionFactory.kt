@@ -41,10 +41,6 @@ object AuditExceptionFactory {
       val random = faker.random()
       val lorem = faker.lorem()
       val scannedBy = scannedByIn ?: EmployeeFactory.single()
-      val barcode =  faker.code()
-      val commerce = faker.commerce()
-      val company = faker.company()
-      val idNumber = faker.idNumber()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
       val audit = auditIn ?: AuditFactory.single()
 
@@ -60,6 +56,7 @@ object AuditExceptionFactory {
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
             signedOff = random.nextBoolean(),
+            lookupKey = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
             audit = SimpleIdentifiableEntity(audit)
          )
       }

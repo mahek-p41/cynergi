@@ -90,7 +90,7 @@ data class InventoryValueObject(
 
 ) : ValueObjectBase<InventoryValueObject>() {
 
-   constructor(item: Inventory, locationType: InventoryLocationTypeValueObject) :
+   constructor(item: InventoryEntity, locationType: InventoryLocationTypeValueObject) :
       this(
          id = item.id,
          serialNumber = item.serialNumber,

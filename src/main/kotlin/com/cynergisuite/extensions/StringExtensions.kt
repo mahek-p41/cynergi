@@ -17,3 +17,6 @@ fun String.isAllLowerCase(): Boolean =
 
 fun String.isAllSameCase(): Boolean =
    this.isAllUpperCase() || this.isAllLowerCase()
+
+fun String?.truncate(maxWidth: Int): String? =
+   StringUtils.truncate(this, maxWidth)

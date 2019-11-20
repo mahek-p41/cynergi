@@ -18,7 +18,7 @@ data class ScheduleEntity(
    val command: ScheduleCommandTypeEntity,
    val type: ScheduleTypeEntity,
    val enabled: Boolean = true,
-   val arguments: MutableList<ScheduleArgumentEntity> = mutableListOf()
+   val arguments: MutableSet<ScheduleArgumentEntity> = mutableSetOf()
 ) : Entity<ScheduleEntity> {
 
    constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleTypeEntity) :
@@ -31,7 +31,7 @@ data class ScheduleEntity(
          type = type
       )
 
-   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleTypeEntity, arguments: MutableList<ScheduleArgumentEntity>) :
+   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleTypeEntity, arguments: MutableSet<ScheduleArgumentEntity>) :
       this(
          id = null,
          title = title,

@@ -13,6 +13,7 @@ import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class DepartmentControllerSpecification extends ControllerSpecificationBase {
@@ -80,9 +81,6 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == NOT_FOUND
-      final def notFoundResult = exception.response.bodyAsJson()
-      notFoundResult.size() == 1
-      notFoundResult.message == "Request with Page 3, Size 5, Sort By id and Sort Direction ASC produced no results"
+      exception.status == NO_CONTENT
    }
 }

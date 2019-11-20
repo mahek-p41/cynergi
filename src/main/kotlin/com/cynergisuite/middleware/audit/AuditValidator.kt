@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ValidationError
@@ -63,7 +62,7 @@ class AuditValidator @Inject constructor(
             errors.add(ValidationError("storeNumber", NotFound(storeNumber)))
          }
 
-         if (storeNumber != null && auditRepository.countAuditsNotCompleted(storeNumber = storeNumber) > 0) {
+         if (storeNumber != null && auditRepository.countAuditsNotCompletedOrCanceled(storeNumber = storeNumber) > 0) {
             errors.add(ValidationError("storeNumber", AuditOpenAtStore(storeNumber)))
          }
       }

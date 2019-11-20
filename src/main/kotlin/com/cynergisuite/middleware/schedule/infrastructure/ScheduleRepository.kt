@@ -243,6 +243,8 @@ class ScheduleRepository @Inject constructor(
          .map { scheduleArgumentRepository.upsert(updated, it) }
          .forEach { updated.arguments.add(it) }
 
+      scheduleArgumentRepository.deleteNotIn(updated, entity.arguments)
+
       return updated
    }
 

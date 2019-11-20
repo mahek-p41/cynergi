@@ -28,7 +28,7 @@ class InventoryService(
       return inventoryRepository.findByLookupKey(lookupKey)?.let { map(it, locale) }
    }
 
-   private fun map(inventory: Inventory, locale: Locale) : InventoryValueObject =
+   private fun map(inventory: InventoryEntity, locale: Locale) : InventoryValueObject =
       InventoryValueObject(
          inventory,
          InventoryLocationTypeValueObject(inventory.locationType, inventory.locationType.localizeMyDescription(locale, localizationService))
