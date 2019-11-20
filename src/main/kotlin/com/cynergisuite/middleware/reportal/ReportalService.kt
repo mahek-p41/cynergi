@@ -20,18 +20,18 @@ class ReportalService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ReportalService::class.java)
 
    private val reportalDirectory = File(reportalFileLocation)
+
    init {
       reportalDirectory.mkdirs()
    }
 
    fun generateReportalDocument(store: StoreEntity, reportName: String, extension: String, generator: (reportalOutputStream: OutputStream) -> Unit) {
-      logger.debug("Generating reportal document using {}", generator)
+      logger.debug("Generating reportal {} document using {} for store {}", reportName, generator, store)
 
       val storeDirectory = File(reportalDirectory, "store${store.number}")
       storeDirectory.mkdirs()
 
       executor.execute {
-         //val tempFile = File.createTempFile("reportalTemp", "rpt${store.number}")
          val tempFile = File.createTempFile("${reportName}", "rpt${store.number}")
 
          logger.info("Generating reportal document.  Placing in temp file {}", tempFile)
