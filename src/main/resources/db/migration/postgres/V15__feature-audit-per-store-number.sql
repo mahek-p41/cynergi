@@ -49,6 +49,9 @@ UPDATE audit a
 SET number = ta.number
 FROM temp_audit ta
 WHERE a.id = ta.id;
+
+ALTER TABLE audit
+   ALTER COLUMN number SET NOT NULL;
 -- End audit table number update
 
 -- Drop temp_audit
