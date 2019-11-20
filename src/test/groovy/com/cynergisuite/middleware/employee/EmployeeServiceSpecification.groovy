@@ -46,7 +46,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       reader.close()
    }
 
-   void "csv process file with 3 record"() {
+   void "csv process file with 2 record"() {
       given:
       def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
       def tempFile = tempDirectory.resolve("eli-employees.csv")
@@ -58,8 +58,8 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       then:
-      3 == jdbc.queryForObject("SELECT COUNT(*) FROM employee", Integer)
-      3 == jdbc.queryForList("SELECT id, number, pass_code, active FROM employee").findAll {
+      2 == jdbc.queryForObject("SELECT COUNT(*) FROM employee", Integer)
+      2 == jdbc.queryForList("SELECT id, number, pass_code, active FROM employee").findAll {
          it["number"] == 123 || it["number"] == 987 || it["number"] == 4500
       }.size()
 

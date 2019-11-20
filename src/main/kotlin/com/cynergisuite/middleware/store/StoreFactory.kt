@@ -18,12 +18,6 @@ object StoreFactory {
          number = 3,
          name = "INDEPENDENCE",
          dataset = "testds"
-      ),
-      StoreEntity(
-         id = 3,
-         number = 9000,
-         name = "HOME OFFICE",
-         dataset = "testds"
       )
    )
 

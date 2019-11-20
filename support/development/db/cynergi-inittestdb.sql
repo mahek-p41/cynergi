@@ -37,16 +37,26 @@ CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that wi
 INSERT INTO fastinfo_prod_import.employee_vw (number, last_name, first_name_mi, pass_code, store_number) VALUES (123, 'user', 'test', 'pass', 1); -- create a user that can be used for testing and is also ignored by the truncate service
 
 CREATE TABLE fastinfo_prod_import.store_vw (
-   id           BIGSERIAL                              NOT NULL PRIMARY KEY,
+   id           BIGSERIAL                             NOT NULL PRIMARY KEY,
+   company_id   BIGINT                                NOT NULL,
    number       INTEGER,
    name         VARCHAR(27),
    dataset      VARCHAR(6)                             NOT NULL,
    time_created TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL,
    time_updated TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL
 );
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (1, 'KANSAS CITY', 'testds');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (3, 'INDEPENDENCE', 'testds');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (9000, 'HOME OFFICE', 'testds');
+INSERT INTO fastinfo_prod_import.store_vw (company_id, number, name, dataset) VALUES (1, 1, 'KANSAS CITY', 'testds');
+INSERT INTO fastinfo_prod_import.store_vw (company_id, number, name, dataset) VALUES (1, 3, 'INDEPENDENCE', 'testds');
+
+CREATE TABLE fastinfo_prod_import.company_vw (
+   id           BIGINT                              NOT NULL PRIMARY KEY,
+   number       INTEGER,
+   name         VARCHAR(27),
+   dataset      VARCHAR(6)                             NOT NULL,
+   time_created TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL,
+   time_updated TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL
+);
+INSERT INTO fastinfo_prod_import.company_vw (id, number, name, dataset) VALUES (1, 0, 'RENTAL CITY', 'testds');
 
 CREATE TABLE fastinfo_prod_import.inventory_vw (
    id               BIGINT                                NOT NULL PRIMARY KEY,
