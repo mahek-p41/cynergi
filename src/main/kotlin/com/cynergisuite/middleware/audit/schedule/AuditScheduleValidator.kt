@@ -82,7 +82,7 @@ class AuditScheduleValidator(
       val existingDepartment: Pair<ScheduleArgumentEntity, DepartmentEntity> = schedule.arguments.first { it.description == "department" }.let { it to departmentRepository.findOneByCode(it.value)!! }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
-         .map { it to storeRepository.findOne(it.value.toLong())!! }
+         .map { it to storeRepository.findOneByNumber(it.value.toInt())!! }
          .sortedBy { it.second.id }
          .toList()
       val updateStores: List<StoreEntity> = dto.stores.asSequence()

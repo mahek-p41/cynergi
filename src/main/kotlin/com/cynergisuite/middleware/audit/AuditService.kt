@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
@@ -39,6 +40,7 @@ class AuditService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditValidator: AuditValidator,
+   private val companyRepository: CompanyRepository,
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
 ) {
@@ -90,7 +92,7 @@ class AuditService @Inject constructor(
       val updated = auditRepository.update(existingAudit)
 
       if (updated.currentStatus().value == "SIGNED-OFF") {
-         reportalService.generateReportalDocument { reportalOutputStream ->
+         reportalService.generateReportalDocument(updated.store, "InventoryAudit","pdf"){ reportalOutputStream ->
             Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
                val writer = PdfWriter.getInstance(document, reportalOutputStream)
 
@@ -111,6 +113,8 @@ class AuditService @Inject constructor(
       val ascender = true
       val descender = true
       val currentDate = LocalDate.now()
+
+      val companyName = companyRepository.findCompanyByStore(audit.store)!!.name
 
       val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
@@ -142,7 +146,7 @@ class AuditService @Inject constructor(
       header.setWidthPercentage(100f)
 
       header.makeCell("DATE: ${currentDate}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("BOLIN RENTAL PURCHASE", Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(companyName, Element.ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("PAGE ${document.pageNumber}", Element.ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
@@ -176,7 +180,7 @@ class AuditService @Inject constructor(
       val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
       val rowFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.NORMAL)
 
-      val table = PdfPTable(10)
+      val table = PdfPTable(8)
       val evenColor = Color(204, 204, 204)
       val oddColor = Color.WHITE
       val padding = 0f
@@ -202,22 +206,19 @@ class AuditService @Inject constructor(
 
       val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-      val widthPercentage: Float = (pageWidth - 10) / 10
-      val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
-      widths[0] = widths[0] - 25 //Shortening Scan Area
-      widths[1] = widths[1] - 50 //Shortening Prod Code
-      widths[2] = widths[2] - 50 //Shortening Brand
-      widths[3] = widths[3] + 20 //Lengthening Model
-      widths[4] = widths[4] - 20 //Shortening Bar Code
-      widths[5] = widths[5] - 20 //Shortening Alt ID
-      widths[7] = widths[7] + 35 //Lengthening Employee
-      widths[8] = widths[8] + 35 //Lengthening Scanned
-      widths[9] = widths[9] + 75 //Lengthening Exception
+      val widthPercentage: Float = (pageWidth - 10) / 8
+      val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
+      widths[0] = 75f //Scan Area
+      widths[1] = 115f //Model
+      widths[2] = 75f //Bar Code
+      widths[3] = 75f //Alt ID
+      widths[4] = 75f //Serial#
+      widths[5] = 135f //Employee
+      widths[6] = 135f //Scanned
+      widths[7] = 200f //Exception
       table.setWidths(widths)
 
       table.makeCell("Scan Area", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
-      table.makeCell("Prod Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
-      table.makeCell("Brand", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Model #", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Bar Code", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Alt ID", Element.ALIGN_TOP, Element.ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
@@ -230,8 +231,6 @@ class AuditService @Inject constructor(
          table.defaultCell.backgroundColor = if (even) evenColor else oddColor
 
          table.addCell(Phrase(exception.scanArea?.myDescription() ?: EMPTY, rowFont))
-         table.addCell(Phrase(exception.productCode ?: EMPTY, rowFont))
-         table.addCell(Phrase(exception.inventoryBrand ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.inventoryModel ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.barcode, rowFont))
          table.addCell(Phrase(exception.altId ?: EMPTY, rowFont))
