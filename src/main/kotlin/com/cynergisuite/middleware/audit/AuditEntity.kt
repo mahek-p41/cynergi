@@ -10,25 +10,27 @@ import kotlin.collections.LinkedHashSet
 import kotlin.collections.MutableSet
 import kotlin.collections.asSequence
 
-data class Audit (
+data class AuditEntity (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val store: StoreEntity,
+   val number: Int = 0,
    val actions: MutableSet<AuditAction> = LinkedHashSet()
-) : Entity<Audit> {
+) : Entity<AuditEntity> {
 
-   constructor(id: Long, audit: Audit) :
+   constructor(id: Long, audit: AuditEntity) :
       this(
          id = id,
          store = audit.store,
+         number = audit.number,
          actions = audit.actions
       )
 
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
-   override fun copyMe(): Audit = copy()
+   override fun copyMe(): AuditEntity = copy()
 
    fun currentStatus(): AuditStatus =
       actions.asSequence()

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.action.AuditAction
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
@@ -52,7 +53,7 @@ class AuditValidator @Inject constructor(
       validationFetchAll(pageRequest)
 
    @Throws(ValidationException::class)
-   fun validateCreate(audit: AuditCreateValueObject, employee: EmployeeValueObject): Audit {
+   fun validateCreate(audit: AuditCreateValueObject, employee: EmployeeValueObject): AuditEntity {
       logger.debug("Validating Create Audit {}", audit)
 
       doValidation { errors ->
@@ -67,7 +68,7 @@ class AuditValidator @Inject constructor(
          }
       }
 
-      return Audit(
+      return AuditEntity(
          store = storeRepository.findOneByNumber(number = audit.store!!.number!!)!!,
          actions = mutableSetOf(
             AuditAction(
@@ -79,7 +80,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(audit: AuditUpdateValueObject, employee: EmployeeValueObject, locale: Locale): Pair<AuditAction, Audit> {
+   fun validateUpdate(audit: AuditUpdateValueObject, employee: EmployeeValueObject, locale: Locale): Pair<AuditAction, AuditEntity> {
       logger.debug("Validating Update Audit {}", audit)
 
       doValidation { errors ->

@@ -54,7 +54,7 @@ class AuditService @Inject constructor(
    @Validated
    fun fetchAll(@Valid pageRequest: AuditPageRequest, locale: Locale): Page<AuditValueObject> {
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest)
-      val found: RepositoryPage<Audit> = auditRepository.findAll(validaPageRequest)
+      val found: RepositoryPage<AuditEntity> = auditRepository.findAll(validaPageRequest)
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
@@ -106,7 +106,7 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
-   private fun buildHeader(audit: Audit, writer: PdfWriter, document: Document) {
+   private fun buildHeader(audit: AuditEntity, writer: PdfWriter, document: Document) {
       val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
       val padding = 0f
       val leading = headerFont.getSize() * 1.2F
@@ -176,7 +176,7 @@ class AuditService @Inject constructor(
       header.writeSelectedRows(0,-1,5f,document.pageSize.height-5,writer.directContent)
    }
 
-   private fun buildExceptionReport(audit: Audit, pageWidth: Float): PdfPTable {
+   private fun buildExceptionReport(audit: AuditEntity, pageWidth: Float): PdfPTable {
       val headerFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.BOLD)
       val rowFont = FontFactory.getFont(FontFactory.COURIER, 10F, Font.NORMAL)
 

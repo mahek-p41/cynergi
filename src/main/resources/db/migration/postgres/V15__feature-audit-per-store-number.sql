@@ -81,3 +81,17 @@ CREATE TRIGGER audit_store_number_auto
    ON audit
    FOR EACH ROW
 EXECUTE PROCEDURE audit_store_number_increment();
+
+CREATE FUNCTION last_updated_number_fn()
+   RETURNS TRIGGER AS
+$$
+    BEGIN
+
+       IF new.number <> old.number THEN -- Helps ensure the number cannot be easily changed
+          RAISE EXCEPTION 'cannot update number once it has been created';
+       END IF;
+
+       RETURN new;
+    END;
+$$
+   LANGUAGE plpgsql;
