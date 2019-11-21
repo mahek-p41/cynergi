@@ -9,8 +9,13 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
+import com.cynergisuite.middleware.audit.status.CANCELED
+import com.cynergisuite.middleware.audit.status.COMPLETED
+import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.Canceled
 import com.cynergisuite.middleware.audit.status.Completed
+import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -349,10 +354,13 @@ class AuditRepository @Inject constructor(
             ) b
             JOIN audit_status_type_domain astd
               ON b.max_status = astd.id
-            WHERE astd.VALUE NOT IN ('${Completed.value}', '${Canceled.value}')
+            WHERE astd.VALUE IN (:values)
          ) c
          """.trimIndent(),
-         mapOf("store_number" to storeNumber),
+         mapOf(
+            "store_number" to storeNumber,
+            "values" to listOf<String>(CREATED.value, IN_PROGRESS.value)
+         ),
          Int::class.java
       )!!
 
