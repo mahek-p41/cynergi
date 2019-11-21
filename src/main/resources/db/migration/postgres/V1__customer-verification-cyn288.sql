@@ -3,15 +3,15 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE FUNCTION last_updated_column_fn()
    RETURNS TRIGGER AS
 $$
-    BEGIN
-       new.time_updated := clock_timestamp();
+BEGIN
+   new.time_updated := clock_timestamp();
 
-       IF new.uu_row_id <> old.uu_row_id THEN -- help ensure that the uu_row_id can't be updated once it is created
-          RAISE EXCEPTION 'cannot update uu_row_id once it has been created';
-       END IF;
+   IF new.uu_row_id <> old.uu_row_id THEN -- help ensure that the uu_row_id can't be updated once it is created
+      RAISE EXCEPTION 'cannot update uu_row_id once it has been created';
+   END IF;
 
-       RETURN new;
-    END;
+   RETURN new;
+END;
 $$
    LANGUAGE plpgsql;
 
