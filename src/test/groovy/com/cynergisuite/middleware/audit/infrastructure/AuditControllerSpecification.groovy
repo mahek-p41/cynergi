@@ -397,7 +397,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit" () {
       when:
-      def result = post("$path", new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)
@@ -428,7 +428,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
 
       when:
-      def result = post("$path", new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)
@@ -447,7 +447,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.signedOff()] as Set)
 
       when:
-      def result = post("$path", new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)
@@ -666,7 +666,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "process audit from CREATED to IN-PROGRESS finally to COMPLETED" () {
       when:
-      def openedResult = post("$path", new AuditCreateValueObject([store: new StoreValueObject(number: 3)]))
+      def openedResult = post(path, new AuditCreateValueObject([store: new StoreValueObject(number: 3)]))
 
       then:
       notThrown(HttpClientResponseException)
