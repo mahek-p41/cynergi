@@ -6,7 +6,7 @@ import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CANCELED
@@ -40,7 +40,7 @@ class AuditRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
-   fun findOne(id: Long): Audit? {
+   fun findOne(id: Long): AuditEntity? {
       val found = jdbc.findFirstOrNullWithCrossJoin("""
          WITH employees AS ( 
             ${employeeRepository.selectBase}
@@ -52,6 +52,7 @@ class AuditRepository @Inject constructor(
             a.time_created AS a_time_created,
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
+            a.number AS a_number,
             (SELECT csastd.value
              FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
              WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
@@ -98,7 +99,7 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
          WHERE a.id = :id
-      """.trimMargin(), mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: Audit, rs ->
+      """.trimMargin(), mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: AuditEntity, rs ->
          auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
       }
 
@@ -111,7 +112,7 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<Audit> {
+   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity> {
       val params = mutableMapOf<String, Any>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
@@ -163,6 +164,7 @@ class AuditRepository @Inject constructor(
                a.time_created AS time_created,
                a.time_updated AS time_updated,
                a.store_number AS store_number,
+               a.number AS number,
                s.current_status AS current_status,
                (SELECT count(a.id) 
                 FROM audit a
@@ -187,6 +189,7 @@ class AuditRepository @Inject constructor(
             a.time_created AS a_time_created,
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
+            a.number AS a_number,
             a.current_status AS current_status,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
@@ -235,13 +238,13 @@ class AuditRepository @Inject constructor(
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<Audit>(pageRequest) { rs, elements ->
+      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<AuditEntity>(pageRequest) { rs, elements ->
          var currentId: Long = -1
-         var currentParentEntity: Audit? = null
+         var currentParentEntity: AuditEntity? = null
 
          do {
             val tempId = rs.getLong("a_id")
-            val tempParentEntity: Audit = if (tempId != currentId) {
+            val tempParentEntity: AuditEntity = if (tempId != currentId) {
                currentId = tempId
                currentParentEntity = mapRow(rs)
                elements.add(currentParentEntity)
@@ -365,7 +368,7 @@ class AuditRepository @Inject constructor(
       )!!
 
    @Transactional
-   fun insert(entity: Audit): Audit {
+   fun insert(entity: AuditEntity): AuditEntity {
       logger.debug("Inserting audit {}", entity)
 
       val audit = jdbc.insertReturning(
@@ -377,12 +380,13 @@ class AuditRepository @Inject constructor(
          """.trimMargin(),
          mapOf("store_number" to entity.store.number),
          RowMapper { rs, _ ->
-            Audit(
+            AuditEntity(
                id = rs.getLong("id"),
                uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
-               store = entity.store
+               store = entity.store,
+               number = rs.getInt("number")
             )
          }
       )
@@ -395,7 +399,7 @@ class AuditRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: Audit): Audit {
+   fun update(entity: AuditEntity): AuditEntity {
       logger.debug("Updating Audit {}", entity)
 
       // Since it isn't really necessary to update a store number for an audit as they can just cancel the audit and create a new one, just upsert the actions
@@ -406,16 +410,17 @@ class AuditRepository @Inject constructor(
       return entity.copy(actions = actions)
    }
 
-   private fun mapRow(rs: ResultSet): Audit =
-      Audit(
+   private fun mapRow(rs: ResultSet): AuditEntity =
+      AuditEntity(
          id = rs.getLong("a_id"),
          uuRowId = rs.getUuid("a_uu_row_id"),
          timeCreated = rs.getOffsetDateTime("a_time_created"),
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
-         store = storeRepository.mapRow(rs, "s_")
+         store = storeRepository.mapRow(rs, "s_"),
+         number = rs.getInt("a_number")
       )
 
-   private fun loadNextStates(audit: Audit) {
+   private fun loadNextStates(audit: AuditEntity) {
       val actions = audit.actions.map { action ->
          val actionStatus = auditStatusRepository.findOne(action.status.id)!!
 

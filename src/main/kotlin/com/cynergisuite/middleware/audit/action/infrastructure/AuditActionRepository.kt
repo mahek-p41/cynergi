@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.action.infrastructure
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditAction
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -25,7 +25,7 @@ class AuditActionRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditActionRepository::class.java)
 
    @Transactional
-   fun insert(parent: Audit, entity: AuditAction): AuditAction {
+   fun insert(parent: AuditEntity, entity: AuditAction): AuditAction {
       logger.debug("Inserting audit_action {}", entity)
 
       return jdbc.insertReturning("""
@@ -52,7 +52,7 @@ class AuditActionRepository @Inject constructor(
       )
    }
 
-   fun upsert(parent: Audit, entity: AuditAction): AuditAction {
+   fun upsert(parent: AuditEntity, entity: AuditAction): AuditAction {
       logger.debug("Upserting AuditAction {} {}", entity, parent)
 
       return if (entity.id != null) {

@@ -29,17 +29,22 @@ data class AuditValueObject (
    @field:Schema(name = "store", required = false, description = "Store the audit is associated with")
    var store: StoreValueObject? = null,
 
+   @field:Positive
+   @field:Schema(name = "number", minimum = "0", required = false, description = "Audit Count")
+   var number: Int = 0,
+
    @field:Schema(name = "actions", required = true, description = "Listing of actions associated with this Audit")
    var actions: MutableSet<AuditActionValueObject> = mutableSetOf()
 
 ) : ValueObjectBase<AuditValueObject>() {
 
-   constructor(entity: Audit, locale: Locale, localizationService: LocalizationService) :
+   constructor(entity: AuditEntity, locale: Locale, localizationService: LocalizationService) :
       this (
          id = entity.id,
          timeCreated = entity.timeCreated,
          timeUpdated = entity.timeUpdated,
          store = StoreValueObject(entity.store),
+         number = entity.number,
          actions = entity.actions.asSequence().map { action ->
             AuditActionValueObject(action, AuditStatusValueObject(action.status, action.status.localizeMyDescription(locale, localizationService)))
          }.toMutableSet()

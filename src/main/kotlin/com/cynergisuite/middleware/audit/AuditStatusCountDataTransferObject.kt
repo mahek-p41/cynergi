@@ -15,7 +15,7 @@ import java.util.Locale
 data class AuditStatusCountDataTransferObject(
 
    @field:Schema(name = "count", description = "Number of audits at the associated status")
-   var count: Int? = 0,
+   var count: Int = 0,
 
    @field:Schema(name = "status", description = "The Audit status")
    var status: AuditStatusValueObject? = null

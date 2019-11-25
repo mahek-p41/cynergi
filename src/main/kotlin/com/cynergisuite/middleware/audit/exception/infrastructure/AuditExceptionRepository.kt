@@ -9,7 +9,7 @@ import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
@@ -127,7 +127,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
+   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
       var totalElements: Long? = null
       val sql = """
          WITH paged AS (
@@ -240,7 +240,7 @@ class AuditExceptionRepository @Inject constructor(
       )
    }
 
-   fun forEach(audit: Audit, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
+   fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
       var result = findAll(audit, PageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
