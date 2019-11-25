@@ -124,6 +124,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
       then:
       notThrown(HttpClientResponseException)
+      audit.number > 0
       new PageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
@@ -258,6 +259,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
       then:
       notThrown(HttpClientResponseException)
+      auditOne.number == 1
+      auditTwo.number == 2
       pageOneResult.elements.size() == 3
       pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }

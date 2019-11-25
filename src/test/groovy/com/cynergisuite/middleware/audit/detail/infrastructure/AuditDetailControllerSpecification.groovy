@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
@@ -108,7 +108,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       given:
       final employee = employeeFactoryService.single()
       final store = storeFactoryService.store(1)
-      final List<Audit> audits = auditFactoryService.stream(2, store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).toList()
+      final List<AuditEntity> audits = auditFactoryService.stream(2, store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).toList()
       final audit = audits[0]
       final secondAudit = audits[1]
       final twelveAuditDetails = auditDetailFactoryService.stream(12, audit, employee, null).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception
 
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
@@ -32,7 +32,7 @@ class AuditExceptionValidator @Inject constructor (
       val inventoryId = auditException.inventory?.id
       val barcode = auditException.barcode
       val errors = doSharedValidation(auditId)
-      val audit: Audit = auditRepository.findOne(auditId)!!
+      val audit: AuditEntity = auditRepository.findOne(auditId)!!
       val auditStatus = audit.currentStatus()
       val scanArea = auditException.scanArea
 
@@ -73,7 +73,7 @@ class AuditExceptionValidator @Inject constructor (
    fun validateAddNote(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
       val auditExceptionId = auditExceptionUpdate.id!!
       val errors = doSharedValidation(auditId)
-      val audit: Audit = auditRepository.findOne(auditId)!!
+      val audit: AuditEntity = auditRepository.findOne(auditId)!!
 
       if (auditExceptionsRepository.doesNotExist(auditExceptionId)) {
          errors.add(

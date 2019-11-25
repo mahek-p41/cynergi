@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
@@ -74,7 +74,7 @@ class AuditDetailValidator @Inject constructor (
    }
 
    private fun validateAudit(auditId: Long, errors: MutableSet<ValidationError>) {
-      val audit: Audit = auditRepository.findOne(auditId) ?: throw NotFoundException(auditId)
+      val audit: AuditEntity = auditRepository.findOne(auditId) ?: throw NotFoundException(auditId)
       val auditStatus = audit.currentStatus()
 
       if (IN_PROGRESS != auditStatus) {

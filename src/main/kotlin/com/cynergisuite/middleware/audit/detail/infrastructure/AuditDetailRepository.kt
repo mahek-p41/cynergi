@@ -9,7 +9,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -92,7 +92,7 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: Audit, page: PageRequest): RepositoryPage<AuditDetailEntity> {
+   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditDetailEntity> {
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
