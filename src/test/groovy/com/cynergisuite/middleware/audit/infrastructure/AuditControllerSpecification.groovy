@@ -410,6 +410,18 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].changedBy.number == authenticatedEmployee.number
    }
 
+   void "create new audits and verify audit numbers are sequential" () {
+      when:
+      def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
+      put(path, new AuditUpdateValueObject([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
+      def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      firstAudit.number > 0
+      firstAudit.number + 1 == secondAudit.number
+   }
+
    void "create new audit when previous audit was cancelled" () {
       given:
       final store = storeFactoryService.random()
