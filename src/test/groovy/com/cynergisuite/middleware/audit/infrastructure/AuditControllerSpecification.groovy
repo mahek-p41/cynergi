@@ -418,8 +418,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      firstAudit.number > 0
-      firstAudit.number + 1 == secondAudit.number
+      firstAudit.auditNumber > 0
+      firstAudit.auditNumber + 1 == secondAudit.auditNumber
    }
 
    void "create new audit when previous audit was cancelled" () {
