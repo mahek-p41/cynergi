@@ -7,7 +7,7 @@ CREATE TEMPORARY TABLE temp_audit(
    UNIQUE (store_number, number)
 );
 
-CREATE OR REPLACE FUNCTION audit_store_number_increment()
+CREATE OR REPLACE FUNCTION audit_store_number_increment_fn()
    RETURNS TRIGGER AS
 $$
 DECLARE
@@ -25,11 +25,11 @@ END;
 $$
    LANGUAGE plpgsql STRICT;
 
-CREATE TRIGGER audit_store_number_auto
+CREATE TRIGGER audit_store_number_auto_trg
    BEFORE INSERT
    ON temp_audit
    FOR EACH ROW
-EXECUTE PROCEDURE audit_store_number_increment();
+EXECUTE PROCEDURE audit_store_number_increment_fn();
 -- End temp audit table setup
 
 -- Begin Insert data into temp table to generate number
@@ -57,8 +57,8 @@ ALTER TABLE audit
 -- Drop temp_audit
 DROP TABLE temp_audit;
 
--- Add trigger to audit
-CREATE OR REPLACE FUNCTION audit_store_number_increment()
+-- Begin Add trigger to audit
+CREATE OR REPLACE FUNCTION audit_store_number_increment_fn()
    RETURNS TRIGGER AS
 $$
 DECLARE
@@ -76,22 +76,30 @@ END;
 $$
    LANGUAGE plpgsql STRICT;
 
-CREATE TRIGGER audit_store_number_auto
+CREATE TRIGGER audit_store_number_auto_trg
    BEFORE INSERT
    ON audit
    FOR EACH ROW
-EXECUTE PROCEDURE audit_store_number_increment();
+EXECUTE PROCEDURE audit_store_number_increment_fn();
+-- End Add trigger to audit
 
-CREATE FUNCTION last_updated_number_fn()
+-- Begin setup for making audit.number as immutable as possibly
+CREATE FUNCTION audit_store_number_update_guard_fn()
    RETURNS TRIGGER AS
 $$
-    BEGIN
+BEGIN
+   IF new.number <> old.number THEN -- Helps ensure the number cannot be easily changed
+      RAISE EXCEPTION 'cannot update number once it has been assigned';
+   END IF;
 
-       IF new.number <> old.number THEN -- Helps ensure the number cannot be easily changed
-          RAISE EXCEPTION 'cannot update number once it has been created';
-       END IF;
-
-       RETURN new;
-    END;
+   RETURN new;
+END;
 $$
    LANGUAGE plpgsql;
+
+CREATE TRIGGER audit_store_number_update_guard_trg
+    BEFORE UPDATE
+    ON audit
+    FOR EACH ROW
+    EXECUTE PROCEDURE audit_store_number_update_guard_fn();
+-- End setup for making audit.number as immutable as possibly
