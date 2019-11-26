@@ -6,7 +6,9 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
+import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -18,6 +20,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -34,7 +37,8 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit/schedule")
 class AuditScheduleController @Inject constructor(
-   private val auditScheduleService: AuditScheduleService
+   private val auditScheduleService: AuditScheduleService,
+   private val authenticationService: AuthenticationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleController::class.java)
 
@@ -93,11 +97,13 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject
-   ): AuditScheduleDataTransferObject {
+      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
+      authentication: Authentication?
+      ): AuditScheduleDataTransferObject {
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
-      val response = auditScheduleService.create(auditSchedule)
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val response = auditScheduleService.create(auditSchedule, employee)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
 

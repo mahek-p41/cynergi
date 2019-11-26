@@ -6,10 +6,9 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationService
-import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
 import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -35,7 +34,6 @@ class AuditScheduleService @Inject constructor(
    private val notificationRepository: NotificationRepository,
    private val notificationService: NotificationService,
    private val companyRepository: CompanyRepository,
-   private val employeeRepository: EmployeeRepository,
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository
 
 ) {
@@ -58,8 +56,8 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto)
+   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, @Valid employee: EmployeeValueObject): AuditScheduleDataTransferObject {
+      val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto, employee)
       val inserted = scheduleRepository.insert(schedule)
 
       return AuditScheduleDataTransferObject(
@@ -116,27 +114,28 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun createNotificationAndAudit(schedule: ScheduleEntity) {
-      val stores = mutableListOf<StoreValueObject>()
+   fun createNotificationAndAudit(schedule: ScheduleEntity) : List<Notification> {
+      val notifications = mutableListOf<Notification>()
       var noteType = notificationTypeDomainRepository.findOne("S")!!
+      var employeeNumber = schedule.arguments.filter { it.description == "employeeNumber" }.map { it.value }.firstOrNull()?: "Unknown"
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOneByNumber(arg.value.toInt())!!
 
-            stores.add(StoreValueObject(store))
-            val companyName = companyRepository.findCompanyByStore(store)?.name
-            val xx = employeeRepository.findOne
+            val companyName = companyRepository.findCompanyByStore(store)!!
             val oneNote = Notification(startDate = LocalDate.now(),
                                        expirationDate = LocalDate.now().plusDays(7),
                                        message = schedule.description!!,
-                                       sendingEmployee = "XXXX",             // TODO get an employee
-                                       company = companyName!!,
+                                       sendingEmployee = employeeNumber,
+                                       company = companyName.number.toString(),
                                        notificationDomainType = noteType)
 
-            notificationRepository.insert(oneNote)
+            val notification = notificationRepository.insert(oneNote)
+            notifications.add(notification)
          }
       }
+      return notifications
 
    }
 }

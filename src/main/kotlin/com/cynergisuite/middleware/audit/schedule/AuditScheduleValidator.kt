@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
@@ -24,7 +25,7 @@ class AuditScheduleValidator(
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
 
-   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
+   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, employee: EmployeeValueObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
       doValidation { errors -> doSharedValidation(dto, errors) }
 
       val stores = mutableListOf<StoreEntity>()
@@ -48,6 +49,13 @@ class AuditScheduleValidator(
             )
          )
       }
+
+      arguments.add(
+         ScheduleArgumentEntity(
+            employee.number.toString(),
+            "employeeNumber"
+         )
+      )
 
       return Triple(
          ScheduleEntity(
