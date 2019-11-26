@@ -114,26 +114,26 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun createNotificationAndAudit(schedule: ScheduleEntity) {
-      val stores = mutableListOf<StoreValueObject>()
-      val notificationDomainType = notificationTypeDomainRepository.findOne("S")!!
-
-      for (arg: ScheduleArgumentEntity in schedule.arguments) {
-         if (arg.description == "storeNumber") {
-            val store = storeRepository.findOneByNumber(arg.value.toInt())!!
-
-            stores.add(StoreValueObject(store))
-            val xx = companyRepository.findCompanyByStore(store)
-            val oneNote = Notification(startDate = LocalDate.now(),
-                                       expirationDate = LocalDate.now().plusDays(7),
-                                       message = schedule.description!!,
-                                       sendingEmployee = "todo",
-                                       company = "todo2",
-                                       notificationDomainType = notificationDomainType)
-
-            xxx = notificationRepository.insert(note)
-         }
-      }
-
-   }
+//   private fun createNotificationAndAudit(schedule: ScheduleEntity) {
+//      val stores = mutableListOf<StoreValueObject>()
+//      val notificationDomainType = notificationTypeDomainRepository.findOne("S")!!
+//
+//      for (arg: ScheduleArgumentEntity in schedule.arguments) {
+//         if (arg.description == "storeNumber") {
+//            val store = storeRepository.findOneByNumber(arg.value.toInt())!!
+//
+//            stores.add(StoreValueObject(store))
+//            val xx = companyRepository.findCompanyByStore(store)
+//            val oneNote = Notification(startDate = LocalDate.now(),
+//                                       expirationDate = LocalDate.now().plusDays(7),
+//                                       message = schedule.description!!,
+//                                       sendingEmployee = "todo",
+//                                       company = "todo2",
+//                                       notificationDomainType = notificationDomainType)
+//
+//            xxx = notificationRepository.insert(note)
+//         }
+//      }
+//
+//   }
 }
