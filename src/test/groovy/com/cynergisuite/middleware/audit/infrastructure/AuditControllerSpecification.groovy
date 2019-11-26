@@ -413,6 +413,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    void "create new audits and verify audit numbers are sequential" () {
       when:
       def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
+      post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 1])]))
       put(path, new AuditUpdateValueObject([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
       def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
 
