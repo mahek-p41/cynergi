@@ -51,7 +51,7 @@ object VerificationTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class VerificationDataLoaderService @Inject constructor(
    private val verificationRepository: VerificationRepository
 ) {

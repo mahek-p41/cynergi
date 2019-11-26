@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
@@ -21,12 +20,12 @@ import javax.inject.Singleton
 @Singleton
 class VerificationEmploymentRepository(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<VerificationEmployment> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper()
    private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(columnPrefix = "ve_")
 
-   override fun findOne(id: Long): VerificationEmployment? {
+   fun findOne(id: Long): VerificationEmployment? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment WHERE id = :id", mapOf("id" to id), simpleVerificationEmploymentRowMapper)
 
       logger.trace("Searching for VerificationEmployment: {} resulted in {}", id, found)
@@ -34,7 +33,7 @@ class VerificationEmploymentRepository(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if VerificationEmployment: {} exists resulted in {}", id, exists)
@@ -43,7 +42,7 @@ class VerificationEmploymentRepository(
    }
 
    @Transactional
-   override fun insert(entity: VerificationEmployment): VerificationEmployment {
+   fun insert(entity: VerificationEmployment): VerificationEmployment {
       logger.debug("Inserting verification_employment  {}", entity)
 
       return jdbc.insertReturning("""
@@ -59,14 +58,14 @@ class VerificationEmploymentRepository(
             "name" to entity.name,
             "reliable" to entity.reliable,
             "title" to entity.title,
-            "verification_id" to entity.verification.entityId()
+            "verification_id" to entity.verification.myId()
          ),
          simpleVerificationEmploymentRowMapper
       )
    }
 
    @Transactional
-   override fun update(entity: VerificationEmployment): VerificationEmployment {
+   fun update(entity: VerificationEmployment): VerificationEmployment {
       logger.debug("Updating verification_employment {}", entity)
 
       return jdbc.updateReturning("""

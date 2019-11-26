@@ -2,7 +2,9 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
@@ -24,7 +26,8 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -33,7 +36,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-@Secured(IS_AUTHENTICATED) // require access to this controller to at the very least be authenticated
+@Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
@@ -43,22 +46,22 @@ class AuditController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @AccessControl("audit-fetchOne")
-   @Get(uri = "/{id}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
+   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
 
       val response = auditService.fetchById(id = id, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Audit by {} resulted in", id, response)
+      logger.debug("Fetching Audit by {} resulted in {}", id, response)
 
       return response
    }
@@ -66,17 +69,18 @@ class AuditController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @AccessControl("audit-fetchAll")
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audits that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
-      logger.info("Fetching all audits {} {}", pageRequest)
+      logger.info("Fetching all audits {} {}", pageRequestIn)
+      val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -86,29 +90,51 @@ class AuditController @Inject constructor(
       return page
    }
 
+   @Throws(ValidationException::class)
+   @AccessControl("audit-fetchAllStatusCounts")
+   @Get(uri = "/counts{?auditStatusCountRequest*}", processes = [APPLICATION_JSON])
+   @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAuditStatusCounts(
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
+      httpRequest: HttpRequest<*>
+   ): List<AuditStatusCountDataTransferObject> {
+      logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val auditStatusCountRequest = AuditPageRequest(auditStatusCountRequestIn)
+
+      logger.debug("Fetching Audit status counts after build {}", auditStatusCountRequest)
+
+      return auditService.findAuditStatusCounts(auditStatusCountRequest, locale)
+   }
+
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("audit-save")
+   @AccessControl("audit-create")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(summary = "Create a single audit", description = "Save a single audit in he OPENED state. The logged in Employee is used for the openedBy property", operationId = "audit-save")
+   @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in the CREATED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to save Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun save(
-      @Body audit: AuditValueObject,
+   fun create(
+      @Body audit: AuditCreateValueObject,
       authentication: Authentication?,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
-      logger.info("Requested Save Audit {}", audit)
+      logger.info("Requested Create Audit {}", audit)
 
       val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = employee.store)
 
       val response = auditService.create(vo = auditToCreate, employee = employee, locale = httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Save Audit {} resulted in {}", audit, response)
+      logger.debug("Requested Create Audit {} resulted in {}", audit, response)
 
       return response
    }
@@ -116,7 +142,7 @@ class AuditController @Inject constructor(
    @Put(processes = [APPLICATION_JSON])
    @AccessControl("audit-update")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-update")
+   @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-update")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),

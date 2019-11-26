@@ -1,9 +1,6 @@
 package com.cynergisuite.middleware.audit.action
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.IdentifiableEntity
-import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.audit.Audit
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.employee.Employee
 import java.time.OffsetDateTime
@@ -18,7 +15,7 @@ data class AuditAction (
    val changedBy: Employee
 ) : Entity<AuditAction> {
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): AuditAction = copy()
 }

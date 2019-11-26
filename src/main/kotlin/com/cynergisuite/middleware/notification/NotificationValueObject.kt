@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Notification", description = "Describes a single notification")
+@Schema(name = "Notification", title = "Single Notification", description = "Describes a single notification")
 data class NotificationValueObject (
 
    @field:Positive
@@ -95,7 +95,7 @@ data class NotificationValueObject (
          recipients = entity.recipients.map { NotificationRecipientValueObject(it) }
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 
    override fun copyMe(): NotificationValueObject = copy()
 }

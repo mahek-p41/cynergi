@@ -15,7 +15,8 @@ import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -33,21 +34,21 @@ class StoreController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @AccessControl("store-fetchOne")
-   @Get(value = "/{id}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
+   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreValueObject::class))]),
       ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long
    ): StoreValueObject {
       logger.info("Fetching Store by {}", id)
 
       val response = storeService.fetchById(id = id) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Store by {} resulted in", id, response)
+      logger.debug("Fetching Store by {} resulted in {}", id, response)
 
       return response
    }
@@ -55,14 +56,14 @@ class StoreController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @AccessControl("store-fetchAll")
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
+   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "404", description = "The the result is empty"),
+      ApiResponse(responseCode = "204", description = "The the result is empty"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest
    ): Page<StoreValueObject> {
       logger.info("Fetching all stores {}", pageRequest)
 

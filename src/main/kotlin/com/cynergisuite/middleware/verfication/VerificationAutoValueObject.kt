@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "VerificationAuto", description = "A verification for an automobile")
+@Schema(name = "VerificationAuto", title = "Automobile verification for a customer", description = "Automobile verification for a single customer associated with a Verification")
 data class VerificationAutoValueObject(
 
    @field:Positive
@@ -113,6 +113,6 @@ data class VerificationAutoValueObject(
 
    override fun copyMe(): VerificationAutoValueObject = copy()
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }
 

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationReference
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
@@ -27,7 +26,7 @@ class VerificationRepository @Inject constructor(
    private val verificationEmploymentRepository: VerificationEmploymentRepository,
    private val verificationLandlordRepository: VerificationLandlordRepository,
    private val verificationReferenceRepository: VerificationReferenceRepository
-) : Repository<Verification> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationRepository::class.java)
    private val simpleVerificationRowMapper: VerificationRowMapper = VerificationRowMapper()
    private val selectAllRowMapper: VerificationRowMapper = VerificationRowMapper(
@@ -124,7 +123,7 @@ class VerificationRepository @Inject constructor(
            ON v.id = vr.verification_id
       """.trimIndent()
 
-   override fun findOne(id: Long): Verification? {
+   fun findOne(id: Long): Verification? {
       val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
          verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
       }
@@ -144,7 +143,7 @@ class VerificationRepository @Inject constructor(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Searching for existence of Verification through ID: {} resulted in {}", id, exists)
@@ -161,7 +160,7 @@ class VerificationRepository @Inject constructor(
    }
 
    @Transactional
-   override fun insert(entity: Verification): Verification {
+   fun insert(entity: Verification): Verification {
       val paramMap = mapOf(
          "customer_account" to entity.customerAccount,
          "customer_comments" to entity.customerComments,
@@ -194,7 +193,7 @@ class VerificationRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: Verification): Verification {
+   fun update(entity: Verification): Verification {
       logger.debug("Updating Verification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!

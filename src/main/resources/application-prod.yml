@@ -28,3 +28,9 @@ cynergi:
       import:
          location: "/opt/cyn/v01/cynmid/legacy/import/"
          rename: true
+   worker:
+      pool:
+         size: 5
+   reportal:
+      file:
+         location: "/Z/WebPortal/ZWebRoot/cynrep/reports"

@@ -7,11 +7,11 @@ import kotlin.math.ceil
 
 @ValueObject
 @JsonInclude(ALWAYS)
-@Schema(name = "Page", description = "A sub listing or a large result set")
-data class Page<VO: IdentifiableValueObject>(
+@Schema(name = "Page", title = "Resulting list of a PageRequest", description = "A sub listing or a large result set")
+data class Page<I: Identifiable>(
 
    @field:Schema(name = "elements", description = "The elements up to 100 returned by the query", required = true)
-   val elements: List<VO> = emptyList(),
+   val elements: List<I> = emptyList(),
 
    @field:Schema(name = "requested", description = "The page request used when calculating the number of results to return", required = true)
    val requested: PageRequest,

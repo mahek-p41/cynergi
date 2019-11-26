@@ -4,7 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import io.reactiverse.reactivex.pgclient.Row
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
@@ -35,7 +35,7 @@ class StoreRepository @Inject constructor(
       FROM fastinfo_prod_import.store_vw s
    """.trimIndent()
 
-   fun findOne(id: Long): Store? {
+   fun findOne(id: Long): StoreEntity? {
       val found = jdbc.findFirstOrNull("$selectBase WHERE id = :id", mapOf("id" to id), simpleStoreRowMapper)
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
@@ -43,7 +43,7 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findByNumber(number: Int): Store? {
+   fun findOneByNumber(number: Int): StoreEntity? {
       val found = jdbc.findFirstOrNull("$selectBase WHERE number = :number", mapOf("number" to number), simpleStoreRowMapper)
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
@@ -51,9 +51,9 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<Store> {
+   fun findAll(pageRequest: PageRequest): RepositoryPage<StoreEntity> {
       var totalElements: Long? = null
-      val elements = mutableListOf<Store>()
+      val elements = mutableListOf<StoreEntity>()
 
       jdbc.query(
          """
@@ -64,7 +64,7 @@ class StoreRepository @Inject constructor(
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
+         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
          LIMIT ${pageRequest.size}
             OFFSET ${pageRequest.offset()}
          """.trimIndent(),
@@ -78,6 +78,7 @@ class StoreRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = pageRequest,
          elements = elements,
          totalElements = totalElements ?: 0
       )
@@ -99,11 +100,20 @@ class StoreRepository @Inject constructor(
       return exists
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): Store =
+   fun doesNotExist(id: Long): Boolean = !exists(id)
+
+   fun maybeMapRow(rs: ResultSet, columnPrefix: String): StoreEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, columnPrefix)
+      } else {
+         null
+      }
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
       simpleStoreRowMapper.mapRow(rs, columnPrefix)
 
-   fun mapRow(row: Row, columnPrefix: String = EMPTY): Store =
-      Store(
+   fun mapRow(row: Row, columnPrefix: String = EMPTY): StoreEntity =
+      StoreEntity(
          id = row.getLong("${columnPrefix}id"),
          timeCreated = row.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = row.getOffsetDateTime("${columnPrefix}time_updated"),
@@ -113,12 +123,12 @@ class StoreRepository @Inject constructor(
       )
 }
 
-private class StoreRowMapper : RowMapper<Store> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): Store =
+private class StoreRowMapper : RowMapper<StoreEntity> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): StoreEntity =
       mapRow(rs, EMPTY)
 
-   fun mapRow(rs: ResultSet, columnPrefix: String): Store =
-      Store(
+   fun mapRow(rs: ResultSet, columnPrefix: String): StoreEntity =
+      StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),

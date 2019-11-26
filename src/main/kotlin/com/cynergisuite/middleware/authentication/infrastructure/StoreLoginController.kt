@@ -16,6 +16,8 @@ import io.reactivex.Single
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
 /**
@@ -30,10 +32,11 @@ import javax.validation.Valid
 class StoreLoginController(
    private val loginController: LoginController // proxying this controller's path and slightly different payload to the existing LoginController
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(StoreLoginController::class.java)
 
    @Post
    @Consumes(APPLICATION_JSON)
-   @Operation(summary = "Login with a username, password and store number", description = "Allows for a different login process where the store associated with the user by default can be overridden", operationId = "store-login")
+   @Operation(tags = ["AuthenticationEndpoints"], summary = "Login with a username, password and store number", description = "Allows for a different login process where the store associated with the user by default can be overridden", operationId = "store-login")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If the login was successful"),
@@ -41,6 +44,8 @@ class StoreLoginController(
       ]
    )
    fun login(@Valid @Body usernamePasswordCredentials: UsernamePasswordStoreCredentials, request: HttpRequest<*>): Single<HttpResponse<*>> {
+      logger.debug("Store login attempted with {}", usernamePasswordCredentials)
+
       return loginController.login(usernamePasswordCredentials, request)
    }
 }

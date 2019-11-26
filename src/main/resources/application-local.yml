@@ -12,7 +12,7 @@ postgres: # postgres reactive client is configured for use by reactive parts of 
          port: 6432
          host: localhost
          database: cynergidb
-         user: postgres
+         user: cynergiuser
          password: password
          maxSize: 1
 datasources:
@@ -30,3 +30,9 @@ cynergi:
       import:
          location: "./import/"
          rename: false
+   worker:
+      pool:
+         size: 5
+   reportal:
+      file:
+         location: "/Z/WebPortal/ZWebRoot/cynrep/reports"

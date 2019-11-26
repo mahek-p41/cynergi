@@ -17,9 +17,6 @@ class AuditStatusService(
    override fun fetchByValue(value: String): AuditStatus? =
       auditStatusRepository.findOne(value)
 
-   fun fetchOpened(): AuditStatus =
-      auditStatusRepository.findOne("OPENED")!!
-
    override fun fetchAll(): List<AuditStatus> =
       auditStatusRepository.findAll()
 

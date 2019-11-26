@@ -13,9 +13,15 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
-import io.micronaut.security.rules.SecurityRule
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.validation.Validated
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -36,9 +42,16 @@ class VerificationController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationController::class.java)
 
+   @Throws(NotFoundException::class)
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-fetchOne")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "The Verification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+      ApiResponse(responseCode = "404", description = "The requested Verification was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    fun fetchOne(
-      @QueryValue("id") id: Long
+      @Parameter(name = "id", description = "The Verification ID to lookup", required = true, `in` = ParameterIn.PATH) @QueryValue("id") id: Long
    ): VerificationValueObject {
       logger.info("Fetching Verification by {}", id)
 
@@ -51,9 +64,15 @@ class VerificationController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @Get(value = "/account/{customerAccount}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-fetchOne-company-customerAccount")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "The Verification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+      ApiResponse(responseCode = "404", description = "The requested Verification was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    fun fetchOne(
-      @QueryValue("companyId") companyId: String,
-      @QueryValue("customerAccount") customerAccount: String
+      @Parameter(name = "id", description = "The Company ID that a Verification is to be to looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("companyId") companyId: String,
+      @Parameter(name = "id", description = "The customer account number that a Verification is to be looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("customerAccount") customerAccount: String
    ): VerificationValueObject {
       logger.info("Fetching Verification by company: {}, customer account {}", companyId, customerAccount)
 
@@ -65,24 +84,36 @@ class VerificationController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @Throws(ValidationException::class, NotFoundException::class)
-   fun save(
+   @Throws(ValidationException::class)
+   @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-create")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "The Verification was created successfully", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "The requested Verification to be created was invalid"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun create(
       @QueryValue("companyId") companyId: String,
       @Valid @Body dto: VerificationValueObject
    ): VerificationValueObject {
-      logger.info("Requested Save Validation {} with company: {}", dto, companyId)
+      logger.info("Requested Create Validation {} with company: {}", dto, companyId)
 
-      verificationValidator.validateSave(vo = dto, parent = companyId)
+      verificationValidator.validateCreate(vo = dto, parent = companyId)
 
       val response = verificationService.create(dto = dto, parent = companyId)
 
-      logger.info("Requested Save Validation {} with company: {} resulted in", dto, companyId, response)
+      logger.info("Requested Create Validation {} with company: {} resulted in", dto, companyId, response)
 
       return response
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @Throws(ValidationException::class, NotFoundException::class)
+   @Throws(ValidationException::class)
+   @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-update")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "The Verification was created successfully", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "The requested update was invalid"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    fun update(
       @QueryValue("companyId") companyId: String,
       @Valid @Body dto: VerificationValueObject

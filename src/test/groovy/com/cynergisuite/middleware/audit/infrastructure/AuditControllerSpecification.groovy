@@ -2,35 +2,50 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
+import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 import javax.inject.Inject
 import java.time.OffsetDateTime
 
+import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
+import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit"
    private static final Locale locale = Locale.US
 
+   @Inject AuditDetailFactoryService auditDetailFactoryService
+   @Inject AuditExceptionFactoryService auditExceptionFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditRepository auditRepository
+   @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
+   @Inject EmployeeFactoryService employeeFactoryService
+   @Inject NamedParameterJdbcTemplate jdbc
    @Inject LocalizationService localizationService
    @Inject StoreFactoryService storeFactoryService
 
@@ -47,14 +62,14 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id == savedAudit.id
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.timeUpdated
-      result.currentStatus.value == 'OPENED'
+      result.currentStatus.value == 'CREATED'
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.store.dataset == store.dataset
       result.actions.size() == 1
       result.actions[0].id > 0
-      result.actions[0].status.value == 'OPENED'
-      result.actions[0].status.description == 'Opened'
+      result.actions[0].status.value == 'CREATED'
+      result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
       result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
       result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
@@ -75,12 +90,13 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    void "fetch all audits for store 1" () {
       given:
       final store = storeFactoryService.store(1)
-      final def twentyAudits = auditFactoryService.stream(20, store).collect { new AuditValueObject(it, locale, localizationService) }
-      final def pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number])
-      final def pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number])
-      final def pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number])
-      final def firstFiveAudits = twentyAudits[0..4]
-      final def secondFiveAudits = twentyAudits[5..9]
+      final statuses = AuditStatusFactory.values().collect { it.value }
+      final twentyAudits = auditFactoryService.stream(20, store).collect { new AuditValueObject(it, locale, localizationService) }
+      final pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number, status: statuses])
+      final pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
+      final pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
+      final firstFiveAudits = twentyAudits[0..4]
+      final secondFiveAudits = twentyAudits[5..9]
 
       when:
       def pageOneResult = get("${path}${pageOne}")
@@ -93,7 +109,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == firstFiveAudits[0].id
       pageOneResult.elements[0].store.id == store.id
       pageOneResult.elements[0].actions.size() == 1
-      pageOneResult.elements[0].actions[0].status.value == "OPENED"
+      pageOneResult.elements[0].actions[0].status.value == "CREATED"
+      pageOneResult.elements[0].actions[0].status.color == "FF0000"
       pageOneResult.elements[0].actions[0].id == firstFiveAudits[0].actions[0].id
 
       when:
@@ -105,18 +122,16 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements[0].actions.size() == 1
-      pageTwoResult.elements[0].actions[0].status.value == "OPENED"
+      pageTwoResult.elements[0].actions[0].status.value == "CREATED"
+      pageTwoResult.elements[0].actions[0].status.color == "FF0000"
       pageTwoResult.elements[0].id == secondFiveAudits[0].id
 
       when:
       get("${path}${pageFive}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NOT_FOUND
-      final def notFoundResult = notFoundException.response.bodyAsJson()
-      notFoundResult.size() == 1
-      notFoundResult.message == "Request with Page 5, Size 5, Sort By id and Sort Direction ASC produced no results"
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
    }
 
    void "fetch all audits by store" () {
@@ -127,7 +142,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final def tenAuditsStoreThree = auditFactoryService.stream(10, storeThree).collect { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def storeOneFilterResult = get("${path}" + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 1]))
+      def storeOneFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 1]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -154,7 +169,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeOneFilterResult.elements[4].actions[0].changedBy.firstNameMi == fiveAuditsStoreOne[4].actions[0].changedBy.firstNameMi
 
       when:
-      def storeThreeFilterResult = get("$path" + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3]))
+      def storeThreeFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -184,12 +199,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final storeOne = storeFactoryService.store(1)
       final storeThree = storeFactoryService.store(3)
-      final storeOneOpenAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
-      final storeThreeOpenAuditOne = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened()] as Set).with { new AuditValueObject(it, locale, localizationService) }
-      final storeThreeInProgressAudit = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+      final storeOneOpenAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.created()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+      final storeThreeOpenAuditOne = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.created()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+      final storeThreeInProgressAudit = auditFactoryService.single(storeThree, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def openedResult = get("$path" + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: 'OPENED']))
+      def openedResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['CREATED'] as Set]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -198,7 +213,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id, storeThreeOpenAuditOne.id]
 
       when:
-      def inProgressResult = get("$path" + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3, status: 'IN-PROGRESS']))
+      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3, status: ['IN-PROGRESS'] as Set]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -207,13 +222,102 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.elements.collect { it.id } == [storeThreeInProgressAudit.id]
    }
 
+   void "fetch all open audits from last week" () {
+      given:
+      final storeOne = storeFactoryService.store(1)
+      final storeOneOpenAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.created()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+
+      when:
+      def updated = jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: storeOneOpenAuditOne.timeCreated.minusDays(8), id: storeOneOpenAuditOne.id])
+      def openedResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['CREATED'] as Set]))
+
+      then:
+      notThrown(Exception)
+      updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
+      openedResult.elements != null
+      openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id]
+      openedResult.elements[0].timeCreated.with { OffsetDateTime.parse(it) } == storeOneOpenAuditOne.timeCreated.minusDays(8)
+   }
+
+   void "fetch in-progress audits from last week" () {
+      given:
+      final storeOne = storeFactoryService.store(1)
+      final storeOneInProgressAuditOne = auditFactoryService.single(storeOne, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
+
+      when:
+      def updated = jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: storeOneInProgressAuditOne.timeCreated.minusDays(8), id: storeOneInProgressAuditOne.id])
+      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['IN-PROGRESS'] as Set]))
+
+      then:
+      notThrown(Exception)
+      updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
+      inProgressResult.elements != null
+      inProgressResult.elements.collect { it.id } == [storeOneInProgressAuditOne.id]
+      inProgressResult.elements[0].timeCreated.with { OffsetDateTime.parse(it) } == storeOneInProgressAuditOne.timeCreated.minusDays(8)
+   }
+
+   void "fetch all opened audits with from thru" () {
+      setup:
+      final storeOne = storeFactoryService.store(1)
+      final storeThree = storeFactoryService.store(3)
+      final storeOneEmployee = employeeFactoryService.single(storeOne)
+      final storeThreeEmployee = employeeFactoryService.single(storeThree)
+      final warehouse = auditScanAreaFactoryService.warehouse()
+      final showroom = auditScanAreaFactoryService.showroom()
+      final storeroom = auditScanAreaFactoryService.storeroom()
+
+      // setup store one open audit
+      final openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee)
+      auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
+      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee, null)
+
+      // setup store three open audit
+      final openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
+      auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
+      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee, null)
+
+      // setup store one canceled audit
+      auditFactoryService.single(storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
+
+      // setup store three canceled audit
+      auditFactoryService.single(storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
+
+      // setup store one completed off audits
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      // setup store three completed off audits
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      // setup store one signed off audits
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      // setup store three signed off audits
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def twoCreatedAudits = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', from: beginningOfWeek(OffsetDateTime.now()), thru: endOfWeek(OffsetDateTime.now()), status: [AuditStatusFactory.created().value] as Set]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      twoCreatedAudits.elements != null
+      twoCreatedAudits.elements.size() == 2
+      twoCreatedAudits.totalElements == 2
+      twoCreatedAudits.totalPages == 1
+      twoCreatedAudits.first == true
+      twoCreatedAudits.last == true
+   }
+
    void "fetch all when each audit has multiple statuses" () {
       given:
       final storeOne = storeFactoryService.store(1)
-      final sixAudits = auditFactoryService.stream(6, storeOne, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set).map { new AuditValueObject(it, locale, localizationService) }.toList()
+      auditFactoryService.generate(6, storeOne, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      def firstFiveAudits = get("${path}${new PageRequest([page: 1, size: 5, sortBy: 'id'])}")
+      def firstFiveAudits = get(path + new PageRequest([page: 1, size: 5, sortBy: 'id']))
 
       then:
       notThrown(HttpClientResponseException)
@@ -223,9 +327,77 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       firstFiveAudits.totalPages == 2
    }
 
+   void "fetch audit status counts using defaults for request parameters" () {
+      setup:
+      auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
+      auditFactoryService.generate(4, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(5, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def counts = get("${path}/counts").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+
+      then:
+      notThrown(HttpClientResponseException)
+      counts.size() == 5
+      counts == [
+         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
+         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+         new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
+         new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
+         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.signedOff()))
+      ]
+   }
+
+   void "fetch audit status counts using specified from" () {
+      setup:
+      final def from = OffsetDateTime.now().minusDays(1)
+      auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
+      auditFactoryService.generate(4, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(5, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+
+      then:
+      notThrown(HttpClientResponseException)
+      counts.size() == 5
+      counts == [
+         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
+         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+         new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
+         new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
+         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.signedOff()))
+      ]
+   }
+
+   void "fetch audit status counts using specified from and statuses" () {
+      setup:
+      final def from = OffsetDateTime.now().minusDays(1)
+      auditFactoryService.generate(1, null, authenticatedEmployee, [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      auditFactoryService.generate(3, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
+      auditFactoryService.generate(4, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(5, null, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def counts = get("${path}/counts?from=${from}&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+
+      then:
+      notThrown(HttpClientResponseException)
+      counts.size() == 2
+      counts == [
+         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
+         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+      ]
+   }
+
    void "create new audit" () {
       when:
-      def result = post("/$path", new AuditValueObject())
+      def result = post(path, new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)
@@ -233,14 +405,65 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id > 0
       result.store.storeNumber == authenticatedEmployee.store.number
       result.actions.size() == 1
-      result.actions[0].status.value == "OPENED"
-      result.actions[0].status.description == "Opened"
+      result.actions[0].status.value == "CREATED"
+      result.actions[0].status.description == "Created"
+      result.actions[0].changedBy.number == authenticatedEmployee.number
+   }
+
+   void "create new audits and verify audit numbers are sequential" () {
+      when:
+      def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
+      post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 1])]))
+      put(path, new AuditUpdateValueObject([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
+      def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      firstAudit.auditNumber > 0
+      firstAudit.auditNumber + 1 == secondAudit.auditNumber
+   }
+
+   void "create new audit when previous audit was cancelled" () {
+      given:
+      final store = storeFactoryService.random()
+      auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
+
+      when:
+      def result = post(path, new AuditCreateValueObject())
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.store.storeNumber == authenticatedEmployee.store.number
+      result.actions.size() == 1
+      result.actions[0].status.value == "CREATED"
+      result.actions[0].status.description == "Created"
+      result.actions[0].changedBy.number == authenticatedEmployee.number
+   }
+
+   void "create new audit when previous audit was signed-off" () {
+      given:
+      final store = storeFactoryService.random()
+      auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.signedOff()] as Set)
+
+      when:
+      def result = post(path, new AuditCreateValueObject())
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.store.storeNumber == authenticatedEmployee.store.number
+      result.actions.size() == 1
+      result.actions[0].status.value == "CREATED"
+      result.actions[0].status.description == "Created"
       result.actions[0].changedBy.number == authenticatedEmployee.number
    }
 
    void "create new audit with invalid store" () {
       when:
-      post("/$path", new AuditValueObject(new StoreValueObject([number: 13])))
+      post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 13])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -256,17 +479,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final store = storeFactoryService.store(1)
       auditFactoryService.single(store)
-      final newAudit = AuditFactory.single(store).with { new AuditValueObject(it, locale, localizationService) }
+      final newAudit = AuditFactory.single(store).with { new AuditCreateValueObject([store: new StoreValueObject(it.store)]) }
 
       when:
-      post("/$path", newAudit)
+      post(path, newAudit)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorValueObject(it) } == [new ErrorValueObject("Store ${store.number} has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Store ${store.number} has an audit already in progress", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {
@@ -275,22 +498,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      def result = put("/$path", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'IN-PROGRESS'])]))
+      def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'IN-PROGRESS'])]))
 
       then:
       notThrown(HttpClientResponseException)
       result.id == audit.id
       result.store.storeNumber == store.number
       result.actions.size() == 2
-      def resultActions = result.actions
+      final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
       resultActions[0].id > 0
-      resultActions[0].status.value == "OPENED"
-      resultActions[0].status.description == "Opened"
+      resultActions[0].status.value == "CREATED"
+      resultActions[0].status.description == "Created"
       resultActions[0].changedBy.number == audit.actions[0].changedBy.number
       resultActions[1].id != null
       resultActions[1].id > 0
@@ -305,7 +528,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single()
 
       when:
-      def result = put("/$path", new AuditUpdateValueObject([id: audit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
+      def result = put(path, new AuditUpdateValueObject([id: audit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -313,15 +536,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id == audit.id
       result.store.storeNumber == audit.store.number
       result.actions.size() == 2
-      def resultActions = result.actions
+      final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
       resultActions[0].id > 0
-      resultActions[0].status.value == "OPENED"
-      resultActions[0].status.description == "Opened"
+      resultActions[0].status.value == "CREATED"
+      resultActions[0].status.description == "Created"
       resultActions[0].changedBy.number == audit.actions[0].changedBy.number
       resultActions[1].id != null
       resultActions[1].id > 0
@@ -336,7 +559,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single()
 
       when:
-      put("/$path", new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
+      put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -344,15 +567,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "status"
-      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from Opened to Completed"
+      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from Created to Completed"
    }
 
    void "update in progress to opened" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
-      put("/$path", new AuditUpdateValueObject([id: audit.id, status: new AuditStatusValueObject([value: "OPENED"])]))
+      put(path, new AuditUpdateValueObject([id: audit.id, status: new AuditStatusValueObject([value: "CREATED"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -360,15 +583,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "status"
-      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from In Progress to Opened"
+      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from In Progress to Created"
    }
 
    void "update completed to opened" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      put("/$path", new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "OPENED"])]))
+      put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "CREATED"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -376,12 +599,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "status"
-      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from Completed to Opened"
+      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from Completed to Created"
    }
 
    void "update opened to null status" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.opened()] as Set)
+      final audit = auditFactoryService.single([AuditStatusFactory.created()] as Set)
 
       when:
       client.exchange(
@@ -397,12 +620,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit without an id" () {
       when:
-      put("/$path", new AuditUpdateValueObject([status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
+      put(path, new AuditUpdateValueObject([status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
-      final def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
-      final def response = exception.response.bodyAsJson()
+      final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "audit.id"
       response[0].message == "Is required"
@@ -410,16 +633,16 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit with a non-existent id" () {
       given:
-      final def savedAudit = auditFactoryService.single()
-      final def missingId = savedAudit.id * 100
+      final savedAudit = auditFactoryService.single()
+      final missingId = savedAudit.id * 100
 
       when:
-      put("/$path", new AuditUpdateValueObject([id: missingId, status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
+      put(path, new AuditUpdateValueObject([id: missingId, status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
-      final def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
-      final def response = exception.response.bodyAsJson()
+      final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "id"
       response[0].message == "${String.format("%,d", missingId)} was unable to be found"
@@ -431,7 +654,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      put("/$path", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'INVALID'])]))
+      put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'INVALID'])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -442,9 +665,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "Audit status INVALID was unable to be found"
    }
 
-   void "process audit from OPENED to IN-PROGRESS finally to COMPLETED" () {
+   void "process audit from CREATED to IN-PROGRESS finally to COMPLETED" () {
       when:
-      def openedResult = post("/$path", new AuditValueObject([store: new StoreValueObject(number: 3)]))
+      def openedResult = post(path, new AuditCreateValueObject([store: new StoreValueObject(number: 3)]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -452,19 +675,19 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.id > 0
       openedResult.store.storeNumber == 3
       openedResult.actions.size() == 1
-      def openActions = openedResult.actions
+      final openActions = openedResult.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       openActions[0].id != null
       openActions[0].id > 0
-      openActions[0].status.value == "OPENED"
-      openActions[0].status.description == "Opened"
+      openActions[0].status.value == "CREATED"
+      openActions[0].status.description == "Created"
       openActions[0].changedBy.number == authenticatedEmployee.number
 
       when:
-      def inProgressResult = put("/$path", new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
+      def inProgressResult = put(path, new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -472,15 +695,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.id > 0
       inProgressResult.store.storeNumber == 3
       inProgressResult.actions.size() == 2
-      def inProgressActions = inProgressResult.actions
+      final inProgressActions = inProgressResult.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       inProgressActions[0].id != null
       inProgressActions[0].id > 0
-      inProgressActions[0].status.value == "OPENED"
-      inProgressActions[0].status.description == "Opened"
+      inProgressActions[0].status.value == "CREATED"
+      inProgressActions[0].status.description == "Created"
       inProgressActions[0].changedBy.number == authenticatedEmployee.number
       inProgressActions[1].id != null
       inProgressActions[1].id > 0
@@ -490,7 +713,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressActions[1].changedBy.number == authenticatedEmployee.number
 
       when:
-      def completedResult = put("/$path", new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
+      def completedResult = put(path, new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -498,15 +721,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.id > 0
       completedResult.store.storeNumber == 3
       completedResult.actions.size() == 3
-      def completedActions = completedResult.actions
+      final completedActions = completedResult.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       completedActions[0].id != null
       completedActions[0].id > 0
-      completedActions[0].status.value == "OPENED"
-      completedActions[0].status.description == "Opened"
+      completedActions[0].status.value == "CREATED"
+      completedActions[0].status.description == "Created"
       completedActions[0].changedBy.number == authenticatedEmployee.number
       completedActions[1].id != null
       completedActions[1].id > 0
@@ -524,17 +747,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit after existing open audit was COMPLETED" () {
       given:
-      final audit = auditFactoryService.single(authenticatedEmployee.store, authenticatedEmployee, [AuditStatusFactory.opened(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(authenticatedEmployee.store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
-      put("/$path", new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
+      put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       notThrown(HttpClientResponseException)
-      auditRepository.countAuditsNotCompleted(audit.store.number) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number) == 0
 
       when:
-      def result = post("/$path", new AuditValueObject())
+      def result = post(path, new AuditCreateValueObject())
 
       then:
       notThrown(HttpClientResponseException)
@@ -542,8 +765,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.id > audit.id
       result.store.storeNumber == authenticatedEmployee.store.number
       result.actions.size() == 1
-      result.actions[0].status.value == "OPENED"
-      result.actions[0].status.description == "Opened"
+      result.actions[0].status.value == "CREATED"
+      result.actions[0].status.description == "Created"
       result.actions[0].changedBy.number == authenticatedEmployee.number
    }
 }

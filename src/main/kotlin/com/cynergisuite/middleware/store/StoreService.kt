@@ -14,12 +14,12 @@ class StoreService @Inject constructor(
       storeRepository.findOne(id = id)?.let { StoreValueObject(entity = it) }
 
    fun fetchByNumber(number: Int): StoreValueObject? =
-      storeRepository.findByNumber(number = number)?.let { StoreValueObject(entity = it) }
+      storeRepository.findOneByNumber(number = number)?.let { StoreValueObject(entity = it) }
 
    fun fetchAll(pageRequest: PageRequest): Page<StoreValueObject> {
       val stores = storeRepository.findAll(pageRequest)
 
-      return stores.toPage(pageRequest) { store ->
+      return stores.toPage { store ->
          StoreValueObject(store)
       }
    }

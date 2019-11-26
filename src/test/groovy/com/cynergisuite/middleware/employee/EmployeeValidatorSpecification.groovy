@@ -17,7 +17,7 @@ class EmployeeValidatorSpecification extends Specification {
       def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject([loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
+      employeeValidator.validateCreate(new EmployeeValueObject([loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
       notThrown(ValidationException)
@@ -29,7 +29,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateSave(new EmployeeValueObject(null, null, null, null, null, null, null, null))
+      employeeValidator.validateCreate(new EmployeeValueObject(null, null, null, null, null, null, null, null))
 
       then:
       notThrown(ValidationException)

@@ -17,11 +17,16 @@
     <logger name="org" level="ERROR" />
     <logger name="com.zaxxer" level="ERROR" />
     <logger name="io.netty" level="ERROR" />
-    <logger name="io.micronaut" level="INFO" />
-    <logger name="com.hightouchinc" level="DEBUG" />
+    <logger name="io.micronaut" level="DEBUG" />
+    <logger name="io.micronaut.context" level="ERROR" />
+    <logger name="io.micronaut.core.beans" level="ERROR" />
+    <logger name="io.micronaut.core.reflect" level="ERROR" />
+    <logger name="io.micronaut.context.event" level="ERROR" />
+    <logger name="io.micronaut.management" level="ERROR" />
+    <logger name="com.cynergisuite" level="TRACE" />
     <logger name="org.flywaydb" level="INFO" />
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="PROD_FILE"/>
     </root>
 </configuration>

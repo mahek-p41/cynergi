@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
-@Schema(name = "UsernamePasswordStoreCredentials", description = "Username/Password with the ability to set the user's associated store", requiredProperties = ["username", "password", "storeNumber"])
+@Schema(name = "UsernamePasswordStoreCredentials", title = "Username/Password combo", description = "Username/Password with the ability to set the user's associated store", requiredProperties = ["username", "password", "storeNumber"])
 class UsernamePasswordStoreCredentials(
    username: String? = null,
    password: String? = null,

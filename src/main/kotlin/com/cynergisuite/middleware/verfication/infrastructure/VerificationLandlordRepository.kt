@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
@@ -20,12 +19,12 @@ import javax.inject.Singleton
 @Singleton
 class VerificationLandlordRepository(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<VerificationLandlord> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationLandlordRepository::class.java)
    private val simpleVerificationLandlordRowMapper = VerificationLandlordRowMapper()
    private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(columnPrefix = "vl_")
 
-   override fun findOne(id: Long): VerificationLandlord? {
+   fun findOne(id: Long): VerificationLandlord? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord WHERE id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
 
       logger.trace("searching for VerificationLandlord: {} resulted in {}", id, found)
@@ -33,7 +32,7 @@ class VerificationLandlordRepository(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if VerificationLandlord: {} exists resulted in {}", id, exists)
@@ -42,7 +41,7 @@ class VerificationLandlordRepository(
    }
 
    @Transactional
-   override fun insert(entity: VerificationLandlord): VerificationLandlord {
+   fun insert(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Inserting verification_landlord {}", entity)
 
       return jdbc.insertReturning("""
@@ -62,14 +61,14 @@ class VerificationLandlordRepository(
             "phone" to entity.phone,
             "reliable" to entity.reliable,
             "rent" to entity.rent,
-            "verification_id" to entity.verification.entityId()
+            "verification_id" to entity.verification.myId()
          ),
          simpleVerificationLandlordRowMapper
       )
    }
 
    @Transactional
-   override fun update(entity: VerificationLandlord): VerificationLandlord {
+   fun update(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Updating verification_landlord {}", entity)
 
       return jdbc.updateReturning("""

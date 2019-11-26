@@ -14,7 +14,7 @@ class VerificationValidator(
 ) {
 
    @Throws(ValidationException::class)
-   fun validateSave(vo: VerificationValueObject, parent: String) {
+   fun validateCreate(vo: VerificationValueObject, parent: String) {
       val errors = if (verificationService.exists(customerAccount = vo.customerAccount!!)) {
          setOf(ValidationError("cust_acct", Duplicate(vo.customerAccount)))
       } else {

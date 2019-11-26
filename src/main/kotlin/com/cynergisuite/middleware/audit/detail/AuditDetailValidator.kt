@@ -1,11 +1,15 @@
 package com.cynergisuite.middleware.audit.detail
 
-import com.cynergisuite.middleware.audit.Audit
+import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDetails
 import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
 import com.cynergisuite.middleware.localization.NotFound
@@ -19,20 +23,26 @@ import javax.inject.Singleton
 class AuditDetailValidator @Inject constructor (
    private val auditDetailRepository: AuditDetailRepository,
    private val auditRepository: AuditRepository,
-   private val auditScanAreaRepository: AuditScanAreaRepository
-) {
+   private val auditScanAreaRepository: AuditScanAreaRepository,
+   private val inventoryRepository: InventoryRepository
+) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateSave(vo: AuditDetailValueObject) {
-      logger.debug("Validating Save AuditDetail {}", vo)
+   fun validateCreate(auditId: Long, auditDetailCreate: AuditDetailCreateValueObject) {
+      logger.debug("Validating Create AuditDetail {}", auditDetailCreate)
 
-      val errors = doSharedValidation(vo)
+      doValidation { errors ->
+         val inventoryId = auditDetailCreate.inventory!!.id!!
 
-      if (errors.isNotEmpty()) {
-         logger.debug("Validating Save AuditDetail {} had errors {}", vo, errors)
+         validateAudit(auditId, errors)
+         validateScanArea(auditDetailCreate.scanArea!!.value!!, errors)
 
-         throw ValidationException(errors)
+         if (inventoryRepository.doesNotExist(inventoryId)) {
+            errors.add(
+               ValidationError("inventory.id", NotFound(inventoryId))
+            )
+         }
       }
    }
 
@@ -40,44 +50,37 @@ class AuditDetailValidator @Inject constructor (
    fun validateUpdate(vo: AuditDetailValueObject) {
       logger.debug("Validating Update AuditDetail {}", vo)
 
-      val errors = doSharedValidation(vo)
-      val id = vo.id
+      doValidation { errors ->
+         val auditId = vo.audit!!.myId()!!
+         val id = vo.id
 
-      if (id == null) {
-         errors.add(element = ValidationError("id", NotNull("id")))
-      } else if ( !auditDetailRepository.exists(id = id) ) {
-         errors.add(ValidationError("id", NotFound(id)))
-      }
+         validateAudit(auditId, errors)
+         validateScanArea(vo.scanArea!!.value!!, errors)
 
-      if (errors.isNotEmpty()) {
-         logger.debug("Validating Update AuditDetail {} had errors {}", vo, errors)
-
-         throw ValidationException(errors)
+         if (id == null) {
+            errors.add(element = ValidationError("id", NotNull("id")))
+         } else if ( auditDetailRepository.doesNotExist(id)) {
+            errors.add(ValidationError("id", NotFound(id)))
+         }
       }
    }
 
-   private fun doSharedValidation(vo: AuditDetailValueObject): MutableSet<ValidationError> {
-      val errors = mutableSetOf<ValidationError>()
-      val auditId = vo.audit!!.valueObjectId()!!
-      val audit: Audit? = auditRepository.findOne(auditId)
-      val auditStatus = audit?.currentStatus()
-
-      if ( audit == null ) {
+   private fun validateScanArea(scanAreaValue: String, errors: MutableSet<ValidationError>) {
+      if ( !auditScanAreaRepository.exists(scanAreaValue) ) {
          errors.add(
-            ValidationError("audit.id", NotFound(auditId))
+            ValidationError("scanArea", AuditScanAreaNotFound(scanAreaValue))
          )
-      } else if (auditStatus != null && "IN-PROGRESS" != auditStatus.value) {
+      }
+   }
+
+   private fun validateAudit(auditId: Long, errors: MutableSet<ValidationError>) {
+      val audit: AuditEntity = auditRepository.findOne(auditId) ?: throw NotFoundException(auditId)
+      val auditStatus = audit.currentStatus()
+
+      if (IN_PROGRESS != auditStatus) {
          errors.add(
             ValidationError("audit.status", AuditMustBeInProgressDetails(auditId))
          )
       }
-
-      if ( !auditScanAreaRepository.exists(vo.scanArea!!.value!!) ) {
-         errors.add(
-            ValidationError("scanArea", AuditScanAreaNotFound(vo.scanArea!!.value))
-         )
-      }
-
-      return errors
    }
 }

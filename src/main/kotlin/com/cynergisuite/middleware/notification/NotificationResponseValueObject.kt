@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Deprecated(message = "Remove this here and in the front end at some point, there shouldn't be any need for this wrapper")
 @ValueObject
 @JsonInclude(value = ALWAYS)
-@Schema(name = "NotificationResponse", description = "Wrapper around a Notification")
+@Schema(name = "NotificationResponse", title = "Wrapper around a Notification", description = "Wrapper around a Notification")
 data class NotificationResponseValueObject(
    var notification: NotificationValueObject
 )

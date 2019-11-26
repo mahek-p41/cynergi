@@ -3,44 +3,81 @@ networks:
   cynerginet:
     name: cynerginet
 services:
-  cynergidevdb:
-    container_name: cynergidevdb
+  cynergidb:
+    container_name: cynergidb
     build:
       context: db
-      dockerfile: cynergidevdb.dockerfile
+      dockerfile: cynergidb.dockerfile
     ports:
       - "6432:5432"
     volumes:
-    - ./db/DatabaseDumps:/tmp/dumps
+      - ./db/DatabaseDumps:/tmp/dumps
     environment:
       - POSTGRES_PASSWORD=password
-    restart: always
+    restart: 'no'
     networks:
       - cynerginet
-  cynergidevdbsnapshot:
-    container_name: cynergidevdbsnapshot
+  cynmid:
+     container_name: cynmid
+     build:
+        context: cynmid
+        dockerfile: cynmid.dockerfile
+     ports:
+       - "8080:8080"
+     volumes:
+       - ../../build/libs:/tmp
+       - ../../import:/tmp/import
+     restart: 'no'
+     depends_on:
+       - cynergidb
+     networks:
+        - cynerginet
+     command: ["java", "-Dmicronaut.environments=develop", "-Dpostgres.reactive.client.port=5432", "-Dpostgres.reactive.client.host=cynergidb", "-Dmicronaut.server.port=8080", "-Dmicronaut.server.host=cynmid", "-Dcynergi.legacy.import.location=/tmp/import", "-jar", "/tmp/cynergi-middleware-r2-all.jar"]
+     #command: ["/bin/bash"]
+  cynergidbready:
+     container_name: cynergidbready
+     build:
+        context: db
+        dockerfile: cynergidbsnapshot.dockerfile
+     networks:
+       - cynerginet
+     command: [ "/tmp/cynergi-db-ready.sh" ]
+  cynergidbsnapshot:
+    container_name: cynergidbsnapshot
     build:
       context: db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      dockerfile: cynergidbsnapshot.dockerfile
     volumes:
       - ./db/DatabaseDumps:/tmp/dumps
     depends_on:
-      - cynergidevdb
+      - cynergidb
     networks:
       - cynerginet
     command: [ "/root/cynergi-dev-db-dump.sh" ]
-  cynergidevdbpsql:
+  cynergidbpsql:
     build:
       context: db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
-    container_name: cynergidevdbpsql
+      dockerfile: cynergidbsnapshot.dockerfile
+    container_name: cynergidbpsql
     depends_on:
-      - cynergidevdb
+      - cynergidb
     stdin_open: true
     tty: true
-    command: [ "/usr/local/bin/psql", "--host=cynergidevdb", "--port=5432", "cynergidb", "postgres" ]
     networks:
       - cynerginet
+    command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "cynergiuser" ]
+  cynergidevelopdbpsql:
+     build:
+        context: db
+        dockerfile: cynergidbsnapshot.dockerfile
+     container_name: cynergidbpsql
+     depends_on:
+        - cynergidb
+     stdin_open: true
+     tty: true
+     networks:
+        - cynerginet
+     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "cynergiuser" ]
   cynergitestdb:
     build:
       context: db
@@ -51,22 +88,22 @@ services:
     environment:
       - POSTGRES_DB=cynergitestdb
       - POSTGRES_PASSWORD=password
-    restart: always
+    restart: 'no'
     container_name: cynergitestdb
     networks:
       - cynerginet
   cynergitestdbpsql:
     build:
       context: db
-      dockerfile: cynergiedevdbsnapshot.dockerfile
+      dockerfile: cynergidbsnapshot.dockerfile
     container_name: cynergitestdbpsql
     depends_on:
-      - cynergidevdb
+      - cynergidb
     stdin_open: true
     tty: true
-    command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
     networks:
       - cynerginet
+    command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
   fastinfosnapshot:
      container_name: fastinfosnapshot
      build:
@@ -75,7 +112,7 @@ services:
      volumes:
         - ./db/DatabaseDumps:/tmp/dumps
      depends_on:
-        - cynergidevdb
+        - cynergidb
      networks:
         - cynerginet
      command: [ "/root/fastinfo-db-dump.sh" ]

@@ -5,20 +5,14 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-fun ResultSet.getOffsetDateTime(column: String) : OffsetDateTime =
-  this.getObject(column, OffsetDateTime::class.java)
+fun ResultSet.getOffsetDateTime(columnLabel: String) : OffsetDateTime =
+  this.getObject(columnLabel, OffsetDateTime::class.java)
 
-fun ResultSet.getOffsetDateTimeOrNull(column: String) : OffsetDateTime? =
-   this.getObject(column, OffsetDateTime::class.java)
+fun ResultSet.getLocalDate(columnLabel: String) : LocalDate =
+   this.getObject(columnLabel, LocalDate::class.java)
 
-fun ResultSet.getLocalDate(column: String) : LocalDate =
-   this.getObject(column, LocalDate::class.java)
+fun ResultSet.getLocalDateOrNull(columnLabel: String) : LocalDate? =
+   this.getObject(columnLabel, LocalDate::class.java)
 
-fun ResultSet.getLocalDateOrNull(column: String) : LocalDate? =
-   this.getObject(column, LocalDate::class.java)
-
-fun ResultSet.getUuid(column: String) : UUID =
-  this.getObject(column, UUID::class.java)
-
-fun ResultSet.getUuidOrNull(column: String) : UUID? =
-   this.getObject(column, UUID::class.java)
+fun ResultSet.getUuid(columnLabel: String) : UUID =
+  this.getObject(columnLabel, UUID::class.java)

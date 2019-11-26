@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.detail.scan.area.infrastructure
 
-import com.cynergisuite.domain.infrastructure.TypeDomainRepository
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -15,19 +14,21 @@ import javax.inject.Singleton
 @Singleton
 class AuditScanAreaRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : TypeDomainRepository<AuditScanArea> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScanAreaRepository::class.java)
    private val simpleAuditScanAreaRowMapper = AuditScanAreaRowMapper()
 
-   override fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_scan_area_type_domain WHERE value = :value)", mapOf("value" to value), Boolean::class.java)!!
+   fun exists(value: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_scan_area_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
 
       logger.trace("Checking if Audit: {} exists resulted in {}", value, exists)
 
       return exists
    }
 
-   override fun findOne(id: Long): AuditScanArea? {
+   fun doesNotExist(scanAreaValue: String): Boolean = !exists(scanAreaValue)
+
+   fun findOne(id: Long): AuditScanArea? {
       val found = jdbc.findFirstOrNull("SELECT * FROM audit_scan_area_type_domain WHERE id = :id", mapOf("id" to id), simpleAuditScanAreaRowMapper)
 
       logger.trace("Searching for AuditScanAreaTypeDomain: {} resulted in {}", id, found)
@@ -35,7 +36,7 @@ class AuditScanAreaRepository @Inject constructor(
       return found
    }
 
-   override fun findOne(value: String): AuditScanArea? {
+   fun findOne(value: String): AuditScanArea? {
       val found = jdbc.findFirstOrNull("SELECT * FROM audit_scan_area_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), simpleAuditScanAreaRowMapper)
 
       logger.trace("Searching for AuditStatusTypeDomain: {} resulted in {}", value, found)
@@ -43,11 +44,18 @@ class AuditScanAreaRepository @Inject constructor(
       return found
    }
 
-   override fun findAll(): List<AuditScanArea> =
+   fun findAll(): List<AuditScanArea> =
       jdbc.query("SELECT * FROM audit_scan_area_type_domain ORDER BY value", simpleAuditScanAreaRowMapper)
 
    fun mapPrefixedRow(rs: ResultSet, prefix: String = "ad_"): AuditScanArea =
       simpleAuditScanAreaRowMapper.mapRow(rs, prefix)
+
+   fun mapPrefixedRowOrNull(rs: ResultSet, prefix: String): AuditScanArea? =
+      if (rs.getString("${prefix}id") != null) {
+         mapPrefixedRow(rs, prefix)
+      } else {
+         null
+      }
 }
 
 private class AuditScanAreaRowMapper(

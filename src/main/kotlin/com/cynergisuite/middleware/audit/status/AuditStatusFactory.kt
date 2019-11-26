@@ -1,35 +1,34 @@
 package com.cynergisuite.middleware.audit.status
 
-import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
-import io.micronaut.context.annotation.Requires
 import org.apache.commons.lang3.RandomUtils
 import java.util.stream.Stream
-import javax.inject.Inject
-import javax.inject.Singleton
 
 object AuditStatusFactory {
    private val statuses = listOf(
-      AuditStatus(1, "OPENED", "Opened", "audit.status.opened"),
-      AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress"),
-      AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed"),
-      AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled"),
-      AuditStatus(5, "SIGNED-OFF", "Signed Off", "audit.status.signed-off"),
-      AuditStatus(6, "CLOSED", "Closed", "audit.status.closed")
+      CREATED,
+      IN_PROGRESS,
+      COMPLETED,
+      CANCELED,
+      SIGNED_OFF
    )
 
    @JvmStatic
-   fun opened(): AuditStatus = statuses.first { it.value == "OPENED" }
+   fun created(): AuditStatus = statuses.first { it == CREATED }
 
    @JvmStatic
-   fun inProgress(): AuditStatus = statuses.first { it.value == "IN-PROGRESS" }
+   fun inProgress(): AuditStatus = statuses.first { it == IN_PROGRESS }
 
    @JvmStatic
-   fun completed(): AuditStatus = statuses.first { it.value == "COMPLETED" }
+   fun canceled(): AuditStatus = statuses.first { it == CANCELED }
 
    @JvmStatic
-   fun values(): List<AuditStatus> {
-      return statuses
-   }
+   fun completed(): AuditStatus = statuses.first { it == COMPLETED }
+
+   @JvmStatic
+   fun signedOff(): AuditStatus = statuses.first { it == SIGNED_OFF }
+
+   @JvmStatic
+   fun values(): List<AuditStatus> = statuses
 
    @JvmStatic
    fun random(): AuditStatus {
@@ -44,22 +43,6 @@ object AuditStatusFactory {
    }
 
    @JvmStatic
-   fun single(): AuditStatus {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditStatusTypeDomain") }
-   }
-}
-
-@Singleton
-@Requires(env = ["demo", "test"])
-class AuditStatusFactoryService @Inject constructor(
-   private val auditStatusTypeDomainRepository: AuditStatusRepository
-) {
-
-   fun stream(numberIn: Int = 1): Stream<AuditStatus> {
-      return AuditStatusFactory.stream(numberIn)
-         .map { auditStatusTypeDomainRepository.findOne(it.value)!! }
-   }
-
    fun single(): AuditStatus {
       return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditStatusTypeDomain") }
    }

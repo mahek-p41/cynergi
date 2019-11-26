@@ -30,7 +30,7 @@ class AuditScanAreaController @Inject constructor(
 
    @Get
    @AccessControl("auditDetailScanArea-fetchAll")
-   @Operation(summary = "Fetch a list of valid audit detail scan areas", description = "Fetch a listing of supported audit detail scan areas", operationId = "auditDetailScanArea-fetchAll")
+   @Operation(tags = ["AuditScanAreaEndpoints"], summary = "Fetch a list of valid audit detail scan areas", description = "Fetch a listing of supported audit detail scan areas", operationId = "auditDetailScanArea-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AuditScanAreaValueObject::class))])
    ])

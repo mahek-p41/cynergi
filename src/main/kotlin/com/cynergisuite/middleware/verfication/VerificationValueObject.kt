@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Verification", description = "Describes a verification")
+@Schema(name = "Verification", title = "Customer Verification", description = "A single verification for a single customer")
 data class VerificationValueObject(
    var id: Long?,
 
@@ -50,7 +50,7 @@ data class VerificationValueObject(
    @field:Size(max = 6)
    @field:JsonDeserialize(contentAs = VerificationReferenceValueObject::class)
    @field:JsonProperty("checklist_references")
-   val references: MutableList<VerificationReferenceValueObject> = mutableListOf()
+   var references: MutableList<VerificationReferenceValueObject> = mutableListOf()
 
 ) : ValueObjectBase<VerificationValueObject>() {
    constructor(entity: Verification) :
@@ -68,7 +68,7 @@ data class VerificationValueObject(
 
    override fun copyMe(): VerificationValueObject = this.copy()
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }
 
 private fun copyAutoEntityToValueObject(entity: Verification): VerificationAutoValueObject? {

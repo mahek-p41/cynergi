@@ -1,6 +1,6 @@
 package com.cynergisuite.domain.infrastructure
 
-import com.cynergisuite.domain.IdentifiableValueObject
+
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.employee.EmployeeService
 import groovy.json.JsonSlurper
@@ -31,8 +31,12 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    void setup() {
       client = httpClient.toBlocking()
       authenticatedEmployee = employeeService.fetchUserByAuthentication(123, 'pass', null).blockingGet()
-      cynergiAccessToken = client.exchange(POST("/login", new UsernamePasswordCredentials('123', 'pass')), BearerAccessRefreshToken).body().accessToken
+      cynergiAccessToken = loginEmployee(authenticatedEmployee)
       jsonSlurper = new JsonSlurper()
+   }
+
+   String loginEmployee(Employee employee) {
+      return client.exchange(POST("/login", new UsernamePasswordCredentials(employee.number.toString(), employee.passCode)), BearerAccessRefreshToken).body().accessToken
    }
 
    Object get(String path) throws HttpClientResponseException {
@@ -43,15 +47,15 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       ).bodyAsJson()
    }
 
-   def <BODY extends IdentifiableValueObject> Object post(String path, BODY body) throws HttpClientResponseException {
+   Object post(String path, Object body, String accessToken = cynergiAccessToken) throws HttpClientResponseException {
       return client.exchange(
-         POST("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
+         POST("/${path}", body).header("Authorization", "Bearer $accessToken"),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()
    }
 
-   def <BODY extends IdentifiableValueObject> Object put(String path, BODY body) throws HttpClientResponseException {
+   Object put(String path, Object body) throws HttpClientResponseException {
       return client.exchange(
          PUT("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),

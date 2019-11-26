@@ -6,6 +6,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class StoreControllerSpecification extends ControllerSpecificationBase {
@@ -46,7 +47,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       new PageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
-      pageOneResult.elements.size() == 3
+      pageOneResult.elements.size() == 2
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
@@ -55,19 +56,12 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
       pageOneResult.elements[1].dataset == "testds"
-      pageOneResult.elements[2].id == 3
-      pageOneResult.elements[2].storeNumber == 9000
-      pageOneResult.elements[2].name == "HOME OFFICE"
-      pageOneResult.elements[2].dataset == "testds"
 
       when:
       get("${path}${pageTwo}")
 
       then:
       final def notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NOT_FOUND
-      final def notFoundResult = notFoundException.response.bodyAsJson()
-      notFoundResult.size() == 1
-      notFoundResult.message == "Request with Page 2, Size 5, Sort By id and Sort Direction ASC produced no results"
+      notFoundException.status == NO_CONTENT
    }
 }

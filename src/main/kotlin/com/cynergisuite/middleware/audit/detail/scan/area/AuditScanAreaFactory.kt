@@ -52,7 +52,7 @@ object AuditScanAreaFactory {
 }
 
 @Singleton
-@Requires(env = ["demo", "test"])
+@Requires(env = ["develop", "test"])
 class AuditScanAreaFactoryService @Inject constructor(
    private val auditScanAreaTypeDomainRepository: AuditScanAreaRepository
 ) {

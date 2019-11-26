@@ -3,10 +3,10 @@ package com.cynergisuite.middleware.notification
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.EndDateBeforeStart
-import com.cynergisuite.middleware.localization.NotificationRecipientsRequired
-import com.cynergisuite.middleware.localization.NotificationRecipientsRequiredAll
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
+import com.cynergisuite.middleware.localization.NotificationRecipientsRequired
+import com.cynergisuite.middleware.localization.NotificationRecipientsRequiredAll
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
@@ -15,19 +15,19 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationValidator @Inject constructor(
-   private val notificationService: NotificationService,
-   private val dateFormatter: DateTimeFormatter
+   private val notificationService: NotificationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(NotificationValidator::class.java)
+   private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
    @Throws(ValidationException::class)
-   fun validateSave(vo: NotificationValueObject) {
-      logger.debug("Validating Save Notification {}", vo)
+   fun validateCreate(vo: NotificationValueObject) {
+      logger.debug("Validating Create Notification {}", vo)
 
       val errors: MutableSet<ValidationError> = doValidate(dto = vo)
 
       if (errors.isNotEmpty()) {
-         logger.info("Validating Save Notification {} had errors", vo)
+         logger.info("Validating Create Notification {} had errors", vo)
 
          throw ValidationException(errors)
       }

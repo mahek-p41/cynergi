@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.extensions.findAllWithCrossJoin
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getLocalDate
@@ -27,7 +26,7 @@ class NotificationRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository,
    private val notificationRecipientRepository: NotificationRecipientRepository
-) : Repository<Notification> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
    private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
@@ -60,7 +59,7 @@ class NotificationRepository @Inject constructor(
            ON n.id = nr.notification_id
    """.trimIndent()
 
-   override fun findOne(id: Long): Notification? {
+   fun findOne(id: Long): Notification? {
       val found: Notification? = jdbc.findFirstOrNullWithCrossJoin("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id), fullNotificationRowMapper) { notification, rs ->
          notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also { notification.recipients.add(it) }
       }
@@ -70,7 +69,7 @@ class NotificationRepository @Inject constructor(
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Notification: {} exists resulted in {}", id, exists)
@@ -140,7 +139,7 @@ class NotificationRepository @Inject constructor(
       }
 
    @Transactional
-   override fun insert(entity: Notification): Notification {
+   fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
       val inserted = jdbc.insertReturning("""
@@ -156,7 +155,7 @@ class NotificationRepository @Inject constructor(
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
             "expiration_date" to entity.expirationDate,
-            "notification_type_id" to entity.notificationDomainType.entityId()
+            "notification_type_id" to entity.notificationDomainType.myId()
          ),
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
@@ -169,7 +168,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: Notification): Notification {
+   fun update(entity: Notification): Notification {
       logger.debug("Updating notification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!
@@ -194,7 +193,7 @@ class NotificationRepository @Inject constructor(
             "expiration_date" to entity.expirationDate,
             "message" to entity.message,
             "sending_employee" to entity.sendingEmployee,
-            "notification_type_id" to entity.notificationDomainType.entityId()
+            "notification_type_id" to entity.notificationDomainType.myId()
          ),
          NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
@@ -229,7 +228,7 @@ class NotificationRepository @Inject constructor(
 
    private fun doRecipientUpdates(entity: Notification, existing: Notification) =
       entity.recipients.asSequence()
-         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.entityId() == n.notification.entityId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
+         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.myId() == n.notification.myId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
 }

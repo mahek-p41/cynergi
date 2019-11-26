@@ -37,7 +37,7 @@ class EmployeeService @Inject constructor(
 
    @Validated
    fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {
-      employeeValidator.validateSave(vo)
+      employeeValidator.validateCreate(vo)
 
       return EmployeeValueObject(
          entity = employeeRepository.insert(entity = Employee(vo = vo))

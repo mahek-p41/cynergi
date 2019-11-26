@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.error.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AccessException
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -16,7 +16,6 @@ import com.cynergisuite.middleware.localization.NotImplemented
 import com.cynergisuite.middleware.localization.PageOutOfBounds
 import com.cynergisuite.middleware.localization.RouteError
 import com.cynergisuite.middleware.localization.UnableToParseJson
-import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
@@ -24,6 +23,7 @@ import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
+import io.micronaut.http.HttpResponse.noContent
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
 import io.micronaut.http.HttpStatus.FORBIDDEN
@@ -47,49 +47,50 @@ class ErrorHandlerController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
 
    @Error(global = true, exception = Throwable::class)
-   fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorValueObject> {
+   fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorDataTransferObject> {
       logger.error("Unknown Error", throwable)
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorValueObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
+      return serverError(ErrorDataTransferObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
    }
 
    @Error(global = true, exception = JsonParseException::class)
-   fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorValueObject> {
+   fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDataTransferObject> {
       logger.error("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         ErrorValueObject(
+         ErrorDataTransferObject(
             message = localizationService.localize(localizationCode = UnableToParseJson(exception.localizedMessage), locale = locale)
          )
       )
    }
 
    @Error(global = true, exception = IOException::class)
-   fun inputOutputExceptionhandler(httpRequest: HttpRequest<*>, exception: IOException) {
-      if (exception.message?.trim() == "An existing connection was forcibly closed by the remote host") {
-         logger.error("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
-      } else {
-         logger.error("Unknown IOException occurred during request processing", exception)
+   fun inputOutputExceptionHandler(httpRequest: HttpRequest<*>, exception: IOException) {
+      when (exception.message?.trim()?.toLowerCase()) {
+         "an existing connection was forcibly closed by the remote host", "connection reset by peer" ->
+            logger.warn("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
+         else ->
+            logger.error("Unknown IOException occurred during request processing", exception)
       }
    }
 
    @Error(global = true, exception = NotImplementedError::class)
-   fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<ErrorValueObject> {
+   fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<ErrorDataTransferObject> {
       logger.error("Endpoint not implemented", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return HttpResponse
-         .status<ErrorValueObject>(NOT_IMPLEMENTED)
-         .body(ErrorValueObject(localizationService.localize(localizationCode = NotImplemented(httpRequest.path), locale = locale)))
+         .status<ErrorDataTransferObject>(NOT_IMPLEMENTED)
+         .body(ErrorDataTransferObject(localizationService.localize(localizationCode = NotImplemented(httpRequest.path), locale = locale)))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
-   fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorValueObject> {
+   fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDataTransferObject> {
       logger.error("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
@@ -104,7 +105,7 @@ class ErrorHandlerController @Inject constructor(
 
          conversionErrorCause is JsonMappingException -> {
             badRequest(
-               ErrorValueObject(
+               ErrorDataTransferObject(
                   message = localizationService.localize(ConversionError(argument.name, conversionError.originalValue.orElse(null)), locale),
                   path = conversionErrorCause.path.joinToString(".") { it.fieldName }
                )
@@ -118,22 +119,22 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = OperationNotPermittedException::class)
-   fun operationNotPermitted(httpRequest: HttpRequest<*>, exception: OperationNotPermittedException): HttpResponse<ErrorValueObject> {
+   fun operationNotPermitted(httpRequest: HttpRequest<*>, exception: OperationNotPermittedException): HttpResponse<ErrorDataTransferObject> {
       logger.error("An operation that is not permitted was initiated", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         ErrorValueObject(
+         ErrorDataTransferObject(
             message = localizationService.localize(messageKey = exception.messageTemplate, locale = locale, arguments = emptyArray()),
             path = exception.path
          )
       )
    }
 
-   private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorValueObject> {
+   private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDataTransferObject> {
       return badRequest(
-         ErrorValueObject(
+         ErrorDataTransferObject(
             message = localizationService.localize(ConversionError(argumentName, argumentValue), locale),
             path = argumentName
          )
@@ -141,60 +142,53 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
-   fun unsatisifedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorValueObject> {
+   fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorDataTransferObject> {
       logger.trace("Unsatisfied Route Error", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         ErrorValueObject(
+         ErrorDataTransferObject(
             localizationService.localize(localizationCode = RouteError(exception.argument.name), locale = locale)
          )
       )
    }
 
    @Error(global = true, exception = PageOutOfBoundsException::class)
-   fun pageOutOfBoundsExceptionHandler(httpRequest: HttpRequest<*>, exception: PageOutOfBoundsException): HttpResponse<ErrorValueObject> {
+   fun pageOutOfBoundsExceptionHandler(exception: PageOutOfBoundsException): HttpResponse<ErrorDataTransferObject> {
       logger.error("Page out of bounds was requested {}", exception.toString())
 
-      val locale = httpRequest.findLocaleWithDefault()
-      val pageRequest = exception.pageRequest
-
-      return notFound(
-         ErrorValueObject(
-            localizationService.localize(PageOutOfBounds(pageRequest.page, pageRequest.size, pageRequest.sortBy, pageRequest.sortDirection), locale)
-         )
-      )
+      return noContent()
    }
 
    @Error(global = true, exception = NotFoundException::class)
-   fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorValueObject> {
+   fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorDataTransferObject> {
       logger.trace("Not Found Error", notFoundException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return notFound(
-         ErrorValueObject(
+         ErrorDataTransferObject(
             localizationService.localize(localizationCode = NotFound(notFoundException.notFound), locale = locale)
          )
       )
    }
 
    @Error(global = true, exception = ValidationException::class)
-   fun validationException(httpRequest: HttpRequest<*>, validationException: ValidationException): HttpResponse<List<ErrorValueObject>> {
+   fun validationException(httpRequest: HttpRequest<*>, validationException: ValidationException): HttpResponse<List<ErrorDataTransferObject>> {
       logger.trace("Validation Error", validationException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
          validationException.errors.map { validationError: ValidationError ->
-            ErrorValueObject(message = localizationService.localize(validationError.localizationCode, locale), path = validationError.path)
+            ErrorDataTransferObject(message = localizationService.localize(validationError.localizationCode, locale), path = validationError.path)
          }
       )
    }
 
    @Error(global = true, exception = ConstraintViolationException::class)
-   fun constraintViolationException(httpRequest: HttpRequest<*>, constraintViolationException: ConstraintViolationException): HttpResponse<List<ErrorValueObject>> {
+   fun constraintViolationException(httpRequest: HttpRequest<*>, constraintViolationException: ConstraintViolationException): HttpResponse<List<ErrorDataTransferObject>> {
       logger.trace("Constraint Violation Error", constraintViolationException)
 
       val locale = httpRequest.findLocaleWithDefault()
@@ -204,20 +198,20 @@ class ErrorHandlerController @Inject constructor(
             val field = buildPropertyPath(rootPath = it.propertyPath)
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
 
-            ErrorValueObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value)), path = field)
+            ErrorDataTransferObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value)), path = field)
          }
       )
    }
 
    @Error(global = true, exception = AccessException::class)
-   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorValueObject> {
+   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorDataTransferObject> {
       logger.info("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return HttpResponse
-         .status<ErrorValueObject>(FORBIDDEN)
-         .body(ErrorValueObject(localizationService.localize(localizationCode = accessException.error, locale = locale)))
+         .status<ErrorDataTransferObject>(FORBIDDEN)
+         .body(ErrorDataTransferObject(localizationService.localize(localizationCode = accessException.error, locale = locale)))
    }
 
 

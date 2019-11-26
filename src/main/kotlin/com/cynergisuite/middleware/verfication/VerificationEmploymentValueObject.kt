@@ -9,7 +9,7 @@ import java.time.LocalDate
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "VerificationEmployment", description = "A verification for employment")
+@Schema(name = "VerificationEmployment", title = "Employement Verification for a customer", description = "Employment verification for a single customer associated with a Verification")
 data class VerificationEmploymentValueObject(
 
    var id: Long? = null,
@@ -50,5 +50,5 @@ data class VerificationEmploymentValueObject(
 
    override fun copyMe(): VerificationEmploymentValueObject = copy()
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
 }

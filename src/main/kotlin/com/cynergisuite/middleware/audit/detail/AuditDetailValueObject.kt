@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.audit.detail
 
-import com.cynergisuite.domain.IdentifiableValueObject
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -15,7 +14,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AuditDetail", description = "A single item associated with an Audit")
+@Schema(name = "AuditDetail", title = "Single item associated with an Audit", description = "Single line item that has been successfully found during the audit process")
 data class AuditDetailValueObject (
 
    @field:Positive
@@ -28,12 +27,22 @@ data class AuditDetailValueObject (
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 1, max = 200)
-   var barCode: String?,
+   var barcode: String?,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
-   var inventoryId: String?,
+   var serialNumber: String?,
+
+   @field:NotNull
+   @field:NotBlank
+   @field:Size(min = 3, max = 100)
+   var productCode: String?,
+
+   @field:NotNull
+   @field:NotBlank
+   @field:Size(min = 3, max = 100)
+   var altId: String?,
 
    @field:NotNull
    @field:NotBlank
@@ -49,42 +58,31 @@ data class AuditDetailValueObject (
    var scannedBy: EmployeeValueObject?,
 
    @field:NotNull
-   @field:NotBlank
-   @field:Size(min = 3, max = 100)
-   var inventoryStatus: String?,
-
-   @field:NotNull
-   var audit: IdentifiableValueObject?
+   var audit: Identifiable?
 
 ) : ValueObjectBase<AuditDetailValueObject>() {
 
-   constructor(entity: AuditDetail, auditScanAreaValueObject: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
       this(
          entity = entity,
          audit = SimpleIdentifiableValueObject(entity.audit),
-         auditScanAreaValueObject = auditScanAreaValueObject
+         auditScanArea = auditScanArea
       )
 
-   constructor(entity: AuditDetail, audit: IdentifiableValueObject? = null, auditScanArea: AuditScanArea) :
-      this(
-         entity = entity,
-         audit = audit,
-         auditScanAreaValueObject = AuditScanAreaValueObject(auditScanArea)
-      )
-
-   constructor(entity: AuditDetail, audit: IdentifiableValueObject? = null, auditScanAreaValueObject: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaValueObject) :
       this(
          id = entity.id,
-         scanArea = auditScanAreaValueObject,
-         barCode = entity.barCode,
-         inventoryId = entity.inventoryId,
+         scanArea = auditScanArea,
+         barcode = entity.barcode,
+         productCode = entity.productCode,
+         altId = entity.altId,
+         serialNumber = entity.serialNumber,
          inventoryBrand = entity.inventoryBrand,
          inventoryModel = entity.inventoryModel,
          scannedBy = EmployeeValueObject(entity.scannedBy),
-         inventoryStatus = entity.inventoryStatus,
          audit = audit
       )
 
-   override fun valueObjectId(): Long? = id
+   override fun myId(): Long? = id
    override fun copyMe(): AuditDetailValueObject = copy()
 }

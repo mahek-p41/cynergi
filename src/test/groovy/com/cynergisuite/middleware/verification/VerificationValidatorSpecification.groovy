@@ -17,7 +17,7 @@ class VerificationValidatorSpecification extends Specification {
       final def validator = new VerificationValidator(verificationService)
 
       when:
-      validator.validateSave(verificationValueObject, "corrto")
+      validator.validateCreate(verificationValueObject, "corrto")
 
       then:
       1 * verificationService.exists(verificationValueObject.customerAccount) >> false
@@ -31,7 +31,7 @@ class VerificationValidatorSpecification extends Specification {
       final def validator = new VerificationValidator(verificationService)
 
       when:
-      validator.validateSave(verificationValueObject, "corrto")
+      validator.validateCreate(verificationValueObject, "corrto")
 
       then:
       1 * verificationService.exists(verificationValueObject.customerAccount) >> true
