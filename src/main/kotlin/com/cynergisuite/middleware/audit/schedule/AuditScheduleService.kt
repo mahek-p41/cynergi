@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
@@ -34,6 +35,7 @@ class AuditScheduleService @Inject constructor(
    private val notificationRepository: NotificationRepository,
    private val notificationService: NotificationService,
    private val companyRepository: CompanyRepository,
+   private val employeeRepository: EmployeeRepository,
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository
 
 ) {
@@ -116,23 +118,23 @@ class AuditScheduleService @Inject constructor(
 
    private fun createNotificationAndAudit(schedule: ScheduleEntity) {
       val stores = mutableListOf<StoreValueObject>()
-      val notificationDomainType = notificationTypeDomainRepository.findOne("S")!!
+      var noteType = notificationTypeDomainRepository.findOne("S")!!
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOneByNumber(arg.value.toInt())!!
 
             stores.add(StoreValueObject(store))
-            var companyName = companyRepository.findCompanyByStore(store)?.name
-            val xx = companyRepository.findCompanyByStore(store)
+            val companyName = companyRepository.findCompanyByStore(store)?.name
+            val xx = employeeRepository.findOne
             val oneNote = Notification(startDate = LocalDate.now(),
                                        expirationDate = LocalDate.now().plusDays(7),
                                        message = schedule.description!!,
-                                       sendingEmployee = "todo",
+                                       sendingEmployee = "XXXX",             // TODO get an employee
                                        company = companyName!!,
-                                       notificationDomainType = notificationDomainType)
+                                       notificationDomainType = noteType)
 
-            xxx = notificationRepository.insert(note)
+            notificationRepository.insert(oneNote)
          }
       }
 
