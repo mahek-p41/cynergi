@@ -2,8 +2,15 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.notification.Notification
+import com.cynergisuite.middleware.notification.NotificationService
+import com.cynergisuite.middleware.notification.NotificationValueObject
+import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
+import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
@@ -12,6 +19,7 @@ import com.cynergisuite.middleware.store.StoreValueObject
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.validation.Validated
 import java.time.DayOfWeek
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -21,7 +29,13 @@ class AuditScheduleService @Inject constructor(
    private val auditScheduleValidator: AuditScheduleValidator,
    private val departmentRepository: DepartmentRepository,
    private val scheduleRepository: ScheduleRepository,
-   private val storeRepository: StoreRepository
+   private val storeRepository: StoreRepository,
+   private val auditRepository: AuditRepository,
+   private val notificationRepository: NotificationRepository,
+   private val notificationService: NotificationService,
+   private val companyRepository: CompanyRepository,
+   private val notificationTypeDomainRepository: NotificationTypeDomainRepository
+
 ) {
 
    fun fetchById(id: Long): AuditScheduleDataTransferObject? {
@@ -98,5 +112,28 @@ class AuditScheduleService @Inject constructor(
          department = department,
          enabled = schedule.enabled
       )
+   }
+
+   private fun createNotificationAndAudit(schedule: ScheduleEntity) {
+      val stores = mutableListOf<StoreValueObject>()
+      val notificationDomainType = notificationTypeDomainRepository.findOne("S")!!
+
+      for (arg: ScheduleArgumentEntity in schedule.arguments) {
+         if (arg.description == "storeNumber") {
+            val store = storeRepository.findOneByNumber(arg.value.toInt())!!
+
+            stores.add(StoreValueObject(store))
+            val xx = companyRepository.findCompanyByStore(store)
+            val oneNote = Notification(startDate = LocalDate.now(),
+                                       expirationDate = LocalDate.now().plusDays(7),
+                                       message = schedule.description!!,
+                                       sendingEmployee = "todo",
+                                       company = "todo2",
+                                       notificationDomainType = notificationDomainType)
+
+            xxx = notificationRepository.insert(note)
+         }
+      }
+
    }
 }
