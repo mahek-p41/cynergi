@@ -27,7 +27,7 @@ data class ShipVia(
          description = vo.description!!
       )
 
-   override fun entityId(): Long? = id
+   override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): ShipVia = copy()
 }

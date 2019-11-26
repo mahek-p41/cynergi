@@ -2,19 +2,19 @@ package com.cynergisuite.middleware.shipvia.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorValueObject
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.shipvia.ShipViaFactory
 import com.cynergisuite.middleware.shipvia.ShipViaFactoryService
 import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import java.util.stream.Collectors
+import javax.inject.Inject
+
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-
-import javax.inject.Inject
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class ShipViaControllerSpecification extends ControllerSpecificationBase {
@@ -98,11 +98,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final def notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NOT_FOUND
-      final def notFoundResult = notFoundException.response.bodyAsJson()
-      notFoundResult.size() == 1
-      notFoundResult.message == "Request with Page 5, Size 5, Sort By name and Sort Direction ASC produced no results"
-
+      notFoundException.status == NO_CONTENT
    }
 
    void "post valid shipVia"() {
@@ -117,7 +113,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id > 0
       response.name == shipVia.name
       response.description == shipVia.description
-
    }
 
    void "post null values to shipVia()"() {
@@ -133,11 +128,10 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 2
-      result.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorValueObject("Is required", "description"),
-         new ErrorValueObject("Is required", "name")
+      result.collect { new ErrorDataTransferObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDataTransferObject("Is required", "description"),
+         new ErrorDataTransferObject("Is required", "name")
       ]
-
    }
 
    void "put valid shipVia"() {
@@ -167,9 +161,9 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 2
-      result.collect { new ErrorValueObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorValueObject("Is required", "description"),
-         new ErrorValueObject("Is required", "name")
+      result.collect { new ErrorDataTransferObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDataTransferObject("Is required", "description"),
+         new ErrorDataTransferObject("Is required", "name")
       ]
    }
 
@@ -186,8 +180,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 1
-      result.collect { new ErrorValueObject(it) } == [
-         new ErrorValueObject("Is required", "id")
+      result.collect { new ErrorDataTransferObject(it) } == [
+         new ErrorDataTransferObject("Is required", "id")
       ]
    }
 }

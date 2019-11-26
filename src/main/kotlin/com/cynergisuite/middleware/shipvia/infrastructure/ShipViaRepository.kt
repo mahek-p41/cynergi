@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.shipvia.infrastructure
 
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.infrastructure.Repository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.shipvia.ShipVia
@@ -18,24 +17,26 @@ import javax.inject.Singleton
 @Singleton
 class ShipViaRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : Repository<ShipVia> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
    private val simpleShipViaRowMapper = ShipViaRowMapper()
 
-   override fun findOne(id: Long): ShipVia? {
+   fun findOne(id: Long): ShipVia? {
       val found = jdbc.findFirstOrNull("SELECT id, uu_row_id, time_created, time_updated, name, description FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
+
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
+
       return found
    }
 
-   override fun exists(id: Long): Boolean {
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
       logger.trace("Checking if ShipVia: {} exists resulted in {}", id, exists)
       return exists
    }
 
    @Transactional
-   override fun insert(entity: ShipVia): ShipVia {
+   fun insert(entity: ShipVia): ShipVia {
       logger.debug("Inserting shipVia {}", entity)
 
       return jdbc.insertReturning("""
@@ -53,7 +54,7 @@ class ShipViaRepository @Inject constructor(
    }
 
    @Transactional
-   override fun update(entity: ShipVia): ShipVia {
+   fun update(entity: ShipVia): ShipVia {
       logger.debug("Updating shipVia {}", entity)
 
       return jdbc.updateReturning("""
@@ -100,6 +101,7 @@ class ShipViaRepository @Inject constructor(
       }
 
       return RepositoryPage(
+         requested = pageRequest,
          elements = shipVia,
          totalElements = totalElements ?: 0
       )

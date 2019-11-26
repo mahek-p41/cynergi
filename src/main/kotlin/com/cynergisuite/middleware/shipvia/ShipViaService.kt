@@ -3,8 +3,7 @@ package com.cynergisuite.middleware.shipvia
 import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.infrastructure.IdentifiableService
-import com.cynergisuite.middleware.legacy.load.LegacyCsvLoadingService
+import com.cynergisuite.middleware.load.legacy.LegacyCsvLoadingService
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
 import io.micronaut.validation.Validated
 import org.apache.commons.csv.CSVRecord
@@ -18,13 +17,22 @@ import javax.validation.Valid
 class ShipViaService @Inject constructor(
    private val shipViaRepository: ShipViaRepository,
    private val shipViaValidator: ShipViaValidator
-) : IdentifiableService<ShipViaValueObject>, CSVParsingService(), LegacyCsvLoadingService {
+) : CSVParsingService(), LegacyCsvLoadingService {
    private val shipViaMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-shipVia*csv")
 
-   override fun fetchById(id: Long): ShipViaValueObject? =
+   fun fetchById(id: Long): ShipViaValueObject? =
       shipViaRepository.findOne(id = id)?.let{ShipViaValueObject(entity = it)}
 
-   override fun exists(id: Long): Boolean = shipViaRepository.exists(id = id)
+   @Validated
+   fun fetchAll(@Valid pageRequest: PageRequest): Page<ShipViaValueObject> {
+      val found = shipViaRepository.findAll(pageRequest)
+
+      return found.toPage { shipVia ->
+         ShipViaValueObject(shipVia)
+      }
+   }
+
+   fun exists(id: Long): Boolean = shipViaRepository.exists(id = id)
 
    @Validated
    fun create(@Valid vo: ShipViaValueObject): ShipViaValueObject {
@@ -55,11 +63,4 @@ class ShipViaService @Inject constructor(
          )
       )
    }
-
-   @Validated
-   fun fetchAll(@Valid pageRequest: PageRequest): Page<ShipViaValueObject> {
-      val found = shipViaRepository.findAll(pageRequest)
-      return found.toPage(pageRequest) {ShipViaValueObject(it)}
-   }
-
 }
