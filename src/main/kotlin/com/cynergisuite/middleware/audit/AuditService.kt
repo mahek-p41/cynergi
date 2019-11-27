@@ -7,6 +7,9 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.status.COMPLETED
+import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -91,8 +94,9 @@ class AuditService @Inject constructor(
 
       val updated = auditRepository.update(existingAudit)
 
-      if (updated.currentStatus().value == "SIGNED-OFF") {
-         reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf"){ reportalOutputStream ->
+      if (updated.currentStatus() == SIGNED_OFF) {
+         // TODO use auditExceptionRepository to set the signedOff value to true where it isn't already signedOff for the audit represented by updated
+         reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf") { reportalOutputStream ->
             Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
                val writer = PdfWriter.getInstance(document, reportalOutputStream)
 
@@ -120,11 +124,11 @@ class AuditService @Inject constructor(
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
       val beginAction =  audit.actions.asSequence()
-         .first { it.status.value == "IN-PROGRESS"}
+         .first { it.status == IN_PROGRESS}
       val beginDate = dateFormatter.format(beginAction.timeCreated)
 
       val endAction =  audit.actions.asSequence()
-         .first { it.status.value == "COMPLETED"}
+         .first { it.status == COMPLETED}
       val endDate = dateFormatter.format(endAction.timeCreated)
       val endEmployee = endAction.changedBy.getEmpName()
 
