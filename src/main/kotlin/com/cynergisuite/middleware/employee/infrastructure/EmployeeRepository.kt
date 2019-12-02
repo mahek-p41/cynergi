@@ -5,6 +5,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -30,6 +31,7 @@ import javax.inject.Singleton
 @Singleton
 class EmployeeRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
+   private val passwordEncoderService: PasswordEncoderService,
    private val storeRepository: StoreRepository,
    private val postgresClient: PgPool
 ) {
@@ -145,25 +147,21 @@ class EmployeeRepository @Inject constructor(
 
       val tuple: Tuple
       val query = if (storeNumber != null) {
-         tuple = Tuple.of(storeNumber, number, passCode)
+         tuple = Tuple.of(storeNumber, number)
 
          """
          $selectBaseWithoutEmployeeStoreJoin
             ON s.s_number = $1
          WHERE e.number = $2
-            AND e.pass_code = $3
             AND e.active = true
-         LIMIT 1
          """.trimIndent()
       } else {
-         tuple = Tuple.of(number, passCode)
+         tuple = Tuple.of(number)
 
          """
          $selectBase
          WHERE e.number = $1
-            AND e.pass_code = $2
             AND e.active = true
-         LIMIT 1
          """.trimIndent()
       }
 
@@ -188,6 +186,7 @@ class EmployeeRepository @Inject constructor(
                active = row.getBoolean("e_active")
             )
          }
+         .filter { employee -> passwordEncoderService.matches(passCode, employee.passCode) || employee.passCode == passCode }
    }
 
    @Transactional
@@ -204,7 +203,7 @@ class EmployeeRepository @Inject constructor(
             "number" to entity.number,
             "last_name" to entity.lastName,
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
-            "pass_code" to entity.passCode,
+            "pass_code" to passwordEncoderService.encode(entity.passCode),
             "store_number" to entity.store.number,
             "active" to entity.active
          ),
