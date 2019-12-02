@@ -190,7 +190,7 @@ class EmployeeRepository @Inject constructor(
             if (employee.loc == "int") {
                passwordEncoderService.matches(passCode, employee.passCode)
             } else {
-               employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb
+               employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
             }
          }
    }
