@@ -28,13 +28,13 @@ CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that wi
     store_number  INTEGER                                             NOT NULL,
     last_name     VARCHAR(15) CHECK( char_length(last_name) > 1)      NOT NULL,
     first_name_mi VARCHAR(15) CHECK( first_name_mi IS NOT NULL AND char_length(first_name_mi) > 1),
-    pass_code     VARCHAR(60)  CHECK( char_length(pass_code) > 58 )     NOT NULL,
+    pass_code     VARCHAR(6)  CHECK( char_length(pass_code) > 0 )     NOT NULL,
     department    VARCHAR(2),
     active        BOOLEAN     DEFAULT TRUE                            NOT NULL,
     time_created  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
     time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL
 );
-INSERT INTO fastinfo_prod_import.employee_vw (number, last_name, first_name_mi, pass_code, store_number) VALUES (123, 'user', 'test', '$2a$10$FpTbpK6188v0IgzhaokeeuFPWJ7X5E02aIe9B90w0RZcLD68KqFje', 1); -- create a user that can be used for testing and is also ignored by the truncate service
+INSERT INTO fastinfo_prod_import.employee_vw (number, last_name, first_name_mi, pass_code, store_number) VALUES (123, 'user', 'test', 'pass', 1); -- create a user that can be used for testing and is also ignored by the truncate service
 
 CREATE TABLE fastinfo_prod_import.store_vw (
    id           BIGSERIAL                             NOT NULL PRIMARY KEY,

@@ -44,15 +44,6 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   @Validated
-   fun update(@Valid vo: EmployeeValueObject): EmployeeValueObject {
-      employeeValidator.validateUpdate(vo)
-
-      return EmployeeValueObject(
-         entity = employeeRepository.update(entity = Employee(vo = vo))
-      )
-   }
-
    fun canEmployeeAccess(asset: String, employee: EmployeeValueObject): Boolean {
       logger.debug("Checking if the user {} has access to asset {}", employee, asset)
 

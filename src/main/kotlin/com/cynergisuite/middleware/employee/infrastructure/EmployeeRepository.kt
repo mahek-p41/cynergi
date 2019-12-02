@@ -219,38 +219,6 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   @Transactional
-   fun update(entity: Employee): Employee {
-      logger.debug("Updating employee {}", entity)
-
-      return jdbc.updateReturning("""
-         UPDATE employee
-         SET
-            number = :number,
-            last_name = :last_name,
-            first_name_mi = :first_name_mi,
-            pass_code = :pass_code,
-            store_number = :store_number,
-            active = :active
-         WHERE id = :id
-         RETURNING
-            *
-         """.trimIndent(),
-         mapOf(
-            "id" to entity.id,
-            "number" to entity.number,
-            "last_name" to entity.lastName,
-            "first_name_mi" to entity.firstNameMi.trimToNull(),  // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
-            "pass_code" to entity.passCode,
-            "store_number" to entity.store.number,
-            "active" to entity.active
-         ),
-         RowMapper { rs, _ ->
-            mapDDLRow(rs, entity.store)
-         }
-      )
-   }
-
    private fun mapDDLRow(rs: ResultSet, store: StoreEntity) : Employee =
       Employee(
          id = rs.getLong("id"),
