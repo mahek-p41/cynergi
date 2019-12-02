@@ -186,7 +186,13 @@ class EmployeeRepository @Inject constructor(
                active = row.getBoolean("e_active")
             )
          }
-         .filter { employee -> passwordEncoderService.matches(passCode, employee.passCode) || employee.passCode == passCode }
+         .filter { employee ->
+            if (employee.loc == "int") {
+               passwordEncoderService.matches(passCode, employee.passCode)
+            } else {
+               employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb
+            }
+         }
    }
 
    @Transactional
