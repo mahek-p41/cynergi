@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
@@ -266,6 +267,32 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
+   }
+
+   void "Sign-off exception status when audit signed-off" () {
+      given:
+      final store = authenticatedEmployee.store
+      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+/*      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(auditOne, employee, locale)
+
+      existingAudit.actions.add(validAuditAction)
+      val (validAuditAction, auditOne) = auditValidator.validateUpdate(auditOne, authenticatedEmployee, locale)
+      auditOne.actions.add(validAuditAction)
+      AuditService.update(auditOne,authenticatedEmployee)*/
+
+      when:
+      def pageOneResult = get("/audit/${auditOne.id}/exception")
+
+      then:
+      notThrown(HttpClientResponseException)
+      auditOne.number == 1
+      pageOneResult.elements.size() == 3
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}
+         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+//         .each { it['signed_off'] = true }
+         .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditOne
    }
 
    void "fetch one audit exception by id not found" () {

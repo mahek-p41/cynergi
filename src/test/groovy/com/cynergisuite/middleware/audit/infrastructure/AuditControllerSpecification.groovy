@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
@@ -11,7 +12,9 @@ import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
+import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -769,4 +772,60 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].status.description == "Created"
       result.actions[0].changedBy.number == authenticatedEmployee.number
    }
+
+   void "update completed audit to signed-off and sign-off on exceptions" () {
+         given:
+         final store = storeFactoryService.store(1)
+         final audit = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+         final List<AuditExceptionValueObject> threeAuditDiscrepancies = auditExceptionFactoryService.stream(3, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+
+         when:
+         def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
+
+         then:
+         notThrown(HttpClientResponseException)
+         result.id == audit.id
+         result.store.storeNumber == store.number
+         result.actions.size() == 4
+         final resultActions = result.actions
+            .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+            .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+            .collect{ new AuditActionValueObject(it) }
+            .sort { o1, o2 -> o1.id <=> o2.id }
+         resultActions[0].id != null
+         resultActions[0].id > 0
+         resultActions[0].status.value == "CREATED"
+         resultActions[0].status.description == "Created"
+         resultActions[0].changedBy.number == audit.actions[0].changedBy.number
+         resultActions[1].id != null
+         resultActions[1].id > 0
+         resultActions[1].id > resultActions[0].id
+         resultActions[1].status.value == "IN-PROGRESS"
+         resultActions[1].status.description == "In Progress"
+         resultActions[1].changedBy.number == audit.actions[1].changedBy.number
+         resultActions[2].id != null
+         resultActions[2].id > 0
+         resultActions[2].id > resultActions[0].id
+         resultActions[2].status.value == "COMPLETED"
+         resultActions[2].status.description == "Completed"
+         resultActions[2].changedBy.number == audit.actions[2].changedBy.number
+         resultActions[3].id != null
+         resultActions[3].id > 0
+         resultActions[3].id > resultActions[0].id
+         resultActions[3].status.value == "SIGNED-OFF"
+         resultActions[3].status.description == "Signed Off"
+         resultActions[3].changedBy.number == authenticatedEmployee.number
+
+      when:
+      def pageOneResult = get("/audit/${audit.id}/exception")
+
+      then:
+      notThrown(HttpClientResponseException)
+      audit.number == 1
+      pageOneResult.elements.size() == 3
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}
+         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .each { it['signedOff'] = true }
+      }
 }

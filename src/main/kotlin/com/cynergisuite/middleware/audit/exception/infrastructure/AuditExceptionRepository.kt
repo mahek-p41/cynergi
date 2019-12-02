@@ -4,11 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findAllWithCrossJoin
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -290,6 +286,22 @@ class AuditExceptionRepository @Inject constructor(
          RowMapper { rs, rowNum ->
             mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
          }
+      )
+   }
+
+   @Transactional
+   fun signOffAllExceptions(audit: AuditEntity) {
+      logger.debug("Updating audit_exception {}", audit)
+
+      jdbc.update("""
+         UPDATE audit_exception
+         SET signed_off = true
+         WHERE audit_id = :audit_id
+         AND signed_off = false
+         """.trimIndent(),
+         mapOf(
+            "audit_id" to audit.myId()
+         )
       )
    }
 
