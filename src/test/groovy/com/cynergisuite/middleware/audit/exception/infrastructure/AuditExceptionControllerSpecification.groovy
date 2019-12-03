@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
