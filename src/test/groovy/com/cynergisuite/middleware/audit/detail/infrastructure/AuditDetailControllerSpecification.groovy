@@ -241,9 +241,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
    }
 
-   void "create audit detail when audit is in state OPENED" () {
+   void "create audit detail when audit is in state OPENED (CREATED?)" () {
       given:
-      final def audit = auditFactoryService.single()
+      final def audit = auditFactoryService.single(authenticatedEmployee.store, authenticatedEmployee, [AuditStatusFactory.created()] as Set)
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
