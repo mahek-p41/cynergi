@@ -17,6 +17,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
+import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -112,8 +113,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == firstFiveAudits[0].id
       pageOneResult.elements[0].store.id == store.id
       pageOneResult.elements[0].actions.size() == 1
-      pageOneResult.elements[0].actions[0].status.value == "CREATED"
-      pageOneResult.elements[0].actions[0].status.color == "FF0000"
+      pageOneResult.elements[0].actions[0].status.value == Created.INSTANCE.value
+      pageOneResult.elements[0].actions[0].status.color == Created.INSTANCE.color
       pageOneResult.elements[0].actions[0].id == firstFiveAudits[0].actions[0].id
 
       when:
@@ -125,8 +126,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements[0].actions.size() == 1
-      pageTwoResult.elements[0].actions[0].status.value == "CREATED"
-      pageTwoResult.elements[0].actions[0].status.color == "FF0000"
+      pageTwoResult.elements[0].actions[0].status.value == Created.INSTANCE.value
+      pageTwoResult.elements[0].actions[0].status.color == Created.INSTANCE.color
       pageTwoResult.elements[0].id == secondFiveAudits[0].id
 
       when:
