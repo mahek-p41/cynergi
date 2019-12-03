@@ -5,6 +5,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.employee.Employee
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -30,6 +31,7 @@ import javax.inject.Singleton
 @Singleton
 class EmployeeRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
+   private val passwordEncoderService: PasswordEncoderService,
    private val storeRepository: StoreRepository,
    private val postgresClient: PgPool
 ) {
@@ -145,25 +147,21 @@ class EmployeeRepository @Inject constructor(
 
       val tuple: Tuple
       val query = if (storeNumber != null) {
-         tuple = Tuple.of(storeNumber, number, passCode)
+         tuple = Tuple.of(storeNumber, number)
 
          """
          $selectBaseWithoutEmployeeStoreJoin
             ON s.s_number = $1
          WHERE e.number = $2
-            AND e.pass_code = $3
             AND e.active = true
-         LIMIT 1
          """.trimIndent()
       } else {
-         tuple = Tuple.of(number, passCode)
+         tuple = Tuple.of(number)
 
          """
          $selectBase
          WHERE e.number = $1
-            AND e.pass_code = $2
             AND e.active = true
-         LIMIT 1
          """.trimIndent()
       }
 
@@ -188,6 +186,13 @@ class EmployeeRepository @Inject constructor(
                active = row.getBoolean("e_active")
             )
          }
+         .filter { employee ->
+            if (employee.loc == "int") {
+               passwordEncoderService.matches(passCode, employee.passCode)
+            } else {
+               employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
+            }
+         }
    }
 
    @Transactional
@@ -204,39 +209,7 @@ class EmployeeRepository @Inject constructor(
             "number" to entity.number,
             "last_name" to entity.lastName,
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
-            "pass_code" to entity.passCode,
-            "store_number" to entity.store.number,
-            "active" to entity.active
-         ),
-         RowMapper { rs, _ ->
-            mapDDLRow(rs, entity.store)
-         }
-      )
-   }
-
-   @Transactional
-   fun update(entity: Employee): Employee {
-      logger.debug("Updating employee {}", entity)
-
-      return jdbc.updateReturning("""
-         UPDATE employee
-         SET
-            number = :number,
-            last_name = :last_name,
-            first_name_mi = :first_name_mi,
-            pass_code = :pass_code,
-            store_number = :store_number,
-            active = :active
-         WHERE id = :id
-         RETURNING
-            *
-         """.trimIndent(),
-         mapOf(
-            "id" to entity.id,
-            "number" to entity.number,
-            "last_name" to entity.lastName,
-            "first_name_mi" to entity.firstNameMi.trimToNull(),  // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
-            "pass_code" to entity.passCode,
+            "pass_code" to passwordEncoderService.encode(entity.passCode),
             "store_number" to entity.store.number,
             "active" to entity.active
          ),

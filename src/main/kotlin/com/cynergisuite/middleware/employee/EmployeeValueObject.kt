@@ -41,13 +41,13 @@ data class EmployeeValueObject(
 
    @field:JsonIgnore
    @field:NotNull
-   @field:Size(min = 3, max = 6)
-   @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", maximum = "6", hidden = true)
+   @field:Size(min = 3)
+   @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", hidden = true)
    var passCode: String?,
 
    @field:NotNull
    @field:JsonIgnore
-   @field:Schema(name = "store", description = "Default store Employee is assocated with", hidden = true)
+   @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
    var store: StoreValueObject?,
 
    @field:JsonIgnore

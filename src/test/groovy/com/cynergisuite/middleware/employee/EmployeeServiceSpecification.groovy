@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
+import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import io.micronaut.test.annotation.MicronautTest
 import org.apache.commons.io.FileUtils
 import org.junit.Rule
@@ -17,6 +18,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
 
    @Inject EmployeeService employeeService
    @Inject JdbcTemplate jdbc
+   @Inject PasswordEncoderService passwordEncoderService
 
    void "eli path glob"() {
       expect:
@@ -82,7 +84,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       then:
       null != employee
       123 == employee.number
-      "tryme" == employee.passCode
+      passwordEncoderService.matches("tryme", employee.passCode)
       1 == employee.store.number
       employee.active
 
