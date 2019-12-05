@@ -4,9 +4,9 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
@@ -23,7 +23,7 @@ import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/*
+/* FIXME
  * Notes for the future
  * 1. Due to current practices in the data for employees first_name_mi can be blank rather than null.  This should be
  *    fixed so that it is more consistent in the database and is not smoothed over by the business logic.
@@ -39,7 +39,7 @@ class EmployeeRepository @Inject constructor(
 
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, loc
+         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, loc, allow_auto_store_assign
          FROM (
             SELECT 1 AS from_priority,
                fpie.id AS id,
@@ -52,6 +52,7 @@ class EmployeeRepository @Inject constructor(
                fpie.store_number AS store_number,
                fpie.active AS active,
                fpie.department AS department,
+               FALSE AS allow_auto_store_assign,
                'ext' AS loc
             FROM fastinfo_prod_import.employee_vw fpie
             WHERE coalesce(trim(fpie.pass_code), '') <> ''
@@ -67,6 +68,7 @@ class EmployeeRepository @Inject constructor(
                e.store_number AS store_number,
                e.active AS active,
                e.department AS department,
+               e.allow_auto_store_assign AS allow_auto_store_assign,
                'int' AS loc
             FROM employee e
             WHERE coalesce(trim(e.pass_code), '') <> ''
@@ -93,19 +95,27 @@ class EmployeeRepository @Inject constructor(
          active AS e_active,
          department AS e_department,
          loc AS e_loc,
+         allow_auto_store_assign AS e_allow_auto_store_assign,
          s.s_id AS s_id,
          s.s_time_created AS s_time_created,
          s.s_time_updated AS s_time_updated,
          s.s_number AS s_number,
          s.s_name AS s_name,
-         s.s_dataset AS s_dataset
+         s.s_dataset AS s_dataset,
+         ds.s_id AS ds_id,
+         ds.s_time_created AS ds_time_created,
+         ds.s_time_updated AS ds_time_updated,
+         ds.s_number AS ds_number,
+         ds.s_name AS ds_name,
+         ds.s_dataset AS ds_dataset
       FROM employees e
-           JOIN stores s
+           JOIN stores ds ON ds.s_number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
+           LEFT OUTER JOIN stores s
    """.trimIndent()
 
    val selectBase = "$selectBaseWithoutEmployeeStoreJoin ON e.store_number = s.s_number"
 
-   fun findOne(id: Long, loc: String): Employee? {
+   fun findOne(id: Long, loc: String): EmployeeEntity? {
       val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.id = :id AND e.loc = :loc", mapOf("id" to id, "loc" to loc), RowMapper { rs, _ -> mapRow(rs) })
 
       logger.trace("Searching for Employee: {} {} resulted in {}", id, loc, found)
@@ -113,7 +123,7 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun findOne(number: Int, loc: String): Employee? {
+   fun findOne(number: Int, loc: String): EmployeeEntity? {
       val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.number = :number AND loc = :loc", mapOf("number" to number, "loc" to loc), RowMapper { rs, _ -> mapRow(rs) })
 
       logger.trace("Searching for Employee: {} {} resulted in {}", number, loc, found)
@@ -121,10 +131,22 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun findOne(id: Long, loc: String, storeNumber: Int): Employee? {
-      val found = jdbc.findFirstOrNull("$selectBaseWithoutEmployeeStoreJoin\nON s.s_number = :store_number\nWHERE e.id = :id AND e.loc = :loc", mapOf("id" to id, "loc" to loc, "store_number" to storeNumber), RowMapper { rs, _ -> mapRow(rs)})
+   fun findOne(user: AuthenticatedUser): EmployeeEntity? {
+      val found = jdbc.findFirstOrNull("""
+         $selectBaseWithoutEmployeeStoreJoin
+            ON s.s_number = :store_number
+         WHERE e.id = :id
+               AND e.loc = :loc
+         """.trimIndent(),
+         mapOf(
+            "id" to user.id,
+            "loc" to user.loc,
+            "store_number" to user.storeNumber
+         ),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
-      logger.trace("Searching for Employee: {} {} {} resulted in {}", id, loc, storeNumber, found)
+      logger.trace("Searching for Employee: {} resulted in {}", user, found)
 
       return found
    }
@@ -142,7 +164,7 @@ class EmployeeRepository @Inject constructor(
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
     * pointed at FastInfo to pull in Zortec data about an Employee
     */
-   fun findUserByAuthentication(number: Int, passCode: String, storeNumber: Int?): Maybe<Employee> {
+   fun findUserByAuthentication(number: Int, passCode: String, storeNumber: Int?): Maybe<EmployeeEntity> {
       logger.trace("Checking authentication for {} {}", number, storeNumber)
 
       val tuple: Tuple
@@ -173,7 +195,8 @@ class EmployeeRepository @Inject constructor(
             val iterator = rs.iterator()
             val row = iterator.next()
 
-            Employee(
+            val defaultStore = storeRepository.mapRow(row, "ds_")
+            val employee = EmployeeEntity(
                id = row.getLong("e_id"),
                timeCreated = row.getOffsetDateTime("e_time_created"),
                timeUpdated = row.getOffsetDateTime("e_time_updated") ?: OffsetDateTime.now(),
@@ -183,25 +206,36 @@ class EmployeeRepository @Inject constructor(
                firstNameMi = row.getString("e_first_name_mi"),
                passCode = row.getString("e_pass_code"),
                store = storeRepository.mapRow(row, "s_"),
-               active = row.getBoolean("e_active")
+               active = row.getBoolean("e_active"),
+               allowAutoStoreAssign = row.getBoolean("e_allow_auto_store_assign")
             )
+
+            employee to defaultStore
          }
-         .filter { employee ->
+         .filter { (employee, _) ->
             if (employee.loc == "int") {
                passwordEncoderService.matches(passCode, employee.passCode)
             } else {
                employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
             }
          }
+         .filter { (employee, _) -> employee.store != null || employee.allowAutoStoreAssign } // FIXME reconsider this filter
+         .map { (employee, defaultStore) ->
+            if (employee.store == null && employee.allowAutoStoreAssign) {
+               employee.copy(store = defaultStore)
+            } else {
+               employee
+            }
+         }
    }
 
    @Transactional
-   fun insert(entity: Employee): Employee {
+   fun insert(entity: EmployeeEntity): EmployeeEntity {
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, allow_auto_store_assign)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :allow_auto_store_assign)
          RETURNING
             *
          """.trimIndent(),
@@ -210,30 +244,15 @@ class EmployeeRepository @Inject constructor(
             "last_name" to entity.lastName,
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to passwordEncoderService.encode(entity.passCode),
-            "store_number" to entity.store.number,
-            "active" to entity.active
+            "store_number" to entity.store?.number,
+            "active" to entity.active,
+            "allow_auto_store_assign" to entity.allowAutoStoreAssign
          ),
          RowMapper { rs, _ ->
             mapDDLRow(rs, entity.store)
          }
       )
    }
-
-   private fun mapDDLRow(rs: ResultSet, store: StoreEntity) : Employee =
-      Employee(
-         id = rs.getLong("id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
-         loc = "int",
-         number = rs.getInt("number"),
-         lastName = rs.getString("last_name"),
-         firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
-         passCode = rs.getString("pass_code"),
-         store = store,
-         active = rs.getBoolean("active"),
-         department = rs.getString("department")
-      )
-
 
    @Cacheable("user-cache")
    fun canEmployeeAccess(loc: String, asset: String, id: Long): Boolean {
@@ -246,8 +265,8 @@ class EmployeeRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): Employee  =
-      Employee(
+   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity  =
+      EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
@@ -258,13 +277,29 @@ class EmployeeRepository @Inject constructor(
          passCode = rs.getString("${columnPrefix}pass_code"),
          store = storeRepository.mapRow(rs, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
-         department = rs.getString("${columnPrefix}department")
+         department = rs.getString("${columnPrefix}department"),
+         allowAutoStoreAssign = rs.getBoolean("${columnPrefix}allow_auto_store_assign")
       )
 
-   fun maybeMapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): Employee?  =
+   fun maybeMapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix)
       } else {
          null
       }
+
+   private fun mapDDLRow(rs: ResultSet, store: StoreEntity?) : EmployeeEntity =
+      EmployeeEntity(
+         id = rs.getLong("id"),
+         timeCreated = rs.getOffsetDateTime("time_created"),
+         timeUpdated = rs.getOffsetDateTime("time_updated"),
+         loc = "int",
+         number = rs.getInt("number"),
+         lastName = rs.getString("last_name"),
+         firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
+         passCode = rs.getString("pass_code"),
+         store = store,
+         active = rs.getBoolean("active"),
+         department = rs.getString("department")
+      )
 }

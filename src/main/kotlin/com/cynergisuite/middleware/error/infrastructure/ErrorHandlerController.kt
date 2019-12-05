@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.error.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.error.NotFoundException
@@ -8,6 +9,8 @@ import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.AccessDenied
+import com.cynergisuite.middleware.localization.AccessDeniedStore
 import com.cynergisuite.middleware.localization.ConversionError
 import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -16,10 +19,12 @@ import com.cynergisuite.middleware.localization.NotImplemented
 import com.cynergisuite.middleware.localization.PageOutOfBounds
 import com.cynergisuite.middleware.localization.RouteError
 import com.cynergisuite.middleware.localization.UnableToParseJson
+import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
+import io.micronaut.core.util.StringUtils
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
@@ -30,8 +35,10 @@ import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
+import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -201,6 +208,24 @@ class ErrorHandlerController @Inject constructor(
             ErrorDataTransferObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value)), path = field)
          }
       )
+   }
+
+   @Error(global = true, exception = AuthenticationException::class)
+   fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDataTransferObject> {
+      logger.info("AuthenticationException", authenticationException)
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val message = if (authenticationException.message.isDigits()) { // most likely store should have been provided
+         localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
+      } else if ( !authenticationException.message.isNullOrBlank() ) {
+         localizationService.localize(AccessDenied(authenticationException.message!!), locale)
+      } else {
+         localizationService.localize(AccessDenied(localizationService.localize(Unknown(), locale)), locale)
+      }
+
+      return HttpResponse
+         .status<ErrorDataTransferObject>(FORBIDDEN)
+         .body(ErrorDataTransferObject(message))
    }
 
    @Error(global = true, exception = AccessException::class)

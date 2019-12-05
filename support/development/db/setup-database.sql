@@ -32,14 +32,13 @@ BEGIN
             loc_trans.created_at AT TIME ZONE ''UTC'' AS time_created,
             loc_trans.updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-         JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
-         ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
-         WHERE (loc_trans.loc_tran_rec_type = ''4'') AND
-         (loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc) AND
-         (loc_trans.loc_tran_loc <> 9000) AND
-         (loc_trans2.loc_tran_rec_type = ''4'') AND
-         (loc_trans2.loc_tran_loc = 0) AND
-         loc_trans.loc_transfer_desc IS NOT NULL
+              JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
+                ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
+         WHERE loc_trans.loc_tran_rec_type = ''4''
+            AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
+            AND loc_trans2.loc_tran_rec_type = ''4''
+            AND loc_trans2.loc_tran_loc = 0
+            AND loc_trans.loc_transfer_desc IS NOT NULL
       ';
 
       unionAll := ' UNION ALL ';

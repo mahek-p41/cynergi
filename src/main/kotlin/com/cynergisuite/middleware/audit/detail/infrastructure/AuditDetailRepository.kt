@@ -13,7 +13,7 @@ import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -58,6 +58,7 @@ class AuditDetailRepository @Inject constructor(
          e.e_department AS e_department,
          e.e_active AS e_active,
          e.e_loc AS e_loc,
+         e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
          e.s_id AS s_id,
          e.s_time_created AS s_time_created,
          e.s_time_updated AS s_time_updated,
@@ -100,7 +101,7 @@ class AuditDetailRepository @Inject constructor(
          WITH paged AS (
             $selectBase
          )
-         SELECT 
+         SELECT
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
@@ -200,7 +201,7 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
       return AuditDetailEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),

@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.audit.action.AuditAction
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreEntity
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 object AuditFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val store = storeIn?: StoreFactory.random()
       val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.created())
@@ -55,7 +55,7 @@ class AuditFactoryService @Inject constructor(
    fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<AuditEntity> =
       stream(numberIn, storeIn, null, null)
 
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>?): Stream<AuditEntity> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?): Stream<AuditEntity> {
       val store = storeIn ?: storeFactoryService.random()
       val changedBy = changedByIn ?: employeeFactoryService.single()
 
@@ -65,7 +65,7 @@ class AuditFactoryService @Inject constructor(
          }
    }
 
-   fun generate(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: Employee? = null, statusesIn: Set<AuditStatus>?) {
+   fun generate(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?) {
       stream(numberIn, storeIn, changedByIn, statusesIn).forEach {  } // exercise the stream with the terminal forEach
    }
 
@@ -75,10 +75,10 @@ class AuditFactoryService @Inject constructor(
    fun single(storeIn: StoreEntity? = null): AuditEntity =
       stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 
-   fun single(storeIn: StoreEntity? = null, changedByIn: Employee? = null): AuditEntity =
+   fun single(storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null): AuditEntity =
       single(storeIn = storeIn, changedByIn = changedByIn, statusesIn = null)
 
-   fun single(storeIn: StoreEntity? = null, changedByIn: Employee?, statusesIn: Set<AuditStatus>?): AuditEntity =
+   fun single(storeIn: StoreEntity? = null, changedByIn: EmployeeEntity?, statusesIn: Set<AuditStatus>?): AuditEntity =
       stream(storeIn = storeIn, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 
    fun single(statusesIn: Set<AuditStatus>?): AuditEntity =

@@ -1,3 +1,3 @@
-number,last_name,first_name_mi,pass_code,store_number,active
-123,user,test,tryme,1,TRUE
-987,user2,test2,hrdpas,3,TRUE
+number,last_name,first_name_mi,pass_code,store_number,active,allow_auto_store_assign
+123,user,test,tryme,1,TRUE,false
+987,user2,test2,hrdpas,3,TRUE,false

@@ -111,7 +111,7 @@ class AuditExceptionController @Inject constructor(
       logger.info("Requested Create AuditException {}", vo)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
       val response = auditExceptionService.create(auditId, vo, employee, locale)
 
       logger.debug("Requested Create AuditException {} resulted in {}", vo, response)
@@ -138,7 +138,7 @@ class AuditExceptionController @Inject constructor(
       logger.info("Requested Update AuditException {}", vo)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
       val response = auditExceptionService.addNote(auditId, vo, employee, locale)
 
       logger.debug("Requested Update AuditException {} resulted in {}", vo, response)

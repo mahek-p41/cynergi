@@ -2,12 +2,11 @@ package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.action.AuditAction
-import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -73,7 +72,7 @@ class AuditValidator @Inject constructor(
          actions = mutableSetOf(
             AuditAction(
                status = CREATED,
-               changedBy = Employee(employee)
+               changedBy = EmployeeEntity(employee)
             )
          )
       )
@@ -120,7 +119,7 @@ class AuditValidator @Inject constructor(
       return Pair(
          AuditAction(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
-            changedBy = Employee(employee)
+            changedBy = EmployeeEntity(employee)
          ),
          auditRepository.findOne(audit.id!!)!!
       )

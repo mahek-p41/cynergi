@@ -5,7 +5,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
@@ -23,7 +23,7 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: Employee,
+   val scannedBy: EmployeeEntity,
    val exceptionCode: String,
    val signedOff: Boolean = false,
    val signedOffBy: Employee?,
@@ -42,7 +42,7 @@ data class AuditExceptionEntity(
          serialNumber = vo.serialNumber,
          inventoryBrand = vo.inventoryBrand,
          inventoryModel = vo.inventoryModel,
-         scannedBy = Employee(vo.scannedBy!!),
+         scannedBy = EmployeeEntity(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
          signedOffBy = vo.signedOffBy?.let { Employee(it) },
@@ -60,7 +60,7 @@ data class AuditExceptionEntity(
          serialNumber = inventory.serialNumber,
          inventoryBrand = inventory.brand,
          inventoryModel = inventory.modelNumber,
-         scannedBy = Employee(scannedBy),
+         scannedBy = EmployeeEntity(scannedBy),
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)
@@ -75,7 +75,7 @@ data class AuditExceptionEntity(
          serialNumber = null,
          inventoryBrand = null,
          inventoryModel = null,
-         scannedBy = Employee(scannedBy),
+         scannedBy = EmployeeEntity(scannedBy),
          exceptionCode = exceptionCode,
          lookupKey = null,
          audit = SimpleIdentifiableEntity(audit)

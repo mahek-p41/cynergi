@@ -1,8 +1,6 @@
 ALTER TABLE employee
     DROP CONSTRAINT employee_pass_code_check;
 ALTER TABLE employee
-    ADD CONSTRAINT employee_pass_code_check CHECK ( char_length(pass_code) > 58 );
-ALTER TABLE employee
     ALTER COLUMN pass_code TYPE VARCHAR(60);
 
 UPDATE employee

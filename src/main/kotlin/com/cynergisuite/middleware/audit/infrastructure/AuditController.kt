@@ -129,7 +129,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Create Audit {}", audit)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = employee.store)
 
       val response = auditService.create(vo = auditToCreate, employee = employee, locale = httpRequest.findLocaleWithDefault())
@@ -156,7 +156,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Update Audit {}", audit)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
       val response = auditService.update(audit = audit, employee = employee, locale = httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)

@@ -1,7 +1,7 @@
 package com.cynergisuite.domain.infrastructure
 
 
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeService
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
@@ -26,7 +26,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    protected BlockingHttpClient client
    protected String cynergiAccessToken
    protected JsonSlurper jsonSlurper
-   protected Employee authenticatedEmployee
+   protected EmployeeEntity authenticatedEmployee
 
    void setup() {
       client = httpClient.toBlocking()
@@ -35,7 +35,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       jsonSlurper = new JsonSlurper()
    }
 
-   String loginEmployee(Employee employee) {
+   String loginEmployee(EmployeeEntity employee) {
       return client.exchange(POST("/login", new UsernamePasswordCredentials(employee.number.toString(), employee.passCode)), BearerAccessRefreshToken).body().accessToken
    }
 
