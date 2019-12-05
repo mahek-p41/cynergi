@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -21,11 +21,11 @@ data class AuditDetailEntity(
    val altId: String,
    val inventoryBrand: String?,
    val inventoryModel: String,
-   val scannedBy: Employee,
+   val scannedBy: EmployeeEntity,
    val audit: Identifiable
 ) : Entity<AuditDetailEntity> {
 
-   constructor(inventory: InventoryEntity, audit: SimpleIdentifiableEntity, scanArea: AuditScanArea, scannedBy: Employee) :
+   constructor(inventory: InventoryEntity, audit: SimpleIdentifiableEntity, scanArea: AuditScanArea, scannedBy: EmployeeEntity) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,

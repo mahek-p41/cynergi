@@ -1,2 +1,2 @@
-number,last_name,first_name_mi,pass_code,store_number,active
-998,admin,,HTi3.0,1,true
+number,last_name,first_name_mi,pass_code,store_number,active,allow_auto_store_assign
+998,admin,,HTi3.0,1,true,true

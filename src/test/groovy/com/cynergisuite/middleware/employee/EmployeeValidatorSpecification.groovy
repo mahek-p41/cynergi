@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreValueObject
-import com.cynergisuite.middleware.localization.NotFound
 import spock.lang.Specification
 
 class EmployeeValidatorSpecification extends Specification {
@@ -29,7 +28,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateCreate(new EmployeeValueObject(null, null, null, null, null, null, null, null))
+      employeeValidator.validateCreate(new EmployeeValueObject(null, null, null, null, null, null, null, null, null))
 
       then:
       notThrown(ValidationException)

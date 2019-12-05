@@ -51,7 +51,7 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<StoreEntity> {
+   fun findAll(pageRequest: PageRequest, includeAll: Boolean = false): RepositoryPage<StoreEntity> {
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 
@@ -59,6 +59,7 @@ class StoreRepository @Inject constructor(
          """
          WITH paged AS (
             $selectBase
+            WHERE number <> 9000
          )
          SELECT
             p.*,
@@ -112,15 +113,19 @@ class StoreRepository @Inject constructor(
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
       simpleStoreRowMapper.mapRow(rs, columnPrefix)
 
-   fun mapRow(row: Row, columnPrefix: String = EMPTY): StoreEntity =
-      StoreEntity(
-         id = row.getLong("${columnPrefix}id"),
-         timeCreated = row.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = row.getOffsetDateTime("${columnPrefix}time_updated"),
-         number = row.getInteger("${columnPrefix}number"),
-         name = row.getString("${columnPrefix}name"),
-         dataset = row.getString("${columnPrefix}dataset")
-      )
+   fun mapRow(row: Row, columnPrefix: String = EMPTY): StoreEntity? =
+      if (row.getLong("${columnPrefix}id") != null) {
+         StoreEntity(
+            id = row.getLong("${columnPrefix}id"),
+            timeCreated = row.getOffsetDateTime("${columnPrefix}time_created"),
+            timeUpdated = row.getOffsetDateTime("${columnPrefix}time_updated"),
+            number = row.getInteger("${columnPrefix}number"),
+            name = row.getString("${columnPrefix}name"),
+            dataset = row.getString("${columnPrefix}dataset")
+         )
+      } else {
+         null
+      }
 }
 
 private class StoreRowMapper : RowMapper<StoreEntity> {

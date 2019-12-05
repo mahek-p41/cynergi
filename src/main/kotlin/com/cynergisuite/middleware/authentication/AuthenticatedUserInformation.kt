@@ -11,13 +11,21 @@ import javax.validation.constraints.NotNull
 @Schema(name = "AuthenticationInformation", title = "Claims associated with a user", description = "Describes some useful info about a user's login status.  The loginStatus property will change to describe the user's state.")
 data class AuthenticatedUserInformation (
 
-   @field:Schema(name = "number", title = "Employee Number", description = "System assigned number for an employee", required = true, nullable = true)
-   val number: String? = null,
+   @field:Schema(name = "employeeNumber", title = "Employee Number", description = "System assigned number for an employee", required = true, nullable = true)
+   val employeeNumber: String? = null,
 
    @field:NotNull
    @field:Schema(name = "loginStatus", title = "Login status of user", description = "Describes if the state of the user", required = true, nullable = false)
    val loginStatus: String,
 
-   @field:Schema(name = "store", title = "Session's store number", description = "User's store number that their session is associated with", required = true, nullable = true)
-   val store: Int? = null
-)
+   @field:Schema(name = "storeNumber", title = "Session's store number", description = "User's store number that their session is associated with", required = true, nullable = true)
+   val storeNumber: Int? = null
+) {
+
+   constructor(user: AuthenticatedUser, loginStatus: String) :
+      this(
+         employeeNumber = user.employeeNumber.toString(),
+         storeNumber = user.storeNumber,
+         loginStatus = loginStatus
+      )
+}

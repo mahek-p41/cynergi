@@ -40,7 +40,7 @@ class EmployeeService @Inject constructor(
       employeeValidator.validateCreate(vo)
 
       return EmployeeValueObject(
-         entity = employeeRepository.insert(entity = Employee(vo = vo))
+         entity = employeeRepository.insert(entity = EmployeeEntity(vo = vo))
       )
    }
 
@@ -50,7 +50,7 @@ class EmployeeService @Inject constructor(
       return employeeRepository.canEmployeeAccess(employee.loc!!, asset, employee.id!!)
    }
 
-   fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<Employee> =
+   fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
       employeeRepository.findUserByAuthentication(number, passCode, storeNumber)
 
    override fun canProcess(path: Path): Boolean =
@@ -71,7 +71,8 @@ class EmployeeService @Inject constructor(
                firstNameMi = record.get("first_name_mi").trimToNull(),
                passCode = record.get("pass_code"),
                store = store,
-               active = record.get("active")?.toBoolean() ?: true
+               active = record.get("active")?.toBoolean() ?: true,
+               allowAutoStoreAssign = record.get("allow_auto_store_assign")?.toBoolean() ?: false
             )
          )
       } else {

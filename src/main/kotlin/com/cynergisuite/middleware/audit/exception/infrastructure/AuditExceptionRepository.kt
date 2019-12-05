@@ -10,7 +10,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -61,6 +61,7 @@ class AuditExceptionRepository @Inject constructor(
             e.e_active AS e_active,
             e.e_department AS e_department,
             e.e_loc AS e_loc,
+            e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
             e.s_id AS s_id,
             e.s_time_created AS s_time_created,
             e.s_time_updated AS s_time_updated,
@@ -88,6 +89,7 @@ class AuditExceptionRepository @Inject constructor(
             noteEmployee.e_active AS noteEmployee_active,
             noteEmployee.e_department AS noteEmployee_department,
             noteEmployee.e_loc AS noteEmployee_loc,
+            noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
             noteEmployee.s_id AS noteEmployee_store_id,
             noteEmployee.s_time_created AS noteEmployee_store_time_created,
             noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
@@ -129,7 +131,7 @@ class AuditExceptionRepository @Inject constructor(
          WITH paged AS (
             WITH ae_employees AS (
                ${employeeRepository.selectBase}
-            ), 
+            ),
             audit_exceptions AS (
                SELECT ae.id AS ae_id,
                   ae.uu_row_id AS ae_uu_row_id,
@@ -155,6 +157,7 @@ class AuditExceptionRepository @Inject constructor(
                   e.e_active AS e_active,
                   e.e_department AS e_department,
                   e.e_loc AS e_loc,
+                  e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
                   e.s_id AS s_id,
                   e.s_time_created AS s_time_created,
                   e.s_time_updated AS s_time_updated,
@@ -175,7 +178,7 @@ class AuditExceptionRepository @Inject constructor(
                ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
                LIMIT ${page.size} OFFSET ${page.offset()}
             )
-            SELECT 
+            SELECT
                ae.*,
                aen.id AS aen_id,
                aen.uu_row_id AS aen_uu_row_id,
@@ -193,6 +196,7 @@ class AuditExceptionRepository @Inject constructor(
                noteEmployee.e_active AS noteEmployee_active,
                noteEmployee.e_department AS noteEmployee_department,
                noteEmployee.e_loc AS noteEmployee_loc,
+               noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
                noteEmployee.s_id AS noteEmployee_store_id,
                noteEmployee.s_time_created AS noteEmployee_store_time_created,
                noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
@@ -245,6 +249,7 @@ class AuditExceptionRepository @Inject constructor(
             callback(auditException, index % 2 == 0)
             index++
          }
+
          result = findAll(audit, result.requested.nextPage())
       }
    }
@@ -317,7 +322,7 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),

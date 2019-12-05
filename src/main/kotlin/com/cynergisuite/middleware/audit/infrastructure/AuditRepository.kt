@@ -42,7 +42,7 @@ class AuditRepository @Inject constructor(
 
    fun findOne(id: Long): AuditEntity? {
       val found = jdbc.findFirstOrNullWithCrossJoin("""
-         WITH employees AS ( 
+         WITH employees AS (
             ${employeeRepository.selectBase}
          )
          SELECT
@@ -76,6 +76,7 @@ class AuditRepository @Inject constructor(
             aer.e_active AS aer_active,
             aer.e_department AS aer_department,
             aer.e_loc AS aer_loc,
+            aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
             s.time_created AS s_time_created,
             s.time_updated AS s_time_updated,
@@ -144,11 +145,11 @@ class AuditRepository @Inject constructor(
 
       @Language("PostgreSQL")
       val sql = """
-         WITH employees AS ( 
+         WITH employees AS (
             ${employeeRepository.selectBase}
          ), audits AS (
             WITH status AS (
-               SELECT csastd.value AS current_status, 
+               SELECT csastd.value AS current_status,
                       csaa.audit_id AS audit_id, csaa.id
                FROM audit_action csaa
                     JOIN audit_status_type_domain csastd
@@ -166,7 +167,7 @@ class AuditRepository @Inject constructor(
                a.store_number AS store_number,
                a.number AS number,
                s.current_status AS current_status,
-               (SELECT count(a.id) 
+               (SELECT count(a.id)
                 FROM audit a
                     JOIN status s
                       ON s.audit_id = a.id
@@ -210,6 +211,7 @@ class AuditRepository @Inject constructor(
             aer.e_active AS aer_active,
             aer.e_department AS aer_department,
             aer.e_loc AS aer_loc,
+            aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
             s.time_created AS s_time_created,
             s.time_updated AS s_time_updated,
@@ -344,9 +346,9 @@ class AuditRepository @Inject constructor(
 
    fun countAuditsNotCompletedOrCanceled(storeNumber: Int): Int =
       jdbc.queryForObject("""
-         SELECT COUNT (*) 
+         SELECT COUNT (*)
          FROM (
-            SELECT * 
+            SELECT *
             FROM (
                   SELECT a.id, MAX(aa.status_id) AS max_status
                   FROM audit a

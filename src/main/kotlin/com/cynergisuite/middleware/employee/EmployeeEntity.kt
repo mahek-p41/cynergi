@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 
-data class Employee(
+data class EmployeeEntity(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
@@ -13,12 +13,13 @@ data class Employee(
    val lastName: String,
    val firstNameMi: String?,
    val passCode: String,
-   val store: StoreEntity,
+   val store: StoreEntity?,
    val active: Boolean = true,
+   val allowAutoStoreAssign: Boolean = false,
    val department: String? = null
 ) : Identifiable {
 
-   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, department: String? = null) :
+   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, allowAutoStoreAssign: Boolean, department: String? = null) :
       this(
          id = null,
          loc = loc,
@@ -28,6 +29,7 @@ data class Employee(
          passCode = passCode,
          store = store,
          active = active,
+         allowAutoStoreAssign = allowAutoStoreAssign,
          department = department
       )
 
@@ -44,7 +46,7 @@ data class Employee(
       )
 
    override fun myId(): Long? = id
-   fun copyMe(): Employee = copy()
+   fun copyMe(): EmployeeEntity = copy()
    fun displayName(): String = "$number - $lastName"
    fun getEmpName() : String = "$firstNameMi $lastName"
 }

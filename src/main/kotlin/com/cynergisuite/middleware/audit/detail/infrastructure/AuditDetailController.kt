@@ -107,7 +107,7 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
       val response = auditDetailService.create(auditId, vo, employee, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)

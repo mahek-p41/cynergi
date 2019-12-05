@@ -4,7 +4,6 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
@@ -16,7 +15,7 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactor
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
@@ -316,7 +315,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception using employee that doesn't have a first name" () {
       given:
-      final noFirstNameGuy = new Employee(null, OffsetDateTime.now(), OffsetDateTime.now(), "int", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, null)
+      final noFirstNameGuy = new EmployeeEntity(null, OffsetDateTime.now(), OffsetDateTime.now(), "int", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
       employeeRepository.insert(noFirstNameGuy)
       final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US

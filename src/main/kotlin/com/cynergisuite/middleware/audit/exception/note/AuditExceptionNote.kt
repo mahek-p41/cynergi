@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.exception.note
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -14,7 +14,7 @@ data class AuditExceptionNote(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val note: String,
-   val enteredBy: Employee,
+   val enteredBy: EmployeeEntity,
    val auditException: Identifiable
 ) : Entity<AuditExceptionNote> {
 
@@ -22,7 +22,7 @@ data class AuditExceptionNote(
       this(
          id = vo.id,
          note = vo.note!!,
-         enteredBy = Employee(enteredBy),
+         enteredBy = EmployeeEntity(enteredBy),
          auditException = SimpleIdentifiableEntity(auditId)
       )
 

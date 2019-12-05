@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
 import com.cynergisuite.middleware.authentication.UsernamePasswordStoreCredentials
 import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.security.authentication.AuthenticationFailed
@@ -31,7 +32,15 @@ class UserAuthenticationProvider @Inject constructor(
       return if (identity != null && secret != null) {
          employeeService
             .fetchUserByAuthentication(identity, secret, storeNumber)
-            .flatMapPublisher { just(AuthenticatedUser(it)) }
+            .flatMapPublisher { employee ->
+               val employeeStore = employee.store
+
+               if (employeeStore != null) { // if employee has store then proceed
+                  just(AuthenticatedUser(employee, employee.store))
+               } else { // otherwise inform the client that a store is required for the provided user
+                  just(AuthenticationResponseStoreRequired(identity))
+               }
+            }
       } else {
          just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       }
