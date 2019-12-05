@@ -1,21 +1,17 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.infrastructure.PagedResultSetExtractor
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
-import com.cynergisuite.middleware.audit.status.CANCELED
-import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.Canceled
-import com.cynergisuite.middleware.audit.status.Completed
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -41,7 +37,7 @@ class AuditRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
    fun findOne(id: Long): AuditEntity? {
-      val found = jdbc.findFirstOrNullWithCrossJoin("""
+      val found = jdbc.findFirstOrNull<AuditEntity>("""
          WITH employees AS (
             ${employeeRepository.selectBase}
          )
@@ -100,8 +96,14 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
          WHERE a.id = :id
-      """.trimMargin(), mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: AuditEntity, rs ->
-         auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+      """.trimMargin(), mapOf("id" to id)) { rs ->
+         val audit = this.mapRow(rs)
+
+         do {
+            auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+         } while(rs.next())
+
+         audit
       }
 
       if (found != null) {
@@ -240,7 +242,7 @@ class AuditRepository @Inject constructor(
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<AuditEntity>(pageRequest) { rs, elements ->
+      val repoPage = jdbc.queryPaged<AuditEntity>(sql, params, pageRequest) { rs, elements ->
          var currentId: Long = -1
          var currentParentEntity: AuditEntity? = null
 
@@ -257,7 +259,7 @@ class AuditRepository @Inject constructor(
 
             tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
          } while(rs.next())
-      })
+      }
 
       return repoPage.copy(elements = repoPage.elements.onEach(this::loadNextStates))
    }
