@@ -95,7 +95,7 @@ class AuditService @Inject constructor(
       val updated = auditRepository.update(existingAudit)
 
       if (updated.currentStatus() == SIGNED_OFF) {
-         auditExceptionRepository.signOffAllExceptions(updated)
+         auditExceptionRepository.signOffAllExceptions(updated, employee)
          reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf") { reportalOutputStream ->
             Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
                val writer = PdfWriter.getInstance(document, reportalOutputStream)

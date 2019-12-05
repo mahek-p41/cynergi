@@ -56,6 +56,7 @@ object AuditExceptionFactory {
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
             signedOff = random.nextBoolean(),
+            signedOffBy = null,
             lookupKey = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
             audit = SimpleIdentifiableEntity(audit)
          )

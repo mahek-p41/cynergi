@@ -26,6 +26,7 @@ data class AuditExceptionEntity(
    val scannedBy: Employee,
    val exceptionCode: String,
    val signedOff: Boolean = false,
+   val signedOffBy: Employee?,
    val lookupKey: String?,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
    val audit: Identifiable
@@ -44,6 +45,7 @@ data class AuditExceptionEntity(
          scannedBy = Employee(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
+         signedOffBy = vo.signedOffBy?.let { Employee(it) },
          lookupKey = vo.lookupKey,
          notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.myId()!!) }.toMutableList(),
          audit = SimpleIdentifiableEntity(vo.audit!!)

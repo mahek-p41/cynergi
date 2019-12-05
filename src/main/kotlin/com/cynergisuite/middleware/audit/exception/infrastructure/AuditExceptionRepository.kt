@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -27,6 +28,7 @@ class AuditExceptionRepository @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeRepository: EmployeeRepository,
+   private val employeeValueObject: EmployeeValueObject,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
@@ -50,6 +52,7 @@ class AuditExceptionRepository @Inject constructor(
             ae.exception_code AS ae_exception_code,
             ae.audit_id AS ae_audit_id,
             ae.signed_off AS ae_signed_off,
+            ae.signed_off_by AS ae_signed_off_by,
             ae.lookup_key AS ae_lookup_key,
             e.e_id AS e_id,
             e.e_time_created AS e_time_created,
@@ -61,6 +64,16 @@ class AuditExceptionRepository @Inject constructor(
             e.e_active AS e_active,
             e.e_department AS e_department,
             e.e_loc AS e_loc,
+            e2.e_id AS e2_id,
+            e2.e_time_created AS e2_time_created,
+            e2.e_time_updated AS e2_time_updated,
+            e2.e_number AS e2_number,
+            e2.e_last_name AS e2_last_name,
+            e2.e_first_name_mi AS e2_first_name_mi,
+            e2.e_pass_code AS  e2_pass_code,
+            e2.e_active AS e2_active,
+            e2.e_department AS e2_department,
+            e2.e_loc AS e2_loc,
             e.s_id AS s_id,
             e.s_time_created AS s_time_created,
             e.s_time_updated AS s_time_updated,
@@ -97,6 +110,8 @@ class AuditExceptionRepository @Inject constructor(
          FROM audit_exception ae
               JOIN ae_employees e
                 ON ae.scanned_by = e.e_number
+              LEFT OUTER JOIN ae_employees e2
+                              ON ae.signed_off_by = e2.e_number 
               LEFT OUTER JOIN audit_scan_area_type_domain asatd
                 ON ae.scan_area_id = asatd.id
               LEFT OUTER JOIN audit_exception_note aen
@@ -107,8 +122,9 @@ class AuditExceptionRepository @Inject constructor(
          RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-
-            mapRow(rs, scanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
+            val signedOffBy = employeeRepository.mapRow(rs, "e2_", "s_")
+            //The below is an implicit return
+            mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
          }
       ) { auditException, rs ->
          val enteredBy = employeeRepository.maybeMapRow(rs, "noteEmployee_", "noteEmployee_store_")
@@ -144,6 +160,7 @@ class AuditExceptionRepository @Inject constructor(
                   ae.exception_code AS ae_exception_code,
                   ae.audit_id AS ae_audit_id,
                   ae.signed_off AS ae_signed_off,
+                  ae.signed_off_by AS ae_signed_off_by,
                   ae.lookup_key AS ae_lookup_key,
                   e.e_id AS e_id,
                   e.e_time_created AS e_time_created,
@@ -155,6 +172,16 @@ class AuditExceptionRepository @Inject constructor(
                   e.e_active AS e_active,
                   e.e_department AS e_department,
                   e.e_loc AS e_loc,
+                  e2.e_id AS e2_id,
+                  e2.e_time_created AS e2_time_created,
+                  e2.e_time_updated AS e2_time_updated,
+                  e2.e_number AS e2_number,
+                  e2.e_last_name AS e2_last_name,
+                  e2.e_first_name_mi AS e2_first_name_mi,
+                  e2.e_pass_code AS  e2_pass_code,
+                  e2.e_active AS e2_active,
+                  e2.e_department AS e2_department,
+                  e2.e_loc AS e2_loc,                  
                   e.s_id AS s_id,
                   e.s_time_created AS s_time_created,
                   e.s_time_updated AS s_time_updated,
@@ -169,6 +196,8 @@ class AuditExceptionRepository @Inject constructor(
                FROM audit_exception ae
                     JOIN ae_employees e
                       ON ae.scanned_by = e.e_number
+                    LEFT OUTER JOIN ae_employees e2
+                              ON ae.signed_off_by = e2.e_number
                     LEFT OUTER JOIN audit_scan_area_type_domain asatd
                       ON ae.scan_area_id = asatd.id
                WHERE ae.audit_id = :audit_id
@@ -214,12 +243,13 @@ class AuditExceptionRepository @Inject constructor(
       val resultList = jdbc.findAllWithCrossJoin(sql, mutableMapOf("audit_id" to audit.id), "ae_id", RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
+            val signedOffBy = employeeRepository.mapRow(rs, "e2_")
 
             if (totalElements == null) {
                totalElements = rs.getLong("total_elements")
             }
 
-            mapRow(rs, scanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
+            mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
          }
       ) { auditException, rs ->
          val enteredBy = employeeRepository.maybeMapRow(rs, "noteEmployee_", "noteEmployee_store_")
@@ -264,8 +294,8 @@ class AuditExceptionRepository @Inject constructor(
       logger.debug("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, signed_off, lookup_key, audit_id)
-         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :signed_off, :lookup_key, :audit_id)
+         INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, signed_off, signed_off_by, lookup_key, audit_id)
+         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :signed_off, :signed_off_by, :lookup_key, :audit_id)
          RETURNING
             *
          """.trimIndent(),
@@ -280,27 +310,30 @@ class AuditExceptionRepository @Inject constructor(
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
+            "signed_off_by" to entity.signedOffBy,
             "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, rowNum ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
+            mapRow(rs, entity.scanArea, entity.scannedBy, entity.signedOffBy, entity.audit)
          }
       )
    }
 
    @Transactional
-   fun signOffAllExceptions(audit: AuditEntity) {
+   fun signOffAllExceptions(audit: AuditEntity, employee: EmployeeValueObject) {
       logger.debug("Updating audit_exception {}", audit)
 
       jdbc.update("""
          UPDATE audit_exception
-         SET signed_off = true
+         SET signed_off = true,
+         signed_off_by = :employee
          WHERE audit_id = :audit_id
          AND signed_off = false
          """.trimIndent(),
          mapOf(
-            "audit_id" to audit.myId()
+            "audit_id" to audit.myId(),
+            "employee" to employee.number
          )
       )
    }
@@ -317,7 +350,7 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: Employee, signedOffBy: Employee?, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
@@ -333,6 +366,7 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy = scannedBy,
          exceptionCode = rs.getString("${columnPrefix}exception_code"),
          signedOff = rs.getBoolean("${columnPrefix}signed_off"),
+         signedOffBy = signedOffBy,
          lookupKey = rs.getString("${columnPrefix}lookup_key"),
          audit = audit
       )

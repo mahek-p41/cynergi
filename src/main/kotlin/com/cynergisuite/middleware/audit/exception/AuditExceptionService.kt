@@ -67,7 +67,7 @@ class AuditExceptionService @Inject constructor(
 
    @Validated
    fun addNote(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditExceptionValueObject {
-      auditExceptionValidator.validateAddNote(auditId, vo)
+      auditExceptionValidator.validateUpdate(auditId, vo)
 
       val auditException = auditExceptionRepository.findOne(vo.id!!)!!
 

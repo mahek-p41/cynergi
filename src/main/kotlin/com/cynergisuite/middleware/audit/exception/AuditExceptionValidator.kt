@@ -17,6 +17,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.sign
 
 @Singleton
 class AuditExceptionValidator @Inject constructor (
@@ -70,8 +71,9 @@ class AuditExceptionValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateAddNote(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
+   fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
       val auditExceptionId = auditExceptionUpdate.id!!
+      val signedOff = auditExceptionUpdate.signedOff!!
       val errors = doSharedValidation(auditId)
       val audit: AuditEntity = auditRepository.findOne(auditId)!!
 
@@ -87,8 +89,14 @@ class AuditExceptionValidator @Inject constructor (
          )
       }
 
+      if ((!signedOff) and (auditExceptionUpdate.note == null)) {
+         errors.add(
+            ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
+         )
+      }
+
       if (errors.isNotEmpty()) {
-         logger.warn("Validating AddNote for AuditException {} had errors {} for audit {}", auditExceptionUpdate, errors, auditId)
+         logger.warn("Validating Update for AuditException {} had errors {} for audit {}", auditExceptionUpdate, errors, auditId)
 
          throw ValidationException(errors)
       }
