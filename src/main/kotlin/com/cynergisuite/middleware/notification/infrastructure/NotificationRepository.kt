@@ -1,11 +1,11 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.extensions.findAllWithCrossJoin
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationRecipient
@@ -30,7 +30,8 @@ class NotificationRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
    private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
-   @Language("PostgreSQL") private val baseFindQuery = """
+   @Language("PostgreSQL")
+   private val baseFindQuery = """
       SELECT
          n.id AS n_id,
          n.uu_row_id AS n_uu_row_id,
@@ -60,11 +61,15 @@ class NotificationRepository @Inject constructor(
    """.trimIndent()
 
    fun findOne(id: Long): Notification? {
-      val found: Notification? = jdbc.findFirstOrNullWithCrossJoin("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id), fullNotificationRowMapper) { notification, rs ->
-         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also { notification.recipients.add(it) }
-      }
+      val found: Notification? = jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs ->
+         val notification = fullNotificationRowMapper.mapRow(rs, 0)
 
-      logger.trace("Searching for Notification: {} resulted in {}", id, found)
+         do {
+            notificationRecipientRepository.mapRowPrefixedRow(rs)?.also { notification.recipients.add(it) }
+         } while (rs.next())
+
+         notification
+      }
 
       return found
    }
@@ -77,8 +82,8 @@ class NotificationRepository @Inject constructor(
       return exists
    }
 
-   fun findAllByCompany(companyId: String, type: String): List<Notification> =
-      jdbc.findAllWithCrossJoin("""
+   fun findAllByCompany(companyId: String, type: String): List<Notification> {
+      return jdbc.queryFullList("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
@@ -88,17 +93,12 @@ class NotificationRepository @Inject constructor(
          mapOf(
             "company_id" to companyId,
             "notification_type" to type
-         ),
-         "n_id",
-         fullNotificationRowMapper
-      ) { notification, rs ->
-         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
-            notification.recipients.add(it)
-         }
-      }
+         ), this::mapNotifications
+      )
+   }
 
-   fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> =
-      jdbc.findAllWithCrossJoin("""
+   fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> {
+      return jdbc.queryFullList<Notification>("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
@@ -109,19 +109,15 @@ class NotificationRepository @Inject constructor(
             "notification_type" to type,
             "recipient_id" to recipientId
          ),
-         "n_id",
-         fullNotificationRowMapper
-      ) { notification, rs ->
-         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
-            notification.recipients.add(it)
-         }
-      }
+         this::mapNotifications
+      )
+   }
 
    fun findAllTypes(): List<NotificationTypeDomain> =
       notificationTypeDomainRepository.findAll()
 
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
-      jdbc.findAllWithCrossJoin("""
+      jdbc.queryFullList("""
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND n.sending_employee = :sending_employee
@@ -130,13 +126,8 @@ class NotificationRepository @Inject constructor(
             "company_id" to companyId,
             "sending_employee" to sendingEmployee
          ),
-         "n_id",
-         fullNotificationRowMapper
-      ) { notification, rs ->
-         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
-            notification.recipients.add(it)
-         }
-      }
+         this::mapNotifications
+      )
 
    @Transactional
    fun insert(entity: Notification): Notification {
@@ -228,9 +219,33 @@ class NotificationRepository @Inject constructor(
 
    private fun doRecipientUpdates(entity: Notification, existing: Notification) =
       entity.recipients.asSequence()
-         .map { n -> existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.myId() == n.notification.myId() } ?: n } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
+         .map { n ->
+            existing.recipients.firstOrNull { e -> e.recipient == n.recipient && e.notification.myId() == n.notification.myId() }
+               ?: n
+         } // find existing recipient based on the recipient and the parent notification ID otherwise return the new recipient
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
+
+   private fun mapNotifications(rs: ResultSet, notifications: MutableList<Notification>): Unit {
+      var currentId: Long = -1
+      var currentParentEntity: Notification? = null
+
+      do {
+         val tempId = rs.getLong("n_id")
+         val tempParentEntity: Notification = if (tempId != currentId) {
+            currentId = tempId
+            currentParentEntity = fullNotificationRowMapper.mapRow(rs, 0)
+            notifications.add(currentParentEntity)
+            currentParentEntity
+         } else {
+            currentParentEntity!!
+         }
+
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+            tempParentEntity.recipients.add(it)
+         }
+      } while (rs.next())
+   }
 }
 
 private class NotificationRowMapper(
