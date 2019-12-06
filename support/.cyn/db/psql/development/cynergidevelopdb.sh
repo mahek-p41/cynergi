@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 ## description: connect a psql prompt to the cynergidevelopdb
 
-cd development
+cd ../development
 
 if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergidb)` ]; then
   echo "cynergidevelopdb is not running! Not connecting psql."

@@ -4,18 +4,46 @@ cd "${0%/*}" # see: https://stackoverflow.com/questions/6393551/what-is-the-mean
 # need to make sure the current directory is that of this script in the cynergi-middleware/support/.cyn/ so that the child scripts will work correctly
 # plan is to use direnv https://direnv.net/ to setup the path variable using the PATH_add function in a .envrc file
 
-case "$@" in
-  "db start development")
-    ./db/start/development.sh
-    ;;
-  "db psql development cynergidb")
-    ./db/psql/development/cynergidb.sh
-    ;;
-  "db psql development cynergidb")
-    ./db/psql/development/cynergidevelopdb.sh
-    ;;
-  *)
-    echo "Unknown $@"
-    exit 1
-  ;;
-esac
+INPUT=""
+COMMAND="."
+HELP_MODE=false
+DIRECTORY_MODE=false
+COMMAND_MODE=false
+
+while [ -n "$1" ]; do
+  TEST_COMMAND="$COMMAND/$1"
+
+  if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
+    HELP_MODE=true
+  elif [ -d "$TEST_COMMAND" ]; then
+    INPUT="$INPUT $1"
+    DIRECTORY_MODE=true
+    COMMAND="$TEST_COMMAND"
+  elif [ -f "$TEST_COMMAND.sh" ]; then
+    INPUT="$INPUT $1"
+    COMMAND="$TEST_COMMAND.sh"
+    COMMAND_MODE=true
+  else
+    echo "$TEST_COMMAND is an unknown command"
+    exit -1
+  fi
+
+  shift
+done
+
+if [ $HELP_MODE = true ]; then
+  if [ $DIRECTORY_MODE = true ]; then
+    SUB_COMMANDS=`ls $COMMAND`
+    echo "Possibly sub commands of [$INPUT ]"
+    echo "$SUB_COMMANDS"
+    exit 0
+  else
+    echo "I can't help with [$INPUT ]" # TODO handle parsing of shell script to see if it takes arguments
+    exit -1
+  fi
+elif [ $COMMAND_MODE = true ]; then
+  eval "$COMMAND"
+  exit $?
+else
+  echo "No command found matching [$INPUT ]"
+fi
