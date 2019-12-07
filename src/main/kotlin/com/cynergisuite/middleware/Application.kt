@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware
 
+import com.cynergisuite.middleware.load.legacy.infrastructure.LegacyDataLoader
 import io.micronaut.runtime.Micronaut
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
@@ -27,10 +28,12 @@ object Application {
          System.setProperty("logback.configurationFile", "logback-prod.xml")
       }
 
-      Micronaut.build()
+      val mn = Micronaut.build()
          .args(*args)
          .packages("com.cynergisuite.middleware")
          .mainClass(Application.javaClass)
          .start()
+
+      mn.getBean(LegacyDataLoader::class.java).processLegacyImports() // FIXME when the loop that results with using this as a listener on the MigrationFinishedEvent
    }
 }
