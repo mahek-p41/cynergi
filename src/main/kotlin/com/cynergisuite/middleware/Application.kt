@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware
 
+import com.cynergisuite.middleware.load.develop.DevelopDataLoader
 import com.cynergisuite.middleware.load.legacy.infrastructure.LegacyDataLoader
 import io.micronaut.runtime.Micronaut
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
@@ -23,8 +24,9 @@ object Application {
    @JvmStatic
    fun main(args: Array<String>) {
       val systemProps = System.getProperties()
+      val mnEnvironment = systemProps["micronaut.environments"]
 
-      if (systemProps["micronaut.environments"] == "prod" && !systemProps.containsKey("logback.configurationFile")) {
+      if (mnEnvironment == "prod" && !systemProps.containsKey("logback.configurationFile")) {
          System.setProperty("logback.configurationFile", "logback-prod.xml")
       }
 
@@ -35,5 +37,9 @@ object Application {
          .start()
 
       mn.getBean(LegacyDataLoader::class.java).processLegacyImports() // FIXME when the loop that results with using this as a listener on the MigrationFinishedEvent
+
+      if (mnEnvironment == "develop") {
+         mn.getBean(DevelopDataLoader::class.java).loadDemoData() // FIXME when above fix is put in
+      }
    }
 }
