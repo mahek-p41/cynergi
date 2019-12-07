@@ -37,7 +37,7 @@ class DevelopDataLoader @Inject constructor(
 
       val storeOne = storeFactoryService.store(1)
       val storeThree = storeFactoryService.store(3)
-      val admin = employeeRepository.findOne(998, "int")
+      val admin = employeeRepository.findOne(998, "eli")
       val storeOneEmployee = employeeFactoryService.single(storeOne)
       val storeThreeEmployee = employeeFactoryService.single(storeThree)
       val salesAssociateDepartment = departmentFactoryService.department("SA")

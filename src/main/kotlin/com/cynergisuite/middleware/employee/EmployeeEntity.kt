@@ -8,7 +8,7 @@ data class EmployeeEntity(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val loc: String,
+   val type: String,
    val number: Int,
    val lastName: String,
    val firstNameMi: String?,
@@ -19,10 +19,10 @@ data class EmployeeEntity(
    val department: String? = null
 ) : Identifiable {
 
-   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, allowAutoStoreAssign: Boolean, department: String? = null) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, allowAutoStoreAssign: Boolean, department: String? = null) :
       this(
          id = null,
-         loc = loc,
+         type = type,
          number = number,
          lastName = lastName,
          firstNameMi = firstNameMi,
@@ -36,7 +36,7 @@ data class EmployeeEntity(
    constructor(vo: EmployeeValueObject) :
       this(
          id = vo.id,
-         loc = vo.loc!!,
+         type = vo.type!!,
          number = vo.number!!,
          lastName = vo.lastName!!,
          firstNameMi = vo.firstNameMi,

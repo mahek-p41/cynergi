@@ -37,7 +37,7 @@ class AuditRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
    fun findOne(id: Long): AuditEntity? {
-      val found = jdbc.findFirstOrNull<AuditEntity>("""
+      val found = jdbc.findFirstOrNull("""
          WITH employees AS (
             ${employeeRepository.selectBase}
          )
@@ -71,7 +71,7 @@ class AuditRepository @Inject constructor(
             aer.e_pass_code AS aer_pass_code,
             aer.e_active AS aer_active,
             aer.e_department AS aer_department,
-            aer.e_loc AS aer_loc,
+            aer.e_employee_type AS aer_employee_type,
             aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
             s.time_created AS s_time_created,
@@ -212,7 +212,7 @@ class AuditRepository @Inject constructor(
             aer.e_pass_code AS aer_pass_code,
             aer.e_active AS aer_active,
             aer.e_department AS aer_department,
-            aer.e_loc AS aer_loc,
+            aer.e_employee_type AS aer_employee_type,
             aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
             s.time_created AS s_time_created,

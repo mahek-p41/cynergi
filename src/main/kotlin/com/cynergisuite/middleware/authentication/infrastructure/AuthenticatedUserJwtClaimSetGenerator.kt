@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
-import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.JWTClaimsSet.Builder
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.runtime.ApplicationConfiguration
@@ -28,7 +27,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
       if (userDetails is AuthenticatedUser) {
          builder
             ?.claim("id", userDetails.id)
-            ?.claim("loc", userDetails.loc)
+            ?.claim("type", userDetails.employeeType)
             ?.claim("stNum", userDetails.storeNumber)
       }
    }
