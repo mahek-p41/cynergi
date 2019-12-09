@@ -7,6 +7,7 @@ COPY cynergi-db-ready.sh /tmp/cynergi-db-ready.sh
 RUN chmod 0600 /root/.pgpass
 RUN chmod u+x /root/cynergi-dev-db-dump.sh
 RUN dos2unix /root/cynergi-dev-db-dump.sh
+RUN dos2unix /tmp/cynergi-db-ready.sh
 RUN apk add pspg
 
 VOLUME /tmp/dumps

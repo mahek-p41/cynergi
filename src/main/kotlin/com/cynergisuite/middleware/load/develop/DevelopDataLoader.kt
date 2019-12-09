@@ -9,10 +9,8 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.load.legacy.LegacyLoadFinishedEvent
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.event.ApplicationEventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
@@ -31,15 +29,15 @@ class DevelopDataLoader @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val employeeFactoryService: EmployeeFactoryService,
    private val storeFactoryService: StoreFactoryService
-) : ApplicationEventListener<LegacyLoadFinishedEvent> {
+) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
-   override fun onApplicationEvent(event: LegacyLoadFinishedEvent?) {
+   fun loadDemoData() {
       logger.info("Loading develop data")
 
       val storeOne = storeFactoryService.store(1)
       val storeThree = storeFactoryService.store(3)
-      val admin = employeeRepository.findOne(998, "int")
+      val admin = employeeRepository.findOne(998, "eli")
       val storeOneEmployee = employeeFactoryService.single(storeOne)
       val storeThreeEmployee = employeeFactoryService.single(storeThree)
       val salesAssociateDepartment = departmentFactoryService.department("SA")

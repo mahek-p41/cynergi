@@ -315,8 +315,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception using employee that doesn't have a first name" () {
       given:
-      final noFirstNameGuy = new EmployeeEntity(null, OffsetDateTime.now(), OffsetDateTime.now(), "int", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
-      employeeRepository.insert(noFirstNameGuy)
+      final noFirstNameGuy = new EmployeeEntity(null, OffsetDateTime.now(), OffsetDateTime.now(), "eli", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
+      final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
       final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
