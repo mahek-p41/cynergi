@@ -57,7 +57,7 @@ class AuditDetailRepository @Inject constructor(
          e.e_pass_code AS  e_pass_code,
          e.e_department AS e_department,
          e.e_active AS e_active,
-         e.e_loc AS e_loc,
+         e.e_employee_type AS e_employee_type,
          e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
          e.s_id AS s_id,
          e.s_time_created AS s_time_created,

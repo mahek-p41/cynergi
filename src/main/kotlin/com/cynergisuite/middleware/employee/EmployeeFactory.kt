@@ -25,7 +25,7 @@ object EmployeeFactory {
 
       return IntStream.range(0, number).mapToObj {
          EmployeeEntity(
-            loc = "int",
+            type = "eli",
             number = numbers.numberBetween(1, 10_000),
             lastName = name.lastName(),
             firstNameMi = name.firstName(),
@@ -46,7 +46,7 @@ object EmployeeFactory {
          id = 1,
          timeCreated = OffsetDateTime.now(),
          timeUpdated = OffsetDateTime.now(),
-         loc = "int",
+         type = "eli",
          number = 123,
          lastName = "user",
          firstNameMi = "test",

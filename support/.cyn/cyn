@@ -5,7 +5,7 @@ cd "${0%/*}" # see: https://stackoverflow.com/questions/6393551/what-is-the-mean
 # plan is to use direnv https://direnv.net/ to setup the path variable using the PATH_add function in a .envrc file
 
 INPUT=""
-COMMAND="."
+COMMAND="./commands"
 HELP_MODE=false
 DIRECTORY_MODE=false
 COMMAND_MODE=false

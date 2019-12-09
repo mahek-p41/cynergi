@@ -39,7 +39,7 @@ class EmployeeRepository @Inject constructor(
 
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, loc, allow_auto_store_assign
+         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
          FROM (
             SELECT 1 AS from_priority,
                fpie.id AS id,
@@ -53,7 +53,7 @@ class EmployeeRepository @Inject constructor(
                fpie.active AS active,
                fpie.department AS department,
                FALSE AS allow_auto_store_assign,
-               'ext' AS loc
+               'sysz' AS employee_type
             FROM fastinfo_prod_import.employee_vw fpie
             WHERE coalesce(trim(fpie.pass_code), '') <> ''
             UNION
@@ -69,7 +69,7 @@ class EmployeeRepository @Inject constructor(
                e.active AS active,
                e.department AS department,
                e.allow_auto_store_assign AS allow_auto_store_assign,
-               'int' AS loc
+               'eli' AS employee_type
             FROM employee e
             WHERE coalesce(trim(e.pass_code), '') <> ''
          ) AS inner_emp
@@ -94,7 +94,7 @@ class EmployeeRepository @Inject constructor(
          pass_code AS e_pass_code,
          active AS e_active,
          department AS e_department,
-         loc AS e_loc,
+         employee_type AS e_employee_type,
          allow_auto_store_assign AS e_allow_auto_store_assign,
          s.s_id AS s_id,
          s.s_time_created AS s_time_created,
@@ -115,18 +115,18 @@ class EmployeeRepository @Inject constructor(
 
    val selectBase = "$selectBaseWithoutEmployeeStoreJoin ON e.store_number = s.s_number"
 
-   fun findOne(id: Long, loc: String): EmployeeEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.id = :id AND e.loc = :loc", mapOf("id" to id, "loc" to loc), RowMapper { rs, _ -> mapRow(rs) })
+   fun findOne(id: Long, employeeType: String): EmployeeEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.id = :id AND e.employee_type = :employee_type", mapOf("id" to id, "employee_type" to employeeType), RowMapper { rs, _ -> mapRow(rs) })
 
-      logger.trace("Searching for Employee: {} {} resulted in {}", id, loc, found)
+      logger.trace("Searching for Employee: {} {} resulted in {}", id, employeeType, found)
 
       return found
    }
 
-   fun findOne(number: Int, loc: String): EmployeeEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.number = :number AND loc = :loc", mapOf("number" to number, "loc" to loc), RowMapper { rs, _ -> mapRow(rs) })
+   fun findOne(number: Int, employeeType: String): EmployeeEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.number = :number AND employee_type = :employee_type", mapOf("number" to number, "employee_type" to employeeType), RowMapper { rs, _ -> mapRow(rs) })
 
-      logger.trace("Searching for Employee: {} {} resulted in {}", number, loc, found)
+      logger.trace("Searching for Employee: {} {} resulted in {}", number, employeeType, found)
 
       return found
    }
@@ -136,11 +136,11 @@ class EmployeeRepository @Inject constructor(
          $selectBaseWithoutEmployeeStoreJoin
             ON s.s_number = :store_number
          WHERE e.id = :id
-               AND e.loc = :loc
+               AND e.employee_type = :employee_type
          """.trimIndent(),
          mapOf(
             "id" to user.id,
-            "loc" to user.loc,
+            "employee_type" to user.employeeType,
             "store_number" to user.storeNumber
          ),
          RowMapper { rs, _ -> mapRow(rs) }
@@ -151,7 +151,7 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun exists(id: Long, loc: String): Boolean {
+   fun exists(id: Long, employeeType: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ($selectBase) AS emp_exists WHERE emp_exists.id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Employee: {} exists resulted in {}", id, exists)
@@ -200,7 +200,7 @@ class EmployeeRepository @Inject constructor(
                id = row.getLong("e_id"),
                timeCreated = row.getOffsetDateTime("e_time_created"),
                timeUpdated = row.getOffsetDateTime("e_time_updated") ?: OffsetDateTime.now(),
-               loc = row.getString("e_loc"),
+               type = row.getString("e_employee_type"),
                number = row.getInteger("e_number"),
                lastName = row.getString("e_last_name"),
                firstNameMi = row.getString("e_first_name_mi"),
@@ -213,7 +213,7 @@ class EmployeeRepository @Inject constructor(
             employee to defaultStore
          }
          .filter { (employee, _) ->
-            if (employee.loc == "int") {
+            if (employee.type == "eli") {
                passwordEncoderService.matches(passCode, employee.passCode)
             } else {
                employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
@@ -255,7 +255,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    @Cacheable("user-cache")
-   fun canEmployeeAccess(loc: String, asset: String, id: Long): Boolean {
+   fun canEmployeeAccess(employeeType: String, asset: String, id: Long): Boolean {
       logger.debug("Check if user {} has access to asset {} via the database", id, asset)
 
       return if(asset == "check") { // everyone authenticated should be able to access this asset
@@ -270,7 +270,7 @@ class EmployeeRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         loc = rs.getString("${columnPrefix}loc"),
+         type = rs.getString("${columnPrefix}employee_type"),
          number = rs.getInt("${columnPrefix}number"),
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
@@ -293,7 +293,7 @@ class EmployeeRepository @Inject constructor(
          id = rs.getLong("id"),
          timeCreated = rs.getOffsetDateTime("time_created"),
          timeUpdated = rs.getOffsetDateTime("time_updated"),
-         loc = "int",
+         type = "eli",
          number = rs.getInt("number"),
          lastName = rs.getString("last_name"),
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL

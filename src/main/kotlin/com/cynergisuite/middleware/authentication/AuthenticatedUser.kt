@@ -8,22 +8,15 @@ import java.util.Objects
 
 class AuthenticatedUser(
    val id: Long,
-   val loc: String,
+   val employeeType: String,
    val storeNumber: Int,
    val employeeNumber: Int
 ) : UserDetails(employeeNumber.toString(), mutableListOf()) {
-   constructor(employee: EmployeeEntity, storeNumber: Int) :
-      this (
-         id = employee.id!!,
-         loc = employee.loc,
-         storeNumber = storeNumber,
-         employeeNumber = employee.number
-      )
 
    constructor(employee: EmployeeEntity, overrideStore: StoreEntity) :
       this (
          id = employee.id!!,
-         loc = employee.loc,
+         employeeType = employee.type,
          storeNumber = overrideStore.number,
          employeeNumber = employee.number
       )
@@ -31,8 +24,8 @@ class AuthenticatedUser(
    constructor(authentication: Authentication) :
       this(
          id = authentication.attributes.get("id").let { Objects.toString(it).toLong() },
-         loc = authentication.attributes.get("loc").let { Objects.toString(it) },
+         employeeType = authentication.attributes.get("type").let { Objects.toString(it) },
          storeNumber = authentication.attributes.get("stNum").let { Objects.toString(it).toInt() },
-         employeeNumber = authentication.attributes.get("sub").let { Objects.toString(it).toInt() }
+         employeeNumber = authentication.attributes.get("sub").let { Objects.toString(it).toInt() } // sub is a subject which is encoded by the framework
       )
 }
