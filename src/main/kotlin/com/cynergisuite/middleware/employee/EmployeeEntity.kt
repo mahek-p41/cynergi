@@ -41,8 +41,9 @@ data class EmployeeEntity(
          lastName = vo.lastName!!,
          firstNameMi = vo.firstNameMi,
          passCode = vo.passCode!!,
-         store = StoreEntity(vo.store!!),
-         active = vo.active!!
+         store = vo.store?.let { StoreEntity(it) },
+         active = vo.active!!,
+         allowAutoStoreAssign = vo.allowAutoStoreAssign!!
       )
 
    override fun myId(): Long? = id

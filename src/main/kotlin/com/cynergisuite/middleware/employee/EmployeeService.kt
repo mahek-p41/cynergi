@@ -57,11 +57,10 @@ class EmployeeService @Inject constructor(
       employeeMatcher.matches(path.fileName)
 
    override fun processCsvRow(record: CSVRecord) {
-      val storeNumberIn = record.get("store_number")
+      val storeNumberIn = record.get("store_number").trimToNull()
 
-      if ( !storeNumberIn.isNullOrBlank() && storeNumberIn.isDigits() ) {
-         val storeNumber = storeNumberIn.toInt()
-         val store = storeService.fetchByNumber(storeNumber)
+      if ( storeNumberIn.isNullOrBlank() || storeNumberIn.isDigits() ) {
+         val store = storeNumberIn?.let { storeService.fetchByNumber(it.toInt()) }
 
          create (
             EmployeeValueObject(
