@@ -77,7 +77,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.notifications.size() == 1
 
-      result.notifications[0].message = schedule.description
+      result.notifications[0].message == schedule.description
       result.notifications[0].sendingEmployee == employee.number.toString()
       result.notifications[0].expirationDate != null
    }
