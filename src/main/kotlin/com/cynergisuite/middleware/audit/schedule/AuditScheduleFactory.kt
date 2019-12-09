@@ -4,7 +4,7 @@ import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -26,7 +26,7 @@ import javax.inject.Singleton
 object AuditScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: Employee? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
       val faker = Faker()
       val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
@@ -74,7 +74,7 @@ class AuditScheduleFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: Employee? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random())
       val department = departmentIn ?: departmentFactoryService.random()
       val employee = employeeIn ?: employeeFactoryService.single()
@@ -83,7 +83,7 @@ class AuditScheduleFactoryService @Inject constructor(
          .map { scheduleRepository.insert(it) }
    }
 
-   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: Employee? = null) :ScheduleEntity {
+   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null) :ScheduleEntity {
       return stream(1, dayOfWeekIn, storesIn, departmentIn, employeeIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
    }
 }
