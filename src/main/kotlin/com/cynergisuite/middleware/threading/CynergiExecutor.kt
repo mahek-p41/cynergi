@@ -4,7 +4,9 @@ import io.micronaut.context.annotation.Value
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,7 +26,6 @@ class CynergiExecutor @Inject constructor(
             .build()
       )
 
-   fun execute(job: () -> Unit) {
+   fun execute(job: () -> Unit) =
       executor.execute(job)
-   }
 }

@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.schedule
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
+import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 object ScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleTypeEntity? = null, commandIn: ScheduleCommandTypeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null, commandIn: ScheduleCommandTypeEntity? = null): Stream<ScheduleEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val scheduleType = scheduleTypeIn ?: ScheduleTypeFactory.random()
       val faker = Faker()
@@ -34,7 +34,7 @@ object ScheduleFactory {
    }
 
    @JvmStatic
-   fun single(scheduleTypeIn: ScheduleTypeEntity? = null) : ScheduleEntity {
+   fun single(scheduleTypeIn: ScheduleType? = null) : ScheduleEntity {
       return stream(1, scheduleTypeIn).findFirst().orElseThrow{ Exception("Unable to create Schedule") }
    }
 }
@@ -45,7 +45,7 @@ class ScheduleFactoryService @Inject constructor(
    private val scheduleRepository: ScheduleRepository
 ) {
 
-   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleTypeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null): Stream<ScheduleEntity> {
       return ScheduleFactory.stream(numberIn, scheduleTypeIn)
          .map { scheduleRepository.insert(it) }
    }

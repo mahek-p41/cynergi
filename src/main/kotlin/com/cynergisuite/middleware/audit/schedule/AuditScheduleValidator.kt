@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
+import com.cynergisuite.middleware.schedule.type.WEEKLY
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -68,7 +69,7 @@ class AuditScheduleValidator(
             description = dto.description,
             schedule = dto.schedule!!.name,
             command = scheduleCommandTypeRepository.findByValue("AuditSchedule"),
-            type = scheduleTypeRepository.findByValue("WEEKLY"),
+            type = WEEKLY,
             arguments = arguments,
             enabled = dto.enabled!!
          ),
