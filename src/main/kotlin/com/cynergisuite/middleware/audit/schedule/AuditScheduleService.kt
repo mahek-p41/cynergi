@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -59,8 +58,8 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, @Valid employee: EmployeeValueObject): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto, employee)
+   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditScheduleDataTransferObject {
+      val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto, employee, locale)
       val inserted = scheduleRepository.insert(schedule)
 
       return AuditScheduleDataTransferObject(
@@ -75,8 +74,8 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateUpdate(dto)
+   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditScheduleDataTransferObject {
+      val (schedule, stores, department) = auditScheduleValidator.validateUpdate(dto, employee, locale)
       val updated = scheduleRepository.update(schedule)
 
       return AuditScheduleDataTransferObject(
@@ -121,6 +120,10 @@ class AuditScheduleService @Inject constructor(
    override fun processSchedule(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
+      val locale = schedule.arguments.asSequence()
+         .filter { it.description == "locale" }
+         .map { Locale.forLanguageTag(it.value) }
+         .firstOrNull() ?: Locale.getDefault()
       val employee = schedule.arguments.asSequence()
          .filter { it.description == "employeeNumber" }
          .filterNotNull()
@@ -142,7 +145,7 @@ class AuditScheduleService @Inject constructor(
                notificationType = STORE.value
             )
 
-            val audit = auditService.create(AuditCreateValueObject(StoreValueObject(store)), EmployeeValueObject(employee), Locale.getDefault())
+            val audit = auditService.findOrCreate(store, employee, locale)
             val notification = notificationService.create(oneNote)
 
             audits.add(audit)

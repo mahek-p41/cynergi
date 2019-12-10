@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
+import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -23,6 +24,7 @@ import static java.time.DayOfWeek.TUESDAY
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
+   @Inject ScheduleRepository scheduleRepository
    @Inject StoreFactoryService storeFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
 
@@ -285,6 +287,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne, storeThree] as Set, salesAssociateDepartment))
+      def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
       notThrown(HttpClientResponseException)
@@ -295,6 +298,13 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
       result.department.id == salesAssociateDepartment.id
       result.enabled == true
+
+      loadedSchedule.arguments.size() == 5
+      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == authenticatedEmployee.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "locale" } != null
+      loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeThree.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "department" && it.value == salesAssociateDepartment.code } != null
    }
 
    void "update audit schedule change from enabled to disabled" () {
@@ -307,6 +317,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set, salesAssociateDepartment, false))
+      def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
       notThrown(HttpClientResponseException)
@@ -318,6 +329,12 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.department.id == salesAssociateDepartment.id
       result.enabled == false
+
+      loadedSchedule.arguments.size() == 4
+      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == authenticatedEmployee.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "locale" } != null
+      loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "department" && it.value == salesAssociateDepartment.code } != null
    }
 
    void "update audit schedule remove store change department" () {
@@ -345,6 +362,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
       when:
       result = get("/audit/schedule/${schedule.id}")
+      def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
       notThrown(HttpClientResponseException)
@@ -356,6 +374,12 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.department.id == salesAssociateDepartment.id
       result.enabled == true
+
+      loadedSchedule.arguments.size() == 4
+      loadedSchedule.arguments.find { it.description == "employeeNumber" } != null
+      loadedSchedule.arguments.find { it.description == "locale" } != null
+      loadedSchedule.arguments.find { it.description == "storeNumber" } != null
+      loadedSchedule.arguments.find { it.description == "department" } != null
    }
 
    void "update audit schedule without id" () {

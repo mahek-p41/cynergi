@@ -2,18 +2,19 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
+import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -35,9 +36,7 @@ class AuditRepository @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
-
-   fun findOne(id: Long): AuditEntity? {
-      val found = jdbc.findFirstOrNull("""
+   @Language("PostgreSQL") private val baseFindQuery = """
          WITH employees AS (
             ${employeeRepository.selectBase}
          )
@@ -95,8 +94,12 @@ class AuditRepository @Inject constructor(
                   ON a.store_number = s.number
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
-         WHERE a.id = :id
-      """.trimMargin(), mapOf("id" to id)) { rs ->
+      """.trimMargin()
+
+   fun findOne(id: Long): AuditEntity? {
+      logger.debug("Searching for audit by id {}", id)
+
+      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.id = :id", mapOf("id" to id)) { rs ->
          val audit = this.mapRow(rs)
 
          do {
@@ -111,6 +114,29 @@ class AuditRepository @Inject constructor(
       }
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
+
+      return found
+   }
+
+   fun findOneNotCompletedOrCanceled(store: StoreEntity): AuditEntity? {
+      logger.debug("Searching for audit not completed or canceled for store {} and status {}", store)
+
+      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)",
+         mapOf("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))) { rs ->
+         val audit = this.mapRow(rs)
+
+         do {
+            auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+         } while(rs.next())
+
+         audit
+      }
+
+      if (found != null) {
+         loadNextStates(found)
+      }
+
+      logger.debug("Searching for audit not completed or canceled for store {} resulted in {}", store, found)
 
       return found
    }
@@ -366,7 +392,7 @@ class AuditRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "store_number" to storeNumber,
-            "values" to listOf<String>(CREATED.value, IN_PROGRESS.value)
+            "values" to listOf(CREATED.value, IN_PROGRESS.value)
          ),
          Int::class.java
       )!!

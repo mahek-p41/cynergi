@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
@@ -12,6 +13,7 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -98,12 +100,14 @@ class AuditScheduleController @Inject constructor(
    ])
    fun create(
       @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
-      authentication: Authentication?
+      authentication: Authentication?,
+      httpRequest: HttpRequest<*>
       ): AuditScheduleDataTransferObject {
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
+      val locale = httpRequest.findLocaleWithDefault()
       val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditScheduleService.create(auditSchedule, employee)
+      val response = auditScheduleService.create(auditSchedule, employee, locale)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
 
@@ -121,11 +125,15 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun update(
-      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject
+      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
+      authentication: Authentication?,
+      httpRequest: HttpRequest<*>
    ) : AuditScheduleDataTransferObject {
       logger.info("Requested update audit schedule {}", auditSchedule)
 
-      val response = auditScheduleService.update(auditSchedule)
+      val locale = httpRequest.findLocaleWithDefault()
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
+      val response = auditScheduleService.update(auditSchedule, employee, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)
 
