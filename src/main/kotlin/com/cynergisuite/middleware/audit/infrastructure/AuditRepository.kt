@@ -118,7 +118,7 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findOneNotCompletedOrCanceled(store: StoreEntity): AuditEntity? {
+   fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
       logger.debug("Searching for audit not completed or canceled for store {} and status {}", store)
 
       val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)",

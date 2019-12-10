@@ -32,12 +32,12 @@ import javax.validation.Valid
 class AuditScheduleService @Inject constructor(
    private val auditService: AuditService,
    private val auditScheduleValidator: AuditScheduleValidator,
+   private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository,
    private val employeeRepository: EmployeeRepository,
    private val scheduleRepository: ScheduleRepository,
    private val storeRepository: StoreRepository,
-   private val notificationService: NotificationService,
-   private val companyRepository: CompanyRepository
+   private val notificationService: NotificationService
 ) : DailySchedule {
 
    fun fetchById(id: Long): AuditScheduleDataTransferObject? {

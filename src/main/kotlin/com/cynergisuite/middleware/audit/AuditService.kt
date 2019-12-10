@@ -7,9 +7,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.COMPLETED
-import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -85,10 +83,15 @@ class AuditService @Inject constructor(
       return AuditValueObject(audit, locale, localizationService)
    }
 
-   fun findOrCreate(store: StoreEntity, employee: EmployeeEntity, locale: Locale): AuditValueObject =
-      auditRepository.findOneNotCompletedOrCanceled(store)
-         ?.let { AuditValueObject(it, locale, localizationService) }
-         ?: create(AuditCreateValueObject(StoreValueObject(store)), EmployeeValueObject(employee), locale)
+   fun findOrCreate(store: StoreEntity, employee: EmployeeEntity, locale: Locale): AuditValueObject {
+      val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
+
+      return if (createdOrInProgressAudit != null) {
+         AuditValueObject(createdOrInProgressAudit, locale, localizationService)
+      } else {
+         create(AuditCreateValueObject(StoreValueObject(store)), EmployeeValueObject(employee), locale)
+      }
+   }
 
    @Validated
    fun update(@Valid audit: AuditUpdateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
