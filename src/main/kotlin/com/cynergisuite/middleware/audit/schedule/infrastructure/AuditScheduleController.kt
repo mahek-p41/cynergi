@@ -102,7 +102,7 @@ class AuditScheduleController @Inject constructor(
       ): AuditScheduleDataTransferObject {
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
+      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
       val response = auditScheduleService.create(auditSchedule, employee)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)

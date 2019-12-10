@@ -10,7 +10,9 @@ import com.cynergisuite.middleware.store.StoreFactory
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
-import java.time.DayOfWeek
+
+import static java.time.DayOfWeek.FRIDAY
+import static java.time.DayOfWeek.MONDAY
 
 @MicronautTest(transactional = false)
 class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
@@ -24,18 +26,23 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store = StoreFactory.random()
       final dept = DepartmentFactory.random()
       final employee = employeeFactoryService.single(store)
-      final schedule = auditScheduleFactoryService.single(DayOfWeek.MONDAY, [store], dept, employee)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store], dept, employee)
 
       when:
       def result = auditScheduleService.processSchedule(schedule)
 
       then:
       notThrown(ValidationException)
-      result.size() == 1
+      result.notifications.size() == 1
+      result.audits.size() == 1
 
       result.notifications[0].message == schedule.description
       result.notifications[0].sendingEmployee == employee.number.toString()
       result.notifications[0].expirationDate != null
+      result.audits[0].actions.size() == 1
+      result.audits[0].auditNumber > 0
+      result.audits[0].currentStatus.value == "CREATED"
+      result.audits[0].store.number == store.number
    }
 
    void "two store test"() {
@@ -44,7 +51,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store3 = StoreFactory.storeThree()
       final dept = DepartmentFactory.random()
       final employee = employeeFactoryService.single(store1)
-      final schedule = auditScheduleFactoryService.single(DayOfWeek.FRIDAY, [store1, store3], dept, employee)
+      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], dept, employee)
 
       when:
       def result = auditScheduleService.processSchedule(schedule)
@@ -56,10 +63,18 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.notifications[0].message == schedule.description
       result.notifications[0].sendingEmployee == employee.number.toString()
       result.notifications[0].expirationDate != null
+      result.audits[0].actions.size() == 1
+      result.audits[0].auditNumber > 0
+      result.audits[0].currentStatus.value == "CREATED"
+      result.audits[0].store.number == store1.number
 
       result.notifications[1].message == schedule.description
       result.notifications[1].sendingEmployee == employee.number.toString()
       result.notifications[1].expirationDate != null
+      result.audits[1].actions.size() == 1
+      result.audits[1].auditNumber > 0
+      result.audits[1].currentStatus.value == "CREATED"
+      result.audits[1].store.number == store3.number
    }
 
    void "one store with already CREATED audit" () {
@@ -68,7 +83,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final dept = DepartmentFactory.random()
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
-      final schedule = auditScheduleFactoryService.single(DayOfWeek.MONDAY, [store], dept, employee)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], dept, employee)
 
       when:
       def result = auditScheduleService.processSchedule(schedule)

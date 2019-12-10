@@ -42,7 +42,7 @@ class EmployeeRepository @Inject constructor(
    @Language("PostgreSQL")
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
+         SELECT from_priority, id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
          FROM (
             SELECT
                1 AS from_priority,
@@ -90,6 +90,7 @@ class EmployeeRepository @Inject constructor(
          FROM fastinfo_prod_import.store_vw s
       )
       SELECT
+         from_priority AS priority,
          id AS e_id,
          time_created AS e_time_created,
          time_updated AS e_time_updated,
@@ -131,7 +132,7 @@ class EmployeeRepository @Inject constructor(
    fun findOne(number: Int, employeeType: String? = null): EmployeeEntity? {
       val params = mutableMapOf<String, Any>("number" to number)
       val query = StringBuilder(selectBase)
-         .append("\nWHERE e.number =: number")
+         .append("\nWHERE e.number = :number")
 
       if (employeeType != null) {
          params["employee_type"] = employeeType

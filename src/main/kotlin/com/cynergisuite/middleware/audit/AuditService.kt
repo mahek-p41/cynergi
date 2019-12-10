@@ -19,15 +19,12 @@ import com.lowagie.text.Element
 import com.lowagie.text.Font
 import com.lowagie.text.FontFactory
 import com.lowagie.text.PageSize
-import com.lowagie.text.Paragraph
 import com.lowagie.text.Phrase
 import com.lowagie.text.Rectangle
-import com.lowagie.text.pdf.PdfPCell
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
-import io.reactiverse.kotlin.pgclient.data.intervalOf
 import org.apache.commons.lang3.StringUtils.EMPTY
 import java.awt.Color
 import java.time.LocalDate
@@ -47,9 +44,6 @@ class AuditService @Inject constructor(
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
 ) {
-   private companion object {
-      val REPORT_CREATED_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
-   }
 
    fun fetchById(id: Long, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id)?.let { AuditValueObject(it, locale, localizationService) }
