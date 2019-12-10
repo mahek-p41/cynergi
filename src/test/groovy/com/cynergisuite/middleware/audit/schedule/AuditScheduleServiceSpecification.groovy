@@ -30,7 +30,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [store], dept, employee)
 
       when:
-      def result = DailySchedule.processDaily(schedule)
+      def result = auditScheduleService.processDaily(schedule)
 
       then:
       notThrown(ValidationException)
@@ -55,7 +55,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], dept, employee)
 
       when:
-      def result = DailySchedule.processDaily(schedule)
+      def result = auditScheduleService.processDaily(schedule)
 
       then:
       notThrown(ValidationException)
@@ -87,7 +87,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], dept, employee)
 
       when:
-      def result = DailySchedule.processDaily(schedule)
+      def result = auditScheduleService.processDaily(schedule)
 
       then:
       notThrown(Exception)

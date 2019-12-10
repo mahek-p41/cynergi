@@ -244,7 +244,7 @@ class AuditExceptionRepository @Inject constructor(
       var result = findAll(audit, PageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
-      while(result.elements.isNotEmpty()){
+      while(result.elements.isNotEmpty()) {
          result.elements.forEach { auditException ->
             callback(auditException, index % 2 == 0)
             index++

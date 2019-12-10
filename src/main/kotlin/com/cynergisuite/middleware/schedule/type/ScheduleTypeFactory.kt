@@ -4,12 +4,12 @@ import org.apache.commons.lang3.RandomUtils
 
 object ScheduleTypeFactory {
    private val types = listOf(
-      ScheduleTypeEntity(1, "WEEKLY", "Weekly", "schedule.weekly")
+      WEEKLY
    )
 
    @JvmStatic
-   fun weekly(): ScheduleTypeEntity = types.first { it.value == "WEEKLY" }
+   fun weekly(): ScheduleType = WEEKLY
 
    @JvmStatic
-   fun random(): ScheduleTypeEntity = types[RandomUtils.nextInt(0, types.size)]
+   fun random(): ScheduleType = types[RandomUtils.nextInt(0, types.size)]
 }
