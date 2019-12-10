@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.schedule.DailySchedule
 import com.cynergisuite.middleware.store.StoreFactory
 import io.micronaut.test.annotation.MicronautTest
 
@@ -29,7 +30,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [store], dept, employee)
 
       when:
-      def result = auditScheduleService.processSchedule(schedule)
+      def result = DailySchedule.processDaily(schedule)
 
       then:
       notThrown(ValidationException)
@@ -54,7 +55,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], dept, employee)
 
       when:
-      def result = auditScheduleService.processSchedule(schedule)
+      def result = DailySchedule.processDaily(schedule)
 
       then:
       notThrown(ValidationException)
@@ -86,7 +87,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], dept, employee)
 
       when:
-      def result = auditScheduleService.processSchedule(schedule)
+      def result = DailySchedule.processDaily(schedule)
 
       then:
       notThrown(Exception)

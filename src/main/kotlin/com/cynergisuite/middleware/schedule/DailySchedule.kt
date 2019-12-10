@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.schedule
 
-interface Scheduler {
+interface DailySchedule {
 
    @Throws(ScheduleProcessingException::class)
-   fun processSchedule(schedule: ScheduleEntity) : ScheduleResult
+   fun processDaily(schedule: ScheduleEntity) : ScheduleResult
 }

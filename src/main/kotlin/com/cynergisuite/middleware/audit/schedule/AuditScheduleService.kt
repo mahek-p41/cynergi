@@ -14,7 +14,7 @@ import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
-import com.cynergisuite.middleware.schedule.Scheduler
+import com.cynergisuite.middleware.schedule.DailySchedule
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
@@ -38,7 +38,7 @@ class AuditScheduleService @Inject constructor(
    private val storeRepository: StoreRepository,
    private val notificationService: NotificationService,
    private val companyRepository: CompanyRepository
-) : Scheduler {
+) : DailySchedule {
 
    fun fetchById(id: Long): AuditScheduleDataTransferObject? {
       val schedule = scheduleRepository.findOne(id)
@@ -117,7 +117,7 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Throws(ScheduleProcessingException::class)
-   override fun processSchedule(schedule: ScheduleEntity) : AuditScheduleResult {
+   override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
       val locale = schedule.arguments.asSequence()
