@@ -86,7 +86,7 @@ class ScheduleRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: SchedulePageRequest, type: ScheduleType? = null): RepositoryPage<ScheduleEntity, SchedulePageRequest> {
+   fun findAll(pageRequest: SchedulePageRequest, type: ScheduleType? = null): RepositoryPage<ScheduleEntity> {
       logger.trace("Fetching All schedules {}", pageRequest)
 
       val command = pageRequest.command
@@ -188,7 +188,7 @@ class ScheduleRepository @Inject constructor(
             callback(schedule)
          }
 
-         result = findAll(result.requested.nextPage(), type)
+         result = findAll(result.requested.nextPage() as SchedulePageRequest, type)
       }
    }
 
