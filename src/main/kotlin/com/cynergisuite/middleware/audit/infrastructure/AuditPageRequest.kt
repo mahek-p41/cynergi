@@ -1,12 +1,10 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.DataTransferObject
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.PageRequestBase
-import com.cynergisuite.domain.PageRequestDefaults.defaultPage
-import com.cynergisuite.domain.PageRequestDefaults.defaultSize
-import com.cynergisuite.domain.PageRequestDefaults.defaultSortBy
-import com.cynergisuite.domain.PageRequestDefaults.defaultSortDirection
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_PAGE
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SIZE
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_BY
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.domain.ValidPageSortBy
 import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.extensions.endOfWeek
@@ -49,10 +47,10 @@ class AuditPageRequest(
 
    constructor(pageRequestIn: AuditPageRequest? = null) :
       this(
-         page = pageRequestIn?.page ?: defaultPage,
-         size = pageRequestIn?.size ?: defaultSize,
-         sortBy = pageRequestIn?.sortBy ?: defaultSortBy,
-         sortDirection = pageRequestIn?.sortDirection ?: defaultSortDirection
+         page = pageRequestIn?.page ?: DEFAULT_PAGE,
+         size = pageRequestIn?.size ?: DEFAULT_SIZE,
+         sortBy = pageRequestIn?.sortBy ?: DEFAULT_SORT_BY,
+         sortDirection = pageRequestIn?.sortDirection ?: DEFAULT_SORT_DIRECTION
       ) {
          val statusesIn = pageRequestIn?.status
 

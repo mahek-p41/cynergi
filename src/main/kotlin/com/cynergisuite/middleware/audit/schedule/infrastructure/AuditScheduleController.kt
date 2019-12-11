@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
