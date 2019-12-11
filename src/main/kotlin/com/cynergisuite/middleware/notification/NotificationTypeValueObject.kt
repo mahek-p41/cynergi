@@ -19,7 +19,7 @@ data class NotificationTypeValueObject (
 
 ) : ValueObjectBase<NotificationTypeValueObject>() {
 
-   constructor(entity: NotificationTypeDomain) :
+   constructor(entity: NotificationType) :
       this(
          id = entity.id,
          value = entity.value,

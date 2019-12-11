@@ -479,7 +479,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "create new audit on store with already open audit" () {
-
       given:
       final store = storeFactoryService.store(1)
       auditFactoryService.single(store)

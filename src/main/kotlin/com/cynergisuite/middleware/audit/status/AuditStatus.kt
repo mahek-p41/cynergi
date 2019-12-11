@@ -12,7 +12,7 @@ sealed class AuditStatus(
    val description: String,
    val localizationCode: String,
    val color: String,
-   val nextStates: MutableSet<AuditStatus> = LinkedHashSet()
+   val nextStates: MutableSet<AuditStatus> = LinkedHashSet<AuditStatus>()
 ) : TypeDomainEntity<AuditStatus> {
 
    private val myHashCode: Int = HashCodeBuilder()

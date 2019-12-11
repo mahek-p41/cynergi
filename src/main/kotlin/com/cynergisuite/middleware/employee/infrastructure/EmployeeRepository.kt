@@ -14,10 +14,12 @@ import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
+import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.lang.StringBuilder
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -37,11 +39,13 @@ class EmployeeRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
+   @Language("PostgreSQL")
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
+         SELECT from_priority, id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
          FROM (
-            SELECT 1 AS from_priority,
+            SELECT
+               1 AS from_priority,
                fpie.id AS id,
                fpie.time_created AS time_created,
                fpie.time_updated AS time_updated,
@@ -57,7 +61,8 @@ class EmployeeRepository @Inject constructor(
             FROM fastinfo_prod_import.employee_vw fpie
             WHERE coalesce(trim(fpie.pass_code), '') <> ''
             UNION
-            SELECT 2 AS from_priority,
+            SELECT
+               2 AS from_priority,
                e.id AS id,
                e.time_created AS time_created,
                e.time_updated AS time_updated,
@@ -85,6 +90,7 @@ class EmployeeRepository @Inject constructor(
          FROM fastinfo_prod_import.store_vw s
       )
       SELECT
+         from_priority AS priority,
          id AS e_id,
          time_created AS e_time_created,
          time_updated AS e_time_updated,
@@ -123,8 +129,21 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun findOne(number: Int, employeeType: String): EmployeeEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.number = :number AND employee_type = :employee_type", mapOf("number" to number, "employee_type" to employeeType), RowMapper { rs, _ -> mapRow(rs) })
+   fun findOne(number: Int, employeeType: String? = null): EmployeeEntity? {
+      val params = mutableMapOf<String, Any>("number" to number)
+      val query = StringBuilder(selectBase)
+         .append("\nWHERE e.number = :number")
+
+      if (employeeType != null) {
+         params["employee_type"] = employeeType
+         query.append("\nAND employee_type = :employee_type")
+      }
+
+      query.append("\nORDER BY priority\n LIMIT 1")
+
+      logger.debug("Searching for employee {}, {} with {}", number, employeeType, query)
+
+      val found = jdbc.findFirstOrNull(query.toString(), params, RowMapper { rs, _ -> mapRow(rs) })
 
       logger.trace("Searching for Employee: {} {} resulted in {}", number, employeeType, found)
 

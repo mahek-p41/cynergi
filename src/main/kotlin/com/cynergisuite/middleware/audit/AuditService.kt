@@ -11,23 +11,23 @@ import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
+import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.StoreValueObject
 import com.lowagie.text.Document
 import com.lowagie.text.Element
 import com.lowagie.text.Font
 import com.lowagie.text.FontFactory
 import com.lowagie.text.PageSize
-import com.lowagie.text.Paragraph
 import com.lowagie.text.Phrase
 import com.lowagie.text.Rectangle
-import com.lowagie.text.pdf.PdfPCell
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
-import io.reactiverse.kotlin.pgclient.data.intervalOf
 import org.apache.commons.lang3.StringUtils.EMPTY
 import java.awt.Color
 import java.time.LocalDate
@@ -47,9 +47,6 @@ class AuditService @Inject constructor(
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
 ) {
-   private companion object {
-      val REPORT_CREATED_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
-   }
 
    fun fetchById(id: Long, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id)?.let { AuditValueObject(it, locale, localizationService) }
@@ -84,6 +81,16 @@ class AuditService @Inject constructor(
       val audit = auditRepository.insert(validAudit)
 
       return AuditValueObject(audit, locale, localizationService)
+   }
+
+   fun findOrCreate(store: StoreEntity, employee: EmployeeEntity, locale: Locale): AuditValueObject {
+      val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
+
+      return if (createdOrInProgressAudit != null) {
+         AuditValueObject(createdOrInProgressAudit, locale, localizationService)
+      } else {
+         create(AuditCreateValueObject(StoreValueObject(store)), EmployeeValueObject(employee), locale)
+      }
    }
 
    @Validated

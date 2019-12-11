@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
@@ -13,6 +14,7 @@ import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import java.util.Locale
 import javax.inject.Singleton
 
 @Singleton
@@ -24,7 +26,7 @@ class AuditScheduleValidator(
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
 
-   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
+   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, employee: EmployeeValueObject, locale: Locale): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
       doValidation { errors -> doSharedValidation(dto, errors) }
 
       val stores = mutableListOf<StoreEntity>()
@@ -33,6 +35,10 @@ class AuditScheduleValidator(
          ScheduleArgumentEntity(
             department.code,
             "department"
+         ),
+         ScheduleArgumentEntity(
+            locale.toLanguageTag(),
+            "locale"
          )
       )
 
@@ -49,6 +55,13 @@ class AuditScheduleValidator(
          )
       }
 
+      arguments.add(
+         ScheduleArgumentEntity(
+            employee.number.toString(),
+            "employeeNumber"
+         )
+      )
+
       return Triple(
          ScheduleEntity(
             title = dto.title!!,
@@ -64,7 +77,7 @@ class AuditScheduleValidator(
       )
    }
 
-   fun validateUpdate(dto: AuditScheduleCreateUpdateDataTransferObject): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
+   fun validateUpdate(dto: AuditScheduleCreateUpdateDataTransferObject, employee: EmployeeValueObject, locale: Locale): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
       doValidation { errors ->
          val scheduleId = dto.id
 
@@ -80,7 +93,11 @@ class AuditScheduleValidator(
       val stores = mutableListOf<StoreEntity>()
       val schedule = scheduleRepository.findOne(dto.id!!)!!
       val updateDepartment = departmentRepository.findOne(dto.department!!.id!!)!!
-      val existingDepartment: Pair<ScheduleArgumentEntity, DepartmentEntity> = schedule.arguments.first { it.description == "department" }.let { it to departmentRepository.findOneByCode(it.value)!! }
+      val existingEmployee = schedule.arguments.firstOrNull { it.description == "employeeNumber" }
+      val existingLocale = schedule.arguments.firstOrNull { it.description == "locale" }
+      val existingDepartment: Pair<ScheduleArgumentEntity, DepartmentEntity> = schedule.arguments
+         .first { it.description == "department" }
+         .let { it to departmentRepository.findOneByCode(it.value)!! }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
          .map { it to storeRepository.findOneByNumber(it.value.toInt())!! }
@@ -102,6 +119,22 @@ class AuditScheduleValidator(
          }
 
          argsToUpdate.add(store)
+      }
+
+      if (existingEmployee == null) {
+         argsToUpdate.add(ScheduleArgumentEntity(employee.number.toString(), "employeeNumber"))
+      } else if (existingEmployee.value != employee.number.toString()) {
+         argsToUpdate.add(existingEmployee.copy(value = employee.number.toString()))
+      } else {
+         argsToUpdate.add(existingEmployee)
+      }
+
+      if (existingLocale == null) { // handle the case where a schedule might have been created without a locale
+         argsToUpdate.add(ScheduleArgumentEntity(locale.toLanguageTag(), "locale"))
+      } else if (existingLocale.value != locale.toLanguageTag()) {
+         argsToUpdate.add(existingLocale.copy(value = locale.toLanguageTag()))
+      } else {
+         argsToUpdate.add(existingLocale)
       }
 
       if (updateDepartment != existingDepartment.second) {
