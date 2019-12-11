@@ -2,10 +2,9 @@ package com.cynergisuite.domain.infrastructure
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
-import kotlin.math.ceil
+import com.cynergisuite.domain.PageRequestBase
 
-data class RepositoryPage<ENTITY: Identifiable, REQUESTED: PageRequest>(
+data class RepositoryPage<ENTITY: Identifiable, REQUESTED>(
    val elements: List<ENTITY>,
    val totalElements: Long,
    val requested: REQUESTED

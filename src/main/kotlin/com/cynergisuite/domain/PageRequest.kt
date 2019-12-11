@@ -16,66 +16,49 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Pattern.Flag.CASE_INSENSITIVE
 
-private object PageRequestDefaults {
+object PageRequestDefaults {
    const val defaultPage: Int = 1
    const val defaultSize: Int = 10
    const val defaultSortBy: String = "id"
    const val defaultSortDirection: String = "ASC"
 }
 
-@DataTransferObject
-@Schema(name = "PageRequest", title = "How to query for a paged set of items", description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC")
-open class PageRequest {
+interface PageRequest {
+   fun snakeSortBy(): String
+   fun offset(): Int
+   fun first(): Boolean
+   fun last(): Boolean
+}
+
+abstract class PageRequestBase<out PAGE>(
 
    @field:NotNull
    @field:Min(value = 1)
    @field:Schema(minimum = "1", description = "The page that is requested.  Starts with 1", defaultValue = "1")
-   var page: Int = defaultPage
+   var page: Int = defaultPage,
 
    @field:NotNull
    @field:Min(value = 5)
    @field:Max(value = 100)
    @field:Schema(minimum = "5", description = "How many items for each page", defaultValue = "10")
-   var size: Int = defaultSize
+   var size: Int = defaultSize,
 
    @field:NotNull
    @field:Schema(description = "The column to sort the data by.  Currently only id and name are supported", defaultValue = "id")
-   var sortBy: String = defaultSortBy // this is open so that child classes can override this property and add specialized sorting
+   var sortBy: String = defaultSortBy, // this is open so that child classes can override this property and add specialized sorting
 
    @field:NotNull
    @field:Pattern(regexp = "ASC|DESC", flags = [CASE_INSENSITIVE])
    @field:Schema(description = "The direction the results should be sorted by.  Either Ascending or Descending", defaultValue = "ASC")
    var sortDirection: String = defaultSortDirection
+) : PageRequest {
+   protected abstract fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): PAGE
+   protected abstract fun sortByMe(): String
+   protected abstract fun myToString(parentString: String): String
 
-   constructor()
+   fun nextPage(): PAGE = myNextPage(this.page + 1, size, sortBy, sortDirection)
 
-   constructor(pageRequestIn: PageRequest? = null) :
-      this(
-         page = pageRequestIn?.page ?: defaultPage,
-         size = pageRequestIn?.size ?: defaultSize,
-         sortBy = pageRequestIn?.sortBy ?: defaultSortBy,
-         sortDirection = pageRequestIn?.sortDirection ?: defaultSortDirection
-      )
-
-   constructor(page: Int, size: Int, sortBy: String, sortDirection: String) {
-      this.page = page
-      this.size = size
-      this.sortBy = sortBy
-      this.sortDirection = sortDirection
-   }
-
-   fun offset(): Int {
-      val requestedOffsetPage: Int = page
-      val offsetPage = requestedOffsetPage - 1
-      val offsetSize = size
-
-      return offsetPage * offsetSize
-   }
-
-   @ValidPageSortBy("id")
-   open fun sortByMe() : String = sortBy
-
-   fun snakeSortBy(): String {
+   override fun snakeSortBy(): String {
       val sortByMe = sortByMe()
 
       return if (sortByMe.isAllSameCase()) {
@@ -85,18 +68,18 @@ open class PageRequest {
       }
    }
 
-   protected fun nextPageNumber(): Int = page + 1
+   override fun offset(): Int {
+      val requestedOffsetPage: Int = page
+      val offsetPage = requestedOffsetPage - 1
+      val offsetSize = size
 
-   open fun nextPage(): PageRequest =
-      PageRequest(
-         page = nextPageNumber(),
-         size = size,
-         sortBy = sortBy,
-         sortDirection = sortDirection
-      )
+      return offsetPage * offsetSize
+   }
+
+   override fun first(): Boolean = page == 1
 
    override fun equals(other: Any?): Boolean =
-      if (other is PageRequest) {
+      if (other is PageRequestBase<*>) {
          EqualsBuilder()
             .append(this.page, other.page)
             .append(this.size, other.size)
@@ -116,4 +99,37 @@ open class PageRequest {
          .toHashCode()
 
    override fun toString(): String = "?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection"
+}
+
+@DataTransferObject
+@Schema(name = "PageRequest", title = "How to query for a paged set of items", description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC")
+class StandardPageRequest : PageRequestBase<StandardPageRequest> {
+
+   constructor(pageRequestIn: StandardPageRequest? = null) :
+      this(
+         page = pageRequestIn?.page ?: defaultPage,
+         size = pageRequestIn?.size ?: defaultSize,
+         sortBy = pageRequestIn?.sortBy ?: defaultSortBy,
+         sortDirection = pageRequestIn?.sortDirection ?: defaultSortDirection
+      )
+
+   constructor(page: Int, size: Int, sortBy: String, sortDirection: String) {
+      this.page = page
+      this.size = size
+      this.sortBy = sortBy
+      this.sortDirection = sortDirection
+   }
+
+   override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): StandardPageRequest =
+      StandardPageRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection
+      )
+
+   @ValidPageSortBy("id")
+   override fun sortByMe(): String = sortBy
+
+   override fun myToString(parentString: String): String = parentString
 }

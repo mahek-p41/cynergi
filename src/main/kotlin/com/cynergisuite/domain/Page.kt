@@ -23,7 +23,7 @@ data class Page<I: Identifiable>(
    val totalPages: Long = ceil(totalElements.toDouble() / (requested.size).toDouble()).toLong(),
 
    @field:Schema(name = "first", description = "Boolean value to show whether or not this is the first page", required = true)
-   val first: Boolean = requested.page == 1,
+   val first: Boolean = requested.first(),
 
    @field:Schema(name = "last", description = "Boolean value to show whether or not this is the last page", required = true)
    val last: Boolean = requested.page.toLong() == totalPages

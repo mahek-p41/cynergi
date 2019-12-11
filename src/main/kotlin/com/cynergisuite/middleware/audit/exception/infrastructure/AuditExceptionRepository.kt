@@ -4,7 +4,11 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findAllWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -125,7 +129,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
+   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       var totalElements: Long? = null
       val sql = """
          WITH paged AS (
@@ -245,7 +249,7 @@ class AuditExceptionRepository @Inject constructor(
       var index = 0
 
       while(result.elements.isNotEmpty()) {
-         result.elements.forEach { auditException ->
+         result.elements.forEach { auditException: AuditExceptionEntity ->
             callback(auditException, index % 2 == 0)
             index++
          }
