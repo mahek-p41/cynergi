@@ -8,7 +8,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.Size
 
 @DataTransferObject
-@Schema(name = "SchedulePageRequest", title = "How to query for a paged set of scheduled items", description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC&command=SOMECOMAND")
+@Schema(
+   name = "SchedulePageRequest",
+   title = "How to query for a paged set of scheduled items",
+   description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC&command=SOMECOMAND",
+   allOf = [PageRequestBase::class]
+)
 class SchedulePageRequest(
    page: Int, size: Int, sortBy: String, sortDirection: String,
 

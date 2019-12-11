@@ -11,7 +11,8 @@ import javax.validation.constraints.Positive
 @Schema(
    name = "InventoryPageRequest",
    title = "Specialized paging for Inventory listing requests",
-   description = "Defines the parameters available to for a paging request to the inventory-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&inventoryStatus=N&inventoryStatus=O&inventoryStatus=R&inventoryStatus=D&locationType=STORE"
+   description = "Defines the parameters available to for a paging request to the inventory-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&inventoryStatus=N&inventoryStatus=O&inventoryStatus=R&inventoryStatus=D&locationType=STORE",
+   allOf = [PageRequestBase::class]
 )
 class InventoryPageRequest(
    page: Int, size: Int, sortBy: String, sortDirection: String,
