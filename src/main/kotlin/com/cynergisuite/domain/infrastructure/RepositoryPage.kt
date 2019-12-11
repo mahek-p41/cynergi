@@ -5,10 +5,10 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import kotlin.math.ceil
 
-data class RepositoryPage<ENTITY: Identifiable>(
+data class RepositoryPage<ENTITY: Identifiable, REQUESTED: PageRequest>(
    val elements: List<ENTITY>,
    val totalElements: Long,
-   val requested: PageRequest
+   val requested: REQUESTED
 ) {
 
    fun <VO: Identifiable> toPage(elementTransformer: (e: ENTITY) -> VO): Page<VO> {

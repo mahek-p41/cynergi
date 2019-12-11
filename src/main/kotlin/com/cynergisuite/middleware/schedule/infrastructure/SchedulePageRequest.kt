@@ -26,6 +26,12 @@ class SchedulePageRequest(
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy
 
-   override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): SchedulePageRequest =
-      SchedulePageRequest(page, size, sortBy, sortDirection, this.command)
+   override fun nextPage(): SchedulePageRequest =
+      SchedulePageRequest(
+         super.nextPageNumber(),
+         size,
+         sortBy,
+         sortDirection,
+         this.command
+      )
 }
