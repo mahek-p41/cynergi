@@ -1,8 +1,7 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
@@ -19,7 +18,6 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
@@ -76,7 +74,7 @@ class AuditDetailController @Inject constructor(
    ])
    fun fetchAll(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)

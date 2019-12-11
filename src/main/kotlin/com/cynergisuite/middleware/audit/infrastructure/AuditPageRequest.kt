@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
+import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.PageRequestBase
 import com.cynergisuite.domain.PageRequestDefaults.defaultPage

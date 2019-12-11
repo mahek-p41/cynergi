@@ -51,7 +51,7 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, includeAll: Boolean = false): RepositoryPage<StoreEntity> {
+   fun findAll(pageRequest: PageRequest, includeAll: Boolean = false): RepositoryPage<StoreEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 
@@ -65,8 +65,8 @@ class StoreRepository @Inject constructor(
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-         LIMIT ${pageRequest.size}
+         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
          """.trimIndent(),
          emptyMap<String, Any>()

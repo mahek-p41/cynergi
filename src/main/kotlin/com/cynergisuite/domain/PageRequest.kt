@@ -24,13 +24,17 @@ object PageRequestDefaults {
 }
 
 interface PageRequest {
+   fun page(): Int
+   fun size(): Int
+   fun sortBy(): String
+   fun sortDirection(): String
    fun snakeSortBy(): String
    fun offset(): Int
-   fun first(): Boolean
-   fun last(): Boolean
+   fun nextPage(): PageRequest
 }
 
-abstract class PageRequestBase<out PAGE>(
+@DataTransferObject
+abstract class PageRequestBase<out PAGE: PageRequest>(
 
    @field:NotNull
    @field:Min(value = 1)
@@ -56,7 +60,12 @@ abstract class PageRequestBase<out PAGE>(
    protected abstract fun sortByMe(): String
    protected abstract fun myToString(parentString: String): String
 
-   fun nextPage(): PAGE = myNextPage(this.page + 1, size, sortBy, sortDirection)
+   override fun page(): Int = page
+   override fun size(): Int = size
+   override fun sortBy(): String = sortBy
+   override fun sortDirection(): String = sortDirection
+
+   override fun nextPage(): PAGE = myNextPage(this.page + 1, size, sortBy, sortDirection)
 
    override fun snakeSortBy(): String {
       val sortByMe = sortByMe()
@@ -75,8 +84,6 @@ abstract class PageRequestBase<out PAGE>(
 
       return offsetPage * offsetSize
    }
-
-   override fun first(): Boolean = page == 1
 
    override fun equals(other: Any?): Boolean =
       if (other is PageRequestBase<*>) {
@@ -98,19 +105,19 @@ abstract class PageRequestBase<out PAGE>(
          .append(this.sortDirection)
          .toHashCode()
 
-   override fun toString(): String = "?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection"
+   override fun toString(): String = myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
 }
 
 @DataTransferObject
 @Schema(name = "PageRequest", title = "How to query for a paged set of items", description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC")
 class StandardPageRequest : PageRequestBase<StandardPageRequest> {
 
-   constructor(pageRequestIn: StandardPageRequest? = null) :
+   constructor(pageRequestIn: PageRequest? = null) :
       this(
-         page = pageRequestIn?.page ?: defaultPage,
-         size = pageRequestIn?.size ?: defaultSize,
-         sortBy = pageRequestIn?.sortBy ?: defaultSortBy,
-         sortDirection = pageRequestIn?.sortDirection ?: defaultSortDirection
+         page = pageRequestIn?.page() ?: defaultPage,
+         size = pageRequestIn?.size() ?: defaultSize,
+         sortBy = pageRequestIn?.sortBy() ?: defaultSortBy,
+         sortDirection = pageRequestIn?.sortDirection() ?: defaultSortDirection
       )
 
    constructor(page: Int, size: Int, sortBy: String, sortDirection: String) {

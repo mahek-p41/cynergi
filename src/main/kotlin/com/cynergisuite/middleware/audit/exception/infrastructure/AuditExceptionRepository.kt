@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit.exception.infrastructure
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findAllWithCrossJoin
 import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
@@ -179,8 +180,8 @@ class AuditExceptionRepository @Inject constructor(
                     LEFT OUTER JOIN audit_scan_area_type_domain asatd
                       ON ae.scan_area_id = asatd.id
                WHERE ae.audit_id = :audit_id
-               ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
-               LIMIT ${page.size} OFFSET ${page.offset()}
+               ORDER by ae_${page.snakeSortBy()} ${page.sortDirection()}
+               LIMIT ${page.size()} OFFSET ${page.offset()}
             )
             SELECT
                ae.*,
@@ -245,7 +246,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
-      var result = findAll(audit, PageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      var result = findAll(audit, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
       while(result.elements.isNotEmpty()) {

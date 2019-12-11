@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
@@ -78,7 +78,7 @@ class AuditExceptionController @Inject constructor(
    ])
    fun fetchAll(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)

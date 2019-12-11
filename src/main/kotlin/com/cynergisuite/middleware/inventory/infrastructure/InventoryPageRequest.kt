@@ -27,7 +27,7 @@ class InventoryPageRequest(
    @field:Schema(name = "locationType", description = "Allows for choosing where the inventory is located to be chosen.  If this property is not filled out then all items are returned", allowableValues = ["STORE", "WAREHOUSE", "PEDNING", "CUSTOM", "LOANER", "SERVICE", "STOLEN", "CHARGEOFF"], required = false, nullable = true)
    var locationType: String? = null
 
-) : PageRequestBase<InventoryPageRequest>() {
+) : PageRequestBase<InventoryPageRequest>(page, size, sortBy, sortDirection) {
 
    constructor(pageRequest: InventoryPageRequest, storeNumber: Int):
       this(

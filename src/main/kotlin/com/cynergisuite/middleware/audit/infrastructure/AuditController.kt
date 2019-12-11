@@ -80,6 +80,7 @@ class AuditController @Inject constructor(
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {} {}", pageRequestIn)
+
       val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 

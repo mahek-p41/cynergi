@@ -141,7 +141,7 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity> {
+   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
@@ -268,7 +268,7 @@ class AuditRepository @Inject constructor(
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      val repoPage = jdbc.queryPaged<AuditEntity>(sql, params, pageRequest) { rs, elements ->
+      val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
          var currentId: Long = -1
          var currentParentEntity: AuditEntity? = null
 

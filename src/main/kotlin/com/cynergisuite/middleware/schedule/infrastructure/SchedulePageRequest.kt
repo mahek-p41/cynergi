@@ -19,10 +19,10 @@ class SchedulePageRequest(
 
    constructor(pageRequest: PageRequest, command: String):
       this(
-         page = pageRequest.page,
-         size = pageRequest.size,
-         sortBy = pageRequest.sortBy,
-         sortDirection = pageRequest.sortDirection,
+         page = pageRequest.page(),
+         size = pageRequest.size(),
+         sortBy = pageRequest.sortBy(),
+         sortDirection = pageRequest.sortDirection(),
          command = command
       )
 

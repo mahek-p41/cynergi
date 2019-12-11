@@ -93,7 +93,7 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditDetailEntity> {
+   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
@@ -106,8 +106,8 @@ class AuditDetailRepository @Inject constructor(
             count(*) OVER() as total_elements
          FROM paged AS p
          WHERE p.ad_audit_id = :audit_id
-         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection}
-         LIMIT ${page.size} OFFSET ${page.offset()}
+         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection()}
+         LIMIT ${page.size()} OFFSET ${page.offset()}
       """.trimIndent(),
       mutableMapOf("audit_id" to audit.id)
       ) { rs ->

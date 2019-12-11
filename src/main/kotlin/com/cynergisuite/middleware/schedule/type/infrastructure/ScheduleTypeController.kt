@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.schedule.type.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -42,11 +42,11 @@ class ScheduleTypeController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: PageRequest?,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: StandardPageRequest?,
       httpRequest: HttpRequest<*>
    ): Page<ScheduleTypeValueObject> {
       logger.info("Fetching all schedule types {} {}", pageRequestIn)
-      val pageRequest = PageRequest(pageRequestIn)
+      val pageRequest = StandardPageRequest(pageRequestIn)
       val page =  scheduleTypeService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {

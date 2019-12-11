@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
@@ -79,7 +79,7 @@ class AuditScheduleController @Inject constructor(
    ): Page<AuditScheduleDataTransferObject> {
       logger.info("Fetching all audit schedules {} {}", pageRequestIn)
 
-      val pageRequest = PageRequest(pageRequestIn) // copy the result applying defaults if they are missing
+      val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditScheduleService.fetchAll(pageRequest)
 
       if (page.elements.isEmpty()) {

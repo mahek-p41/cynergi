@@ -105,7 +105,7 @@ class InventoryRepository(
       return inventory;
    }
 
-   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity> {
+   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
@@ -123,7 +123,7 @@ class InventoryRepository(
       val sql = """
       WITH paged AS (
          $selectBase
-         WHERE i.primary_location = :location 
+         WHERE i.primary_location = :location
                ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )

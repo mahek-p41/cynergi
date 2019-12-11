@@ -58,7 +58,7 @@ class ScheduleTypeRepository(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<ScheduleTypeEntity> {
+   fun findAll(pageRequest: PageRequest): RepositoryPage<ScheduleTypeEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<ScheduleTypeEntity>()
 
@@ -70,8 +70,8 @@ class ScheduleTypeRepository(
             localization_code AS std_localization_code,
             (SELECT count(id) FROM schedule_type_domain) AS total_elements
          FROM schedule_type_domain std
-         ORDER BY std_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-               LIMIT ${pageRequest.size}
+         ORDER BY std_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+               LIMIT ${pageRequest.size()}
                OFFSET ${pageRequest.offset()}
          """.trimIndent()) { rs ->
          if (totalElements == null) {
