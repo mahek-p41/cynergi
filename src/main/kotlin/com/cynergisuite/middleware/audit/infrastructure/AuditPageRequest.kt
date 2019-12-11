@@ -13,8 +13,6 @@ import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
-import io.swagger.v3.oas.annotations.extensions.Extension
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -76,30 +74,20 @@ class AuditPageRequest(
       )
 
    @ValidPageSortBy("id", "storeNumber")
-   override fun sortByMe(): String = sortBy
+   override fun sortByMe(): String = sortBy()
 
-   override fun myToString(parentString: String): String {
-      val stringBuilder = StringBuilder(parentString)
+   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
       val storeNumber = this.storeNumber
       val status = this.status
+      var separator = separatorIn
 
-      if (from != null) {
-         stringBuilder.append("&from=").append(from)
-      }
-
-      if (thru != null) {
-         stringBuilder.append("&thru=").append(thru)
-      }
-
-      if (storeNumber != null) {
-         stringBuilder.append("&storeNumber=").append(storeNumber)
-      }
+      separator = from?.apply { stringBuilder.append(separatorIn).append("from=").append(this) }.let { "&" }
+      separator = thru?.apply { stringBuilder.append(separatorIn).append("thru=").append(this) }.let { "&" }
+      separator = storeNumber?.apply { stringBuilder.append(separatorIn).append("storeNumber=").append(this) }.let { "&" }
 
       if ( !status.isNullOrEmpty() ) {
-         stringBuilder.append(status.joinToString(separator = "&status=", prefix = "&status="))
+         stringBuilder.append(status.joinToString(separator = "${separator}status=", prefix = "&status="))
       }
-
-      return stringBuilder.toString()
    }
 
    override fun equals(other: Any?): Boolean =

@@ -208,8 +208,8 @@ class AuditRepository @Inject constructor(
                  JOIN maxStatus ms
                       ON s.id = ms.current_status_id
             $whereBuilder
-            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-            LIMIT ${pageRequest.size}
+            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+            LIMIT ${pageRequest.size()}
                OFFSET ${pageRequest.offset()}
          )
          SELECT

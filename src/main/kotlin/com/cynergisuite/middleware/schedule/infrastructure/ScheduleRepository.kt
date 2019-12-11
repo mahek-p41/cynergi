@@ -188,7 +188,7 @@ class ScheduleRepository @Inject constructor(
             callback(schedule)
          }
 
-         result = findAll(result.requested.nextPage() as SchedulePageRequest, type)
+         result = findAll(result.requested.nextPage(), type)
       }
    }
 

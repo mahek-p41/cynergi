@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
+import java.lang.StringBuilder
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
@@ -44,48 +45,49 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    @field:NotNull
    @field:Min(value = 1)
    @field:Schema(minimum = "1", description = "The page that is requested.  Starts with 1", defaultValue = "1")
-   var page: Int = DEFAULT_PAGE,
+   var page: Int?,
 
    @field:NotNull
    @field:Min(value = 5)
    @field:Max(value = 100)
    @field:Schema(minimum = "5", description = "How many items for each page", defaultValue = "10")
-   var size: Int = DEFAULT_SIZE,
+   var size: Int?,
 
    @field:NotNull
    @field:Schema(description = "The column to sort the data by.  Currently only id and name are supported", defaultValue = "id")
-   var sortBy: String = DEFAULT_SORT_BY,
+   var sortBy: String?,
 
    @field:NotNull
    @field:Pattern(regexp = "ASC|DESC", flags = [CASE_INSENSITIVE])
    @field:Schema(description = "The direction the results should be sorted by.  Either Ascending or Descending", defaultValue = "ASC")
-   var sortDirection: String = DEFAULT_SORT_DIRECTION
+   var sortDirection: String?
 
 ) : PageRequest {
+
    protected abstract fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): PAGE
    protected abstract fun sortByMe(): String
-   protected abstract fun myToString(parentString: String): String
+   protected abstract fun myToString(stringBuilder: StringBuilder, separatorIn: String)
 
-   override fun page(): Int = page
-   override fun size(): Int = size
-   override fun sortBy(): String = sortBy
-   override fun sortDirection(): String = sortDirection
-   override fun nextPage(): PAGE = myNextPage(this.page + 1, size, sortBy, sortDirection)
+   override fun page(): Int = page ?: DEFAULT_PAGE
+   override fun size(): Int = size ?: DEFAULT_SIZE
+   override fun sortBy(): String = sortBy ?: DEFAULT_SORT_BY
+   override fun sortDirection(): String = sortDirection ?: DEFAULT_SORT_DIRECTION
+   override fun nextPage(): PAGE = myNextPage(this.page() + 1, size(), sortBy(), sortDirection())
 
    override fun snakeSortBy(): String {
       val sortByMe = sortByMe()
 
       return if (sortByMe.isAllSameCase()) {
-         sortBy
+         sortBy()
       } else {
          LOWER_CAMEL.to(LOWER_UNDERSCORE, sortByMe())
       }
    }
 
    override fun offset(): Int {
-      val requestedOffsetPage: Int = page
+      val requestedOffsetPage: Int = page()
       val offsetPage = requestedOffsetPage - 1
-      val offsetSize = size
+      val offsetSize = size()
 
       return offsetPage * offsetSize
    }
@@ -110,7 +112,19 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
          .append(this.sortDirection)
          .toHashCode()
 
-   override fun toString(): String = myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
+   override fun toString(): String { //= myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
+      val stringBuilder = StringBuilder()
+      var separator = "?"
+
+      separator = page?.apply { stringBuilder.append(separator).append("page=").append(this) }.let { "&" } // using let here because compiler complains that page may have changed if done with if (page != null)
+      separator = size?.apply { stringBuilder.append(separator).append("size=").append(this) }.let { "&" }
+      separator = sortBy?.apply { stringBuilder.append(separator).append("sortBy=").append(this) }.let { "&" }
+      separator = sortDirection?.apply { stringBuilder.append(separator).append("sortDirection=").append(this) }.let { "&" }
+
+      myToString(stringBuilder, separator)
+
+      return stringBuilder.toString()
+   }
 }
 
 @Schema(
@@ -120,7 +134,9 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    allOf = [PageRequestBase::class],
    discriminatorMapping = [DiscriminatorMapping(schema = PageRequestBase::class)]
 )
-class StandardPageRequest : PageRequestBase<StandardPageRequest> {
+class StandardPageRequest(
+   page: Int, size: Int, sortBy: String, sortDirection: String
+) : PageRequestBase<StandardPageRequest>(page, size, sortBy, sortDirection) {
 
    constructor(pageRequestIn: PageRequest? = null) :
       this(
@@ -129,13 +145,6 @@ class StandardPageRequest : PageRequestBase<StandardPageRequest> {
          sortBy = pageRequestIn?.sortBy() ?: DEFAULT_SORT_BY,
          sortDirection = pageRequestIn?.sortDirection() ?: DEFAULT_SORT_DIRECTION
       )
-
-   constructor(page: Int, size: Int, sortBy: String, sortDirection: String) {
-      this.page = page
-      this.size = size
-      this.sortBy = sortBy
-      this.sortDirection = sortDirection
-   }
 
    override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): StandardPageRequest =
       StandardPageRequest(
@@ -146,7 +155,6 @@ class StandardPageRequest : PageRequestBase<StandardPageRequest> {
       )
 
    @ValidPageSortBy("id")
-   override fun sortByMe(): String = sortBy
-
-   override fun myToString(parentString: String): String = parentString
+   override fun sortByMe(): String = sortBy()
+   override fun myToString(parentString: StringBuilder, separatorIn: String) {  }
 }

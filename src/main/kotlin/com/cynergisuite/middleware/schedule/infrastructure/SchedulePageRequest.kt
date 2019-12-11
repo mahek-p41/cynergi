@@ -5,6 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.PageRequestBase
 import com.cynergisuite.domain.ValidPageSortBy
 import io.swagger.v3.oas.annotations.media.Schema
+import java.lang.StringBuilder
 import javax.validation.constraints.Size
 
 @DataTransferObject
@@ -41,6 +42,8 @@ class SchedulePageRequest(
       )
 
    @ValidPageSortBy("id")
-   override fun sortByMe(): String = sortBy
-   override fun myToString(parentString: String): String = "${parentString}&command=$command"
+   override fun sortByMe(): String = sortBy()
+   override fun myToString(parentString: StringBuilder, separatorIn: String) {
+      command?.also { parentString.append(separatorIn).append("command=").append(command) }
+   }
 }

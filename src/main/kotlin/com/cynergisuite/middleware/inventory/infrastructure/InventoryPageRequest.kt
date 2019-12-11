@@ -32,10 +32,10 @@ class InventoryPageRequest(
 
    constructor(pageRequest: InventoryPageRequest, storeNumber: Int):
       this(
-         page = pageRequest.page,
-         size = pageRequest.size,
-         sortBy = pageRequest.sortBy,
-         sortDirection = pageRequest.sortDirection,
+         page = pageRequest.page(),
+         size = pageRequest.size(),
+         sortBy = pageRequest.sortBy(),
+         sortDirection = pageRequest.sortDirection(),
          storeNumber = storeNumber,
          inventoryStatus = pageRequest.inventoryStatus,
          locationType = pageRequest.locationType
@@ -53,26 +53,22 @@ class InventoryPageRequest(
       )
 
    @ValidPageSortBy("id")
-   override fun sortByMe(): String = sortBy
+   override fun sortByMe(): String = sortBy()
 
-   override fun myToString(parentString: String): String {
-      val stringBuilder = StringBuilder(parentString)
+   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
       val storeNumber = this.storeNumber
       val inventoryStatus = this.inventoryStatus
+      var separator = separatorIn
 
-      if (storeNumber != null) {
-         stringBuilder.append("&storeNumber=").append(storeNumber)
-      }
+      separator = storeNumber?.apply { stringBuilder.append(separator).append("storeNumber=").append(this) }.let { "&" }
 
       if ( !inventoryStatus.isNullOrEmpty() ) {
-         inventoryStatus.joinTo(stringBuilder, "&inventoryStatus=", "&inventoryStatus=")
+         inventoryStatus.joinTo(stringBuilder, "${separator}inventoryStatus=", "&inventoryStatus=")
       }
 
       if ( !locationType.isNullOrEmpty() ) {
-         stringBuilder.append("&locationType=").append(locationType)
+         stringBuilder.append(separator).append("locationType=").append(locationType)
       }
-
-      return stringBuilder.toString()
    }
 
    override fun equals(other: Any?): Boolean =
