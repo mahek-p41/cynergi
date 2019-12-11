@@ -85,11 +85,11 @@ open class PageRequest {
       }
    }
 
-   fun nextPage() = myNextPage(this.page + 1, this.size, this.sortByMe(), this.sortDirection)
+   protected fun nextPageNumber(): Int = page + 1
 
-   protected open fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String) =
+   open fun nextPage(): PageRequest =
       PageRequest(
-         page = page,
+         page = nextPageNumber(),
          size = size,
          sortBy = sortBy,
          sortDirection = sortDirection
