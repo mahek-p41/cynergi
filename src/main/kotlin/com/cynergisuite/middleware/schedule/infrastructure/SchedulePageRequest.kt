@@ -43,7 +43,7 @@ class SchedulePageRequest(
 
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
-   override fun myToString(parentString: StringBuilder, separatorIn: String) {
-      command?.also { parentString.append(separatorIn).append("command=").append(command) }
+   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
+      command?.also { stringBuilder.append(separatorIn).append("command=").append(command) }
    }
 }

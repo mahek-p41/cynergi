@@ -81,9 +81,9 @@ class AuditPageRequest(
       val status = this.status
       var separator = separatorIn
 
-      separator = from?.apply { stringBuilder.append(separatorIn).append("from=").append(this) }.let { "&" }
-      separator = thru?.apply { stringBuilder.append(separatorIn).append("thru=").append(this) }.let { "&" }
-      separator = storeNumber?.apply { stringBuilder.append(separatorIn).append("storeNumber=").append(this) }.let { "&" }
+      separator = from?.apply { stringBuilder.append(separator).append("from=").append(this) }.let { "&" }
+      separator = thru?.apply { stringBuilder.append(separator).append("thru=").append(this) }.let { "&" }
+      separator = storeNumber?.apply { stringBuilder.append(separator).append("storeNumber=").append(this) }.let { "&" }
 
       if ( !status.isNullOrEmpty() ) {
          stringBuilder.append(status.joinToString(separator = "${separator}status=", prefix = "&status="))

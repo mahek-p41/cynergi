@@ -26,7 +26,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       when:
       def result = scheduleService.runDaily(TUESDAY)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest())
+      def audits = auditRepository.findAll(new AuditPageRequest(null))
 
       then:
       notThrown(Exception)
@@ -46,7 +46,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       when:
       def result = scheduleService.runDaily(WEDNESDAY)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest())
+      def audits = auditRepository.findAll(new AuditPageRequest(null))
 
       then:
       notThrown(Exception)
