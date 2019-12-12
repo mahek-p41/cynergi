@@ -42,11 +42,11 @@ class ScheduleTypeController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: StandardPageRequest?,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<ScheduleTypeValueObject> {
-      logger.info("Fetching all schedule types {} {}", pageRequestIn)
-      val pageRequest = StandardPageRequest(pageRequestIn)
+      logger.info("Fetching all schedule types {} {}", pageRequest)
+
       val page =  scheduleTypeService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {

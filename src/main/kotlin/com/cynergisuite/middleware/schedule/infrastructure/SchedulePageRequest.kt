@@ -5,7 +5,6 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.PageRequestBase
 import com.cynergisuite.domain.ValidPageSortBy
 import io.swagger.v3.oas.annotations.media.Schema
-import java.lang.StringBuilder
 import javax.validation.constraints.Size
 
 @DataTransferObject
@@ -16,7 +15,7 @@ import javax.validation.constraints.Size
    allOf = [PageRequestBase::class]
 )
 class SchedulePageRequest(
-   page: Int, size: Int, sortBy: String, sortDirection: String,
+   page: Int?, size: Int?, sortBy: String?, sortDirection: String?,
 
    @field:Size(min = 3, max = 25)
    var command: String? = null

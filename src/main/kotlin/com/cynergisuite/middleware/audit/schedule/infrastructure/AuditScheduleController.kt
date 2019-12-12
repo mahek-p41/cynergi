@@ -74,11 +74,10 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest
    ): Page<AuditScheduleDataTransferObject> {
-      logger.info("Fetching all audit schedules {} {}", pageRequestIn)
+      logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditScheduleService.fetchAll(pageRequest)
 
       if (page.elements.isEmpty()) {

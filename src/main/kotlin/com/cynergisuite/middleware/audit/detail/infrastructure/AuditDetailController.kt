@@ -31,7 +31,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.annotation.Nullable
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
@@ -75,12 +74,11 @@ class AuditDetailController @Inject constructor(
    ])
    fun fetchAll(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: StandardPageRequest?,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditDetailValueObject> {
-      logger.info("Fetching all details associated with audit {} {}", auditId, pageRequestIn)
+      logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val pageRequest = StandardPageRequest(pageRequestIn)
       val page =  auditDetailService.fetchAll(auditId, pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {

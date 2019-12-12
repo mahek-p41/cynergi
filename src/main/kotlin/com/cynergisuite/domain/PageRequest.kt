@@ -11,10 +11,8 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.lang.StringBuilder
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Pattern.Flag.CASE_INSENSITIVE
 
@@ -42,22 +40,18 @@ interface PageRequest {
 )
 abstract class PageRequestBase<out PAGE: PageRequest>(
 
-   @field:NotNull
    @field:Min(value = 1)
    @field:Schema(minimum = "1", description = "The page that is requested.  Starts with 1", defaultValue = "1")
    var page: Int?,
 
-   @field:NotNull
    @field:Min(value = 5)
    @field:Max(value = 100)
    @field:Schema(minimum = "5", description = "How many items for each page", defaultValue = "10")
    var size: Int?,
 
-   @field:NotNull
    @field:Schema(description = "The column to sort the data by.  Currently only id and name are supported", defaultValue = "id")
    var sortBy: String?,
 
-   @field:NotNull
    @field:Pattern(regexp = "ASC|DESC", flags = [CASE_INSENSITIVE])
    @field:Schema(description = "The direction the results should be sorted by.  Either Ascending or Descending", defaultValue = "ASC")
    var sortDirection: String?

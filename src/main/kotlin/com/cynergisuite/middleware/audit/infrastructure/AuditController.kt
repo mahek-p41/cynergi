@@ -76,12 +76,11 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
-      logger.info("Fetching all audits {} {}", pageRequestIn)
+      logger.info("Fetching all audits {} {}", pageRequest)
 
-      val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -100,15 +99,12 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequest: AuditPageRequest,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
-      logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
+      logger.debug("Fetching Audit status counts {}", auditStatusCountRequest)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val auditStatusCountRequest = AuditPageRequest(auditStatusCountRequestIn)
-
-      logger.debug("Fetching Audit status counts after build {}", auditStatusCountRequest)
 
       return auditService.findAuditStatusCounts(auditStatusCountRequest, locale)
    }
