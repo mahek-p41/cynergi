@@ -92,21 +92,21 @@ class AuditController @Inject constructor(
 
    @Throws(ValidationException::class)
    @AccessControl("audit-fetchAllStatusCounts")
-   @Get(uri = "/counts{?auditStatusCountRequest*}", processes = [APPLICATION_JSON])
+   @Get(uri = "/counts{?pageRequest*}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequest: AuditPageRequest,
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
-      logger.debug("Fetching Audit status counts {}", auditStatusCountRequest)
+      logger.debug("Fetching Audit status counts {}", pageRequest)
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return auditService.findAuditStatusCounts(auditStatusCountRequest, locale)
+      return auditService.findAuditStatusCounts(pageRequest, locale)
    }
 
    @Post(processes = [APPLICATION_JSON])

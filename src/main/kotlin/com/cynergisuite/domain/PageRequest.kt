@@ -7,7 +7,6 @@ import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.extensions.isAllSameCase
 import com.google.common.base.CaseFormat.LOWER_CAMEL
 import com.google.common.base.CaseFormat.LOWER_UNDERSCORE
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -125,8 +124,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    name = "PageRequest",
    title = "How to query for a paged set of items",
    description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC",
-   allOf = [PageRequestBase::class],
-   discriminatorMapping = [DiscriminatorMapping(schema = PageRequestBase::class)]
+   allOf = [PageRequestBase::class]
 )
 class StandardPageRequest(
    page: Int, size: Int, sortBy: String, sortDirection: String

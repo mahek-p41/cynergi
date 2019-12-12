@@ -95,7 +95,7 @@ class ScheduleRepository @Inject constructor(
       var currentSchedule: ScheduleEntity? = null
       var where = "WHERE"
       var and = EMPTY
-      var whereClause= StringBuilder()
+      var whereClause = StringBuilder()
       val params = mutableMapOf<String, Any>()
 
       if (command != null) {
@@ -288,5 +288,4 @@ class ScheduleRepository @Inject constructor(
          command = scheduleCommandProvider(rs),
          type = scheduleTypeProvider(rs)
       )
-
 }

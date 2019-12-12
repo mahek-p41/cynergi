@@ -26,6 +26,5 @@ class CynergiExecutor @Inject constructor(
             .build()
       )
 
-   fun execute(job: () -> Unit) =
-      executor.execute(job)
+   fun execute(job: () -> Unit) = executor.execute(job)
 }
