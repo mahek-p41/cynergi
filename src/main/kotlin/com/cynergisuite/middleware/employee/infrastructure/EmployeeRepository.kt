@@ -227,8 +227,12 @@ class EmployeeRepository @Inject constructor(
          .filter { (employee, _) -> employee.store != null || employee.allowAutoStoreAssign } // FIXME reconsider this filter
          .map { (employee, defaultStore) ->
             if (employee.store == null && employee.allowAutoStoreAssign) {
+               logger.debug("Employee {} is allowed to auto store assign using {}", number, defaultStore)
+
                employee.copy(store = defaultStore)
             } else {
+               logger.debug("Employe {} is not allow to auto store assign", number)
+
                employee
             }
          }
@@ -278,7 +282,7 @@ class EmployeeRepository @Inject constructor(
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
-         store = storeRepository.mapRow(rs, storeColumnPrefix),
+         store = storeRepository.mapRowOrNull(rs, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = rs.getString("${columnPrefix}department"),
          allowAutoStoreAssign = rs.getBoolean("${columnPrefix}allow_auto_store_assign")

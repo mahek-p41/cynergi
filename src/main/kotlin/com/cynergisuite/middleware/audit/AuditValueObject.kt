@@ -33,6 +33,10 @@ data class AuditValueObject (
    @field:Schema(name = "number", minimum = "0", required = false, description = "Audit Count")
    var auditNumber: Int = 0,
 
+   @field:Positive
+   @field:Schema(name = "totalExceptions", description="Total number of exceptions associated with an audit", minimum = "0", readOnly = true, required = false)
+   var totalExceptions: Int = 0,
+
    @field:Schema(name = "actions", required = true, description = "Listing of actions associated with this Audit")
    var actions: MutableSet<AuditActionValueObject> = mutableSetOf()
 
@@ -45,6 +49,7 @@ data class AuditValueObject (
          timeUpdated = entity.timeUpdated,
          store = StoreValueObject(entity.store),
          auditNumber = entity.number,
+         totalExceptions = entity.totalExceptions,
          actions = entity.actions.asSequence().map { action ->
             AuditActionValueObject(action, AuditStatusValueObject(action.status, action.status.localizeMyDescription(locale, localizationService)))
          }.toMutableSet()

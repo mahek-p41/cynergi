@@ -109,7 +109,14 @@ class StoreRepository @Inject constructor(
       }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
-      simpleStoreRowMapper.mapRow(rs, columnPrefix)
+      mapRowOrNull(rs, columnPrefix)!!
+
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         simpleStoreRowMapper.mapRow(rs, columnPrefix)
+      } else {
+         null
+      }
 
    fun mapRow(row: Row, columnPrefix: String = EMPTY): StoreEntity? =
       if (row.getLong("${columnPrefix}id") != null) {
