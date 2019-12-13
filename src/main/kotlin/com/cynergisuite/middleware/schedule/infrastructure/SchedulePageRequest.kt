@@ -42,7 +42,11 @@ class SchedulePageRequest(
 
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
-   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
+   protected override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
       command?.also { stringBuilder.append(separatorIn).append("command=").append(command) }
+   }
+
+   protected override fun myToStringValues(): List<Pair<String, Any?>> {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
    }
 }

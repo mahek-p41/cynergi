@@ -61,7 +61,7 @@ class AuditPageRequest(
          this.storeNumber = pageRequestIn?.storeNumber
       }
 
-   override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
+   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
       AuditPageRequest(
          page = page,
          size = size,
@@ -76,7 +76,7 @@ class AuditPageRequest(
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy()
 
-   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
+   protected override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
       val status = this.status
       var separator = separatorIn
 
@@ -88,6 +88,14 @@ class AuditPageRequest(
          stringBuilder.append(status.joinToString(separator = "${separator}status=", prefix = "&status="))
       }
    }
+
+   protected override fun myToStringValues(): List<Pair<String, Any?>> =
+      listOf(
+         "from" to from,
+         "thru" to thru,
+         "storeNumber" to storeNumber,
+         "status" to status
+      )
 
    override fun equals(other: Any?): Boolean =
       if (other is AuditPageRequest) {

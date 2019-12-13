@@ -71,6 +71,10 @@ class InventoryPageRequest(
       }
    }
 
+   override fun myToStringValues(): List<Pair<String, Any?>> {
+      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+   }
+
    override fun equals(other: Any?): Boolean =
       if (other is InventoryPageRequest) {
          EqualsBuilder()

@@ -60,6 +60,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    protected abstract fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): PAGE
    protected abstract fun sortByMe(): String
    protected abstract fun myToString(stringBuilder: StringBuilder, separatorIn: String)
+   protected abstract fun myToStringValues(): List<Pair<String, Any?>>
 
    override fun page(): Int = page ?: DEFAULT_PAGE
    override fun size(): Int = size ?: DEFAULT_SIZE
@@ -114,7 +115,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
       separator = sortBy?.apply { stringBuilder.append(separator).append("sortBy=").append(this) }?.let { "&" } ?: separator
       separator = sortDirection?.apply { stringBuilder.append(separator).append("sortDirection=").append(this) }?.let { "&" } ?: separator
 
-      myToString(stringBuilder, separator)
+      //myToString(stringBuilder, separator)
 
       return stringBuilder.toString()
    }
@@ -149,4 +150,5 @@ class StandardPageRequest(
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
    override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {  }
+   override fun myToStringValues(): List<Pair<String, Any?>> = emptyList()
 }
