@@ -15,6 +15,7 @@ data class AuditEntity (
    val store: StoreEntity,
    val number: Int = 0,
    val totalExceptions: Int = 0,
+   val lastUpdated: OffsetDateTime? = null,
    val actions: MutableSet<AuditAction> = LinkedHashSet()
 ) : Entity<AuditEntity> {
 
@@ -24,7 +25,8 @@ data class AuditEntity (
          store = audit.store,
          number = audit.number,
          actions = audit.actions,
-         totalExceptions = audit.totalExceptions
+         totalExceptions = audit.totalExceptions,
+         lastUpdated = audit.lastUpdated
       )
 
    override fun myId(): Long? = id

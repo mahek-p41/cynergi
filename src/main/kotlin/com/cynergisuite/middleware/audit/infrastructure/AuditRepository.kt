@@ -3,12 +3,12 @@ package com.cynergisuite.middleware.audit.infrastructure
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
-import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
@@ -49,6 +49,13 @@ class AuditRepository @Inject constructor(
             a.store_number AS store_number,
             a.number AS a_number,
             (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            (SELECT max(time_updated)
+               FROM (
+                    SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                    UNION
+                    SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                  ) AS m
+            ) AS a_last_updated,
             (SELECT csastd.value
              FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
              WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
@@ -192,6 +199,13 @@ class AuditRepository @Inject constructor(
                a.store_number AS store_number,
                a.number AS number,
                (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
+               (SELECT max(time_updated)
+                  FROM (
+                       SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                       UNION
+                       SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                     ) AS m
+               ) AS last_updated,
                s.current_status AS current_status,
                (SELECT count(a.id)
                 FROM audit a
@@ -219,6 +233,7 @@ class AuditRepository @Inject constructor(
             a.number AS a_number,
             a.total_exceptions AS a_total_exceptions,
             a.current_status AS current_status,
+            a.last_updated AS a_last_updated,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
             aa.time_created AS aa_time_created,
@@ -410,7 +425,8 @@ class AuditRepository @Inject constructor(
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                store = entity.store,
                number = rs.getInt("number"),
-               totalExceptions = 0
+               totalExceptions = 0,
+               lastUpdated = null
             )
          }
       )
@@ -442,7 +458,8 @@ class AuditRepository @Inject constructor(
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
          store = storeRepository.mapRow(rs, "s_"),
          number = rs.getInt("a_number"),
-         totalExceptions = rs.getInt("a_total_exceptions")
+         totalExceptions = rs.getInt("a_total_exceptions"),
+         lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
       )
 
    private fun loadNextStates(audit: AuditEntity) {

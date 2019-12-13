@@ -10,9 +10,11 @@ import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -83,7 +85,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final store = storeFactoryService.random()
       final savedAudit = auditFactoryService.single(store)
-      final auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
 
       when:
       def result = get("$path/${savedAudit.id}")
@@ -91,6 +93,41 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.totalExceptions == auditExceptions.size()
+      result.lastUpdated != null
+      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
+   }
+
+   void "fetch one audit by id that has associated details" () {
+      given:
+      final store = storeFactoryService.random()
+      final savedAudit = auditFactoryService.single(store)
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, null, null).toList()
+
+      when:
+      def result = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.totalExceptions == 0
+      result.lastUpdated != null
+      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditDetails.last().timeUpdated
+   }
+
+   void "fetch one audit by id that has associated details and exceptions" () {
+      given:
+      final store = storeFactoryService.random()
+      final savedAudit = auditFactoryService.single(store)
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, null, null).toList()
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
+
+      when:
+      def result = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.totalExceptions == 20
+      result.lastUpdated != null
+      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
    }
 
    void "fetch one audit by id not found" () {
