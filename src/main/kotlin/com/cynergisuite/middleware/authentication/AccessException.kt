@@ -8,9 +8,9 @@ class AccessException(
    val user: String?
 ): Exception(error.getCode()) {
 
-   constructor(error: SystemCode, user: Authentication?) :
+   constructor(error: SystemCode, authentication: Authentication?) :
       this(
          error = error,
-         user = user?.name
+         user = authentication?.name
       )
 }

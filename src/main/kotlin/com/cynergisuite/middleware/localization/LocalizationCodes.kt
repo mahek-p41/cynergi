@@ -50,6 +50,7 @@ class NotImplemented(pathNotImplemented: String): SystemCode("system.not.impleme
 class LoggedIn(user: String): SystemCode("system.logged.in", arrayOf(user))
 class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())
 class AccessDenied(user: String): SystemCode("system.access.denied", arrayOf(user))
+class AccessDeniedStore(user: String): SystemCode("system.access.denied.store", arrayOf(user))
 class Unknown: SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String): SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
 class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?): SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))

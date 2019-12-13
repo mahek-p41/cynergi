@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
+import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.LoggedIn
 import com.cynergisuite.middleware.localization.NotLoggedIn
@@ -41,8 +42,9 @@ class AuthenticatedController @Inject constructor(
 
       return if (authentication != null) {
          val message = localizationService.localize(localizationCode = LoggedIn(authentication.name), locale = locale)
+         val authenticationDefinition = StandardAuthenticatedUser(authentication)
 
-         HttpResponse.ok(AuthenticatedUserInformation(number = authentication.name, loginStatus = message, store = authentication.attributes["storeNumber"]?.toString()?.toInt()))
+         HttpResponse.ok(AuthenticatedUserInformation(authenticationDefinition, message))
       } else {
          val message = localizationService.localize(NotLoggedIn(), locale)
 

@@ -9,7 +9,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.InventoryValueObject
-import com.cynergisuite.middleware.localization.NotLoggedIn
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
@@ -49,26 +48,22 @@ class InventoryController(
    ])
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: InventoryPageRequest,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<InventoryValueObject> {
       logger.info("Fetch all inventory for store")
 
-      val employee = authenticationService.findEmployee(authentication)
+      val user = authenticationService.findUser(authentication)
 
-      logger.info("Requesting inventory {} using employee {}", pageRequest, employee)
+      logger.info("Requesting inventory {} using employee {}", pageRequest, user)
 
-      if (employee != null) {
-         val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, employee.store!!.number!!)
-         val page = inventoryService.fetchAll(pageToRequest, httpRequest.findLocaleWithDefault())
+      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
+      val page = inventoryService.fetchAll(pageToRequest, httpRequest.findLocaleWithDefault())
 
-         if (page.elements.isEmpty()) {
-            throw PageOutOfBoundsException(pageRequest)
-         } else {
-            return page
-         }
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest)
       } else {
-         throw AccessException(NotLoggedIn(), authentication)
+         return page
       }
    }
 

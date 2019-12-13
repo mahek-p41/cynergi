@@ -1,7 +1,8 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.middleware.notification.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.NotificationType
+import com.cynergisuite.middleware.notification.NotificationTypeEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,7 +29,7 @@ class NotificationTypeDomainRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long): NotificationTypeDomain? {
+   fun findOne(id: Long): NotificationType? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE id = :id", mapOf("id" to id), simpleNotificationDomainTypeRowMapper)
 
       logger.trace("Searching for NotificationTypeDomain: {} resulted in {}", id, found)
@@ -36,7 +37,7 @@ class NotificationTypeDomainRepository @Inject constructor(
       return found
    }
 
-   fun findOne(value: String): NotificationTypeDomain? {
+   fun findOne(value: String): NotificationType? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_type_domain WHERE value = :value", mapOf("value" to value), simpleNotificationDomainTypeRowMapper)
 
       logger.trace("searching for NotificationTypeDomain: {} resulted in {}", value, found)
@@ -44,18 +45,18 @@ class NotificationTypeDomainRepository @Inject constructor(
       return found
    }
 
-   fun findAll(): List<NotificationTypeDomain> =
+   fun findAll(): List<NotificationType> =
       jdbc.query("SELECT * FROM notification_type_domain ORDER BY value", simpleNotificationDomainTypeRowMapper)
 
-   fun mapPrefixedRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain? =
+   fun mapPrefixedRow(rs: ResultSet, rowNum: Int): NotificationType? =
       rs.getString("ntd_id")?.let { prefixedNotificationDomainTypeRowMapper.mapRow(rs = rs, rowNum = rowNum) }
 }
 
 private class NotificationTypeDomainRowMapper(
    private val columnPrefix: String = EMPTY
-) : RowMapper<NotificationTypeDomain> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): NotificationTypeDomain =
-      NotificationTypeDomain(
+) : RowMapper<NotificationType> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): NotificationType =
+      NotificationTypeEntity(
          id = rs.getLong("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),

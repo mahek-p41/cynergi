@@ -1,23 +1,20 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.infrastructure.PagedResultSetExtractor
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
-import com.cynergisuite.middleware.audit.status.CANCELED
-import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.Canceled
-import com.cynergisuite.middleware.audit.status.Completed
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -39,10 +36,8 @@ class AuditRepository @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
-
-   fun findOne(id: Long): AuditEntity? {
-      val found = jdbc.findFirstOrNullWithCrossJoin("""
-         WITH employees AS ( 
+   @Language("PostgreSQL") private val baseFindQuery = """
+         WITH employees AS (
             ${employeeRepository.selectBase}
          )
          SELECT
@@ -53,6 +48,14 @@ class AuditRepository @Inject constructor(
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
             a.number AS a_number,
+            (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            (SELECT max(time_updated)
+               FROM (
+                    SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                    UNION
+                    SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                  ) AS m
+            ) AS a_last_updated,
             (SELECT csastd.value
              FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
              WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
@@ -67,15 +70,14 @@ class AuditRepository @Inject constructor(
             astd.color AS astd_color,
             astd.localization_code AS astd_localization_code,
             aer.e_id AS aer_id,
-            aer.e_time_created AS aer_time_created,
-            aer.e_time_updated AS aer_time_updated,
             aer.e_number AS aer_number,
             aer.e_last_name AS aer_last_name,
             aer.e_first_name_mi AS aer_first_name_mi,
             aer.e_pass_code AS aer_pass_code,
             aer.e_active AS aer_active,
             aer.e_department AS aer_department,
-            aer.e_loc AS aer_loc,
+            aer.e_employee_type AS aer_employee_type,
+            aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
             s.time_created AS s_time_created,
             s.time_updated AS s_time_updated,
@@ -83,8 +85,6 @@ class AuditRepository @Inject constructor(
             s.number AS s_number,
             s.dataset AS s_dataset,
             se.id AS se_id,
-            se.time_created AS se_time_created,
-            se.time_updated AS se_time_updated,
             se.name AS se_name,
             se.dataset AS s_dataset
          FROM audit a
@@ -98,9 +98,19 @@ class AuditRepository @Inject constructor(
                   ON a.store_number = s.number
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
-         WHERE a.id = :id
-      """.trimMargin(), mapOf("id" to id), RowMapper { rs, _ -> this.mapRow(rs) }) { audit: AuditEntity, rs ->
-         auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+      """.trimMargin()
+
+   fun findOne(id: Long): AuditEntity? {
+      logger.debug("Searching for audit by id {}", id)
+
+      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.id = :id", mapOf("id" to id)) { rs ->
+         val audit = this.mapRow(rs)
+
+         do {
+            auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+         } while(rs.next())
+
+         audit
       }
 
       if (found != null) {
@@ -112,7 +122,30 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity> {
+   fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
+      logger.debug("Searching for audit not completed or canceled for store {} and status {}", store)
+
+      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)",
+         mapOf("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))) { rs ->
+         val audit = this.mapRow(rs)
+
+         do {
+            auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+         } while(rs.next())
+
+         audit
+      }
+
+      if (found != null) {
+         loadNextStates(found)
+      }
+
+      logger.debug("Searching for audit not completed or canceled for store {} resulted in {}", store, found)
+
+      return found
+   }
+
+   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
@@ -144,11 +177,11 @@ class AuditRepository @Inject constructor(
 
       @Language("PostgreSQL")
       val sql = """
-         WITH employees AS ( 
+         WITH employees AS (
             ${employeeRepository.selectBase}
          ), audits AS (
             WITH status AS (
-               SELECT csastd.value AS current_status, 
+               SELECT csastd.value AS current_status,
                       csaa.audit_id AS audit_id, csaa.id
                FROM audit_action csaa
                     JOIN audit_status_type_domain csastd
@@ -165,8 +198,16 @@ class AuditRepository @Inject constructor(
                a.time_updated AS time_updated,
                a.store_number AS store_number,
                a.number AS number,
+               (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
+               (SELECT max(time_updated)
+                  FROM (
+                       SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                       UNION
+                       SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                     ) AS m
+               ) AS last_updated,
                s.current_status AS current_status,
-               (SELECT count(a.id) 
+               (SELECT count(a.id)
                 FROM audit a
                     JOIN status s
                       ON s.audit_id = a.id
@@ -179,8 +220,8 @@ class AuditRepository @Inject constructor(
                  JOIN maxStatus ms
                       ON s.id = ms.current_status_id
             $whereBuilder
-            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-            LIMIT ${pageRequest.size}
+            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+            LIMIT ${pageRequest.size()}
                OFFSET ${pageRequest.offset()}
          )
          SELECT
@@ -190,7 +231,9 @@ class AuditRepository @Inject constructor(
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
             a.number AS a_number,
+            a.total_exceptions AS a_total_exceptions,
             a.current_status AS current_status,
+            a.last_updated AS a_last_updated,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
             aa.time_created AS aa_time_created,
@@ -201,24 +244,19 @@ class AuditRepository @Inject constructor(
             astd.color AS astd_color,
             astd.localization_code AS astd_localization_code,
             aer.e_id AS aer_id,
-            aer.e_time_created AS aer_time_created,
-            aer.e_time_updated AS aer_time_updated,
             aer.e_number AS aer_number,
             aer.e_last_name AS aer_last_name,
             aer.e_first_name_mi AS aer_first_name_mi,
             aer.e_pass_code AS aer_pass_code,
             aer.e_active AS aer_active,
             aer.e_department AS aer_department,
-            aer.e_loc AS aer_loc,
+            aer.e_employee_type AS aer_employee_type,
+            aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
-            s.time_created AS s_time_created,
-            s.time_updated AS s_time_updated,
             s.name AS s_name,
             s.number AS s_number,
             s.dataset AS s_dataset,
             se.id AS se_id,
-            se.time_created AS se_time_created,
-            se.time_updated AS se_time_updated,
             se.name AS se_name,
             se.dataset AS s_dataset,
             total_elements AS total_elements
@@ -233,12 +271,12 @@ class AuditRepository @Inject constructor(
                   ON a.store_number = s.number
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
-         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
+         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      val repoPage = jdbc.query(sql, params, PagedResultSetExtractor<AuditEntity>(pageRequest) { rs, elements ->
+      val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
          var currentId: Long = -1
          var currentParentEntity: AuditEntity? = null
 
@@ -255,7 +293,7 @@ class AuditRepository @Inject constructor(
 
             tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
          } while(rs.next())
-      })
+      }
 
       return repoPage.copy(elements = repoPage.elements.onEach(this::loadNextStates))
    }
@@ -344,9 +382,9 @@ class AuditRepository @Inject constructor(
 
    fun countAuditsNotCompletedOrCanceled(storeNumber: Int): Int =
       jdbc.queryForObject("""
-         SELECT COUNT (*) 
+         SELECT COUNT (*)
          FROM (
-            SELECT * 
+            SELECT *
             FROM (
                   SELECT a.id, MAX(aa.status_id) AS max_status
                   FROM audit a
@@ -362,7 +400,7 @@ class AuditRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "store_number" to storeNumber,
-            "values" to listOf<String>(CREATED.value, IN_PROGRESS.value)
+            "values" to listOf(CREATED.value, IN_PROGRESS.value)
          ),
          Int::class.java
       )!!
@@ -371,7 +409,7 @@ class AuditRepository @Inject constructor(
    fun insert(entity: AuditEntity): AuditEntity {
       logger.debug("Inserting audit {}", entity)
 
-      val audit = jdbc.insertReturning(
+      val audit = jdbc.insertReturning<AuditEntity>(
          """
          INSERT INTO audit(store_number)
          VALUES (:store_number)
@@ -386,7 +424,9 @@ class AuditRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                store = entity.store,
-               number = rs.getInt("number")
+               number = rs.getInt("number"),
+               totalExceptions = 0,
+               lastUpdated = null
             )
          }
       )
@@ -417,7 +457,9 @@ class AuditRepository @Inject constructor(
          timeCreated = rs.getOffsetDateTime("a_time_created"),
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
          store = storeRepository.mapRow(rs, "s_"),
-         number = rs.getInt("a_number")
+         number = rs.getInt("a_number"),
+         totalExceptions = rs.getInt("a_total_exceptions"),
+         lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
       )
 
    private fun loadNextStates(audit: AuditEntity) {

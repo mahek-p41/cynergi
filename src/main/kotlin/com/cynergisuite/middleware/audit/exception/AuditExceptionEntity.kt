@@ -5,7 +5,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
@@ -23,7 +23,7 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: Employee,
+   val scannedBy: EmployeeEntity,
    val exceptionCode: String,
    val signedOff: Boolean = false,
    val lookupKey: String?,
@@ -41,7 +41,7 @@ data class AuditExceptionEntity(
          serialNumber = vo.serialNumber,
          inventoryBrand = vo.inventoryBrand,
          inventoryModel = vo.inventoryModel,
-         scannedBy = Employee(vo.scannedBy!!),
+         scannedBy = EmployeeEntity(vo.scannedBy!!),
          exceptionCode = vo.exceptionCode!!,
          signedOff = vo.signedOff,
          lookupKey = vo.lookupKey,
@@ -49,7 +49,7 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(vo.audit!!)
       )
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeValueObject, exceptionCode: String) :
+   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -58,13 +58,13 @@ data class AuditExceptionEntity(
          serialNumber = inventory.serialNumber,
          inventoryBrand = inventory.brand,
          inventoryModel = inventory.modelNumber,
-         scannedBy = Employee(scannedBy),
+         scannedBy = EmployeeEntity.from(scannedBy),
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeValueObject, exceptionCode: String) :
+   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = barcode,
@@ -73,7 +73,7 @@ data class AuditExceptionEntity(
          serialNumber = null,
          inventoryBrand = null,
          inventoryModel = null,
-         scannedBy = Employee(scannedBy),
+         scannedBy = scannedBy,
          exceptionCode = exceptionCode,
          lookupKey = null,
          audit = SimpleIdentifiableEntity(audit)

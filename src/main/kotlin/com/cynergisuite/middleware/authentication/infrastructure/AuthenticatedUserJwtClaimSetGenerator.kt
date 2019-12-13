@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
-import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.JWTClaimsSet.Builder
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.runtime.ApplicationConfiguration
 import io.micronaut.security.authentication.UserDetails
@@ -21,14 +21,14 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
    applicationConfiguration: ApplicationConfiguration?
 ) : JWTClaimsSetGenerator(tokenConfiguration, jwtIdGenerator, claimsAudienceProvider, applicationConfiguration) {
 
-   override fun populateWithUserDetails(builder: JWTClaimsSet.Builder?, userDetails: UserDetails?) {
+   override fun populateWithUserDetails(builder: Builder?, userDetails: UserDetails?) {
       super.populateWithUserDetails(builder, userDetails)
 
       if (userDetails is AuthenticatedUser) {
          builder
-            ?.claim("id", userDetails.id)
-            ?.claim("loc", userDetails.loc)
-            ?.claim("storeNumber", userDetails.storeNumber)
+            ?.claim("id", userDetails.myId())
+            ?.claim("type", userDetails.myEmployeeType())
+            ?.claim("stNum", userDetails.myStoreNumber())
       }
    }
 }

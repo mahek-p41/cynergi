@@ -4,6 +4,9 @@ import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
+import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.EmployeeFactory
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
@@ -14,7 +17,6 @@ import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import org.apache.commons.lang3.StringUtils
 import java.time.DayOfWeek
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -24,13 +26,14 @@ import javax.inject.Singleton
 object AuditScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
       val faker = Faker()
       val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
       val dayOfWeek = dayOfWeekIn ?: DayOfWeek.values().random()
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
       val department = departmentIn ?: DepartmentFactory.random()
+      val employee = employeeIn ?: EmployeeFactory.single()
       val arguments = mutableSetOf(ScheduleArgumentEntity(value = department.code, description = "department"))
 
       for (store in stores) {
@@ -41,6 +44,13 @@ object AuditScheduleFactory {
             )
          )
       }
+
+      arguments.add(
+         ScheduleArgumentEntity(
+            employee.number.toString(),
+            "employeeNumber"
+         )
+      )
 
       return IntStream.range(0, number).mapToObj {
          ScheduleEntity(
@@ -59,19 +69,21 @@ object AuditScheduleFactory {
 @Requires(env = ["develop", "test"])
 class AuditScheduleFactoryService @Inject constructor(
    private val departmentFactoryService: DepartmentFactoryService,
+   private val employeeFactoryService: EmployeeFactoryService,
    private val scheduleRepository: ScheduleRepository,
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random())
       val department = departmentIn ?: departmentFactoryService.random()
+      val employee = employeeIn ?: employeeFactoryService.single()
 
-      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, department)
+      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, department, employee)
          .map { scheduleRepository.insert(it) }
    }
 
-   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null) :ScheduleEntity {
-      return stream(1, dayOfWeekIn, storesIn, departmentIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
+   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null) :ScheduleEntity {
+      return stream(1, dayOfWeekIn, storesIn, departmentIn, employeeIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
    }
 }

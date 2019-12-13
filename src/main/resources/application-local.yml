@@ -30,6 +30,7 @@ cynergi:
       import:
          location: "./import/"
          rename: false
+         process-startup: false
    worker:
       pool:
          size: 5

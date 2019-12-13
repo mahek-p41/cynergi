@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -65,9 +65,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single()
       final audit = auditFactoryService.single()
       final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, employee, null).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
-      final pageTwo = new PageRequest(2, 5, "id", "ASC")
-      final pageFive = new PageRequest(5, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
       final firstFiveDetails = twentyAuditDetails[0..4]
       final secondFiveDetails = twentyAuditDetails[5..9]
 
@@ -76,7 +76,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageOneResult.requested) == pageOne
+      new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 20
@@ -89,7 +89,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageTwoResult.requested) == pageTwo
+      new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect {
@@ -128,7 +128,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit details related to an audit where there are 2 different scan areas" () {
       given:
-      final pageOne = new PageRequest(1, 10, "ID", "ASC")
+      final pageOne = new StandardPageRequest(1, 10, "ID", "ASC")
       final employee = employeeFactoryService.single()
       final store = storeFactoryService.store(1)
       final warehouse = auditScanAreaFactoryService.warehouse()
@@ -241,9 +241,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
    }
 
-   void "create audit detail when audit is in state OPENED" () {
+   void "create audit detail when audit is in state OPENED (CREATED?)" () {
       given:
-      final def audit = auditFactoryService.single()
+      final def audit = auditFactoryService.single(authenticatedEmployee.store, authenticatedEmployee, [AuditStatusFactory.created()] as Set)
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]

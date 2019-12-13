@@ -9,13 +9,16 @@ import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
+import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.lang.StringBuilder
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -83,19 +86,28 @@ class ScheduleRepository @Inject constructor(
       return found
    }
 
-   fun fetchAll(pageRequest: SchedulePageRequest): RepositoryPage<ScheduleEntity> {
+   fun findAll(pageRequest: SchedulePageRequest, type: ScheduleType? = null): RepositoryPage<ScheduleEntity, SchedulePageRequest> {
       logger.trace("Fetching All schedules {}", pageRequest)
 
       val command = pageRequest.command
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
-      var whereClause = ""
+      var where = "WHERE"
+      var and = EMPTY
+      var whereClause = StringBuilder()
       val params = mutableMapOf<String, Any>()
 
       if (command != null) {
-         whereClause = " WHERE sctd.value = :sctd_value"
+         whereClause.append(" $where sctd.value = :sctd_value")
          params["sctd_value"] = command
+         where = EMPTY
+         and = " AND "
+      }
+
+      if (type != null) {
+         whereClause.append("$where $and schedType.value = :schedType_value")
+         params["schedType_value"] = type.value
       }
 
       jdbc.query("""
@@ -166,6 +178,18 @@ class ScheduleRepository @Inject constructor(
          elements = elements,
          totalElements = totalElement ?: 0
       )
+   }
+
+   fun forEach(type: ScheduleType, callback: (ScheduleEntity) -> Unit) {
+      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), type)
+
+      while(result.elements.isNotEmpty()) {
+         for (schedule in result.elements) {
+            callback(schedule)
+         }
+
+         result = findAll(result.requested.nextPage(), type)
+      }
    }
 
    fun exists(id: Long): Boolean {
@@ -243,7 +267,7 @@ class ScheduleRepository @Inject constructor(
          .map { scheduleArgumentRepository.upsert(updated, it) }
          .forEach { updated.arguments.add(it) }
 
-      scheduleArgumentRepository.deleteNotIn(updated, entity.arguments)
+      scheduleArgumentRepository.deleteNotIn(updated, updated.arguments)
 
       return updated
    }
@@ -251,7 +275,7 @@ class ScheduleRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =
       mapRow(rs, "", { entity.type }, { entity.command })
 
-   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandTypeEntity): ScheduleEntity =
+   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandTypeEntity): ScheduleEntity =
       ScheduleEntity(
          id = rs.getLong("${scheduleColumnPrefix}id"),
          uuRowId = rs.getUuid("${scheduleColumnPrefix}uu_row_id"),
@@ -264,5 +288,4 @@ class ScheduleRepository @Inject constructor(
          command = scheduleCommandProvider(rs),
          type = scheduleTypeProvider(rs)
       )
-
 }

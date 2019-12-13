@@ -22,8 +22,8 @@ data class EmployeeValueObject(
 
    @field:JsonIgnore
    @field:NotNull
-   @field:Schema(name = "loc", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
-   var loc: String?,
+   @field:Schema(name = "type", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
+   var type: String?,
 
    @field:NotNull
    @field:Min(1)
@@ -41,44 +41,50 @@ data class EmployeeValueObject(
 
    @field:JsonIgnore
    @field:NotNull
-   @field:Size(min = 3, max = 6)
-   @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", maximum = "6", hidden = true)
+   @field:Size(min = 3)
+   @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", hidden = true)
    var passCode: String?,
 
-   @field:NotNull
    @field:JsonIgnore
-   @field:Schema(name = "store", description = "Default store Employee is assocated with", hidden = true)
+   @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
    var store: StoreValueObject?,
 
    @field:JsonIgnore
    @field:NotNull
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
-   var active: Boolean? = true
+   var active: Boolean? = true,
+
+   @field:JsonIgnore
+   @field:NotNull
+   @field:Schema(name = "allowAutoStoreAssign", description = "true|false value describing whether an employee/user can have a store auto assigned by the system or not", hidden = true)
+   var allowAutoStoreAssign: Boolean? = false
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 
-   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, allowAutoStoreAssign: Boolean, active: Boolean) :
       this(
          id = null,
-         loc = loc,
+         type = type,
          number = number,
          lastName = lastName,
          firstNameMi = firstNameMi,
          passCode = passCode,
          store = store,
-         active = active
+         active = active,
+         allowAutoStoreAssign = allowAutoStoreAssign
       )
 
-   constructor(entity: Employee) :
+   constructor(entity: EmployeeEntity) :
       this(
          id = entity.id,
-         loc = entity.loc,
+         type = entity.type,
          number = entity.number,
          lastName = entity.lastName,
          firstNameMi = entity.firstNameMi,
          passCode = entity.passCode,
-         store = StoreValueObject(entity.store),
-         active = entity.active
+         store = entity.store?.let { StoreValueObject(it) },
+         active = entity.active,
+         allowAutoStoreAssign = entity.allowAutoStoreAssign
       )
 
    override fun myId(): Long? = id

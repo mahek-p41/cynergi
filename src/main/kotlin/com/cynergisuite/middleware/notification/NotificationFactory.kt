@@ -17,7 +17,7 @@ import javax.inject.Singleton
 object NotificationTestDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, company: String? = "testco", startDateIn: LocalDate?  = null, expirationDateIn: LocalDate? = null, type: NotificationTypeDomain? = null, sendingEmployee: String? = null): Stream<Notification> {
+   fun stream(numberIn: Int = 1, company: String? = "testco", startDateIn: LocalDate?  = null, expirationDateIn: LocalDate? = null, type: NotificationType? = null, sendingEmployee: String? = null): Stream<Notification> {
       val number = if (numberIn > 0) numberIn else 1
       val companyId = company ?: "testco"
       val faker = Faker()
@@ -53,7 +53,7 @@ class NotificationDataLoaderService @Inject constructor(
       return stream(numberIn, "testco", null, null, null, null)
    }
 
-   fun stream(numberIn: Int = 1, company: String  = "testco", startDate: LocalDate? = null, expirationDate: LocalDate? = null, type: NotificationTypeDomain? = null, sendingEmployee: String? = null): Stream<Notification> {
+   fun stream(numberIn: Int = 1, company: String  = "testco", startDate: LocalDate? = null, expirationDate: LocalDate? = null, type: NotificationType? = null, sendingEmployee: String? = null): Stream<Notification> {
       return NotificationTestDataLoader.stream(numberIn, company, startDate, expirationDate, type, sendingEmployee)
          .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id)!!.basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
          .map { notificationsRepository.insert(it) }

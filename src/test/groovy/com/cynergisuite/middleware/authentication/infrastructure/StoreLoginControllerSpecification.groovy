@@ -61,9 +61,9 @@ class StoreLoginControllerSpecification extends Specification {
 
       then:
       notThrown(HttpClientResponseException)
-      response.number == '123'
+      response.employeeNumber == '123'
       response.loginStatus == '123 is now logged in'
-      response.store == 3
+      response.storeNumber == 3
    }
 
    void "login failure due to invalid store" () {

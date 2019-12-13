@@ -2,13 +2,12 @@ package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.action.AuditAction
-import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.employee.Employee
-import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AuditOpenAtStore
@@ -53,7 +52,7 @@ class AuditValidator @Inject constructor(
       validationFetchAll(pageRequest)
 
    @Throws(ValidationException::class)
-   fun validateCreate(audit: AuditCreateValueObject, employee: EmployeeValueObject): AuditEntity {
+   fun validateCreate(audit: AuditCreateValueObject, employee: User): AuditEntity {
       logger.debug("Validating Create Audit {}", audit)
 
       doValidation { errors ->
@@ -73,14 +72,14 @@ class AuditValidator @Inject constructor(
          actions = mutableSetOf(
             AuditAction(
                status = CREATED,
-               changedBy = Employee(employee)
+               changedBy = EmployeeEntity.from(employee)
             )
          )
       )
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(audit: AuditUpdateValueObject, employee: EmployeeValueObject, locale: Locale): Pair<AuditAction, AuditEntity> {
+   fun validateUpdate(audit: AuditUpdateValueObject, employee: User, locale: Locale): Pair<AuditAction, AuditEntity> {
       logger.debug("Validating Update Audit {}", audit)
 
       doValidation { errors ->
@@ -120,7 +119,7 @@ class AuditValidator @Inject constructor(
       return Pair(
          AuditAction(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
-            changedBy = Employee(employee)
+            changedBy = EmployeeEntity.from(employee)
          ),
          auditRepository.findOne(audit.id!!)!!
       )

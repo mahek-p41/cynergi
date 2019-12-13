@@ -9,10 +9,10 @@ import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -76,11 +76,11 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
-      logger.info("Fetching all audits {} {}", pageRequestIn)
-      val pageRequest = AuditPageRequest(pageRequestIn) // copy the result applying defaults if they are missing
+      logger.info("Fetching all audits {} {}", pageRequest)
+
       val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -92,24 +92,21 @@ class AuditController @Inject constructor(
 
    @Throws(ValidationException::class)
    @AccessControl("audit-fetchAllStatusCounts")
-   @Get(uri = "/counts{?auditStatusCountRequest*}", processes = [APPLICATION_JSON])
+   @Get(uri = "/counts{?pageRequest*}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("auditStatusCountRequest") auditStatusCountRequestIn: AuditPageRequest?,
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
-      logger.debug("Fetching Audit status counts {}", auditStatusCountRequestIn)
+      logger.debug("Fetching Audit status counts {}", pageRequest)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val auditStatusCountRequest = AuditPageRequest(auditStatusCountRequestIn)
 
-      logger.debug("Fetching Audit status counts after build {}", auditStatusCountRequest)
-
-      return auditService.findAuditStatusCounts(auditStatusCountRequest, locale)
+      return auditService.findAuditStatusCounts(pageRequest, locale)
    }
 
    @Post(processes = [APPLICATION_JSON])
@@ -124,15 +121,16 @@ class AuditController @Inject constructor(
    ])
    fun create(
       @Body audit: AuditCreateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Requested Create Audit {}", audit)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
-      val auditToCreate = if (audit.store != null) audit else audit.copy(store = employee.store)
+      val user = authenticationService.findUser(authentication)
+      val defaultStore = user.myStore() ?: throw NotFoundException("store")
+      val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
 
-      val response = auditService.create(vo = auditToCreate, employee = employee, locale = httpRequest.findLocaleWithDefault())
+      val response = auditService.create(vo = auditToCreate, employee = user, locale = httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create Audit {} resulted in {}", audit, response)
 
@@ -151,13 +149,13 @@ class AuditController @Inject constructor(
    ])
    fun update(
       @Body audit: AuditUpdateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Requested Update Audit {}", audit)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication) ?: throw NotFoundException("employee")
-      val response = auditService.update(audit = audit, employee = employee, locale = httpRequest.findLocaleWithDefault())
+      val user = authenticationService.findUser(authentication)
+      val response = auditService.update(audit = audit, user = user, locale = httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 

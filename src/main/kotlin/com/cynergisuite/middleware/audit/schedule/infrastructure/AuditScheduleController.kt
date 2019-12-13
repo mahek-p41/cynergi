@@ -1,15 +1,18 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
+import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -18,6 +21,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -34,7 +38,8 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit/schedule")
 class AuditScheduleController @Inject constructor(
-   private val auditScheduleService: AuditScheduleService
+   private val auditScheduleService: AuditScheduleService,
+   private val authenticationService: AuthenticationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleController::class.java)
 
@@ -69,11 +74,10 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: AuditPageRequest?
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest
    ): Page<AuditScheduleDataTransferObject> {
-      logger.info("Fetching all audit schedules {} {}", pageRequestIn)
+      logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val pageRequest = PageRequest(pageRequestIn) // copy the result applying defaults if they are missing
       val page =  auditScheduleService.fetchAll(pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -93,11 +97,15 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject
-   ): AuditScheduleDataTransferObject {
+      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+      ): AuditScheduleDataTransferObject {
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
-      val response = auditScheduleService.create(auditSchedule)
+      val locale = httpRequest.findLocaleWithDefault()
+      val user = authenticationService.findUser(authentication)
+      val response = auditScheduleService.create(auditSchedule, user, locale)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
 
@@ -115,11 +123,15 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun update(
-      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject
+      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ) : AuditScheduleDataTransferObject {
       logger.info("Requested update audit schedule {}", auditSchedule)
 
-      val response = auditScheduleService.update(auditSchedule)
+      val locale = httpRequest.findLocaleWithDefault()
+      val user = authenticationService.findUser(authentication)
+      val response = auditScheduleService.update(auditSchedule, user, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)
 

@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.middleware.verfication.Verification
-import com.cynergisuite.middleware.verfication.VerificationReference
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.verfication.Verification
+import com.cynergisuite.middleware.verfication.VerificationReference
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.intellij.lang.annotations.Language
@@ -124,8 +124,14 @@ class VerificationRepository @Inject constructor(
       """.trimIndent()
 
    fun findOne(id: Long): Verification? {
-      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id), selectAllRowMapper) { verification, rs ->
-         verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+      val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs ->
+         val verification = selectAllRowMapper.mapRow(rs, 0)
+
+         do {
+            verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+         } while(rs.next())
+
+         verification
       }
 
       logger.trace("Searched for {} found {}", id, found)
@@ -134,8 +140,14 @@ class VerificationRepository @Inject constructor(
    }
 
    fun findByCustomerAccount(customerAccount: String): Verification? {
-      val found: Verification? = jdbc.findFirstOrNullWithCrossJoin("$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount), selectAllRowMapper) { verification, rs ->
-         verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+      val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs ->
+         val verification = selectAllRowMapper.mapRow(rs, 0)
+
+         do {
+            verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+         } while(rs.next())
+
+         verification
       }
 
       logger.debug("Search for Verification through Customer Account: {} resulted in {}", customerAccount, found)

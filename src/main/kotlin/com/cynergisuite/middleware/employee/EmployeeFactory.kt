@@ -14,7 +14,7 @@ import javax.inject.Singleton
 object EmployeeFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<Employee> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -24,8 +24,8 @@ object EmployeeFactory {
       val store = storeIn ?: StoreFactory.random()
 
       return IntStream.range(0, number).mapToObj {
-         Employee(
-            loc = "int",
+         EmployeeEntity(
+            type = "eli",
             number = numbers.numberBetween(1, 10_000),
             lastName = name.lastName(),
             firstNameMi = name.firstName(),
@@ -37,24 +37,20 @@ object EmployeeFactory {
    }
 
    @JvmStatic
-   fun single(): Employee =
+   fun single(): EmployeeEntity =
       stream(1).findFirst().orElseThrow { Exception("Unable to create Employee") }
 
    @JvmStatic
-   fun testEmployee(): Employee =
-      Employee(
+   fun testEmployee(): EmployeeEntity =
+      EmployeeEntity(
          id = 1,
-         timeCreated = OffsetDateTime.now(),
-         timeUpdated = OffsetDateTime.now(),
-         loc = "int",
+         type = "eli",
          number = 123,
          lastName = "user",
          firstNameMi = "test",
          passCode = "pass",
          store = StoreEntity(
             id = 1,
-            timeCreated = OffsetDateTime.now(),
-            timeUpdated = OffsetDateTime.now(),
             number = 1,
             name = "KANSAS CITY",
             dataset = "testds"
@@ -70,18 +66,18 @@ class EmployeeFactoryService @Inject constructor(
    private val employeeRepository: EmployeeRepository
 ) {
 
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<Employee> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<EmployeeEntity> {
       return EmployeeFactory.stream(numberIn, storeIn)
          .map {
             employeeRepository.insert(it)
          }
    }
 
-   fun single(): Employee {
+   fun single(): EmployeeEntity {
       return single(null)
    }
 
-   fun single(storeIn: StoreEntity? = null): Employee {
+   fun single(storeIn: StoreEntity? = null): EmployeeEntity {
       return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Employee") }
    }
 }

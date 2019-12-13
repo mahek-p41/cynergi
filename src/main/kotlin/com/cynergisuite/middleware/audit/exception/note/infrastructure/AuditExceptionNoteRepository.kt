@@ -5,7 +5,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -20,7 +20,7 @@ class AuditExceptionNoteRepository(
       jdbc.insertReturning("""
          INSERT INTO audit_exception_note (note, entered_by, audit_exception_id)
          VALUES (:note, :entered_by, :audit_exception_id)
-         RETURNING 
+         RETURNING
             *
          """.trimIndent(),
          mapOf(
@@ -38,7 +38,7 @@ class AuditExceptionNoteRepository(
          note
       }
 
-   fun mapRow(rs: ResultSet, enteredBy: Employee, columnPrefix: String = EMPTY): AuditExceptionNote? =
+   fun mapRow(rs: ResultSet, enteredBy: EmployeeEntity, columnPrefix: String = EMPTY): AuditExceptionNote? =
       if (rs.getString("${columnPrefix}id") != null) {
          AuditExceptionNote(
             id = rs.getLong("${columnPrefix}id"),

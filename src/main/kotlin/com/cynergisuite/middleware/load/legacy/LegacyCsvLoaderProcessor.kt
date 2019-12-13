@@ -9,6 +9,7 @@ import javax.inject.Singleton
 class LegacyCsvLoaderProcessor @Inject constructor(
    private val csvLoadingServices: List<LegacyCsvLoadingService>
 ) {
+
    fun processCsv(path: Path, reader: Reader) {
       csvLoadingServices.forEach { loadingService ->
          if (loadingService.canProcess(path)) {

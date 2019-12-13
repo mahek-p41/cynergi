@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.github.javafaker.Faker
@@ -17,7 +17,7 @@ import javax.inject.Singleton
 object AuditExceptionNoteFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: Employee? = null): Stream<AuditExceptionNote> {
+   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val auditException = auditExceptionIn ?: AuditExceptionFactory.single()
@@ -45,7 +45,7 @@ class AuditExceptionNoteFactoryService @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeFactoryService: EmployeeFactoryService
 ) {
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: Employee? = null): Stream<AuditExceptionNote> {
+   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
       val auditException = auditExceptionIn ?: auditExceptionFactoryService.single()
       val enteredBy = enteredByIn ?: employeeFactoryService.single()
 

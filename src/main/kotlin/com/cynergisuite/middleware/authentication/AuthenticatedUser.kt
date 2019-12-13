@@ -1,28 +1,14 @@
 package com.cynergisuite.middleware.authentication
 
-import com.cynergisuite.middleware.employee.Employee
+import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.store.StoreEntity
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.UserDetails
+import java.util.Objects
 
-class AuthenticatedUser(
-   val id: Long,
-   val loc: String,
-   val storeNumber: Int,
-   username: String
-) : UserDetails(username, mutableListOf()) {
-   constructor(employee: Employee) :
-      this (
-         id = employee.id!!,
-         loc = employee.loc,
-         storeNumber = employee.store.number,
-         username = employee.number.toString()
-      )
-
-   constructor(employee: Employee, overrideStore: StoreEntity) :
-      this (
-         id = employee.id!!,
-         loc = employee.loc,
-         storeNumber = overrideStore.number,
-         username = employee.number.toString()
-      )
+interface AuthenticatedUser : Identifiable {
+   fun myEmployeeType(): String
+   fun myStoreNumber(): Int?
+   fun myEmployeeNumber(): Int
 }
