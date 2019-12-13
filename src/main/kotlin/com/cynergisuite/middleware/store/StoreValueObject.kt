@@ -38,6 +38,14 @@ data class StoreValueObject (
          dataset = entity.dataset
       )
 
+   constructor(store: Store) :
+      this(
+         id = store.myId()!!,
+         number = store.myNumber(),
+         name = store.myName(),
+         dataset = store.myDataset()
+      )
+
    override fun myId(): Long? = id
    override fun copyMe(): StoreValueObject = copy()
 }

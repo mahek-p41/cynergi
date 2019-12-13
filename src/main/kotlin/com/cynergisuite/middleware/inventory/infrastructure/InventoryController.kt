@@ -48,16 +48,16 @@ class InventoryController(
    ])
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: InventoryPageRequest,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<InventoryValueObject> {
       logger.info("Fetch all inventory for store")
 
-      val employee = authenticationService.findEmployee(authentication)
+      val user = authenticationService.findUser(authentication)
 
-      logger.info("Requesting inventory {} using employee {}", pageRequest, employee)
+      logger.info("Requesting inventory {} using employee {}", pageRequest, user)
 
-      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, employee.store!!.number!!)
+      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
       val page = inventoryService.fetchAll(pageToRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {

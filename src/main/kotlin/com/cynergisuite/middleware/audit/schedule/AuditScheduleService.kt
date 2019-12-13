@@ -4,10 +4,10 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
@@ -26,7 +26,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
 import javax.inject.Inject
-import javax.inject.Qualifier
 import javax.inject.Singleton
 import javax.validation.Valid
 
@@ -61,7 +60,7 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditScheduleDataTransferObject {
+   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, employee: User, locale: Locale): AuditScheduleDataTransferObject {
       val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto, employee, locale)
       val inserted = scheduleRepository.insert(schedule)
 
@@ -77,8 +76,8 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateUpdate(dto, employee, locale)
+   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): AuditScheduleDataTransferObject {
+      val (schedule, stores, department) = auditScheduleValidator.validateUpdate(dto, user, locale)
       val updated = scheduleRepository.update(schedule)
 
       return AuditScheduleDataTransferObject(

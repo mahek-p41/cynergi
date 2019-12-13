@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.employee
 import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.extensions.trimToNull
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.load.legacy.LegacyCsvLoadingService
 import com.cynergisuite.middleware.store.StoreService
@@ -44,10 +45,10 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   fun canEmployeeAccess(asset: String, employee: EmployeeValueObject): Boolean {
+   fun canEmployeeAccess(asset: String, employee: User): Boolean {
       logger.debug("Checking if the user {} has access to asset {}", employee, asset)
 
-      return employeeRepository.canEmployeeAccess(employee.type!!, asset, employee.id!!)
+      return employeeRepository.canEmployeeAccess(employee.myEmployeeType(), asset, employee.myId() ?: -1) // user -1 since that shouldn't be a valid id in the system, and will cause the access check to fail
    }
 
    fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =

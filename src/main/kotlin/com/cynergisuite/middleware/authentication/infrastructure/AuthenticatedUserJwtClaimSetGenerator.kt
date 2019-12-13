@@ -26,9 +26,9 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
 
       if (userDetails is AuthenticatedUser) {
          builder
-            ?.claim("id", userDetails.id)
-            ?.claim("type", userDetails.employeeType)
-            ?.claim("stNum", userDetails.storeNumber)
+            ?.claim("id", userDetails.myId())
+            ?.claim("type", userDetails.myEmployeeType())
+            ?.claim("stNum", userDetails.myStoreNumber())
       }
    }
 }

@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailReposi
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -42,7 +42,7 @@ class AuditDetailService @Inject constructor(
       auditDetailRepository.exists(id = id)
 
    @Validated
-   fun create(auditId: Long, @Valid vo: AuditDetailCreateValueObject, @Valid scannedBy: EmployeeValueObject, locale: Locale): AuditDetailValueObject {
+   fun create(auditId: Long, @Valid vo: AuditDetailCreateValueObject, @Valid scannedBy: User, locale: Locale): AuditDetailValueObject {
       auditDetailValidator.validateCreate(auditId, vo)
 
       val scanArea = auditScanAreaRepository.findOne(vo.scanArea!!.value!!)!!
@@ -52,7 +52,7 @@ class AuditDetailService @Inject constructor(
          AuditDetailEntity(
             inventory,
             scanArea = scanArea,
-            scannedBy = EmployeeEntity(scannedBy),
+            scannedBy = EmployeeEntity.from(scannedBy),
             audit = SimpleIdentifiableEntity(auditId)
          )
       )

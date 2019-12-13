@@ -9,10 +9,10 @@ import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -121,15 +121,16 @@ class AuditController @Inject constructor(
    ])
    fun create(
       @Body audit: AuditCreateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Requested Create Audit {}", audit)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val auditToCreate = if (audit.store != null) audit else audit.copy(store = employee.store)
+      val user = authenticationService.findUser(authentication)
+      val defaultStore = user.myStore() ?: throw NotFoundException("store")
+      val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
 
-      val response = auditService.create(vo = auditToCreate, employee = employee, locale = httpRequest.findLocaleWithDefault())
+      val response = auditService.create(vo = auditToCreate, employee = user, locale = httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create Audit {} resulted in {}", audit, response)
 
@@ -148,13 +149,13 @@ class AuditController @Inject constructor(
    ])
    fun update(
       @Body audit: AuditUpdateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Requested Update Audit {}", audit)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditService.update(audit = audit, employee = employee, locale = httpRequest.findLocaleWithDefault())
+      val user = authenticationService.findUser(authentication)
+      val response = auditService.update(audit = audit, user = user, locale = httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 

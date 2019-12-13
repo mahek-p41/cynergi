@@ -10,9 +10,9 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.StoreEntity
@@ -75,9 +75,8 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun create(@Valid vo: AuditCreateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
+   fun create(@Valid vo: AuditCreateValueObject, employee: User, locale: Locale): AuditValueObject {
       val validAudit = auditValidator.validateCreate(vo, employee)
-
       val audit = auditRepository.insert(validAudit)
 
       return AuditValueObject(audit, locale, localizationService)
@@ -89,13 +88,13 @@ class AuditService @Inject constructor(
       return if (createdOrInProgressAudit != null) {
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
-         create(AuditCreateValueObject(StoreValueObject(store)), EmployeeValueObject(employee), locale)
+         create(AuditCreateValueObject(StoreValueObject(store)), employee, locale)
       }
    }
 
    @Validated
-   fun update(@Valid audit: AuditUpdateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditValueObject {
-      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(audit, employee, locale)
+   fun update(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
+      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(audit, user, locale)
 
       existingAudit.actions.add(validAuditAction)
 

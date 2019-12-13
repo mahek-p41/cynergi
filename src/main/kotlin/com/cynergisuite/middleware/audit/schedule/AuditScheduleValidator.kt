@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
@@ -27,7 +27,7 @@ class AuditScheduleValidator(
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
 
-   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, employee: EmployeeValueObject, locale: Locale): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
+   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
       doValidation { errors -> doSharedValidation(dto, errors) }
 
       val stores = mutableListOf<StoreEntity>()
@@ -58,7 +58,7 @@ class AuditScheduleValidator(
 
       arguments.add(
          ScheduleArgumentEntity(
-            employee.number.toString(),
+            user.myEmployeeNumber().toString(),
             "employeeNumber"
          )
       )
@@ -78,7 +78,7 @@ class AuditScheduleValidator(
       )
    }
 
-   fun validateUpdate(dto: AuditScheduleCreateUpdateDataTransferObject, employee: EmployeeValueObject, locale: Locale): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
+   fun validateUpdate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Triple<ScheduleEntity, List<StoreEntity>, DepartmentEntity> {
       doValidation { errors ->
          val scheduleId = dto.id
 
@@ -123,9 +123,9 @@ class AuditScheduleValidator(
       }
 
       if (existingEmployee == null) {
-         argsToUpdate.add(ScheduleArgumentEntity(employee.number.toString(), "employeeNumber"))
-      } else if (existingEmployee.value != employee.number.toString()) {
-         argsToUpdate.add(existingEmployee.copy(value = employee.number.toString()))
+         argsToUpdate.add(ScheduleArgumentEntity(user.myEmployeeNumber().toString(), "employeeNumber"))
+      } else if (existingEmployee.value != user.myEmployeeNumber().toString()) {
+         argsToUpdate.add(existingEmployee.copy(value = user.myEmployeeNumber().toString()))
       } else {
          argsToUpdate.add(existingEmployee)
       }

@@ -98,14 +98,14 @@ class AuditScheduleController @Inject constructor(
    ])
    fun create(
       @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
       ): AuditScheduleDataTransferObject {
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditScheduleService.create(auditSchedule, employee, locale)
+      val user = authenticationService.findUser(authentication)
+      val response = auditScheduleService.create(auditSchedule, user, locale)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
 
@@ -124,14 +124,14 @@ class AuditScheduleController @Inject constructor(
    ])
    fun update(
       @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) : AuditScheduleDataTransferObject {
       logger.info("Requested update audit schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditScheduleService.update(auditSchedule, employee, locale)
+      val user = authenticationService.findUser(authentication)
+      val response = auditScheduleService.update(auditSchedule, user, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)
 

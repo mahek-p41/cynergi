@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -101,13 +100,13 @@ class AuditDetailController @Inject constructor(
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
       @Body vo: AuditDetailCreateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditDetailService.create(auditId, vo, employee, httpRequest.findLocaleWithDefault())
+      val user = authenticationService.findUser(authentication)
+      val response = auditDetailService.create(auditId, vo, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
 

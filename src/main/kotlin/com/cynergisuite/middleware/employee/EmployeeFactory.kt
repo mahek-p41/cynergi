@@ -44,8 +44,6 @@ object EmployeeFactory {
    fun testEmployee(): EmployeeEntity =
       EmployeeEntity(
          id = 1,
-         timeCreated = OffsetDateTime.now(),
-         timeUpdated = OffsetDateTime.now(),
          type = "eli",
          number = 123,
          lastName = "user",
@@ -53,8 +51,6 @@ object EmployeeFactory {
          passCode = "pass",
          store = StoreEntity(
             id = 1,
-            timeCreated = OffsetDateTime.now(),
-            timeUpdated = OffsetDateTime.now(),
             number = 1,
             name = "KANSAS CITY",
             dataset = "testds"

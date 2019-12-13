@@ -24,8 +24,8 @@ data class AuthenticatedUserInformation (
 
    constructor(user: AuthenticatedUser, loginStatus: String) :
       this(
-         employeeNumber = user.employeeNumber.toString(),
-         storeNumber = user.storeNumber,
+         employeeNumber = user.myEmployeeNumber().toString(),
+         storeNumber = user.myStoreNumber(),
          loginStatus = loginStatus
       )
 }
