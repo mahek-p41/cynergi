@@ -61,41 +61,8 @@ class AuditPageRequest(
          this.storeNumber = pageRequestIn?.storeNumber
       }
 
-   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
-      AuditPageRequest(
-         page = page,
-         size = size,
-         sortBy = sortBy,
-         sortDirection = sortDirection,
-         from = this.from,
-         thru = this.thru,
-         storeNumber = this.storeNumber,
-         status = this.status
-      )
-
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy()
-
-   protected override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
-      val status = this.status
-      var separator = separatorIn
-
-      separator = from?.apply { stringBuilder.append(separator).append("from=").append(this) }?.let { "&" } ?: separator
-      separator = thru?.apply { stringBuilder.append(separator).append("thru=").append(this) }?.let { "&" } ?: separator
-      separator = storeNumber?.apply { stringBuilder.append(separator).append("storeNumber=").append(this) }?.let { "&" } ?: separator
-
-      if ( !status.isNullOrEmpty() ) {
-         stringBuilder.append(status.joinToString(separator = "${separator}status=", prefix = "&status="))
-      }
-   }
-
-   protected override fun myToStringValues(): List<Pair<String, Any?>> =
-      listOf(
-         "from" to from,
-         "thru" to thru,
-         "storeNumber" to storeNumber,
-         "status" to status
-      )
 
    override fun equals(other: Any?): Boolean =
       if (other is AuditPageRequest) {
@@ -114,6 +81,26 @@ class AuditPageRequest(
          .append(this.storeNumber)
          .append(this.status)
          .toHashCode()
+
+   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
+      AuditPageRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection,
+         from = this.from,
+         thru = this.thru,
+         storeNumber = this.storeNumber,
+         status = this.status
+      )
+
+   protected override fun myToStringValues(): List<Pair<String, Any?>> =
+      listOf(
+         "from" to from,
+         "thru" to thru,
+         "storeNumber" to storeNumber,
+         "status" to status
+      )
 
    private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
       val fromIn = pageRequestIn?.from

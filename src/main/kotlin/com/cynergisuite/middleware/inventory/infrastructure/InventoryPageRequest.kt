@@ -41,39 +41,8 @@ class InventoryPageRequest(
          locationType = pageRequest.locationType
       )
 
-   override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): InventoryPageRequest =
-      InventoryPageRequest(
-         page = page,
-         size = size,
-         sortBy = sortBy,
-         sortDirection = sortDirection,
-         storeNumber = this.storeNumber,
-         inventoryStatus = this.inventoryStatus,
-         locationType = this.locationType
-      )
-
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
-
-   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
-      val storeNumber = this.storeNumber
-      val inventoryStatus = this.inventoryStatus
-      var separator = separatorIn
-
-      separator = storeNumber?.apply { stringBuilder.append(separator).append("storeNumber=").append(this) }.let { "&" }
-
-      if ( !inventoryStatus.isNullOrEmpty() ) {
-         inventoryStatus.joinTo(stringBuilder, "${separator}inventoryStatus=", "&inventoryStatus=")
-      }
-
-      if ( !locationType.isNullOrEmpty() ) {
-         stringBuilder.append(separator).append("locationType=").append(locationType)
-      }
-   }
-
-   override fun myToStringValues(): List<Pair<String, Any?>> {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-   }
 
    override fun equals(other: Any?): Boolean =
       if (other is InventoryPageRequest) {
@@ -95,4 +64,21 @@ class InventoryPageRequest(
          .append(this.locationType)
          .toHashCode()
 
+   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): InventoryPageRequest =
+      InventoryPageRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection,
+         storeNumber = this.storeNumber,
+         inventoryStatus = this.inventoryStatus,
+         locationType = this.locationType
+      )
+
+   protected override fun myToStringValues(): List<Pair<String, Any?>> =
+      listOf(
+         "storeNumber" to storeNumber,
+         "inventoryStatus" to inventoryStatus,
+         "locationType" to locationType
+      )
 }

@@ -31,7 +31,10 @@ class SchedulePageRequest(
          command = command
       )
 
-   override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): SchedulePageRequest =
+   @ValidPageSortBy("id")
+   override fun sortByMe(): String = sortBy()
+
+   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): SchedulePageRequest =
       SchedulePageRequest(
          page = page,
          size = size,
@@ -40,13 +43,6 @@ class SchedulePageRequest(
          command = this.command
       )
 
-   @ValidPageSortBy("id")
-   override fun sortByMe(): String = sortBy()
-   protected override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
-      command?.also { stringBuilder.append(separatorIn).append("command=").append(command) }
-   }
-
-   protected override fun myToStringValues(): List<Pair<String, Any?>> {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-   }
+   protected override fun myToStringValues(): List<Pair<String, Any?>> =
+      listOf("command" to command)
 }

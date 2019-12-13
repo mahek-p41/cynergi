@@ -59,16 +59,15 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
 
    protected abstract fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): PAGE
    protected abstract fun sortByMe(): String
-   protected abstract fun myToString(stringBuilder: StringBuilder, separatorIn: String)
    protected abstract fun myToStringValues(): List<Pair<String, Any?>>
 
-   override fun page(): Int = page ?: DEFAULT_PAGE
-   override fun size(): Int = size ?: DEFAULT_SIZE
-   override fun sortBy(): String = sortBy ?: DEFAULT_SORT_BY
-   override fun sortDirection(): String = sortDirection ?: DEFAULT_SORT_DIRECTION
-   override fun nextPage(): PAGE = myNextPage(this.page() + 1, size(), sortBy(), sortDirection())
+   final override fun page(): Int = page ?: DEFAULT_PAGE
+   final override fun size(): Int = size ?: DEFAULT_SIZE
+   final override fun sortBy(): String = sortBy ?: DEFAULT_SORT_BY
+   final override fun sortDirection(): String = sortDirection ?: DEFAULT_SORT_DIRECTION
+   final override fun nextPage(): PAGE = myNextPage(this.page() + 1, size(), sortBy(), sortDirection())
 
-   override fun snakeSortBy(): String {
+   final override fun snakeSortBy(): String {
       val sortByMe = sortByMe()
 
       return if (sortByMe.isAllSameCase()) {
@@ -78,7 +77,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
       }
    }
 
-   override fun offset(): Int {
+   final override fun offset(): Int {
       val requestedOffsetPage: Int = page()
       val offsetPage = requestedOffsetPage - 1
       val offsetSize = size()
@@ -106,7 +105,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
          .append(this.sortDirection)
          .toHashCode()
 
-   override fun toString(): String { //= myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
+   final override fun toString(): String { //= myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
       val stringBuilder = StringBuilder()
       var separator = "?"
 
@@ -115,7 +114,18 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
       separator = sortBy?.apply { stringBuilder.append(separator).append("sortBy=").append(this) }?.let { "&" } ?: separator
       separator = sortDirection?.apply { stringBuilder.append(separator).append("sortDirection=").append(this) }?.let { "&" } ?: separator
 
-      //myToString(stringBuilder, separator)
+      myToStringValues().asSequence()
+         .filter { (_, value) -> value != null }
+         .flatMap { (key, value) ->
+            if (value is Iterable<*>) {
+               value.asSequence().map { key to it }
+            } else {
+               sequenceOf(key to value)
+            }
+         }
+         .forEach { (key, value) ->
+            separator = value.apply { stringBuilder.append(separator).append(key).append('=').append(this) }.let { "&" }
+         }
 
       return stringBuilder.toString()
    }
@@ -149,6 +159,5 @@ class StandardPageRequest(
 
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
-   override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {  }
    override fun myToStringValues(): List<Pair<String, Any?>> = emptyList()
 }
