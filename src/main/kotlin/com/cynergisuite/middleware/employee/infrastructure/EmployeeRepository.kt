@@ -231,7 +231,7 @@ class EmployeeRepository @Inject constructor(
 
                employee.copy(store = defaultStore)
             } else {
-               logger.debug("Employe {} is not allow to auto store assign", number)
+               logger.debug("Employee {} is not allowed to auto store assign", number)
 
                employee
             }
