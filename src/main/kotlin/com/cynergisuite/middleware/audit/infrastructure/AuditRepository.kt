@@ -48,6 +48,7 @@ class AuditRepository @Inject constructor(
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
             a.number AS a_number,
+            (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
             (SELECT csastd.value
              FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
              WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
@@ -190,6 +191,7 @@ class AuditRepository @Inject constructor(
                a.time_updated AS time_updated,
                a.store_number AS store_number,
                a.number AS number,
+               (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
                s.current_status AS current_status,
                (SELECT count(a.id)
                 FROM audit a
@@ -215,6 +217,7 @@ class AuditRepository @Inject constructor(
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
             a.number AS a_number,
+            a.total_exceptions AS a_total_exceptions,
             a.current_status AS current_status,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
@@ -391,7 +394,7 @@ class AuditRepository @Inject constructor(
    fun insert(entity: AuditEntity): AuditEntity {
       logger.debug("Inserting audit {}", entity)
 
-      val audit = jdbc.insertReturning(
+      val audit = jdbc.insertReturning<AuditEntity>(
          """
          INSERT INTO audit(store_number)
          VALUES (:store_number)
@@ -406,7 +409,8 @@ class AuditRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                store = entity.store,
-               number = rs.getInt("number")
+               number = rs.getInt("number"),
+               totalExceptions = 0
             )
          }
       )
@@ -437,7 +441,8 @@ class AuditRepository @Inject constructor(
          timeCreated = rs.getOffsetDateTime("a_time_created"),
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
          store = storeRepository.mapRow(rs, "s_"),
-         number = rs.getInt("a_number")
+         number = rs.getInt("a_number"),
+         totalExceptions = rs.getInt("a_total_exceptions")
       )
 
    private fun loadNextStates(audit: AuditEntity) {

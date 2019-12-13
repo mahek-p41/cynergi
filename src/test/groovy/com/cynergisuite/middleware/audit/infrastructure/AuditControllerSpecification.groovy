@@ -79,6 +79,20 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
    }
 
+   void "fetch one audit by id that has associated exceptions" () {
+      given:
+      final store = storeFactoryService.random()
+      final savedAudit = auditFactoryService.single(store)
+      final auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
+
+      when:
+      def result = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.totalExceptions == auditExceptions.size()
+   }
+
    void "fetch one audit by id not found" () {
       when:
       get("$path/0")
@@ -307,6 +321,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      twoCreatedAudits.elements[0].totalExceptions == 25
+      twoCreatedAudits.elements[1].totalExceptions == 26
       twoCreatedAudits.elements != null
       twoCreatedAudits.elements.size() == 2
       twoCreatedAudits.totalElements == 2
