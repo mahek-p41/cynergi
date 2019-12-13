@@ -77,13 +77,12 @@ class AuditPageRequest(
    override fun sortByMe(): String = sortBy()
 
    override fun myToString(stringBuilder: StringBuilder, separatorIn: String) {
-      val storeNumber = this.storeNumber
       val status = this.status
       var separator = separatorIn
 
-      separator = from?.apply { stringBuilder.append(separator).append("from=").append(this) }.let { "&" }
-      separator = thru?.apply { stringBuilder.append(separator).append("thru=").append(this) }.let { "&" }
-      separator = storeNumber?.apply { stringBuilder.append(separator).append("storeNumber=").append(this) }.let { "&" }
+      separator = from?.apply { stringBuilder.append(separator).append("from=").append(this) }?.let { "&" } ?: separator
+      separator = thru?.apply { stringBuilder.append(separator).append("thru=").append(this) }?.let { "&" } ?: separator
+      separator = storeNumber?.apply { stringBuilder.append(separator).append("storeNumber=").append(this) }?.let { "&" } ?: separator
 
       if ( !status.isNullOrEmpty() ) {
          stringBuilder.append(status.joinToString(separator = "${separator}status=", prefix = "&status="))

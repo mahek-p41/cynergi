@@ -109,10 +109,10 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
       val stringBuilder = StringBuilder()
       var separator = "?"
 
-      separator = page?.apply { stringBuilder.append(separator).append("page=").append(this) }.let { "&" }
-      separator = size?.apply { stringBuilder.append(separator).append("size=").append(this) }.let { "&" }
-      separator = sortBy?.apply { stringBuilder.append(separator).append("sortBy=").append(this) }.let { "&" }
-      separator = sortDirection?.apply { stringBuilder.append(separator).append("sortDirection=").append(this) }.let { "&" }
+      separator = page?.apply { stringBuilder.append(separator).append("page=").append(this) }?.let { "&" } ?: separator
+      separator = size?.apply { stringBuilder.append(separator).append("size=").append(this) }?.let { "&" } ?: separator
+      separator = sortBy?.apply { stringBuilder.append(separator).append("sortBy=").append(this) }?.let { "&" } ?: separator
+      separator = sortDirection?.apply { stringBuilder.append(separator).append("sortDirection=").append(this) }?.let { "&" } ?: separator
 
       myToString(stringBuilder, separator)
 
