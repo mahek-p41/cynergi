@@ -42,13 +42,11 @@ class EmployeeRepository @Inject constructor(
    @Language("PostgreSQL")
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT from_priority, id, time_created, time_updated, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
+         SELECT from_priority, id, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
          FROM (
             SELECT
                1 AS from_priority,
                fpie.id AS id,
-               fpie.time_created AS time_created,
-               fpie.time_updated AS time_updated,
                fpie.number AS number,
                fpie.last_name AS last_name,
                fpie.first_name_mi AS first_name_mi,
@@ -64,8 +62,6 @@ class EmployeeRepository @Inject constructor(
             SELECT
                2 AS from_priority,
                e.id AS id,
-               e.time_created AS time_created,
-               e.time_updated AS time_updated,
                e.number AS number,
                e.last_name AS last_name,
                e.first_name_mi AS first_name_mi,
@@ -82,8 +78,6 @@ class EmployeeRepository @Inject constructor(
       ), stores AS (
          SELECT
             s.id AS s_id,
-            s.time_created AS s_time_created,
-            s.time_updated AS s_time_updated,
             s.number AS s_number,
             s.name AS s_name,
             s.dataset AS s_dataset
@@ -92,8 +86,6 @@ class EmployeeRepository @Inject constructor(
       SELECT
          from_priority AS priority,
          id AS e_id,
-         time_created AS e_time_created,
-         time_updated AS e_time_updated,
          number AS e_number,
          last_name AS e_last_name,
          NULLIF(TRIM(first_name_mi), '') AS e_first_name_mi,
@@ -103,14 +95,10 @@ class EmployeeRepository @Inject constructor(
          employee_type AS e_employee_type,
          allow_auto_store_assign AS e_allow_auto_store_assign,
          s.s_id AS s_id,
-         s.s_time_created AS s_time_created,
-         s.s_time_updated AS s_time_updated,
          s.s_number AS s_number,
          s.s_name AS s_name,
          s.s_dataset AS s_dataset,
          ds.s_id AS ds_id,
-         ds.s_time_created AS ds_time_created,
-         ds.s_time_updated AS ds_time_updated,
          ds.s_number AS ds_number,
          ds.s_name AS ds_name,
          ds.s_dataset AS ds_dataset
@@ -158,9 +146,9 @@ class EmployeeRepository @Inject constructor(
                AND e.employee_type = :employee_type
          """.trimIndent(),
          mapOf(
-            "id" to user.id,
-            "employee_type" to user.employeeType,
-            "store_number" to user.storeNumber
+            "id" to user.myId(),
+            "employee_type" to user.myEmployeeType(),
+            "store_number" to user.myStoreNumber()
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -217,8 +205,6 @@ class EmployeeRepository @Inject constructor(
             val defaultStore = storeRepository.mapRow(row, "ds_")
             val employee = EmployeeEntity(
                id = row.getLong("e_id"),
-               timeCreated = row.getOffsetDateTime("e_time_created"),
-               timeUpdated = row.getOffsetDateTime("e_time_updated") ?: OffsetDateTime.now(),
                type = row.getString("e_employee_type"),
                number = row.getInteger("e_number"),
                lastName = row.getString("e_last_name"),
@@ -287,8 +273,6 @@ class EmployeeRepository @Inject constructor(
    fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity  =
       EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          type = rs.getString("${columnPrefix}employee_type"),
          number = rs.getInt("${columnPrefix}number"),
          lastName = rs.getString("${columnPrefix}last_name"),
@@ -310,8 +294,6 @@ class EmployeeRepository @Inject constructor(
    private fun mapDDLRow(rs: ResultSet, store: StoreEntity?) : EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
          type = "eli",
          number = rs.getInt("number"),
          lastName = rs.getString("last_name"),

@@ -62,8 +62,6 @@ class AuditRepository @Inject constructor(
             astd.color AS astd_color,
             astd.localization_code AS astd_localization_code,
             aer.e_id AS aer_id,
-            aer.e_time_created AS aer_time_created,
-            aer.e_time_updated AS aer_time_updated,
             aer.e_number AS aer_number,
             aer.e_last_name AS aer_last_name,
             aer.e_first_name_mi AS aer_first_name_mi,
@@ -79,8 +77,6 @@ class AuditRepository @Inject constructor(
             s.number AS s_number,
             s.dataset AS s_dataset,
             se.id AS se_id,
-            se.time_created AS se_time_created,
-            se.time_updated AS se_time_updated,
             se.name AS se_name,
             se.dataset AS s_dataset
          FROM audit a
@@ -141,7 +137,7 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity> {
+   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
@@ -208,8 +204,8 @@ class AuditRepository @Inject constructor(
                  JOIN maxStatus ms
                       ON s.id = ms.current_status_id
             $whereBuilder
-            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-            LIMIT ${pageRequest.size}
+            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+            LIMIT ${pageRequest.size()}
                OFFSET ${pageRequest.offset()}
          )
          SELECT
@@ -230,8 +226,6 @@ class AuditRepository @Inject constructor(
             astd.color AS astd_color,
             astd.localization_code AS astd_localization_code,
             aer.e_id AS aer_id,
-            aer.e_time_created AS aer_time_created,
-            aer.e_time_updated AS aer_time_updated,
             aer.e_number AS aer_number,
             aer.e_last_name AS aer_last_name,
             aer.e_first_name_mi AS aer_first_name_mi,
@@ -241,14 +235,10 @@ class AuditRepository @Inject constructor(
             aer.e_employee_type AS aer_employee_type,
             aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
             s.id AS s_id,
-            s.time_created AS s_time_created,
-            s.time_updated AS s_time_updated,
             s.name AS s_name,
             s.number AS s_number,
             s.dataset AS s_dataset,
             se.id AS se_id,
-            se.time_created AS se_time_created,
-            se.time_updated AS se_time_updated,
             se.name AS se_name,
             se.dataset AS s_dataset,
             total_elements AS total_elements
@@ -263,12 +253,12 @@ class AuditRepository @Inject constructor(
                   ON a.store_number = s.number
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
-         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
+         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
       logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
 
-      val repoPage = jdbc.queryPaged<AuditEntity>(sql, params, pageRequest) { rs, elements ->
+      val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
          var currentId: Long = -1
          var currentParentEntity: AuditEntity? = null
 

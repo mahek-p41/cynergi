@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -113,9 +113,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final audit = auditFactoryService.single()
       final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
-      final pageTwo = new PageRequest(2, 5, "id", "ASC")
-      final pageFive = new PageRequest(5, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
       final firstFiveDiscrepancies = twentyAuditDiscrepancies[0..4]
       final secondFiveDiscrepancies = twentyAuditDiscrepancies[5..9]
 
@@ -125,7 +125,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       then:
       notThrown(HttpClientResponseException)
       audit.number > 0
-      new PageRequest(pageOneResult.requested) == pageOne
+      new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
@@ -138,7 +138,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageTwoResult.requested) == pageTwo
+      new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
@@ -166,7 +166,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch all audit exceptions for a single audit where each exception has 2 notes attached" () {
       given:
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final audit = auditFactoryService.single()
       final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, null)
          .peek{ it.notes.addAll(auditExceptionNoteFactoryService.stream(2, it, authenticatedEmployee).toList()) } // create some notes and save them
@@ -179,7 +179,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageOneResult.requested) == pageOne
+      new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       final pageOneAuditExceptions = pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
@@ -315,7 +315,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception using employee that doesn't have a first name" () {
       given:
-      final noFirstNameGuy = new EmployeeEntity(null, OffsetDateTime.now(), OffsetDateTime.now(), "eli", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
+      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
       final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
       final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US

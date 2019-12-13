@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
@@ -9,7 +9,6 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObje
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -78,7 +77,7 @@ class AuditExceptionController @Inject constructor(
    ])
    fun fetchAll(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
@@ -105,14 +104,14 @@ class AuditExceptionController @Inject constructor(
    fun create(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId") auditId: Long,
       @Body vo: AuditExceptionCreateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {
       logger.info("Requested Create AuditException {}", vo)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditExceptionService.create(auditId, vo, employee, locale)
+      val user = authenticationService.findUser(authentication)
+      val response = auditExceptionService.create(auditId, vo, user, locale)
 
       logger.debug("Requested Create AuditException {} resulted in {}", vo, response)
 
@@ -132,14 +131,14 @@ class AuditExceptionController @Inject constructor(
    fun update(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId") auditId: Long,
       @Body vo: AuditExceptionUpdateValueObject,
-      authentication: Authentication?,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {
       logger.info("Requested Update AuditException {}", vo)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditExceptionService.addNote(auditId, vo, employee, locale)
+      val user = authenticationService.findUser(authentication)
+      val response = auditExceptionService.addNote(auditId, vo, user, locale)
 
       logger.debug("Requested Update AuditException {} resulted in {}", vo, response)
 

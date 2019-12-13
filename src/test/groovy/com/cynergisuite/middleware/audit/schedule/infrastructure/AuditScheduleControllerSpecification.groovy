@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
@@ -79,9 +79,9 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.random()
       final emp = employeeFactoryService.single(store)
       final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, FRIDAY, [store], department, emp).toList()
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
-      final pageTwo = new PageRequest(2, 5, "id", "ASC")
-      final pageThree = new PageRequest(3, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
 
       when:
       def pageOneResult = get("/audit/schedule${pageOne}")
@@ -162,8 +162,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.storeThree()
       final emp = employeeFactoryService.single(storeOne)
       final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, TUESDAY, [storeOne, storeThree], department, emp).toList()
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
-      final pageThree = new PageRequest(3, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
 
       when:
       def pageOneResult = get("/audit/schedule${pageOne}")

@@ -20,11 +20,11 @@ data class Page<I: Identifiable>(
    val totalElements: Long,
 
    @field:Schema(name = "totalPages", description = "The total number of pages that can possibly be returned at the time this query was executed", required = true)
-   val totalPages: Long = ceil(totalElements.toDouble() / (requested.size).toDouble()).toLong(),
+   val totalPages: Long = ceil(totalElements.toDouble() / (requested.size()).toDouble()).toLong(),
 
    @field:Schema(name = "first", description = "Boolean value to show whether or not this is the first page", required = true)
-   val first: Boolean = requested.page == 1,
+   val first: Boolean = requested.page() == 1,
 
    @field:Schema(name = "last", description = "Boolean value to show whether or not this is the last page", required = true)
-   val last: Boolean = requested.page.toLong() == totalPages
+   val last: Boolean = requested.page().toLong() == totalPages
 )

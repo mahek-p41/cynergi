@@ -23,10 +23,8 @@ class DepartmentRepository @Inject constructor(
       logger.debug("Search for department by id {}", id)
 
       val found = jdbc.findFirstOrNull("""
-         SELECT 
+         SELECT
             id AS d_id,
-            time_created AS d_time_created,
-            time_updated AS d_time_updated,
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
@@ -47,10 +45,8 @@ class DepartmentRepository @Inject constructor(
       logger.debug("Searching for department by code {}", code)
 
       val found = jdbc.findFirstOrNull("""
-         SELECT 
+         SELECT
             id AS d_id,
-            time_created AS d_time_created,
-            time_updated AS d_time_updated,
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
@@ -67,23 +63,21 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<DepartmentEntity> {
+   fun findAll(pageRequest: PageRequest): RepositoryPage<DepartmentEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<DepartmentEntity>()
 
       jdbc.query("""
-         SELECT 
+         SELECT
             id AS d_id,
-            time_created AS d_time_created,
-            time_updated AS d_time_updated,
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
             default_menu AS d_default_menu,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw) AS total_elements
          FROM fastinfo_prod_import.department_vw
-         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-         LIMIT ${pageRequest.size}
+         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
          """.trimIndent()
       ) { rs ->
@@ -114,8 +108,6 @@ class DepartmentRepository @Inject constructor(
    fun mapRow(rs: ResultSet, columnPrefix: String = "d_"): DepartmentEntity =
       DepartmentEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          code = rs.getString("${columnPrefix}code"),
          description = rs.getString("${columnPrefix}description"),
          securityProfile = rs.getInt("${columnPrefix}security_profile"),

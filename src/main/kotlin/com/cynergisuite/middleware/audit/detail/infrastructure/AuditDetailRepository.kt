@@ -49,8 +49,6 @@ class AuditDetailRepository @Inject constructor(
          ad.inventory_model AS ad_inventory_model,
          ad.audit_id AS ad_audit_id,
          e.e_id AS e_id,
-         e.e_time_created AS e_time_created,
-         e.e_time_updated AS e_time_updated,
          e.e_number AS e_number,
          e.e_last_name AS e_last_name,
          e.e_first_name_mi AS e_first_name_mi,
@@ -60,8 +58,6 @@ class AuditDetailRepository @Inject constructor(
          e.e_employee_type AS e_employee_type,
          e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
          e.s_id AS s_id,
-         e.s_time_created AS s_time_created,
-         e.s_time_updated AS s_time_updated,
          e.s_number AS s_number,
          e.s_name AS s_name,
          e.s_dataset AS s_dataset,
@@ -93,7 +89,7 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditDetailEntity> {
+   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
@@ -106,8 +102,8 @@ class AuditDetailRepository @Inject constructor(
             count(*) OVER() as total_elements
          FROM paged AS p
          WHERE p.ad_audit_id = :audit_id
-         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection}
-         LIMIT ${page.size} OFFSET ${page.offset()}
+         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection()}
+         LIMIT ${page.size()} OFFSET ${page.offset()}
       """.trimIndent(),
       mutableMapOf("audit_id" to audit.id)
       ) { rs ->

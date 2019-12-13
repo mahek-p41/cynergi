@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
@@ -321,7 +321,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(6, storeOne, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      def firstFiveAudits = get(path + new PageRequest([page: 1, size: 5, sortBy: 'id']))
+      def firstFiveAudits = get(path + new StandardPageRequest([page: 1, size: 5, sortBy: 'id']))
 
       then:
       notThrown(HttpClientResponseException)

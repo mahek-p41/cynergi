@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -63,7 +63,7 @@ class StoreController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: PageRequest
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest
    ): Page<StoreValueObject> {
       logger.info("Fetching all stores {}", pageRequest)
 
