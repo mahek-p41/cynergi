@@ -26,15 +26,14 @@ import javax.inject.Singleton
 object AuditScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
       val faker = Faker()
       val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
       val dayOfWeek = dayOfWeekIn ?: DayOfWeek.values().random()
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
-      val department = departmentIn ?: DepartmentFactory.random()
       val employee = employeeIn ?: EmployeeFactory.single()
-      val arguments = mutableSetOf(ScheduleArgumentEntity(value = department.code, description = "department"))
+      val arguments = mutableSetOf<ScheduleArgumentEntity>()
 
       for (store in stores) {
          arguments.add(
@@ -74,16 +73,15 @@ class AuditScheduleFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random())
-      val department = departmentIn ?: departmentFactoryService.random()
       val employee = employeeIn ?: employeeFactoryService.single()
 
-      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, department, employee)
+      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, employee)
          .map { scheduleRepository.insert(it) }
    }
 
-   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, departmentIn: DepartmentEntity? = null, employeeIn: EmployeeEntity? = null) :ScheduleEntity {
-      return stream(1, dayOfWeekIn, storesIn, departmentIn, employeeIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
+   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null) :ScheduleEntity {
+      return stream(1, dayOfWeekIn, storesIn, employeeIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
    }
 }

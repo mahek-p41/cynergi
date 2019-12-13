@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreFactoryService
@@ -25,7 +24,6 @@ class DevelopDataLoader @Inject constructor(
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val auditScheduleScheduleFactoryService: AuditScheduleFactoryService,
-   private val departmentFactoryService: DepartmentFactoryService,
    private val employeeRepository: EmployeeRepository,
    private val employeeFactoryService: EmployeeFactoryService,
    private val storeFactoryService: StoreFactoryService
@@ -40,7 +38,6 @@ class DevelopDataLoader @Inject constructor(
       val admin = employeeRepository.findOne(number = 998, employeeType = "eli")
       val storeOneEmployee = employeeFactoryService.single(storeOne)
       val storeThreeEmployee = employeeFactoryService.single(storeThree)
-      val salesAssociateDepartment = departmentFactoryService.department("SA")
 
       // audit store holding areas
       val warehouse = auditScanAreaFactoryService.warehouse()
@@ -82,8 +79,8 @@ class DevelopDataLoader @Inject constructor(
       // setup store three signed off audits
       auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
-      auditScheduleScheduleFactoryService.single(DayOfWeek.TUESDAY, listOf(storeOne), salesAssociateDepartment)
-      auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree), salesAssociateDepartment)
+      auditScheduleScheduleFactoryService.single(DayOfWeek.TUESDAY, listOf(storeOne))
+      auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree))
 
       logger.info("Finished loading develop data")
       logger.info("Admin employee {}", admin)

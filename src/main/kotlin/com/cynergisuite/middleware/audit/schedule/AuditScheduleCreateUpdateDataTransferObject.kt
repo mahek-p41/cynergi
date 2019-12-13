@@ -39,65 +39,46 @@ data class AuditScheduleCreateUpdateDataTransferObject(
    @field:Schema(name = "stores", description = "Set of stores the audit schedule is supposed to run against")
    val stores: Set<SimpleIdentifiableDataTransferObject> = mutableSetOf(), // is from a schedule argument that is collected together
 
-   @field:Valid
-   @field:NotNull
-   @field:Schema(name = "department", description = "Department that is supposed to do the audit at the desired stores")
-   val department: SimpleIdentifiableDataTransferObject? = null,
-
    @field:NotNull
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")
    val enabled: Boolean? = null
 
 ) {
-   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity) :
+   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>) :
       this(
          title = title,
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department.id),
          enabled = true
       )
 
-   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity, enabled: Boolean = true) :
+   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, enabled: Boolean = true) :
       this(
          title = title,
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department.id),
          enabled = enabled
       )
 
-   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity) :
+   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>) :
       this(
          id = id,
          title = title,
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department.id),
          enabled = true
       )
 
-   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, department: DepartmentEntity, enabled: Boolean = true) :
+   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<StoreEntity>, enabled: Boolean = true) :
       this(
          id = id,
          title = title,
          description = description,
          schedule = schedule,
          stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.id) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department.id),
          enabled = enabled
-      )
-
-   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<Long>, department: Long) :
-      this(
-         title = title,
-         description = description,
-         schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it) }.toSet(),
-         department = SimpleIdentifiableDataTransferObject(department),
-         enabled = true
       )
 }

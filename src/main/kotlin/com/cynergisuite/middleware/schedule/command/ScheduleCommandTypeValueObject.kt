@@ -20,11 +20,11 @@ data class ScheduleCommandTypeValueObject(
 
 ) : ValueObjectBase<ScheduleCommandTypeValueObject>() {
 
-   constructor(entity: ScheduleCommandTypeEntity, locale: Locale, localizationService: LocalizationService) :
+   constructor(type: ScheduleCommandType, locale: Locale, localizationService: LocalizationService) :
       this (
-         id = entity.id,
-         value = entity.value,
-         description = entity.localizeMyDescription(locale, localizationService)
+         id = type.id,
+         value = type.value,
+         description = type.localizeMyDescription(locale, localizationService)
       )
 
    override fun myId(): Long? = id

@@ -12,10 +12,10 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
-import com.cynergisuite.middleware.schedule.ScheduleEntity
-import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.DailySchedule
+import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleName
+import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
@@ -61,7 +61,7 @@ class AuditScheduleService @Inject constructor(
 
    @Validated
    fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, employee: User, locale: Locale): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateCreate(dto, employee, locale)
+      val (schedule, stores) = auditScheduleValidator.validateCreate(dto, employee, locale)
       val inserted = scheduleRepository.insert(schedule)
 
       return AuditScheduleDataTransferObject(
@@ -70,14 +70,13 @@ class AuditScheduleService @Inject constructor(
          description = inserted.description,
          schedule = DayOfWeek.valueOf(inserted.schedule),
          stores = stores.map { StoreValueObject(it) },
-         department = DepartmentValueObject(department),
          enabled = inserted.enabled
       )
    }
 
    @Validated
    fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): AuditScheduleDataTransferObject {
-      val (schedule, stores, department) = auditScheduleValidator.validateUpdate(dto, user, locale)
+      val (schedule, stores) = auditScheduleValidator.validateUpdate(dto, user, locale)
       val updated = scheduleRepository.update(schedule)
 
       return AuditScheduleDataTransferObject(
@@ -86,24 +85,18 @@ class AuditScheduleService @Inject constructor(
          description = updated.description,
          schedule = DayOfWeek.valueOf(schedule.schedule),
          stores = stores.map { StoreValueObject(it) },
-         department = DepartmentValueObject(department),
          enabled = updated.enabled
       )
    }
 
    private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity): AuditScheduleDataTransferObject {
       val stores = mutableListOf<StoreValueObject>()
-      var department: DepartmentValueObject? = null
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOneByNumber(arg.value.toInt())!!
 
             stores.add(StoreValueObject(store))
-         } else if (arg.description == "department") {
-            val dept = departmentRepository.findOneByCode(arg.value)!!
-
-            department = DepartmentValueObject(dept)
          }
       }
 
@@ -113,7 +106,6 @@ class AuditScheduleService @Inject constructor(
          description = schedule.description,
          schedule = DayOfWeek.valueOf(schedule.schedule),
          stores = stores,
-         department = department,
          enabled = schedule.enabled
       )
    }

@@ -39,11 +39,6 @@ data class AuditScheduleDataTransferObject(
    @field:Schema(name = "stores", description = "Set of stores the audit schedule is supposed to run against")
    var stores: List<StoreValueObject> = mutableListOf(), // is from a schedule argument that is collected together
 
-   @field:Valid
-   @field:NotNull
-   @field:Schema(name = "department", description = "Department that is supposed to do the audit at the desired stores")
-   var department: DepartmentValueObject? = null,
-
    @field:NotNull
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")
    var enabled: Boolean? = true

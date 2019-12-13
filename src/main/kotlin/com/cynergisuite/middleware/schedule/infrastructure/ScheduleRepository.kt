@@ -7,18 +7,16 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.lang.StringBuilder
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -275,7 +273,7 @@ class ScheduleRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =
       mapRow(rs, "", { entity.type }, { entity.command })
 
-   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandTypeEntity): ScheduleEntity =
+   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType): ScheduleEntity =
       ScheduleEntity(
          id = rs.getLong("${scheduleColumnPrefix}id"),
          uuRowId = rs.getUuid("${scheduleColumnPrefix}uu_row_id"),
