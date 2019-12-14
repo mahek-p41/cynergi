@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
@@ -10,14 +11,12 @@ import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static java.time.DayOfWeek.FRIDAY
-import static java.time.DayOfWeek.MONDAY
-import static java.time.DayOfWeek.TUESDAY
+import static java.time.DayOfWeek.*
 
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
@@ -223,21 +222,20 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule with invalid store" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [42] as Set))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(42L)] as Set, enabled: true]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 2
-      response[0].message == "43 was unable to be found"
-      response[1].path == "store[0].id"
-      response[1].message == "42 was unable to be found"
+      response.size() == 1
+      response[0].path == "store[0].id"
+      response[0].message == "42 was unable to be found"
    }
 
    void "create audit schedule with no stores" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [] as Set))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [] as Set, true))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -268,7 +266,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
       result.enabled == true
 
-      loadedSchedule.arguments.size() == 5
+      loadedSchedule.arguments.size() == 4
       loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == authenticatedEmployee.number.toString() } != null
       loadedSchedule.arguments.find { it.description == "locale" } != null
       loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
@@ -282,11 +280,11 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set, false))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(storeOne)] as Set, enabled: false]))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
-      notThrown(HttpClientResponseException)
+      notThrown(Exception)
       result.id == schedule.id
       result.title == "Updated title"
       result.description == "Updated description"
@@ -295,7 +293,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.enabled == false
 
-      loadedSchedule.arguments.size() == 4
+      loadedSchedule.arguments.size() == 3
       loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == authenticatedEmployee.number.toString() } != null
       loadedSchedule.arguments.find { it.description == "locale" } != null
       loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
@@ -335,7 +333,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.enabled == true
 
-      loadedSchedule.arguments.size() == 4
+      loadedSchedule.arguments.size() == 3
       loadedSchedule.arguments.find { it.description == "employeeNumber" } != null
       loadedSchedule.arguments.find { it.description == "locale" } != null
       loadedSchedule.arguments.find { it.description == "storeNumber" } != null

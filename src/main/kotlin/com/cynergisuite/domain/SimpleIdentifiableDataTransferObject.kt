@@ -14,6 +14,12 @@ data class SimpleIdentifiableDataTransferObject(
    var id: Long? = null
 
 ): Identifiable {
+
+   constructor(identifiable: Identifiable):
+      this(
+         id = identifiable.myId()
+      )
+
    override fun myId(): Long? = id
 
    override fun hashCode(): Int = id.hashCode()
