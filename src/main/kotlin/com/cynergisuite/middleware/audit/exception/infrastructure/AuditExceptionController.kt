@@ -139,7 +139,7 @@ class AuditExceptionController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
       val employee: EmployeeValueObject = authenticationService.findEmployee(authentication)
-      val response = auditExceptionService.addNote(auditId, vo, employee, locale)
+      val response = auditExceptionService.update(auditId, vo, employee, locale)
 
       logger.debug("Requested Update AuditException {} resulted in {}", vo, response)
 
