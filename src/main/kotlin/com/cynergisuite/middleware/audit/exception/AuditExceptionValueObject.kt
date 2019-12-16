@@ -11,10 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
 import javax.validation.Valid
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
-import javax.validation.constraints.Size
+import javax.validation.constraints.*
 
 @JsonInclude(NON_NULL)
 @Schema(
@@ -83,6 +80,10 @@ data class AuditExceptionValueObject (
    @field:Schema(name = "signedOff", description = "Whether this exception has been signed off by the designated employee", example = "true", defaultValue = "false")
    var signedOff: Boolean = false,
 
+   @field:Valid
+   @field:Schema(name = "signedOffBy", description = "The Employee who signed-off on the exception.  This is filled in by the system based on login credentials")
+   var signedOffBy: EmployeeValueObject? = null,  // this will be filled out by the system based on how they are logged in
+
    @field:Size(min = 2, max = 200)
    @field:Schema(name = "lookupKey", description = "The key that can be used to determine what inventory entry lines up with this exception")
    var lookupKey: String?,
@@ -110,6 +111,7 @@ data class AuditExceptionValueObject (
          scannedBy = EmployeeValueObject(entity.scannedBy),
          exceptionCode = entity.exceptionCode,
          signedOff = entity.signedOff,
+         signedOffBy = entity.signedOffBy?.let { EmployeeValueObject(it) },
          lookupKey = entity.lookupKey,
          notes = entity.notes.asSequence().map { AuditExceptionNoteValueObject(it) }.toMutableList(),
          audit = SimpleIdentifiableValueObject(entity.audit)

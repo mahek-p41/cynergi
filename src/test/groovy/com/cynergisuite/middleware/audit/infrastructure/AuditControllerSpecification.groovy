@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
@@ -28,10 +28,10 @@ import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import java.time.OffsetDateTime
+import javax.inject.Inject
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
-import javax.inject.Inject
-import java.time.OffsetDateTime
 
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
@@ -67,7 +67,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
-      result.timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.timeUpdated
+      result.lastUpdated == null
       result.currentStatus.value == 'CREATED'
       result.store.storeNumber == store.number
       result.store.name == store.name
@@ -881,4 +881,25 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['signedOff'] = true }
       }
+
+   void "Confirm exceptions signed-off when audit is signed-off" () {
+      given:
+      final store = authenticatedEmployee.store
+      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+
+      when:
+      put(path, new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "SIGNED-OFF"])]))
+      def pageOneResult = get("/audit/${auditOne.id}/exception")
+
+      then:
+      notThrown(HttpClientResponseException)
+      auditOne.number > 0
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 3
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .each { it['signedOff'] = true }
+   }
 }
