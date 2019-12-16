@@ -11,7 +11,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
 import javax.validation.Valid
-import javax.validation.constraints.*
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Positive
+import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(

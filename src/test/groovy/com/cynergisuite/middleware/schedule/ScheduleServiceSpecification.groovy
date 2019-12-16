@@ -21,7 +21,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    void "execute daily Tuesday audit job on Tuesday" () {
       given:
       final storeOne = StoreFactory.storeOne()
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null, null)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
@@ -41,7 +41,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    void "execute daily Tuesday audit job on Wednesday" () {
       given:
       final storeOne = StoreFactory.storeOne()
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null, null)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null)
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)

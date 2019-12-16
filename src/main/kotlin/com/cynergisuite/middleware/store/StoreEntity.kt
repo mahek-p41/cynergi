@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.store
 
-import com.cynergisuite.domain.Identifiable
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.time.OffsetDateTime
 
 data class StoreEntity(
    val id: Long,

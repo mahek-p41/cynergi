@@ -450,7 +450,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final response = e.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDataTransferObject(it) } == [
-         new ErrorDataTransferObject("Audit ${audit.id} must be In Progress to modify its exceptions", "audit.status")
+         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its exceptions", "audit.status")
       ]
    }
 
@@ -545,7 +545,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final response = e.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDataTransferObject(it) } == [
-         new ErrorDataTransferObject("Audit ${audit.id} has already been Signed Off. No new notes allowed", null)
+         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} has already been Signed Off. No new notes allowed", null)
       ]
    }
 }
