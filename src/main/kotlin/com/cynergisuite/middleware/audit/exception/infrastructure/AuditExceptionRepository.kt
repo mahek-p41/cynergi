@@ -3,13 +3,19 @@ package com.cynergisuite.middleware.audit.exception.infrastructure
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findAllWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -54,30 +60,24 @@ class AuditExceptionRepository @Inject constructor(
             ae.signed_off_by AS ae_signed_off_by,
             ae.lookup_key AS ae_lookup_key,
             e.e_id AS e_id,
-            e.e_time_created AS e_time_created,
-            e.e_time_updated AS e_time_updated,
             e.e_number AS e_number,
             e.e_last_name AS e_last_name,
             e.e_first_name_mi AS e_first_name_mi,
             e.e_pass_code AS  e_pass_code,
             e.e_active AS e_active,
             e.e_department AS e_department,
-            e.e_loc AS e_loc,
+            e.e_employee_type AS e_employee_type,
             e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
             e2.e_id AS e2_id,
-            e2.e_time_created AS e2_time_created,
-            e2.e_time_updated AS e2_time_updated,
             e2.e_number AS e2_number,
             e2.e_last_name AS e2_last_name,
             e2.e_first_name_mi AS e2_first_name_mi,
             e2.e_pass_code AS  e2_pass_code,
             e2.e_active AS e2_active,
             e2.e_department AS e2_department,
-            e2.e_loc AS e2_loc,
+            e2.e_employee_type AS e2_employee_type,
             e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
             e.s_id AS s_id,
-            e.s_time_created AS s_time_created,
-            e.s_time_updated AS s_time_updated,
             e.s_number AS s_number,
             e.s_name AS s_name,
             e.s_dataset AS s_dataset,
@@ -93,19 +93,15 @@ class AuditExceptionRepository @Inject constructor(
             aen.entered_by AS aen_entered_by,
             aen.audit_exception_id AS aen_audit_exception_id,
             noteEmployee.e_id AS noteEmployee_id,
-            noteEmployee.e_time_created AS noteEmployee_time_created,
-            noteEmployee.e_time_updated AS noteEmployee_time_updated,
             noteEmployee.e_number AS noteEmployee_number,
             noteEmployee.e_last_name AS noteEmployee_last_name,
             noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
             noteEmployee.e_pass_code AS noteEmployee_pass_code,
             noteEmployee.e_active AS noteEmployee_active,
             noteEmployee.e_department AS noteEmployee_department,
-            noteEmployee.e_loc AS noteEmployee_loc,
+            noteEmployee.e_employee_type AS noteEmployee_employee_type,
             noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
             noteEmployee.s_id AS noteEmployee_store_id,
-            noteEmployee.s_time_created AS noteEmployee_store_time_created,
-            noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
             noteEmployee.s_number AS noteEmployee_store_number,
             noteEmployee.s_name AS noteEmployee_store_name,
             noteEmployee.s_dataset AS noteEmployee_store_dataset
@@ -141,7 +137,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
+   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       var totalElements: Long? = null
       val sql = """
       WITH paged AS (
@@ -165,32 +161,26 @@ class AuditExceptionRepository @Inject constructor(
                ae.signed_off_by AS ae_signed_off_by,
                ae.lookup_key AS ae_lookup_key,
                ae.scanned_by as ae_scanned_by,
-               ae.scan_area_id as ae_scan_area_id,   
+               ae.scan_area_id as ae_scan_area_id,
                e.e_id AS e_id,
-               e.e_time_created AS e_time_created,
-               e.e_time_updated AS e_time_updated,
                e.e_number AS e_number,
                e.e_last_name AS e_last_name,
                e.e_first_name_mi AS e_first_name_mi,
                e.e_pass_code AS e_pass_code,
                e.e_active AS e_active,
                e.e_department AS e_department,
-               e.e_loc AS e_loc,
+               e.e_employee_type AS e_employee_type,
                e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
                e2.e_id AS e2_id,
-               e2.e_time_created AS e2_time_created,
-               e2.e_time_updated AS e2_time_updated,
                e2.e_number AS e2_number,
                e2.e_last_name AS e2_last_name,
                e2.e_first_name_mi AS e2_first_name_mi,
                e2.e_pass_code AS  e2_pass_code,
                e2.e_active AS e2_active,
                e2.e_department AS e2_department,
-               e2.e_loc AS e2_loc,
+               e2.e_employee_type AS e2_employee_type,
                e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
                e.s_id AS s_id,
-               e.s_time_created AS s_time_created,
-               e.s_time_updated AS s_time_updated,
                e.s_number AS s_number,
                e.s_name AS s_name,
                e.s_dataset AS s_dataset,
@@ -207,8 +197,8 @@ class AuditExceptionRepository @Inject constructor(
                  LEFT OUTER JOIN audit_scan_area_type_domain asatd
                    ON ae.scan_area_id = asatd.id
             WHERE ae.audit_id = :audit_id
-            ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
-            LIMIT ${page.size} OFFSET ${page.offset()}
+            ORDER by ae_${page.snakeSortBy()} ${page.sortDirection()}
+            LIMIT ${page.size()} OFFSET ${page.offset()}
          )
          SELECT
             ae.*,
@@ -219,19 +209,15 @@ class AuditExceptionRepository @Inject constructor(
             aen.note AS aen_note,
             aen.audit_exception_id AS aen_audit_exception_id,
             noteEmployee.e_id AS noteEmployee_id,
-            noteEmployee.e_time_created AS noteEmployee_time_created,
-            noteEmployee.e_time_updated AS noteEmployee_time_updated,
             noteEmployee.e_number AS noteEmployee_number,
             noteEmployee.e_last_name AS noteEmployee_last_name,
             noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
             noteEmployee.e_pass_code AS noteEmployee_pass_code,
             noteEmployee.e_active AS noteEmployee_active,
             noteEmployee.e_department AS noteEmployee_department,
-            noteEmployee.e_loc AS noteEmployee_loc,
+            noteEmployee.e_employee_type AS noteEmployee_employee_type,
             noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
             noteEmployee.s_id AS noteEmployee_store_id,
-            noteEmployee.s_time_created AS noteEmployee_store_time_created,
-            noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
             noteEmployee.s_number AS noteEmployee_store_number,
             noteEmployee.s_name AS noteEmployee_store_name,
             noteEmployee.s_dataset AS noteEmployee_store_dataset
@@ -275,11 +261,11 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
-      var result = findAll(audit, PageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      var result = findAll(audit, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
-      while(result.elements.isNotEmpty()){
-         result.elements.forEach { auditException ->
+      while(result.elements.isNotEmpty()) {
+         result.elements.forEach { auditException: AuditExceptionEntity ->
             callback(auditException, index % 2 == 0)
             index++
          }
@@ -330,7 +316,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @Transactional
-   fun signOffAllExceptions(audit: AuditEntity, employee: EmployeeValueObject) {
+   fun signOffAllExceptions(audit: AuditEntity, employee: User) {
       logger.debug("Updating audit_exception {}", audit)
 
       jdbc.update("""
@@ -342,7 +328,7 @@ class AuditExceptionRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "audit_id" to audit.myId(),
-            "employee" to employee.number
+            "employee" to employee.myEmployeeNumber()
          )
       )
    }

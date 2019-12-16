@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.store.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -37,15 +37,15 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all stores" () {
       given:
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
-      final pageTwo = new PageRequest(2, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
 
       when:
       def pageOneResult = get("${path}${pageOne}")
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageOneResult.requested) == pageOne
+      new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 2
       pageOneResult.elements[0].id == 1

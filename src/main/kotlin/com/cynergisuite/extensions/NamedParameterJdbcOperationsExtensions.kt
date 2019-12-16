@@ -69,8 +69,8 @@ fun <ENTITY: Identifiable> NamedParameterJdbcOperations.queryFullList(sql: Strin
    return this.query(sql, params, SimpleResultSetExtractor<ENTITY>(mapper))!!
 }
 
-fun <ENTITY: Identifiable> NamedParameterJdbcOperations.queryPaged(sql: String, params: Map<String, *>, pageRequest: PageRequest, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY> {
-   return this.query(sql, params, PagedResultSetExtractor<ENTITY>(pageRequest, mapper))!!
+fun <ENTITY: Identifiable, REQUESTED: PageRequest> NamedParameterJdbcOperations.queryPaged(sql: String, params: Map<String, *>, pageRequest: REQUESTED, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY, REQUESTED> {
+   return this.query(sql, params, PagedResultSetExtractor<ENTITY, REQUESTED>(pageRequest, mapper))!!
 }
 
 fun <ENTITY> NamedParameterJdbcOperations.insertReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {

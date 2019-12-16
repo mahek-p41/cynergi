@@ -5,13 +5,12 @@ import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.context.annotation.Value
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.FileOutputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Files.createDirectories
-import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,6 +20,7 @@ class ReportalService @Inject constructor(
    @Value("\${cynergi.reportal.file.location}") private val reportalFileLocation: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ReportalService::class.java)
+   private val reportalDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy-hhmmss")
    private val reportalDirectory = Paths.get(reportalFileLocation).also { createDirectories(it) }
 
    fun generateReportalDocument(store: StoreEntity, reportName: String, extension: String, generator: (reportalOutputStream: OutputStream) -> Unit) {
@@ -29,7 +29,7 @@ class ReportalService @Inject constructor(
       val storeDirectory = reportalDirectory.resolve("store${store.number}").also { createDirectories(it) }
 
       executor.execute {
-         val tempPath = Files.createTempFile("${reportName}", "rpt${store.number}")
+         val tempPath = Files.createTempFile(reportName, "rpt${store.number}")
 
          logger.info("Generating reportal document.  Placing in temp file {}", tempPath)
 
@@ -39,7 +39,7 @@ class ReportalService @Inject constructor(
             reportalOutputStream.flush()
          }
 
-         val reportalFile = storeDirectory.resolve("$reportName.${extension}")
+         val reportalFile = storeDirectory.resolve("$reportName-${LocalDateTime.now().format(reportalDateFormat)}.${extension}")
 
          logger.debug("Moving file {} to {}", tempPath, reportalFile)
          val destPath = Files.move(tempPath, reportalFile)

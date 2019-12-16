@@ -51,7 +51,7 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(vo.audit!!)
       )
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeValueObject, exceptionCode: String) :
+   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -60,13 +60,13 @@ data class AuditExceptionEntity(
          serialNumber = inventory.serialNumber,
          inventoryBrand = inventory.brand,
          inventoryModel = inventory.modelNumber,
-         scannedBy = EmployeeEntity(scannedBy),
+         scannedBy = EmployeeEntity.from(scannedBy),
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeValueObject, exceptionCode: String) :
+   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = barcode,
@@ -75,7 +75,7 @@ data class AuditExceptionEntity(
          serialNumber = null,
          inventoryBrand = null,
          inventoryModel = null,
-         scannedBy = EmployeeEntity(scannedBy),
+         scannedBy = scannedBy,
          exceptionCode = exceptionCode,
          lookupKey = null,
          audit = SimpleIdentifiableEntity(audit)

@@ -8,12 +8,10 @@ import java.time.OffsetDateTime
 
 data class StoreEntity(
    val id: Long,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val number: Int,
    val name: String,
    val dataset: String
-) : Identifiable, Comparable<StoreEntity> {
+) : Store, Comparable<StoreEntity> {
 
    constructor(store: StoreValueObject) :
       this(
@@ -23,7 +21,18 @@ data class StoreEntity(
          dataset = store.dataset!!
       )
 
+   constructor(store: Store) :
+      this(
+         id = store.myId()!!,
+         number = store.myNumber(),
+         name = store.myName(),
+         dataset = store.myDataset()
+      )
+
    override fun myId(): Long? = id
+   override fun myNumber(): Int = number
+   override fun myName(): String = name
+   override fun myDataset(): String = dataset
 
    override fun hashCode(): Int =
       HashCodeBuilder()
@@ -52,4 +61,17 @@ data class StoreEntity(
          .append(this.name, other.name)
          .append(this.dataset, other.dataset)
          .toComparison()
+
+   companion object {
+
+      @JvmStatic
+      fun from(store: Store?): StoreEntity? =
+         if (store is StoreEntity) {
+            store
+         } else if (store != null) {
+            StoreEntity(store)
+         } else {
+            null
+         }
+   }
 }

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.department.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -49,9 +49,9 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all departments" () {
       given:
-      final pageOne = new PageRequest(1, 5, "id", "ASC")
-      final pageTwo = new PageRequest(2, 5, "id", "ASC")
-      final pageThree = new PageRequest(3, 5, "id", "ASC")
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
       final allTestDepartments = DepartmentFactory.all().collect { new DepartmentValueObject(it) }
 
       when:
@@ -59,7 +59,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageOneResult.requested) == pageOne
+      new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == allTestDepartments.size()
@@ -70,7 +70,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      new PageRequest(pageTwoResult.requested) == pageTwo
+      new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.totalElements == allTestDepartments.size()

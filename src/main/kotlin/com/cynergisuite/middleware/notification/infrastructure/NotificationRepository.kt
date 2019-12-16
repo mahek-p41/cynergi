@@ -9,7 +9,7 @@ import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationRecipient
-import com.cynergisuite.middleware.notification.NotificationTypeDomain
+import com.cynergisuite.middleware.notification.NotificationType
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
@@ -113,7 +113,7 @@ class NotificationRepository @Inject constructor(
       )
    }
 
-   fun findAllTypes(): List<NotificationTypeDomain> =
+   fun findAllTypes(): List<NotificationType> =
       notificationTypeDomainRepository.findAll()
 
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
@@ -250,7 +250,7 @@ class NotificationRepository @Inject constructor(
 
 private class NotificationRowMapper(
    private val columnPrefix: String = EMPTY,
-   private val notificationDomainTypeRowMapper: RowMapper<NotificationTypeDomain>
+   private val notificationDomainTypeRowMapper: RowMapper<NotificationType>
 ) : RowMapper<Notification> {
    override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
       Notification(

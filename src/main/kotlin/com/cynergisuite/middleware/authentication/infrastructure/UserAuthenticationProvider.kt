@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
+import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
 import com.cynergisuite.middleware.authentication.UsernamePasswordStoreCredentials
 import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.security.authentication.AuthenticationFailed
@@ -36,12 +37,17 @@ class UserAuthenticationProvider @Inject constructor(
                val employeeStore = employee.store
 
                if (employeeStore != null) { // if employee has store then proceed
-                  just(AuthenticatedUser(employee, employee.store))
+                  logger.debug("Employee has store {} proceeding with login", employeeStore)
+
+                  just(StandardAuthenticatedUser(employee, employee.store))
                } else { // otherwise inform the client that a store is required for the provided user
+                  logger.debug("Employee did not have store informing client of store requirement")
+
                   just(AuthenticationResponseStoreRequired(identity))
                }
             }
       } else {
+         logger.debug("Employee {} was unable to be authenticated", identity)
          just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       }
    }

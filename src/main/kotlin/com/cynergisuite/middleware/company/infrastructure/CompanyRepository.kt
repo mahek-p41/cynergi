@@ -40,7 +40,7 @@ class CompanyRepository @Inject constructor(
       logger.debug("Search for company using store id {}", store.id)
 
       val found = jdbc.findFirstOrNull("""
-         SELECT 
+         SELECT
             c.id AS id,
             c.time_created AS time_created,
             c.time_updated AS time_updated,
@@ -77,7 +77,7 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<CompanyEntity> {
+   fun findAll(pageRequest: PageRequest): RepositoryPage<CompanyEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<CompanyEntity>()
 
@@ -90,8 +90,8 @@ class CompanyRepository @Inject constructor(
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-         LIMIT ${pageRequest.size}
+         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
          """.trimIndent(),
          emptyMap<String, Any>()
