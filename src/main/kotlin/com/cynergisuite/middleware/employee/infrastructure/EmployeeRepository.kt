@@ -281,7 +281,7 @@ class EmployeeRepository @Inject constructor(
          allowAutoStoreAssign = rs.getBoolean("${columnPrefix}allow_auto_store_assign")
       )
 
-   fun maybeMapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix)
       } else {

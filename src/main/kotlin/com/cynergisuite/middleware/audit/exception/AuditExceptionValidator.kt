@@ -89,7 +89,7 @@ class AuditExceptionValidator @Inject constructor (
          )
       }
 
-      if ((!signedOff) and (auditExceptionUpdate.note == null)) {
+      if ((!signedOff) && (auditExceptionUpdate.note == null)) {
          errors.add(
             ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
          )

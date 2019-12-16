@@ -11,8 +11,11 @@ import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -20,12 +23,14 @@ import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import org.apache.commons.lang3.RandomUtils
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 import javax.inject.Inject
@@ -829,4 +834,25 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['signedOff'] = true }
       }
+
+   void "Confirm exceptions signed-off when audit is signed-off" () {
+      given:
+      final store = authenticatedEmployee.store
+      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+
+      when:
+      put(path, new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "SIGNED-OFF"])]))
+      def pageOneResult = get("/audit/${auditOne.id}/exception")
+
+      then:
+      notThrown(HttpClientResponseException)
+      auditOne.number > 0
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 3
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .each { it['signedOff'] = true }
+   }
 }

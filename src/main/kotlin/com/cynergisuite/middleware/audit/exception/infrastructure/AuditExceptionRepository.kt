@@ -74,6 +74,7 @@ class AuditExceptionRepository @Inject constructor(
             e2.e_active AS e2_active,
             e2.e_department AS e2_department,
             e2.e_loc AS e2_loc,
+            e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
             e.s_id AS s_id,
             e.s_time_created AS s_time_created,
             e.s_time_updated AS s_time_updated,
@@ -123,12 +124,12 @@ class AuditExceptionRepository @Inject constructor(
          RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-            val signedOffBy = employeeRepository.mapRow(rs, "e2_", "s_")
+            val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
             //The below is an implicit return
             mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
          }
       ) { auditException, rs ->
-         val enteredBy = employeeRepository.maybeMapRow(rs, "noteEmployee_", "noteEmployee_store_")
+         val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
 
          if (enteredBy != null) {
             auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
@@ -143,110 +144,114 @@ class AuditExceptionRepository @Inject constructor(
    fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity> {
       var totalElements: Long? = null
       val sql = """
-         WITH paged AS (
-            WITH ae_employees AS (
-               ${employeeRepository.selectBase}
-            ),
-            audit_exceptions AS (
-               SELECT ae.id AS ae_id,
-                  ae.uu_row_id AS ae_uu_row_id,
-                  ae.time_created AS ae_time_created,
-                  ae.time_updated AS ae_time_updated,
-                  ae.barcode AS ae_barcode,
-                  ae.product_code AS ae_product_code,
-                  ae.alt_id AS ae_alt_id,
-                  ae.serial_number AS ae_serial_number,
-                  ae.inventory_brand AS ae_inventory_brand,
-                  ae.inventory_model AS ae_inventory_model,
-                  ae.exception_code AS ae_exception_code,
-                  ae.audit_id AS ae_audit_id,
-                  ae.signed_off AS ae_signed_off,
-                  ae.signed_off_by AS ae_signed_off_by,
-                  ae.lookup_key AS ae_lookup_key,
-                  e.e_id AS e_id,
-                  e.e_time_created AS e_time_created,
-                  e.e_time_updated AS e_time_updated,
-                  e.e_number AS e_number,
-                  e.e_last_name AS e_last_name,
-                  e.e_first_name_mi AS e_first_name_mi,
-                  e.e_pass_code AS e_pass_code,
-                  e.e_active AS e_active,
-                  e.e_department AS e_department,
-                  e.e_loc AS e_loc,
-                  e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
-                  e2.e_id AS e2_id,
-                  e2.e_time_created AS e2_time_created,
-                  e2.e_time_updated AS e2_time_updated,
-                  e2.e_number AS e2_number,
-                  e2.e_last_name AS e2_last_name,
-                  e2.e_first_name_mi AS e2_first_name_mi,
-                  e2.e_pass_code AS  e2_pass_code,
-                  e2.e_active AS e2_active,
-                  e2.e_department AS e2_department,
-                  e2.e_loc AS e2_loc,
-                  e.s_id AS s_id,
-                  e.s_time_created AS s_time_created,
-                  e.s_time_updated AS s_time_updated,
-                  e.s_number AS s_number,
-                  e.s_name AS s_name,
-                  e.s_dataset AS s_dataset,
-                  asatd.id AS asatd_id,
-                  asatd.value AS asatd_value,
-                  asatd.description AS asatd_description,
-                  asatd.localization_code AS asatd_localization_code,
-                  count(*) OVER() as total_elements
-               FROM audit_exception ae
-                    JOIN ae_employees e
-                      ON ae.scanned_by = e.e_number
-                    LEFT OUTER JOIN ae_employees e2
-                              ON ae.signed_off_by = e2.e_number
-                    LEFT OUTER JOIN audit_scan_area_type_domain asatd
-                      ON ae.scan_area_id = asatd.id
-               WHERE ae.audit_id = :audit_id
-               ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
-               LIMIT ${page.size} OFFSET ${page.offset()}
-            )
-            SELECT
-               ae.*,
-               aen.id AS aen_id,
-               aen.uu_row_id AS aen_uu_row_id,
-               aen.time_created AS aen_time_created,
-               aen.time_updated AS aen_time_updated,
-               aen.note AS aen_note,
-               aen.audit_exception_id AS aen_audit_exception_id,
-               noteEmployee.e_id AS noteEmployee_id,
-               noteEmployee.e_time_created AS noteEmployee_time_created,
-               noteEmployee.e_time_updated AS noteEmployee_time_updated,
-               noteEmployee.e_number AS noteEmployee_number,
-               noteEmployee.e_last_name AS noteEmployee_last_name,
-               noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
-               noteEmployee.e_pass_code AS noteEmployee_pass_code,
-               noteEmployee.e_active AS noteEmployee_active,
-               noteEmployee.e_department AS noteEmployee_department,
-               noteEmployee.e_loc AS noteEmployee_loc,
-               noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
-               noteEmployee.s_id AS noteEmployee_store_id,
-               noteEmployee.s_time_created AS noteEmployee_store_time_created,
-               noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
-               noteEmployee.s_number AS noteEmployee_store_number,
-               noteEmployee.s_name AS noteEmployee_store_name,
-               noteEmployee.s_dataset AS noteEmployee_store_dataset
-            FROM audit_exceptions ae
-                 LEFT OUTER JOIN audit_exception_note aen
-                   ON ae.ae_id = aen.audit_exception_id
-                 LEFT OUTER JOIN ae_employees noteEmployee
-                   ON aen.entered_by = noteEmployee.e_number
-            ORDER BY ae.ae_id, aen.id ASC
+      WITH paged AS (
+         WITH ae_employees AS (
+            ${employeeRepository.selectBase}
+         ),
+         audit_exceptions AS (
+            SELECT ae.id AS ae_id,
+               ae.uu_row_id AS ae_uu_row_id,
+               ae.time_created AS ae_time_created,
+               ae.time_updated AS ae_time_updated,
+               ae.barcode AS ae_barcode,
+               ae.product_code AS ae_product_code,
+               ae.alt_id AS ae_alt_id,
+               ae.serial_number AS ae_serial_number,
+               ae.inventory_brand AS ae_inventory_brand,
+               ae.inventory_model AS ae_inventory_model,
+               ae.exception_code AS ae_exception_code,
+               ae.audit_id AS ae_audit_id,
+               ae.signed_off AS ae_signed_off,
+               ae.signed_off_by AS ae_signed_off_by,
+               ae.lookup_key AS ae_lookup_key,
+               ae.scanned_by as ae_scanned_by,
+               ae.scan_area_id as ae_scan_area_id,   
+               e.e_id AS e_id,
+               e.e_time_created AS e_time_created,
+               e.e_time_updated AS e_time_updated,
+               e.e_number AS e_number,
+               e.e_last_name AS e_last_name,
+               e.e_first_name_mi AS e_first_name_mi,
+               e.e_pass_code AS e_pass_code,
+               e.e_active AS e_active,
+               e.e_department AS e_department,
+               e.e_loc AS e_loc,
+               e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
+               e2.e_id AS e2_id,
+               e2.e_time_created AS e2_time_created,
+               e2.e_time_updated AS e2_time_updated,
+               e2.e_number AS e2_number,
+               e2.e_last_name AS e2_last_name,
+               e2.e_first_name_mi AS e2_first_name_mi,
+               e2.e_pass_code AS  e2_pass_code,
+               e2.e_active AS e2_active,
+               e2.e_department AS e2_department,
+               e2.e_loc AS e2_loc,
+               e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
+               e.s_id AS s_id,
+               e.s_time_created AS s_time_created,
+               e.s_time_updated AS s_time_updated,
+               e.s_number AS s_number,
+               e.s_name AS s_name,
+               e.s_dataset AS s_dataset,
+               asatd.id AS asatd_id,
+               asatd.value AS asatd_value,
+               asatd.description AS asatd_description,
+               asatd.localization_code AS asatd_localization_code,
+               count(*) OVER() as total_elements
+            FROM audit_exception ae
+                 JOIN ae_employees e
+                   ON ae.scanned_by = e.e_number
+                 LEFT OUTER JOIN ae_employees e2
+                           ON ae.signed_off_by = e2.e_number
+                 LEFT OUTER JOIN audit_scan_area_type_domain asatd
+                   ON ae.scan_area_id = asatd.id
+            WHERE ae.audit_id = :audit_id
+            ORDER by ae_${page.snakeSortBy()} ${page.sortDirection}
+            LIMIT ${page.size} OFFSET ${page.offset()}
          )
-         SELECT p.* FROM paged AS p
-         """.trimIndent()
+         SELECT
+            ae.*,
+            aen.id AS aen_id,
+            aen.uu_row_id AS aen_uu_row_id,
+            aen.time_created AS aen_time_created,
+            aen.time_updated AS aen_time_updated,
+            aen.note AS aen_note,
+            aen.audit_exception_id AS aen_audit_exception_id,
+            noteEmployee.e_id AS noteEmployee_id,
+            noteEmployee.e_time_created AS noteEmployee_time_created,
+            noteEmployee.e_time_updated AS noteEmployee_time_updated,
+            noteEmployee.e_number AS noteEmployee_number,
+            noteEmployee.e_last_name AS noteEmployee_last_name,
+            noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
+            noteEmployee.e_pass_code AS noteEmployee_pass_code,
+            noteEmployee.e_active AS noteEmployee_active,
+            noteEmployee.e_department AS noteEmployee_department,
+            noteEmployee.e_loc AS noteEmployee_loc,
+            noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
+            noteEmployee.s_id AS noteEmployee_store_id,
+            noteEmployee.s_time_created AS noteEmployee_store_time_created,
+            noteEmployee.s_time_updated AS noteEmployee_store_time_updated,
+            noteEmployee.s_number AS noteEmployee_store_number,
+            noteEmployee.s_name AS noteEmployee_store_name,
+            noteEmployee.s_dataset AS noteEmployee_store_dataset
+         FROM audit_exceptions ae
+              LEFT OUTER JOIN audit_exception_note aen
+                ON ae.ae_id = aen.audit_exception_id
+              LEFT OUTER JOIN ae_employees noteEmployee
+                ON aen.entered_by = noteEmployee.e_number
+         ORDER BY ae.ae_id, aen.id ASC
+      )
+      SELECT p.* FROM paged AS p
+      """.trimIndent()
+
 
       logger.debug("find all audit exceptions {}", sql)
 
       val resultList = jdbc.findAllWithCrossJoin(sql, mutableMapOf("audit_id" to audit.id), "ae_id", RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-            val signedOffBy = employeeRepository.mapRow(rs, "e2_")
+            val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
 
             if (totalElements == null) {
                totalElements = rs.getLong("total_elements")
@@ -255,7 +260,7 @@ class AuditExceptionRepository @Inject constructor(
             mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
          }
       ) { auditException, rs ->
-         val enteredBy = employeeRepository.maybeMapRow(rs, "noteEmployee_", "noteEmployee_store_")
+         val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
 
          if (enteredBy != null) {
             auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
