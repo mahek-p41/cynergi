@@ -22,8 +22,8 @@ data class EmployeeValueObject(
 
    @field:JsonIgnore
    @field:NotNull
-   @field:Schema(name = "loc", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
-   var loc: String?,
+   @field:Schema(name = "type", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
+   var type: String?,
 
    @field:NotNull
    @field:Min(1)
@@ -61,10 +61,10 @@ data class EmployeeValueObject(
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 
-   constructor(loc: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, allowAutoStoreAssign: Boolean, active: Boolean) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, allowAutoStoreAssign: Boolean, active: Boolean) :
       this(
          id = null,
-         loc = loc,
+         type = type,
          number = number,
          lastName = lastName,
          firstNameMi = firstNameMi,
@@ -77,7 +77,7 @@ data class EmployeeValueObject(
    constructor(entity: EmployeeEntity) :
       this(
          id = entity.id,
-         loc = entity.loc,
+         type = entity.type,
          number = entity.number,
          lastName = entity.lastName,
          firstNameMi = entity.firstNameMi,

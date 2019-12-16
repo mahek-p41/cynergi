@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
@@ -10,12 +10,11 @@ import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
-import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
-import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -23,18 +22,16 @@ import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
-import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import org.apache.commons.lang3.RandomUtils
+import java.time.OffsetDateTime
+import javax.inject.Inject
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
-import javax.inject.Inject
-import java.time.OffsetDateTime
 
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
@@ -70,7 +67,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
-      result.timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.timeUpdated
+      result.lastUpdated == null
       result.currentStatus.value == 'CREATED'
       result.store.storeNumber == store.number
       result.store.name == store.name
@@ -82,6 +79,55 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
       result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
       result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
+   }
+
+   void "fetch one audit by id that has associated exceptions" () {
+      given:
+      final store = storeFactoryService.random()
+      final savedAudit = auditFactoryService.single(store)
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
+
+      when:
+      def result = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.totalExceptions == auditExceptions.size()
+      result.lastUpdated != null
+      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
+   }
+
+   void "fetch one audit by id that has associated details" () {
+      given:
+      final store = storeFactoryService.random()
+      final savedAudit = auditFactoryService.single(store)
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, null, null).toList()
+
+      when:
+      def result = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.totalExceptions == 0
+      result.lastUpdated != null
+      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditDetails.last().timeUpdated
+   }
+
+   void "fetch one audit by id that has associated details and exceptions" () {
+      given:
+      final store = storeFactoryService.random()
+      final savedAudit = auditFactoryService.single(store)
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, null, null).toList()
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
+
+      when:
+      def result = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.totalExceptions == 20
+      result.lastUpdated != null
+      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
    }
 
    void "fetch one audit by id not found" () {
@@ -312,6 +358,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      twoCreatedAudits.elements[0].totalExceptions == 25
+      twoCreatedAudits.elements[1].totalExceptions == 26
       twoCreatedAudits.elements != null
       twoCreatedAudits.elements.size() == 2
       twoCreatedAudits.totalElements == 2
@@ -326,7 +374,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(6, storeOne, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      def firstFiveAudits = get(path + new PageRequest([page: 1, size: 5, sortBy: 'id']))
+      def firstFiveAudits = get(path + new StandardPageRequest([page: 1, size: 5, sortBy: 'id']))
 
       then:
       notThrown(HttpClientResponseException)
@@ -484,7 +532,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "create new audit on store with already open audit" () {
-
       given:
       final store = storeFactoryService.store(1)
       auditFactoryService.single(store)

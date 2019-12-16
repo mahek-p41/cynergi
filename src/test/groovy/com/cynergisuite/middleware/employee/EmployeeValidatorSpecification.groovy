@@ -16,7 +16,7 @@ class EmployeeValidatorSpecification extends Specification {
       def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateCreate(new EmployeeValueObject([loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
+      employeeValidator.validateCreate(new EmployeeValueObject([type: "eli", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
       notThrown(ValidationException)
@@ -44,10 +44,10 @@ class EmployeeValidatorSpecification extends Specification {
       def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
+      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, type: "eli", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
-      1 * employeeRepository.exists(1L, "int") >> true
+      1 * employeeRepository.exists(1L, "eli") >> true
       notThrown(ValidationException)
    }
 
@@ -58,10 +58,10 @@ class EmployeeValidatorSpecification extends Specification {
       def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
+      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, type: "eli", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
-      1 * employeeRepository.exists(1L, "int") >> false
+      1 * employeeRepository.exists(1L, "eli") >> false
       def exception = thrown(ValidationException)
       exception.errors.size() == 1
       exception.errors[0].localizationCode instanceof NotFound
@@ -77,10 +77,10 @@ class EmployeeValidatorSpecification extends Specification {
       def store = StoreFactory.random().with { new StoreValueObject(it) }
 
       when:
-      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, loc: "int", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
+      employeeValidator.validateUpdate(new EmployeeValueObject([id: 1L, type: "eli", number: 989, lastName: "user", firstNameMi: "test", passCode: "studio", store: store, active: true]))
 
       then:
-      1 * employeeRepository.exists(1L, "int") >> true
+      1 * employeeRepository.exists(1L, "eli") >> true
       notThrown(ValidationException)
    }
 }

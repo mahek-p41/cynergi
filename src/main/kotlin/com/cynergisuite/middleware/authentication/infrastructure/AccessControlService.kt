@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.employee.EmployeeService
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
@@ -30,9 +29,9 @@ class AccessControlService @Inject constructor(
       val authenticatedUser = securityService.authentication.orElse(null)
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset = accessControl?.values?.get("asset") as String?
-      val employee: EmployeeValueObject? = authenticationService.findEmployee(authenticatedUser)
+      val user = authenticationService.findUser(authenticatedUser)
 
-      return if (securityService.isAuthenticated && asset != null && employee != null && employeeService.canEmployeeAccess(asset, employee)) {
+      return if (securityService.isAuthenticated && asset != null && user != null && employeeService.canEmployeeAccess(asset, user)) {
          context.proceed()
       } else {
          val username = securityService.username().orElse(null)

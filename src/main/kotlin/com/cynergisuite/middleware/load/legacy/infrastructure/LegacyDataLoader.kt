@@ -2,11 +2,7 @@ package com.cynergisuite.middleware.load.legacy.infrastructure
 
 import com.cynergisuite.middleware.load.legacy.LegacyCsvLoaderProcessor
 import com.cynergisuite.middleware.load.legacy.LegacyLoad
-import com.cynergisuite.middleware.load.legacy.LegacyLoadFinishedEvent
-import io.micronaut.configuration.dbmigration.flyway.event.MigrationFinishedEvent
 import io.micronaut.context.annotation.Value
-import io.micronaut.context.event.ApplicationEventListener
-import io.micronaut.context.event.ApplicationEventPublisher
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.io.input.TeeInputStream
@@ -33,42 +29,32 @@ class LegacyDataLoader @Inject constructor(
    @Value("\${cynergi.legacy.import.rename-extension}") private val renameExtension: String = "processed",
    @Value("\${cynergi.legacy.import.process-startup}") private val processImportsOnStartup: Boolean = true,
    private val legacyLoadRepository: LegacyLoadRepository,
-   private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor,
-   private val applicationEventPublisher: ApplicationEventPublisher
-) : ApplicationEventListener<MigrationFinishedEvent> {
+   private val legacyCsvLoaderProcessor: LegacyCsvLoaderProcessor
+) {
    private val logger: Logger = LoggerFactory.getLogger(LegacyDataLoader::class.java)
    private val fileSystem = FileSystems.getDefault()
    private val eliMatcher = fileSystem.getPathMatcher("glob:eli*csv")
 
-   override fun onApplicationEvent(event: MigrationFinishedEvent?) {
-      if (processImportsOnStartup) {
-         processLegacyImports(Paths.get(legacyImportLocation))
-      }
-   }
-
    @Transactional
-   fun processLegacyImports(importLocation: Path) {
-      try {
-         logger.info("Loading Legacy Data")
+   fun processLegacyImports(importLocation: Path = Paths.get(legacyImportLocation)) {
+      if (processImportsOnStartup) {
+         try {
+            logger.info("Loading Legacy Data")
 
-         Files.newDirectoryStream(importLocation).use { directoryStream ->
-            directoryStream.asSequence()
-               .filter { path -> path.toFile().isFile } // filter out anything that isn't a file
-               .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
-               .sortedBy { path -> path.fileName }
-               .filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
-               .filter { path -> path.toFile().length() > 0 }
-               .map { path -> processFile(path) } // read in file and save to appropriate table in the database
-               .onEach { processed -> saveInLegacyImport(processed) } // safe file and meta in database
-               .forEach { processed -> moveProcessedFile(processed) } // move the file to processed
+            Files.newDirectoryStream(importLocation).use { directoryStream ->
+               directoryStream.asSequence().filter { path -> path.toFile().isFile } // filter out anything that isn't a file
+                  .filter { path -> eliMatcher.matches(path.fileName) } // filter out anything that doesn't end in .csv
+                  .sortedBy { path -> path.fileName }.filter { path -> !legacyLoadRepository.exists(path.toRealPath(NOFOLLOW_LINKS)) } // filter out anything that has already been saved with that name in the database
+                  .filter { path -> path.toFile().length() > 0 }.map { path -> processFile(path) } // read in file and save to appropriate table in the database
+                  .onEach { processed -> saveInLegacyImport(processed) } // safe file and meta in database
+                  .forEach { processed -> moveProcessedFile(processed) } // move the file to processed
+            }
+
+            logger.info("Finished loading Legacy Data")
+         } catch (e: NoSuchFileException) {
+            logger.error("Unable to find import location.  Unable to load legacy data", e)
          }
-
-         logger.info("Finished loading Legacy Data")
-      } catch (e: NoSuchFileException) {
-         logger.error("Unable to find import location.  Unable to load legacy data", e)
       }
-
-      applicationEventPublisher.publishEvent(LegacyLoadFinishedEvent(legacyImportLocation))
    }
 
    private fun processFile(path: Path): Pair<Path, String> {

@@ -104,6 +104,14 @@ services:
     networks:
       - cynerginet
     command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
+  cynergitestdbready:
+     container_name: cynergitestdbready
+     build:
+        context: db
+        dockerfile: cynergitestdb.dockerfile
+     networks:
+        - cynerginet
+     command: [ "/tmp/cynergi-test-db-ready.sh" ]
   fastinfosnapshot:
      container_name: fastinfosnapshot
      build:

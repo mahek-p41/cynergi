@@ -8,7 +8,8 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -41,7 +42,7 @@ class AuditExceptionService @Inject constructor(
       auditExceptionRepository.exists(id = id)
 
    @Validated
-   fun create(auditId: Long, @Valid vo: AuditExceptionCreateValueObject, @Valid scannedBy: EmployeeValueObject, locale: Locale): AuditExceptionValueObject {
+   fun create(auditId: Long, @Valid vo: AuditExceptionCreateValueObject, @Valid scannedBy: User, locale: Locale): AuditExceptionValueObject {
       auditExceptionValidator.validateCreate(auditId, vo)
 
       val inventoryId = vo.inventory?.id
@@ -52,13 +53,13 @@ class AuditExceptionService @Inject constructor(
       return transformEntity(auditException, locale)
    }
 
-   private fun createAuditException(auditId: Long, scannedBy: EmployeeValueObject, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
+   private fun createAuditException(auditId: Long, scannedBy: User, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
       return if (inventoryId != null) {
          val inventory = inventoryRepository.findOne(inventoryId)!!
 
-         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), scannedBy, exceptionCode)
+         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), EmployeeEntity.from(scannedBy), exceptionCode)
       } else {
-         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), scannedBy, exceptionCode)
+         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), EmployeeEntity.from(scannedBy), exceptionCode)
       }
    }
 
@@ -66,12 +67,12 @@ class AuditExceptionService @Inject constructor(
       scanArea?.let { auditScanAreaRepository.findOne(it.value!!) }
 
    @Validated
-   fun update(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid employee: EmployeeValueObject, locale: Locale): AuditExceptionValueObject {
+   fun update(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid enteredBy: User, locale: Locale): AuditExceptionValueObject {
       auditExceptionValidator.validateUpdate(auditId, vo)
 
       val auditException = auditExceptionRepository.findOne(vo.id!!)!!
 
-      auditException.notes.add(AuditExceptionNote(vo.note!!, employee, auditException))
+      auditException.notes.add(AuditExceptionNote(vo.note!!, enteredBy, auditException))
 
       return transformEntity(
          auditExceptionRepository.update(auditException),

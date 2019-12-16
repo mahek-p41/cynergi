@@ -47,6 +47,7 @@ CREATE TABLE fastinfo_prod_import.store_vw (
 );
 INSERT INTO fastinfo_prod_import.store_vw (company_id, number, name, dataset) VALUES (1, 1, 'KANSAS CITY', 'testds');
 INSERT INTO fastinfo_prod_import.store_vw (company_id, number, name, dataset) VALUES (1, 3, 'INDEPENDENCE', 'testds');
+INSERT INTO fastinfo_prod_import.store_vw (company_id, number, name, dataset) VALUES (1, 9000, 'HOME OFFICE', 'testds');
 
 CREATE TABLE fastinfo_prod_import.company_vw (
    id           BIGINT                              NOT NULL PRIMARY KEY,

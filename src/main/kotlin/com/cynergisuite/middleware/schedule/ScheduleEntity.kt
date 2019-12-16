@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.schedule
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
+import com.cynergisuite.middleware.schedule.type.ScheduleType
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -16,12 +16,12 @@ data class ScheduleEntity(
    val description: String?,
    val schedule: String,
    val command: ScheduleCommandTypeEntity,
-   val type: ScheduleTypeEntity,
+   val type: ScheduleType,
    val enabled: Boolean = true,
    val arguments: MutableSet<ScheduleArgumentEntity> = mutableSetOf()
 ) : Entity<ScheduleEntity> {
 
-   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleTypeEntity) :
+   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleType) :
       this(
          id = null,
          title = title,
@@ -31,7 +31,7 @@ data class ScheduleEntity(
          type = type
       )
 
-   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleTypeEntity, arguments: MutableSet<ScheduleArgumentEntity>) :
+   constructor(title: String, description: String?, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleType, arguments: MutableSet<ScheduleArgumentEntity>) :
       this(
          id = null,
          title = title,

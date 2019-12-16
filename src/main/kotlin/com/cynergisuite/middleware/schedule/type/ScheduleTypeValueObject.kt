@@ -19,7 +19,7 @@ data class ScheduleTypeValueObject(
 
 ) : ValueObjectBase<ScheduleTypeValueObject>() {
 
-   constructor(entity: ScheduleTypeEntity, localizedDescription: String) :
+   constructor(entity: ScheduleType, localizedDescription: String) :
       this(
          id = entity.id,
          value = entity.value,

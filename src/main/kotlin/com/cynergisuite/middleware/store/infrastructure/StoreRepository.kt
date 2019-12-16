@@ -27,8 +27,6 @@ class StoreRepository @Inject constructor(
    final val selectBase = """
       SELECT
          s.id AS id,
-         s.time_created AS time_created,
-         s.time_updated AS time_updated,
          s.number AS number,
          s.name AS name,
          s.dataset AS dataset
@@ -51,7 +49,7 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, includeAll: Boolean = false): RepositoryPage<StoreEntity> {
+   fun findAll(pageRequest: PageRequest, includeAll: Boolean = false): RepositoryPage<StoreEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 
@@ -65,8 +63,8 @@ class StoreRepository @Inject constructor(
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-         LIMIT ${pageRequest.size}
+         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
          """.trimIndent(),
          emptyMap<String, Any>()
@@ -111,14 +109,19 @@ class StoreRepository @Inject constructor(
       }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
-      simpleStoreRowMapper.mapRow(rs, columnPrefix)
+      mapRowOrNull(rs, columnPrefix)!!
+
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         simpleStoreRowMapper.mapRow(rs, columnPrefix)
+      } else {
+         null
+      }
 
    fun mapRow(row: Row, columnPrefix: String = EMPTY): StoreEntity? =
       if (row.getLong("${columnPrefix}id") != null) {
          StoreEntity(
             id = row.getLong("${columnPrefix}id"),
-            timeCreated = row.getOffsetDateTime("${columnPrefix}time_created"),
-            timeUpdated = row.getOffsetDateTime("${columnPrefix}time_updated"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),
             dataset = row.getString("${columnPrefix}dataset")
@@ -135,8 +138,6 @@ private class StoreRowMapper : RowMapper<StoreEntity> {
    fun mapRow(rs: ResultSet, columnPrefix: String): StoreEntity =
       StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          dataset = rs.getString("${columnPrefix}dataset")

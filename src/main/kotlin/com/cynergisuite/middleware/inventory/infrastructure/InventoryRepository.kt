@@ -27,8 +27,6 @@ class InventoryRepository(
    private val selectBase = """
       SELECT
          i.id AS id,
-         i.time_created AS time_created,
-         i.time_updated AS time_updated,
          i.product_code AS product_code,
          i.serial_number AS serial_number,
          i.lookup_key AS lookup_key,
@@ -105,7 +103,7 @@ class InventoryRepository(
       return inventory;
    }
 
-   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity> {
+   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
@@ -123,7 +121,7 @@ class InventoryRepository(
       val sql = """
       WITH paged AS (
          $selectBase
-         WHERE i.primary_location = :location 
+         WHERE i.primary_location = :location
                ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
@@ -156,8 +154,6 @@ class InventoryRepository(
    fun mapRow(rs: ResultSet): InventoryEntity =
       InventoryEntity(
          id = rs.getLong("id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
          serialNumber = rs.getString("serial_number"),
          lookupKey = rs.getString("lookup_key"),
          lookupKeyType = rs.getString("lookup_key_type"),

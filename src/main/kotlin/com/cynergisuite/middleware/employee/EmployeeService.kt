@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.employee
 import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.extensions.trimToNull
+import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.load.legacy.LegacyCsvLoadingService
 import com.cynergisuite.middleware.store.StoreService
@@ -26,14 +27,14 @@ class EmployeeService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(EmployeeService::class.java)
    private val employeeMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-employee*csv")
 
-   fun fetchById(id: Long, loc: String): EmployeeValueObject? =
-      employeeRepository.findOne(id = id, loc = loc)?.let { EmployeeValueObject(entity = it) }
+   fun fetchById(id: Long, employeeType: String): EmployeeValueObject? =
+      employeeRepository.findOne(id = id, employeeType = employeeType)?.let { EmployeeValueObject(entity = it) }
 
-   fun fetchByNumberAndLoc(number: Int, loc: String): EmployeeValueObject? =
-      employeeRepository.findOne(number, loc)?.let { EmployeeValueObject(entity = it) }
+   fun fetchByNumberAndLoc(number: Int, employeeType: String): EmployeeValueObject? =
+      employeeRepository.findOne(number, employeeType)?.let { EmployeeValueObject(entity = it) }
 
-   fun exists(id: Long, loc: String): Boolean =
-      employeeRepository.exists(id = id, loc = loc)
+   fun exists(id: Long, employeeType: String): Boolean =
+      employeeRepository.exists(id = id, employeeType = employeeType)
 
    @Validated
    fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {
@@ -44,10 +45,10 @@ class EmployeeService @Inject constructor(
       )
    }
 
-   fun canEmployeeAccess(asset: String, employee: EmployeeValueObject): Boolean {
+   fun canEmployeeAccess(asset: String, employee: User): Boolean {
       logger.debug("Checking if the user {} has access to asset {}", employee, asset)
 
-      return employeeRepository.canEmployeeAccess(employee.loc!!, asset, employee.id!!)
+      return employeeRepository.canEmployeeAccess(employee.myEmployeeType(), asset, employee.myId() ?: -1) // user -1 since that shouldn't be a valid id in the system, and will cause the access check to fail
    }
 
    fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
@@ -57,15 +58,14 @@ class EmployeeService @Inject constructor(
       employeeMatcher.matches(path.fileName)
 
    override fun processCsvRow(record: CSVRecord) {
-      val storeNumberIn = record.get("store_number")
+      val storeNumberIn = record.get("store_number").trimToNull()
 
-      if ( !storeNumberIn.isNullOrBlank() && storeNumberIn.isDigits() ) {
-         val storeNumber = storeNumberIn.toInt()
-         val store = storeService.fetchByNumber(storeNumber)
+      if ( storeNumberIn.isNullOrBlank() || storeNumberIn.isDigits() ) {
+         val store = storeNumberIn?.let { storeService.fetchByNumber(it.toInt()) }
 
          create (
             EmployeeValueObject(
-               loc = "int",
+               type = "eli",
                number = record.get("number").toInt(),
                lastName = record.get("last_name"),
                firstNameMi = record.get("first_name_mi").trimToNull(),

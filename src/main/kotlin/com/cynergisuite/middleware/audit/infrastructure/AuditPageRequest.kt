@@ -1,6 +1,10 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.PageRequestBase
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_PAGE
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SIZE
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_BY
+import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.domain.ValidPageSortBy
 import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.extensions.endOfWeek
@@ -20,35 +24,45 @@ import javax.validation.constraints.Positive
 @Schema(
    name = "AuditPageRequest",
    title = "Specialized paging for listing audits",
-   description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=CREATED&status=IN-PROGRESS"
+   description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=CREATED&status=IN-PROGRESS",
+   allOf = [PageRequestBase::class]
 )
-class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
+class AuditPageRequest(
+   page: Int?, size: Int?, sortBy: String?, sortDirection: String?,
 
    @field:Schema(name = "from", description = "Bottom end of the range which will be used to filter audits.  If from is found thru is required.  If both from and thru are empty then the result will include all audits")
-   var from: OffsetDateTime? = null
+   var from: OffsetDateTime? = null,
 
    @field:Schema(name = "thru", description = "Top end of the range which will be used to filter audits.  If from is found thru is required.  If both from and thru are empty then the result will include all audits")
-   var thru: OffsetDateTime? = null
+   var thru: OffsetDateTime? = null,
 
    @field:Positive
    @field:Min(1)
    @field:Schema(minimum = "1", description = "The Store Number to filter results with")
-   var storeNumber: Int? = null
+   var storeNumber: Int? = null,
 
    @field:Schema(name = "status", description = "Collection of statues that an audit must be in")
    var status: Set<String>? = emptySet()
 
-   constructor(pageRequestIn: AuditPageRequest? = null) : this(pageRequestIn ?: PageRequest()) {
-      val statusesIn = pageRequestIn?.status
+) : PageRequestBase<AuditPageRequest>(page, size, sortBy, sortDirection) {
 
-      this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf(CREATED.value, IN_PROGRESS.value, COMPLETED.value, CANCELED.value, SIGNED_OFF.value)
-      this.from = buildFrom(this.status!!, pageRequestIn)
-      this.thru = buildThru(from, this.status!!, pageRequestIn)
-      this.storeNumber = pageRequestIn?.storeNumber
-   }
+   constructor(pageRequestIn: AuditPageRequest? = null) :
+      this(
+         page = pageRequestIn?.page ?: DEFAULT_PAGE,
+         size = pageRequestIn?.size ?: DEFAULT_SIZE,
+         sortBy = pageRequestIn?.sortBy ?: DEFAULT_SORT_BY,
+         sortDirection = pageRequestIn?.sortDirection ?: DEFAULT_SORT_DIRECTION
+      ) {
+         val statusesIn = pageRequestIn?.status
+
+         this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf(CREATED.value, IN_PROGRESS.value, COMPLETED.value, CANCELED.value, SIGNED_OFF.value)
+         this.from = buildFrom(this.status!!, pageRequestIn)
+         this.thru = buildThru(from, this.status!!, pageRequestIn)
+         this.storeNumber = pageRequestIn?.storeNumber
+      }
 
    @ValidPageSortBy("id", "storeNumber")
-   override fun sortByMe(): String = sortBy
+   override fun sortByMe(): String = sortBy()
 
    override fun equals(other: Any?): Boolean =
       if (other is AuditPageRequest) {
@@ -68,29 +82,25 @@ class AuditPageRequest(pageRequest: PageRequest) : PageRequest(pageRequest) {
          .append(this.status)
          .toHashCode()
 
-   override fun toString(): String {
-      val stringBuilder = StringBuilder(super.toString())
-      val storeNumber = this.storeNumber
-      val status = this.status
+   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
+      AuditPageRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection,
+         from = this.from,
+         thru = this.thru,
+         storeNumber = this.storeNumber,
+         status = this.status
+      )
 
-      if (from != null) {
-         stringBuilder.append("&from=").append(from)
-      }
-
-      if (thru != null) {
-         stringBuilder.append("&thru=").append(thru)
-      }
-
-      if (storeNumber != null) {
-         stringBuilder.append("&storeNumber=").append(storeNumber)
-      }
-
-      if ( !status.isNullOrEmpty() ) {
-         stringBuilder.append(status.joinToString(separator = "&status=", prefix = "&status="))
-      }
-
-      return stringBuilder.toString()
-   }
+   protected override fun myToStringValues(): List<Pair<String, Any?>> =
+      listOf(
+         "from" to from,
+         "thru" to thru,
+         "storeNumber" to storeNumber,
+         "status" to status
+      )
 
    private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
       val fromIn = pageRequestIn?.from

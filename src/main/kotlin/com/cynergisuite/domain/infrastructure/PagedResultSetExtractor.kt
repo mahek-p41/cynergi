@@ -5,13 +5,13 @@ import com.cynergisuite.domain.PageRequest
 import org.springframework.jdbc.core.ResultSetExtractor
 import java.sql.ResultSet
 
-class PagedResultSetExtractor<T : Identifiable>(
-   private val requested: PageRequest,
-   private val mapper: (rs: ResultSet, elements: MutableList<T>) -> Unit
-) : ResultSetExtractor<RepositoryPage<T>> {
+class PagedResultSetExtractor<IDENT : Identifiable, REQUESTED: PageRequest>(
+   private val requested: REQUESTED,
+   private val mapper: (rs: ResultSet, elements: MutableList<IDENT>) -> Unit
+) : ResultSetExtractor<RepositoryPage<IDENT, REQUESTED>> {
 
-   override fun extractData(rs: ResultSet): RepositoryPage<T> {
-      val elements = mutableListOf<T>()
+   override fun extractData(rs: ResultSet): RepositoryPage<IDENT, REQUESTED> {
+      val elements = mutableListOf<IDENT>()
       var totalElements: Long = 0
 
       if (rs.next()) {

@@ -9,8 +9,6 @@ import java.time.OffsetDateTime
 
 data class InventoryEntity(
    val id: Long,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val serialNumber: String,
    val lookupKey: String,
    val lookupKeyType: String,

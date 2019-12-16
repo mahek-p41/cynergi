@@ -8,6 +8,9 @@ import java.util.UUID
 fun ResultSet.getOffsetDateTime(columnLabel: String) : OffsetDateTime =
   this.getObject(columnLabel, OffsetDateTime::class.java)
 
+fun ResultSet.getOffsetDateTimeOrNull(columnLabel: String) : OffsetDateTime? =
+   this.getObject(columnLabel, OffsetDateTime::class.java)
+
 fun ResultSet.getLocalDate(columnLabel: String) : LocalDate =
    this.getObject(columnLabel, LocalDate::class.java)
 
