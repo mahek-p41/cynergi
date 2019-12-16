@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.exception
 
+import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
@@ -17,7 +18,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.sign
 
 @Singleton
 class AuditExceptionValidator @Inject constructor (
@@ -25,90 +25,76 @@ class AuditExceptionValidator @Inject constructor (
    private val auditExceptionsRepository: AuditExceptionRepository,
    private val inventoryRepository: InventoryRepository,
    private val scanAreaRepository: AuditScanAreaRepository
-) {
+) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionValidator::class.java)
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject) {
-      val inventoryId = auditException.inventory?.id
-      val barcode = auditException.barcode
-      val errors = doSharedValidation(auditId)
-      val audit: AuditEntity = auditRepository.findOne(auditId)!!
-      val auditStatus = audit.currentStatus()
-      val scanArea = auditException.scanArea
+      doValidation { errors ->
+         val inventoryId = auditException.inventory?.id
+         val barcode = auditException.barcode
+         val audit: AuditEntity = auditRepository.findOne(auditId)!!
+         val auditStatus = audit.currentStatus()
+         val scanArea = auditException.scanArea
 
-      if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId)) {
-         errors.add(
-            ValidationError("inventory.id", NotFound(inventoryId))
-         )
-      } else if (inventoryId == null && barcode == null) {
-         errors.add(
-            ValidationError("barcode", AuditExceptionMustHaveInventoryOrBarcode())
-         )
-      }
-
-      if ("IN-PROGRESS" != auditStatus.value) {
-         errors.add(
-            ValidationError("audit.status", AuditMustBeInProgressDiscrepancy(auditId))
-         )
-      }
-
-      if (scanArea != null) {
-         val scanAreaValue = scanArea.value
-
-         if (scanAreaValue != null && scanAreaRepository.doesNotExist(scanAreaValue) ) {
+         if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId)) {
             errors.add(
-               ValidationError("audit.scanArea", AuditScanAreaNotFound(scanAreaValue))
+               ValidationError("inventory.id", NotFound(inventoryId))
+            )
+         } else if (inventoryId == null && barcode == null) {
+            errors.add(
+               ValidationError("barcode", AuditExceptionMustHaveInventoryOrBarcode())
             )
          }
-      }
 
-      if (errors.isNotEmpty()) {
-         logger.warn("Validating Create for AuditException {} had errors {} for audit {}", auditException, errors, auditId)
+         if ("IN-PROGRESS" != auditStatus.value) {
+            errors.add(
+               ValidationError("audit.status", AuditMustBeInProgressDiscrepancy(auditId))
+            )
+         }
 
-         throw ValidationException(errors)
+         if (scanArea != null) {
+            val scanAreaValue = scanArea.value
+
+            if (scanAreaValue != null && scanAreaRepository.doesNotExist(scanAreaValue) ) {
+               errors.add(
+                  ValidationError("audit.scanArea", AuditScanAreaNotFound(scanAreaValue))
+               )
+            }
+         }
       }
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
-      val auditExceptionId = auditExceptionUpdate.id!!
-      val signedOff = auditExceptionUpdate.signedOff!!
-      val errors = doSharedValidation(auditId)
-      val audit: AuditEntity = auditRepository.findOne(auditId)!!
+      doValidation { errors ->
+         val auditExceptionId = auditExceptionUpdate.id!!
+         val signedOff = auditExceptionUpdate.signedOff!!
+         val audit: AuditEntity = auditRepository.findOne(auditId)!!
 
-      if (auditExceptionsRepository.doesNotExist(auditExceptionId)) {
-         errors.add(
-            ValidationError("id", NotFound(auditExceptionId))
-         )
-      }
+         if (auditExceptionsRepository.doesNotExist(auditExceptionId)) {
+            errors.add(
+               ValidationError("id", NotFound(auditExceptionId))
+            )
+         }
 
-      if (audit.currentStatus().value == "SIGNED-OFF") {
-         errors.add(
-            ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
-         )
-      }
+         if (audit.currentStatus().value == "SIGNED-OFF") {
+            errors.add(
+               ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
+            )
+         }
 
-      if ((!signedOff) && (auditExceptionUpdate.note == null)) {
-         errors.add(
-            ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
-         )
-      }
-
-      if (errors.isNotEmpty()) {
-         logger.warn("Validating Update for AuditException {} had errors {} for audit {}", auditExceptionUpdate, errors, auditId)
-
-         throw ValidationException(errors)
+         if (!signedOff && auditExceptionUpdate.note == null) {
+            errors.add(
+               ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
+            )
+         }
       }
    }
 
-   private fun doSharedValidation(auditId: Long): MutableSet<ValidationError> {
-      val errors = mutableSetOf<ValidationError>()
-
+   private fun doSharedValidation(auditId: Long) {
       if (auditRepository.doesNotExist(auditId)) {
          throw NotFoundException(auditId)
       }
-
-      return errors
    }
 }

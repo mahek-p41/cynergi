@@ -231,7 +231,6 @@ class AuditExceptionRepository @Inject constructor(
       SELECT p.* FROM paged AS p
       """.trimIndent()
 
-
       logger.debug("find all audit exceptions {}", sql)
 
       val resultList = jdbc.findAllWithCrossJoin(sql, mutableMapOf("audit_id" to audit.id), "ae_id", RowMapper { rs, _ ->
