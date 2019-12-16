@@ -24,7 +24,12 @@ data class AuditExceptionUpdateValueObject(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "note", description = "Note to be added to the AuditException")
-   var note: AuditExceptionNoteValueObject? = null
+   var note: AuditExceptionNoteValueObject? = null,
+
+   @field:Valid
+   @field:NotNull
+   @field:Schema(name = "signed-off", description = "AuditException boolean for signed-off")
+   var signedOff: Boolean? = false
 
 )  : ValueObjectBase<AuditExceptionUpdateValueObject>() {
    override fun myId(): Long? = id

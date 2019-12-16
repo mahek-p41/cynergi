@@ -3,10 +3,8 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.schedule.DailySchedule
 import com.cynergisuite.middleware.store.StoreFactory
 import io.micronaut.test.annotation.MicronautTest
 
@@ -25,9 +23,8 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    void "one store test"() {
       given:
       final store = StoreFactory.random()
-      final dept = DepartmentFactory.random()
       final employee = employeeFactoryService.single(store)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store], dept, employee)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee)
 
       when:
       def result = auditScheduleService.processDaily(schedule)
@@ -50,9 +47,8 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       given:
       final store1 = StoreFactory.storeOne()
       final store3 = StoreFactory.storeThree()
-      final dept = DepartmentFactory.random()
       final employee = employeeFactoryService.single(store1)
-      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], dept, employee)
+      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee)
 
       when:
       def result = auditScheduleService.processDaily(schedule)
@@ -81,10 +77,9 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    void "one store with already CREATED audit" () {
       given:
       final store1 = StoreFactory.storeOne()
-      final dept = DepartmentFactory.random()
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], dept, employee)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], employee)
 
       when:
       def result = auditScheduleService.processDaily(schedule)

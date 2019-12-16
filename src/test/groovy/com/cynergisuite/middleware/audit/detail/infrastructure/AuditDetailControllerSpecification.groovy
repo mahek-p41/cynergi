@@ -258,7 +258,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final def response = exception.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDataTransferObject(it) } == [
-         new ErrorDataTransferObject("Audit ${audit.id} must be In Progress to modify its details", "audit.status")
+         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its details", "audit.status")
       ]
    }
 }
