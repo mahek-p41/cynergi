@@ -30,7 +30,10 @@ class AuditExceptionValidator @Inject constructor (
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject) {
+      doSharedValidation(auditId)
+
       doValidation { errors ->
+
          val inventoryId = auditException.inventory?.id
          val barcode = auditException.barcode
          val audit: AuditEntity = auditRepository.findOne(auditId)!!
@@ -67,6 +70,8 @@ class AuditExceptionValidator @Inject constructor (
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
+      doSharedValidation(auditId)
+
       doValidation { errors ->
          val auditExceptionId = auditExceptionUpdate.id!!
          val signedOff = auditExceptionUpdate.signedOff!!
