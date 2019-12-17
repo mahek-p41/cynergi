@@ -57,7 +57,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit by id" () {
       given:
-      final store = storeFactoryService.random()
+      final store = storeFactoryService.store(3)
       final savedAudit = auditFactoryService.single(store)
 
       when:
@@ -65,6 +65,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      savedAudit.inventoryCount == 8
       result.id == savedAudit.id
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.lastUpdated == null
