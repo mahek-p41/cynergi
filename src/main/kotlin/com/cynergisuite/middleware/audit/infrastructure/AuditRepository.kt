@@ -411,10 +411,16 @@ class AuditRepository @Inject constructor(
 
       val audit = jdbc.insertReturning<AuditEntity>(
          """
-         INSERT INTO audit(store_number)
-         VALUES (:store_number)
+        INSERT INTO audit(store_number, inventory_count)
+         VALUES (
+         :store_number,
+         (SELECT COUNT (*)
+         FROM fastinfo_prod_import.inventory_vw i
+         WHERE i.primary_location = :store_number AND
+         i.status in ('N', 'R', 'D') 
+         ))
          RETURNING
-            *
+         *
          """.trimMargin(),
          mapOf("store_number" to entity.store.number),
          RowMapper { rs, _ ->
@@ -426,7 +432,7 @@ class AuditRepository @Inject constructor(
                store = entity.store,
                number = rs.getInt("number"),
                totalExceptions = 0,
-               inventoryCount = countIdleInventoryForStore(entity.store.number),
+               inventoryCount = entity.inventoryCount,
                lastUpdated = null
             )
          }
@@ -438,18 +444,6 @@ class AuditRepository @Inject constructor(
 
       return audit
    }
-
-   fun countIdleInventoryForStore(storeNumber: Int): Int =
-      jdbc.queryForObject("""
-         SELECT COUNT (*)
-         FROM fastinfo_prod_import.inventory_vw i
-         WHERE i.primary_location = :store_number AND
-               (i.status in ('N', 'R', 'D')) 
-         """.trimIndent(),
-         mapOf(
-            "store_number" to storeNumber),
-         Int::class.java
-      )!!
 
    @Transactional
    fun update(entity: AuditEntity): AuditEntity {
