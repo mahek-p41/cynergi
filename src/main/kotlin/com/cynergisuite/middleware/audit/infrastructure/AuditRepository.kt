@@ -469,6 +469,7 @@ class AuditRepository @Inject constructor(
          store = storeRepository.mapRow(rs, "s_"),
          number = rs.getInt("a_number"),
          totalExceptions = rs.getInt("a_total_exceptions"),
+         inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
       )
 
