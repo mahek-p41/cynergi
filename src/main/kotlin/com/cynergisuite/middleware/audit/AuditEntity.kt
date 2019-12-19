@@ -17,7 +17,7 @@ data class AuditEntity (
    val totalExceptions: Int = 0,
    val lastUpdated: OffsetDateTime? = null,
    val inventoryCount: Int = 0,
-   val actions: MutableSet<AuditAction> = LinkedHashSet()
+   val actions: MutableSet<AuditAction> = LinkedHashSet<AuditAction>()
 ) : Entity<AuditEntity> {
 
    constructor(id: Long, audit: AuditEntity) :

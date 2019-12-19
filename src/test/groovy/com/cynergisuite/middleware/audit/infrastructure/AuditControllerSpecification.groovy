@@ -93,6 +93,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      result.inventoryCount > 0
+      result.inventoryCount == savedAudit.inventoryCount
       result.totalExceptions == auditExceptions.size()
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
@@ -109,6 +111,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      result.inventoryCount > 0
+      result.inventoryCount == savedAudit.inventoryCount
       result.totalExceptions == 0
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditDetails.last().timeUpdated
@@ -163,6 +167,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements[0].id == firstFiveAudits[0].id
+      pageOneResult.elements[0].inventoryCount > 0
+      pageOneResult.elements[0].inventoryCount == firstFiveAudits[0].inventoryCount
       pageOneResult.elements[0].store.id == store.id
       pageOneResult.elements[0].actions.size() == 1
       pageOneResult.elements[0].actions[0].status.value == Created.INSTANCE.value

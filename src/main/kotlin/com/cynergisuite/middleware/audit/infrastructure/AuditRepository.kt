@@ -416,14 +416,16 @@ class AuditRepository @Inject constructor(
          """
         INSERT INTO audit(store_number, inventory_count)
          VALUES (
-         :store_number,
-         (SELECT COUNT (*)
-         FROM fastinfo_prod_import.inventory_vw i
-         WHERE i.primary_location = :store_number AND
-         i.status in ('N', 'R', 'D') 
-         ))
+            :store_number,
+            (
+               SELECT COUNT (id)
+               FROM fastinfo_prod_import.inventory_vw i
+               WHERE i.primary_location = :store_number
+                     AND i.status in ('N', 'R', 'D')
+            )
+         )
          RETURNING
-         *
+            *
          """.trimMargin(),
          mapOf("store_number" to entity.store.number),
          RowMapper { rs, _ ->
@@ -476,7 +478,6 @@ class AuditRepository @Inject constructor(
    private fun loadNextStates(audit: AuditEntity) {
       val actions = audit.actions.map { action ->
          val actionStatus = auditStatusRepository.findOne(action.status.id)!!
-
          val changed = action.copy(status = actionStatus)
 
          changed
