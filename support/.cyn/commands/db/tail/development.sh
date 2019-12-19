@@ -4,7 +4,7 @@
 cd ../development
 
 if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergidb)` ]; then
-  echo "cynergidb is not running! Not connecting psql."
+  echo "cynergidb is not running! Not tailing!"
   exit 1
 else
   echo "Tailing cynergidb"

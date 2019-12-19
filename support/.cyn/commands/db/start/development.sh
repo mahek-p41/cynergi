@@ -8,7 +8,7 @@ if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | gr
   docker-compose run --rm cynergidbready
   exit $?
 else
-  echo "cynergidb and cynergidevelopdb are alread running"
+  echo "cynergidb and cynergidevelopdb are already running"
   echo "can be accessed at $(docker-compose port cynergidb 5432)"
   exit 1
 fi
