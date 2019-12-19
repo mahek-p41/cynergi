@@ -56,6 +56,7 @@ class AuditRepository @Inject constructor(
                     SELECT time_updated FROM audit_exception WHERE audit_id = a.id
                   ) AS m
             ) AS a_last_updated,
+            a.inventory_count as a_inventory_count,
             (SELECT csastd.value
              FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
              WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
@@ -206,6 +207,7 @@ class AuditRepository @Inject constructor(
                        SELECT time_updated FROM audit_exception WHERE audit_id = a.id
                      ) AS m
                ) AS last_updated,
+               a.inventory_count AS inventory_count,
                s.current_status AS current_status,
                (SELECT count(a.id)
                 FROM audit a
@@ -234,6 +236,7 @@ class AuditRepository @Inject constructor(
             a.total_exceptions AS a_total_exceptions,
             a.current_status AS current_status,
             a.last_updated AS a_last_updated,
+            a.inventory_count AS a_inventory_count,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
             aa.time_created AS aa_time_created,
@@ -411,8 +414,16 @@ class AuditRepository @Inject constructor(
 
       val audit = jdbc.insertReturning<AuditEntity>(
          """
-         INSERT INTO audit(store_number)
-         VALUES (:store_number)
+        INSERT INTO audit(store_number, inventory_count)
+         VALUES (
+            :store_number,
+            (
+               SELECT COUNT (id)
+               FROM fastinfo_prod_import.inventory_vw i
+               WHERE i.primary_location = :store_number
+                     AND i.status in ('N', 'R', 'D')
+            )
+         )
          RETURNING
             *
          """.trimMargin(),
@@ -426,6 +437,7 @@ class AuditRepository @Inject constructor(
                store = entity.store,
                number = rs.getInt("number"),
                totalExceptions = 0,
+               inventoryCount = rs.getInt("inventory_count"),
                lastUpdated = null
             )
          }
@@ -459,13 +471,13 @@ class AuditRepository @Inject constructor(
          store = storeRepository.mapRow(rs, "s_"),
          number = rs.getInt("a_number"),
          totalExceptions = rs.getInt("a_total_exceptions"),
+         inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
       )
 
    private fun loadNextStates(audit: AuditEntity) {
       val actions = audit.actions.map { action ->
          val actionStatus = auditStatusRepository.findOne(action.status.id)!!
-
          val changed = action.copy(status = actionStatus)
 
          changed

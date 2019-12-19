@@ -37,6 +37,10 @@ data class AuditValueObject (
    @field:Schema(name = "lastUpdated", description = "Last time an audit detail or audit exception was created", readOnly = true, required = false)
    val lastUpdated: OffsetDateTime? = null,
 
+   @field:Positive
+   @field:Schema(name = "inventoryCount", description="Total idle inventory count associated with an audit's store", minimum = "0", readOnly = true, required = false)
+   var inventoryCount: Int = 0,
+
    @field:Schema(name = "actions", required = true, description = "Listing of actions associated with this Audit")
    var actions: MutableSet<AuditActionValueObject> = mutableSetOf()
 
@@ -50,6 +54,7 @@ data class AuditValueObject (
          auditNumber = entity.number,
          totalExceptions = entity.totalExceptions,
          lastUpdated = entity.lastUpdated,
+         inventoryCount = entity.inventoryCount,
          actions = entity.actions.asSequence().map { action ->
             AuditActionValueObject(action, AuditStatusValueObject(action.status, action.status.localizeMyDescription(locale, localizationService)))
          }.toMutableSet()
