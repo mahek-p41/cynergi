@@ -11,13 +11,13 @@ import javax.inject.Singleton
 object ShipViaFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1): Stream<ShipVia> {
+   fun stream(numberIn: Int = 1): Stream<ShipViaEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
 
       return IntStream.range(0, number).mapToObj {
-         ShipVia(
+         ShipViaEntity(
             name = lorem.characters(3, 250),
             description = lorem.characters(3, 495)
          )
@@ -25,7 +25,7 @@ object ShipViaFactory {
    }
 
    @JvmStatic
-   fun single(): ShipVia {
+   fun single(): ShipViaEntity {
       return stream(1).findFirst().orElseThrow { Exception("Unable to create ShipVia") }
    }
 }
@@ -35,13 +35,13 @@ object ShipViaFactory {
 class ShipViaFactoryService @Inject constructor(
    private val shipViaRepository: ShipViaRepository
 ) {
-   fun stream(numberIn: Int = 1): Stream<ShipVia> {
+   fun stream(numberIn: Int = 1): Stream<ShipViaEntity> {
       return ShipViaFactory.stream(numberIn).map {
          shipViaRepository.insert(it)
       }
    }
 
-   fun single(): ShipVia {
+   fun single(): ShipViaEntity {
       return stream(1).findFirst().orElseThrow { Exception("Unable to create ShipVia")}
    }
 }

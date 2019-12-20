@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.shipvia.infrastructure
 
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.shipvia.ShipViaFactory
@@ -8,9 +8,7 @@ import com.cynergisuite.middleware.shipvia.ShipViaFactoryService
 import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import java.util.stream.Collectors
 import javax.inject.Inject
-
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -48,20 +46,20 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.name <=> o2.name }.collect(Collectors.toList())
-      def pageOne = new PageRequest(1, 5, "name", "ASC")
-      def pageTwo = new PageRequest(2, 5, "name", "ASC")
-      def pageLast = new PageRequest(4, 5, "name", "ASC")
-      def pageFive = new PageRequest(5, 5, "name", "ASC")
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.name <=> o2.name }.toList()
+      def pageOne = new StandardPageRequest(1, 5, "name", "ASC")
+      def pageTwo = new StandardPageRequest(2, 5, "name", "ASC")
+      def pageLast = new StandardPageRequest(4, 5, "name", "ASC")
+      def pageFive = new StandardPageRequest(5, 5, "name", "ASC")
       def firstPageShipVia = twentyShipVias[0..4]
       def secondPageShipVia = twentyShipVias[5..9]
       def lastPageShipVia = twentyShipVias[15..19]
 
       when:
-      def pageOneResult = get("$path/${pageOne}")
+      def pageOneResult = get("$path${pageOne}")
 
       then:
-      pageOneResult.requested.with { new PageRequest(it) } == pageOne
+      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
       pageOneResult.totalElements == 20
       pageOneResult.totalPages == 4
       pageOneResult.first == true
@@ -70,10 +68,10 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
 
       when:
-      def pageTwoResult = get("$path/${pageTwo}")
+      def pageTwoResult = get("$path${pageTwo}")
 
       then:
-      pageTwoResult.requested.with { new PageRequest(it) } == pageTwo
+      pageTwoResult.requested.with { new StandardPageRequest(it) } == pageTwo
       pageTwoResult.totalElements == 20
       pageTwoResult.totalPages == 4
       pageTwoResult.first == false
@@ -82,10 +80,10 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.collect { new ShipViaValueObject(it) } == secondPageShipVia
 
       when:
-      def pageLastResult = get("$path/${pageLast}")
+      def pageLastResult = get("$path${pageLast}")
 
       then:
-      pageLastResult.requested.with { new PageRequest(it) } == pageLast
+      pageLastResult.requested.with { new StandardPageRequest(it) } == pageLast
       pageLastResult.totalElements == 20
       pageLastResult.totalPages == 4
       pageLastResult.first == false
@@ -99,6 +97,44 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       then:
       final def notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch all without page"() {
+      given:
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.toList()
+      def firstPageShipVia = twentyShipVias[0..9]
+
+      when:
+      def pageOneResult = get(path)
+
+      then:
+      notThrown(HttpClientResponseException)
+      pageOneResult.requested.with { new StandardPageRequest(it) } == new StandardPageRequest(null)
+      pageOneResult.totalElements == 20
+      pageOneResult.totalPages == 2
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 10
+      pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
+   }
+
+   void "fetch all with page"() {
+      given:
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.toList()
+      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      def firstPageShipVia = twentyShipVias[0..4]
+
+      when:
+      def pageOneResult = get("$path${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
+      pageOneResult.totalElements == 20
+      pageOneResult.totalPages == 4
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
    }
 
    void "post valid shipVia"() {

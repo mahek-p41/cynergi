@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.shipvia.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -12,6 +13,8 @@ import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.validation.Validated
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -42,7 +45,7 @@ class ShipViaController @Inject constructor(
    @AccessControl("company-fetchAll")
    @Get(value = "{?pageRequest*}", produces = [APPLICATION_JSON])
    fun fetchAll(
-      @Valid @QueryValue("pageRequest") pageRequest: PageRequest
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest
    ): Page<ShipViaValueObject> {
       val page = shipViaService.fetchAll(pageRequest)
 

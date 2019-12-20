@@ -9,6 +9,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 data class ShipViaValueObject(
+
    @field:Positive
    var id: Long? = null,
 
@@ -28,7 +29,7 @@ data class ShipViaValueObject(
          description = description
       )
 
-   constructor(entity: ShipVia) :
+   constructor(entity: ShipViaEntity) :
       this(
          id = entity.id,
          name = entity.name,

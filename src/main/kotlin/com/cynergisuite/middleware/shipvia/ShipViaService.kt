@@ -27,19 +27,20 @@ class ShipViaService @Inject constructor(
    fun fetchAll(@Valid pageRequest: PageRequest): Page<ShipViaValueObject> {
       val found = shipViaRepository.findAll(pageRequest)
 
-      return found.toPage { shipVia ->
+      return found.toPage { shipVia: ShipViaEntity ->
          ShipViaValueObject(shipVia)
       }
    }
 
-   fun exists(id: Long): Boolean = shipViaRepository.exists(id = id)
+   fun exists(id: Long): Boolean =
+      shipViaRepository.exists(id = id)
 
    @Validated
    fun create(@Valid vo: ShipViaValueObject): ShipViaValueObject {
       shipViaValidator.validateSave(vo)
 
       return ShipViaValueObject(
-         entity = shipViaRepository.insert(entity = ShipVia(vo = vo))
+         entity = shipViaRepository.insert(entity = ShipViaEntity(vo = vo))
       )
    }
 
@@ -48,7 +49,7 @@ class ShipViaService @Inject constructor(
       shipViaValidator.validateUpdate(vo)
 
       return ShipViaValueObject(
-         entity = shipViaRepository.update(entity = ShipVia(vo = vo))
+         entity = shipViaRepository.update(entity = ShipViaEntity(vo = vo))
       )
    }
 

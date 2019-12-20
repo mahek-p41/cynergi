@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.shipvia.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
-import com.cynergisuite.middleware.shipvia.ShipVia
+import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -21,7 +21,7 @@ class ShipViaRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
    private val simpleShipViaRowMapper = ShipViaRowMapper()
 
-   fun findOne(id: Long): ShipVia? {
+   fun findOne(id: Long): ShipViaEntity? {
       val found = jdbc.findFirstOrNull("SELECT id, uu_row_id, time_created, time_updated, name, description FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
@@ -36,7 +36,7 @@ class ShipViaRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: ShipVia): ShipVia {
+   fun insert(entity: ShipViaEntity): ShipViaEntity {
       logger.debug("Inserting shipVia {}", entity)
 
       return jdbc.insertReturning("""
@@ -54,7 +54,7 @@ class ShipViaRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: ShipVia): ShipVia {
+   fun update(entity: ShipViaEntity): ShipViaEntity {
       logger.debug("Updating shipVia {}", entity)
 
       return jdbc.updateReturning("""
@@ -75,9 +75,9 @@ class ShipViaRepository @Inject constructor(
       )
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<ShipVia> {
+   fun findAll(pageRequest: PageRequest): RepositoryPage<ShipViaEntity, PageRequest> {
       var totalElements: Long? = null
-      val shipVia = mutableListOf<ShipVia>()
+      val shipVia = mutableListOf<ShipViaEntity>()
 
       jdbc.query("""
          WITH shipVias AS (
@@ -87,8 +87,8 @@ class ShipViaRepository @Inject constructor(
             s.*,
             count(*) OVER() as total_elements
          FROM shipVias AS s
-         ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
-         LIMIT ${pageRequest.size}
+         ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
+         LIMIT ${pageRequest.size()}
          OFFSET ${pageRequest.offset()}
          """.trimIndent(),
          emptyMap<String, Any>()
@@ -111,9 +111,9 @@ class ShipViaRepository @Inject constructor(
 
 private class ShipViaRowMapper(
    private val columnPrefix: String = EMPTY
-) : RowMapper<ShipVia> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ShipVia =
-      ShipVia(
+) : RowMapper<ShipViaEntity> {
+   override fun mapRow(rs: ResultSet, rowNum: Int): ShipViaEntity =
+      ShipViaEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

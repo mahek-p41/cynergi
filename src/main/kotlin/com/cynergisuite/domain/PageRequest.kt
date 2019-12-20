@@ -30,6 +30,7 @@ interface PageRequest {
    fun snakeSortBy(): String
    fun offset(): Int
    fun nextPage(): PageRequest
+   fun copyFillInDefaults(): PageRequest
 }
 
 @DataTransferObject
@@ -57,7 +58,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
 
 ) : PageRequest {
 
-   protected abstract fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): PAGE
+   protected abstract fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): PAGE
    protected abstract fun sortByMe(): String
    protected abstract fun myToStringValues(): List<Pair<String, Any?>>
 
@@ -65,7 +66,8 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    final override fun size(): Int = size ?: DEFAULT_SIZE
    final override fun sortBy(): String = sortBy ?: DEFAULT_SORT_BY
    final override fun sortDirection(): String = sortDirection ?: DEFAULT_SORT_DIRECTION
-   final override fun nextPage(): PAGE = myNextPage(this.page() + 1, size(), sortBy(), sortDirection())
+   final override fun nextPage(): PAGE = myCopyPage(this.page() + 1, size(), sortBy(), sortDirection())
+   final override fun copyFillInDefaults(): PAGE = myCopyPage(this.page(), size(), sortBy(), sortDirection())
 
    final override fun snakeSortBy(): String {
       val sortByMe = sortByMe()
@@ -149,7 +151,7 @@ class StandardPageRequest(
          sortDirection = pageRequestIn?.sortDirection() ?: DEFAULT_SORT_DIRECTION
       )
 
-   override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): StandardPageRequest =
+   override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): StandardPageRequest =
       StandardPageRequest(
          page = page,
          size = size,
@@ -161,3 +163,4 @@ class StandardPageRequest(
    override fun sortByMe(): String = sortBy()
    override fun myToStringValues(): List<Pair<String, Any?>> = emptyList()
 }
+
