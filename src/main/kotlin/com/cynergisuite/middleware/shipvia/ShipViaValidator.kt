@@ -18,7 +18,7 @@ class ShipViaValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ShipViaValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateSave(vo: ShipViaValueObject){
+   fun validateCreate(vo: ShipViaValueObject){
       logger.trace("Validating Save ShipVia {}", vo)
    }
 

@@ -37,7 +37,7 @@ class ShipViaService @Inject constructor(
 
    @Validated
    fun create(@Valid vo: ShipViaValueObject): ShipViaValueObject {
-      shipViaValidator.validateSave(vo)
+      shipViaValidator.validateCreate(vo)
 
       return ShipViaValueObject(
          entity = shipViaRepository.insert(entity = ShipViaEntity(vo = vo))

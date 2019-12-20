@@ -35,8 +35,11 @@ class ShipViaController @Inject constructor(
       @QueryValue("id") id: Long
    ): ShipViaValueObject {
       logger.info("Fetching ShipVia by {}", id)
+
       val response = shipViaService.fetchById(id = id) ?: throw NotFoundException(id)
+
       logger.debug("Fetch ShipVia by {} resulted {}", id, response)
+
       return response
    }
 
@@ -56,16 +59,17 @@ class ShipViaController @Inject constructor(
       return page
    }
 
-
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    fun save(
       @Valid @Body vo: ShipViaValueObject
    ): ShipViaValueObject {
       logger.info("Requested Save ShipVia {}", vo)
-      shipViaValidator.validateSave(vo = vo)
+
       val response = shipViaService.create(vo = vo)
+
       logger.debug("Requested Save ShipVia {} resulted in {}", vo, response)
+
       return response
    }
 
@@ -75,9 +79,11 @@ class ShipViaController @Inject constructor(
       @Valid @Body vo: ShipViaValueObject
    ): ShipViaValueObject {
       logger.info("Requested Update ShipVia {}", vo)
-      shipViaValidator.validateUpdate(vo = vo)
+
       val response = shipViaService.update(vo = vo)
+
       logger.debug("Requested Update ShipVia {} resulted in {}", vo, response)
+
       return response
    }
 
