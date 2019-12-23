@@ -11,50 +11,6 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW store_vw AS';
-   unionAll := '';
-
-   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'store_vw') THEN
-      DROP VIEW store_vw;
-   END IF;
-
-   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
-   LOOP
-      sqlToExec := sqlToExec
-      || ' '
-      || unionAll || '
-         SELECT
-            loc_trans.id AS id,
-            loc_trans2.id AS company_id,
-            loc_trans.loc_tran_loc AS number,
-            loc_trans.loc_transfer_desc AS name,
-            ''' || r.schema_name || ''' AS dataset,
-            loc_trans.created_at AT TIME ZONE ''UTC'' AS time_created,
-            loc_trans.updated_at AT TIME ZONE ''UTC'' AS time_updated
-         FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-              JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
-                ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
-         WHERE loc_trans.loc_tran_rec_type = ''4''
-            AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
-            AND loc_trans2.loc_tran_rec_type = ''4''
-            AND loc_trans2.loc_tran_loc = 0
-            AND loc_trans.loc_transfer_desc IS NOT NULL
-      ';
-
-      unionAll := ' UNION ALL ';
-   END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY number ASC';
-
-   EXECUTE sqlToExec;
-END $$;
-
-DO $$
-DECLARE
-   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
-   r RECORD;
-   sqlToExec VARCHAR;
-   unionAll VARCHAR;
-BEGIN
    sqlToExec := 'CREATE OR REPLACE VIEW company_vw AS';
    unionAll := '';
 
@@ -123,6 +79,50 @@ BEGIN
 
       unionStr := ' UNION ';
    END LOOP;
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW store_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'store_vw') THEN
+      DROP VIEW store_vw;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            loc_trans.id AS id,
+            loc_trans2.id AS company_id,
+            loc_trans.loc_tran_loc AS number,
+            loc_trans.loc_transfer_desc AS name,
+            ''' || r.schema_name || ''' AS dataset,
+            loc_trans.created_at AT TIME ZONE ''UTC'' AS time_created,
+            loc_trans.updated_at AT TIME ZONE ''UTC'' AS time_updated
+         FROM ' || r.schema_name || '.level1_loc_trans loc_trans
+              JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
+                ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
+         WHERE loc_trans.loc_tran_rec_type = ''4''
+            AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
+            AND loc_trans2.loc_tran_rec_type = ''4''
+            AND loc_trans2.loc_tran_loc = 0
+            AND loc_trans.loc_transfer_desc IS NOT NULL
+      ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number ASC';
 
    EXECUTE sqlToExec;
 END $$;
@@ -240,7 +240,8 @@ BEGIN
             loc_trans.loc_tran_primary_loc AS primary_location,
             loc_trans2.loc_transfer_loc_type AS location_type,
             loc_trans2.created_at AT TIME ZONE ''UTC'' AS time_created,
-            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated
+            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            ''' || r.schema_name || ''' AS dataset
          FROM ' || r.schema_name || '.level1_ninvrecs inv_recs '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans ON inv_location_rec_1 = loc_trans.loc_tran_loc '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2 ON loc_trans.loc_tran_primary_loc = loc_trans2.loc_tran_loc '
