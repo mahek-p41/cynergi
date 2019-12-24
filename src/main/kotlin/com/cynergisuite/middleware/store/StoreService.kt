@@ -13,11 +13,11 @@ class StoreService @Inject constructor(
    fun fetchById(id: Long): StoreValueObject? =
       storeRepository.findOne(id = id)?.let { StoreValueObject(entity = it) }
 
-   fun fetchByNumber(number: Int): StoreValueObject? =
-      storeRepository.findOneByNumber(number = number)?.let { StoreValueObject(entity = it) }
+   fun fetchByNumber(number: Int, dataset: String): StoreValueObject? =
+      storeRepository.findOne(number, dataset)?.let { StoreValueObject(entity = it) }
 
-   fun fetchAll(pageRequest: PageRequest): Page<StoreValueObject> {
-      val stores = storeRepository.findAll(pageRequest)
+   fun fetchAll(pageRequest: PageRequest, dataset: String): Page<StoreValueObject> {
+      val stores = storeRepository.findAll(pageRequest, dataset)
 
       return stores.toPage { store ->
          StoreValueObject(store)

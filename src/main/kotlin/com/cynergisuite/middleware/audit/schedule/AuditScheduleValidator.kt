@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.authentication.User
-import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
@@ -27,7 +26,9 @@ class AuditScheduleValidator(
 ) : ValidatorBase() {
 
    fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
-      doValidation { errors -> doSharedValidation(dto, errors) }
+      doValidation {
+         errors -> doSharedValidation(dto, errors)
+      }
 
       val stores = mutableListOf<StoreEntity>()
       val arguments = mutableSetOf(
@@ -90,7 +91,7 @@ class AuditScheduleValidator(
       val existingLocale = schedule.arguments.firstOrNull { it.description == "locale" }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
-         .map { it to storeRepository.findOneByNumber(it.value.toInt())!! }
+         .map { it to storeRepository.findOne(it.value.toInt(), user.myDataset())!! }
          .sortedBy { it.second.id }
          .toList()
       val updateStores: List<StoreEntity> = dto.stores.asSequence()

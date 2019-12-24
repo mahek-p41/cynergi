@@ -27,9 +27,6 @@ class EmployeeService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(EmployeeService::class.java)
    private val employeeMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-employee*csv")
 
-   fun fetchById(id: Long, employeeType: String): EmployeeValueObject? =
-      employeeRepository.findOne(id = id, employeeType = employeeType)?.let { EmployeeValueObject(entity = it) }
-
    fun exists(id: Long, employeeType: String): Boolean =
       employeeRepository.exists(id = id, employeeType = employeeType)
 
@@ -56,9 +53,10 @@ class EmployeeService @Inject constructor(
 
    override fun processCsvRow(record: CSVRecord) {
       val storeNumberIn = record.get("store_number").trimToNull()
+      val dataset = record.get("dataset").trimToNull()
 
-      if ( storeNumberIn.isNullOrBlank() || storeNumberIn.isDigits() ) {
-         val store = storeNumberIn?.let { storeService.fetchByNumber(it.toInt()) }
+      if ( (storeNumberIn.isNullOrBlank() || storeNumberIn.isDigits()) && dataset != null ) {
+         val store = storeNumberIn?.let { storeService.fetchByNumber(it.toInt(), dataset) }
 
          create (
             EmployeeValueObject(

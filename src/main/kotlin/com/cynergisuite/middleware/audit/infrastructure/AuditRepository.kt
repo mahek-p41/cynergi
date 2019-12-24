@@ -125,10 +125,17 @@ class AuditRepository @Inject constructor(
    }
 
    fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
-      logger.debug("Searching for audit not completed or canceled for store {} and status {}", store)
+      val query = "$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses) AND s_dataset = :dataset"
 
-      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)",
-         mapOf("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))) { rs ->
+      logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
+
+      val found = jdbc.findFirstOrNull(query,
+         mapOf(
+            "store_number" to store.number,
+            "statuses" to listOf(CREATED.value, IN_PROGRESS.value),
+            "dataset" to store.myDataset()
+         )
+      ) { rs ->
          val audit = this.mapRow(rs)
 
          do {

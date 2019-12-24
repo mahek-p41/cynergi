@@ -41,15 +41,15 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findOneByNumber(number: Int): StoreEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE number = :number", mapOf("number" to number), simpleStoreRowMapper)
+   fun findOne(number: Int, dataset: String): StoreEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase WHERE number = :number AND s.dataset = :dataset", mapOf("number" to number, "dataset" to dataset), simpleStoreRowMapper)
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
 
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, includeAll: Boolean = false): RepositoryPage<StoreEntity, PageRequest> {
+   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<StoreEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 

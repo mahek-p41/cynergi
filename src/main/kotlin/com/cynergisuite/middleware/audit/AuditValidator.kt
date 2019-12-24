@@ -52,7 +52,7 @@ class AuditValidator @Inject constructor(
       validationFetchAll(pageRequest)
 
    @Throws(ValidationException::class)
-   fun validateCreate(audit: AuditCreateValueObject, employee: User): AuditEntity {
+   fun validateCreate(audit: AuditCreateValueObject, user: User): AuditEntity {
       logger.debug("Validating Create Audit {}", audit)
 
       doValidation { errors ->
@@ -68,18 +68,18 @@ class AuditValidator @Inject constructor(
       }
 
       return AuditEntity(
-         store = storeRepository.findOneByNumber(number = audit.store!!.number!!)!!,
+         store = storeRepository.findOne(number = audit.store!!.number!!, dataset = user.myDataset())!!,
          actions = mutableSetOf(
             AuditAction(
                status = CREATED,
-               changedBy = fromUser(employee)
+               changedBy = fromUser(user)
             )
          )
       )
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(audit: AuditUpdateValueObject, employee: User, locale: Locale): Pair<AuditAction, AuditEntity> {
+   fun validateUpdate(audit: AuditUpdateValueObject, user: User, locale: Locale): Pair<AuditAction, AuditEntity> {
       logger.debug("Validating Update Audit {}", audit)
 
       doValidation { errors ->
@@ -119,7 +119,7 @@ class AuditValidator @Inject constructor(
       return Pair(
          AuditAction(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
-            changedBy = fromUser(employee)
+            changedBy = fromUser(user)
          ),
          auditRepository.findOne(audit.id!!)!!
       )

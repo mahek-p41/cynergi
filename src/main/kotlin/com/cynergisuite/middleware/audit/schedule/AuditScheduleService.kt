@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.notification.NotificationService
@@ -42,21 +41,21 @@ class AuditScheduleService @Inject constructor(
    private val notificationService: NotificationService
 ) : DailySchedule {
 
-   fun fetchById(id: Long): AuditScheduleDataTransferObject? {
+   fun fetchById(id: Long, dataset: String): AuditScheduleDataTransferObject? {
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
-         buildAuditScheduleValueObjectFromSchedule(schedule)
+         buildAuditScheduleValueObjectFromSchedule(schedule, dataset)
       } else {
          null
       }
    }
 
    @Validated
-   fun fetchAll(@Valid pageRequest: PageRequest): Page<AuditScheduleDataTransferObject> {
+   fun fetchAll(@Valid pageRequest: PageRequest, dataset: String): Page<AuditScheduleDataTransferObject> {
       val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
 
-      return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it) }
+      return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, dataset) }
    }
 
    @Validated
@@ -89,12 +88,12 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity): AuditScheduleDataTransferObject {
+   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, dataset: String): AuditScheduleDataTransferObject {
       val stores = mutableListOf<StoreValueObject>()
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
-            val store = storeRepository.findOneByNumber(arg.value.toInt())!!
+            val store = storeRepository.findOne(arg.value.toInt(), dataset)!!
 
             stores.add(StoreValueObject(store))
          }
@@ -114,6 +113,7 @@ class AuditScheduleService @Inject constructor(
    override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
+      val dataset = schedule.arguments.firstOrNull { it.description == "dataset" }?.value ?: throw ScheduleProcessingException("Unable to determine dataset for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }
@@ -122,18 +122,18 @@ class AuditScheduleService @Inject constructor(
          .filter { it.description == "employeeNumber" }
          .filterNotNull()
          .map { it.value.toInt() }
-         .map { employeeRepository.findOne(it, null) }
+         .map { employeeRepository.findOne(number = it, employeeType = null, dataset = dataset) }
          .firstOrNull() ?: throw ScheduleProcessingException("Unable to find employee who scheduled audit")
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
-            val store = storeRepository.findOneByNumber(arg.value.toInt())!!
-            val companyName = companyRepository.findCompanyByStore(store)!!
+            val store = storeRepository.findOne(arg.value.toInt(), dataset)!!
+            val company = companyRepository.findCompanyByStore(store)!!
             val oneNote = NotificationValueObject(
                startDate = LocalDate.now(),
                dateCreated = null,
                expirationDate = LocalDate.now().plusDays(7),
-               company = companyName.number.toString(),
+               company = company.number.toString(),
                message = schedule.description!!,
                sendingEmployee = employee.number.toString(),
                notificationType = STORE.value

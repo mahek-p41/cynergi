@@ -45,10 +45,10 @@ object EmployeeFactory {
       EmployeeEntity(
          id = 1,
          type = "eli",
-         number = 123,
-         dataset = "testds",
-         lastName = "user",
-         firstNameMi = "test",
+         number = 111,
+         dataset = "tstds1",
+         lastName = "MARTINEZ",
+         firstNameMi = "DANIEL",
          passCode = "pass",
          store = StoreEntity(
             id = 1,
@@ -80,5 +80,9 @@ class EmployeeFactoryService @Inject constructor(
 
    fun single(storeIn: StoreEntity? = null): EmployeeEntity {
       return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Employee") }
+   }
+
+   fun findTestEmployee(number: Int, dataset: String): EmployeeEntity? {
+      return employeeRepository.findOne(number, "sysz", dataset)
    }
 }

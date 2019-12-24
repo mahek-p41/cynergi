@@ -53,11 +53,13 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit Schedule with", `in` = PATH) @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the Audit Schedule with", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
    ): AuditScheduleDataTransferObject {
       logger.info("Fetching Audit Schedule by {}", id)
 
-      val response = auditScheduleService.fetchById(id = id) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = auditScheduleService.fetchById(id, user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit Schedule by {} resulted in {}", id, response)
 
@@ -74,11 +76,13 @@ class AuditScheduleController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      authentication: Authentication
    ): Page<AuditScheduleDataTransferObject> {
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val page =  auditScheduleService.fetchAll(pageRequest)
+      val user = authenticationService.findUser(authentication)
+      val page =  auditScheduleService.fetchAll(pageRequest, user.myDataset())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)

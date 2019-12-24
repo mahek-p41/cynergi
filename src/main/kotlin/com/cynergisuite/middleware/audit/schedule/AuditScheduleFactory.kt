@@ -26,7 +26,7 @@ import javax.inject.Singleton
 object AuditScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, dataset: String? = null): Stream<ScheduleEntity> {
       val faker = Faker()
       val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
@@ -73,7 +73,7 @@ class AuditScheduleFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, dataset: String? = null): Stream<ScheduleEntity> {
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random())
       val employee = employeeIn ?: employeeFactoryService.single()
 

@@ -206,6 +206,7 @@ BEGIN
       || unionAll || '
          SELECT
             inv_recs.id AS id,
+            ''' || r.schema_name || ''' AS dataset,
             inv_recs.inv_serial_nbr_key AS serial_number,
             CASE
                WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN inv_recs.inv_alt_id
@@ -241,8 +242,7 @@ BEGIN
             loc_trans.loc_tran_primary_loc AS primary_location,
             loc_trans2.loc_transfer_loc_type AS location_type,
             loc_trans2.created_at AT TIME ZONE ''UTC'' AS time_created,
-            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated,
-            ''' || r.schema_name || ''' AS dataset
+            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level1_ninvrecs inv_recs '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans ON inv_location_rec_1 = loc_trans.loc_tran_loc '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2 ON loc_trans.loc_tran_primary_loc = loc_trans2.loc_tran_loc '
@@ -271,10 +271,30 @@ CREATE USER MAPPING FOR cynergiuser
     SERVER fastinfo
     OPTIONS (USER :'fastinfoUserName', PASSWORD :'fastinfoPassword');
 
+CREATE FOREIGN TABLE fastinfo_prod_import.company_vw (
+    id BIGINT,
+    number INTEGER,
+    name VARCHAR,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'company_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
+    id BIGINT,
+    number INTEGER,
+    name VARCHAR,
+    dataset VARCHAR,
+    company_id BIGINT,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
+
 CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
   id BIGINT,
   code VARCHAR,
   description VARCHAR,
+  dataset VARCHAR,
   security_profile INTEGER,
   default_menu VARCHAR,
   time_created TIMESTAMPTZ,
@@ -295,26 +315,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
 
-CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
-   id BIGINT,
-   number INTEGER,
-   name VARCHAR,
-   dataset VARCHAR,
-   time_created TIMESTAMPTZ,
-   time_updated TIMESTAMPTZ
-) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
-
-CREATE FOREIGN TABLE fastinfo_prod_import.company_vw (
-   id BIGINT,
-   number INTEGER,
-   name VARCHAR,
-   dataset VARCHAR,
-   time_created TIMESTAMPTZ,
-   time_updated TIMESTAMPTZ
-) SERVER fastinfo OPTIONS (TABLE_NAME 'company_vw', SCHEMA_NAME 'public');
-
 CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     id BIGINT,
+    dataset VARCHAR,
     serial_number VARCHAR,
     lookup_key VARCHAR,
     lookup_key_type TEXT,

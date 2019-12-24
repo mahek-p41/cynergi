@@ -112,7 +112,7 @@ class EmployeeRepository @Inject constructor(
 
    val selectBase = "$selectBaseWithoutEmployeeStoreJoin ON e.store_number = s.s_number"
 
-   fun findOne(id: Long, employeeType: String): EmployeeEntity? {
+   fun findOne(id: Long, employeeType: String, dataset: String): EmployeeEntity? {
       val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.id = :id AND e.employee_type = :employee_type", mapOf("id" to id, "employee_type" to employeeType), RowMapper { rs, _ -> mapRow(rs) })
 
       logger.trace("Searching for Employee: {} {} resulted in {}", id, employeeType, found)
@@ -120,7 +120,7 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun findOne(number: Int, employeeType: String? = null): EmployeeEntity? {
+   fun findOne(number: Int, employeeType: String? = null, dataset: String): EmployeeEntity? {
       val params = mutableMapOf<String, Any>("number" to number)
       val query = StringBuilder(selectBase)
          .append("\nWHERE e.number = :number")

@@ -25,13 +25,13 @@ class StoreLoginControllerSpecification extends Specification {
 
    void "login successful"() {
       given:
-      final employee = employeeService.fetchUserByAuthentication(123, 'pass', null).blockingGet()
+      final employee = employeeService.fetchUserByAuthentication(111, 'pass', null).blockingGet()
       final store = storeService.fetchByNumber(3)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login/store",new UsernamePasswordStoreCredentials(employee.number.toString(), employee.passCode, store.number)),
+            POST("/login/store",new UsernamePasswordStoreCredentials(employee.number.toString(), employee.passCode, store.number, 'tstds1')),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -61,19 +61,19 @@ class StoreLoginControllerSpecification extends Specification {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == '123'
-      response.loginStatus == '123 is now logged in'
+      response.employeeNumber == '111'
+      response.loginStatus == '111 is now logged in'
       response.storeNumber == 3
    }
 
    void "login failure due to invalid store" () {
       given:
-      final validEmployee = employeeService.fetchUserByAuthentication(123, 'pass', null).blockingGet()
+      final validEmployee = employeeService.fetchUserByAuthentication(111, 'pass', null).blockingGet()
 
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login/store",new UsernamePasswordStoreCredentials(validEmployee.number.toString(), validEmployee.passCode, 75)),
+            POST("/login/store",new UsernamePasswordStoreCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, null)),
             Argument.of(String),
             Argument.of(String)
          )

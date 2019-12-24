@@ -48,8 +48,8 @@ class CompanyRepository @Inject constructor(
             c.name AS name,
             c.dataset AS dataset
          FROM fastinfo_prod_import.company_vw c
-         JOIN fastinfo_prod_import.store_vw s
-         ON c.id = s.company_id
+              JOIN fastinfo_prod_import.store_vw s
+                ON c.id = s.company_id
          WHERE s.id = :store_id
          """.trimIndent(),
          mapOf("store_id" to store.id),
