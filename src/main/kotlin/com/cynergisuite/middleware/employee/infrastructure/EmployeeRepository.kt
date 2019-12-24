@@ -42,7 +42,7 @@ class EmployeeRepository @Inject constructor(
    @Language("PostgreSQL")
    private val selectBaseWithoutEmployeeStoreJoin = """
       WITH employees AS (
-         SELECT from_priority, id, number, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
+         SELECT from_priority, id, number, dataset, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
          FROM (
             SELECT
                1 AS from_priority,
@@ -55,7 +55,8 @@ class EmployeeRepository @Inject constructor(
                fpie.active AS active,
                fpie.department AS department,
                FALSE AS allow_auto_store_assign,
-               'sysz' AS employee_type
+               'sysz' AS employee_type,
+               fpie.dataset AS dataset
             FROM fastinfo_prod_import.employee_vw fpie
             WHERE coalesce(trim(fpie.pass_code), '') <> ''
             UNION
@@ -70,7 +71,8 @@ class EmployeeRepository @Inject constructor(
                e.active AS active,
                e.department AS department,
                e.allow_auto_store_assign AS allow_auto_store_assign,
-               'eli' AS employee_type
+               'eli' AS employee_type,
+               'cyneli' AS dataset
             FROM employee e
             WHERE coalesce(trim(e.pass_code), '') <> ''
          ) AS inner_emp
@@ -87,6 +89,7 @@ class EmployeeRepository @Inject constructor(
          from_priority AS priority,
          id AS e_id,
          number AS e_number,
+         dataset AS e_dataset,
          last_name AS e_last_name,
          NULLIF(TRIM(first_name_mi), '') AS e_first_name_mi,
          pass_code AS e_pass_code,
@@ -139,6 +142,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
+      // TODO add dataset as part of the components to be looked up
       val found = jdbc.findFirstOrNull("""
          $selectBaseWithoutEmployeeStoreJoin
             ON s.s_number = :store_number
@@ -207,6 +211,7 @@ class EmployeeRepository @Inject constructor(
                id = row.getLong("e_id"),
                type = row.getString("e_employee_type"),
                number = row.getInteger("e_number"),
+               dataset = row.getString("e_dataset"),
                lastName = row.getString("e_last_name"),
                firstNameMi = row.getString("e_first_name_mi"),
                passCode = row.getString("e_pass_code"),
@@ -279,6 +284,7 @@ class EmployeeRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}employee_type"),
          number = rs.getInt("${columnPrefix}number"),
+         dataset = rs.getString("${columnPrefix}dataset"),
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
@@ -300,6 +306,7 @@ class EmployeeRepository @Inject constructor(
          id = rs.getLong("id"),
          type = "eli",
          number = rs.getInt("number"),
+         dataset = "cyneli",
          lastName = rs.getString("last_name"),
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),

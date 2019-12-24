@@ -10,7 +10,8 @@ data class StandardAuthenticatedUser(
    val id: Long,
    val employeeType: String,
    val storeNumber: Int,
-   val employeeNumber: Int
+   val employeeNumber: Int,
+   val dataset: String
 ): AuthenticatedUser, UserDetails(employeeNumber.toString(), mutableListOf()) {
 
    constructor(employee: EmployeeEntity, overrideStore: StoreEntity) :
@@ -18,18 +19,21 @@ data class StandardAuthenticatedUser(
          id = employee.id!!,
          employeeType = employee.type,
          storeNumber = overrideStore.number,
-         employeeNumber = employee.number
+         employeeNumber = employee.number,
+         dataset = employee.dataset
       )
 
    constructor(authentication: Authentication) :
       this(
-         id = authentication.attributes.get("id").let { Objects.toString(it).toLong() },
-         employeeType = authentication.attributes.get("type").let { Objects.toString(it) },
-         storeNumber = authentication.attributes.get("stNum").let { Objects.toString(it).toInt() },
-         employeeNumber = authentication.attributes.get("sub").let { Objects.toString(it).toInt() } // sub is a subject which is encoded by the framework
+         id = authentication.attributes["id"].let { Objects.toString(it).toLong() },
+         employeeType = authentication.attributes["type"].let { Objects.toString(it) },
+         storeNumber = authentication.attributes["stNum"].let { Objects.toString(it).toInt() },
+         employeeNumber = authentication.attributes["sub"].let { Objects.toString(it).toInt() }, // sub is a subject which is encoded by the framework
+         dataset = authentication.attributes["ds"].let { Objects.toString(it) }
       )
 
    override fun myId(): Long = id
+   override fun myDataset(): String = dataset
    override fun myEmployeeType(): String = employeeType
    override fun myStoreNumber(): Int = storeNumber
    override fun myEmployeeNumber(): Int = employeeNumber

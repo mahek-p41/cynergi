@@ -50,6 +50,7 @@ class AuditDetailRepository @Inject constructor(
          ad.audit_id AS ad_audit_id,
          e.e_id AS e_id,
          e.e_number AS e_number,
+         e.e_dataset AS e_dataset,
          e.e_last_name AS e_last_name,
          e.e_first_name_mi AS e_first_name_mi,
          e.e_pass_code AS  e_pass_code,

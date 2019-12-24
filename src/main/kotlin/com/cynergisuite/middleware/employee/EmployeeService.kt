@@ -30,9 +30,6 @@ class EmployeeService @Inject constructor(
    fun fetchById(id: Long, employeeType: String): EmployeeValueObject? =
       employeeRepository.findOne(id = id, employeeType = employeeType)?.let { EmployeeValueObject(entity = it) }
 
-   fun fetchByNumberAndLoc(number: Int, employeeType: String): EmployeeValueObject? =
-      employeeRepository.findOne(number, employeeType)?.let { EmployeeValueObject(entity = it) }
-
    fun exists(id: Long, employeeType: String): Boolean =
       employeeRepository.exists(id = id, employeeType = employeeType)
 
@@ -67,6 +64,7 @@ class EmployeeService @Inject constructor(
             EmployeeValueObject(
                type = "eli",
                number = record.get("number").toInt(),
+               dataset = record.get("dataset"),
                lastName = record.get("last_name"),
                firstNameMi = record.get("first_name_mi").trimToNull(),
                passCode = record.get("pass_code"),

@@ -31,9 +31,9 @@ BEGIN
             created_at AT TIME ZONE ''UTC'' AS time_created,
             updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-         WHERE (loc_trans.loc_tran_rec_type = ''4'') AND
-         (loc_trans.loc_tran_loc = 0) AND
-         loc_trans.loc_transfer_desc IS NOT NULL
+         WHERE loc_trans.loc_tran_rec_type = ''4''
+               AND loc_trans.loc_tran_loc = 0
+               AND loc_trans.loc_transfer_desc IS NOT NULL
       ';
 
       unionAll := ' UNION ALL ';
@@ -68,6 +68,7 @@ BEGIN
             loc_dept_desc AS description,
             loc_dept_security_profile AS security_profile,
             loc_dept_default_menu AS default_menu,
+            ''' || r.schema_name || ''' AS dataset,
             created_at AT TIME ZONE ''UTC'' AS time_created,
             updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level2_departments
@@ -114,10 +115,10 @@ BEGIN
               JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
                 ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
          WHERE loc_trans.loc_tran_rec_type = ''4''
-            AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
-            AND loc_trans2.loc_tran_rec_type = ''4''
-            AND loc_trans2.loc_tran_loc = 0
-            AND loc_trans.loc_transfer_desc IS NOT NULL
+               AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
+               AND loc_trans2.loc_tran_rec_type = ''4''
+               AND loc_trans2.loc_tran_loc = 0
+               AND loc_trans.loc_transfer_desc IS NOT NULL
       ';
 
       unionAll := ' UNION ALL ';
@@ -155,26 +156,26 @@ BEGIN
             NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
             emp_dept AS department,
             TRIM(BOTH FROM
-                 CAST(emp_pass_1 AS TEXT) ||
-                 CAST(emp_pass_2 AS TEXT) ||
-                 CAST(emp_pass_3 AS TEXT) ||
-                 CAST(emp_pass_4 AS TEXT) ||
-                 CAST(emp_pass_5 AS TEXT) ||
-                 CAST(emp_pass_6 AS TEXT)
-               ) AS pass_code,
+               CAST(emp_pass_1 AS TEXT) ||
+               CAST(emp_pass_2 AS TEXT) ||
+               CAST(emp_pass_3 AS TEXT) ||
+               CAST(emp_pass_4 AS TEXT) ||
+               CAST(emp_pass_5 AS TEXT) ||
+               CAST(emp_pass_6 AS TEXT)
+            ) AS pass_code,
             true AS active,
             created_at AT TIME ZONE ''UTC'' AS time_created,
             updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level1_loc_emps
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM
-                     CAST(emp_pass_1 AS TEXT) ||
-                     CAST(emp_pass_2 AS TEXT) ||
-                     CAST(emp_pass_3 AS TEXT) ||
-                     CAST(emp_pass_4 AS TEXT) ||
-                     CAST(emp_pass_5 AS TEXT) ||
-                     CAST(emp_pass_6 AS TEXT)
-                   ) <> ''''
+                  CAST(emp_pass_1 AS TEXT) ||
+                  CAST(emp_pass_2 AS TEXT) ||
+                  CAST(emp_pass_3 AS TEXT) ||
+                  CAST(emp_pass_4 AS TEXT) ||
+                  CAST(emp_pass_5 AS TEXT) ||
+                  CAST(emp_pass_6 AS TEXT)
+               ) <> ''''
       ';
 
       unionAll := ' UNION ALL ';
@@ -306,7 +307,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
 CREATE FOREIGN TABLE fastinfo_prod_import.company_vw (
    id BIGINT,
    number INTEGER,
-   company_name VARCHAR,
+   name VARCHAR,
    dataset VARCHAR,
    time_created TIMESTAMPTZ,
    time_updated TIMESTAMPTZ

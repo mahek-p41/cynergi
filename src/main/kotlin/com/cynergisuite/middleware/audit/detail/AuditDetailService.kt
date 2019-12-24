@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObje
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.User
-import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -52,7 +52,7 @@ class AuditDetailService @Inject constructor(
          AuditDetailEntity(
             inventory,
             scanArea = scanArea,
-            scannedBy = EmployeeEntity.from(scannedBy),
+            scannedBy = fromUser(scannedBy),
             audit = SimpleIdentifiableEntity(auditId)
          )
       )

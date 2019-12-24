@@ -17,7 +17,6 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -164,6 +163,7 @@ class AuditExceptionRepository @Inject constructor(
                ae.scan_area_id as ae_scan_area_id,
                e.e_id AS e_id,
                e.e_number AS e_number,
+               e.e_dataset AS e_dataset,
                e.e_last_name AS e_last_name,
                e.e_first_name_mi AS e_first_name_mi,
                e.e_pass_code AS e_pass_code,
@@ -173,6 +173,7 @@ class AuditExceptionRepository @Inject constructor(
                e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
                e2.e_id AS e2_id,
                e2.e_number AS e2_number,
+               e2.e_dataset AS e2_dataset,
                e2.e_last_name AS e2_last_name,
                e2.e_first_name_mi AS e2_first_name_mi,
                e2.e_pass_code AS  e2_pass_code,
@@ -210,6 +211,7 @@ class AuditExceptionRepository @Inject constructor(
             aen.audit_exception_id AS aen_audit_exception_id,
             noteEmployee.e_id AS noteEmployee_id,
             noteEmployee.e_number AS noteEmployee_number,
+            noteEmployee.e_dataset AS noteEmployee_dataset,
             noteEmployee.e_last_name AS noteEmployee_last_name,
             noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
             noteEmployee.e_pass_code AS noteEmployee_pass_code,

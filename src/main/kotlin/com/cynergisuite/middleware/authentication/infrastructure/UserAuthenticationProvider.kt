@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
 import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
 import com.cynergisuite.middleware.authentication.UsernamePasswordStoreCredentials

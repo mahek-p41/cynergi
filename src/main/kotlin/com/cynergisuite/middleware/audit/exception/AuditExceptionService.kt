@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.audit.exception.infrastructure.AuditException
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.User
-import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -57,9 +57,9 @@ class AuditExceptionService @Inject constructor(
       return if (inventoryId != null) {
          val inventory = inventoryRepository.findOne(inventoryId)!!
 
-         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), EmployeeEntity.from(scannedBy), exceptionCode)
+         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), fromUser(scannedBy), exceptionCode)
       } else {
-         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), EmployeeEntity.from(scannedBy), exceptionCode)
+         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), fromUser(scannedBy), exceptionCode)
       }
    }
 

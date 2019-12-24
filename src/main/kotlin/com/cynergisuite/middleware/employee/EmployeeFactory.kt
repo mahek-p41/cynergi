@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -27,6 +26,7 @@ object EmployeeFactory {
          EmployeeEntity(
             type = "eli",
             number = numbers.numberBetween(1, 10_000),
+            dataset = "testds",
             lastName = name.lastName(),
             firstNameMi = name.firstName(),
             passCode = lorem.characters(3, 6),
@@ -46,6 +46,7 @@ object EmployeeFactory {
          id = 1,
          type = "eli",
          number = 123,
+         dataset = "testds",
          lastName = "user",
          firstNameMi = "test",
          passCode = "pass",

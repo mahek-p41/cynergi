@@ -28,7 +28,7 @@ class EmployeeValidatorSpecification extends Specification {
       def employeeValidator = new EmployeeValidator(employeeRepository)
 
       when:
-      employeeValidator.validateCreate(new EmployeeValueObject(null, null, null, null, null, null, null, null, null))
+      employeeValidator.validateCreate(new EmployeeValueObject(null, null, null, null, null, null, null, null, null, null))
 
       then:
       notThrown(ValidationException)

@@ -26,15 +26,19 @@ CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that wi
     id            BIGSERIAL                                           NOT NULL PRIMARY KEY,
     number        INTEGER     CHECK( number > 0 )                     NOT NULL,
     store_number  INTEGER                                             NOT NULL,
-    last_name     VARCHAR(15) CHECK( char_length(last_name) > 1)      NOT NULL,
+    dataset       VARCHAR(6)  CHECK( char_length(dataset) = 6 )       NOT NULL,
+    last_name     VARCHAR(15) CHECK( char_length(last_name) > 1 )     NOT NULL,
     first_name_mi VARCHAR(15) CHECK( first_name_mi IS NOT NULL AND char_length(first_name_mi) > 1),
     pass_code     VARCHAR(6)  CHECK( char_length(pass_code) > 0 )     NOT NULL,
     department    VARCHAR(2),
     active        BOOLEAN     DEFAULT TRUE                            NOT NULL,
     time_created  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
-    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL
+    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
+    keep          BOOLEAN DEFAULT FALSE -- used by truncate database service to determine whether or not to keep something
 );
-INSERT INTO fastinfo_prod_import.employee_vw (number, last_name, first_name_mi, pass_code, store_number) VALUES (123, 'user', 'test', 'pass', 1); -- create a user that can be used for testing and is also ignored by the truncate service
+INSERT INTO fastinfo_prod_import.employee_vw (number, dataset, last_name, first_name_mi, pass_code, store_number, keep) VALUES (123, 'cyneli', 'user', 'test', 'pass', 1, true);
+INSERT INTO fastinfo_prod_import.employee_vw (number, dataset, last_name, first_name_mi, pass_code, store_number, keep) VALUES (124, 'corrto', 'user1', 'test', 'pass', 1, true);
+INSERT INTO fastinfo_prod_import.employee_vw (number, dataset, last_name, first_name_mi, pass_code, store_number, keep) VALUES (124, 'corrnr', 'user1', 'test', 'pass', 1, true);
 
 CREATE TABLE fastinfo_prod_import.store_vw (
    id           BIGSERIAL                             NOT NULL PRIMARY KEY,
@@ -57,7 +61,7 @@ CREATE TABLE fastinfo_prod_import.company_vw (
    time_created TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL,
    time_updated TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL
 );
-INSERT INTO fastinfo_prod_import.company_vw (id, number, name, dataset) VALUES (1, 0, 'RENTAL CITY', 'testds');
+INSERT INTO fastinfo_prod_import.company_vw (id, number, name, dataset) VALUES (4, 0, 'RENTAL CITY', 'testds');
 
 CREATE TABLE fastinfo_prod_import.inventory_vw (
    id               BIGINT                                NOT NULL PRIMARY KEY,

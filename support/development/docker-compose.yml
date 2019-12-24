@@ -124,3 +124,13 @@ services:
      networks:
         - cynerginet
      command: [ "/root/fastinfo-db-dump.sh" ]
+  fastinfopsql:
+     container_name: fastinfopsql
+     build:
+        context: db
+        dockerfile: fastinfosnapshot.dockerfile
+     depends_on:
+        - cynergidb
+     networks:
+        - cynerginet
+     command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "fastinfo_production", "postgres" ]

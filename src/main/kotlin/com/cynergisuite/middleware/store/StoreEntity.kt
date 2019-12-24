@@ -63,13 +63,11 @@ data class StoreEntity(
    companion object {
 
       @JvmStatic
-      fun from(store: Store?): StoreEntity? =
-         if (store is StoreEntity) {
-            store
-         } else if (store != null) {
-            StoreEntity(store)
-         } else {
-            null
+      fun fromStore(store: Store?): StoreEntity? =
+         when {
+            store is StoreEntity -> store
+            store != null -> StoreEntity(store)
+            else -> null
          }
    }
 }
