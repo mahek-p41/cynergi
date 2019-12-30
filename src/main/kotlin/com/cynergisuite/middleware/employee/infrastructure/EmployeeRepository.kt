@@ -187,6 +187,7 @@ class EmployeeRepository @Inject constructor(
             ON s.s_number = $1
          WHERE e.number = $2
             AND e.active = true
+         ORDER BY priority
          """.trimIndent()
       } else {
          tuple = Tuple.of(number)
@@ -195,10 +196,11 @@ class EmployeeRepository @Inject constructor(
          $selectBase
          WHERE e.number = $1
             AND e.active = true
+         ORDER BY priority
          """.trimIndent()
       }
 
-      logger.trace(query)
+      logger.trace("Checking authentication for {} {} using {}", number, storeNumber, query)
 
       return postgresClient.rxPreparedQuery(query, tuple)
          .filter { rs -> rs.size() > 0 }
@@ -248,8 +250,8 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, allow_auto_store_assign)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :allow_auto_store_assign)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, allow_auto_store_assign, dataset)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :allow_auto_store_assign, :dataset)
          RETURNING
             *
          """.trimIndent(),
@@ -260,7 +262,8 @@ class EmployeeRepository @Inject constructor(
             "pass_code" to passwordEncoderService.encode(entity.passCode),
             "store_number" to entity.store?.number,
             "active" to entity.active,
-            "allow_auto_store_assign" to entity.allowAutoStoreAssign
+            "allow_auto_store_assign" to entity.allowAutoStoreAssign,
+            "dataset" to entity.dataset
          ),
          RowMapper { rs, _ ->
             mapDDLRow(rs, entity.store)

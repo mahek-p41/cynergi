@@ -28,7 +28,8 @@ class DepartmentRepository @Inject constructor(
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
-            default_menu AS d_default_menu
+            default_menu AS d_default_menu,
+            dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw
          WHERE id = :id
          """.trimIndent(),
@@ -50,7 +51,8 @@ class DepartmentRepository @Inject constructor(
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
-            default_menu AS d_default_menu
+            default_menu AS d_default_menu,
+            dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw
          WHERE code = :code
          """.trimIndent(),
@@ -74,6 +76,7 @@ class DepartmentRepository @Inject constructor(
             description AS d_description,
             security_profile AS d_security_profile,
             default_menu AS d_default_menu,
+            dataset AS d_dataset,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw) AS total_elements
          FROM fastinfo_prod_import.department_vw
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
@@ -111,6 +114,7 @@ class DepartmentRepository @Inject constructor(
          code = rs.getString("${columnPrefix}code"),
          description = rs.getString("${columnPrefix}description"),
          securityProfile = rs.getInt("${columnPrefix}security_profile"),
-         defaultMenu = rs.getString("${columnPrefix}default_menu")
+         defaultMenu = rs.getString("${columnPrefix}default_menu"),
+         dataset = rs.getString("${columnPrefix}dataset")
       )
 }
