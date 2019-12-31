@@ -94,10 +94,16 @@ class InventoryRepository(
    fun doesNotExist(id: Long): Boolean =
       !exists(id)
 
-   fun findByLookupKey(lookupKey: String): InventoryEntity? {
+   fun findByLookupKey(lookupKey: String, dataset: String): InventoryEntity? {
       logger.debug("Finding Inventory by barcode with {}", lookupKey)
 
-      val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.lookup_key = :lookup_key", mapOf("lookup_key" to lookupKey), RowMapper { rs, _ -> mapRow(rs) })
+      val inventory = jdbc.findFirstOrNull("""
+         $selectBase
+         WHERE i.lookup_key = :lookup_key
+               AND primaryStore.dataset = :dataset""".trimIndent(),
+         mapOf("lookup_key" to lookupKey, "dataset" to dataset),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.debug("Search for Inventory by barcode {} produced {}", lookupKey, inventory)
 
@@ -123,7 +129,9 @@ class InventoryRepository(
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
-               AMD dataset = :dataset
+               AND i.dataset = :dataset
+               AND primaryStore.dataset = :dataset
+               AND currentStore.dataset = :dataset
                ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )

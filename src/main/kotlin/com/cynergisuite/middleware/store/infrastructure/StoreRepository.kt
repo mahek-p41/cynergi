@@ -58,6 +58,7 @@ class StoreRepository @Inject constructor(
          WITH paged AS (
             $selectBase
             WHERE number <> 9000
+                  AND s.dataset = :dataset
          )
          SELECT
             p.*,
@@ -67,7 +68,7 @@ class StoreRepository @Inject constructor(
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
          """.trimIndent(),
-         emptyMap<String, Any>()
+         mapOf("dataset" to dataset)
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")

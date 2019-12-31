@@ -65,7 +65,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      result.inventoryCount == 8
+      result.inventoryCount == 269
       result.id == savedAudit.id
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.lastUpdated == null

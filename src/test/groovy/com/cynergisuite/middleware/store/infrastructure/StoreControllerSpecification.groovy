@@ -20,7 +20,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       result.id == 1
       result.storeNumber == 1
       result.name == "KANSAS CITY"
-      result.dataset == "testds"
+      result.dataset == "tstds1"
    }
 
    void "fetch one store by id not found" () {
@@ -51,11 +51,11 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].dataset == "testds"
+      pageOneResult.elements[0].dataset == "tstds1"
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].dataset == "testds"
+      pageOneResult.elements[1].dataset == "tstds1"
 
       when:
       get("${path}${pageTwo}")

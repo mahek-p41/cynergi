@@ -431,12 +431,13 @@ class AuditRepository @Inject constructor(
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = :store_number
                      AND i.status in ('N', 'R', 'D')
+                     AND i.dataset = :dataset
             )
          )
          RETURNING
             *
          """.trimMargin(),
-         mapOf("store_number" to entity.store.number),
+         mapOf("store_number" to entity.store.number, "dataset" to entity.store.dataset),
          RowMapper { rs, _ ->
             AuditEntity(
                id = rs.getLong("id"),

@@ -11,6 +11,8 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
+import org.apache.commons.lang3.StringUtils
+
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -32,7 +34,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       result.code == department.code
       result.description == department.description
       result.securityProfile == department.securityProfile
-      result.defaultMenu == department.defaultMenu
+      result.defaultMenu == StringUtils.trimToNull(department.defaultMenu)
    }
 
    void "fetch one by department id that doesn't exist"() {

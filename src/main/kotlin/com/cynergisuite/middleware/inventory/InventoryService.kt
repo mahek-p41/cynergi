@@ -24,8 +24,8 @@ class InventoryService(
       }
    }
 
-   fun fetchByLookupKey(lookupKey: String, locale: Locale): InventoryValueObject? {
-      return inventoryRepository.findByLookupKey(lookupKey)?.let { map(it, locale) }
+   fun fetchByLookupKey(lookupKey: String, dataset: String, locale: Locale): InventoryValueObject? {
+      return inventoryRepository.findByLookupKey(lookupKey, dataset)?.let { map(it, locale) }
    }
 
    private fun map(inventory: InventoryEntity, locale: Locale) : InventoryValueObject =

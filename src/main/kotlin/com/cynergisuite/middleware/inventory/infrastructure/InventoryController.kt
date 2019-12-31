@@ -79,10 +79,13 @@ class InventoryController(
    ])
    fun fetchByBarcode(
       @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey") lookupKey: String,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): InventoryValueObject {
       logger.info("Fetching Inventory by barcode {}", lookupKey)
 
-      return inventoryService.fetchByLookupKey(lookupKey, httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
+      val user = authenticationService.findUser(authentication)
+
+      return inventoryService.fetchByLookupKey(lookupKey, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }
 }
