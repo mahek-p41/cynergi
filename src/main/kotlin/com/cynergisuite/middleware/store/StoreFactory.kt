@@ -51,17 +51,20 @@ object StoreFactory {
    )
 
    @JvmStatic
-   fun random(): StoreEntity = stores.random()
+   fun random() = random(dataset = "tstds1")
+   
+   @JvmStatic
+   fun random(dataset: String): StoreEntity = stores.filter { it.dataset == dataset }.random()
 
    @JvmStatic
    fun findByNumber(number: Int, dataset: String = "tstds1"): StoreEntity =
       stores.first { it.number == number && it.dataset == dataset }
 
    @JvmStatic
-   fun storeOne(): StoreEntity = findByNumber(1)
+   fun storeOne(): StoreEntity = stores[0]
 
    @JvmStatic
-   fun storeThree(): StoreEntity = findByNumber(3)
+   fun storeThree(): StoreEntity = stores[1]
 }
 
 @Singleton
@@ -70,15 +73,21 @@ class StoreFactoryService(
    private val storeRepository: StoreRepository
 ) {
 
-   fun store(number: Int, dataset: String = "tstds1"): StoreEntity =
+   fun store(number: Int): StoreEntity =
+      store(number = number, dataset = "tstds1")
+
+   fun store(number: Int, dataset: String): StoreEntity =
       storeRepository.findOne(number, dataset) ?: throw Exception("Unable to find store $number")
 
    fun random(): StoreEntity =
-      storeRepository.findOne(StoreFactory.random().number, "tstds1") ?: throw Exception("Unable to find random Store")
+      store(StoreFactory.random()) ?: throw Exception("Unable to find random Store")
 
    fun storeOne(): StoreEntity =
-      storeRepository.findOne(StoreFactory.storeOne().number, "tstds1") ?: throw Exception("Unable to find Store 1")
+      store(StoreFactory.storeOne()) ?: throw Exception("Unable to find Store 1")
 
    fun storeThree(): StoreEntity =
-      storeRepository.findOne(StoreFactory.storeThree().number, "tstds1") ?: throw Exception("Unable to find Store 3")
+      store(StoreFactory.storeThree()) ?: throw Exception("Unable to find Store 3")
+
+   private fun store(storeEntity: Store): StoreEntity? =
+      storeRepository.findOne(storeEntity.myNumber(), storeEntity.myDataset())
 }

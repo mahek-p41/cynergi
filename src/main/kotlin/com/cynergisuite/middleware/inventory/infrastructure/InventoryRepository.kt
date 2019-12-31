@@ -50,6 +50,7 @@ class InventoryRepository(
          i.condition AS condition,
          i.returned_date AS returned_date,
          i.status AS status,
+         i.dataset AS dataset,
          primaryStore.id AS primary_store_id,
          primaryStore.time_created AS primary_store_time_created,
          primaryStore.time_updated AS primary_store_time_updated,
@@ -103,11 +104,11 @@ class InventoryRepository(
       return inventory;
    }
 
-   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity, InventoryPageRequest> {
+   fun findAll(pageRequest: InventoryPageRequest, dataset: String): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
-      val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!)
+      val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!, "dataset" to dataset)
 
       logger.debug("Finding all Inventory with {} and {}", pageRequest, params)
 
@@ -122,6 +123,7 @@ class InventoryRepository(
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
+               AMD dataset = :dataset
                ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
@@ -183,6 +185,7 @@ class InventoryRepository(
             value = rs.getString("location_type_value"),
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")
-         )
+         ),
+         dataset = rs.getString("dataset")
       )
 }

@@ -58,7 +58,7 @@ class InventoryController(
       logger.info("Requesting inventory {} using employee {}", pageRequest, user)
 
       val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
-      val page = inventoryService.fetchAll(pageToRequest, httpRequest.findLocaleWithDefault())
+      val page = inventoryService.fetchAll(pageToRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

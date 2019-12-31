@@ -72,7 +72,7 @@ class EmployeeRepository @Inject constructor(
                e.department AS department,
                e.allow_auto_store_assign AS allow_auto_store_assign,
                'eli' AS employee_type,
-               'cyneli' AS dataset
+               e.dataset AS dataset
             FROM employee e
             WHERE coalesce(trim(e.pass_code), '') <> ''
          ) AS inner_emp
@@ -142,17 +142,20 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
-      // TODO add dataset as part of the components to be looked up
       val found = jdbc.findFirstOrNull("""
          $selectBaseWithoutEmployeeStoreJoin
             ON s.s_number = :store_number
          WHERE e.id = :id
                AND e.employee_type = :employee_type
+               AND e.dataset = :dataset
+               AND s.s_dataset = :dataset
+               AND ds.s_dataset = :dataset
          """.trimIndent(),
          mapOf(
             "id" to user.myId(),
             "employee_type" to user.myEmployeeType(),
-            "store_number" to user.myStoreNumber()
+            "store_number" to user.myStoreNumber(),
+            "dataset" to user.myDataset()
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -175,27 +178,33 @@ class EmployeeRepository @Inject constructor(
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
     * pointed at FastInfo to pull in Zortec data about an Employee
     */
-   fun findUserByAuthentication(number: Int, passCode: String, storeNumber: Int?): Maybe<EmployeeEntity> {
+   fun findUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int?): Maybe<EmployeeEntity> {
       logger.trace("Checking authentication for {} {}", number, storeNumber)
 
       val tuple: Tuple
       val query = if (storeNumber != null) {
-         tuple = Tuple.of(storeNumber, number)
+         tuple = Tuple.of(storeNumber, number, dataset)
 
          """
          $selectBaseWithoutEmployeeStoreJoin
             ON s.s_number = $1
          WHERE e.number = $2
             AND e.active = true
+            AND e.dataset = $3
+            AND s.s_dataset = $3
+            AND ds.s_dataset = $3
          ORDER BY priority
          """.trimIndent()
       } else {
-         tuple = Tuple.of(number)
+         tuple = Tuple.of(number, dataset)
 
          """
          $selectBase
          WHERE e.number = $1
             AND e.active = true
+            AND e.dataset = $2
+            AND s.s_dataset = $2
+            AND ds.s_dataset = $2
          ORDER BY priority
          """.trimIndent()
       }

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
 import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
-import com.cynergisuite.middleware.authentication.UsernamePasswordStoreCredentials
+import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
@@ -27,11 +27,12 @@ class UserAuthenticationProvider @Inject constructor(
 
       val identity = (authenticationRequest?.identity as String?)?.toInt()
       val secret = authenticationRequest?.secret as String?
-      val storeNumber = if (authenticationRequest is UsernamePasswordStoreCredentials) authenticationRequest.storeNumber else null
+      val storeNumber = if (authenticationRequest is LoginCredentials) authenticationRequest.storeNumber else null
+      val dataset = if (authenticationRequest is LoginCredentials) authenticationRequest.dataset else null
 
-      return if (identity != null && secret != null) {
+      return if (identity != null && secret != null && dataset != null) {
          employeeService
-            .fetchUserByAuthentication(identity, secret, storeNumber)
+            .fetchUserByAuthentication(identity, secret, dataset, storeNumber)
             .flatMapPublisher { employee ->
                val employeeStore = employee.store
 
@@ -47,6 +48,7 @@ class UserAuthenticationProvider @Inject constructor(
             }
       } else {
          logger.debug("Employee {} was unable to be authenticated", identity)
+
          just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       }
    }

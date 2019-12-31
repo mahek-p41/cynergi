@@ -315,7 +315,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception using employee that doesn't have a first name" () {
       given:
-      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
+      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "tstds1", "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
       final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
       final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US

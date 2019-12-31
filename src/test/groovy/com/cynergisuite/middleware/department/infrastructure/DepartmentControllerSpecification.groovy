@@ -37,14 +37,14 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department id that doesn't exist"() {
       when:
-      get("/department/11")
+      get("/department/110")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       final response = exception.response.body().with { parseResponse(it) }
       response.size() == 1
-      response.message == "11 was unable to be found"
+      response.message == "110 was unable to be found"
    }
 
    void "fetch all departments" () {
@@ -62,7 +62,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == allTestDepartments.size()
+      pageOneResult.totalElements == 9
       pageOneResult.elements.collect { new DepartmentValueObject(it) } == allTestDepartments[0..4]
 
       when:
@@ -72,9 +72,9 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
-      pageTwoResult.elements.size() == 5
-      pageTwoResult.totalElements == allTestDepartments.size()
-      pageTwoResult.elements.collect { new DepartmentValueObject(it) } == allTestDepartments[5..9]
+      pageTwoResult.elements.size() == 4
+      pageTwoResult.totalElements == 9
+      pageTwoResult.elements.collect { new DepartmentValueObject(it) } == allTestDepartments[5..8]
 
       when:
       get("/department${pageThree}")

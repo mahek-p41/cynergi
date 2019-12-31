@@ -33,8 +33,8 @@ class DevelopDataLoader @Inject constructor(
    fun loadDemoData() {
       logger.info("Loading develop data")
 
-      val storeOne = storeFactoryService.store(1)
-      val storeThree = storeFactoryService.store(3)
+      val storeOne = storeFactoryService.store(1, "corrto")
+      val storeThree = storeFactoryService.store(3, "corrto")
       val storeOneEmployee = employeeFactoryService.single(storeOne)
       val storeThreeEmployee = employeeFactoryService.single(storeThree)
 

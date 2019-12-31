@@ -26,7 +26,7 @@ object EmployeeFactory {
          EmployeeEntity(
             type = "eli",
             number = numbers.numberBetween(1, 10_000),
-            dataset = "testds",
+            dataset = store.dataset,
             lastName = name.lastName(),
             firstNameMi = name.firstName(),
             passCode = lorem.characters(3, 6),

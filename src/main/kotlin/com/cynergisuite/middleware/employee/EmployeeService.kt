@@ -45,8 +45,8 @@ class EmployeeService @Inject constructor(
       return employeeRepository.canEmployeeAccess(employee.myEmployeeType(), asset, employee.myId() ?: -1) // user -1 since that shouldn't be a valid id in the system, and will cause the access check to fail
    }
 
-   fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
-      employeeRepository.findUserByAuthentication(number, passCode, storeNumber)
+   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
+      employeeRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
 
    override fun canProcess(path: Path): Boolean =
       employeeMatcher.matches(path.fileName)
