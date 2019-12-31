@@ -31,6 +31,7 @@ class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cyn
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
+class InvalidDataset(dataset: String): Cynergi("cynergi.validation.invalid.dataset", arrayOf(dataset))
 
 class AuditStatusNotFound(auditStatus: String):  Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String): Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

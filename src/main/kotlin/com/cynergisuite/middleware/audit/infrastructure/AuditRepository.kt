@@ -61,6 +61,7 @@ class AuditRepository @Inject constructor(
              FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
              WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
             ) AS current_status,
+            a.dataset AS a_dataset,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
             aa.time_created AS aa_time_created,
@@ -102,10 +103,10 @@ class AuditRepository @Inject constructor(
                   ON aer.s_number = se.number
       """.trimMargin()
 
-   fun findOne(id: Long): AuditEntity? {
+   fun findOne(id: Long, dataset: String): AuditEntity? {
       logger.debug("Searching for audit by id {}", id)
 
-      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.id = :id", mapOf("id" to id)) { rs ->
+      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.id = :id", mapOf("id" to id, "dataset" to dataset)) { rs ->
          val audit = this.mapRow(rs)
 
          do {
@@ -125,7 +126,7 @@ class AuditRepository @Inject constructor(
    }
 
    fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
-      val query = "$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses) AND s_dataset = :dataset"
+      val query = "$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
 
@@ -154,34 +155,28 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest): RepositoryPage<AuditEntity, AuditPageRequest> {
-      val params = mutableMapOf<String, Any>()
+   fun findAll(pageRequest: AuditPageRequest, dataset: String): RepositoryPage<AuditEntity, AuditPageRequest> {
+      val params = mutableMapOf<String, Any>("dataset" to dataset)
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
-      val whereBuilder = StringBuilder()
+      val whereBuilder = StringBuilder("WHERE a.dataset = :dataset ")
       val from = pageRequest.from
       val thru = pageRequest.thru
-      var where = " WHERE "
-      var and = EMPTY
 
       if (storeNumber != null) {
          params["store_number"] = storeNumber
-         whereBuilder.append(where).append(" store_number = :store_number ")
-         where = EMPTY
-         and = " AND "
+         whereBuilder.append(" AND store_number = :store_number ")
       }
 
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         whereBuilder.append(where).append(and).append(" a.time_created BETWEEN :from AND :thru ")
-         where = EMPTY
-         and = " AND "
+         whereBuilder.append(" AND a.time_created BETWEEN :from AND :thru ")
       }
 
       if (status != null && status.isNotEmpty()) {
          params["current_status"] = status
-         whereBuilder.append(where).append(and).append(" current_status IN (:current_status) ")
+         whereBuilder.append(" AND current_status IN (:current_status) ")
       }
 
       @Language("PostgreSQL")
@@ -216,6 +211,7 @@ class AuditRepository @Inject constructor(
                      ) AS m
                ) AS last_updated,
                a.inventory_count AS inventory_count,
+               a.dataset AS dataset,
                s.current_status AS current_status,
                (SELECT count(a.id)
                 FROM audit a
@@ -245,6 +241,7 @@ class AuditRepository @Inject constructor(
             a.current_status AS current_status,
             a.last_updated AS a_last_updated,
             a.inventory_count AS a_inventory_count,
+            a.dataset AS a_dataset,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
             aa.time_created AS aa_time_created,
@@ -281,8 +278,10 @@ class AuditRepository @Inject constructor(
                   ON aa.changed_by = aer.e_number
               JOIN fastinfo_prod_import.store_vw s
                   ON a.store_number = s.number
+                  AND s.dataset = :dataset
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
+                  AND se.dataset = :dataset
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
@@ -320,9 +319,9 @@ class AuditRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun findAuditStatusCounts(pageRequest: AuditPageRequest): List<AuditStatusCount> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, dataset: String): List<AuditStatusCount> {
       val status = pageRequest.status
-      val params = mutableMapOf<String, Any>()
+      val params = mutableMapOf<String, Any>("dataset" to dataset)
       val whereBuilder = StringBuilder()
       val from = pageRequest.from
       val thru = pageRequest.thru
@@ -372,7 +371,7 @@ class AuditRepository @Inject constructor(
          FROM audit a
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-            JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number
+            JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number AND store.dataset = :dataset
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,
@@ -392,7 +391,7 @@ class AuditRepository @Inject constructor(
       }
    }
 
-   fun countAuditsNotCompletedOrCanceled(storeNumber: Int): Int =
+   fun countAuditsNotCompletedOrCanceled(storeNumber: Int, dataset: String): Int =
       jdbc.queryForObject("""
          SELECT COUNT (*)
          FROM (
@@ -403,6 +402,7 @@ class AuditRepository @Inject constructor(
                       JOIN audit_action aa
                         ON a.id = aa.audit_id
                   WHERE a.store_number = :store_number
+                       AND a.dataset = :dataset
                   GROUP BY a.id
             ) b
             JOIN audit_status_type_domain astd
@@ -412,7 +412,8 @@ class AuditRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "store_number" to storeNumber,
-            "values" to listOf(CREATED.value, IN_PROGRESS.value)
+            "values" to listOf(CREATED.value, IN_PROGRESS.value),
+            "dataset" to dataset
          ),
          Int::class.java
       )!!
@@ -423,7 +424,7 @@ class AuditRepository @Inject constructor(
 
       val audit = jdbc.insertReturning<AuditEntity>(
          """
-        INSERT INTO audit(store_number, inventory_count)
+        INSERT INTO audit(store_number, inventory_count, dataset)
          VALUES (
             :store_number,
             (
@@ -432,7 +433,8 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = :store_number
                      AND i.status in ('N', 'R', 'D')
                      AND i.dataset = :dataset
-            )
+            ),
+            :dataset
          )
          RETURNING
             *
@@ -448,7 +450,8 @@ class AuditRepository @Inject constructor(
                number = rs.getInt("number"),
                totalExceptions = 0,
                inventoryCount = rs.getInt("inventory_count"),
-               lastUpdated = null
+               lastUpdated = null,
+               dataset = rs.getString("dataset")
             )
          }
       )
@@ -482,7 +485,8 @@ class AuditRepository @Inject constructor(
          number = rs.getInt("a_number"),
          totalExceptions = rs.getInt("a_total_exceptions"),
          inventoryCount = rs.getInt("a_inventory_count"),
-         lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
+         lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated"),
+         dataset = rs.getString("a_dataset")
       )
 
    private fun loadNextStates(audit: AuditEntity) {

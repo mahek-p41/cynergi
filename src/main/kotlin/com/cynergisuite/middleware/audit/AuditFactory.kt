@@ -28,7 +28,8 @@ object AuditFactory {
       return IntStream.range(0, number).mapToObj {
          AuditEntity(
             store = store,
-            actions = statuses.map { AuditAction(status = it, changedBy = changedBy) }.toMutableSet()
+            actions = statuses.map { AuditAction(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet<AuditAction>()),
+            dataset = store.dataset
          )
       }
    }

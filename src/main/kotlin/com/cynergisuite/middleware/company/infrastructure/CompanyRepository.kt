@@ -128,6 +128,16 @@ class CompanyRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
+   fun exists(dataset: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset FROM fastinfo_prod_import.company_vw WHERE dataset = :dataset)", mapOf("dataset" to dataset), Boolean::class.java)!!
+
+      logger.trace("Checking if Company: {} exists using dataset resulted in {}", dataset, exists)
+
+      return exists
+   }
+
+   fun doesNotExist(dataset: String): Boolean = !exists(dataset)
+
    fun maybeMapRow(rs: ResultSet, columnPrefix: String): CompanyEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix)

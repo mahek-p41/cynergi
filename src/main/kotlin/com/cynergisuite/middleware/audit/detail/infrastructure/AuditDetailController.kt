@@ -74,11 +74,13 @@ class AuditDetailController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val page =  auditDetailService.fetchAll(auditId, pageRequest, httpRequest.findLocaleWithDefault())
+      val user = authenticationService.findUser(authentication)
+      val page =  auditDetailService.fetchAll(auditId, user.myDataset(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)

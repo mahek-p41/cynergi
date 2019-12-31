@@ -28,12 +28,12 @@ class AuditExceptionService @Inject constructor(
    private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
-   fun fetchById(id: Long, locale: Locale): AuditExceptionValueObject? =
-      auditExceptionRepository.findOne(id = id)?.let { transformEntity(it, locale) }
+   fun fetchById(id: Long, dataset: String, locale: Locale): AuditExceptionValueObject? =
+      auditExceptionRepository.findOne(id = id, dataset = dataset)?.let { transformEntity(it, locale) }
 
-   fun fetchAll(auditId: Long, pageRequest: PageRequest, locale: Locale): Page<AuditExceptionValueObject> {
-      val audit = auditRepository.findOne(auditId) ?: throw NotFoundException(auditId)
-      val found = auditExceptionRepository.findAll(audit, pageRequest)
+   fun fetchAll(auditId: Long, dataset: String, pageRequest: PageRequest, locale: Locale): Page<AuditExceptionValueObject> {
+      val audit = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
+      val found = auditExceptionRepository.findAll(audit, dataset, pageRequest)
 
       return found.toPage { transformEntity(it, locale) }
    }
@@ -43,7 +43,7 @@ class AuditExceptionService @Inject constructor(
 
    @Validated
    fun create(auditId: Long, @Valid vo: AuditExceptionCreateValueObject, @Valid scannedBy: User, locale: Locale): AuditExceptionValueObject {
-      auditExceptionValidator.validateCreate(auditId, vo)
+      auditExceptionValidator.validateCreate(auditId, scannedBy.myDataset(), vo)
 
       val inventoryId = vo.inventory?.id
       val barcode = vo.barcode
@@ -68,9 +68,9 @@ class AuditExceptionService @Inject constructor(
 
    @Validated
    fun update(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid enteredBy: User, locale: Locale): AuditExceptionValueObject {
-      auditExceptionValidator.validateUpdate(auditId, vo)
+      auditExceptionValidator.validateUpdate(auditId, enteredBy.myDataset(), vo)
 
-      val auditException = auditExceptionRepository.findOne(vo.id!!)!!
+      val auditException = auditExceptionRepository.findOne(vo.id!!, enteredBy.myDataset())!!
 
       auditException.notes.add(AuditExceptionNote(vo.note!!, enteredBy, auditException))
 

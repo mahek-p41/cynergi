@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class AuditEntity (
+data class AuditEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
@@ -17,6 +17,7 @@ data class AuditEntity (
    val totalExceptions: Int = 0,
    val lastUpdated: OffsetDateTime? = null,
    val inventoryCount: Int = 0,
+   val dataset: String,
    val actions: MutableSet<AuditAction> = LinkedHashSet<AuditAction>()
 ) : Entity<AuditEntity> {
 
@@ -28,7 +29,8 @@ data class AuditEntity (
          actions = audit.actions,
          totalExceptions = audit.totalExceptions,
          inventoryCount = audit.inventoryCount,
-         lastUpdated = audit.lastUpdated
+         lastUpdated = audit.lastUpdated,
+         dataset = audit.dataset
       )
 
    override fun myId(): Long? = id

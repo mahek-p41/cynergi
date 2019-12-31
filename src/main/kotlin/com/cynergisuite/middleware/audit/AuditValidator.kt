@@ -7,12 +7,14 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AuditOpenAtStore
 import com.cynergisuite.middleware.localization.AuditStatusNotFound
 import com.cynergisuite.middleware.localization.AuditUnableToChangeStatusFromTo
+import com.cynergisuite.middleware.localization.InvalidDataset
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
@@ -28,13 +30,14 @@ import javax.inject.Singleton
 class AuditValidator @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditStatusService: AuditStatusService,
+   private val companyRepository: CompanyRepository,
    private val localizationService: LocalizationService,
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AuditValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validationFetchAll(pageRequest: AuditPageRequest): AuditPageRequest {
+   fun validationFetchAll(pageRequest: AuditPageRequest, dataset: String): AuditPageRequest {
       doValidation { errors ->
          val from = pageRequest.from
          val thru = pageRequest.thru
@@ -42,14 +45,18 @@ class AuditValidator @Inject constructor(
          if (thru != null && from != null && thru.isBefore(from)) {
             errors.add(ValidationError("from", ThruDateIsBeforeFrom(from, thru)))
          }
+
+         if (companyRepository.doesNotExist(dataset)) {
+            errors.add(ValidationError("dataset", InvalidDataset(dataset)))
+         }
       }
 
       return pageRequest
    }
 
    @Throws(ValidationException::class)
-   fun validateFindAuditStatusCounts(pageRequest: AuditPageRequest) =
-      validationFetchAll(pageRequest)
+   fun validateFindAuditStatusCounts(pageRequest: AuditPageRequest, dataset: String) =
+      validationFetchAll(pageRequest, dataset)
 
    @Throws(ValidationException::class)
    fun validateCreate(audit: AuditCreateValueObject, user: User): AuditEntity {
@@ -62,7 +69,7 @@ class AuditValidator @Inject constructor(
             errors.add(ValidationError("storeNumber", NotFound(storeNumber)))
          }
 
-         if (storeNumber != null && auditRepository.countAuditsNotCompletedOrCanceled(storeNumber = storeNumber) > 0) {
+         if (storeNumber != null && auditRepository.countAuditsNotCompletedOrCanceled(storeNumber = storeNumber, dataset = user.myDataset()) > 0) {
             errors.add(ValidationError("storeNumber", AuditOpenAtStore(storeNumber)))
          }
       }
@@ -74,7 +81,8 @@ class AuditValidator @Inject constructor(
                status = CREATED,
                changedBy = fromUser(user)
             )
-         )
+         ),
+         dataset = user.myDataset()
       )
    }
 
@@ -89,7 +97,7 @@ class AuditValidator @Inject constructor(
          if (id == null) {
             errors.add(element = ValidationError("id", NotNull("id")))
          } else {
-            val existingAudit = auditRepository.findOne(id)
+            val existingAudit = auditRepository.findOne(id, user.myDataset())
 
             if (existingAudit == null) {
                errors.add(ValidationError("id", NotFound(id)))
@@ -121,7 +129,7 @@ class AuditValidator @Inject constructor(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
             changedBy = fromUser(user)
          ),
-         auditRepository.findOne(audit.id!!)!!
+         auditRepository.findOne(audit.id!!, user.myDataset())!!
       )
    }
 }

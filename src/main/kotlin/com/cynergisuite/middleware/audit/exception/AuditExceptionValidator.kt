@@ -29,14 +29,13 @@ class AuditExceptionValidator @Inject constructor (
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionValidator::class.java)
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject) {
+   fun validateCreate(auditId: Long, dataset: String, auditException: AuditExceptionCreateValueObject) {
       doSharedValidation(auditId)
 
       doValidation { errors ->
-
          val inventoryId = auditException.inventory?.id
          val barcode = auditException.barcode
-         val audit: AuditEntity = auditRepository.findOne(auditId)!!
+         val audit: AuditEntity = auditRepository.findOne(auditId, dataset)!!
          val auditStatus = audit.currentStatus()
          val scanArea = auditException.scanArea
 
@@ -69,13 +68,13 @@ class AuditExceptionValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
+   fun validateUpdate(auditId: Long, dataset: String, auditExceptionUpdate: AuditExceptionUpdateValueObject) {
       doSharedValidation(auditId)
 
       doValidation { errors ->
          val auditExceptionId = auditExceptionUpdate.id!!
          val signedOff = auditExceptionUpdate.signedOff!!
-         val audit: AuditEntity = auditRepository.findOne(auditId)!!
+         val audit: AuditEntity = auditRepository.findOne(auditId, dataset)!!
 
          if (auditExceptionsRepository.doesNotExist(auditExceptionId)) {
             errors.add(

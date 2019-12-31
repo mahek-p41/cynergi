@@ -29,13 +29,13 @@ class AuditDetailValidator @Inject constructor (
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(auditId: Long, auditDetailCreate: AuditDetailCreateValueObject) {
+   fun validateCreate(auditId: Long, dataset: String, auditDetailCreate: AuditDetailCreateValueObject) {
       logger.debug("Validating Create AuditDetail {}", auditDetailCreate)
 
       doValidation { errors ->
          val inventoryId = auditDetailCreate.inventory!!.id!!
 
-         validateAudit(auditId, errors)
+         validateAudit(auditId, dataset, errors)
          validateScanArea(auditDetailCreate.scanArea!!.value!!, errors)
 
          if (inventoryRepository.doesNotExist(inventoryId)) {
@@ -47,14 +47,14 @@ class AuditDetailValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(vo: AuditDetailValueObject) {
+   fun validateUpdate(vo: AuditDetailValueObject, dataset: String) {
       logger.debug("Validating Update AuditDetail {}", vo)
 
       doValidation { errors ->
          val auditId = vo.audit!!.myId()!!
          val id = vo.id
 
-         validateAudit(auditId, errors)
+         validateAudit(auditId, dataset, errors)
          validateScanArea(vo.scanArea!!.value!!, errors)
 
          if (id == null) {
@@ -73,8 +73,8 @@ class AuditDetailValidator @Inject constructor (
       }
    }
 
-   private fun validateAudit(auditId: Long, errors: MutableSet<ValidationError>) {
-      val audit: AuditEntity = auditRepository.findOne(auditId) ?: throw NotFoundException(auditId)
+   private fun validateAudit(auditId: Long, dataset: String, errors: MutableSet<ValidationError>) {
+      val audit: AuditEntity = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
       val auditStatus = audit.currentStatus()
 
       if (IN_PROGRESS != auditStatus) {

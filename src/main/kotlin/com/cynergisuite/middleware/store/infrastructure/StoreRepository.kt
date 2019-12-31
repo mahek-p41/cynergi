@@ -31,10 +31,11 @@ class StoreRepository @Inject constructor(
          s.name AS name,
          s.dataset AS dataset
       FROM fastinfo_prod_import.store_vw s
+      WHERE s.dataset = :dataset
    """.trimIndent()
 
-   fun findOne(id: Long): StoreEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE id = :id", mapOf("id" to id), simpleStoreRowMapper)
+   fun findOne(id: Long, dataset: String): StoreEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase AND id = :id", mapOf("id" to id, "dataset" to dataset), simpleStoreRowMapper)
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
 
@@ -42,7 +43,7 @@ class StoreRepository @Inject constructor(
    }
 
    fun findOne(number: Int, dataset: String): StoreEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE number = :number AND s.dataset = :dataset", mapOf("number" to number, "dataset" to dataset), simpleStoreRowMapper)
+      val found = jdbc.findFirstOrNull("$selectBase AND number = :number", mapOf("number" to number, "dataset" to dataset), simpleStoreRowMapper)
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
 

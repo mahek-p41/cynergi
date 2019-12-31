@@ -45,11 +45,13 @@ class StoreController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
    ): StoreValueObject {
       logger.info("Fetching Store by {}", id)
 
-      val response = storeService.fetchById(id = id) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = storeService.fetchById(id = id, dataset = user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
 

@@ -78,44 +78,39 @@ class EmployeeRepository @Inject constructor(
          ) AS inner_emp
          ORDER BY from_priority
       ), stores AS (
-         SELECT
-            s.id AS s_id,
-            s.number AS s_number,
-            s.name AS s_name,
-            s.dataset AS s_dataset
-         FROM fastinfo_prod_import.store_vw s
+         ${storeRepository.selectBase}
       )
       SELECT
-         from_priority AS priority,
-         id AS e_id,
-         number AS e_number,
-         dataset AS e_dataset,
-         last_name AS e_last_name,
-         NULLIF(TRIM(first_name_mi), '') AS e_first_name_mi,
-         pass_code AS e_pass_code,
-         active AS e_active,
-         department AS e_department,
-         employee_type AS e_employee_type,
-         allow_auto_store_assign AS e_allow_auto_store_assign,
-         s.s_id AS s_id,
-         s.s_number AS s_number,
-         s.s_name AS s_name,
-         s.s_dataset AS s_dataset,
-         ds.s_id AS ds_id,
-         ds.s_number AS ds_number,
-         ds.s_name AS ds_name,
-         ds.s_dataset AS ds_dataset
+         e.from_priority AS e_priority,
+         e.id AS e_id,
+         e.number AS e_number,
+         e.dataset AS e_dataset,
+         e.last_name AS e_last_name,
+         NULLIF(TRIM(e.first_name_mi), '') AS e_first_name_mi,
+         e.pass_code AS e_pass_code,
+         e.active AS e_active,
+         e.department AS e_department,
+         e.employee_type AS e_employee_type,
+         e.allow_auto_store_assign AS e_allow_auto_store_assign,
+         s.id AS s_id,
+         s.number AS s_number,
+         s.name AS s_name,
+         s.dataset AS s_dataset,
+         ds.id AS ds_id,
+         ds.number AS ds_number,
+         ds.name AS ds_name,
+         ds.dataset AS ds_dataset
       FROM employees e
-           JOIN stores ds ON ds.s_number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
+           JOIN stores ds ON ds.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
            LEFT OUTER JOIN stores s
    """.trimIndent()
 
-   val selectBase = "$selectBaseWithoutEmployeeStoreJoin ON e.store_number = s.s_number"
+   val selectBase = "$selectBaseWithoutEmployeeStoreJoin ON e.store_number = s.number"
 
    fun findOne(id: Long, employeeType: String, dataset: String): EmployeeEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.id = :id AND e.employee_type = :employee_type", mapOf("id" to id, "employee_type" to employeeType), RowMapper { rs, _ -> mapRow(rs) })
+      val found = jdbc.findFirstOrNull("$selectBase\nWHERE e.id = :id AND e.employee_type = :employee_type", mapOf("id" to id, "employee_type" to employeeType, "dataset" to dataset), RowMapper { rs, _ -> mapRow(rs) })
 
-      logger.trace("Searching for Employee: {} {} resulted in {}", id, employeeType, found)
+      logger.trace("Searching for Employee: {} {} {} resulted in {}", id, employeeType, dataset, found)
 
       return found
    }
@@ -130,7 +125,7 @@ class EmployeeRepository @Inject constructor(
          query.append("\nAND employee_type = :employee_type")
       }
 
-      query.append("\nORDER BY priority\n LIMIT 1")
+      query.append("\nORDER BY e.from_priority\n LIMIT 1")
 
       logger.debug("Searching for employee {}, {} with {}", number, employeeType, query)
 
@@ -144,12 +139,9 @@ class EmployeeRepository @Inject constructor(
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
       val found = jdbc.findFirstOrNull("""
          $selectBaseWithoutEmployeeStoreJoin
-            ON s.s_number = :store_number
+            ON s.number = :store_number
          WHERE e.id = :id
                AND e.employee_type = :employee_type
-               AND e.dataset = :dataset
-               AND s.s_dataset = :dataset
-               AND ds.s_dataset = :dataset
          """.trimIndent(),
          mapOf(
             "id" to user.myId(),
@@ -186,26 +178,20 @@ class EmployeeRepository @Inject constructor(
          tuple = Tuple.of(storeNumber, number, dataset)
 
          """
-         $selectBaseWithoutEmployeeStoreJoin
-            ON s.s_number = $1
+         ${selectBaseWithoutEmployeeStoreJoin.replace(":dataset", "$3")}
+            ON s.number = $1
          WHERE e.number = $2
             AND e.active = true
-            AND e.dataset = $3
-            AND s.s_dataset = $3
-            AND ds.s_dataset = $3
-         ORDER BY priority
+         ORDER BY e.from_priority
          """.trimIndent()
       } else {
          tuple = Tuple.of(number, dataset)
 
          """
-         $selectBase
+         ${selectBase.replace(":dataset", "$2")}
          WHERE e.number = $1
             AND e.active = true
-            AND e.dataset = $2
-            AND s.s_dataset = $2
-            AND ds.s_dataset = $2
-         ORDER BY priority
+         ORDER BY e.from_priority
          """.trimIndent()
       }
 

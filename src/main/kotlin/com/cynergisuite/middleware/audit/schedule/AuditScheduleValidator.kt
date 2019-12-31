@@ -39,7 +39,7 @@ class AuditScheduleValidator(
       )
 
       for (storeIn in dto.stores) {
-         val store = storeRepository.findOne(storeIn.myId()!!)!!
+         val store = storeRepository.findOne(storeIn.myId()!!, user.myDataset())!!
 
          stores.add(store)
 
@@ -95,7 +95,7 @@ class AuditScheduleValidator(
          .sortedBy { it.second.id }
          .toList()
       val updateStores: List<StoreEntity> = dto.stores.asSequence()
-         .map { storeRepository.findOne(it.id!!)!! }
+         .map { storeRepository.findOne(it.id!!, user.myDataset())!! }
          .toList()
       val argsToUpdate = mutableSetOf<ScheduleArgumentEntity>()
 

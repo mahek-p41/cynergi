@@ -55,11 +55,13 @@ class AuditController @Inject constructor(
    ])
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
 
-      val response = auditService.fetchById(id = id, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = auditService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit by {} resulted in {}", id, response)
 
@@ -77,11 +79,13 @@ class AuditController @Inject constructor(
    ])
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {} {}", pageRequest)
 
-      val page =  auditService.fetchAll(pageRequest, httpRequest.findLocaleWithDefault())
+      val user = authenticationService.findUser(authentication)
+      val page =  auditService.fetchAll(pageRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -100,13 +104,15 @@ class AuditController @Inject constructor(
    ])
    fun fetchAuditStatusCounts(
       @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
       logger.debug("Fetching Audit status counts {}", pageRequest)
 
+      val user = authenticationService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
-      return auditService.findAuditStatusCounts(pageRequest, locale)
+      return auditService.findAuditStatusCounts(pageRequest, user.myDataset(), locale)
    }
 
    @Post(processes = [APPLICATION_JSON])

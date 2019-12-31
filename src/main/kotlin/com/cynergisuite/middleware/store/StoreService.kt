@@ -10,8 +10,8 @@ import javax.inject.Singleton
 class StoreService @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
-   fun fetchById(id: Long): StoreValueObject? =
-      storeRepository.findOne(id = id)?.let { StoreValueObject(entity = it) }
+   fun fetchById(id: Long, dataset: String): StoreValueObject? =
+      storeRepository.findOne(id = id, dataset = dataset)?.let { StoreValueObject(entity = it) }
 
    fun fetchByNumber(number: Int, dataset: String): StoreValueObject? =
       storeRepository.findOne(number, dataset)?.let { StoreValueObject(entity = it) }
