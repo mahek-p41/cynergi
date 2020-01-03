@@ -36,9 +36,11 @@ class AuditRepository @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
-   @Language("PostgreSQL") private val baseFindQuery = """
+
+   private fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String): String {
+      return """
          WITH employees AS (
-            ${employeeRepository.selectBase}
+            ${employeeRepository.selectBaseQuery(params, dataset)}
          )
          SELECT
             a.id AS id,
@@ -103,24 +105,15 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
                      AND a.dataset = se.dataset
-      """.trimMargin()
+      """
+   }
 
    fun findOne(id: Long, dataset: String): AuditEntity? {
-      logger.debug("Searching for audit by id {}", id)
+      logger.debug("Searching for audit by id {} with dataset {}", id, dataset)
 
-      val found = jdbc.findFirstOrNull("$baseFindQuery\nWHERE a.id = :id", mapOf("id" to id, "dataset" to dataset)) { rs ->
-         val audit = this.mapRow(rs)
-
-         do {
-            auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
-         } while(rs.next())
-
-         audit
-      }
-
-      if (found != null) {
-         loadNextStates(found)
-      }
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = "${selectBaseQuery(params, dataset)}\nWHERE a.id = :id"
+      val found = executeFindSingleQuery(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
 
@@ -128,17 +121,20 @@ class AuditRepository @Inject constructor(
    }
 
    fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
-      val query = "$baseFindQuery\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
+      val params = mutableMapOf<String, Any?>("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
+      val query = "${selectBaseQuery(params, store.dataset)}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
 
-      val found = jdbc.findFirstOrNull(query,
-         mapOf(
-            "store_number" to store.number,
-            "statuses" to listOf(CREATED.value, IN_PROGRESS.value),
-            "dataset" to store.myDataset()
-         )
-      ) { rs ->
+      val found = executeFindSingleQuery(query, params)
+
+      logger.debug("Searching for audit not completed or canceled for store {} resulted in {}", store, found)
+
+      return found
+   }
+
+   private fun executeFindSingleQuery(query: String, params: Map<String, Any?>): AuditEntity? {
+      val found = jdbc.findFirstOrNull(query, params) { rs ->
          val audit = this.mapRow(rs)
 
          do {
@@ -152,13 +148,12 @@ class AuditRepository @Inject constructor(
          loadNextStates(found)
       }
 
-      logger.debug("Searching for audit not completed or canceled for store {} resulted in {}", store, found)
 
       return found
    }
 
    fun findAll(pageRequest: AuditPageRequest, dataset: String): RepositoryPage<AuditEntity, AuditPageRequest> {
-      val params = mutableMapOf<String, Any>("dataset" to dataset)
+      val params = mutableMapOf<String, Any?>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder("WHERE a.dataset = :dataset ")
@@ -181,10 +176,9 @@ class AuditRepository @Inject constructor(
          whereBuilder.append(" AND current_status IN (:current_status) ")
       }
 
-      @Language("PostgreSQL")
       val sql = """
          WITH employees AS (
-            ${employeeRepository.selectBase}
+            ${employeeRepository.selectBaseQuery(params, dataset)}
          ), audits AS (
             WITH status AS (
                SELECT csastd.value AS current_status,

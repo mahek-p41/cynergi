@@ -27,8 +27,8 @@ class EmployeeService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(EmployeeService::class.java)
    private val employeeMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-employee*csv")
 
-   fun exists(id: Long, employeeType: String): Boolean =
-      employeeRepository.exists(id = id, employeeType = employeeType)
+   fun exists(id: Long, employeeType: String, dataset: String): Boolean =
+      employeeRepository.exists(id = id, employeeType = employeeType, dataset = dataset)
 
    @Validated
    fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {

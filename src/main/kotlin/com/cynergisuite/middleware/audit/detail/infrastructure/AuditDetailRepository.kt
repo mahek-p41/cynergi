@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.google.common.collect.Multimap
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -32,52 +33,54 @@ class AuditDetailRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
-   private val selectBase = """
-      WITH ad_employees AS (
-         ${employeeRepository.selectBase}
-      )
-      SELECT
-         ad.id AS ad_id,
-         ad.uu_row_id AS ad_uu_row_id,
-         ad.time_created AS ad_time_created,
-         ad.time_updated AS ad_time_updated,
-         ad.barcode AS ad_barcode,
-         ad.product_code AS ad_product_code,
-         ad.alt_id AS ad_alt_id,
-         ad.serial_number AS ad_serial_number,
-         ad.inventory_brand AS ad_inventory_brand,
-         ad.inventory_model AS ad_inventory_model,
-         ad.audit_id AS ad_audit_id,
-         e.e_id AS e_id,
-         e.e_number AS e_number,
-         e.e_dataset AS e_dataset,
-         e.e_last_name AS e_last_name,
-         e.e_first_name_mi AS e_first_name_mi,
-         e.e_pass_code AS  e_pass_code,
-         e.e_department AS e_department,
-         e.e_active AS e_active,
-         e.e_employee_type AS e_employee_type,
-         e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
-         e.s_id AS s_id,
-         e.s_number AS s_number,
-         e.s_name AS s_name,
-         e.s_dataset AS s_dataset,
-         asatd.id AS asatd_id,
-         asatd.value AS asatd_value,
-         asatd.description AS asatd_description,
-         asatd.localization_code AS asatd_localization_code
-      FROM audit_detail ad
-           JOIN ad_employees e
-             ON ad.scanned_by = e.e_number
-           JOIN audit_scan_area_type_domain asatd
-             ON ad.scan_area_id = asatd.id
-   """.trimIndent()
+
+   private fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String): String {
+      return """
+         WITH ad_employees AS (
+            ${employeeRepository.selectBaseQuery(params, dataset)}
+         )
+         SELECT
+            ad.id AS ad_id,
+            ad.uu_row_id AS ad_uu_row_id,
+            ad.time_created AS ad_time_created,
+            ad.time_updated AS ad_time_updated,
+            ad.barcode AS ad_barcode,
+            ad.product_code AS ad_product_code,
+            ad.alt_id AS ad_alt_id,
+            ad.serial_number AS ad_serial_number,
+            ad.inventory_brand AS ad_inventory_brand,
+            ad.inventory_model AS ad_inventory_model,
+            ad.audit_id AS ad_audit_id,
+            e.e_id AS e_id,
+            e.e_number AS e_number,
+            e.e_dataset AS e_dataset,
+            e.e_last_name AS e_last_name,
+            e.e_first_name_mi AS e_first_name_mi,
+            e.e_pass_code AS  e_pass_code,
+            e.e_department AS e_department,
+            e.e_active AS e_active,
+            e.e_employee_type AS e_employee_type,
+            e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
+            e.s_id AS s_id,
+            e.s_number AS s_number,
+            e.s_name AS s_name,
+            e.s_dataset AS s_dataset,
+            asatd.id AS asatd_id,
+            asatd.value AS asatd_value,
+            asatd.description AS asatd_description,
+            asatd.localization_code AS asatd_localization_code
+         FROM audit_detail ad
+              JOIN ad_employees e
+                ON ad.scanned_by = e.e_number
+              JOIN audit_scan_area_type_domain asatd
+                ON ad.scan_area_id = asatd.id
+      """
+   }
 
    fun findOne(id: Long, dataset: String): AuditDetailEntity? {
-      val found = jdbc.findFirstOrNull(
-         "$selectBase\nWHERE ad.id = :id",
-         mapOf("id" to id, "dataset" to dataset),
-         RowMapper { rs, _ ->
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = "${selectBaseQuery(params, dataset)} WHERE ad.id = :id"
+      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_")
             val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
@@ -91,12 +94,10 @@ class AuditDetailRepository @Inject constructor(
    }
 
    fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
-      var totalElements: Long? = null
-      val resultList: MutableList<AuditDetailEntity> = mutableListOf()
-
-      jdbc.query("""
+      val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
+      val query = """
          WITH paged AS (
-            $selectBase
+            ${selectBaseQuery(params, dataset)}
          )
          SELECT
             p.*,
@@ -105,9 +106,11 @@ class AuditDetailRepository @Inject constructor(
          WHERE p.ad_audit_id = :audit_id
          ORDER by ad_${page.snakeSortBy()} ${page.sortDirection()}
          LIMIT ${page.size()} OFFSET ${page.offset()}
-      """.trimIndent(),
-      mutableMapOf("audit_id" to audit.id, "dataset" to dataset)
-      ) { rs ->
+      """
+      var totalElements: Long? = null
+      val resultList: MutableList<AuditDetailEntity> = mutableListOf()
+
+      jdbc.query(query, params) { rs ->
          val scannedBy = employeeRepository.mapRow(rs, "e_")
          val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 

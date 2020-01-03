@@ -38,9 +38,10 @@ class AuditExceptionRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
    fun findOne(id: Long, dataset: String): AuditExceptionEntity? {
-      val found = jdbc.findFirstOrNullWithCrossJoin("""
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = """
          WITH ae_employees AS (
-            ${employeeRepository.selectBase}
+            ${employeeRepository.selectBaseQuery(params, dataset)}
          )
          SELECT
             ae.id AS ae_id,
@@ -118,8 +119,8 @@ class AuditExceptionRepository @Inject constructor(
                 ON ae.id = aen.audit_exception_id
               LEFT OUTER JOIN ae_employees noteEmployee
                 ON aen.entered_by = noteEmployee.e_number AND noteEmployee.e_dataset = :dataset
-         WHERE ae.id = :id""".trimIndent(), mapOf("id" to id, "dataset" to dataset),
-         RowMapper { rs, _ ->
+         WHERE ae.id = :id"""
+      val found = jdbc.findFirstOrNullWithCrossJoin(query, params, RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
             val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
@@ -140,11 +141,12 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
       var totalElements: Long? = null
       val sql = """
       WITH paged AS (
          WITH ae_employees AS (
-            ${employeeRepository.selectBase}
+            ${employeeRepository.selectBaseQuery(params, dataset)}
          ),
          audit_exceptions AS (
             SELECT ae.id AS ae_id,
@@ -238,7 +240,7 @@ class AuditExceptionRepository @Inject constructor(
 
       logger.debug("find all audit exceptions {}", sql)
 
-      val resultList = jdbc.findAllWithCrossJoin(sql, mutableMapOf("audit_id" to audit.id, "dataset" to dataset), "ae_id", RowMapper { rs, _ ->
+      val resultList = jdbc.findAllWithCrossJoin(sql, params, "ae_id", RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
             val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")

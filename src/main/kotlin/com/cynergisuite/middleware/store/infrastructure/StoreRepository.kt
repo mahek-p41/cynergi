@@ -24,18 +24,24 @@ class StoreRepository @Inject constructor(
    private val simpleStoreRowMapper = StoreRowMapper()
 
    @Language("PostgreSQL")
-   final val selectBase = """
-      SELECT
-         s.id AS id,
-         s.number AS number,
-         s.name AS name,
-         s.dataset AS dataset
-      FROM fastinfo_prod_import.store_vw s
-      WHERE s.dataset = :dataset
-   """.trimIndent()
+   fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String, datasetParamKey: String = ":dataset"): String {
+      params["dataset"] = dataset
+
+      return """
+         SELECT
+            s.id AS id,
+            s.number AS number,
+            s.name AS name,
+            s.dataset AS dataset
+         FROM fastinfo_prod_import.store_vw s
+         WHERE s.dataset = $datasetParamKey
+      """
+   }
 
    fun findOne(id: Long, dataset: String): StoreEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase AND id = :id", mapOf("id" to id, "dataset" to dataset), simpleStoreRowMapper)
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = "${selectBaseQuery(params, dataset)} AND id = :id"
+      val found = jdbc.findFirstOrNull(query, params, simpleStoreRowMapper)
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
 
@@ -43,7 +49,9 @@ class StoreRepository @Inject constructor(
    }
 
    fun findOne(number: Int, dataset: String): StoreEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase AND number = :number", mapOf("number" to number, "dataset" to dataset), simpleStoreRowMapper)
+      val params = mutableMapOf<String, Any?>("number" to number)
+      val query = "${selectBaseQuery(params, dataset)} AND number = :number"
+      val found = jdbc.findFirstOrNull(query, params, simpleStoreRowMapper)
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
 
@@ -51,14 +59,15 @@ class StoreRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<StoreEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>()
+      val query = "${selectBaseQuery(params, dataset)} AND number <> 9000"
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 
       jdbc.query(
          """
          WITH paged AS (
-            $selectBase
-               AND number <> 9000
+            ${query}
          )
          SELECT
             p.*,
@@ -67,8 +76,8 @@ class StoreRepository @Inject constructor(
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
-         """.trimIndent(),
-         mapOf("dataset" to dataset)
+         """,
+         params
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
