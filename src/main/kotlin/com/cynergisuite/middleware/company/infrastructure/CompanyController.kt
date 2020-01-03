@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.company.CompanyValueObject
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import io.micronaut.http.MediaType
+import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
@@ -34,19 +35,19 @@ class CompanyController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(CompanyController::class.java)
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("company-fetchAll")
-   @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["CompanyEndpoints"], summary = "Fetch a listing of companies", description = "Fetch a paginated listing of companies", operationId = "company-fetchAll")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "204", description = "The the result is empty"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: StandardPageRequest
    ): Page<CompanyValueObject> {
-      logger.info("Fetching all companies {}", pageRequest)
+      logger.info("Fetching all companies {}", pageRequestIn)
 
+      val pageRequest = StandardPageRequest(pageRequestIn)
       val page = companyService.fetchAll(pageRequest)
 
       if (page.elements.isEmpty()) {

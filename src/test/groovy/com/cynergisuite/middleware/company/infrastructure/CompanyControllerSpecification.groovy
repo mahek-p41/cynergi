@@ -1,19 +1,23 @@
 package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
-import com.cynergisuite.middleware.company.CompanyValueObject
+import io.micronaut.core.type.Argument
+import io.micronaut.http.client.RxHttpClient
+import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
+import spock.lang.Specification
 
 
+import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
-class CompanyControllerSpecification extends ControllerSpecificationBase {
+class CompanyControllerSpecification extends Specification {
+   @Client("/api/company") @Inject RxHttpClient httpClient // since the company controller only has a single endpoint of fetchAll and it doesn't require authentication no need to use the ControllerSpecificationBase class.  Also there is nothing to cleanup
    @Inject CompanyFactoryService companyFactoryService
 
    void "fetch all companies" () {
@@ -23,7 +27,10 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       final allCompanies = CompanyFactory.all().sort { o1, o2 -> o1.id <=> o2.id }
 
       when:
-      def pageOneResult = get("/company${pageOne}")
+      def pageOneResult = httpClient.toBlocking().exchange(GET(pageOne.toString()), // login without authorization
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
 
       then:
       notThrown(Exception)
@@ -41,7 +48,10 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[1].dataset == allCompanies[1].dataset
 
       when:
-      get("/company${pageTwo}")
+      httpClient.toBlocking().exchange(GET(pageTwo.toString()), // login without authorization
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
 
       then:
       final exception = thrown(HttpClientResponseException)

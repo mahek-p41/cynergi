@@ -44,7 +44,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      final response = exception.response.body().with { parseResponse(it) }
+      final response = exception.response.bodyAsJson()
       response.size() == 1
       response.message == "110 was unable to be found"
    }

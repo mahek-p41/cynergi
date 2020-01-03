@@ -25,14 +25,12 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
 
    protected BlockingHttpClient client
    protected String cynergiAccessToken
-   protected JsonSlurper jsonSlurper
    protected EmployeeEntity authenticatedEmployee
 
    void setup() {
       client = httpClient.toBlocking()
       authenticatedEmployee = employeeService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet()
       cynergiAccessToken = loginEmployee(authenticatedEmployee)
-      jsonSlurper = new JsonSlurper()
    }
 
    String loginEmployee(EmployeeEntity employee) {
@@ -69,9 +67,5 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()
-   }
-
-   Object parseResponse(Object responseBody) {
-      return jsonSlurper.parseText(responseBody as String)
    }
 }

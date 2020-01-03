@@ -275,7 +275,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      def response = exception.response.body().with { parseResponse(it) }
+      def response = exception.response.bodyAsJson()
       response.size() == 1
       response.message == "0 was unable to be found"
    }
