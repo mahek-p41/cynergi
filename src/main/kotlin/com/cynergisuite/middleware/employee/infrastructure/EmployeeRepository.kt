@@ -116,7 +116,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun findOne(number: Int, employeeType: String? = null, dataset: String): EmployeeEntity? {
-      val params = mutableMapOf<String, Any>("number" to number)
+      val params = mutableMapOf<String, Any>("number" to number, "dataset" to dataset)
       val query = StringBuilder(selectBase)
          .append("\nWHERE e.number = :number")
 

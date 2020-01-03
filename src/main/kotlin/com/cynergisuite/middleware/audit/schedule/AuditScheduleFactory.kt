@@ -26,7 +26,7 @@ import javax.inject.Singleton
 object AuditScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, dataset: String? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, datasetIn: String? = null): Stream<ScheduleEntity> {
       val faker = Faker()
       val chuckNorris = faker.chuckNorris()
       val number = if (numberIn > 0) numberIn else 1
@@ -34,6 +34,7 @@ object AuditScheduleFactory {
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
       val employee = employeeIn ?: EmployeeFactory.single()
       val arguments = mutableSetOf<ScheduleArgumentEntity>()
+      val dataset = datasetIn ?: "tstds1"
 
       for (store in stores) {
          arguments.add(
@@ -44,6 +45,12 @@ object AuditScheduleFactory {
          )
       }
 
+      arguments.add(
+         ScheduleArgumentEntity(
+            dataset,
+            "dataset"
+         )
+      )
       arguments.add(
          ScheduleArgumentEntity(
             employee.number.toString(),
@@ -77,11 +84,11 @@ class AuditScheduleFactoryService @Inject constructor(
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random())
       val employee = employeeIn ?: employeeFactoryService.single()
 
-      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, employee)
+      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, employee, dataset)
          .map { scheduleRepository.insert(it) }
    }
 
-   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null) :ScheduleEntity {
-      return stream(1, dayOfWeekIn, storesIn, employeeIn).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
+   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, dataset: String? = null) :ScheduleEntity {
+      return stream(1, dayOfWeekIn, storesIn, employeeIn, dataset).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
    }
 }
