@@ -58,8 +58,7 @@ class StoreRepository @Inject constructor(
          """
          WITH paged AS (
             $selectBase
-            WHERE number <> 9000
-                  AND s.dataset = :dataset
+               AND number <> 9000
          )
          SELECT
             p.*,

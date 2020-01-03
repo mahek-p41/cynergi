@@ -51,11 +51,13 @@ class AuditDetailController @Inject constructor(
    ])
    fun fetchOne(
       @QueryValue("id") id: Long,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Fetching AuditDetail by {}", id)
 
-      val response = auditDetailService.fetchById(id = id, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = auditDetailService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 

@@ -27,13 +27,13 @@ class AuditDetailService @Inject constructor(
    private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
-   fun fetchById(id: Long, locale: Locale): AuditDetailValueObject? =
-      auditDetailRepository.findOne(id = id)?.let { transformEntity(it, locale) }
+   fun fetchById(id: Long, dataset: String, locale: Locale): AuditDetailValueObject? =
+      auditDetailRepository.findOne(id, dataset)?.let { transformEntity(it, locale) }
 
    @Validated
    fun fetchAll(auditId: Long, dataset: String, @Valid pageRequest: PageRequest, locale: Locale): Page<AuditDetailValueObject> {
       val audit = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
-      val found = auditDetailRepository.findAll(audit, pageRequest)
+      val found = auditDetailRepository.findAll(audit, dataset, pageRequest)
 
       return found.toPage { transformEntity(it, locale) }
    }
@@ -64,7 +64,7 @@ class AuditDetailService @Inject constructor(
    fun update(@Valid vo: AuditDetailValueObject, dataset: String, locale: Locale): AuditDetailValueObject {
       auditDetailValidator.validateUpdate(vo, dataset)
 
-      val auditDetail = auditDetailRepository.findOne(vo.id!!) ?: throw NotFoundException(vo.id!!)
+      val auditDetail = auditDetailRepository.findOne(vo.id!!, dataset) ?: throw NotFoundException(vo.id!!)
       val auditDetailUpdated = auditDetailRepository.update(
          auditDetail.copy(
             scanArea = auditScanAreaRepository.findOne(vo.scanArea!!.value!!)!!

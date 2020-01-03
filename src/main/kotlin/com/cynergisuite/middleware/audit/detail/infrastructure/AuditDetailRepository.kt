@@ -73,10 +73,10 @@ class AuditDetailRepository @Inject constructor(
              ON ad.scan_area_id = asatd.id
    """.trimIndent()
 
-   fun findOne(id: Long): AuditDetailEntity? {
+   fun findOne(id: Long, dataset: String): AuditDetailEntity? {
       val found = jdbc.findFirstOrNull(
          "$selectBase\nWHERE ad.id = :id",
-         mapOf("id" to id),
+         mapOf("id" to id, "dataset" to dataset),
          RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_")
             val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
@@ -90,7 +90,7 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
+   fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
@@ -106,7 +106,7 @@ class AuditDetailRepository @Inject constructor(
          ORDER by ad_${page.snakeSortBy()} ${page.sortDirection()}
          LIMIT ${page.size()} OFFSET ${page.offset()}
       """.trimIndent(),
-      mutableMapOf("audit_id" to audit.id)
+      mutableMapOf("audit_id" to audit.id, "dataset" to dataset)
       ) { rs ->
          val scannedBy = employeeRepository.mapRow(rs, "e_")
          val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
