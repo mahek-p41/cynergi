@@ -99,8 +99,10 @@ class AuditRepository @Inject constructor(
                   ON aa.changed_by = aer.e_number
               JOIN fastinfo_prod_import.store_vw s
                   ON a.store_number = s.number
+                     AND a.dataset = s.dataset
               JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
+                     AND a.dataset = se.dataset
       """.trimMargin()
 
    fun findOne(id: Long, dataset: String): AuditEntity? {

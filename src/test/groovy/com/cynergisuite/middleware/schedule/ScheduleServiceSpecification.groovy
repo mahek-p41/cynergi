@@ -21,12 +21,12 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    void "execute daily Tuesday audit job on Tuesday" () {
       given:
       final storeOne = StoreFactory.storeOne()
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null, "tstds1")
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null))
+      def audits = auditRepository.findAll(new AuditPageRequest(null), "tstds1")
 
       then:
       notThrown(Exception)
@@ -41,12 +41,12 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    void "execute daily Tuesday audit job on Wednesday" () {
       given:
       final storeOne = StoreFactory.storeOne()
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null, "tstds1")
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null))
+      def audits = auditRepository.findAll(new AuditPageRequest(null), "tstds1")
 
       then:
       notThrown(Exception)

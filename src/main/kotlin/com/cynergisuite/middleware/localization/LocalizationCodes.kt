@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.localization
 
+import org.apache.commons.lang3.builder.ToStringBuilder
 import java.time.OffsetDateTime
 
 interface LocalizationCode {
@@ -13,6 +14,12 @@ open class LocalizationCodeImpl(
 ) : LocalizationCode {
    override fun getCode(): String = code
    override fun getArguments(): Array<Any?> = arguments
+   override fun toString(): String {
+      return ToStringBuilder(this)
+         .append("code", code)
+         .append("argument", arguments)
+         .build()
+   }
 }
 
 abstract class Validation(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
