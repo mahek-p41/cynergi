@@ -46,6 +46,7 @@ class UserAuthenticationProvider @Inject constructor(
                   just(AuthenticationResponseStoreRequired(identity))
                }
             }
+            .defaultIfEmpty(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       } else {
          logger.debug("Employee {} was unable to be authenticated", identity)
 

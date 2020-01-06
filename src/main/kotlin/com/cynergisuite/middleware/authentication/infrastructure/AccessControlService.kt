@@ -36,7 +36,7 @@ class AccessControlService @Inject constructor(
       } else {
          val username = securityService.username().orElse(null)
 
-         throw AccessException(AccessDenied(username), username)
+         throw AccessException(AccessDenied(), username)
       }
    }
 }

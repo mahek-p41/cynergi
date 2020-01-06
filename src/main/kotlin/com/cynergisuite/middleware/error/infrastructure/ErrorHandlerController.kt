@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.error.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
+import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
@@ -10,6 +11,7 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AccessDenied
+import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
 import com.cynergisuite.middleware.localization.AccessDeniedStore
 import com.cynergisuite.middleware.localization.ConversionError
 import com.cynergisuite.middleware.localization.InternalError
@@ -23,6 +25,7 @@ import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.core.util.StringUtils
 import io.micronaut.http.HttpRequest
@@ -214,13 +217,14 @@ class ErrorHandlerController @Inject constructor(
    fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDataTransferObject> {
       logger.info("AuthenticationException", authenticationException)
 
+      val userName = httpRequest.body.map { if (it is ObjectNode && it.has("username")) it.get("username").textValue() else null }.orElse(null)
       val locale = httpRequest.findLocaleWithDefault()
       val message = if (authenticationException.message.isDigits()) { // most likely store should have been provided
          localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
-      } else if ( !authenticationException.message.isNullOrBlank() ) {
-         localizationService.localize(AccessDenied(authenticationException.message!!), locale)
+      } else if ( !authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
+         localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
       } else {
-         localizationService.localize(AccessDenied(localizationService.localize(Unknown(), locale)), locale)
+         localizationService.localize(AccessDenied(), locale)
       }
 
       return HttpResponse
