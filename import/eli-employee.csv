@@ -1,3 +1,4 @@
 number,last_name,first_name_mi,pass_code,store_number,active,allow_auto_store_assign,dataset
-998,admin,,pass,,true,true,corrto
-123,test,user,word,1,true,false,corrto
+998,admin,,pass,,true,true,tstds1
+998,admin,,pass,,true,true,tstds2
+123,test,user,word,1,true,false,tstds1
