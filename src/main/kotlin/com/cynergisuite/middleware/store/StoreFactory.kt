@@ -52,19 +52,20 @@ object StoreFactory {
 
    @JvmStatic
    fun random() = random(dataset = "tstds1")
-   
+
    @JvmStatic
-   fun random(dataset: String): StoreEntity = stores.filter { it.dataset == dataset }.random()
+   fun random(dataset: String): StoreEntity =
+      stores.filter { it.dataset == dataset }.random()
 
    @JvmStatic
    fun findByNumber(number: Int, dataset: String = "tstds1"): StoreEntity =
       stores.first { it.number == number && it.dataset == dataset }
 
    @JvmStatic
-   fun storeOne(): StoreEntity = stores[0]
+   fun storeOneTstds1(): StoreEntity = stores[0]
 
    @JvmStatic
-   fun storeThree(): StoreEntity = stores[1]
+   fun storeThreeTstds1(): StoreEntity = stores[1]
 }
 
 @Singleton
@@ -82,11 +83,11 @@ class StoreFactoryService(
    fun random(): StoreEntity =
       store(StoreFactory.random()) ?: throw Exception("Unable to find random Store")
 
-   fun storeOne(): StoreEntity =
-      store(StoreFactory.storeOne()) ?: throw Exception("Unable to find Store 1")
+   fun storeOneTstds1(): StoreEntity =
+      store(StoreFactory.storeOneTstds1()) ?: throw Exception("Unable to find Store 1")
 
-   fun storeThree(): StoreEntity =
-      store(StoreFactory.storeThree()) ?: throw Exception("Unable to find Store 3")
+   fun storeThreeTstds1(): StoreEntity =
+      store(StoreFactory.storeThreeTstds1()) ?: throw Exception("Unable to find Store 3")
 
    private fun store(storeEntity: Store): StoreEntity? =
       storeRepository.findOne(storeEntity.myNumber(), storeEntity.myDataset())

@@ -45,8 +45,8 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "two store test"() {
       given:
-      final store1 = StoreFactory.storeOne()
-      final store3 = StoreFactory.storeThree()
+      final store1 = StoreFactory.storeOneTstds1()
+      final store3 = StoreFactory.storeThreeTstds1()
       final employee = employeeFactoryService.single(store1)
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, "tstds1")
 
@@ -76,7 +76,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "one store with already CREATED audit" () {
       given:
-      final store1 = StoreFactory.storeOne()
+      final store1 = StoreFactory.storeOneTstds1()
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], employee, "tstds1")

@@ -47,8 +47,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one two stores"() {
       given:
-      final storeOne = storeFactoryService.storeOne()
-      final storeThree = storeFactoryService.storeThree()
+      final storeOne = storeFactoryService.storeOneTstds1()
+      final storeThree = storeFactoryService.storeThreeTstds1()
       final employee = employeeFactoryService.single(storeOne)
       final auditSchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne, storeThree], employee, 'tstds1')
 
@@ -141,8 +141,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all with multiple stores" () {
       given:
-      final storeOne = storeFactoryService.storeOne()
-      final storeThree = storeFactoryService.storeThree()
+      final storeOne = storeFactoryService.storeOneTstds1()
+      final storeThree = storeFactoryService.storeThreeTstds1()
       final emp = employeeFactoryService.single(storeOne)
       final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, TUESDAY, [storeOne, storeThree], emp, 'tstds1').toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -248,8 +248,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule add store" () {
       given:
-      final storeOne = storeFactoryService.storeOne()
-      final storeThree = storeFactoryService.storeThree()
+      final storeOne = storeFactoryService.storeOneTstds1()
+      final storeThree = storeFactoryService.storeThreeTstds1()
       final employee = employeeFactoryService.single(storeOne)
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, 'tstds1')
 
@@ -275,7 +275,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule change from enabled to disabled" () {
       given:
-      final storeOne = storeFactoryService.storeOne()
+      final storeOne = storeFactoryService.storeOneTstds1()
       final employee = employeeFactoryService.single(storeOne)
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee,'tstds1')
 
@@ -301,8 +301,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule remove store" () {
       given:
-      final storeOne = storeFactoryService.storeOne()
-      final storeThree = storeFactoryService.storeThree()
+      final storeOne = storeFactoryService.storeOneTstds1()
+      final storeThree = storeFactoryService.storeThreeTstds1()
       final employee = employeeFactoryService.single(storeOne)
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], employee, 'tstds1')
 

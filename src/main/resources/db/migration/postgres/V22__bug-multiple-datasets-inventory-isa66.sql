@@ -19,7 +19,6 @@ CREATE TABLE company
     last_updated      TIMESTAMPTZ DEFAULT clock_timestamp()              NOT NULL,
     name              VARCHAR(150) CHECK ( char_length(name) > 1 )       NOT NULL,
     doing_business_as VARCHAR(100) CHECK ( char_length(doing_business_as) > 1 ),
-    type              VARCHAR(100) CHECK ( char_length(type) > 1 )       NOT NULL,
     client_code       VARCHAR(6) CHECK ( char_length(client_code) > 1 )  NOT NULL,
     client_id         INTEGER CHECK ( client_id > 0 )                    NOT NULL,
     dataset_code      VARCHAR(6) CHECK ( char_length(dataset_code) = 6 ) NOT NULL,

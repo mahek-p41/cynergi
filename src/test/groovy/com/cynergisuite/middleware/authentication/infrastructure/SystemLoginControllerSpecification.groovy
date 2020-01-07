@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.LoginCredentials
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.EmployeeService
+import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
@@ -22,9 +24,10 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 class SystemLoginControllerSpecification extends Specification {
    @Inject @Client("/api") RxHttpClient httpClient
    @Inject EmployeeService employeeService
+   @Inject EmployeeFactoryService employeeFactoryService
    @Inject StoreService storeService
 
-   void "login successful"() {
+   void "login successful" () {
       given:
       final employee = employeeService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet()
       final store = storeService.fetchByNumber(3, 'tstds1')
@@ -83,6 +86,8 @@ class SystemLoginControllerSpecification extends Specification {
       then:
       final error = thrown(HttpClientResponseException)
       error.status == UNAUTHORIZED
+      final json = error.response.bodyAsJson()
+      json.message == "Access denied for ${validEmployee.number} credentials do not match"
    }
 
    void "login failure due to missing dataset" () {
@@ -100,5 +105,29 @@ class SystemLoginControllerSpecification extends Specification {
       then:
       final error = thrown(HttpClientResponseException)
       error.status == BAD_REQUEST
+      final json = error.response.bodyAsJson()
+      json.size() == 1
+      json[0].message == "Is required"
+      json[0].path == "login.loginCredentials.dataset"
+   }
+
+   void "login with user who isn't authorized for tstds2" () {
+      given:
+      final storeOneTstds1 = StoreFactory.storeOneTstds1()
+      final user = employeeFactoryService.single(storeOneTstds1)
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            POST("/login",new LoginCredentials(user.number.toString(), user.passCode, user.store.number, 'tstds2')),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      final error = thrown(HttpClientResponseException)
+      error.status == UNAUTHORIZED
+      final json = error.response.bodyAsJson()
+      json.message == "Access denied for ${user.number} credentials do not match"
    }
 }

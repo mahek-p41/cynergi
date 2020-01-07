@@ -20,7 +20,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "execute daily Tuesday audit job on Tuesday" () {
       given:
-      final storeOne = StoreFactory.storeOne()
+      final storeOne = StoreFactory.storeOneTstds1()
       final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null, "tstds1")
 
       when:
@@ -40,7 +40,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "execute daily Tuesday audit job on Wednesday" () {
       given:
-      final storeOne = StoreFactory.storeOne()
+      final storeOne = StoreFactory.storeOneTstds1()
       final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], null, "tstds1")
 
       when:

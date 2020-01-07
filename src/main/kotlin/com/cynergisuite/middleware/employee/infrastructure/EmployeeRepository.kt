@@ -181,7 +181,7 @@ class EmployeeRepository @Inject constructor(
     * pointed at FastInfo to pull in Zortec data about an Employee
     */
    fun findUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int?): Maybe<EmployeeEntity> {
-      logger.trace("Checking authentication for {} {}", number, storeNumber)
+      logger.trace("Checking authentication for {} {} {}", number, dataset, storeNumber)
 
       val params = LinkedHashMap<String, Any?>()
       val query = if (storeNumber != null) {
@@ -192,21 +192,23 @@ class EmployeeRepository @Inject constructor(
          ${selectBaseWithoutEmployeeStoreJoinQuery(params, dataset, "$3")}
             ON s.number = $1
          WHERE e.number = $2
-            AND e.active = true
+            AND e.active = TRUE
+            AND e.dataset = ${'$'}3
          ORDER BY e.from_priority
          """.trimIndent()
       } else {
          params.put("number", number)
 
          """
-         ${selectBaseQuery(params, dataset, "$2").replace(":dataset", "$2")}
+         ${selectBaseQuery(params, dataset, "$2")}
          WHERE e.number = $1
-            AND e.active = true
+            AND e.active = TRUE
+            AND e.dataset = $2
          ORDER BY e.from_priority
          """.trimIndent()
       }
 
-      logger.trace("Checking authentication for {} {} using {}", number, storeNumber, query)
+      logger.trace("Checking authentication for {} {} {} using {}", number, dataset, storeNumber, query)
 
       return postgresClient.rxPreparedQuery(query, Tuple(ArrayTuple(params.values)))
          .filter { rs -> rs.size() > 0 }

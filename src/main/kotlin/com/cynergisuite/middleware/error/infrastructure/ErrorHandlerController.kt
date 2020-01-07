@@ -36,6 +36,7 @@ import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
 import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
+import io.micronaut.http.HttpStatus.UNAUTHORIZED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.security.authentication.AuthenticationException
@@ -215,26 +216,34 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = AuthenticationException::class)
    fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDataTransferObject> {
-      logger.info("AuthenticationException", authenticationException)
+      logger.warn("AuthenticationException {}", authenticationException.localizedMessage)
 
       val userName = httpRequest.body.map { if (it is ObjectNode && it.has("username")) it.get("username").textValue() else null }.orElse(null)
       val locale = httpRequest.findLocaleWithDefault()
-      val message = if (authenticationException.message.isDigits()) { // most likely store should have been provided
-         localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
-      } else if ( !authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
-         localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
-      } else {
-         localizationService.localize(AccessDenied(), locale)
-      }
+      return if (authenticationException.message.isDigits()) { // most likely store should have been provided
+         val message = localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
 
-      return HttpResponse
-         .status<ErrorDataTransferObject>(FORBIDDEN)
-         .body(ErrorDataTransferObject(message))
+         HttpResponse
+            .status<ErrorDataTransferObject>(UNAUTHORIZED)
+            .body(ErrorDataTransferObject(message))
+      } else if ( !authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
+         val message = localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(UNAUTHORIZED)
+            .body(ErrorDataTransferObject(message))
+      } else {
+         val message = localizationService.localize(AccessDenied(), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(FORBIDDEN)
+            .body(ErrorDataTransferObject(message))
+      }
    }
 
    @Error(global = true, exception = AccessException::class)
    fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorDataTransferObject> {
-      logger.info("Unauthorized exception", accessException)
+      logger.warn("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
