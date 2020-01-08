@@ -133,7 +133,7 @@ class AuditController @Inject constructor(
       logger.info("Requested Create Audit {}", audit)
 
       val user = authenticationService.findUser(authentication)
-      val defaultStore = user.myStore() ?: throw NotFoundException("store")
+      val defaultStore = user.myLocation() ?: throw NotFoundException("store")
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
 
       val response = auditService.create(vo = auditToCreate, employee = user, locale = httpRequest.findLocaleWithDefault())

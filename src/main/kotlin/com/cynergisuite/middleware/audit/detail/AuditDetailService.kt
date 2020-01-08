@@ -46,7 +46,7 @@ class AuditDetailService @Inject constructor(
       auditDetailValidator.validateCreate(auditId, scannedBy.myDataset(), vo)
 
       val scanArea = auditScanAreaRepository.findOne(vo.scanArea!!.value!!)!!
-      val inventory = inventoryRepository.findOne(vo.inventory!!.id!!)!!
+      val inventory = inventoryRepository.findOne(vo.inventory!!.id!!, scannedBy.myDataset())!!
 
       val auditDetail = auditDetailRepository.insert(
          AuditDetailEntity(

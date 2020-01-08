@@ -55,7 +55,7 @@ class AuditExceptionService @Inject constructor(
 
    private fun createAuditException(auditId: Long, scannedBy: User, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
       return if (inventoryId != null) {
-         val inventory = inventoryRepository.findOne(inventoryId)!!
+         val inventory = inventoryRepository.findOne(inventoryId, scannedBy.myDataset())!!
 
          AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), fromUser(scannedBy), exceptionCode)
       } else {

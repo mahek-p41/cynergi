@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.location.Location
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
 import javax.validation.Valid
@@ -43,7 +43,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
    var enabled: Boolean? = null
 
 ) {
-   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<Store>) :
+   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<Location>) :
       this(
          title = title,
          description = description,
@@ -52,7 +52,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          enabled = true
       )
 
-   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<Store>, enabled: Boolean = true) :
+   constructor(title: String, description: String, schedule: DayOfWeek, stores: Set<Location>, enabled: Boolean = true) :
       this(
          title = title,
          description = description,
@@ -61,7 +61,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          enabled = enabled
       )
 
-   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<Store>) :
+   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<Location>) :
       this(
          id = id,
          title = title,

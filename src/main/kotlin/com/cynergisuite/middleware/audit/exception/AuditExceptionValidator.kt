@@ -39,7 +39,7 @@ class AuditExceptionValidator @Inject constructor (
          val auditStatus = audit.currentStatus()
          val scanArea = auditException.scanArea
 
-         if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId)) {
+         if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId, dataset)) {
             errors.add(
                ValidationError("inventory.id", NotFound(inventoryId))
             )

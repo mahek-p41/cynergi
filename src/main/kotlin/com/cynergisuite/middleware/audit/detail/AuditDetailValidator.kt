@@ -38,7 +38,7 @@ class AuditDetailValidator @Inject constructor (
          validateAudit(auditId, dataset, errors)
          validateScanArea(auditDetailCreate.scanArea!!.value!!, errors)
 
-         if (inventoryRepository.doesNotExist(inventoryId)) {
+         if (inventoryRepository.doesNotExist(inventoryId, dataset)) {
             errors.add(
                ValidationError("inventory.id", NotFound(inventoryId))
             )

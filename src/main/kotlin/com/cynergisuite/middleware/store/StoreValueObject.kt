@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.store
 
 import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.middleware.location.Location
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -38,12 +39,12 @@ data class StoreValueObject (
          dataset = entity.dataset
       )
 
-   constructor(store: Store) :
+   constructor(location: Location) :
       this(
-         id = store.myId()!!,
-         number = store.myNumber(),
-         name = store.myName(),
-         dataset = store.myDataset()
+         id = location.myId()!!,
+         number = location.myNumber(),
+         name = location.myName(),
+         dataset = location.myDataset()
       )
 
    override fun myId(): Long? = id

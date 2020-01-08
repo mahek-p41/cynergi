@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.authentication.User
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreEntity.Companion.fromStore
+import com.cynergisuite.middleware.store.StoreEntity.Companion.fromLocation
 
 data class EmployeeEntity(
    val id: Long? = null,
@@ -57,7 +57,7 @@ data class EmployeeEntity(
          lastName = user.myLastName(),
          firstNameMi = user.myFirstNameMi(),
          passCode = user.myPassCode(),
-         store = fromStore(user.myStore()),
+         store = fromLocation(user.myLocation()),
          active = true,
          allowAutoStoreAssign = user.doesAllowAutoStoreAssign()
       )
@@ -66,7 +66,7 @@ data class EmployeeEntity(
    override fun myFirstNameMi(): String? = firstNameMi
    override fun myLastName(): String = lastName
    override fun myPassCode(): String = passCode
-   override fun myStore(): Store? = store
+   override fun myLocation(): Location? = store
    override fun myDepartment(): String? = department
    override fun amIActive(): Boolean = active
    override fun doesAllowAutoStoreAssign(): Boolean = allowAutoStoreAssign

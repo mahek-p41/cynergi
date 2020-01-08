@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.store
 
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
@@ -89,6 +90,6 @@ class StoreFactoryService(
    fun storeThreeTstds1(): StoreEntity =
       store(StoreFactory.storeThreeTstds1()) ?: throw Exception("Unable to find Store 3")
 
-   private fun store(storeEntity: Store): StoreEntity? =
-      storeRepository.findOne(storeEntity.myNumber(), storeEntity.myDataset())
+   private fun store(location: Location): StoreEntity? =
+      storeRepository.findOne(location.myNumber(), location.myDataset())
 }
