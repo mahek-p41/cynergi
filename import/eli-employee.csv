@@ -2,3 +2,4 @@ number,last_name,first_name_mi,pass_code,store_number,active,allow_auto_store_as
 998,admin,,pass,,true,true,tstds1
 998,admin,,pass,,true,true,tstds2
 123,test,user,word,1,true,false,tstds1
+124,test1,user1,word,,true,false,tstds1

@@ -193,7 +193,7 @@ class EmployeeRepository @Inject constructor(
             ON s.number = $1
          WHERE e.number = $2
             AND e.active = TRUE
-            AND e.dataset = ${'$'}3
+            AND e.dataset = $3
          ORDER BY e.from_priority
          """.trimIndent()
       } else {
@@ -230,16 +230,26 @@ class EmployeeRepository @Inject constructor(
                allowAutoStoreAssign = row.getBoolean("e_allow_auto_store_assign")
             )
 
+            logger.trace("Processing results for employee {} with default store {}", employee, defaultStore)
+
             employee to defaultStore
          }
          .filter { (employee, _) ->
             if (employee.type == "eli") {
+               logger.trace("Checking eli employee with hash password {}", employee)
+
                passwordEncoderService.matches(passCode, employee.passCode)
             } else {
+               logger.trace("Checking sysz employee with plain text password {}", employee)
+
                employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
             }
          }
-         .filter { (employee, _) -> employee.store != null || employee.allowAutoStoreAssign } // FIXME reconsider this filter
+         .filter { (employee, _) ->
+            logger.trace("checking if employee store is null [Store {}] and if that employee is allowed to be auto assigned [allowAutoStoreAssign {}]", employee.store, employee.allowAutoStoreAssign)
+            // FIXME this will probably need to be changed to doing some kind map that indicates to the caller that the user couldn't be logged int because they don't have a default store and aren't allow auto store assign
+            employee.store != null || employee.allowAutoStoreAssign
+         }
          .map { (employee, defaultStore) ->
             if (employee.store == null && employee.allowAutoStoreAssign) {
                logger.debug("Employee {} is allowed to auto store assign using {}", number, defaultStore)

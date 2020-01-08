@@ -23,7 +23,7 @@ plugins {
    id "jacoco"
    id "application"
    id "groovy"
-   id "org.flywaydb.flyway" version "5.2.1"
+   id "org.flywaydb.flyway" version "5.2.4"
 }
 
 apply plugin: 'org.openapi.generator'
