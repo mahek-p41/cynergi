@@ -13,6 +13,7 @@ class LoginCredentials(
    username: String? = null,
    password: String? = null,
 
+   @field:Positive
    @field:Schema(name = "storeNumber", required = true, description = "Store Number to be used to override the user's default store")
    var storeNumber: Int? = null,
 

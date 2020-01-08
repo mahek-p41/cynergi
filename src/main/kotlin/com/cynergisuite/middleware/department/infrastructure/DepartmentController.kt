@@ -45,7 +45,7 @@ class DepartmentController @Inject constructor(
    ])
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long
-      ): DepartmentValueObject {
+   ): DepartmentValueObject {
       logger.info("Fetching department by {}", id)
 
       val response = departmentService.fetchOne(id) ?: throw NotFoundException(id)

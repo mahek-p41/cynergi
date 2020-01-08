@@ -220,6 +220,7 @@ class ErrorHandlerController @Inject constructor(
 
       val userName = httpRequest.body.map { if (it is ObjectNode && it.has("username")) it.get("username").textValue() else null }.orElse(null)
       val locale = httpRequest.findLocaleWithDefault()
+
       return if (authenticationException.message.isDigits()) { // most likely store should have been provided
          val message = localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
 

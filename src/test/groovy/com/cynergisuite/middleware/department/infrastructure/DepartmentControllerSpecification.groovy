@@ -5,17 +5,15 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.department.DepartmentValueObject
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
 import org.apache.commons.lang3.StringUtils
 
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static org.apache.commons.lang3.StringUtils.trimToNull
 
 @MicronautTest(transactional = false)
 class DepartmentControllerSpecification extends ControllerSpecificationBase {
@@ -34,7 +32,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       result.code == department.code
       result.description == department.description
       result.securityProfile == department.securityProfile
-      result.defaultMenu == StringUtils.trimToNull(department.defaultMenu)
+      result.defaultMenu == trimToNull(department.defaultMenu)
    }
 
    void "fetch one by department id that doesn't exist"() {

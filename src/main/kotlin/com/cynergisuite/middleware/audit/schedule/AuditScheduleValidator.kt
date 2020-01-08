@@ -26,9 +26,7 @@ class AuditScheduleValidator(
 ) : ValidatorBase() {
 
    fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
-      doValidation {
-         errors -> doSharedValidation(dto, errors)
-      }
+      doValidation { errors -> doSharedValidation(dto, errors) }
 
       val stores = mutableListOf<StoreEntity>()
       val arguments = mutableSetOf(

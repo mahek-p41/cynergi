@@ -148,7 +148,6 @@ class AuditRepository @Inject constructor(
          loadNextStates(found)
       }
 
-
       return found
    }
 

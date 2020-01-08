@@ -21,6 +21,7 @@ data class AuthenticatedUserInformation (
    @field:Schema(name = "storeNumber", title = "Session's store number", description = "User's store number that their session is associated with", required = true)
    val storeNumber: Int? = null,
 
+   @field:NotNull
    @field:Schema(name = "dataset", title = "Company dataset currently connected to", description = "Company dataset that data is being loaded from", required = true)
    val dataset: String? = null
 ) {

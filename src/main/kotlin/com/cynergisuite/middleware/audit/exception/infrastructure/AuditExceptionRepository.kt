@@ -120,6 +120,7 @@ class AuditExceptionRepository @Inject constructor(
               LEFT OUTER JOIN ae_employees noteEmployee
                 ON aen.entered_by = noteEmployee.e_number AND noteEmployee.e_dataset = :dataset
          WHERE ae.id = :id"""
+
       val found = jdbc.findFirstOrNullWithCrossJoin(query, params, RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
             val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
