@@ -5,7 +5,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -23,7 +23,7 @@ data class AuditExceptionNote(
       this(
          id = vo.id,
          note = vo.note!!,
-         enteredBy = EmployeeEntity.from(enteredBy),
+         enteredBy = fromUser(enteredBy),
          auditException = SimpleIdentifiableEntity(auditId)
       )
 
@@ -32,14 +32,6 @@ data class AuditExceptionNote(
          vo = vo,
          enteredBy = enteredBy,
          auditId = auditException.myId()!!
-      )
-
-   constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeValueObject, auditId: Long) :
-      this(
-         id = vo.id,
-         note = vo.note!!,
-         enteredBy = EmployeeEntity(enteredBy),
-         auditException = SimpleIdentifiableEntity(auditId)
       )
 
    override fun myId(): Long? = id

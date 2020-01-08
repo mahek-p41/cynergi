@@ -8,7 +8,8 @@ data class DepartmentEntity(
    val code: String,
    val description: String,
    val securityProfile: Int,
-   val defaultMenu: String
+   val defaultMenu: String,
+   val dataset: String // aka company
 ) : Identifiable {
    override fun myId(): Long? = id
 }

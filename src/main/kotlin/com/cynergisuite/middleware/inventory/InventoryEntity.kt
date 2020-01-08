@@ -33,7 +33,8 @@ data class InventoryEntity(
    val location: StoreEntity?,
    val status: String,
    val primaryLocation: StoreEntity,
-   val locationType: InventoryLocationType
+   val locationType: InventoryLocationType,
+   val dataset: String
 ) : Identifiable {
    override fun myId(): Long? = id
 }

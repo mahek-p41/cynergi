@@ -13,8 +13,8 @@ class InventoryService(
    private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
-   fun fetchAll(pageRequest: InventoryPageRequest, locale: Locale): Page<InventoryValueObject> {
-      val inventory = inventoryRepository.findAll(pageRequest)
+   fun fetchAll(pageRequest: InventoryPageRequest, dataset: String, locale: Locale): Page<InventoryValueObject> {
+      val inventory = inventoryRepository.findAll(pageRequest, dataset)
 
       return inventory.toPage  { item ->
          InventoryValueObject(
@@ -24,8 +24,8 @@ class InventoryService(
       }
    }
 
-   fun fetchByLookupKey(lookupKey: String, locale: Locale): InventoryValueObject? {
-      return inventoryRepository.findByLookupKey(lookupKey)?.let { map(it, locale) }
+   fun fetchByLookupKey(lookupKey: String, dataset: String, locale: Locale): InventoryValueObject? {
+      return inventoryRepository.findByLookupKey(lookupKey, dataset)?.let { map(it, locale) }
    }
 
    private fun map(inventory: InventoryEntity, locale: Locale) : InventoryValueObject =

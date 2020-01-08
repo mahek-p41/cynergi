@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -27,6 +26,7 @@ object EmployeeFactory {
          EmployeeEntity(
             type = "eli",
             number = numbers.numberBetween(1, 10_000),
+            dataset = store.dataset,
             lastName = name.lastName(),
             firstNameMi = name.firstName(),
             passCode = lorem.characters(3, 6),
@@ -45,9 +45,10 @@ object EmployeeFactory {
       EmployeeEntity(
          id = 1,
          type = "eli",
-         number = 123,
-         lastName = "user",
-         firstNameMi = "test",
+         number = 111,
+         dataset = "tstds1",
+         lastName = "MARTINEZ",
+         firstNameMi = "DANIEL",
          passCode = "pass",
          store = StoreEntity(
             id = 1,
@@ -79,5 +80,9 @@ class EmployeeFactoryService @Inject constructor(
 
    fun single(storeIn: StoreEntity? = null): EmployeeEntity {
       return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Employee") }
+   }
+
+   fun findTestEmployee(number: Int, dataset: String): EmployeeEntity? {
+      return employeeRepository.findOne(number, "sysz", dataset)
    }
 }

@@ -27,14 +27,8 @@ class EmployeeService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(EmployeeService::class.java)
    private val employeeMatcher = FileSystems.getDefault().getPathMatcher("glob:eli-employee*csv")
 
-   fun fetchById(id: Long, employeeType: String): EmployeeValueObject? =
-      employeeRepository.findOne(id = id, employeeType = employeeType)?.let { EmployeeValueObject(entity = it) }
-
-   fun fetchByNumberAndLoc(number: Int, employeeType: String): EmployeeValueObject? =
-      employeeRepository.findOne(number, employeeType)?.let { EmployeeValueObject(entity = it) }
-
-   fun exists(id: Long, employeeType: String): Boolean =
-      employeeRepository.exists(id = id, employeeType = employeeType)
+   fun exists(id: Long, employeeType: String, dataset: String): Boolean =
+      employeeRepository.exists(id = id, employeeType = employeeType, dataset = dataset)
 
    @Validated
    fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {
@@ -51,22 +45,24 @@ class EmployeeService @Inject constructor(
       return employeeRepository.canEmployeeAccess(employee.myEmployeeType(), asset, employee.myId() ?: -1) // user -1 since that shouldn't be a valid id in the system, and will cause the access check to fail
    }
 
-   fun fetchUserByAuthentication(number: Int, passCode: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
-      employeeRepository.findUserByAuthentication(number, passCode, storeNumber)
+   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
+      employeeRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
 
    override fun canProcess(path: Path): Boolean =
       employeeMatcher.matches(path.fileName)
 
    override fun processCsvRow(record: CSVRecord) {
       val storeNumberIn = record.get("store_number").trimToNull()
+      val dataset = record.get("dataset").trimToNull()
 
-      if ( storeNumberIn.isNullOrBlank() || storeNumberIn.isDigits() ) {
-         val store = storeNumberIn?.let { storeService.fetchByNumber(it.toInt()) }
+      if ( (storeNumberIn.isNullOrBlank() || storeNumberIn.isDigits()) && dataset != null ) {
+         val store = storeNumberIn?.let { storeService.fetchByNumber(it.toInt(), dataset) }
 
          create (
             EmployeeValueObject(
                type = "eli",
                number = record.get("number").toInt(),
+               dataset = record.get("dataset"),
                lastName = record.get("last_name"),
                firstNameMi = record.get("first_name_mi").trimToNull(),
                passCode = record.get("pass_code"),

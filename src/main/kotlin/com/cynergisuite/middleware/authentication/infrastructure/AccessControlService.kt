@@ -31,12 +31,12 @@ class AccessControlService @Inject constructor(
       val asset = accessControl?.values?.get("asset") as String?
       val user = authenticationService.findUser(authenticatedUser)
 
-      return if (securityService.isAuthenticated && asset != null && user != null && employeeService.canEmployeeAccess(asset, user)) {
+      return if (securityService.isAuthenticated && asset != null && employeeService.canEmployeeAccess(asset, user)) {
          context.proceed()
       } else {
          val username = securityService.username().orElse(null)
 
-         throw AccessException(AccessDenied(username), username)
+         throw AccessException(AccessDenied(), username)
       }
    }
 }

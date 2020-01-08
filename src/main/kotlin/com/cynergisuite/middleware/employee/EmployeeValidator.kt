@@ -30,7 +30,7 @@ class EmployeeValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(vo: EmployeeValueObject) {
+   fun validateUpdate(vo: EmployeeValueObject, dataset: String) {
       logger.trace("Validating Update Employee {}", vo)
 
       val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer
@@ -38,7 +38,7 @@ class EmployeeValidator @Inject constructor (
 
       if (id == null) {
          errors.add(element = ValidationError("id", NotNull("id")))
-      } else if ( !employeeRepository.exists(id = id, employeeType = vo.type!!) ) {
+      } else if ( !employeeRepository.exists(id = id, employeeType = vo.type!!, dataset = dataset) ) {
          errors.add(ValidationError("id", NotFound(id)))
       }
 

@@ -26,32 +26,32 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 764
-      pageOneResult.totalPages == 153
+      pageOneResult.totalElements == 423
+      pageOneResult.totalPages == 85
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[0].id == 2
-      pageOneResult.elements[0].serialNumber == "A973V0167"
-      pageOneResult.elements[0].lookupKey == "00110411"
+      pageOneResult.elements[0].id == 73821
+      pageOneResult.elements[0].serialNumber == "201-00923"
+      pageOneResult.elements[0].lookupKey == "201-00923"
       pageOneResult.elements[0].lookupKeyType == "BARCODE"
-      pageOneResult.elements[0].barcode == "A973V0167"
-      pageOneResult.elements[0].altId == "00110411"
-      pageOneResult.elements[0].brand == "AMANA"
-      pageOneResult.elements[0].modelNumber == "ACAMAAMACD125R"
-      pageOneResult.elements[0].productCode == "A-AIR CONDITIONER"
-      pageOneResult.elements[0].description == "AIR CONDITIONER"
-      pageOneResult.elements[0].receivedDate == "2010-06-08"
-      pageOneResult.elements[0].originalCost == 245
-      pageOneResult.elements[0].actualCost == 245
-      pageOneResult.elements[0].modelCategory == "A"
-      pageOneResult.elements[0].timesRented == 5
-      pageOneResult.elements[0].totalRevenue == 793.66
-      pageOneResult.elements[0].remainingValue == 0
-      pageOneResult.elements[0].sellPrice == 171.46
-      pageOneResult.elements[0].assignedValue == 0
-      pageOneResult.elements[0].idleDays == 14
-      pageOneResult.elements[0].condition == "FAIR"
-      pageOneResult.elements[0].status == "O"
+      pageOneResult.elements[0].barcode == "201-00923"
+      pageOneResult.elements[0].altId == "201-00923"
+      pageOneResult.elements[0].brand == "GIDGET MEAUT"
+      pageOneResult.elements[0].modelNumber == "FPGIDFRAMEDART"
+      pageOneResult.elements[0].productCode == "F-MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].description == "MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].receivedDate == "2012-04-13"
+      pageOneResult.elements[0].originalCost == 55.03
+      pageOneResult.elements[0].actualCost == 55.03
+      pageOneResult.elements[0].modelCategory == "F"
+      pageOneResult.elements[0].timesRented == 0
+      pageOneResult.elements[0].totalRevenue == 0.00
+      pageOneResult.elements[0].remainingValue == 0.00
+      pageOneResult.elements[0].sellPrice == 0.00
+      pageOneResult.elements[0].assignedValue == 0.00
+      pageOneResult.elements[0].idleDays == 0
+      pageOneResult.elements[0].condition == null
+      pageOneResult.elements[0].status == "N"
       pageOneResult.elements[0].primaryLocation.id == 1
       pageOneResult.elements[0].primaryLocation.storeNumber == 1
       pageOneResult.elements[0].primaryLocation.name == "KANSAS CITY"
@@ -72,33 +72,32 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 764
-      pageOneResult.totalPages == 153
+      pageOneResult.totalElements == 423
+      pageOneResult.totalPages == 85
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[0].id == 2
-      pageOneResult.elements[0].serialNumber == "A973V0167"
-      pageOneResult.elements[0].lookupKey == "00110411"
+      pageOneResult.elements[0].id == 73821
+      pageOneResult.elements[0].serialNumber == "201-00923"
+      pageOneResult.elements[0].lookupKey == "201-00923"
       pageOneResult.elements[0].lookupKeyType == "BARCODE"
-      pageOneResult.elements[0].barcode == "A973V0167"
-      pageOneResult.elements[0].altId == "00110411"
-      pageOneResult.elements[0].brand == "AMANA"
-      pageOneResult.elements[0].modelNumber == "ACAMAAMACD125R"
-      pageOneResult.elements[0].productCode == "A-AIR CONDITIONER"
-      pageOneResult.elements[0].description == "AIR CONDITIONER"
-      pageOneResult.elements[0].receivedDate == "2010-06-08"
-      pageOneResult.elements[0].originalCost == 245
-      pageOneResult.elements[0].actualCost == 245
-      pageOneResult.elements[0].modelCategory == "A"
-      pageOneResult.elements[0].timesRented == 5
-      pageOneResult.elements[0].totalRevenue == 793.66
-      pageOneResult.elements[0].remainingValue == 0
-      pageOneResult.elements[0].sellPrice == 171.46
-      pageOneResult.elements[0].assignedValue == 0
-      pageOneResult.elements[0].idleDays == 14
-      pageOneResult.elements[0].condition == "FAIR"
-      pageOneResult.elements[0].location == null
-      pageOneResult.elements[0].status == "O"
+      pageOneResult.elements[0].barcode == "201-00923"
+      pageOneResult.elements[0].altId == "201-00923"
+      pageOneResult.elements[0].brand == "GIDGET MEAUT"
+      pageOneResult.elements[0].modelNumber == "FPGIDFRAMEDART"
+      pageOneResult.elements[0].productCode == "F-MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].description == "MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].receivedDate == "2012-04-13"
+      pageOneResult.elements[0].originalCost == 55.03
+      pageOneResult.elements[0].actualCost == 55.03
+      pageOneResult.elements[0].modelCategory == "F"
+      pageOneResult.elements[0].timesRented == 0
+      pageOneResult.elements[0].totalRevenue == 0.00
+      pageOneResult.elements[0].remainingValue == 0.00
+      pageOneResult.elements[0].sellPrice == 0.00
+      pageOneResult.elements[0].assignedValue == 0.00
+      pageOneResult.elements[0].idleDays == 0
+      pageOneResult.elements[0].condition == null
+      pageOneResult.elements[0].status == "N"
       pageOneResult.elements[0].primaryLocation.id == 1
       pageOneResult.elements[0].primaryLocation.storeNumber == 1
       pageOneResult.elements[0].primaryLocation.name == "KANSAS CITY"
@@ -119,34 +118,31 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.requested.inventoryStatus == ["N"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 17
-      pageOneResult.totalPages == 4
+      pageOneResult.totalElements == 252
+      pageOneResult.totalPages == 51
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[0].id == 382
-      pageOneResult.elements[0].serialNumber == "201-00963"
-      pageOneResult.elements[0].lookupKey == "201-00963"
+      pageOneResult.elements[0].id == 73821
+      pageOneResult.elements[0].serialNumber == "201-00923"
+      pageOneResult.elements[0].lookupKey == "201-00923"
       pageOneResult.elements[0].lookupKeyType == "BARCODE"
-      pageOneResult.elements[0].barcode == "201-00963"
-      pageOneResult.elements[0].altId == "201-00963"
-      pageOneResult.elements[0].brand == "ASHLEY"
-      pageOneResult.elements[0].modelNumber == "BSASHB104-31/36/5"
-      pageOneResult.elements[0].productCode == "B-BEDROOM 4 PC SET"
-      pageOneResult.elements[0].description == "BEDROOM 4 PC SET"
-      pageOneResult.elements[0].receivedDate == "2012-04-24"
-      pageOneResult.elements[0].originalCost == 313.16
-      pageOneResult.elements[0].actualCost == 313.16
-      pageOneResult.elements[0].modelCategory == "B"
+      pageOneResult.elements[0].barcode == "201-00923"
+      pageOneResult.elements[0].altId == "201-00923"
+      pageOneResult.elements[0].brand == "GIDGET MEAUT"
+      pageOneResult.elements[0].modelNumber == "FPGIDFRAMEDART"
+      pageOneResult.elements[0].productCode == "F-MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].description == "MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].receivedDate == "2012-04-13"
+      pageOneResult.elements[0].originalCost == 55.03
+      pageOneResult.elements[0].actualCost == 55.03
+      pageOneResult.elements[0].modelCategory == "F"
       pageOneResult.elements[0].timesRented == 0
-      pageOneResult.elements[0].totalRevenue == 0
-      pageOneResult.elements[0].remainingValue == 274.02
-      pageOneResult.elements[0].sellPrice == 0
-      pageOneResult.elements[0].assignedValue == 0
+      pageOneResult.elements[0].totalRevenue == 0.00
+      pageOneResult.elements[0].remainingValue == 0.00
+      pageOneResult.elements[0].sellPrice == 0.00
+      pageOneResult.elements[0].assignedValue == 0.00
       pageOneResult.elements[0].idleDays == 0
       pageOneResult.elements[0].condition == null
-      pageOneResult.elements[0].location.id == 1
-      pageOneResult.elements[0].location.storeNumber == 1
-      pageOneResult.elements[0].location.name == "KANSAS CITY"
       pageOneResult.elements[0].status == "N"
       pageOneResult.elements[0].primaryLocation.id == 1
       pageOneResult.elements[0].primaryLocation.storeNumber == 1
@@ -168,33 +164,32 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 764
-      pageOneResult.totalPages == 153
+      pageOneResult.totalElements == 423
+      pageOneResult.totalPages == 85
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[0].id == 2
-      pageOneResult.elements[0].serialNumber == "A973V0167"
-      pageOneResult.elements[0].lookupKey == "00110411"
+      pageOneResult.elements[0].id == 73821
+      pageOneResult.elements[0].serialNumber == "201-00923"
+      pageOneResult.elements[0].lookupKey == "201-00923"
       pageOneResult.elements[0].lookupKeyType == "BARCODE"
-      pageOneResult.elements[0].barcode == "A973V0167"
-      pageOneResult.elements[0].altId == "00110411"
-      pageOneResult.elements[0].brand == "AMANA"
-      pageOneResult.elements[0].modelNumber == "ACAMAAMACD125R"
-      pageOneResult.elements[0].productCode == "A-AIR CONDITIONER"
-      pageOneResult.elements[0].description == "AIR CONDITIONER"
-      pageOneResult.elements[0].receivedDate == "2010-06-08"
-      pageOneResult.elements[0].originalCost == 245
-      pageOneResult.elements[0].actualCost == 245
-      pageOneResult.elements[0].modelCategory == "A"
-      pageOneResult.elements[0].timesRented == 5
-      pageOneResult.elements[0].totalRevenue == 793.66
-      pageOneResult.elements[0].remainingValue == 0
-      pageOneResult.elements[0].sellPrice == 171.46
-      pageOneResult.elements[0].assignedValue == 0
-      pageOneResult.elements[0].idleDays == 14
-      pageOneResult.elements[0].condition == "FAIR"
-      pageOneResult.elements[0].location == null
-      pageOneResult.elements[0].status == "O"
+      pageOneResult.elements[0].barcode == "201-00923"
+      pageOneResult.elements[0].altId == "201-00923"
+      pageOneResult.elements[0].brand == "GIDGET MEAUT"
+      pageOneResult.elements[0].modelNumber == "FPGIDFRAMEDART"
+      pageOneResult.elements[0].productCode == "F-MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].description == "MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[0].receivedDate == "2012-04-13"
+      pageOneResult.elements[0].originalCost == 55.03
+      pageOneResult.elements[0].actualCost == 55.03
+      pageOneResult.elements[0].modelCategory == "F"
+      pageOneResult.elements[0].timesRented == 0
+      pageOneResult.elements[0].totalRevenue == 0.00
+      pageOneResult.elements[0].remainingValue == 0.00
+      pageOneResult.elements[0].sellPrice == 0.00
+      pageOneResult.elements[0].assignedValue == 0.00
+      pageOneResult.elements[0].idleDays == 0
+      pageOneResult.elements[0].condition == null
+      pageOneResult.elements[0].status == "N"
       pageOneResult.elements[0].primaryLocation.id == 1
       pageOneResult.elements[0].primaryLocation.storeNumber == 1
       pageOneResult.elements[0].primaryLocation.name == "KANSAS CITY"
@@ -208,7 +203,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      inventory.id == 9
+      inventory.id == 70884
       inventory.serialNumber == "1104000198"
       inventory.lookupKey == "1104000198"
       inventory.lookupKeyType == "BARCODE"
@@ -223,14 +218,14 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       inventory.actualCost == 199.99
       inventory.modelCategory == "A"
       inventory.timesRented == 1
-      inventory.totalRevenue == 62.83
-      inventory.remainingValue == 183.32
+      inventory.totalRevenue == 379.99
+      inventory.remainingValue == 0.00
       inventory.sellPrice == 379.99
       inventory.assignedValue == 0
       inventory.idleDays == 50
       inventory.condition == null
       inventory.location == null
-      inventory.status == "O"
+      inventory.status == "E"
       inventory.primaryLocation.id == 1
       inventory.primaryLocation.storeNumber == 1
       inventory.primaryLocation.name == "KANSAS CITY"

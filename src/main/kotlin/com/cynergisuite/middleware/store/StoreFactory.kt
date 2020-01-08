@@ -1,37 +1,72 @@
 package com.cynergisuite.middleware.store
 
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
 
 object StoreFactory {
-
-   private val stores = listOf( // list of stores defined in cynergi-inittestdb.sql
+   private val stores = listOf( // list of stores defined in cynergi-inittestdb.sql that aren't HOME OFFICE
       StoreEntity(
          id = 1,
          number = 1,
          name = "KANSAS CITY",
-         dataset = "testds"
+         dataset = "tstds1"
       ),
       StoreEntity(
          id = 2,
          number = 3,
          name = "INDEPENDENCE",
-         dataset = "testds"
+         dataset = "tstds1"
+      ),
+      StoreEntity(
+         id = 4,
+         number = 1,
+         name = "Pelham Trading Post, Inc",
+         dataset = "tstds2"
+      ),
+      StoreEntity(
+         id = 5,
+         number = 2,
+         name = "Camilla Trading Post, Inc.",
+         dataset = "tstds2"
+      ),
+      StoreEntity(
+         id = 6,
+         number = 3,
+         name = "Arlington Trading Post",
+         dataset = "tstds2"
+      ),
+      StoreEntity(
+         id = 7,
+         number = 4,
+         name = "Moultrie Trading Post, Inc",
+         dataset = "tstds2"
+      ),
+      StoreEntity(
+         id = 8,
+         number = 5,
+         name = "Bainbridge Trading Post",
+         dataset = "tstds2"
       )
    )
 
    @JvmStatic
-   fun random(): StoreEntity = stores.random()
+   fun random() = random(dataset = "tstds1")
 
    @JvmStatic
-   fun findByNumber(number: Int): StoreEntity = stores.first { it.number == number }
+   fun random(dataset: String): StoreEntity =
+      stores.filter { it.dataset == dataset }.random()
 
    @JvmStatic
-   fun storeOne(): StoreEntity = findByNumber(1)
+   fun findByNumber(number: Int, dataset: String = "tstds1"): StoreEntity =
+      stores.first { it.number == number && it.dataset == dataset }
 
    @JvmStatic
-   fun storeThree(): StoreEntity = findByNumber(3)
+   fun storeOneTstds1(): StoreEntity = stores[0]
+
+   @JvmStatic
+   fun storeThreeTstds1(): StoreEntity = stores[1]
 }
 
 @Singleton
@@ -41,14 +76,20 @@ class StoreFactoryService(
 ) {
 
    fun store(number: Int): StoreEntity =
-      storeRepository.findOneByNumber(number) ?: throw Exception("Unable to find store $number")
+      store(number = number, dataset = "tstds1")
+
+   fun store(number: Int, dataset: String): StoreEntity =
+      storeRepository.findOne(number, dataset) ?: throw Exception("Unable to find store $number")
 
    fun random(): StoreEntity =
-      storeRepository.findOneByNumber(StoreFactory.random().number) ?: throw Exception("Unable to find random Store")
+      store(StoreFactory.random()) ?: throw Exception("Unable to find random Store")
 
-   fun storeOne(): StoreEntity =
-      storeRepository.findOneByNumber(StoreFactory.storeOne().number) ?: throw Exception("Unable to find Store 1")
+   fun storeOneTstds1(): StoreEntity =
+      store(StoreFactory.storeOneTstds1()) ?: throw Exception("Unable to find Store 1")
 
-   fun storeThree(): StoreEntity =
-      storeRepository.findOneByNumber(StoreFactory.storeThree().number) ?: throw Exception("Unable to find Store 3")
+   fun storeThreeTstds1(): StoreEntity =
+      store(StoreFactory.storeThreeTstds1()) ?: throw Exception("Unable to find Store 3")
+
+   private fun store(location: Location): StoreEntity? =
+      storeRepository.findOne(location.myNumber(), location.myDataset())
 }

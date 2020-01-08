@@ -22,6 +22,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
@@ -29,6 +31,7 @@ import javax.inject.Inject
 class AuthenticatedController @Inject constructor(
    private val localizationService: LocalizationService
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(AuthenticatedController::class.java)
 
    @Secured(IS_ANONYMOUS)
    @Get(produces = [APPLICATION_JSON])
@@ -40,13 +43,19 @@ class AuthenticatedController @Inject constructor(
    fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
       val locale = httpRequest.findLocaleWithDefault()
 
+      logger.debug("Checking authentication {}", authentication)
+
       return if (authentication != null) {
          val message = localizationService.localize(localizationCode = LoggedIn(authentication.name), locale = locale)
          val authenticationDefinition = StandardAuthenticatedUser(authentication)
 
+         logger.debug("User is authenticated {}", authenticationDefinition)
+
          HttpResponse.ok(AuthenticatedUserInformation(authenticationDefinition, message))
       } else {
          val message = localizationService.localize(NotLoggedIn(), locale)
+
+         logger.debug("User was not authenticated")
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)

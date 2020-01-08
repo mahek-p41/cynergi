@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.department.DepartmentService
 import com.cynergisuite.middleware.department.DepartmentValueObject
@@ -12,6 +13,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -27,6 +29,7 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/department")
 class DepartmentController @Inject constructor(
+   private val authenticationService: AuthenticationService,
    private val departmentService: DepartmentService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
@@ -62,11 +65,13 @@ class DepartmentController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      authentication: Authentication
    ): Page<DepartmentValueObject> {
       logger.info("Fetching all departments {}", pageRequest)
 
-      val page = departmentService.fetchAll(pageRequest)
+      val user = authenticationService.findUser(authentication)
+      val page = departmentService.fetchAll(pageRequest, user.myDataset())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

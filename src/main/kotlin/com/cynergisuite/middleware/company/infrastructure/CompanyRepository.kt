@@ -48,8 +48,8 @@ class CompanyRepository @Inject constructor(
             c.name AS name,
             c.dataset AS dataset
          FROM fastinfo_prod_import.company_vw c
-         JOIN fastinfo_prod_import.store_vw s
-         ON c.id = s.company_id
+              JOIN fastinfo_prod_import.store_vw s
+                ON c.id = s.company_id
          WHERE s.id = :store_id
          """.trimIndent(),
          mapOf("store_id" to store.id),
@@ -69,10 +69,10 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
-   fun findOneByNumber(number: Int): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE number = :number", mapOf("number" to number), simpleCompanyRowMapper)
+   fun findByDataset(dataset: String): CompanyEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase WHERE dataset = :dataset", mapOf("dataset" to dataset), simpleCompanyRowMapper)
 
-      logger.trace("Search for Company by number: {} resulted in {}", number, found)
+      logger.trace("Searching for Company: {} resulted in {}", dataset, found)
 
       return found
    }
@@ -127,6 +127,16 @@ class CompanyRepository @Inject constructor(
    }
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
+
+   fun exists(dataset: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset FROM fastinfo_prod_import.company_vw WHERE dataset = :dataset)", mapOf("dataset" to dataset), Boolean::class.java)!!
+
+      logger.trace("Checking if Company: {} exists using dataset resulted in {}", dataset, exists)
+
+      return exists
+   }
+
+   fun doesNotExist(dataset: String): Boolean = !exists(dataset)
 
    fun maybeMapRow(rs: ResultSet, columnPrefix: String): CompanyEntity? =
       if (rs.getString("${columnPrefix}id") != null) {

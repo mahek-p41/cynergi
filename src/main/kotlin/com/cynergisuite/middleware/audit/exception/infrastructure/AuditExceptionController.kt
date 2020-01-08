@@ -54,12 +54,14 @@ class AuditExceptionController @Inject constructor(
    ])
    fun fetchOne(
       @QueryValue("id") id: Long,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {
       logger.info("Fetching AuditException by {}", id)
 
+      val user = authenticationService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val response = auditExceptionService.fetchById(id, locale) ?: throw NotFoundException(id)
+      val response = auditExceptionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditException by {} resulted in", id, response)
 
@@ -78,11 +80,14 @@ class AuditExceptionController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: Long,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
+
+      val user = authenticationService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val page =  auditExceptionService.fetchAll(auditId, pageRequest, locale)
+      val page =  auditExceptionService.fetchAll(auditId, user.myDataset(), pageRequest, locale)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
