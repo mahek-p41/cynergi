@@ -5,11 +5,11 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findAllWithCrossJoin
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -121,19 +121,21 @@ class AuditExceptionRepository @Inject constructor(
                 ON aen.entered_by = noteEmployee.e_number AND noteEmployee.e_dataset = :dataset
          WHERE ae.id = :id"""
 
-      val found = jdbc.findFirstOrNullWithCrossJoin(query, params, RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
-            val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-            val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
-            //The below is an implicit return
-            mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
-         }
-      ) { auditException, rs ->
-         val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
+      val found = jdbc.findFirstOrNull(query, params) { rs ->
+         val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
+         val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
+         val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
+         val exception = mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
 
-         if (enteredBy != null) {
-            auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
-         }
+         do {
+            val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
+
+            if (enteredBy != null) {
+               auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { exception.notes.add(it) }
+            }
+         } while(rs.next())
+
+         exception
       }
 
       logger.trace("Searching for AuditException: {} resulted in {}", id, found)
@@ -143,7 +145,6 @@ class AuditExceptionRepository @Inject constructor(
 
    fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
-      var totalElements: Long? = null
       val sql = """
       WITH paged AS (
          WITH ae_employees AS (
@@ -241,30 +242,32 @@ class AuditExceptionRepository @Inject constructor(
 
       logger.debug("find all audit exceptions {}", sql)
 
-      val resultList = jdbc.findAllWithCrossJoin(sql, params, "ae_id", RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
-            val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-            val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
+      return jdbc.queryPaged(sql, params, page) { rs, elements ->
+         var currentId = -1L
+         var currentParentEntity: AuditExceptionEntity? = null
 
-            if (totalElements == null) {
-               totalElements = rs.getLong("total_elements")
+         do {
+            val tempId = rs.getLong("ae_id")
+            val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
+               val scannedBy = employeeRepository.mapRow(rs, "e_")
+               val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
+               val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
+
+               currentId = tempId
+               currentParentEntity = mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
             }
 
-            mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
-         }
-      ) { auditException, rs ->
-         val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
+            val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
 
-         if (enteredBy != null) {
-            auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
-         }
+            if (enteredBy != null) {
+               auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { tempParentEntity.notes.add(it) }
+            }
+         } while (rs.next())
       }
-
-      return RepositoryPage(
-         requested = page,
-         elements = resultList,
-         totalElements = totalElements ?: 0
-      )
    }
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
