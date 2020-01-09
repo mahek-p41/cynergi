@@ -55,7 +55,7 @@ class InventoryController(
 
       val user = authenticationService.findUser(authentication)
 
-      logger.info("Requesting inventory {} using employee {}", pageRequest, user)
+      logger.info("Requesting inventory available to user {} for page {}", user, pageRequest)
 
       val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
       val page = inventoryService.fetchAll(pageToRequest, user.myDataset(), httpRequest.findLocaleWithDefault())

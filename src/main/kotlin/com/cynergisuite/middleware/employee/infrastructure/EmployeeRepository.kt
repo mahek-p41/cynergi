@@ -148,6 +148,7 @@ class EmployeeRepository @Inject constructor(
             ON s.number = :store_number
          WHERE e.id = :id
                AND e.employee_type = :employee_type
+               AND e.dataset = :dataset
          """.trimIndent()
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) } )
 
