@@ -50,6 +50,7 @@ class AuditRepository @Inject constructor(
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
             a.number AS a_number,
+            (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS a_total_details,
             (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
             (SELECT max(time_updated)
                FROM (
@@ -197,6 +198,7 @@ class AuditRepository @Inject constructor(
                a.time_updated AS time_updated,
                a.store_number AS store_number,
                a.number AS number,
+               (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
                (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
                (SELECT max(time_updated)
                   FROM (
@@ -232,6 +234,7 @@ class AuditRepository @Inject constructor(
             a.time_updated AS a_time_updated,
             a.store_number AS store_number,
             a.number AS a_number,
+            a.total_details AS a_total_details,
             a.total_exceptions AS a_total_exceptions,
             a.current_status AS current_status,
             a.last_updated AS a_last_updated,
@@ -443,6 +446,7 @@ class AuditRepository @Inject constructor(
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                store = entity.store,
                number = rs.getInt("number"),
+               totalDetails = 0,
                totalExceptions = 0,
                inventoryCount = rs.getInt("inventory_count"),
                lastUpdated = null,
@@ -462,7 +466,7 @@ class AuditRepository @Inject constructor(
    fun update(entity: AuditEntity): AuditEntity {
       logger.debug("Updating Audit {}", entity)
 
-      // Since it isn't really necessary to update a store number for an audit as they can just cancel the audit and create a new one, just upsert the actions
+      // there is nothing to update on an audit as they can just cancel the audit and create a new one, just upsert the actions
       val actions = entity.actions.asSequence()
          .map { auditActionRepository.upsert(entity, it) }
          .toMutableSet()
@@ -478,6 +482,7 @@ class AuditRepository @Inject constructor(
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
          store = storeRepository.mapRow(rs, "s_"),
          number = rs.getInt("a_number"),
+         totalDetails = rs.getInt("a_total_details"),
          totalExceptions = rs.getInt("a_total_exceptions"),
          inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated"),

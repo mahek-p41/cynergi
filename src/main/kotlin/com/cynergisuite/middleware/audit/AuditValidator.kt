@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.audit.action.AuditAction
+import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
@@ -77,7 +77,7 @@ class AuditValidator @Inject constructor(
       return AuditEntity(
          store = storeRepository.findOne(number = audit.store!!.number!!, dataset = user.myDataset())!!,
          actions = mutableSetOf(
-            AuditAction(
+            AuditActionEntity(
                status = CREATED,
                changedBy = fromUser(user)
             )
@@ -87,7 +87,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(audit: AuditUpdateValueObject, user: User, locale: Locale): Pair<AuditAction, AuditEntity> {
+   fun validateUpdate(audit: AuditUpdateValueObject, user: User, locale: Locale): Pair<AuditActionEntity, AuditEntity> {
       logger.debug("Validating Update Audit {}", audit)
 
       doValidation { errors ->
@@ -125,7 +125,7 @@ class AuditValidator @Inject constructor(
       }
 
       return Pair(
-         AuditAction(
+         AuditActionEntity(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
             changedBy = fromUser(user)
          ),
