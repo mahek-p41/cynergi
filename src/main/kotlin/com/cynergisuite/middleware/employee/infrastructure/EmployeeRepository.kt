@@ -150,6 +150,9 @@ class EmployeeRepository @Inject constructor(
                AND e.employee_type = :employee_type
                AND e.dataset = :dataset
          """.trimIndent()
+
+      logger.debug("Searching for Employee: {} with {} using {}", user, params, query)
+
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) } )
 
       logger.trace("Searching for Employee: {} resulted in {}", user, found)

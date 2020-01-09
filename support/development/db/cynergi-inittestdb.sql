@@ -60,8 +60,8 @@ INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, secu
 INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('SM', 'STORE MANAGE', 'tstds2', 0, '');
 INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('WH', 'WAREHOUSE', 'tstds2', 0, '');
 
-CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that will be created by the cynergi-data-migration project
-    id            BIGSERIAL                                           NOT NULL PRIMARY KEY,
+CREATE TABLE fastinfo_prod_import.employee_vw (
+    id            BIGINT                                              NOT NULL,
     number        INTEGER     CHECK( number > 0 )                     NOT NULL,
     store_number  INTEGER                                             NOT NULL,
     dataset       VARCHAR(6)  CHECK( char_length(dataset) = 6 )       NOT NULL,
@@ -71,92 +71,93 @@ CREATE TABLE fastinfo_prod_import.employee_vw ( -- create stand-in table that wi
     department    VARCHAR(2),
     active        BOOLEAN     DEFAULT TRUE                            NOT NULL,
     time_created  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
-    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL
+    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
+    UNIQUE(id, dataset)
 );
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (1, 3, 'tstds1', 'ROUTE 1', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (2, 3, 'tstds1', 'ROUTE 2', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (10, 3, 'tstds1', 'GOLD CUSTOMER', null, 'pass', 'NO', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (13, 3, 'tstds1', 'BANKRUPTCIES', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (18, 3, 'tstds1', 'MANAGERS ACCTS', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (19, 3, 'tstds1', 'SKIP', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (20, 3, 'tstds1', 'LEGAL', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (100, 1, 'tstds1', 'LATHERY', 'MARK', 'pass', 'RM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (101, 1, 'tstds1', 'TORRIJOS', 'MAGALI', 'pass', 'SM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (102, 1, 'tstds1', 'VANDERPOOL', 'VICTORIA', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (103, 1, 'tstds1', 'GERICKE', 'J KEITH', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (104, 1, 'tstds1', 'CARRILLO', 'DIANA', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (105, 1, 'tstds1', 'SPRAGUE', 'JOHN', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (106, 3, 'tstds1', 'ROBB', 'DAKOTA', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (107, 1, 'tstds1', 'CANTU', 'ENRIQUE', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (108, 1, 'tstds1', 'THOMAS', 'BRIAN', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (109, 1, 'tstds1', 'MACIAS', 'FERNANDO', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (110, 1, 'tstds1', 'ROSARIO', 'JONATHAN', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (111, 1, 'tstds1', 'MARTINEZ', 'DANIEL', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (300, 1, 'tstds1', 'SEPULVEDA', 'DANIEL', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (302, 3, 'tstds1', 'ADAME', 'JOSEPH', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (303, 3, 'tstds1', 'MUNOZ', 'CHRISTOPHER', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (304, 1, 'tstds1', 'RINEBERG', 'PHILIP', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (305, 3, 'tstds1', 'TOLEFREE', 'JERMAINE', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (306, 3, 'tstds1', 'THOMPSON', 'TYREE', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (307, 3, 'tstds1', 'QUINONES', 'TONY', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (308, 3, 'tstds1', 'LAY', 'KEVIN', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (309, 3, 'tstds1', 'JONES', 'BRIAN', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (310, 3, 'tstds1', 'PLUNKETT', 'RICHARD', 'pass', 'SM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (311, 3, 'tstds1', 'JEWELL', 'CHRISTOPHER', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (312, 1, 'tstds1', 'LATHERY', 'MONA', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (313, 1, 'tstds1', 'JEWELL', 'CHRISTOPHER', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (314, 3, 'tstds1', 'WADDY', 'ANN', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (315, 3, 'tstds1', 'MUNOZA', 'CHRISTOPHER', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (900, 9000, 'tstds1', 'RINEBERG', 'RICK', 'pass', 'EX', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (901, 9000, 'tstds1', 'KULUVA', 'CHUCK', 'pass', 'EX', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (9999, 9000, 'tstds1', 'ONLINE PAYMENTS', null, 'pass', 'CY', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90000, 1, 'tstds1', 'EXECUTIVE', null, 'pass', 'EX', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90001, 1, 'tstds1', 'REGIONAL MGR', null, 'pass', 'RM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90002, 1, 'tstds1', 'MARKET MANAGER', null, 'pass', 'MM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90003, 1, 'tstds1', 'STORE MANAGER', null, 'pass', 'SM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90004, 1, 'tstds1', 'ASST MANAGER', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90005, 1, 'tstds1', 'ACCOUNT REP', null, 'pass', 'AR', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90006, 1, 'tstds1', 'SALES ASSOCIATE', null, 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90007, 1, 'tstds1', 'DELIVERY DRIVER', null, 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (90008, 1, 'tstds1', 'TERMINATED', 'EMP', 'pass', 'TE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (99998, 1, 'tstds1', '2-Way SMS', null, 'pass', 'RM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (2, 1, 'tstds2', 'PALMER', 'L', 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (4, 5, 'tstds2', 'MILLER', 'HEATHER NICOLE', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (5, 4, 'tstds2', 'MARTINEZ', 'RUBEN', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (6, 2, 'tstds2', 'BYNUM', 'DAVID', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (7, 1, 'tstds2', 'PALMER', 'DONNIE', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (9, 1, 'tstds2', 'HURST', 'WANDA', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (10, 3, 'tstds2', 'MCGLAMORY', 'PAMELA', 'pass', 'SM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (11, 4, 'tstds2', 'MASONOFF', 'NICHOLAS', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (12, 5, 'tstds2', 'CRANKFIELD', 'LADON M', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (14, 1, 'tstds2', 'LEVERETTE', 'MATTHEW', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (15, 4, 'tstds2', 'TAYLOR', 'DIANNE', 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (17, 4, 'tstds2', 'MOORE', 'DANTE', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (18, 2, 'tstds2', 'MOORE', 'FANTA', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (21, 3, 'tstds2', 'GOWAN', 'LOGAN', 'pass', 'CO', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (22, 1, 'tstds2', 'JACKSON', 'BRANTLEY', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (23, 4, 'tstds2', 'JOHNSON', 'LIZA', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (25, 1, 'tstds2', 'PALMER', 'AMY', 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (26, 4, 'tstds2', 'ADAMS', 'KYLE', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (30, 1, 'tstds2', 'PUZAKULICS', 'JESSICA', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (31, 1, 'tstds2', 'PALMER', 'D.J.', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (32, 1, 'tstds2', 'CHASTAIN', 'TARA', 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (33, 4, 'tstds2', 'EMORY', 'JAMES', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (38, 5, 'tstds2', 'PIPPIN', 'COREY', 'pass', 'CO', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (40, 1, 'tstds2', 'MERRITT', 'ANTAVIUS', 'pass', 'DE', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (50, 1, 'tstds2', 'PALMER', 'LINDA', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (99, 1, 'tstds2', 'TEST', 'TEST', 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (800, 1, 'tstds2', 'MANAGER', null, 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (801, 1, 'tstds2', 'ACCOUNT MANAGER', null, 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (802, 1, 'tstds2', 'SALES ASSOC.', null, 'pass', 'SA', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (901, 1, 'tstds2', 'ROUTE 1', null, 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (902, 1, 'tstds2', 'ROUTE 2', null, 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (903, 1, 'tstds2', 'ROUTE 3', null, 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (904, 1, 'tstds2', 'ROUTE 4', null, 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (905, 1, 'tstds2', 'ROUTE 5', null, 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (906, 1, 'tstds2', 'ROUTE 6', null, 'pass', 'OF', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (999, 1, 'tstds2', 'PAP', 'PAYMENT', 'pass', 'MG', true);
-INSERT INTO fastinfo_prod_import.employee_vw(number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (99998, 1, 'tstds2', '2-Way SMS', null, 'pass', 'HO', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (1 , 1, 3, 'tstds1', 'ROUTE 1', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (2 , 2, 3, 'tstds1', 'ROUTE 2', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (3 , 10, 3, 'tstds1', 'GOLD CUSTOMER', null, 'pass', 'NO', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (4 , 13, 3, 'tstds1', 'BANKRUPTCIES', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (5 , 18, 3, 'tstds1', 'MANAGERS ACCTS', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (6 , 19, 3, 'tstds1', 'SKIP', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (7 , 20, 3, 'tstds1', 'LEGAL', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (8 , 100, 1, 'tstds1', 'LATHERY', 'MARK', 'pass', 'RM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (9 , 101, 1, 'tstds1', 'TORRIJOS', 'MAGALI', 'pass', 'SM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (10, 102, 1, 'tstds1', 'VANDERPOOL', 'VICTORIA', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (11, 103, 1, 'tstds1', 'GERICKE', 'J KEITH', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (12, 104, 1, 'tstds1', 'CARRILLO', 'DIANA', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (13, 105, 1, 'tstds1', 'SPRAGUE', 'JOHN', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (14, 106, 3, 'tstds1', 'ROBB', 'DAKOTA', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (15, 107, 1, 'tstds1', 'CANTU', 'ENRIQUE', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (16, 108, 1, 'tstds1', 'THOMAS', 'BRIAN', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (17, 109, 1, 'tstds1', 'MACIAS', 'FERNANDO', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (18, 110, 1, 'tstds1', 'ROSARIO', 'JONATHAN', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (19, 111, 1, 'tstds1', 'MARTINEZ', 'DANIEL', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (20, 300, 1, 'tstds1', 'SEPULVEDA', 'DANIEL', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (21, 302, 3, 'tstds1', 'ADAME', 'JOSEPH', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (22, 303, 3, 'tstds1', 'MUNOZ', 'CHRISTOPHER', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (23, 304, 1, 'tstds1', 'RINEBERG', 'PHILIP', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (24, 305, 3, 'tstds1', 'TOLEFREE', 'JERMAINE', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (25, 306, 3, 'tstds1', 'THOMPSON', 'TYREE', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (26, 307, 3, 'tstds1', 'QUINONES', 'TONY', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (27, 308, 3, 'tstds1', 'LAY', 'KEVIN', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (28, 309, 3, 'tstds1', 'JONES', 'BRIAN', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (29, 310, 3, 'tstds1', 'PLUNKETT', 'RICHARD', 'pass', 'SM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (30, 311, 3, 'tstds1', 'JEWELL', 'CHRISTOPHER', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (31, 312, 1, 'tstds1', 'LATHERY', 'MONA', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (32, 313, 1, 'tstds1', 'JEWELL', 'CHRISTOPHER', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (33, 314, 3, 'tstds1', 'WADDY', 'ANN', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (34, 315, 3, 'tstds1', 'MUNOZA', 'CHRISTOPHER', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (35, 900, 9000, 'tstds1', 'RINEBERG', 'RICK', 'pass', 'EX', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (36, 901, 9000, 'tstds1', 'KULUVA', 'CHUCK', 'pass', 'EX', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (37, 9999, 9000, 'tstds1', 'ONLINE PAYMENTS', null, 'pass', 'CY', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (38, 90000, 1, 'tstds1', 'EXECUTIVE', null, 'pass', 'EX', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (39, 90001, 1, 'tstds1', 'REGIONAL MGR', null, 'pass', 'RM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (40, 90002, 1, 'tstds1', 'MARKET MANAGER', null, 'pass', 'MM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (41, 90003, 1, 'tstds1', 'STORE MANAGER', null, 'pass', 'SM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (42, 90004, 1, 'tstds1', 'ASST MANAGER', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (43, 90005, 1, 'tstds1', 'ACCOUNT REP', null, 'pass', 'AR', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (44, 90006, 1, 'tstds1', 'SALES ASSOCIATE', null, 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (45, 90007, 1, 'tstds1', 'DELIVERY DRIVER', null, 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (46, 90008, 1, 'tstds1', 'TERMINATED', 'EMP', 'pass', 'TE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (47, 99998, 1, 'tstds1', '2-Way SMS', null, 'pass', 'RM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (1, 2, 1, 'tstds2', 'PALMER', 'L', 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (2, 4, 5, 'tstds2', 'MILLER', 'HEATHER NICOLE', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (3, 5, 4, 'tstds2', 'MARTINEZ', 'RUBEN', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (4, 6, 2, 'tstds2', 'BYNUM', 'DAVID', 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (5, 7, 1, 'tstds2', 'PALMER', 'DONNIE', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (6, 9, 1, 'tstds2', 'HURST', 'WANDA', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (7, 10, 3, 'tstds2', 'MCGLAMORY', 'PAMELA', 'pass', 'SM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (8, 11, 4, 'tstds2', 'MASONOFF', 'NICHOLAS', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (9, 12, 5, 'tstds2', 'CRANKFIELD', 'LADON M', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (10, 14, 1, 'tstds2', 'LEVERETTE', 'MATTHEW', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (11, 15, 4, 'tstds2', 'TAYLOR', 'DIANNE', 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (12, 17, 4, 'tstds2', 'MOORE', 'DANTE', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (13, 18, 2, 'tstds2', 'MOORE', 'FANTA', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (14, 21, 3, 'tstds2', 'GOWAN', 'LOGAN', 'pass', 'CO', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (15, 22, 1, 'tstds2', 'JACKSON', 'BRANTLEY', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (16, 23, 4, 'tstds2', 'JOHNSON', 'LIZA', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (17, 25, 1, 'tstds2', 'PALMER', 'AMY', 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (18, 26, 4, 'tstds2', 'ADAMS', 'KYLE', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (19, 30, 1, 'tstds2', 'PUZAKULICS', 'JESSICA', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (20, 31, 1, 'tstds2', 'PALMER', 'D.J.', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (21, 32, 1, 'tstds2', 'CHASTAIN', 'TARA', 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (22, 33, 4, 'tstds2', 'EMORY', 'JAMES', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (23, 38, 5, 'tstds2', 'PIPPIN', 'COREY', 'pass', 'CO', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (24, 40, 1, 'tstds2', 'MERRITT', 'ANTAVIUS', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (25, 50, 1, 'tstds2', 'PALMER', 'LINDA', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (26, 99, 1, 'tstds2', 'TEST', 'TEST', 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (27, 800, 1, 'tstds2', 'MANAGER', null, 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (28, 801, 1, 'tstds2', 'ACCOUNT MANAGER', null, 'pass', 'AM', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (29, 802, 1, 'tstds2', 'SALES ASSOC.', null, 'pass', 'SA', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (30, 901, 1, 'tstds2', 'ROUTE 1', null, 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (31, 902, 1, 'tstds2', 'ROUTE 2', null, 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (32, 903, 1, 'tstds2', 'ROUTE 3', null, 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (33, 904, 1, 'tstds2', 'ROUTE 4', null, 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (34, 905, 1, 'tstds2', 'ROUTE 5', null, 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (35, 906, 1, 'tstds2', 'ROUTE 6', null, 'pass', 'OF', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (36, 999, 1, 'tstds2', 'PAP', 'PAYMENT', 'pass', 'MG', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (37, 99998, 1, 'tstds2', '2-Way SMS', null, 'pass', 'HO', true);
 
 CREATE TABLE fastinfo_prod_import.inventory_vw (
    id               BIGSERIAL                             NOT NULL PRIMARY KEY,
