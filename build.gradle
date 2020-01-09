@@ -1,5 +1,3 @@
-import org.flywaydb.gradle.task.FlywayMigrateTask
-
 import java.text.SimpleDateFormat
 
 buildscript {
@@ -163,14 +161,14 @@ compileTestKotlin {
    }
 }
 
-task flywayMigrateCynegiDb(type: FlywayMigrateTask) {
+task flywayMigrateCynegiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:6432/cynergidb"
    user = "postgres"
    password = "password"
    locations = ["filesystem:src/main/resources/db/migration/postgres"]
 }
 
-task flywayMigrateCynergiDevelopDb(type: FlywayMigrateTask) {
+task flywayMigrateCynergiDevelopDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:6432/cynergidevelopdb"
    user = "postgres"
    password = "password"
@@ -179,7 +177,7 @@ task flywayMigrateCynergiDevelopDb(type: FlywayMigrateTask) {
    cleanOnValidationError = true
 }
 
-task flywayMigrateCynergiTestDb(type: FlywayMigrateTask) {
+task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:7432/cynergitestdb"
    user = "postgres"
    password = "password"
