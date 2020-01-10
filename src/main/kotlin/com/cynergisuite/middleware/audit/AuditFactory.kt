@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit
 
-import com.cynergisuite.middleware.audit.action.AuditAction
+import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -28,7 +28,7 @@ object AuditFactory {
       return IntStream.range(0, number).mapToObj {
          AuditEntity(
             store = store,
-            actions = statuses.map { AuditAction(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet<AuditAction>()),
+            actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet<AuditActionEntity>()),
             dataset = store.dataset
          )
       }

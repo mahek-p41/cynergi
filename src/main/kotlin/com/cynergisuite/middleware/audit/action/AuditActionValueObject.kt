@@ -37,7 +37,7 @@ data class AuditActionValueObject (
 
 ) : ValueObjectBase<AuditActionValueObject>() {
 
-   constructor(entity: AuditAction, auditStatus: AuditStatusValueObject) :
+   constructor(entity: AuditActionEntity, auditStatus: AuditStatusValueObject) :
       this(
          id = entity.id,
          timeCreated = entity.timeCreated,

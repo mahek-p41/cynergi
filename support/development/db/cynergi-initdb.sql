@@ -57,6 +57,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.company_vw (
 
 CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     id BIGINT,
+    dataset VARCHAR,
     serial_number VARCHAR,
     lookup_key VARCHAR,
     lookup_key_type TEXT,

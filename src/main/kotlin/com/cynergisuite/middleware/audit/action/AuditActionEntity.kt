@@ -6,16 +6,16 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class AuditAction (
+data class AuditActionEntity (
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val status: AuditStatus,
    val changedBy: EmployeeEntity
-) : Entity<AuditAction> {
+) : Entity<AuditActionEntity> {
 
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
-   override fun copyMe(): AuditAction = copy()
+   override fun copyMe(): AuditActionEntity = copy()
 }

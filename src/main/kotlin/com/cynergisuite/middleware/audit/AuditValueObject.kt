@@ -31,6 +31,10 @@ data class AuditValueObject (
    var auditNumber: Int = 0,
 
    @field:Positive
+   @field:Schema(name = "totalDetails", description="Total number of items scanned as part of an audit", minimum = "0", readOnly = true, required = false)
+   var totalDetails: Int = 0,
+
+   @field:Positive
    @field:Schema(name = "totalExceptions", description="Total number of exceptions associated with an audit", minimum = "0", readOnly = true, required = false)
    var totalExceptions: Int = 0,
 
@@ -52,6 +56,7 @@ data class AuditValueObject (
          timeCreated = entity.timeCreated,
          store = StoreValueObject(entity.store),
          auditNumber = entity.number,
+         totalDetails = entity.totalDetails,
          totalExceptions = entity.totalExceptions,
          lastUpdated = entity.lastUpdated,
          inventoryCount = entity.inventoryCount,

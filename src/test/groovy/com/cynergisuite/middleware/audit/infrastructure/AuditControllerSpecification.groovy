@@ -70,6 +70,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.lastUpdated == null
       result.currentStatus.value == 'CREATED'
+      result.totalDetails == 0
+      result.totalExceptions == 0
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.store.dataset == store.dataset
@@ -113,6 +115,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.inventoryCount > 0
       result.inventoryCount == savedAudit.inventoryCount
+      result.totalDetails == 20
       result.totalExceptions == 0
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditDetails.last().timeUpdated
@@ -130,6 +133,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      result.totalDetails == 20
       result.totalExceptions == 20
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
@@ -365,7 +369,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      twoCreatedAudits.elements[0].totalDetails == 21
       twoCreatedAudits.elements[0].totalExceptions == 25
+      twoCreatedAudits.elements[1].totalDetails == 19
       twoCreatedAudits.elements[1].totalExceptions == 26
       twoCreatedAudits.elements != null
       twoCreatedAudits.elements.size() == 2
