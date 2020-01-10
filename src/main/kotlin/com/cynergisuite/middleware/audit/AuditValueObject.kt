@@ -31,7 +31,7 @@ data class AuditValueObject (
    var auditNumber: Int = 0,
 
    @field:Positive
-   @field:Schema(name = "totalDetails", description="Total number of exceptions associated with an audit", minimum = "0", readOnly = true, required = false)
+   @field:Schema(name = "totalDetails", description="Total number of items scanned as part of an audit", minimum = "0", readOnly = true, required = false)
    var totalDetails: Int = 0,
 
    @field:Positive
