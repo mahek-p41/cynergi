@@ -28,7 +28,8 @@ class DepartmentRepository @Inject constructor(
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
-            default_menu AS d_default_menu
+            default_menu AS d_default_menu,
+            dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw
          WHERE id = :id
          """.trimIndent(),
@@ -50,7 +51,8 @@ class DepartmentRepository @Inject constructor(
             code AS d_code,
             description AS d_description,
             security_profile AS d_security_profile,
-            default_menu AS d_default_menu
+            default_menu AS d_default_menu,
+            dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw
          WHERE code = :code
          """.trimIndent(),
@@ -63,7 +65,7 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<DepartmentEntity, PageRequest> {
+   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<DepartmentEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<DepartmentEntity>()
 
@@ -74,12 +76,15 @@ class DepartmentRepository @Inject constructor(
             description AS d_description,
             security_profile AS d_security_profile,
             default_menu AS d_default_menu,
-            (SELECT count(*) FROM fastinfo_prod_import.department_vw) AS total_elements
+            dataset AS d_dataset,
+            (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
          FROM fastinfo_prod_import.department_vw
+         WHERE dataset = :dataset
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
-         """.trimIndent()
+         """.trimIndent(),
+         mapOf("dataset" to dataset)
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -111,6 +116,7 @@ class DepartmentRepository @Inject constructor(
          code = rs.getString("${columnPrefix}code"),
          description = rs.getString("${columnPrefix}description"),
          securityProfile = rs.getInt("${columnPrefix}security_profile"),
-         defaultMenu = rs.getString("${columnPrefix}default_menu")
+         defaultMenu = rs.getString("${columnPrefix}default_menu"),
+         dataset = rs.getString("${columnPrefix}dataset")
       )
 }

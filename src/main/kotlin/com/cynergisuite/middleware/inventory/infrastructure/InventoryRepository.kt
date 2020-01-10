@@ -50,6 +50,7 @@ class InventoryRepository(
          i.condition AS condition,
          i.returned_date AS returned_date,
          i.status AS status,
+         i.dataset AS dataset,
          primaryStore.id AS primary_store_id,
          primaryStore.time_created AS primary_store_time_created,
          primaryStore.time_updated AS primary_store_time_updated,
@@ -72,42 +73,48 @@ class InventoryRepository(
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
    """.trimIndent()
 
-   fun findOne(id: Long): InventoryEntity? {
+   fun findOne(id: Long, dataset: String): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
-      val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.id = :id", mapOf("id" to id), RowMapper { rs, _ -> mapRow(rs)})
+      val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.id = :id AND i.dataset = :dataset", mapOf("id" to id, "dataset" to dataset), RowMapper { rs, _ -> mapRow(rs)})
 
       logger.debug("Search for Inventory by ID {} produced {}", id, inventory)
 
       return inventory
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.inventory_vw WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   fun exists(id: Long, dataset: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.inventory_vw WHERE id = :id AND dataset = :dataset)", mapOf("id" to id, "dataset" to dataset), Boolean::class.java)!!
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean =
-      !exists(id)
+   fun doesNotExist(id: Long, dataset: String): Boolean =
+      !exists(id, dataset)
 
-   fun findByLookupKey(lookupKey: String): InventoryEntity? {
+   fun findByLookupKey(lookupKey: String, dataset: String): InventoryEntity? {
       logger.debug("Finding Inventory by barcode with {}", lookupKey)
 
-      val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.lookup_key = :lookup_key", mapOf("lookup_key" to lookupKey), RowMapper { rs, _ -> mapRow(rs) })
+      val inventory = jdbc.findFirstOrNull("""
+         $selectBase
+         WHERE i.lookup_key = :lookup_key
+               AND primaryStore.dataset = :dataset""".trimIndent(),
+         mapOf("lookup_key" to lookupKey, "dataset" to dataset),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.debug("Search for Inventory by barcode {} produced {}", lookupKey, inventory)
 
       return inventory;
    }
 
-   fun findAll(pageRequest: InventoryPageRequest): RepositoryPage<InventoryEntity, InventoryPageRequest> {
+   fun findAll(pageRequest: InventoryPageRequest, dataset: String): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
-      val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!)
+      val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!, "dataset" to dataset)
 
       logger.debug("Finding all Inventory with {} and {}", pageRequest, params)
 
@@ -122,6 +129,9 @@ class InventoryRepository(
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
+               AND i.dataset = :dataset
+               AND primaryStore.dataset = :dataset
+               AND currentStore.dataset = :dataset
                ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
@@ -183,6 +193,7 @@ class InventoryRepository(
             value = rs.getString("location_type_value"),
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")
-         )
+         ),
+         dataset = rs.getString("dataset")
       )
 }

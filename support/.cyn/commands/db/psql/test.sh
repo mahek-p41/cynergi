@@ -4,10 +4,10 @@
 cd ../development
 
 if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergitestdb)` ]; then
-  echo "cynergidb is not running! Not connecting psql."
+  echo "cynergitestdb is not running! Not connecting psql."
   exit 1
 else
-  echo "Connecting interactive psql to cynergidb"
+  echo "Connecting interactive psql to cynergitestdb"
   docker-compose build cynergitestdbpsql && docker-compose run --rm cynergitestdbpsql
   exit $?
 fi

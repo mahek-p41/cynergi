@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.middleware.authentication.UsernamePasswordStoreCredentials
+import com.cynergisuite.middleware.authentication.LoginCredentials
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -28,11 +28,11 @@ import javax.validation.Valid
  */
 @Validated
 @Secured(IS_ANONYMOUS)
-@Controller("/api/login/store")
-class StoreLoginController(
+@Controller("/api/login")
+class SystemLoginController(
    private val loginController: LoginController // proxying this controller's path and slightly different payload to the existing LoginController
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(StoreLoginController::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(SystemLoginController::class.java)
 
    @Post
    @Consumes(APPLICATION_JSON)
@@ -43,9 +43,9 @@ class StoreLoginController(
          ApiResponse(responseCode = "401", description = "If the login was not successful")
       ]
    )
-   fun login(@Valid @Body usernamePasswordCredentials: UsernamePasswordStoreCredentials, request: HttpRequest<*>): Single<HttpResponse<*>> {
-      logger.debug("Store login attempted with {}", usernamePasswordCredentials)
+   fun login(@Valid @Body loginCredentials: LoginCredentials, request: HttpRequest<*>): Single<HttpResponse<*>> {
+      logger.debug("Store login attempted with {}", loginCredentials)
 
-      return loginController.login(usernamePasswordCredentials, request)
+      return loginController.login(loginCredentials, request)
    }
 }

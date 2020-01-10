@@ -65,11 +65,13 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      result.inventoryCount == 8
+      result.inventoryCount == 269
       result.id == savedAudit.id
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.lastUpdated == null
       result.currentStatus.value == 'CREATED'
+      result.totalDetails == 0
+      result.totalExceptions == 0
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.store.dataset == store.dataset
@@ -113,6 +115,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.inventoryCount > 0
       result.inventoryCount == savedAudit.inventoryCount
+      result.totalDetails == 20
       result.totalExceptions == 0
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditDetails.last().timeUpdated
@@ -130,6 +133,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      result.totalDetails == 20
       result.totalExceptions == 20
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
@@ -142,7 +146,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      def response = exception.response.body().with { parseResponse(it) }
+      def response = exception.response.bodyAsJson()
       response.size() == 1
       response.message == "0 was unable to be found"
    }
@@ -365,7 +369,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      twoCreatedAudits.elements[0].totalDetails == 21
       twoCreatedAudits.elements[0].totalExceptions == 25
+      twoCreatedAudits.elements[1].totalDetails == 19
       twoCreatedAudits.elements[1].totalExceptions == 26
       twoCreatedAudits.elements != null
       twoCreatedAudits.elements.size() == 2
@@ -817,7 +823,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.dataset) == 0
 
       when:
       def result = post(path, new AuditCreateValueObject())
@@ -834,47 +840,47 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "update completed audit to signed-off and sign-off on exceptions" () {
-         given:
-         final store = storeFactoryService.store(1)
-         final audit = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-         final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      given:
+      final store = storeFactoryService.store(1)
+      final audit = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
-         when:
-         def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
+      when:
+      def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
 
-         then:
-         notThrown(HttpClientResponseException)
-         result.id == audit.id
-         result.store.storeNumber == store.number
-         result.actions.size() == 4
-         final resultActions = result.actions
-            .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-            .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
-            .collect{ new AuditActionValueObject(it) }
-            .sort { o1, o2 -> o1.id <=> o2.id }
-         resultActions[0].id != null
-         resultActions[0].id > 0
-         resultActions[0].status.value == "CREATED"
-         resultActions[0].status.description == "Created"
-         resultActions[0].changedBy.number == audit.actions[0].changedBy.number
-         resultActions[1].id != null
-         resultActions[1].id > 0
-         resultActions[1].id > resultActions[0].id
-         resultActions[1].status.value == "IN-PROGRESS"
-         resultActions[1].status.description == "In Progress"
-         resultActions[1].changedBy.number == audit.actions[1].changedBy.number
-         resultActions[2].id != null
-         resultActions[2].id > 0
-         resultActions[2].id > resultActions[0].id
-         resultActions[2].status.value == "COMPLETED"
-         resultActions[2].status.description == "Completed"
-         resultActions[2].changedBy.number == audit.actions[2].changedBy.number
-         resultActions[3].id != null
-         resultActions[3].id > 0
-         resultActions[3].id > resultActions[0].id
-         resultActions[3].status.value == "SIGNED-OFF"
-         resultActions[3].status.description == "Signed Off"
-         resultActions[3].changedBy.number == authenticatedEmployee.number
+      then:
+      notThrown(HttpClientResponseException)
+      result.id == audit.id
+      result.store.storeNumber == store.number
+      result.actions.size() == 4
+      final resultActions = result.actions
+         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      resultActions[0].id != null
+      resultActions[0].id > 0
+      resultActions[0].status.value == "CREATED"
+      resultActions[0].status.description == "Created"
+      resultActions[0].changedBy.number == audit.actions[0].changedBy.number
+      resultActions[1].id != null
+      resultActions[1].id > 0
+      resultActions[1].id > resultActions[0].id
+      resultActions[1].status.value == "IN-PROGRESS"
+      resultActions[1].status.description == "In Progress"
+      resultActions[1].changedBy.number == audit.actions[1].changedBy.number
+      resultActions[2].id != null
+      resultActions[2].id > 0
+      resultActions[2].id > resultActions[0].id
+      resultActions[2].status.value == "COMPLETED"
+      resultActions[2].status.description == "Completed"
+      resultActions[2].changedBy.number == audit.actions[2].changedBy.number
+      resultActions[3].id != null
+      resultActions[3].id > 0
+      resultActions[3].id > resultActions[0].id
+      resultActions[3].status.value == "SIGNED-OFF"
+      resultActions[3].status.description == "Signed Off"
+      resultActions[3].changedBy.number == authenticatedEmployee.number
 
       when:
       def pageOneResult = get("/audit/${audit.id}/exception")

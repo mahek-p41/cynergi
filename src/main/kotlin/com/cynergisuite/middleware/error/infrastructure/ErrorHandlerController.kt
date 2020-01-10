@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.error.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
+import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
@@ -10,6 +11,7 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AccessDenied
+import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
 import com.cynergisuite.middleware.localization.AccessDeniedStore
 import com.cynergisuite.middleware.localization.ConversionError
 import com.cynergisuite.middleware.localization.InternalError
@@ -23,6 +25,7 @@ import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.core.util.StringUtils
 import io.micronaut.http.HttpRequest
@@ -33,6 +36,7 @@ import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
 import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
+import io.micronaut.http.HttpStatus.UNAUTHORIZED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.security.authentication.AuthenticationException
@@ -212,25 +216,35 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = AuthenticationException::class)
    fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDataTransferObject> {
-      logger.info("AuthenticationException", authenticationException)
+      logger.warn("AuthenticationException {}", authenticationException.localizedMessage)
 
+      val userName = httpRequest.body.map { if (it is ObjectNode && it.has("username")) it.get("username").textValue() else null }.orElse(null)
       val locale = httpRequest.findLocaleWithDefault()
-      val message = if (authenticationException.message.isDigits()) { // most likely store should have been provided
-         localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
-      } else if ( !authenticationException.message.isNullOrBlank() ) {
-         localizationService.localize(AccessDenied(authenticationException.message!!), locale)
-      } else {
-         localizationService.localize(AccessDenied(localizationService.localize(Unknown(), locale)), locale)
-      }
 
-      return HttpResponse
-         .status<ErrorDataTransferObject>(FORBIDDEN)
-         .body(ErrorDataTransferObject(message))
+      return if (authenticationException.message.isDigits()) { // most likely store should have been provided
+         val message = localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(UNAUTHORIZED)
+            .body(ErrorDataTransferObject(message))
+      } else if ( !authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
+         val message = localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(UNAUTHORIZED)
+            .body(ErrorDataTransferObject(message))
+      } else {
+         val message = localizationService.localize(AccessDenied(), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(FORBIDDEN)
+            .body(ErrorDataTransferObject(message))
+      }
    }
 
    @Error(global = true, exception = AccessException::class)
    fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorDataTransferObject> {
-      logger.info("Unauthorized exception", accessException)
+      logger.warn("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
 

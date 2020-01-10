@@ -1,13 +1,15 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.authentication.User
-import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.StoreEntity.Companion.fromLocation
 
 data class EmployeeEntity(
    val id: Long? = null,
    val type: String,
    val number: Int,
+   val dataset: String,
    val lastName: String,
    val firstNameMi: String?,
    val passCode: String,
@@ -17,11 +19,12 @@ data class EmployeeEntity(
    val department: String? = null
 ) : User {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, allowAutoStoreAssign: Boolean, department: String? = null) :
+   constructor(type: String, number: Int, dataset: String, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, allowAutoStoreAssign: Boolean, department: String? = null) :
       this(
          id = null,
          type = type,
          number = number,
+         dataset = dataset,
          lastName = lastName,
          firstNameMi = firstNameMi,
          passCode = passCode,
@@ -36,6 +39,7 @@ data class EmployeeEntity(
          id = vo.id,
          type = vo.type!!,
          number = vo.number!!,
+         dataset = vo.dataset!!,
          lastName = vo.lastName!!,
          firstNameMi = vo.firstNameMi,
          passCode = vo.passCode!!,
@@ -49,10 +53,11 @@ data class EmployeeEntity(
          id = user.myId(),
          type = user.myEmployeeType(),
          number = user.myEmployeeNumber(),
+         dataset = user.myDataset(),
          lastName = user.myLastName(),
          firstNameMi = user.myFirstNameMi(),
          passCode = user.myPassCode(),
-         store = StoreEntity.from(user.myStore()),
+         store = fromLocation(user.myLocation()),
          active = true,
          allowAutoStoreAssign = user.doesAllowAutoStoreAssign()
       )
@@ -61,10 +66,11 @@ data class EmployeeEntity(
    override fun myFirstNameMi(): String? = firstNameMi
    override fun myLastName(): String = lastName
    override fun myPassCode(): String = passCode
-   override fun myStore(): Store? = store
+   override fun myLocation(): Location? = store
    override fun myDepartment(): String? = department
    override fun amIActive(): Boolean = active
    override fun doesAllowAutoStoreAssign(): Boolean = allowAutoStoreAssign
+   override fun myDataset(): String = dataset
    override fun myEmployeeType(): String = type
    override fun myStoreNumber(): Int? = store?.number
    override fun myEmployeeNumber(): Int = number
@@ -76,7 +82,7 @@ data class EmployeeEntity(
    companion object {
 
       @JvmStatic
-      fun from(user: User): EmployeeEntity {
+      fun fromUser(user: User): EmployeeEntity {
          return if (user is EmployeeEntity) {
             user
          } else {

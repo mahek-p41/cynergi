@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.store
 
+import com.cynergisuite.middleware.location.Location
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -9,7 +10,7 @@ data class StoreEntity(
    val number: Int,
    val name: String,
    val dataset: String
-) : Store, Comparable<StoreEntity> {
+) : Location, Comparable<StoreEntity> {
 
    constructor(store: StoreValueObject) :
       this(
@@ -19,12 +20,12 @@ data class StoreEntity(
          dataset = store.dataset!!
       )
 
-   constructor(store: Store) :
+   constructor(location: Location) :
       this(
-         id = store.myId()!!,
-         number = store.myNumber(),
-         name = store.myName(),
-         dataset = store.myDataset()
+         id = location.myId()!!,
+         number = location.myNumber(),
+         name = location.myName(),
+         dataset = location.myDataset()
       )
 
    override fun myId(): Long? = id
@@ -63,13 +64,11 @@ data class StoreEntity(
    companion object {
 
       @JvmStatic
-      fun from(store: Store?): StoreEntity? =
-         if (store is StoreEntity) {
-            store
-         } else if (store != null) {
-            StoreEntity(store)
-         } else {
-            null
+      fun fromLocation(location: Location?): StoreEntity? =
+         when {
+            location is StoreEntity -> location
+            location != null -> StoreEntity(location)
+            else -> null
          }
    }
 }

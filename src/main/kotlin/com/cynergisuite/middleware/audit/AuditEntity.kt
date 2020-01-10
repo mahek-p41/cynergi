@@ -1,23 +1,25 @@
 package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.middleware.audit.action.AuditAction
+import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class AuditEntity (
+data class AuditEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val store: StoreEntity,
    val number: Int = 0,
+   val totalDetails: Int = 0,
    val totalExceptions: Int = 0,
    val lastUpdated: OffsetDateTime? = null,
    val inventoryCount: Int = 0,
-   val actions: MutableSet<AuditAction> = LinkedHashSet<AuditAction>()
+   val dataset: String,
+   val actions: MutableSet<AuditActionEntity> = LinkedHashSet<AuditActionEntity>()
 ) : Entity<AuditEntity> {
 
    constructor(id: Long, audit: AuditEntity) :
@@ -26,9 +28,11 @@ data class AuditEntity (
          store = audit.store,
          number = audit.number,
          actions = audit.actions,
+         totalDetails = audit.totalDetails,
          totalExceptions = audit.totalExceptions,
          inventoryCount = audit.inventoryCount,
-         lastUpdated = audit.lastUpdated
+         lastUpdated = audit.lastUpdated,
+         dataset = audit.dataset
       )
 
    override fun myId(): Long? = id

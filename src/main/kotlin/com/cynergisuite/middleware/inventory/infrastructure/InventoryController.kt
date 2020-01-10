@@ -55,10 +55,10 @@ class InventoryController(
 
       val user = authenticationService.findUser(authentication)
 
-      logger.info("Requesting inventory {} using employee {}", pageRequest, user)
+      logger.info("Requesting inventory available to user {} for page {}", user, pageRequest)
 
       val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
-      val page = inventoryService.fetchAll(pageToRequest, httpRequest.findLocaleWithDefault())
+      val page = inventoryService.fetchAll(pageToRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
@@ -79,10 +79,13 @@ class InventoryController(
    ])
    fun fetchByBarcode(
       @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey") lookupKey: String,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): InventoryValueObject {
       logger.info("Fetching Inventory by barcode {}", lookupKey)
 
-      return inventoryService.fetchByLookupKey(lookupKey, httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
+      val user = authenticationService.findUser(authentication)
+
+      return inventoryService.fetchByLookupKey(lookupKey, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }
 }

@@ -6,7 +6,7 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -32,25 +32,6 @@ data class AuditExceptionEntity(
    val audit: Identifiable
 ) : Entity<AuditExceptionEntity> {
 
-   constructor(vo: AuditExceptionValueObject, scanArea: AuditScanArea?) :
-      this (
-         id = vo.id,
-         scanArea = scanArea,
-         barcode = vo.barcode!!,
-         productCode = vo.productCode,
-         altId = vo.altId,
-         serialNumber = vo.serialNumber,
-         inventoryBrand = vo.inventoryBrand,
-         inventoryModel = vo.inventoryModel,
-         scannedBy = EmployeeEntity(vo.scannedBy!!),
-         exceptionCode = vo.exceptionCode!!,
-         signedOff = vo.signedOff,
-         signedOffBy = vo.signedOffBy?.let { EmployeeEntity(it) },
-         lookupKey = vo.lookupKey,
-         notes = vo.notes.asSequence().map { AuditExceptionNote(it,it.enteredBy!!, vo.audit!!.myId()!!) }.toMutableList(),
-         audit = SimpleIdentifiableEntity(vo.audit!!)
-      )
-
    constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
@@ -60,7 +41,7 @@ data class AuditExceptionEntity(
          serialNumber = inventory.serialNumber,
          inventoryBrand = inventory.brand,
          inventoryModel = inventory.modelNumber,
-         scannedBy = EmployeeEntity.from(scannedBy),
+         scannedBy = fromUser(scannedBy),
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)

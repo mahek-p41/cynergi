@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -12,6 +13,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -28,7 +30,8 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/store")
 class StoreController @Inject constructor(
-   private val storeService: StoreService
+   private val storeService: StoreService,
+   private val authenticationService: AuthenticationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(StoreController::class.java)
 
@@ -42,11 +45,13 @@ class StoreController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
    ): StoreValueObject {
       logger.info("Fetching Store by {}", id)
 
-      val response = storeService.fetchById(id = id) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = storeService.fetchById(id = id, dataset = user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
 
@@ -63,11 +68,13 @@ class StoreController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      authentication: Authentication
    ): Page<StoreValueObject> {
       logger.info("Fetching all stores {}", pageRequest)
 
-      val page = storeService.fetchAll(pageRequest)
+      val user = authenticationService.findUser(authentication)
+      val page = storeService.fetchAll(pageRequest, user.myDataset())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

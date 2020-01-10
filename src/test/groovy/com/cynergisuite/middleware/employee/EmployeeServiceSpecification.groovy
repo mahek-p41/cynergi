@@ -32,7 +32,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
    }
 
    void "csv process empty file"() {
-      given:
+      setup:
       def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
       def tempFile = tempDirectory.resolve("eli-employees.csv")
       FileUtils.touch(tempFile.toFile()) // create an empty file
@@ -49,7 +49,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
    }
 
    void "csv process file with 2 record"() {
-      given:
+      setup:
       def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
       def tempFile = tempDirectory.resolve("eli-employees.csv")
       def testEmployeeFile = Paths.get(EmployeeServiceSpecification.class.classLoader.getResource("legacy/load/employee/eli-employee.csv").toURI())
@@ -70,16 +70,16 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
    }
 
    void "check authentication employee found"() {
-      given:
-      def tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
-      def tempFile = tempDirectory.resolve("eli-employees.csv")
-      def testEmployeeFile = Paths.get(EmployeeServiceSpecification.class.classLoader.getResource("legacy/load/employee/eli-employee.csv").toURI())
+      setup:
+      final tempDirectory = temporaryFolder.newFolder("eli-employees").toPath()
+      final tempFile = tempDirectory.resolve("eli-employees.csv")
+      final testEmployeeFile = Paths.get(EmployeeServiceSpecification.class.classLoader.getResource("legacy/load/employee/eli-employee.csv").toURI())
       Files.copy(testEmployeeFile, tempFile)
-      def reader = Files.newBufferedReader(tempFile)
+      final reader = Files.newBufferedReader(tempFile)
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.fetchUserByAuthentication(123, "tryme", null).blockingGet()
+      final employee = employeeService.fetchUserByAuthentication(123, "tryme", 'tstds1', null).blockingGet()
 
       then:
       null != employee
@@ -102,7 +102,7 @@ class EmployeeServiceSpecification extends ServiceSpecificationBase {
       employeeService.processCsv(reader)
 
       when:
-      final def employee = employeeService.fetchUserByAuthentication(989, "studio", null)
+      final def employee = employeeService.fetchUserByAuthentication(989, "studio", "tstds1", null)
 
       then:
       employee.isEmpty()

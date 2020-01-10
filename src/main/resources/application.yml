@@ -10,10 +10,8 @@ micronaut:
       endpoints:
          login:
             enabled: true
-            path: /api/login
          logout:
             enabled: true
-            path: /api/logout
       token:
          jwt:
             enabled: true

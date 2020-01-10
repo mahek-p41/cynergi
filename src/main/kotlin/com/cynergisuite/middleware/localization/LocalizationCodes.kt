@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.localization
 
+import org.apache.commons.lang3.builder.ToStringBuilder
 import java.time.OffsetDateTime
 
 interface LocalizationCode {
@@ -13,6 +14,12 @@ open class LocalizationCodeImpl(
 ) : LocalizationCode {
    override fun getCode(): String = code
    override fun getArguments(): Array<Any?> = arguments
+   override fun toString(): String {
+      return ToStringBuilder(this)
+         .append("code", code)
+         .append("argument", arguments)
+         .build()
+   }
 }
 
 abstract class Validation(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
@@ -31,6 +38,7 @@ class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cyn
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
+class InvalidDataset(dataset: String): Cynergi("cynergi.validation.invalid.dataset", arrayOf(dataset))
 
 class AuditStatusNotFound(auditStatus: String):  Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String): Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
@@ -49,7 +57,8 @@ class RouteError(routeArgument: String): SystemCode("system.route.error", arrayO
 class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class LoggedIn(user: String): SystemCode("system.logged.in", arrayOf(user))
 class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())
-class AccessDenied(user: String): SystemCode("system.access.denied", arrayOf(user))
+class AccessDenied(): SystemCode("system.access.denied", emptyArray())
+class AccessDeniedCredentialsDoNotMatch(user: String): SystemCode("system.access.denied.creds.do.not.match", arrayOf(user))
 class AccessDeniedStore(user: String): SystemCode("system.access.denied.store", arrayOf(user))
 class Unknown: SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String): SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))

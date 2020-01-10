@@ -5,11 +5,11 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findAllWithCrossJoin
-import com.cynergisuite.extensions.findFirstOrNullWithCrossJoin
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -17,7 +17,6 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -38,10 +37,11 @@ class AuditExceptionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   fun findOne(id: Long): AuditExceptionEntity? {
-      val found = jdbc.findFirstOrNullWithCrossJoin("""
+   fun findOne(id: Long, dataset: String): AuditExceptionEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = """
          WITH ae_employees AS (
-            ${employeeRepository.selectBase}
+            ${employeeRepository.selectBaseQuery(params, dataset)}
          )
          SELECT
             ae.id AS ae_id,
@@ -68,6 +68,7 @@ class AuditExceptionRepository @Inject constructor(
             e.e_department AS e_department,
             e.e_employee_type AS e_employee_type,
             e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
+            e.e_dataset AS e_dataset,
             e2.e_id AS e2_id,
             e2.e_number AS e2_number,
             e2.e_last_name AS e2_last_name,
@@ -77,6 +78,7 @@ class AuditExceptionRepository @Inject constructor(
             e2.e_department AS e2_department,
             e2.e_employee_type AS e2_employee_type,
             e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
+            e2.e_dataset AS e2_dataset,
             e.s_id AS s_id,
             e.s_number AS s_number,
             e.s_name AS s_name,
@@ -101,35 +103,39 @@ class AuditExceptionRepository @Inject constructor(
             noteEmployee.e_department AS noteEmployee_department,
             noteEmployee.e_employee_type AS noteEmployee_employee_type,
             noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
+            noteEmployee.e_dataset AS noteEmployee_dataset,
             noteEmployee.s_id AS noteEmployee_store_id,
             noteEmployee.s_number AS noteEmployee_store_number,
             noteEmployee.s_name AS noteEmployee_store_name,
             noteEmployee.s_dataset AS noteEmployee_store_dataset
          FROM audit_exception ae
               JOIN ae_employees e
-                ON ae.scanned_by = e.e_number
+                ON ae.scanned_by = e.e_number AND e.e_dataset = :dataset
               LEFT OUTER JOIN ae_employees e2
-                              ON ae.signed_off_by = e2.e_number
+                ON ae.signed_off_by = e2.e_number AND e2.e_dataset = :dataset
               LEFT OUTER JOIN audit_scan_area_type_domain asatd
                 ON ae.scan_area_id = asatd.id
               LEFT OUTER JOIN audit_exception_note aen
                 ON ae.id = aen.audit_exception_id
               LEFT OUTER JOIN ae_employees noteEmployee
-                ON aen.entered_by = noteEmployee.e_number
-         WHERE ae.id = :id""".trimIndent(), mapOf("id" to id),
-         RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
-            val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-            val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
-            //The below is an implicit return
-            mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
-         }
-      ) { auditException, rs ->
-         val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
+                ON aen.entered_by = noteEmployee.e_number AND noteEmployee.e_dataset = :dataset
+         WHERE ae.id = :id"""
 
-         if (enteredBy != null) {
-            auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
-         }
+      val found = jdbc.findFirstOrNull(query, params) { rs ->
+         val scannedBy = employeeRepository.mapRow(rs, "e_", "s_")
+         val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
+         val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
+         val exception = mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
+
+         do {
+            val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
+
+            if (enteredBy != null) {
+               auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { exception.notes.add(it) }
+            }
+         } while(rs.next())
+
+         exception
       }
 
       logger.trace("Searching for AuditException: {} resulted in {}", id, found)
@@ -137,12 +143,12 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
-      var totalElements: Long? = null
+   fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
       val sql = """
       WITH paged AS (
          WITH ae_employees AS (
-            ${employeeRepository.selectBase}
+            ${employeeRepository.selectBaseQuery(params, dataset)}
          ),
          audit_exceptions AS (
             SELECT ae.id AS ae_id,
@@ -164,6 +170,7 @@ class AuditExceptionRepository @Inject constructor(
                ae.scan_area_id as ae_scan_area_id,
                e.e_id AS e_id,
                e.e_number AS e_number,
+               e.e_dataset AS e_dataset,
                e.e_last_name AS e_last_name,
                e.e_first_name_mi AS e_first_name_mi,
                e.e_pass_code AS e_pass_code,
@@ -173,6 +180,7 @@ class AuditExceptionRepository @Inject constructor(
                e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
                e2.e_id AS e2_id,
                e2.e_number AS e2_number,
+               e2.e_dataset AS e2_dataset,
                e2.e_last_name AS e2_last_name,
                e2.e_first_name_mi AS e2_first_name_mi,
                e2.e_pass_code AS  e2_pass_code,
@@ -210,6 +218,7 @@ class AuditExceptionRepository @Inject constructor(
             aen.audit_exception_id AS aen_audit_exception_id,
             noteEmployee.e_id AS noteEmployee_id,
             noteEmployee.e_number AS noteEmployee_number,
+            noteEmployee.e_dataset AS noteEmployee_dataset,
             noteEmployee.e_last_name AS noteEmployee_last_name,
             noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
             noteEmployee.e_pass_code AS noteEmployee_pass_code,
@@ -233,34 +242,36 @@ class AuditExceptionRepository @Inject constructor(
 
       logger.debug("find all audit exceptions {}", sql)
 
-      val resultList = jdbc.findAllWithCrossJoin(sql, mutableMapOf("audit_id" to audit.id), "ae_id", RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
-            val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
-            val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
+      return jdbc.queryPaged(sql, params, page) { rs, elements ->
+         var currentId = -1L
+         var currentParentEntity: AuditExceptionEntity? = null
 
-            if (totalElements == null) {
-               totalElements = rs.getLong("total_elements")
+         do {
+            val tempId = rs.getLong("ae_id")
+            val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
+               val scannedBy = employeeRepository.mapRow(rs, "e_")
+               val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "asatd_")
+               val signedOffBy = employeeRepository.mapRowOrNull(rs, "e2_")
+
+               currentId = tempId
+               currentParentEntity = mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
             }
 
-            mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("ae_audit_id")), "ae_")
-         }
-      ) { auditException, rs ->
-         val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
+            val enteredBy = employeeRepository.mapRowOrNull(rs, "noteEmployee_", "noteEmployee_store_")
 
-         if (enteredBy != null) {
-            auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { auditException.notes.add(it) }
-         }
+            if (enteredBy != null) {
+               auditExceptionNoteRepository.mapRow(rs, enteredBy, "aen_")?.also { tempParentEntity.notes.add(it) }
+            }
+         } while (rs.next())
       }
-
-      return RepositoryPage(
-         requested = page,
-         elements = resultList,
-         totalElements = totalElements ?: 0
-      )
    }
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
-      var result = findAll(audit, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      var result = findAll(audit, audit.dataset, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
       while(result.elements.isNotEmpty()) {
@@ -269,7 +280,7 @@ class AuditExceptionRepository @Inject constructor(
             index++
          }
 
-         result = findAll(audit, result.requested.nextPage())
+         result = findAll(audit, audit.dataset, result.requested.nextPage())
       }
    }
 

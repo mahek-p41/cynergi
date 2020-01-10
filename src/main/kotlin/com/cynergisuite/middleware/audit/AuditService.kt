@@ -48,13 +48,13 @@ class AuditService @Inject constructor(
    private val reportalService: ReportalService
 ) {
 
-   fun fetchById(id: Long, locale: Locale): AuditValueObject? =
-      auditRepository.findOne(id)?.let { AuditValueObject(it, locale, localizationService) }
+   fun fetchById(id: Long, dataset: String, locale: Locale): AuditValueObject? =
+      auditRepository.findOne(id, dataset)?.let { AuditValueObject(it, locale, localizationService) }
 
    @Validated
-   fun fetchAll(@Valid pageRequest: AuditPageRequest, locale: Locale): Page<AuditValueObject> {
-      val validaPageRequest = auditValidator.validationFetchAll(pageRequest)
-      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest)
+   fun fetchAll(@Valid pageRequest: AuditPageRequest, dataset: String, locale: Locale): Page<AuditValueObject> {
+      val validaPageRequest = auditValidator.validationFetchAll(pageRequest, dataset)
+      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, dataset)
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
@@ -64,11 +64,11 @@ class AuditService @Inject constructor(
    fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, locale: Locale): List<AuditStatusCountDataTransferObject> {
-      val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest)
+   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, dataset: String, locale: Locale): List<AuditStatusCountDataTransferObject> {
+      val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, dataset)
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest)
+         .findAuditStatusCounts(validPageRequest, dataset)
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }

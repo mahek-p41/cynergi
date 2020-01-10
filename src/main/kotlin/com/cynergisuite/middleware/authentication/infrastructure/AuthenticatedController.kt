@@ -2,7 +2,9 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
+import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.LoggedIn
 import com.cynergisuite.middleware.localization.NotLoggedIn
@@ -22,13 +24,17 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
+   private val authenticationService: AuthenticationService,
    private val localizationService: LocalizationService
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(AuthenticatedController::class.java)
 
    @Secured(IS_ANONYMOUS)
    @Get(produces = [APPLICATION_JSON])
@@ -40,13 +46,20 @@ class AuthenticatedController @Inject constructor(
    fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
       val locale = httpRequest.findLocaleWithDefault()
 
+      logger.debug("Checking authentication {}", authentication)
+
       return if (authentication != null) {
+         val user = authenticationService.findUser(authentication).let { EmployeeEntity.fromUser(it) }
          val message = localizationService.localize(localizationCode = LoggedIn(authentication.name), locale = locale)
-         val authenticationDefinition = StandardAuthenticatedUser(authentication)
+         val authenticationDefinition = StandardAuthenticatedUser(user, user.store!!)
+
+         logger.debug("User is authenticated {}", authenticationDefinition)
 
          HttpResponse.ok(AuthenticatedUserInformation(authenticationDefinition, message))
       } else {
          val message = localizationService.localize(NotLoggedIn(), locale)
+
+         logger.debug("User was not authenticated")
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)

@@ -33,9 +33,8 @@ class DevelopDataLoader @Inject constructor(
    fun loadDemoData() {
       logger.info("Loading develop data")
 
-      val storeOne = storeFactoryService.store(1)
-      val storeThree = storeFactoryService.store(3)
-      val admin = employeeRepository.findOne(number = 998, employeeType = "eli")
+      val storeOne = storeFactoryService.store(1, "corrto")
+      val storeThree = storeFactoryService.store(3, "corrto")
       val storeOneEmployee = employeeFactoryService.single(storeOne)
       val storeThreeEmployee = employeeFactoryService.single(storeThree)
 
@@ -83,7 +82,6 @@ class DevelopDataLoader @Inject constructor(
       auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree))
 
       logger.info("Finished loading develop data")
-      logger.info("Admin employee {}", admin)
       logger.info("Store one employee {}", storeOneEmployee)
       logger.info("Store three employee {}", storeThreeEmployee)
    }
