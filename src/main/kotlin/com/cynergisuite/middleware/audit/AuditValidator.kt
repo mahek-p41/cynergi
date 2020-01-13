@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit
 
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
@@ -131,5 +132,9 @@ class AuditValidator @Inject constructor(
          ),
          auditRepository.findOne(audit.id!!, user.myDataset())!!
       )
+   }
+
+   fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject): AuditEntity {
+      
    }
 }

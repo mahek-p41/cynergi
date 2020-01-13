@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.makeCell
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
@@ -114,6 +115,11 @@ class AuditService @Inject constructor(
       }
 
       return AuditValueObject(updated, locale, localizationService)
+   }
+
+   fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
+      val toSignOff = auditValidator.validateSignOffAll(audit)
+      return auditExceptionRepository.signOffAllExceptions()
    }
 
    private fun buildHeader(audit: AuditEntity, writer: PdfWriter, document: Document) {

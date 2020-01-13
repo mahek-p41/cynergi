@@ -327,10 +327,10 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @Transactional
-   fun signOffAllExceptions(audit: AuditEntity, employee: User) {
+   fun signOffAllExceptions(audit: AuditEntity, employee: User): Int {
       logger.debug("Updating audit_exception {}", audit)
 
-      jdbc.update("""
+      return jdbc.update("""
          UPDATE audit_exception
          SET signed_off = true,
              signed_off_by = :employee

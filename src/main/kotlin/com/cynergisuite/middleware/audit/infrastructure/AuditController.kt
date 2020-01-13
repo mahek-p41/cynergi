@@ -1,9 +1,11 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditSignOffAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
@@ -166,5 +168,12 @@ class AuditController @Inject constructor(
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   fun signOffAllExceptions(
+      @Body audit: SimpleIdentifiableDataTransferObject,
+      authentication: Authentication
+   ): AuditSignOffAllExceptionsDataTransferObject {
+
    }
 }
