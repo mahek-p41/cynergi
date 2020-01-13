@@ -29,9 +29,9 @@ object EmployeeFactory {
             dataset = store.dataset,
             lastName = name.lastName(),
             firstNameMi = name.firstName(),
-            passCode = lorem.characters(3, 6),
+            passCode = "password",
             store = store,
-            active = bool.bool()
+            active = true
          )
       }
    }

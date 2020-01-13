@@ -531,6 +531,36 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.audit.id == savedAuditException.audit.myId()
    }
 
+   void "update audit exception to signed-off" () {
+      given:
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit)
+
+      when:
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: true]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id == auditException.id
+      result.signedOff == true
+   }
+
+   void "update audit without note or signedOff" () {
+      given:
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit)
+
+      when:
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: null, note: null]))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "Audit update requires either signed off or a note"
+   }
+
    void "update audit exception that has been signed-off" () {
       given:
       final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)

@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 cd "${0%/*}" # see: https://stackoverflow.com/questions/6393551/what-is-the-meaning-of-0-in-a-bash-script for explanation
 # need to make sure the current directory is that of this script in the cynergi-middleware/support/.cyn/ so that the child scripts will work correctly

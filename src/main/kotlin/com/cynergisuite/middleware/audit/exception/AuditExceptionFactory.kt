@@ -55,7 +55,7 @@ object AuditExceptionFactory {
             inventoryModel = if (random.nextBoolean()) lorem.characters(10, 18) else null,
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
-            signedOff = random.nextBoolean(),
+            signedOff = false,
             signedOffBy = null,
             lookupKey = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
             audit = SimpleIdentifiableEntity(audit)

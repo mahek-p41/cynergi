@@ -2,16 +2,11 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
-import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
-import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.User
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.validation.Validated
 import java.util.Locale
@@ -24,8 +19,6 @@ class AuditExceptionService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditExceptionValidator: AuditExceptionValidator,
-   private val auditScanAreaRepository: AuditScanAreaRepository,
-   private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
    fun fetchById(id: Long, dataset: String, locale: Locale): AuditExceptionValueObject? =
@@ -43,36 +36,14 @@ class AuditExceptionService @Inject constructor(
 
    @Validated
    fun create(auditId: Long, @Valid vo: AuditExceptionCreateValueObject, @Valid scannedBy: User, locale: Locale): AuditExceptionValueObject {
-      auditExceptionValidator.validateCreate(auditId, scannedBy.myDataset(), vo)
+      val auditException = auditExceptionValidator.validateCreate(auditId, scannedBy.myDataset(), vo, scannedBy)
 
-      val inventoryId = vo.inventory?.id
-      val barcode = vo.barcode
-      val scanArea = vo.scanArea
-      val auditException = auditExceptionRepository.insert(createAuditException(auditId, scannedBy, vo.exceptionCode!!, inventoryId, barcode, scanArea))
-
-      return transformEntity(auditException, locale)
+      return transformEntity(auditExceptionRepository.insert(auditException), locale)
    }
-
-   private fun createAuditException(auditId: Long, scannedBy: User, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
-      return if (inventoryId != null) {
-         val inventory = inventoryRepository.findOne(inventoryId, scannedBy.myDataset())!!
-
-         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), fromUser(scannedBy), exceptionCode)
-      } else {
-         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), fromUser(scannedBy), exceptionCode)
-      }
-   }
-
-   private fun createScanArea(scanArea: AuditScanAreaValueObject?): AuditScanArea? =
-      scanArea?.let { auditScanAreaRepository.findOne(it.value!!) }
 
    @Validated
    fun update(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid enteredBy: User, locale: Locale): AuditExceptionValueObject {
-      auditExceptionValidator.validateUpdate(auditId, enteredBy.myDataset(), vo)
-
-      val auditException = auditExceptionRepository.findOne(vo.id!!, enteredBy.myDataset())!!
-
-      auditException.notes.add(AuditExceptionNote(vo.note!!, enteredBy, auditException))
+      val auditException = auditExceptionValidator.validateUpdate(auditId, enteredBy.myDataset(), vo, enteredBy)
 
       return transformEntity(
          auditExceptionRepository.update(auditException),
