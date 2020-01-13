@@ -55,7 +55,10 @@ class AuditExceptionNoteFactoryService @Inject constructor(
          }
    }
 
-   fun single(): AuditExceptionNote {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
-   }
+   fun single(): AuditExceptionNote =
+      single(null, null)
+
+   fun single(auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): AuditExceptionNote =
+      stream(1, auditExceptionIn, enteredByIn).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
+
 }

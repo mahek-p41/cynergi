@@ -16,10 +16,11 @@ data class AuditEntity(
    val number: Int = 0,
    val totalDetails: Int = 0,
    val totalExceptions: Int = 0,
+   val hasExceptionNotes: Boolean = false,
    val lastUpdated: OffsetDateTime? = null,
    val inventoryCount: Int = 0,
    val dataset: String,
-   val actions: MutableSet<AuditActionEntity> = LinkedHashSet<AuditActionEntity>()
+   val actions: MutableSet<AuditActionEntity> = LinkedHashSet()
 ) : Entity<AuditEntity> {
 
    constructor(id: Long, audit: AuditEntity) :
@@ -30,6 +31,7 @@ data class AuditEntity(
          actions = audit.actions,
          totalDetails = audit.totalDetails,
          totalExceptions = audit.totalExceptions,
+         hasExceptionNotes = audit.hasExceptionNotes,
          inventoryCount = audit.inventoryCount,
          lastUpdated = audit.lastUpdated,
          dataset = audit.dataset
