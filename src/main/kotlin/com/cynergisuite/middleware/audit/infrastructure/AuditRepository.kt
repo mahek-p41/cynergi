@@ -18,7 +18,6 @@ import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -52,6 +51,12 @@ class AuditRepository @Inject constructor(
             a.number AS a_number,
             (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS a_total_details,
             (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            (
+             SELECT count(aen.id) > 0
+             FROM audit_exception ae
+                  JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
+             WHERE ae.audit_id = a.id
+            ) AS a_exception_has_notes,
             (SELECT max(time_updated)
                FROM (
                     SELECT time_updated FROM audit_detail WHERE audit_id = a.id
@@ -200,6 +205,12 @@ class AuditRepository @Inject constructor(
                a.number AS number,
                (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
                (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
+               (
+                SELECT count(aen.id) > 0
+                FROM audit_exception ae
+                     JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
+                WHERE ae.audit_id = a.id
+               ) AS exception_has_notes,
                (SELECT max(time_updated)
                   FROM (
                        SELECT time_updated FROM audit_detail WHERE audit_id = a.id
@@ -239,6 +250,7 @@ class AuditRepository @Inject constructor(
             a.current_status AS current_status,
             a.last_updated AS a_last_updated,
             a.inventory_count AS a_inventory_count,
+            a.exception_has_notes AS a_exception_has_notes,
             a.dataset AS a_dataset,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
@@ -484,6 +496,7 @@ class AuditRepository @Inject constructor(
          number = rs.getInt("a_number"),
          totalDetails = rs.getInt("a_total_details"),
          totalExceptions = rs.getInt("a_total_exceptions"),
+         hasExceptionNotes = rs.getBoolean("a_exception_has_notes"),
          inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated"),
          dataset = rs.getString("a_dataset")

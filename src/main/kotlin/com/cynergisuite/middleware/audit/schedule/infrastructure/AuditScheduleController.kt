@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObjec
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -82,7 +81,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
       val user = authenticationService.findUser(authentication)
-      val page =  auditScheduleService.fetchAll(pageRequest, user.myDataset())
+      val page = auditScheduleService.fetchAll(pageRequest, user.myDataset())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
