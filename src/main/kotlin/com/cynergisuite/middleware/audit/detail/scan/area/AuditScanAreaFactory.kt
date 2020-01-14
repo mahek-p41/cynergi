@@ -62,9 +62,8 @@ class AuditScanAreaFactoryService @Inject constructor(
          .map { auditScanAreaTypeDomainRepository.findOne(it.value)!! }
    }
 
-   fun single(): AuditScanArea {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditScanAreaTypeDomain") }
-   }
+   fun single(): AuditScanArea =
+      stream(1).findFirst().orElseThrow { Exception("Unable to find AuditScanAreaTypeDomain") }
 
    fun showroom(): AuditScanArea =
       AuditScanAreaFactory.showroom()
@@ -74,4 +73,10 @@ class AuditScanAreaFactoryService @Inject constructor(
 
    fun storeroom(): AuditScanArea =
       AuditScanAreaFactory.storeroom()
+
+   fun random(): AuditScanArea =
+      AuditScanAreaFactory
+         .findByValue(AuditScanAreaFactory.random().value)
+         .let { auditScanAreaTypeDomainRepository.findOne(it.value)!! }
+
 }

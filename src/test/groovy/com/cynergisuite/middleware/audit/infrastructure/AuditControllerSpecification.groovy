@@ -934,7 +934,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final store = storeFactoryService.store(1)
       final audit = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
       def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
@@ -990,7 +990,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final store = authenticatedEmployee.store
       final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
       put(path, new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "SIGNED-OFF"])]))
@@ -1012,7 +1012,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.storeOneTstds1()
       final employee = employeeFactoryService.single(store)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, null).toList()
+      final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, false).toList()
 
       when:
       def result = put("$path/sign-off/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
@@ -1021,5 +1021,21 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result != null
       result.signedOff == 9
+   }
+
+   void "sign off when all audit exceptions are already signed off" () {
+      given:
+      final store = storeFactoryService.storeOneTstds1()
+      final employee = employeeFactoryService.single(store)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, true).toList()
+
+      when:
+      def result = put("$path/sign-off/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result != null
+      result.signedOff == 0
    }
 }

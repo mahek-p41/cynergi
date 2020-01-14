@@ -316,7 +316,7 @@ class AuditExceptionRepository @Inject constructor(
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
-            "signed_off_by" to entity.signedOffBy,
+            "signed_off_by" to entity.signedOffBy?.myEmployeeNumber(),
             "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
          ),

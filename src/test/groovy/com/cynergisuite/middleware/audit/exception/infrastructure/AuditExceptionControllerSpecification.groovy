@@ -112,7 +112,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "fetch all exceptions for a single audit" () {
       given:
       final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -168,7 +168,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, null)
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false)
          .peek{ it.notes.addAll(auditExceptionNoteFactoryService.stream(2, it, authenticatedEmployee).toList()) } // create some notes and save them
          .map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }
          .toList()
@@ -252,7 +252,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = authenticatedEmployee.store
       final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
       def pageOneResult = get("/audit/${auditTwo.id}/exception")

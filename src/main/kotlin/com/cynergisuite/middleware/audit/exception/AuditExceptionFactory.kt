@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
@@ -43,6 +44,8 @@ object AuditExceptionFactory {
       val scannedBy = scannedByIn ?: EmployeeFactory.single()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
       val audit = auditIn ?: AuditFactory.single()
+      val signedOff = signedOffIn ?: random.nextBoolean()
+      val signedOffBy = if (signedOff) scannedByIn else null
 
       return IntStream.range(0, number).mapToObj {
          AuditExceptionEntity(
@@ -55,8 +58,8 @@ object AuditExceptionFactory {
             inventoryModel = if (random.nextBoolean()) lorem.characters(10, 18) else null,
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
-            signedOff = false,
-            signedOffBy = null,
+            signedOff = signedOff,
+            signedOffBy = signedOffBy,
             lookupKey = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
             audit = SimpleIdentifiableEntity(audit)
          )
@@ -84,18 +87,26 @@ object AuditExceptionFactory {
 class AuditExceptionFactoryService @Inject constructor(
    private val auditFactoryService: AuditFactoryService,
    private val auditExceptionRepository: AuditExceptionRepository,
+   private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val employeeFactoryService: EmployeeFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditExceptionEntity> {
+   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
       val audit = auditIn ?: auditFactoryService.single()
       val scannedBy = scannedByIn ?: employeeFactoryService.single()
+      val scanArea = auditScanAreaFactoryService.random()
 
-      return AuditExceptionFactory.stream(numberIn, audit, scannedBy)
+      return AuditExceptionFactory.stream(numberIn, audit, scannedBy, scanArea, signedOffIn)
          .map {
             auditExceptionRepository.insert(it)
          }
    }
+
+   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null) =
+      stream(numberIn, auditIn, scannedByIn, null, false)
+
+   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, signedOffIn: Boolean? = null) =
+      stream(numberIn, auditIn, scannedByIn, null, signedOffIn)
 
    fun generate(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null) =
       stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
