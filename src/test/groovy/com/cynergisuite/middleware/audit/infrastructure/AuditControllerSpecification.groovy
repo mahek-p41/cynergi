@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -1004,5 +1005,21 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['signedOff'] = true }
+   }
+
+   void "sign off on all audit exceptions" () {
+      given:
+      final store = storeFactoryService.storeOneTstds1()
+      final employee = employeeFactoryService.single(store)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, null).toList()
+
+      when:
+      def result = put("$path/sign-off/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result != null
+      result.signedOff == 9
    }
 }

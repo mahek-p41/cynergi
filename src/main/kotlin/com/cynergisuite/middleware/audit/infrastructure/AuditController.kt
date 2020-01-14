@@ -170,10 +170,24 @@ class AuditController @Inject constructor(
       return response
    }
 
+   @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
+   @AccessControl("audit-updateSignOffAllExceptions")
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AuditEndpoints"], summary = "Sign off on all audit exceptions", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on", operationId = "audit-updateSignOffAllExceptions")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    fun signOffAllExceptions(
       @Body audit: SimpleIdentifiableDataTransferObject,
       authentication: Authentication
    ): AuditSignOffAllExceptionsDataTransferObject {
+      logger.info("Requested sign of on all audit exceptions associated with audit {}", audit)
 
+      val user = authenticationService.findUser(authentication)
+
+      return auditService.signOffAllExceptions(audit, user)
    }
 }

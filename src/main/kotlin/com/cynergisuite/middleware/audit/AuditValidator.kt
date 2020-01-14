@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AuditOpenAtStore
@@ -134,7 +135,8 @@ class AuditValidator @Inject constructor(
       )
    }
 
-   fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject): AuditEntity {
-      
+   @Throws(NotFoundException::class)
+   fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject, dataset: String): AuditEntity {
+      return auditRepository.findOne(audit.myId()!!, dataset) ?: throw NotFoundException(audit.myId()!!)
    }
 }

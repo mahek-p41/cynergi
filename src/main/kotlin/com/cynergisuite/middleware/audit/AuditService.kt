@@ -118,8 +118,11 @@ class AuditService @Inject constructor(
    }
 
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
-      val toSignOff = auditValidator.validateSignOffAll(audit)
-      return auditExceptionRepository.signOffAllExceptions()
+      val toSignOff = auditValidator.validateSignOffAll(audit, user.myDataset())
+
+      return AuditSignOffAllExceptionsDataTransferObject(
+         auditExceptionRepository.signOffAllExceptions(toSignOff, user)
+      )
    }
 
    private fun buildHeader(audit: AuditEntity, writer: PdfWriter, document: Document) {
