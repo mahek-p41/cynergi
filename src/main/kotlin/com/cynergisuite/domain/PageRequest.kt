@@ -30,6 +30,7 @@ interface PageRequest {
    fun snakeSortBy(): String
    fun offset(): Int
    fun nextPage(): PageRequest
+   fun currentPageWithDefaultsForNulls(): PageRequest;
 }
 
 @DataTransferObject
@@ -66,6 +67,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    final override fun sortBy(): String = sortBy ?: DEFAULT_SORT_BY
    final override fun sortDirection(): String = sortDirection ?: DEFAULT_SORT_DIRECTION
    final override fun nextPage(): PAGE = myNextPage(this.page() + 1, size(), sortBy(), sortDirection())
+   final override fun currentPageWithDefaultsForNulls(): PageRequest = myNextPage(this.page(), size(), sortBy(), sortDirection())
 
    final override fun snakeSortBy(): String {
       val sortByMe = sortByMe()

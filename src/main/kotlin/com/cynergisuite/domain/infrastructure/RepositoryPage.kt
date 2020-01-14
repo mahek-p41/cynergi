@@ -17,7 +17,7 @@ data class RepositoryPage<ENTITY: Identifiable, REQUESTED: PageRequest>(
       return Page(
          elements = transformedElements,
          totalElements = this.totalElements,
-         requested = requested
+         requested = requested.currentPageWithDefaultsForNulls()
       )
    }
 }

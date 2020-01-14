@@ -109,6 +109,30 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
          .collect { new AuditExceptionNoteValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditNotes
    }
 
+   void "fetch all exceptions for a single audit with default paging" () {
+      given:
+      final audit = auditFactoryService.single()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final firstTenDiscrepancies = twentyAuditDiscrepancies[0..9]
+
+      when:
+      def pageOneResult = get("/audit/${audit.id}/exception")
+
+      then:
+      notThrown(HttpClientResponseException)
+      audit.number > 0
+      pageOneResult.requested.page == 1
+      pageOneResult.requested.size == 10
+      pageOneResult.requested.sortBy == "id"
+      pageOneResult.requested.sortDirection == "ASC"
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 10
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect { new AuditExceptionValueObject(it) } == firstTenDiscrepancies
+   }
+
    void "fetch all exceptions for a single audit" () {
       given:
       final audit = auditFactoryService.single()
@@ -125,6 +149,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       then:
       notThrown(HttpClientResponseException)
       audit.number > 0
+      pageOneResult.requested.page == 1
+      pageOneResult.requested.size == 5
+      pageOneResult.requested.sortBy == "id"
+      pageOneResult.requested.sortDirection == "ASC"
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5

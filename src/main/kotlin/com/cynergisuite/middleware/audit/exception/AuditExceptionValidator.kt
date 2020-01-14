@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.error.NotFoundException
@@ -115,13 +116,7 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (audit.currentStatus().value == "SIGNED-OFF") {
-            errors.add(
-               ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
-            )
-         }
-
-         if (signedOff != null && !signedOff && auditExceptionUpdate.note == null) {
+         if (audit.currentStatus() == SIGNED_OFF) {
             errors.add(
                ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
             )
