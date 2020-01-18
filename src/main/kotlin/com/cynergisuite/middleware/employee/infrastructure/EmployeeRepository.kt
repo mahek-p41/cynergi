@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.employee.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
@@ -15,14 +14,11 @@ import io.reactiverse.pgclient.impl.ArrayTuple
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
-import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.lang.StringBuilder
 import java.sql.ResultSet
-import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -142,7 +138,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
-      val params = mutableMapOf<String, Any?>("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myStoreNumber())
+      val params = mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myStoreNumber())
       val query = """
          ${selectBaseWithoutEmployeeStoreJoinQuery(params, user.myDataset())}
             ON s.number = :store_number
