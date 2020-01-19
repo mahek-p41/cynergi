@@ -56,7 +56,7 @@ class AuditFactoryService @Inject constructor(
 
    fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?): Stream<AuditEntity> {
       val store = storeIn ?: storeFactoryService.random()
-      val changedBy = changedByIn ?: employeeFactoryService.single()
+      val changedBy = changedByIn ?: employeeFactoryService.single(datasetIn = store.dataset)
 
       return AuditFactory.stream(numberIn, store, changedBy, statusesIn)
          .map {

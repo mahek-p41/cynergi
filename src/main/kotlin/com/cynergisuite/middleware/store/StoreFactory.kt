@@ -82,7 +82,10 @@ class StoreFactoryService(
       storeRepository.findOne(number, dataset) ?: throw Exception("Unable to find store $number")
 
    fun random(): StoreEntity =
-      store(StoreFactory.random()) ?: throw Exception("Unable to find random Store")
+      store(StoreFactory.random()) ?: throw Exception("Unable to find a random StoreEntity")
+
+   fun random(dataset: String): StoreEntity =
+      store(StoreFactory.random(dataset)) ?: throw Exception("Unable to find a random StoreEntity")
 
    fun storeOneTstds1(): StoreEntity =
       store(StoreFactory.storeOneTstds1()) ?: throw Exception("Unable to find Store 1")

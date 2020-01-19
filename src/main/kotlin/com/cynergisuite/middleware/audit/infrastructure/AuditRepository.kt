@@ -108,7 +108,7 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw s
                   ON a.store_number = s.number
                      AND a.dataset = s.dataset
-              JOIN fastinfo_prod_import.store_vw se
+              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
                      AND a.dataset = se.dataset
       """
@@ -289,7 +289,7 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw s
                   ON a.store_number = s.number
                   AND s.dataset = :dataset
-              JOIN fastinfo_prod_import.store_vw se
+              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
                   AND se.dataset = :dataset
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
