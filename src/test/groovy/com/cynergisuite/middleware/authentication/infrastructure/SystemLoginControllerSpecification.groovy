@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.store.StoreFactory
+import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
@@ -26,16 +27,17 @@ class SystemLoginControllerSpecification extends Specification {
    @Inject EmployeeService employeeService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject StoreService storeService
+   @Inject StoreFactoryService storeFactoryService
 
    void "login successful" () {
       given:
-      final employee = employeeService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet()
-      final store = storeService.fetchByNumber(3, 'tstds1')
+      final store = storeFactoryService.storeThreeTstds1()
+      final employee = employeeFactoryService.single(123, 'test', 'username', store, 'word', true, false)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(employee.number.toString(), employee.passCode, store.number, 'tstds1')),
+            POST("/login",new LoginCredentials(employee, 'word')),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -65,20 +67,21 @@ class SystemLoginControllerSpecification extends Specification {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == '111'
-      response.loginStatus == '111 is now logged in'
+      response.employeeNumber == '123'
+      response.loginStatus == '123 is now logged in'
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
 
    void "login failure due to invalid store" () {
       given:
-      final validEmployee = employeeService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet()
+      final store = storeFactoryService.storeThreeTstds1()
+      final validEmployee = employeeFactoryService.single(123, 'test', 'username', store, 'word', true, false)
 
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, validEmployee.dataset)),
+            POST("/login",new LoginCredentials(validEmployee.number.toString(), 'word', 75, validEmployee.dataset)),
             Argument.of(String),
             Argument.of(String)
          )

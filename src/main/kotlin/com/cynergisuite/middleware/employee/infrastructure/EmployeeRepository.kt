@@ -327,7 +327,7 @@ class EmployeeRepository @Inject constructor(
          id = rs.getLong("id"),
          type = "eli",
          number = rs.getInt("number"),
-         dataset = "cyneli",
+         dataset = rs.getString("dataset"),
          lastName = rs.getString("last_name"),
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),

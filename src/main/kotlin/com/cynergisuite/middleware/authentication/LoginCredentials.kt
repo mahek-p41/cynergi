@@ -25,4 +25,12 @@ class LoginCredentials(
 ): UsernamePasswordCredentials(
    username,
    password
-)
+) {
+   constructor(user: User, password: String) :
+      this(
+         username = user.myEmployeeNumber().toString(),
+         password = password,
+         storeNumber = user.myStoreNumber(),
+         dataset = user.myDataset()
+      )
+}
