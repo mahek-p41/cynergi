@@ -100,17 +100,17 @@ class AuditRepository @Inject constructor(
             se.dataset AS s_dataset
          FROM audit a
               JOIN audit_action aa
-                  ON a.id = aa.audit_id
+                   ON a.id = aa.audit_id
               JOIN audit_status_type_domain astd
-                  ON aa.status_id = astd.id
+                   ON aa.status_id = astd.id
               JOIN employees aer
-                  ON aa.changed_by = aer.e_number
+                   ON aa.changed_by = aer.e_number
               JOIN fastinfo_prod_import.store_vw s
-                  ON a.store_number = s.number
-                     AND a.dataset = s.dataset
+                   ON a.store_number = s.number
+                      AND a.dataset = s.dataset
               LEFT OUTER JOIN fastinfo_prod_import.store_vw se
-                  ON aer.s_number = se.number
-                     AND a.dataset = se.dataset
+                   ON aer.s_number = se.number
+                      AND a.dataset = se.dataset
       """
    }
 
