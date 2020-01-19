@@ -17,7 +17,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       given:
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, inventoryStatus: ["N", "O", "R", "D"]])
       when:
-      def pageOneResult = get("${path}${pageOne}")
+      def pageOneResult = get("${path}${pageOne}&extraParamter=one&exParamTwo=2")
 
       then:
       notThrown(HttpClientResponseException)

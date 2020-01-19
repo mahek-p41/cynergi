@@ -100,17 +100,17 @@ class AuditRepository @Inject constructor(
             se.dataset AS s_dataset
          FROM audit a
               JOIN audit_action aa
-                  ON a.id = aa.audit_id
+                   ON a.id = aa.audit_id
               JOIN audit_status_type_domain astd
-                  ON aa.status_id = astd.id
+                   ON aa.status_id = astd.id
               JOIN employees aer
-                  ON aa.changed_by = aer.e_number
+                   ON aa.changed_by = aer.e_number
               JOIN fastinfo_prod_import.store_vw s
-                  ON a.store_number = s.number
-                     AND a.dataset = s.dataset
-              JOIN fastinfo_prod_import.store_vw se
-                  ON aer.s_number = se.number
-                     AND a.dataset = se.dataset
+                   ON a.store_number = s.number
+                      AND a.dataset = s.dataset
+              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
+                   ON aer.s_number = se.number
+                      AND a.dataset = se.dataset
       """
    }
 
@@ -289,7 +289,7 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw s
                   ON a.store_number = s.number
                   AND s.dataset = :dataset
-              JOIN fastinfo_prod_import.store_vw se
+              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
                   AND se.dataset = :dataset
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
@@ -432,7 +432,7 @@ class AuditRepository @Inject constructor(
    fun insert(entity: AuditEntity): AuditEntity {
       logger.debug("Inserting audit {}", entity)
 
-      val audit = jdbc.insertReturning<AuditEntity>(
+      val audit = jdbc.insertReturning(
          """
         INSERT INTO audit(store_number, inventory_count, dataset)
          VALUES (

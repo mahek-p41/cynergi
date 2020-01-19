@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.department.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.middleware.department.DepartmentEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,7 +41,7 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   fun findOneByCode(code: String): DepartmentEntity? {
+   fun findOneByCodeAndDataset(code: String, dataset: String): DepartmentEntity? {
       logger.debug("Searching for department by code {}", code)
 
       val found = jdbc.findFirstOrNull("""
@@ -55,8 +54,12 @@ class DepartmentRepository @Inject constructor(
             dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw
          WHERE code = :code
+               AND dataset = :dataset
          """.trimIndent(),
-         mapOf("code" to code),
+         mapOf(
+            "code" to code,
+            "dataset" to dataset
+         ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 

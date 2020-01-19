@@ -30,10 +30,11 @@ object DepartmentFactory {
    )
 
    @JvmStatic
-   fun findByCode(code: String) = departments.first { it.code == code }
+   fun random() = departments.random()
 
    @JvmStatic
-   fun random() = departments.random()
+   fun random(dataset: String) =
+      departments.filter { it.dataset == dataset }.random()
 
    @JvmStatic
    fun all(): List<DepartmentEntity> = all("tstds1")
@@ -48,9 +49,18 @@ class DepartmentFactoryService(
    private val departmentRepository: DepartmentRepository
 ) {
 
-   fun department(code: String) : DepartmentEntity =
-      departmentRepository.findOneByCode(code) ?: throw Exception("Unable to find department $code")
+   fun department(code: String, dataset: String) : DepartmentEntity =
+      departmentRepository.findOneByCodeAndDataset(code, dataset) ?: throw Exception("Unable to find department $code")
 
-   fun random(): DepartmentEntity =
-      departmentRepository.findOneByCode(DepartmentFactory.random().code) ?: throw Exception("Unable to find random department")
+   fun random(): DepartmentEntity {
+      val department = DepartmentFactory.random()
+
+      return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
+   }
+
+   fun random(dataset: String): DepartmentEntity {
+      val department = DepartmentFactory.random(dataset)
+
+      return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
+   }
 }

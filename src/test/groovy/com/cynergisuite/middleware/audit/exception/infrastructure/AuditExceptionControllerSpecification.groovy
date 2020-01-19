@@ -73,7 +73,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception with a single attached note" () {
       given:
-      final auditNote = auditExceptionNoteFactoryService.single()
+      final auditNote = auditExceptionNoteFactoryService.single(null, authenticatedEmployee)
 
       when:
       def result = get("/audit/exception/${auditNote.auditException.myId()}")
