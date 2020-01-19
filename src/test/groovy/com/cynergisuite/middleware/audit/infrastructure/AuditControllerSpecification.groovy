@@ -87,6 +87,35 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
    }
 
+   void "fetch one audit by id with superfluous URL parameters" () {
+      given:
+      final store = storeFactoryService.store(3)
+      final savedAudit = auditFactoryService.single(store)
+
+      when:
+      def result = get("$path/${savedAudit.id}?extraOne=1&extraTwo=two")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.inventoryCount == 269
+      result.id == savedAudit.id
+      result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
+      result.lastUpdated == null
+      result.currentStatus.value == 'CREATED'
+      result.totalDetails == 0
+      result.totalExceptions == 0
+      result.store.storeNumber == store.number
+      result.store.name == store.name
+      result.store.dataset == store.dataset
+      result.actions.size() == 1
+      result.actions[0].id > 0
+      result.actions[0].status.value == 'CREATED'
+      result.actions[0].status.description == 'Created'
+      result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
+      result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
+      result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
+   }
+
    void "fetch one audit by id that has associated exceptions" () {
       given:
       final store = storeFactoryService.store(1)

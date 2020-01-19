@@ -28,21 +28,19 @@ object AuditFactory {
       return IntStream.range(0, number).mapToObj {
          AuditEntity(
             store = store,
-            actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet<AuditActionEntity>()),
+            actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet()),
             dataset = store.dataset
          )
       }
    }
 
    @JvmStatic
-   fun single(): AuditEntity {
-      return single(storeIn = StoreFactory.random())
-   }
+   fun single(): AuditEntity =
+      single(storeIn = StoreFactory.random())
 
    @JvmStatic
-   fun single(storeIn: StoreEntity): AuditEntity {
-      return stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
-   }
+   fun single(storeIn: StoreEntity): AuditEntity =
+      stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
 }
 
 @Singleton

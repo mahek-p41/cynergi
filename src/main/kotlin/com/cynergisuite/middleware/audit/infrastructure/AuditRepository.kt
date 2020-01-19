@@ -432,7 +432,7 @@ class AuditRepository @Inject constructor(
    fun insert(entity: AuditEntity): AuditEntity {
       logger.debug("Inserting audit {}", entity)
 
-      val audit = jdbc.insertReturning<AuditEntity>(
+      val audit = jdbc.insertReturning(
          """
         INSERT INTO audit(store_number, inventory_count, dataset)
          VALUES (
