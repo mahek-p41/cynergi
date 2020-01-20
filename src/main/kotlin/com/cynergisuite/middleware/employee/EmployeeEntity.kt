@@ -19,21 +19,6 @@ data class EmployeeEntity(
    val department: String? = null
 ) : User {
 
-   constructor(type: String, number: Int, dataset: String, lastName: String, firstNameMi: String, passCode: String, store: StoreEntity, active: Boolean, allowAutoStoreAssign: Boolean, department: String? = null) :
-      this(
-         id = null,
-         type = type,
-         number = number,
-         dataset = dataset,
-         lastName = lastName,
-         firstNameMi = firstNameMi,
-         passCode = passCode,
-         store = store,
-         active = active,
-         allowAutoStoreAssign = allowAutoStoreAssign,
-         department = department
-      )
-
    constructor(vo: EmployeeValueObject) :
       this(
          id = vo.id,

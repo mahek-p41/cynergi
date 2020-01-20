@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 cd "${0%/*}" # see: https://stackoverflow.com/questions/6393551/what-is-the-meaning-of-0-in-a-bash-script for explanation
 # need to make sure the current directory is that of this script in the cynergi-middleware/support/.cyn/ so that the child scripts will work correctly
@@ -32,14 +32,17 @@ while [ -n "$1" ]; do
 done
 
 if [ $HELP_MODE = true ]; then
+echo "Help mode was true"
   if [ $DIRECTORY_MODE = true ]; then
     SUB_COMMANDS=`ls $COMMAND`
-    echo "Possibly sub commands of [$INPUT ]"
+    echo "Possible sub commands of [$INPUT ]"
     echo "$SUB_COMMANDS"
     exit 0
-  else
-    echo "I can't help with [$INPUT ]" # TODO handle parsing of shell script to see if it takes arguments
-    exit -1
+  else # TODO handle parsing of shell script to see if it takes arguments
+    SUB_COMMANDS=`ls $COMMAND`
+    echo "Possible sub commands of [$INPUT ]"
+    echo "$SUB_COMMANDS"
+    exit 0
   fi
 elif [ $COMMAND_MODE = true ]; then
   eval "$COMMAND"

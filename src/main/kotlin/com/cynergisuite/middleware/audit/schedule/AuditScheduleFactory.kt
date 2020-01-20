@@ -1,9 +1,7 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.extensions.truncate
-import com.cynergisuite.middleware.department.DepartmentEntity
-import com.cynergisuite.middleware.department.DepartmentFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
+import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -75,15 +73,15 @@ object AuditScheduleFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class AuditScheduleFactoryService @Inject constructor(
-   private val departmentFactoryService: DepartmentFactoryService,
    private val employeeFactoryService: EmployeeFactoryService,
    private val scheduleRepository: ScheduleRepository,
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, dataset: String? = null): Stream<ScheduleEntity> {
-      val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random())
-      val employee = employeeIn ?: employeeFactoryService.single()
+   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, datasetIn: String? = null): Stream<ScheduleEntity> {
+      val dataset = datasetIn ?: storesIn?.firstOrNull()?.dataset ?: CompanyFactory.random().dataset
+      val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random(dataset))
+      val employee = employeeIn ?: employeeFactoryService.single(datasetIn = dataset)
 
       return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, employee, dataset)
          .map { scheduleRepository.insert(it) }

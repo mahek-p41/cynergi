@@ -73,7 +73,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception with a single attached note" () {
       given:
-      final auditNote = auditExceptionNoteFactoryService.single()
+      final auditNote = auditExceptionNoteFactoryService.single(null, authenticatedEmployee)
 
       when:
       def result = get("/audit/exception/${auditNote.auditException.myId()}")
@@ -109,10 +109,34 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
          .collect { new AuditExceptionNoteValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditNotes
    }
 
+   void "fetch all exceptions for a single audit with default paging" () {
+      given:
+      final audit = auditFactoryService.single()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final firstTenDiscrepancies = twentyAuditDiscrepancies[0..9]
+
+      when:
+      def pageOneResult = get("/audit/${audit.id}/exception")
+
+      then:
+      notThrown(HttpClientResponseException)
+      audit.number > 0
+      pageOneResult.requested.page == 1
+      pageOneResult.requested.size == 10
+      pageOneResult.requested.sortBy == "id"
+      pageOneResult.requested.sortDirection == "ASC"
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 10
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
+         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
+         .collect { new AuditExceptionValueObject(it) } == firstTenDiscrepancies
+   }
+
    void "fetch all exceptions for a single audit" () {
       given:
       final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -125,6 +149,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       then:
       notThrown(HttpClientResponseException)
       audit.number > 0
+      pageOneResult.requested.page == 1
+      pageOneResult.requested.size == 5
+      pageOneResult.requested.sortBy == "id"
+      pageOneResult.requested.sortDirection == "ASC"
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
@@ -168,7 +196,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, null)
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false)
          .peek{ it.notes.addAll(auditExceptionNoteFactoryService.stream(2, it, authenticatedEmployee).toList()) } // create some notes and save them
          .map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }
          .toList()
@@ -252,7 +280,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = authenticatedEmployee.store
       final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, authenticatedEmployee, null).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
       def pageOneResult = get("/audit/${auditTwo.id}/exception")
@@ -529,6 +557,36 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes[0].id > 0
       result.notes[0].note == noteText
       result.audit.id == savedAuditException.audit.myId()
+   }
+
+   void "update audit exception to signed-off" () {
+      given:
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit)
+
+      when:
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: true]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id == auditException.id
+      result.signedOff == true
+   }
+
+   void "update audit without note or signedOff" () {
+      given:
+      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit)
+
+      when:
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: null, note: null]))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "Audit update requires either signed off or a note"
    }
 
    void "update audit exception that has been signed-off" () {

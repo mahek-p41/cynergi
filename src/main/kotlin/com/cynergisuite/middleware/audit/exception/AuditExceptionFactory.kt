@@ -6,10 +6,13 @@ import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
+import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import org.apache.commons.lang3.RandomUtils
@@ -35,7 +38,7 @@ object AuditExceptionFactory {
    }
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditExceptionEntity> {
+   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
@@ -43,6 +46,8 @@ object AuditExceptionFactory {
       val scannedBy = scannedByIn ?: EmployeeFactory.single()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
       val audit = auditIn ?: AuditFactory.single()
+      val signedOff = signedOffIn ?: random.nextBoolean()
+      val signedOffBy = if (signedOff) scannedByIn else null
 
       return IntStream.range(0, number).mapToObj {
          AuditExceptionEntity(
@@ -55,8 +60,8 @@ object AuditExceptionFactory {
             inventoryModel = if (random.nextBoolean()) lorem.characters(10, 18) else null,
             scannedBy = scannedBy,
             exceptionCode = randomExceptionCode(),
-            signedOff = random.nextBoolean(),
-            signedOffBy = null,
+            signedOff = signedOff,
+            signedOffBy = signedOffBy,
             lookupKey = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
             audit = SimpleIdentifiableEntity(audit)
          )
@@ -84,28 +89,42 @@ object AuditExceptionFactory {
 class AuditExceptionFactoryService @Inject constructor(
    private val auditFactoryService: AuditFactoryService,
    private val auditExceptionRepository: AuditExceptionRepository,
-   private val employeeFactoryService: EmployeeFactoryService
+   private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
+   private val employeeFactoryService: EmployeeFactoryService,
+   private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditExceptionEntity> {
-      val audit = auditIn ?: auditFactoryService.single()
-      val scannedBy = scannedByIn ?: employeeFactoryService.single()
+   fun stream(numberIn: Int = 1, datasetIn: String? = null, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
+      val dataset = datasetIn ?: auditIn?.dataset ?: scannedByIn?.dataset ?: CompanyFactory.random().dataset
+      val store = auditIn?.store ?: storeFactoryService.random(dataset)
+      val audit = auditIn ?: auditFactoryService.single(storeIn = store)
+      val scannedBy = scannedByIn ?: employeeFactoryService.single(datasetIn = dataset)
+      val scanArea = auditScanAreaFactoryService.random()
 
-      return AuditExceptionFactory.stream(numberIn, audit, scannedBy)
+      return AuditExceptionFactory.stream(numberIn, audit, scannedBy, scanArea, signedOffIn)
          .map {
             auditExceptionRepository.insert(it)
          }
    }
 
+   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null) =
+      stream(numberIn, auditIn?.dataset, auditIn, scannedByIn, null, false)
+
+   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, signedOffIn: Boolean? = null) =
+      stream(numberIn, auditIn?.dataset, auditIn, scannedByIn, null, signedOffIn)
+
    fun generate(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null) =
-      stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
+      stream(numberIn, auditIn?.dataset, auditIn, scannedByIn, scanAreaIn).forEach {  }
 
    fun single(): AuditExceptionEntity =
       single(auditFactoryService.single())
+
+   fun single(dataset: String): AuditExceptionEntity =
+      stream(datasetIn = dataset).findFirst().orElseThrow { Exception("Unable to create AuditException") }
 
    fun single(auditIn: AuditEntity): AuditExceptionEntity =
       single(auditIn, null)
 
    fun single(auditIn: AuditEntity, scannedByIn: EmployeeEntity?): AuditExceptionEntity =
-      stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
+      stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditException") }
 }

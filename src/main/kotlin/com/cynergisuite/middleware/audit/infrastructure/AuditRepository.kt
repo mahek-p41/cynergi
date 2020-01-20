@@ -18,7 +18,6 @@ import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -52,6 +51,12 @@ class AuditRepository @Inject constructor(
             a.number AS a_number,
             (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS a_total_details,
             (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            (
+             SELECT count(aen.id) > 0
+             FROM audit_exception ae
+                  JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
+             WHERE ae.audit_id = a.id
+            ) AS a_exception_has_notes,
             (SELECT max(time_updated)
                FROM (
                     SELECT time_updated FROM audit_detail WHERE audit_id = a.id
@@ -95,17 +100,17 @@ class AuditRepository @Inject constructor(
             se.dataset AS s_dataset
          FROM audit a
               JOIN audit_action aa
-                  ON a.id = aa.audit_id
+                   ON a.id = aa.audit_id
               JOIN audit_status_type_domain astd
-                  ON aa.status_id = astd.id
+                   ON aa.status_id = astd.id
               JOIN employees aer
-                  ON aa.changed_by = aer.e_number
+                   ON aa.changed_by = aer.e_number
               JOIN fastinfo_prod_import.store_vw s
-                  ON a.store_number = s.number
-                     AND a.dataset = s.dataset
-              JOIN fastinfo_prod_import.store_vw se
-                  ON aer.s_number = se.number
-                     AND a.dataset = se.dataset
+                   ON a.store_number = s.number
+                      AND a.dataset = s.dataset
+              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
+                   ON aer.s_number = se.number
+                      AND a.dataset = se.dataset
       """
    }
 
@@ -200,6 +205,12 @@ class AuditRepository @Inject constructor(
                a.number AS number,
                (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
                (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
+               (
+                SELECT count(aen.id) > 0
+                FROM audit_exception ae
+                     JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
+                WHERE ae.audit_id = a.id
+               ) AS exception_has_notes,
                (SELECT max(time_updated)
                   FROM (
                        SELECT time_updated FROM audit_detail WHERE audit_id = a.id
@@ -239,6 +250,7 @@ class AuditRepository @Inject constructor(
             a.current_status AS current_status,
             a.last_updated AS a_last_updated,
             a.inventory_count AS a_inventory_count,
+            a.exception_has_notes AS a_exception_has_notes,
             a.dataset AS a_dataset,
             aa.id AS aa_id,
             aa.uu_row_id AS aa_uu_row_id,
@@ -277,7 +289,7 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw s
                   ON a.store_number = s.number
                   AND s.dataset = :dataset
-              JOIN fastinfo_prod_import.store_vw se
+              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
                   ON aer.s_number = se.number
                   AND se.dataset = :dataset
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
@@ -420,7 +432,7 @@ class AuditRepository @Inject constructor(
    fun insert(entity: AuditEntity): AuditEntity {
       logger.debug("Inserting audit {}", entity)
 
-      val audit = jdbc.insertReturning<AuditEntity>(
+      val audit = jdbc.insertReturning(
          """
         INSERT INTO audit(store_number, inventory_count, dataset)
          VALUES (
@@ -484,6 +496,7 @@ class AuditRepository @Inject constructor(
          number = rs.getInt("a_number"),
          totalDetails = rs.getInt("a_total_details"),
          totalExceptions = rs.getInt("a_total_exceptions"),
+         hasExceptionNotes = rs.getBoolean("a_exception_has_notes"),
          inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated"),
          dataset = rs.getString("a_dataset")

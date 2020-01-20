@@ -10,6 +10,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -315,27 +316,27 @@ class AuditExceptionRepository @Inject constructor(
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
-            "signed_off_by" to entity.signedOffBy,
+            "signed_off_by" to entity.signedOffBy?.myEmployeeNumber(),
             "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
          ),
-         RowMapper { rs, rowNum ->
+         RowMapper { rs, _ ->
             mapRow(rs, entity.scanArea, entity.scannedBy, entity.signedOffBy, entity.audit)
          }
       )
    }
 
    @Transactional
-   fun signOffAllExceptions(audit: AuditEntity, employee: User) {
+   fun signOffAllExceptions(audit: AuditEntity, employee: User): Int {
       logger.debug("Updating audit_exception {}", audit)
 
-      jdbc.update("""
+      return jdbc.update("""
          UPDATE audit_exception
          SET signed_off = true,
-         signed_off_by = :employee
+             signed_off_by = :employee
          WHERE audit_id = :audit_id
          AND signed_off = false
-         """.trimIndent(),
+         """,
          mapOf(
             "audit_id" to audit.myId(),
             "employee" to employee.myEmployeeNumber()
@@ -346,6 +347,24 @@ class AuditExceptionRepository @Inject constructor(
    @Transactional
    fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Updating audit_exception {}", entity)
+
+      jdbc.updateReturning("""
+         UPDATE audit_exception
+         SET signed_off = :signed_off,
+             signed_off_by = :employee
+         WHERE id = :id
+         RETURNING
+            *
+         """,
+         mapOf(
+            "signed_off" to entity.signedOff,
+            "employee" to if (entity.signedOff) entity.signedOffBy?.myEmployeeNumber() else null,
+            "id" to entity.id
+         ),
+         RowMapper { rs, _ ->
+            mapRow(rs, entity.scanArea, entity.scannedBy, entity.signedOffBy, entity.audit)
+         }
+      )
 
       val notes = entity.notes
          .asSequence()

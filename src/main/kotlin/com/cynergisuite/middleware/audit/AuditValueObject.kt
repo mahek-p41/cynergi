@@ -31,12 +31,15 @@ data class AuditValueObject (
    var auditNumber: Int = 0,
 
    @field:Positive
-   @field:Schema(name = "totalDetails", description="Total number of items scanned as part of an audit", minimum = "0", readOnly = true, required = false)
+   @field:Schema(name = "totalDetails", description = "Total number of items scanned as part of an audit", minimum = "0", readOnly = true, required = false)
    var totalDetails: Int = 0,
 
    @field:Positive
-   @field:Schema(name = "totalExceptions", description="Total number of exceptions associated with an audit", minimum = "0", readOnly = true, required = false)
+   @field:Schema(name = "totalExceptions", description = "Total number of exceptions associated with an audit", minimum = "0", readOnly = true, required = false)
    var totalExceptions: Int = 0,
+
+   @field:Schema(name = "hasExceptionNotes", description = "Indicates if any associated audit exception has one or more notes")
+   var hasExceptionNotes: Boolean = false,
 
    @field:Schema(name = "lastUpdated", description = "Last time an audit detail or audit exception was created", readOnly = true, required = false)
    val lastUpdated: OffsetDateTime? = null,
@@ -58,6 +61,7 @@ data class AuditValueObject (
          auditNumber = entity.number,
          totalDetails = entity.totalDetails,
          totalExceptions = entity.totalExceptions,
+         hasExceptionNotes = entity.hasExceptionNotes,
          lastUpdated = entity.lastUpdated,
          inventoryCount = entity.inventoryCount,
          actions = entity.actions.asSequence().map { action ->
