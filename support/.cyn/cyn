@@ -32,14 +32,17 @@ while [ -n "$1" ]; do
 done
 
 if [ $HELP_MODE = true ]; then
+echo "Help mode was true"
   if [ $DIRECTORY_MODE = true ]; then
     SUB_COMMANDS=`ls $COMMAND`
-    echo "Possibly sub commands of [$INPUT ]"
+    echo "Possible sub commands of [$INPUT ]"
     echo "$SUB_COMMANDS"
     exit 0
-  else
-    echo "I can't help with [$INPUT ]" # TODO handle parsing of shell script to see if it takes arguments
-    exit -1
+  else # TODO handle parsing of shell script to see if it takes arguments
+    SUB_COMMANDS=`ls $COMMAND`
+    echo "Possible sub commands of [$INPUT ]"
+    echo "$SUB_COMMANDS"
+    exit 0
   fi
 elif [ $COMMAND_MODE = true ]; then
   eval "$COMMAND"
