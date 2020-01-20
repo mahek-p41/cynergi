@@ -10,17 +10,23 @@ data class CompanyEntity(
    val id: Long,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val number: Int,
    val name: String,
-   val dataset: String
+   val doingBusinessAs: String,
+   val clientCode: String,
+   val clientId: Int,
+   val datasetCode: String,
+   val federalTaxNumber: String
 ) : Identifiable, Comparable<CompanyEntity> {
 
    constructor(company: CompanyValueObject) :
       this(
          id = company.id,
-         number = company.number!!,
          name = company.name!!,
-         dataset = company.dataset!!
+         doingBusinessAs = company.doingBusinessAs!!,
+         clientCode = company.clientCode!!,
+         clientId = company.clientId!!,
+         datasetCode = company.datasetCode!!,
+         federalTaxNumber = company.federalTaxNumber!!
       )
 
    override fun myId(): Long? = id
@@ -28,18 +34,24 @@ data class CompanyEntity(
    override fun hashCode(): Int =
       HashCodeBuilder()
          .append(this.id)
-         .append(this.number)
          .append(this.name)
-         .append(this.dataset)
+         .append(this.doingBusinessAs)
+         .append(this.clientCode)
+         .append(this.clientId)
+         .append(this.datasetCode)
+         .append(this.federalTaxNumber)
          .toHashCode()
 
    override fun equals(other: Any?): Boolean =
       if (other is CompanyEntity) {
          EqualsBuilder()
             .append(this.id, other.id)
-            .append(this.number, other.number)
             .append(this.name, other.name)
-            .append(this.dataset, other.dataset)
+            .append(this.doingBusinessAs, other.doingBusinessAs)
+            .append(this.clientCode, other.clientCode)
+            .append(this.clientId, other.clientId)
+            .append(this.datasetCode, other.datasetCode)
+            .append(this.federalTaxNumber, other.federalTaxNumber)
             .isEquals
       } else {
          false
@@ -48,8 +60,11 @@ data class CompanyEntity(
    override fun compareTo(other: CompanyEntity): Int =
       CompareToBuilder()
          .append(this.id, other.id)
-         .append(this.number, other.number)
          .append(this.name, other.name)
-         .append(this.dataset, other.dataset)
+         .append(this.doingBusinessAs, other.doingBusinessAs)
+         .append(this.clientCode, other.clientCode)
+         .append(this.clientId, other.clientId)
+         .append(this.datasetCode, other.datasetCode)
+         .append(this.federalTaxNumber, other.federalTaxNumber)
          .toComparison()
 }
