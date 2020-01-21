@@ -226,4 +226,34 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
+
+   void "check authenticated returns 401 when not logged in via HEAD" () {
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      final e = thrown(HttpClientResponseException)
+      e.response.body() == null
+      e.status == UNAUTHORIZED
+   }
+
+   void "check authenticated returns 401 when not logged in via GET" () {
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated/check"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      final e = thrown(HttpClientResponseException)
+      e.response.body() == null
+      e.status == UNAUTHORIZED
+   }
 }
