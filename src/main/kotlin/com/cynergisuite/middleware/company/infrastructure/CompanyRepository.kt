@@ -36,7 +36,7 @@ class CompanyRepository @Inject constructor(
          c.client_id           AS client_id,
          c.dataset_code        AS dataset_code,
          c.federal_tax_number  AS federal_tax_number
-      FROM fastinfo_prod_import.company c
+      FROM company c
    """.trimIndent()
 
    fun findCompanyByStore(store: StoreEntity): CompanyEntity? {
@@ -53,7 +53,7 @@ class CompanyRepository @Inject constructor(
            c.client_id           AS client_id,
            c.dataset_code        AS dataset_code,
            c.federal_tax_number  AS federal_tax_number
-         FROM fastinfo_prod_import.company c
+         FROM company c
               JOIN fastinfo_prod_import.store_vw s
                 ON c.id = s.company_id
          WHERE s.id = :store_id
@@ -117,7 +117,7 @@ class CompanyRepository @Inject constructor(
    }
 
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Company: {} exists resulted in {}", id, exists)
 
@@ -127,7 +127,7 @@ class CompanyRepository @Inject constructor(
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
    fun exists(dataset_code: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset_code FROM fastinfo_prod_import.company WHERE dataset_code = :dataset_code)", mapOf("dataset_code" to dataset_code), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset_code FROM company WHERE dataset_code = :dataset_code)", mapOf("dataset_code" to dataset_code), Boolean::class.java)!!
 
       logger.trace("Checking if Company: {} exists using dataset_code resulted in {}", dataset_code, exists)
 
