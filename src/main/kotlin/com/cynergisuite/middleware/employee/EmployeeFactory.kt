@@ -33,7 +33,7 @@ object EmployeeFactory {
       val numbers = faker.number()
       val name = faker.name()
       val employeeNumber = employeeNumberIn ?: numbers.numberBetween(10, 10_000)
-      val dataset = datasetIn ?: store?.dataset ?: CompanyFactory.random().dataset
+      val dataset = datasetIn ?: store?.dataset ?: CompanyFactory.random().datasetCode
       val lastName = lastNameIn ?: name.lastName()
       val passCode = passCodeIn ?: lorem.characters(3, 8)
       val active = activeIn ?: true
@@ -100,7 +100,7 @@ class EmployeeFactoryService @Inject constructor(
       allowAutoStoreAssignIn: Boolean? = null,
       department: DepartmentEntity? = null
    ): Stream<EmployeeEntity> {
-      val dataset = store?.dataset ?: datasetIn ?: companyFactoryService.random().dataset
+      val dataset = store?.dataset ?: datasetIn ?: companyFactoryService.random().datasetCode
 
       return EmployeeFactory.stream(
          numberIn = numberIn,

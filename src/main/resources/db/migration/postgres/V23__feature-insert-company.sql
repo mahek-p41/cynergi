@@ -7,7 +7,7 @@ CREATE TABLE company
     name               VARCHAR(150) CHECK ( char_length(trim(name)) > 1 )       NOT NULL,
     doing_business_as  VARCHAR(100) CHECK ( char_length(trim(doing_business_as)) > 1 ),
     client_code        VARCHAR(6) CHECK ( char_length(trim(client_code)) > 1 )  NOT NULL,
-    client_id          INTEGER CHECK ( client_id > 0 )                          NOT NULL,
+    client_id          INTEGER    CHECK ( client_id > 0 )                       NOT NULL,
     dataset_code       VARCHAR(6) CHECK ( char_length(trim(dataset_code)) = 6 ) NOT NULL,
     federal_tax_number VARCHAR(12),
     UNIQUE (client_id)

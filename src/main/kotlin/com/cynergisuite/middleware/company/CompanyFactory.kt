@@ -11,7 +11,7 @@ object CompanyFactory {
       CompanyEntity(
          id = 4,
          name = "RENTAL CITY",
-         doingBusinessAs = null!!,
+         doingBusinessAs = null,
          clientCode = "RCT",
          clientId = 1234,
          datasetCode = "tstds1",
@@ -28,6 +28,9 @@ object CompanyFactory {
 
    @JvmStatic
    fun all(): List<CompanyEntity> = companies
+
+   @JvmStatic
+   fun random() = companies.random()
 }
 
 @Singleton
