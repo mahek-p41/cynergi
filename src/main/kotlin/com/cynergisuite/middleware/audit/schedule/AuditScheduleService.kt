@@ -133,7 +133,7 @@ class AuditScheduleService @Inject constructor(
                startDate = LocalDate.now(),
                dateCreated = null,
                expirationDate = LocalDate.now().plusDays(7),
-               company = company.number.toString(),
+               company = company.datasetCode,
                message = schedule.description!!,
                sendingEmployee = employee.number.toString(),
                notificationType = STORE.value

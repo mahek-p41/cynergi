@@ -95,7 +95,7 @@ class AuditExceptionFactoryService @Inject constructor(
 ) {
 
    fun stream(numberIn: Int = 1, datasetIn: String? = null, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
-      val dataset = datasetIn ?: auditIn?.dataset ?: scannedByIn?.dataset ?: CompanyFactory.random().dataset
+      val dataset = datasetIn ?: auditIn?.dataset ?: scannedByIn?.dataset ?: CompanyFactory.random().datasetCode
       val store = auditIn?.store ?: storeFactoryService.random(dataset)
       val audit = auditIn ?: auditFactoryService.single(storeIn = store)
       val scannedBy = scannedByIn ?: employeeFactoryService.single(datasetIn = dataset)

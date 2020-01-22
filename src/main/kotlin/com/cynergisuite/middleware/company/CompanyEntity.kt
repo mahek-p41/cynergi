@@ -11,7 +11,7 @@ data class CompanyEntity(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val name: String,
-   val doingBusinessAs: String,
+   val doingBusinessAs: String?,
    val clientCode: String,
    val clientId: Int,
    val datasetCode: String,
@@ -22,7 +22,7 @@ data class CompanyEntity(
       this(
          id = company.id,
          name = company.name!!,
-         doingBusinessAs = company.doingBusinessAs!!,
+         doingBusinessAs = company.doingBusinessAs,
          clientCode = company.clientCode!!,
          clientId = company.clientId!!,
          datasetCode = company.datasetCode!!,
