@@ -34,20 +34,20 @@ class CompanyControllerSpecification extends ServiceSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 2
       pageOneResult.totalElements == 2
-      pageOneResult.elements[0].id == super.companies[0].id
-      pageOneResult.elements[0].name == super.companies[0].name
-      pageOneResult.elements[0].doingBusinessAs == super.companies[0].doingBusinessAs
-      pageOneResult.elements[0].clientCode == super.companies[0].clientCode
-      pageOneResult.elements[0].clientId == super.companies[0].clientId
-      pageOneResult.elements[0].datasetCode == super.companies[0].datasetCode
-      pageOneResult.elements[0].federalTaxNumber == super.companies[0].federalTaxNumber
-      pageOneResult.elements[1].id == super.companies[1].id
-      pageOneResult.elements[1].name == super.companies[1].name
-      pageOneResult.elements[1].doingBusinessAs == super.companies[1].doingBusinessAs
-      pageOneResult.elements[1].clientCode == super.companies[1].clientCode
-      pageOneResult.elements[1].clientId == super.companies[1].clientId
-      pageOneResult.elements[1].datasetCode == super.companies[1].datasetCode
-      pageOneResult.elements[1].federalTaxNumber == super.companies[1].federalTaxNumber
+      pageOneResult.elements[0].id == companies[0].id
+      pageOneResult.elements[0].name == companies[0].name
+      pageOneResult.elements[0].doingBusinessAs == companies[0].doingBusinessAs
+      pageOneResult.elements[0].clientCode == companies[0].clientCode
+      pageOneResult.elements[0].clientId == companies[0].clientId
+      pageOneResult.elements[0].datasetCode == companies[0].datasetCode
+      pageOneResult.elements[0].federalTaxNumber == companies[0].federalTaxNumber
+      pageOneResult.elements[1].id == companies[1].id
+      pageOneResult.elements[1].name == companies[1].name
+      pageOneResult.elements[1].doingBusinessAs == companies[1].doingBusinessAs
+      pageOneResult.elements[1].clientCode == companies[1].clientCode
+      pageOneResult.elements[1].clientId == companies[1].clientId
+      pageOneResult.elements[1].datasetCode == companies[1].datasetCode
+      pageOneResult.elements[1].federalTaxNumber == companies[1].federalTaxNumber
 
       when:
       httpClient.toBlocking().exchange(GET(pageTwo.toString()), // login without authorization
