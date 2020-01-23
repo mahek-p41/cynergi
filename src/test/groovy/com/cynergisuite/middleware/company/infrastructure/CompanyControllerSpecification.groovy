@@ -1,30 +1,26 @@
 package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.company.CompanyFactory
-import com.cynergisuite.middleware.company.CompanyFactoryService
+import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
-import spock.lang.Specification
 
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
-class CompanyControllerSpecification extends Specification {
+class CompanyControllerSpecification extends ServiceSpecificationBase {
    @Client("/api/company") @Inject RxHttpClient httpClient // since the company controller only has a single endpoint of fetchAll and it doesn't require authentication no need to use the ControllerSpecificationBase class.  Also there is nothing to cleanup
-   @Inject CompanyFactoryService companyFactoryService
 
-   void "fetch all companies" () {
+   void "fetch all companies predefined companies" () {
       given:
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
-      final allCompanies = CompanyFactory.all().sort { o1, o2 -> o1.id <=> o2.id }
 
       when:
       def pageOneResult = httpClient.toBlocking().exchange(GET(pageOne.toString()), // login without authorization
@@ -38,14 +34,20 @@ class CompanyControllerSpecification extends Specification {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 2
       pageOneResult.totalElements == 2
-      pageOneResult.elements[0].id == allCompanies[0].id
-      pageOneResult.elements[0].companyNumber == allCompanies[0].number
-      pageOneResult.elements[0].name == allCompanies[0].name
-      pageOneResult.elements[0].dataset == allCompanies[0].dataset
-      pageOneResult.elements[1].id == allCompanies[1].id
-      pageOneResult.elements[1].companyNumber == allCompanies[1].number
-      pageOneResult.elements[1].name == allCompanies[1].name
-      pageOneResult.elements[1].dataset == allCompanies[1].dataset
+      pageOneResult.elements[0].id == super.companies[0].id
+      pageOneResult.elements[0].name == super.companies[0].name
+      pageOneResult.elements[0].doingBusinessAs == super.companies[0].doingBusinessAs
+      pageOneResult.elements[0].clientCode == super.companies[0].clientCode
+      pageOneResult.elements[0].clientId == super.companies[0].clientId
+      pageOneResult.elements[0].datasetCode == super.companies[0].datasetCode
+      pageOneResult.elements[0].federalTaxNumber == super.companies[0].federalTaxNumber
+      pageOneResult.elements[1].id == super.companies[1].id
+      pageOneResult.elements[1].name == super.companies[1].name
+      pageOneResult.elements[1].doingBusinessAs == super.companies[1].doingBusinessAs
+      pageOneResult.elements[1].clientCode == super.companies[1].clientCode
+      pageOneResult.elements[1].clientId == super.companies[1].clientId
+      pageOneResult.elements[1].datasetCode == super.companies[1].datasetCode
+      pageOneResult.elements[1].federalTaxNumber == super.companies[1].federalTaxNumber
 
       when:
       httpClient.toBlocking().exchange(GET(pageTwo.toString()), // login without authorization
