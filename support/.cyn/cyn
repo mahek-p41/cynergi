@@ -43,6 +43,7 @@ if [ "$SCRIPT" ]; then
   echo "running --> $POSSIBLE"
   eval $POSSIBLE
 else
+  [ ! "$POSSIBLE" ] && POSSIBLE="$CMD"
   LAST=$(find $POSSIBLE -maxdepth 1 | tail -n +2)
   drive "$LAST"
 fi
