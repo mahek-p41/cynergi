@@ -29,7 +29,7 @@ CMD="./commands"
 while [ "$1" ]
 do
   POSSIBLE=$(find $CMD/${1}* -maxdepth 0 2>/dev/null)
-  [ $? -ne 0 ] && echo "No possible matches from $CMD" && exit 99
+  [ $? -ne 0 ] && echo "No possible matches for $1" && POSSIBLE="$CMD"
   if [ $(echo "$POSSIBLE" | wc -l) -eq 1 ]; then
      CMD="$POSSIBLE"
      [ -f "$POSSIBLE" ] && SCRIPT=true
