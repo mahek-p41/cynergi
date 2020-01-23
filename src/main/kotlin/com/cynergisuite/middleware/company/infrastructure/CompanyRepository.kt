@@ -56,9 +56,9 @@ class CompanyRepository @Inject constructor(
            c.federal_tax_number  AS federal_tax_number
          FROM company c
               JOIN fastinfo_prod_import.store_vw s
-                ON c.id = s.company_id
-                   AND c.dataset_code = s.dataset
-         WHERE s.id = :store_id AND s.dataset = :dataset
+                ON c.dataset_code = s.dataset
+         WHERE s.id = :store_id
+               AND s.dataset = :dataset
          """,
          mapOf(
             "store_id" to store.id,
@@ -142,12 +142,24 @@ class CompanyRepository @Inject constructor(
    fun doesNotExist(dataset_code: String): Boolean = !exists(dataset_code)
 
    fun insert(company: CompanyEntity): CompanyEntity {
-      logger.debug("Insertng company {}", company)
+      logger.debug("Inserting company {}", company)
 
-      jdbc.insertReturning("""
+      return jdbc.insertReturning("""
          INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_tax_number)
-         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_tax_number
-      """)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_tax_number)
+         RETURNING
+            *
+         """,
+         mapOf(
+            "name" to company.name,
+            "doing_business_as" to company.doingBusinessAs,
+            "client_code" to company.clientCode,
+            "client_id" to company.clientId,
+            "dataset_code" to company.datasetCode,
+            "federal_tax_number" to company.federalTaxNumber
+         ),
+         RowMapper { rs, rowNum -> mapRow(rs) }
+      )
    }
 
    fun maybeMapRow(rs: ResultSet, columnPrefix: String): CompanyEntity? =
