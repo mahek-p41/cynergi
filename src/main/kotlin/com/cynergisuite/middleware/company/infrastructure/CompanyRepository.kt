@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
@@ -104,7 +105,7 @@ class CompanyRepository @Inject constructor(
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
-         """.trimIndent(),
+         """,
          emptyMap<String, Any>()
       ) { rs ->
          if (totalElements == null) {
@@ -162,28 +163,8 @@ class CompanyRepository @Inject constructor(
       )
    }
 
-   fun maybeMapRow(rs: ResultSet, columnPrefix: String): CompanyEntity? =
-      if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, columnPrefix)
-      } else {
-         null
-      }
-
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): CompanyEntity =
       simpleCompanyRowMapper.mapRow(rs, columnPrefix)
-
-   fun mapRow(row: Row, columnPrefix: String = EMPTY): CompanyEntity =
-      CompanyEntity(
-         id = row.getLong("${columnPrefix}id"),
-         timeCreated = row.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = row.getOffsetDateTime("${columnPrefix}time_updated"),
-         name = row.getString("${columnPrefix}name"),
-         doingBusinessAs = row.getString("${columnPrefix}doing_business_as"),
-         clientCode = row.getString("${columnPrefix}client_code"),
-         clientId = row.getInteger("${columnPrefix}client_id"),
-         datasetCode = row.getString("${columnPrefix}dataset_code"),
-         federalTaxNumber = row.getString("${columnPrefix}federal_tax_number")
-      )
 }
 
 private class CompanyRowMapper : RowMapper<CompanyEntity> {
@@ -193,6 +174,7 @@ private class CompanyRowMapper : RowMapper<CompanyEntity> {
    fun mapRow(rs: ResultSet, columnPrefix: String): CompanyEntity =
       CompanyEntity(
          id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          name = rs.getString("${columnPrefix}name"),
