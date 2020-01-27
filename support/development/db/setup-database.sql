@@ -14,6 +14,21 @@ BEGIN
    sqlToExec := 'CREATE OR REPLACE VIEW company_vw AS';
    unionAll := '';
 
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
+      DROP VIEW company_vw;
+   END IF;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionStr VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW department_vw AS';
+   unionStr := '';
+
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'department_vw') THEN
       DROP VIEW department_vw;
    END IF;
