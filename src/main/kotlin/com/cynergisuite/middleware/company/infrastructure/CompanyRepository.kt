@@ -30,6 +30,7 @@ class CompanyRepository @Inject constructor(
    final val selectBase = """
       SELECT
          c.id                  AS id,
+         c.uu_row_id           AS uu_row_id,
          c.time_created        AS time_created,
          c.time_updated        AS time_updated,
          c.name                AS name,
@@ -47,6 +48,7 @@ class CompanyRepository @Inject constructor(
       val found = jdbc.findFirstOrNull("""
          SELECT
            c.id                  AS id,
+           c.uu_row_id           AS uu_row_id,
            c.time_created        AS time_created,
            c.time_updated        AS time_updated,
            c.name                AS name,
