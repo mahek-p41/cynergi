@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import io.reactiverse.reactivex.pgclient.Row
@@ -37,7 +38,7 @@ class CompanyRepository @Inject constructor(
          c.dataset_code        AS dataset_code,
          c.federal_tax_number  AS federal_tax_number
       FROM company c
-   """.trimIndent()
+   """
 
    fun findCompanyByStore(store: StoreEntity): CompanyEntity? {
       logger.debug("Search for company using store id {}", store.id)
@@ -55,10 +56,14 @@ class CompanyRepository @Inject constructor(
            c.federal_tax_number  AS federal_tax_number
          FROM company c
               JOIN fastinfo_prod_import.store_vw s
-                ON c.id = s.company_id
+                ON c.dataset_code = s.dataset
          WHERE s.id = :store_id
-         """.trimIndent(),
-         mapOf("store_id" to store.id),
+               AND s.dataset = :dataset
+         """,
+         mapOf(
+            "store_id" to store.id,
+            "dataset" to store.dataset
+         ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -135,6 +140,27 @@ class CompanyRepository @Inject constructor(
    }
 
    fun doesNotExist(dataset_code: String): Boolean = !exists(dataset_code)
+
+   fun insert(company: CompanyEntity): CompanyEntity {
+      logger.debug("Inserting company {}", company)
+
+      return jdbc.insertReturning("""
+         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_tax_number)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_tax_number)
+         RETURNING
+            *
+         """,
+         mapOf(
+            "name" to company.name,
+            "doing_business_as" to company.doingBusinessAs,
+            "client_code" to company.clientCode,
+            "client_id" to company.clientId,
+            "dataset_code" to company.datasetCode,
+            "federal_tax_number" to company.federalTaxNumber
+         ),
+         RowMapper { rs, rowNum -> mapRow(rs) }
+      )
+   }
 
    fun maybeMapRow(rs: ResultSet, columnPrefix: String): CompanyEntity? =
       if (rs.getString("${columnPrefix}id") != null) {

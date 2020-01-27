@@ -7,15 +7,15 @@ import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.OffsetDateTime
 
 data class CompanyEntity(
-   val id: Long,
+   val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val name: String,
-   val doingBusinessAs: String?,
+   val doingBusinessAs: String? = null,
    val clientCode: String,
    val clientId: Int,
    val datasetCode: String,
-   val federalTaxNumber: String
+   val federalTaxNumber: String? = null
 ) : Identifiable, Comparable<CompanyEntity> {
 
    constructor(company: CompanyValueObject) :
@@ -26,7 +26,7 @@ data class CompanyEntity(
          clientCode = company.clientCode!!,
          clientId = company.clientId!!,
          datasetCode = company.datasetCode!!,
-         federalTaxNumber = company.federalTaxNumber!!
+         federalTaxNumber = company.federalTaxNumber
       )
 
    override fun myId(): Long? = id
