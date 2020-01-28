@@ -17,7 +17,7 @@ data class CompanyValueObject(
    var id: Long? = null,
 
    @field:NotNull
-   @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a company")
+   @field:Schema(name = "name", required = false, nullable = false, description = "Human readable name for a company")
    var name: String? = null,
 
    @field:Schema(name = "doingBusinessAs", required = false, nullable = true, description = "Doing business as")
@@ -34,7 +34,7 @@ data class CompanyValueObject(
    var clientId: Int? = null,
 
    @field:NotNull
-   @field:Schema(name = "datasetCode", required = false, nullable = true, description = "Dataset that this company belongs to")
+   @field:Schema(name = "datasetCode", required = false, nullable = false, description = "Dataset that this company belongs to")
    var datasetCode: String? = null,
 
    @field:Schema(name = "federalTaxNumber", required = true, nullable = false, description = "Federal taxpayer identification number")

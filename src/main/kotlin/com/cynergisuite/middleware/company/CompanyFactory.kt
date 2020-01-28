@@ -52,7 +52,7 @@ object CompanyFactory {
    }
 
    @JvmStatic
-   fun predfined(): List<CompanyEntity> = companies
+   fun predefined(): List<CompanyEntity> = companies
 
    @JvmStatic
    fun random() = companies.random()
@@ -66,6 +66,7 @@ object CompanyFactory {
    @JvmStatic
    fun forDatasetCode(datasetCode: String): CompanyEntity =
       companies.first { it.datasetCode == datasetCode }
+
 }
 
 @Singleton
@@ -75,7 +76,7 @@ class CompanyFactoryService(
 ) {
 
    fun streamPredefined(): Stream<CompanyEntity> =
-      CompanyFactory.predfined().stream()
+      CompanyFactory.predefined().stream()
          .map { companyRepository.insert(it) }
 
    fun stream(numberIn: Int = 1): Stream<CompanyEntity> =
