@@ -23,5 +23,5 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
 @Around
 @Type(AccessControlService::class)
 annotation class AccessControl(
-   val asset: String
+   val value: String
 )

@@ -1,10 +1,6 @@
 micronaut:
    application:
       name: cynergi-middleware
-   caches:
-      user-cache:
-         maximumSize: 50
-         expire-after-write: 3600s
    security:
       enabled: true
       endpoints:

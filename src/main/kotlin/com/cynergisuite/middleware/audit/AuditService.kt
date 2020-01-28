@@ -94,27 +94,32 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun update(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
-      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(audit, user, locale)
+   fun completeOrCancel(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
+      val (validAuditAction, existingAudit) = auditValidator.validateCompleteOrCancel(audit, user, locale)
 
       existingAudit.actions.add(validAuditAction)
 
       val updated = auditRepository.update(existingAudit)
 
-      if (updated.currentStatus() == SIGNED_OFF) {
-         auditExceptionRepository.signOffAllExceptions(updated, user)
-         reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf") { reportalOutputStream ->
+      return AuditValueObject(updated, locale, localizationService)
+   }
+
+   fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
+      val existing = auditValidator.validateSignOff(audit, user.myDataset(), user, locale)
+
+      if (existing.currentStatus() == SIGNED_OFF) {
+         auditExceptionRepository.signOffAllExceptions(existing, user)
+
+         reportalService.generateReportalDocument(existing.store, "IdleInventoryReport${existing.number}","pdf") { reportalOutputStream ->
             Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
                val writer = PdfWriter.getInstance(document, reportalOutputStream)
 
-               writer.pageEvent = object : PdfPageEventHelper() { override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(updated, writer, document) }
+               writer.pageEvent = object : PdfPageEventHelper() { override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(existing, writer, document) }
                document.open()
-               document.add(buildExceptionReport(updated, document.pageSize.width))
+               document.add(buildExceptionReport(existing, document.pageSize.width))
             }
          }
       }
-
-      return AuditValueObject(updated, locale, localizationService)
    }
 
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {

@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.pgclient.impl.ArrayTuple
 import io.reactiverse.reactivex.pgclient.PgPool
@@ -287,17 +286,6 @@ class EmployeeRepository @Inject constructor(
             mapDDLRow(rs, entity.store)
          }
       )
-   }
-
-   @Cacheable("user-cache")
-   fun canEmployeeAccess(employeeType: String, asset: String, id: Long): Boolean {
-      logger.debug("Check if user {} has access to asset {} via the database", id, asset)
-
-      return if(asset == "check") { // everyone authenticated should be able to access this asset
-         true
-      } else {
-         true // TODO do this check once the appropriate data from the menu/modules conversion is in place
-      }
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity  =

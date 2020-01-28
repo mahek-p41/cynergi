@@ -146,28 +146,46 @@ class AuditController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("audit-update")
+   @AccessControl("audit-CompleteOrCancel")
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-update")
+   @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-CompleteOrCancel")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun update(
+   fun addNoteCompleteOrCancel(
       @Body audit: AuditUpdateValueObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
-      logger.info("Requested Update Audit {}", audit)
+      logger.info("Requested Audit status change or note  {}", audit)
 
       val user = authenticationService.findUser(authentication)
-      val response = auditService.update(audit = audit, user = user, locale = httpRequest.findLocaleWithDefault())
+      val response = auditService.completeOrCancel(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   @Put("/sign-off", processes = [APPLICATION_JSON])
+   @AccessControl("audit-updateSignOff")
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AuditEndpoints"], summary = "Sign off on an audit", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on as well as signing off the audit.", operationId = "audit-updateSignOff")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun signOff(
+      @Body audit: SimpleIdentifiableDataTransferObject,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AuditValueObject {
+      logger.info("")
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])

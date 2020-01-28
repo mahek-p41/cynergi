@@ -16,4 +16,12 @@ class AuthenticationService(
       employeeRepository
          .findOne(StandardAuthenticatedUser(authentication))
          ?: throw AccessException(NotLoggedIn(), authentication = authentication)
+
+   fun canUserAccess(authentication: Authentication, asset: String): Boolean {
+      val user = StandardAuthenticatedUser(authentication)
+
+
+
+      return true;
+   }
 }
