@@ -49,7 +49,6 @@ class CompanyControllerSpecification extends ServiceSpecificationBase {
       pageOneResult.elements[1].datasetCode == companies[1].datasetCode
       pageOneResult.elements[1].federalTaxNumber == companies[1].federalTaxNumber
 
-
       when:
       httpClient.toBlocking().exchange(GET(pageTwo.toString()), // login without authorization
          Argument.of(String),

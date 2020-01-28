@@ -10,7 +10,6 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Company", title = "An entity containing a rental company", description = "An entity containing a rental company.", requiredProperties = ["clientId", "name", "clientId", "datasetCode"])
-
 data class CompanyValueObject(
 
    @field:Positive

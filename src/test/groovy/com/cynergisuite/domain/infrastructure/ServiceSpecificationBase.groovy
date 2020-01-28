@@ -14,8 +14,6 @@ abstract class ServiceSpecificationBase extends Specification {
 
    void setup() {
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
-   }
-   void cleanup() {
       truncateDatabaseService.truncate()
    }
 }
