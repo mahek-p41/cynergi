@@ -161,7 +161,7 @@ class CompanyRepository @Inject constructor(
             "dataset_code" to company.datasetCode,
             "federal_tax_number" to company.federalTaxNumber
          ),
-         RowMapper { rs, rowNum -> mapRow(rs) }
+         RowMapper { rs, _ -> mapRow(rs) }
       )
    }
 

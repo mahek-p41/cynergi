@@ -271,7 +271,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       allPropertiesFullAndNotEmpty(updatedVerification)
 
       dbReferences.size() == 5
-      dbReferences.collect { it.id } == savedVerification.references.collect { it.id } // check that the db only contains the 5 items passed through the PUT call
+      dbReferences.collect { it.id }.sort { o1, o2 -> o1 <=> o2 } == savedVerification.references.collect { it.id }.sort { o1, o2 -> o1 <=> o2} // check that the db only contains the 5 items passed through the PUT call
    }
 
    void "delete two previously created verification reference via update with one missing" () {
@@ -298,6 +298,6 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       allPropertiesFullAndNotEmpty(updatedVerification)
 
       dbReferences.size() == 4
-      dbReferences.collect { it.id } == savedVerification.references.collect { it.id } // check that the db only contains the 5 items passed through the PUT call
+      dbReferences.collect { it.id }.sort { o1, o2 -> o1 <=> o2 } == savedVerification.references.collect { it.id }.sort { o1, o2 -> o1 <=> o2 } // check that the db only contains the 5 items passed through the PUT call
    }
 }
