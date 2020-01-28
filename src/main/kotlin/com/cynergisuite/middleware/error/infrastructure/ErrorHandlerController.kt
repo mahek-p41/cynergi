@@ -174,7 +174,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = NotFoundException::class)
    fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorDataTransferObject> {
-      logger.trace("Not Found Error", notFoundException)
+      logger.trace("Not Found Error {}", notFoundException.message)
 
       val locale = httpRequest.findLocaleWithDefault()
 

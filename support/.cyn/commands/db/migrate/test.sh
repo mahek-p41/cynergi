@@ -13,4 +13,3 @@ else
   ./gradlew flywayMigrateCynergiTestDb
   exit $?
 fi
-

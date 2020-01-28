@@ -17,30 +17,6 @@ BEGIN
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
       DROP VIEW company_vw;
    END IF;
-
-   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
-   LOOP
-      sqlToExec := sqlToExec
-      || ' '
-      || unionAll || '
-         SELECT
-            id AS id,
-            loc_trans.loc_tran_loc AS number,
-            loc_trans.loc_transfer_desc AS name,
-            ''' || r.schema_name || ''' AS dataset,
-            created_at AT TIME ZONE ''UTC'' AS time_created,
-            updated_at AT TIME ZONE ''UTC'' AS time_updated
-         FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-         WHERE loc_trans.loc_tran_rec_type = ''4''
-               AND loc_trans.loc_tran_loc = 0
-               AND loc_trans.loc_transfer_desc IS NOT NULL
-      ';
-
-      unionAll := ' UNION ALL ';
-   END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY number ASC';
-
-   EXECUTE sqlToExec;
 END $$;
 
 DO $$
@@ -270,15 +246,6 @@ CREATE SERVER fastinfo
 CREATE USER MAPPING FOR cynergiuser
     SERVER fastinfo
     OPTIONS (USER :'fastinfoUserName', PASSWORD :'fastinfoPassword');
-
-CREATE FOREIGN TABLE fastinfo_prod_import.company_vw (
-    id BIGINT,
-    number INTEGER,
-    name VARCHAR,
-    dataset VARCHAR,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
-) SERVER fastinfo OPTIONS (TABLE_NAME 'company_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
     id BIGINT,
