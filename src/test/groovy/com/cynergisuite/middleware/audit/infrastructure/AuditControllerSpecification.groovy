@@ -816,7 +816,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "audit.id"
+      response[0].path == "completeOrCancel.audit.id"
       response[0].message == "Is required"
    }
 

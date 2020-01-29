@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.makeCell
+import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
@@ -14,6 +15,7 @@ import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.StoreEntity
@@ -104,24 +106,34 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
+   @Validated
    fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateSignOff(audit, user.myDataset(), user, locale)
+      val changedBy = fromUser(user)
+      val actions = existing.actions.toMutableSet()
 
-      if (existing.currentStatus() == SIGNED_OFF) {
-         auditExceptionRepository.signOffAllExceptions(existing, user)
+      actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = changedBy))
 
-         reportalService.generateReportalDocument(existing.store, "IdleInventoryReport${existing.number}","pdf") { reportalOutputStream ->
+      val updated = auditRepository.update(existing.copy(actions = actions))
+
+      if (updated.currentStatus() == SIGNED_OFF) {
+         auditExceptionRepository.signOffAllExceptions(updated, user)
+
+         reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf") { reportalOutputStream ->
             Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
                val writer = PdfWriter.getInstance(document, reportalOutputStream)
 
-               writer.pageEvent = object : PdfPageEventHelper() { override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(existing, writer, document) }
+               writer.pageEvent = object : PdfPageEventHelper() { override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(updated, writer, document) }
                document.open()
-               document.add(buildExceptionReport(existing, document.pageSize.width))
+               document.add(buildExceptionReport(updated, document.pageSize.width))
             }
          }
       }
+
+      return AuditValueObject(updated, locale, localizationService)
    }
 
+   @Validated
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
       val toSignOff = auditValidator.validateSignOffAll(audit, user.myDataset())
 

@@ -185,7 +185,14 @@ class AuditController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
-      logger.info("")
+      logger.info("Requested sign-off of audit {}", audit)
+
+      val user = authenticationService.findUser(authentication)
+      val response = auditService.signOff(audit, user, httpRequest.findLocaleWithDefault())
+
+      logger.debug("Requested sign-off of audit {} resulted in {}", audit, response)
+
+      return response
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
