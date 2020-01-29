@@ -10,7 +10,6 @@ import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
@@ -21,7 +20,6 @@ import com.cynergisuite.middleware.localization.AuditUnableToChangeStatusFromTo
 import com.cynergisuite.middleware.localization.InvalidDataset
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.localization.ThruDateIsBeforeFrom
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
@@ -104,7 +102,7 @@ class AuditValidator @Inject constructor(
          } else if (requestedStatus != null) {
             val currentStatus = existingAudit.currentStatus()
 
-            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) && requestedStatus != SIGNED_OFF) {
+            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) || requestedStatus == SIGNED_OFF) {
                errors.add(
                   ValidationError(
                      "status",
