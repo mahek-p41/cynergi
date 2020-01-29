@@ -24,14 +24,14 @@ INSERT INTO audit_permission_type_domain(id, value, description, localization_co
 
 CREATE TABLE audit_permission
 (
-    id                  BIGSERIAL                                            NOT NULL PRIMARY KEY,
-    uu_row_id           UUID        DEFAULT uuid_generate_v1()               NOT NULL,
-    time_created        TIMESTAMPTZ DEFAULT clock_timestamp()                NOT NULL,
-    time_updated        TIMESTAMPTZ DEFAULT clock_timestamp()                NOT NULL,
-    department          VARCHAR(3) CHECK ( length(trim(department)) > 1 )    NOT NULL,
-    audit_permission_id INTEGER REFERENCES audit_permission_type_domain (id) NOT NULL,
-    company_id          BIGINT REFERENCES company (id)                       NOT NULL,
-    UNIQUE (department, audit_permission_id)
+    id                       BIGSERIAL                                                NOT NULL PRIMARY KEY,
+    uu_row_id                UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
+    time_created             TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
+    time_updated             TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
+    department               VARCHAR(3)  CHECK ( length(trim(department)) > 1 )       NOT NULL,
+    audit_permission_type_id INTEGER     REFERENCES audit_permission_type_domain (id) NOT NULL,
+    company_id               BIGINT      REFERENCES company (id)                      NOT NULL,
+    UNIQUE (department, audit_permission_type_id)
 );
 CREATE TRIGGER update_audit_permission_trg
     BEFORE UPDATE

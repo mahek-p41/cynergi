@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AccessException
+import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
-import io.micronaut.security.authentication.Authentication
+import io.micronaut.context.ApplicationContext
 import io.micronaut.security.utils.SecurityService
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,16 +22,21 @@ import javax.inject.Singleton
  */
 @Singleton
 class AccessControlService @Inject constructor(
+   private val applicationContext: ApplicationContext,
    private val authenticationService: AuthenticationService,
    private val securityService: SecurityService
 ) : MethodInterceptor<Any, Any> {
 
+   @Throws(AccessException::class)
    override fun intercept(context: MethodInvocationContext<Any, Any>): Any {
-      val authenticatedUser: Authentication = securityService.authentication.orElseThrow { handleAccessDenied() }
+      val arguments = context.arguments
+      val authenticatedUser: AuthenticatedUser = securityService.authentication.map { StandardAuthenticatedUser(it) }.orElseThrow { handleAccessDenied() }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset: String? = accessControl?.stringValue()?.orElse(null)
+      val accessControlProviderClass = accessControl?.classValue("accessControlProvider", DefaultAccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
+      val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
 
-      return if (securityService.isAuthenticated && asset != null && authenticationService.canUserAccess(authenticatedUser, asset)) {
+      return if (securityService.isAuthenticated && asset != null && accessControlProvider.canUserAccess(authenticatedUser, asset, arguments)) {
          context.proceed()
       } else {
          throw handleAccessDenied()

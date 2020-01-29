@@ -17,6 +17,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       def result = get("$path/1")
 
       then:
+      notThrown(HttpClientResponseException)
       result.id == 1
       result.storeNumber == 1
       result.name == "KANSAS CITY"

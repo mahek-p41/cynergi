@@ -1,12 +1,14 @@
 package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.DatasetRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.department.DepartmentEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -15,7 +17,7 @@ import javax.inject.Singleton
 @Singleton
 class DepartmentRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) {
+) : DatasetRepository {
    private val logger: Logger = LoggerFactory.getLogger(DepartmentRepository::class.java)
 
    fun findOne(id: Long): DepartmentEntity? {
@@ -36,7 +38,17 @@ class DepartmentRepository @Inject constructor(
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.debug("Searching for department by id {} resulted in {}", id, found)
+      logger.trace("Searching for department by id {} resulted in {}", id, found)
+
+      return found
+   }
+
+   override fun findDataset(id: Long): String? {
+      logger.debug("Search for dataset of department by id {}", id)
+
+      val found = jdbc.findFirstOrNull("SELECT dataset from FROM fastinfo_prod_import.department_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
+
+      logger.trace("Search for dataset of department by id {} resulted in {}", id, found)
 
       return found
    }
@@ -63,7 +75,7 @@ class DepartmentRepository @Inject constructor(
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.debug("Searching for department by code {} resulted in {}", code, found)
+      logger.trace("Searching for department by code {} resulted in {}", code, found)
 
       return found
    }
