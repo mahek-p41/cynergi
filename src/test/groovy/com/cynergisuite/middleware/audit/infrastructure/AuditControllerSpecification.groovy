@@ -128,7 +128,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
-      result.inventoryCount == 428
+      result.inventoryCount == 424
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.lastUpdated != null
       result.currentStatus.value == 'CREATED'
@@ -164,7 +164,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
-      result.inventoryCount == 428
+      result.inventoryCount == 424
       result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
       result.lastUpdated != null
       result.currentStatus.value == 'CREATED'
