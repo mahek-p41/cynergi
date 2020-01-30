@@ -21,6 +21,10 @@ INSERT INTO audit_permission_type_domain(id, value, description, localization_co
 INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (13, 'auditException-create', 'Create an audit exception', 'audit.exception.create');
 INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (14, 'auditException-update', 'Update an audit exception note or status', 'audit.exception.create');
 INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (15, 'auditException-signOff', 'Allow user to sign-off on an audit', 'audit.exception.sign.off');
+INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (16, 'auditSchedule-fetchOne', 'Allow user to fetch a single audit schedule', 'audit.schedule.fetch.one');
+INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (17, 'auditSchedule-fetchAll', 'Allow user to fetch all audit schedules', 'audit.schedule.fetch.all');
+INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (18, 'auditSchedule-create', 'Allow user to create an audit schedule', 'audit.schedule.create');
+INSERT INTO audit_permission_type_domain(id, value, description, localization_code)VALUES (19, 'auditSchedule-update', 'Allow user to update an audit schedule', 'audit.schedule.update');
 
 CREATE TABLE audit_permission
 (
@@ -31,7 +35,7 @@ CREATE TABLE audit_permission
     department               VARCHAR(3)  CHECK ( length(trim(department)) > 1 )       NOT NULL,
     audit_permission_type_id INTEGER     REFERENCES audit_permission_type_domain (id) NOT NULL,
     company_id               BIGINT      REFERENCES company (id)                      NOT NULL,
-    UNIQUE (department, audit_permission_type_id)
+    UNIQUE (department, audit_permission_type_id, company_id)
 );
 CREATE TRIGGER update_audit_permission_trg
     BEFORE UPDATE
