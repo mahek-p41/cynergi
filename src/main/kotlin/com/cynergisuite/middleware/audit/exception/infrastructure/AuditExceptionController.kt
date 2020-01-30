@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObje
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
+import com.cynergisuite.middleware.audit.infrastructure.AuditAccessProvider
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
@@ -44,7 +45,7 @@ class AuditExceptionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditException-fetchOne")
+   @AccessControl("auditException-fetchOne", accessControlProvider = AuditAccessProvider::class)
    @Get(value = "/exception/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a single AuditException", description = "Fetch a single AuditException by it's system generated primary key", operationId = "auditException-fetchOne")
    @ApiResponses(value = [
@@ -69,7 +70,7 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditException-fetchAll")
+   @AccessControl("auditException-fetchAll", accessControlProvider = AuditAccessProvider::class)
    @Get(uri = "/{auditId}/exception{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a listing of AuditExceptions", description = "Fetch a paginated listing of AuditExceptions based on a parent Audit", operationId = "auditException-fetchAll")
    @ApiResponses(value = [
@@ -97,7 +98,7 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Post(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
-   @AccessControl("auditException-create")
+   @AccessControl("auditException-create", accessControlProvider = AuditAccessProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Create a single AuditException", description = "Create a single AuditException. The logged in Employee is used for the scannedBy property", operationId = "auditException-create")
    @ApiResponses(value = [
@@ -124,7 +125,7 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Put(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
-   @AccessControl("auditException-update")
+   @AccessControl("auditException-update", accessControlProvider = AuditAccessProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Update a single AuditException", description = "Update a single AuditException where the update is the addition of a note", operationId = "auditException-update")
    @ApiResponses(value = [

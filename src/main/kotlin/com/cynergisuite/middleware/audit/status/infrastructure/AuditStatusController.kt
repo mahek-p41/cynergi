@@ -4,6 +4,7 @@ import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AlwaysAllowAccessControlProvider
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
@@ -34,7 +35,7 @@ class AuditStatusController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditStatusController::class.java)
 
    @Get(processes = [APPLICATION_JSON])
-   @AccessControl("auditStatus-fetchAll")
+   @AccessControl("auditStatus-fetchAll", accessControlProvider = AlwaysAllowAccessControlProvider::class)
    @Operation(tags = ["AuditStatusEndpoints"], summary = "Fetch a list of valid audit statuses", description = "Fetch a listing of supported audit statuses", operationId = "auditStatus-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "Successfully loaded a listing of possible Audit Statuses", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusValueObject>::class))])
@@ -53,7 +54,7 @@ class AuditStatusController @Inject constructor(
       return statuses
    }
 
-   @AccessControl("auditStatus-fetchNext")
+   @AccessControl("auditStatus-fetchNext", accessControlProvider = AlwaysAllowAccessControlProvider::class)
    @Get("/{value}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditStatusEndpoints"], summary = "Fetch a list of valid audit statuses", description = "Fetch a listing of supported audit statuses", operationId = "auditStatus-fetchNext")
    fun fetchNext(
