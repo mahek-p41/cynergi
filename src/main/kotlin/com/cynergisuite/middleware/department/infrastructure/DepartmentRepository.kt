@@ -46,7 +46,7 @@ class DepartmentRepository @Inject constructor(
    override fun findDataset(id: Long): String? {
       logger.debug("Search for dataset of department by id {}", id)
 
-      val found = jdbc.findFirstOrNull("SELECT dataset from FROM fastinfo_prod_import.department_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
+      val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.department_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
 
       logger.trace("Search for dataset of department by id {} resulted in {}", id, found)
 

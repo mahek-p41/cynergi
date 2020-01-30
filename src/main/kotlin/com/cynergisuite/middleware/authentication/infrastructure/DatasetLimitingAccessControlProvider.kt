@@ -2,20 +2,27 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.DatasetRepository
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
-import io.micronaut.core.type.Argument
+import io.micronaut.core.type.MutableArgumentValue
+import io.micronaut.http.annotation.QueryValue
 
 abstract class DatasetLimitingAccessControlProvider(
    private val datasetRepository: DatasetRepository
 ): AccessControlProvider {
 
-   override final fun canUserAccess(user: AuthenticatedUser, asset: String, arguments: Array<Argument<Any>>): Boolean {
+   override final fun canUserAccess(user: AuthenticatedUser, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       return when {
-         asset.endsWith("fetchOne") -> processFetchOne(user, arguments.find { it.name == "id" }.let { it as Long })
-         asset.endsWith("fetchAll") -> true
-         else -> super.canUserAccess(user, asset, arguments)
+         asset.endsWith("fetchOne") -> processFetchOne(user, parameters)
+         asset.endsWith("fetchAll") -> true // assumption here is that the user's dataset will be used when filtering the fetchAll query so just return true
+         else -> super.canUserAccess(user, asset, parameters) // return the default value
       }
    }
-   protected final fun processFetchOne(user: AuthenticatedUser, id: Long): Boolean {
+   private fun processFetchOne(user: AuthenticatedUser, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
+      val id = parameters
+         .filter { it.value.isAnnotationPresent(QueryValue::class.java) }
+         .filter { it.value.name == "id" }
+         .filter { it.value.type == Long::class.java }
+         .map { it.value.value as Long }
+         .first()
       val dataset = datasetRepository.findDataset(id)
 
       return if (dataset != null) {

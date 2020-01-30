@@ -29,14 +29,14 @@ class AccessControlService @Inject constructor(
 
    @Throws(AccessException::class)
    override fun intercept(context: MethodInvocationContext<Any, Any>): Any {
-      val arguments = context.arguments
+      val parameters = context.parameters
       val authenticatedUser: AuthenticatedUser = securityService.authentication.map { StandardAuthenticatedUser(it) }.orElseThrow { handleAccessDenied() }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset: String? = accessControl?.stringValue()?.orElse(null)
-      val accessControlProviderClass = accessControl?.classValue("accessControlProvider", DefaultAccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
+      val accessControlProviderClass = accessControl?.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
       val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
 
-      return if (securityService.isAuthenticated && asset != null && accessControlProvider.canUserAccess(authenticatedUser, asset, arguments)) {
+      return if (securityService.isAuthenticated && asset != null && accessControlProvider.canUserAccess(authenticatedUser, asset, parameters)) {
          context.proceed()
       } else {
          throw handleAccessDenied()

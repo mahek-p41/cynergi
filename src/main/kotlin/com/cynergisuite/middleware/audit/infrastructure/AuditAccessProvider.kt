@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.infrastructure
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControlProvider
-import io.micronaut.core.type.Argument
+import io.micronaut.core.type.MutableArgumentValue
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +12,7 @@ class AuditAccessProvider @Inject constructor(
    private val auditPermissionRepository: AuditPermissionRepository
 ): AccessControlProvider {
 
-   override fun canUserAccess(user: AuthenticatedUser, asset: String, arguments: Array<Argument<Any>>): Boolean {
+   override fun canUserAccess(user: AuthenticatedUser, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       val auditPermission = auditPermissionRepository.findOneByAsset(asset)
       val userDepartment = user.myDepartment()
 
