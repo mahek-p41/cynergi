@@ -2,15 +2,21 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import javax.inject.Inject
 
+
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class StoreControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/store"
+
+   @Inject StoreFactoryService storeFactoryService
 
    void "fetch one store by id" () {
       when:
@@ -29,11 +35,25 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       get("$path/0")
 
       then:
-      final HttpClientResponseException exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response.message == "0 was unable to be found"
+   }
+
+   void "fetch one store from different dataset than one associated with authenticated user" () {
+      given:
+      def store = storeFactoryService.randomNotMatchingDataset(authenticatedEmployee.myDataset())
+
+      when:
+      get("$path/${store.myId()}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == FORBIDDEN
+      def response = exception.response.bodyAsJson()
+      response.message == "Access denied"
    }
 
    void "fetch all stores" () {
