@@ -129,6 +129,7 @@ class InventoryRepository(
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
+               AND i.location = :location
                AND i.dataset = :dataset
                AND primaryStore.dataset = :dataset
                AND currentStore.dataset = :dataset

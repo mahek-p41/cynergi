@@ -441,7 +441,8 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (id)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = :store_number
-                     AND i.status in ('N', 'R', 'D')
+                     AND i.location = :store_number
+                     AND i.status in ('N', 'R')
                      AND i.dataset = :dataset
             ),
             :dataset
