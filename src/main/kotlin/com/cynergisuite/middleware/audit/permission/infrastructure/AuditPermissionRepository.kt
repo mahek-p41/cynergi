@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -179,6 +180,7 @@ class AuditPermissionRepository @Inject constructor(
       }
    }
 
+   @Transactional
    fun insert(auditPermission: AuditPermissionEntity): AuditPermissionEntity {
       logger.debug("Inserting AuditPermission {}", auditPermission)
 
