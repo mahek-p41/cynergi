@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObje
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
-import com.cynergisuite.middleware.audit.infrastructure.AuditAccessProvider
+import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
 import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
@@ -45,11 +45,12 @@ class AuditExceptionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditException-fetchOne", accessControlProvider = AuditAccessProvider::class)
+   @AccessControl("auditException-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Get(value = "/exception/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a single AuditException", description = "Fetch a single AuditException by it's system generated primary key", operationId = "auditException-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionValueObject::class))]),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested AuditException was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -70,12 +71,13 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditException-fetchAll", accessControlProvider = AuditAccessProvider::class)
+   @AccessControl("auditException-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{auditId}/exception{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a listing of AuditExceptions", description = "Fetch a paginated listing of AuditExceptions based on a parent Audit", operationId = "auditException-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
@@ -98,12 +100,13 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Post(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
-   @AccessControl("auditException-create", accessControlProvider = AuditAccessProvider::class)
+   @AccessControl("auditException-create", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Create a single AuditException", description = "Create a single AuditException. The logged in Employee is used for the scannedBy property", operationId = "auditException-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The parent Audit was unable to be found or the scanArea was unknown"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -125,12 +128,13 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Put(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
-   @AccessControl("auditException-update", accessControlProvider = AuditAccessProvider::class)
+   @AccessControl("auditException-update", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Update a single AuditException", description = "Update a single AuditException where the update is the addition of a note", operationId = "auditException-update")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If request body is invalid"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested parent Audit or AuditException was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])

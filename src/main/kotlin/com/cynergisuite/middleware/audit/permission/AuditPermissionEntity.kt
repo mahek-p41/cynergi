@@ -5,12 +5,12 @@ import com.cynergisuite.middleware.department.DepartmentEntity
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class AuditPermission(
+data class AuditPermissionEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val auditPermissionType: AuditPermissionType,
+   val type: AuditPermissionType,
    val department: DepartmentEntity,
    val company: CompanyEntity
 )

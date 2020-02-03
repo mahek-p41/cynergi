@@ -8,12 +8,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuditAccessProvider @Inject constructor(
+class AuditAccessControlProvider @Inject constructor(
    private val auditPermissionRepository: AuditPermissionRepository
 ): AccessControlProvider {
 
    override fun canUserAccess(user: AuthenticatedUser, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
-      val auditPermission = auditPermissionRepository.findOneByAsset(asset)
+      val auditPermission = auditPermissionRepository.findOneByAsset(asset, user.myDataset())
       val userDepartment = user.myDepartment()
 
       return if (auditPermission == null) { // TODO handle the case where the user doesn't have a department assigned AKA 998

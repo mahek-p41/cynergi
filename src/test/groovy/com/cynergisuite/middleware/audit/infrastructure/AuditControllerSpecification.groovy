@@ -41,11 +41,12 @@ import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static java.util.Locale.US
 
 @MicronautTest(transactional = false)
 class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit"
-   private static final Locale locale = Locale.US
+   private static final Locale locale = US
 
    @Inject AuditDetailFactoryService auditDetailFactoryService
    @Inject AuditExceptionFactoryService auditExceptionFactoryService

@@ -40,9 +40,7 @@ class AuditStatusController @Inject constructor(
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "Successfully loaded a listing of possible Audit Statuses", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusValueObject>::class))])
    ])
-   fun fetchAll(
-      httpRequest: HttpRequest<*>
-   ): List<AuditStatusValueObject> {
+   fun fetchAll(httpRequest: HttpRequest<*>): List<AuditStatusValueObject> {
       val locale = httpRequest.findLocaleWithDefault()
 
       val statuses = auditStatusService.fetchAll().map {
