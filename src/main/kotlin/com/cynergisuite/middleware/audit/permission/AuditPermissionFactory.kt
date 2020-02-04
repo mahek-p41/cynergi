@@ -37,13 +37,13 @@ class AuditPermissionFactoryService @Inject constructor(
    private val departmentFactoryService: DepartmentFactoryService
 ) {
    fun single(): AuditPermissionEntity {
-      return single(null, null, null).let { auditPermissionRepository.insert(it) }
+      return single(null, null, null)
    }
 
    fun single(departmentIn: DepartmentEntity? = null, permissionTypeIn: AuditPermissionType? = null, companyIn: CompanyEntity? = null): AuditPermissionEntity {
       val company = companyIn ?: companyFactoryService.random()
       val department = departmentIn ?: departmentFactoryService.random(company.datasetCode)
 
-      return AuditPermissionFactory.single(department, permissionTypeIn, company)
+      return AuditPermissionFactory.single(department, permissionTypeIn, company).let { auditPermissionRepository.insert(it) }
    }
 }
