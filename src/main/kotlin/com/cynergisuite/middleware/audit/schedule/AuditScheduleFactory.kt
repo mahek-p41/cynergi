@@ -79,7 +79,7 @@ class AuditScheduleFactoryService @Inject constructor(
 ) {
 
    fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, datasetIn: String? = null): Stream<ScheduleEntity> {
-      val dataset = datasetIn ?: storesIn?.firstOrNull()?.dataset ?: CompanyFactory.random().dataset
+      val dataset = datasetIn ?: storesIn?.firstOrNull()?.dataset ?: CompanyFactory.random().datasetCode
       val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random(dataset))
       val employee = employeeIn ?: employeeFactoryService.single(datasetIn = dataset)
 

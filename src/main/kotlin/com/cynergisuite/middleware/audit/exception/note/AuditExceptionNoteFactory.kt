@@ -47,7 +47,7 @@ class AuditExceptionNoteFactoryService @Inject constructor(
    private val employeeFactoryService: EmployeeFactoryService
 ) {
    fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
-      val dataset = enteredByIn?.dataset ?: CompanyFactory.random().dataset
+      val dataset = enteredByIn?.dataset ?: CompanyFactory.random().datasetCode
       val auditException = auditExceptionIn ?: auditExceptionFactoryService.single(dataset)
       val enteredBy = enteredByIn ?: employeeFactoryService.single()
 

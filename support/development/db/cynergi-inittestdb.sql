@@ -1,17 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE SCHEMA fastinfo_prod_import;
 
-CREATE TABLE fastinfo_prod_import.company_vw (
-   id           BIGINT                                 NOT NULL,
-   number       INTEGER,
-   name         VARCHAR(27),
-   dataset      VARCHAR(6)                             NOT NULL,
-   time_created TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL,
-   time_updated TIMESTAMPTZ  DEFAULT clock_timestamp() NOT NULL
-);
-INSERT INTO fastinfo_prod_import.company_vw (id, number, name, dataset) VALUES (4, 0, 'RENTAL CITY', 'tstds1');
-INSERT INTO fastinfo_prod_import.company_vw (id, number, name, dataset) VALUES (1, 0, 'Pelham Trading Post, Inc.', 'tstds2');
-
 CREATE TABLE fastinfo_prod_import.store_vw (
    id           BIGSERIAL                                             NOT NULL PRIMARY KEY,
    number       INTEGER,

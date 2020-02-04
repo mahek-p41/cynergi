@@ -17,30 +17,6 @@ BEGIN
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
       DROP VIEW company_vw;
    END IF;
-
-   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
-   LOOP
-      sqlToExec := sqlToExec
-      || ' '
-      || unionAll || '
-         SELECT
-            id AS id,
-            loc_trans.loc_tran_loc AS number,
-            loc_trans.loc_transfer_desc AS name,
-            ''' || r.schema_name || ''' AS dataset,
-            created_at AT TIME ZONE ''UTC'' AS time_created,
-            updated_at AT TIME ZONE ''UTC'' AS time_updated
-         FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-         WHERE loc_trans.loc_tran_rec_type = ''4''
-               AND loc_trans.loc_tran_loc = 0
-               AND loc_trans.loc_transfer_desc IS NOT NULL
-      ';
-
-      unionAll := ' UNION ALL ';
-   END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY number ASC';
-
-   EXECUTE sqlToExec;
 END $$;
 
 DO $$
@@ -108,7 +84,7 @@ BEGIN
             loc_trans2.id AS company_id,
             loc_trans.loc_tran_loc AS number,
             loc_trans.loc_transfer_desc AS name,
-            ''' || r.schema_name || ''' AS dataset,
+            ''' || r.schema_name || '''::text AS dataset,
             loc_trans.created_at AT TIME ZONE ''UTC'' AS time_created,
             loc_trans.updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level1_loc_trans loc_trans
@@ -151,7 +127,7 @@ BEGIN
             id AS id,
             emp_nbr AS number,
             emp_store_nbr AS store_number,
-            ''' || r.schema_name || ''' AS dataset,
+            ''' || r.schema_name || '''::text AS dataset,
             emp_last_name AS last_name,
             NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
             emp_dept AS department,
@@ -206,7 +182,7 @@ BEGIN
       || unionAll || '
          SELECT
             inv_recs.id AS id,
-            ''' || r.schema_name || ''' AS dataset,
+            ''' || r.schema_name || '''::text AS dataset,
             inv_recs.inv_serial_nbr_key AS serial_number,
             CASE
                WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN inv_recs.inv_alt_id
@@ -270,15 +246,6 @@ CREATE SERVER fastinfo
 CREATE USER MAPPING FOR cynergiuser
     SERVER fastinfo
     OPTIONS (USER :'fastinfoUserName', PASSWORD :'fastinfoPassword');
-
-CREATE FOREIGN TABLE fastinfo_prod_import.company_vw (
-    id BIGINT,
-    number INTEGER,
-    name VARCHAR,
-    dataset VARCHAR,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
-) SERVER fastinfo OPTIONS (TABLE_NAME 'company_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
     id BIGINT,

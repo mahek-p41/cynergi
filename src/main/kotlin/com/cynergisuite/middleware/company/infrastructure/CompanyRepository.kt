@@ -4,6 +4,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import io.reactiverse.reactivex.pgclient.Row
@@ -27,32 +29,44 @@ class CompanyRepository @Inject constructor(
    @Language("PostgreSQL")
    final val selectBase = """
       SELECT
-         c.id AS id,
-         c.time_created AS time_created,
-         c.time_updated AS time_updated,
-         c.number AS number,
-         c.name AS name,
-         c.dataset AS dataset
-      FROM fastinfo_prod_import.company_vw c
-   """.trimIndent()
+         c.id                  AS id,
+         c.uu_row_id           AS uu_row_id,
+         c.time_created        AS time_created,
+         c.time_updated        AS time_updated,
+         c.name                AS name,
+         c.doing_business_as   AS doing_business_as,
+         c.client_code         AS client_code,
+         c.client_id           AS client_id,
+         c.dataset_code        AS dataset_code,
+         c.federal_tax_number  AS federal_tax_number
+      FROM company c
+   """
 
    fun findCompanyByStore(store: StoreEntity): CompanyEntity? {
       logger.debug("Search for company using store id {}", store.id)
 
       val found = jdbc.findFirstOrNull("""
          SELECT
-            c.id AS id,
-            c.time_created AS time_created,
-            c.time_updated AS time_updated,
-            c.number AS number,
-            c.name AS name,
-            c.dataset AS dataset
-         FROM fastinfo_prod_import.company_vw c
+           c.id                  AS id,
+           c.uu_row_id           AS uu_row_id,
+           c.time_created        AS time_created,
+           c.time_updated        AS time_updated,
+           c.name                AS name,
+           c.doing_business_as   AS doing_business_as,
+           c.client_code         AS client_code,
+           c.client_id           AS client_id,
+           c.dataset_code        AS dataset_code,
+           c.federal_tax_number  AS federal_tax_number
+         FROM company c
               JOIN fastinfo_prod_import.store_vw s
-                ON c.id = s.company_id
+                ON c.dataset_code = s.dataset
          WHERE s.id = :store_id
-         """.trimIndent(),
-         mapOf("store_id" to store.id),
+               AND s.dataset = :dataset
+         """,
+         mapOf(
+            "store_id" to store.id,
+            "dataset" to store.dataset
+         ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -69,10 +83,10 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
-   fun findByDataset(dataset: String): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE dataset = :dataset", mapOf("dataset" to dataset), simpleCompanyRowMapper)
+   fun findByDataset(dataset_code: String): CompanyEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase WHERE dataset_code = :dataset_code", mapOf("dataset_code" to dataset_code), simpleCompanyRowMapper)
 
-      logger.trace("Searching for Company: {} resulted in {}", dataset, found)
+      logger.trace("Searching for Company: {} resulted in {}", dataset_code, found)
 
       return found
    }
@@ -93,7 +107,7 @@ class CompanyRepository @Inject constructor(
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
-         """.trimIndent(),
+         """,
          emptyMap<String, Any>()
       ) { rs ->
          if (totalElements == null) {
@@ -111,52 +125,48 @@ class CompanyRepository @Inject constructor(
    }
 
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.company_vw WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Company: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun exists(number: Int): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT number FROM fastinfo_prod_import.company_vw WHERE number = :number)", mapOf("number" to number), Boolean::class.java)!!
-
-      logger.trace("Checking if Company: {} exists resulted in {}", number, exists)
-
-      return exists
-   }
-
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun exists(dataset: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset FROM fastinfo_prod_import.company_vw WHERE dataset = :dataset)", mapOf("dataset" to dataset), Boolean::class.java)!!
+   fun exists(dataset_code: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset_code FROM company WHERE dataset_code = :dataset_code)", mapOf("dataset_code" to dataset_code), Boolean::class.java)!!
 
-      logger.trace("Checking if Company: {} exists using dataset resulted in {}", dataset, exists)
+      logger.trace("Checking if Company: {} exists using dataset_code resulted in {}", dataset_code, exists)
 
       return exists
    }
 
-   fun doesNotExist(dataset: String): Boolean = !exists(dataset)
+   fun doesNotExist(dataset_code: String): Boolean = !exists(dataset_code)
 
-   fun maybeMapRow(rs: ResultSet, columnPrefix: String): CompanyEntity? =
-      if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, columnPrefix)
-      } else {
-         null
-      }
+   fun insert(company: CompanyEntity): CompanyEntity {
+      logger.debug("Inserting company {}", company)
+
+      return jdbc.insertReturning("""
+         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_tax_number)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_tax_number)
+         RETURNING
+            *
+         """,
+         mapOf(
+            "name" to company.name,
+            "doing_business_as" to company.doingBusinessAs,
+            "client_code" to company.clientCode,
+            "client_id" to company.clientId,
+            "dataset_code" to company.datasetCode,
+            "federal_tax_number" to company.federalTaxNumber
+         ),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
+   }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): CompanyEntity =
       simpleCompanyRowMapper.mapRow(rs, columnPrefix)
-
-   fun mapRow(row: Row, columnPrefix: String = EMPTY): CompanyEntity =
-      CompanyEntity(
-         id = row.getLong("${columnPrefix}id"),
-         timeCreated = row.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = row.getOffsetDateTime("${columnPrefix}time_updated"),
-         number = row.getInteger("${columnPrefix}number"),
-         name = row.getString("${columnPrefix}name"),
-         dataset = row.getString("${columnPrefix}dataset")
-      )
 }
 
 private class CompanyRowMapper : RowMapper<CompanyEntity> {
@@ -166,10 +176,14 @@ private class CompanyRowMapper : RowMapper<CompanyEntity> {
    fun mapRow(rs: ResultSet, columnPrefix: String): CompanyEntity =
       CompanyEntity(
          id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         dataset = rs.getString("${columnPrefix}dataset")
+         doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
+         clientCode = rs.getString("${columnPrefix}client_code"),
+         clientId = rs.getInt("${columnPrefix}client_id"),
+         datasetCode = rs.getString("${columnPrefix}dataset_code"),
+         federalTaxNumber = rs.getString("${columnPrefix}federal_tax_number")
       )
 }
