@@ -32,7 +32,7 @@ data class StandardAuthenticatedUser(
          storeNumber = authentication.attributes["stNum"].let { Objects.toString(it).toInt() },
          employeeNumber = authentication.attributes["sub"].let { Objects.toString(it).toInt() }, // sub is a subject which is encoded by the framework
          dataset = authentication.attributes["ds"].let { Objects.toString(it) },
-         department = authentication.attributes["dep"].let { Objects.toString(it) }
+         department = authentication.attributes["dep"]?.let { Objects.toString(it) }
       )
 
    override fun myId(): Long = id

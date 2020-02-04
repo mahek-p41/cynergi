@@ -73,4 +73,8 @@ class DepartmentFactoryService(
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
    }
+
+   fun forThese(dataset: String, code: String): DepartmentEntity {
+      return departmentRepository.findOneByCodeAndDataset(code = code, dataset = dataset) ?: throw Exception("Unable to find random DepartmentEntity")
+   }
 }

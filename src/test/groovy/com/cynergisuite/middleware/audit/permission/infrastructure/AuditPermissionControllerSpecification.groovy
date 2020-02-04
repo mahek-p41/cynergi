@@ -2,19 +2,27 @@ package com.cynergisuite.middleware.audit.permission.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
 
+
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class AuditPermissionControllerSpecification extends ControllerSpecificationBase {
+   @Inject AuditFactoryService auditFactoryService
    @Inject AuditPermissionFactoryService auditPermissionFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
+   @Inject EmployeeFactoryService employeeFactoryService
+   @Inject StoreFactoryService storeFactoryService
 
    void "fetch all permissions" () {
       given:
@@ -134,11 +142,40 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:
-      get ("/audit/permission/${permission.id + 1}")
+      get("/audit/permission/${permission.id + 1}")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
+   }
+
+   void "associate audit-fetchOne with with Sales Associate" () {
+      given:
+      def company = companyFactoryService.forDatasetCode("tstds1")
+      def store = storeFactoryService.random(company.datasetCode)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
+      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociateLogin = loginEmployee(salesAssociate)
+      def deliveryDriveLogin = loginEmployee(deliveryDriver)
+      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
+      def audit = auditFactoryService.single(store)
+
+      when:
+      def salesAssociateAudit = get("/audit/${audit.id}", salesAssociateLogin)
+
+      then:
+      notThrown(Exception)
+      salesAssociateAudit.id == audit.id
+
+      when:
+      get("/audit/${audit.id}", deliveryDriveLogin)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == FORBIDDEN
    }
 }
