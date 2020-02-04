@@ -59,7 +59,6 @@ class ShipViaService @Inject constructor(
    override fun processCsvRow(record: CSVRecord) {
       create (
          ShipViaValueObject(
-            name = record.get("name"),
             description = record.get("description")
          )
       )

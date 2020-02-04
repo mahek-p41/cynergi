@@ -22,7 +22,7 @@ class ShipViaRepository @Inject constructor(
    private val simpleShipViaRowMapper = ShipViaRowMapper()
 
    fun findOne(id: Long): ShipViaEntity? {
-      val found = jdbc.findFirstOrNull("SELECT id, uu_row_id, time_created, time_updated, name, description FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT id, uu_row_id, time_created, time_updated, description FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
@@ -40,13 +40,12 @@ class ShipViaRepository @Inject constructor(
       logger.debug("Inserting shipVia {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO ship_via(name, description)
-         VALUES (:name, :description)
+         INSERT INTO ship_via(description)
+         VALUES (:description)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "name" to entity.name,
             "description" to entity.description
          ),
          simpleShipViaRowMapper
@@ -60,7 +59,6 @@ class ShipViaRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE ship_via
          SET
-            name = :name,
             description = :description
          WHERE id = :id
          RETURNING
@@ -68,7 +66,6 @@ class ShipViaRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "name" to entity.name,
             "description" to entity.description
          ),
          simpleShipViaRowMapper
@@ -80,13 +77,14 @@ class ShipViaRepository @Inject constructor(
       val shipVia = mutableListOf<ShipViaEntity>()
 
       jdbc.query("""
-         WITH shipVias AS (
-            SELECT id, uu_row_id, time_created, time_updated, name, description FROM ship_via
-         )
          SELECT
-            s.*,
+            id,
+            uu_row_id,
+            time_created,
+            time_updated,
+            description,
             count(*) OVER() as total_elements
-         FROM shipVias AS s
+         FROM ship_via AS s
          ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
          OFFSET ${pageRequest.offset()}
@@ -118,7 +116,6 @@ private class ShipViaRowMapper(
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )
 }
