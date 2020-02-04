@@ -18,7 +18,6 @@ object ShipViaFactory {
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
-            name = lorem.characters(3, 250),
             description = lorem.characters(3, 495)
          )
       }

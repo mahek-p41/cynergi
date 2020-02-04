@@ -14,25 +14,19 @@ data class ShipViaValueObject(
    var id: Long? = null,
 
    @field:NotNull
-   @field:Size(min = 3, max = 255)
-   var name: String?,
-
-   @field:NotNull
    @field:Size(min = 3, max = 500)
    var description: String?
 
 ) : ValueObjectBase<ShipViaValueObject>() {
-   constructor(name: String, description: String) :
+   constructor(description: String) :
       this(
          id = null,
-         name = name,
          description = description
       )
 
    constructor(entity: ShipViaEntity) :
       this(
          id = entity.id,
-         name = entity.name,
          description = entity.description
       )
 
