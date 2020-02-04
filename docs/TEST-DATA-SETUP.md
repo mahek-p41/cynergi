@@ -8,21 +8,6 @@ for the host and creds.
 Once connected you need to generate either SQL Inserts or a CSV.  Which one you need to generate will be documented in
 this following sections.  All the inserts will need to go into the _cynerig-inittestdb.sql_ file
 
-### fastinfo_prod_import.company_vw
-Generate a set of __INSERT__ statments and place them below the definition of the fastinfo_prod_import.company_vw table
-```sql
-SELECT
-   number, name,
-   CASE
-      WHEN dataset = 'corrto'
-         THEN 'tstds1'
-      ELSE 'tstds2'
-      END
-      AS dataset
-FROM fastinfo_prod_import.company_vw
-ORDER BY dataset;
-```
-
 ### fasinfo_prod_import.store_vw
 Generate a set of __INSERT__ statements and place them below the definition of the fastinfo_prod_import.store_vw table
 ```sql

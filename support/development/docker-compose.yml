@@ -32,7 +32,7 @@ services:
        - cynergidb
      networks:
         - cynerginet
-     command: ["java", "-Dmicronaut.environments=develop", "-Dpostgres.reactive.client.port=5432", "-Dpostgres.reactive.client.host=cynergidb", "-Dmicronaut.server.port=8080", "-Dmicronaut.server.host=cynmid", "-Dcynergi.legacy.import.location=/tmp/import", "-jar", "/tmp/cynergi-middleware-r2-all.jar"]
+     command: ["java", "-Dmicronaut.environments=integration", "-Dpostgres.reactive.client.port=5432", "-Dpostgres.reactive.client.host=cynergitestdb", "-Dmicronaut.server.port=8080", "-Dmicronaut.server.host=cynmid", "-Dcynergi.legacy.import.location=/tmp/import", "-jar", "/tmp/cynergi-middleware-r2-all.jar"]
      #command: ["/bin/bash"]
   cynergidbready:
      container_name: cynergidbready
