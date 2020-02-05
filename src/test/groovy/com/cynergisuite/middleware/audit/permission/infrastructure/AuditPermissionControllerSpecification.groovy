@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit.permission.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -150,7 +151,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
    }
 
-   void "associate audit-fetchOne with with Sales Associate" () {
+   void "check association of audit-fetchOne with with Sales Associate" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
       def store = storeFactoryService.random(company.datasetCode)
@@ -177,5 +178,26 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == FORBIDDEN
+   }
+
+   void "associate audit-fetchOne with Sales Associate" () {
+      given:
+      def company = companyFactoryService.forDatasetCode("tstds1")
+      def store = storeFactoryService.random(company.datasetCode)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
+      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociateLogin = loginEmployee(salesAssociate)
+      def deliveryDriveLogin = loginEmployee(deliveryDriver)
+      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def audit = auditFactoryService.single(store)
+
+      when:
+      def permission = post("/audit/permission", new AuditPermissionCreateUpdateDataTransferObject(permissionType, salesAssociateDepartment))
+
+      then:
+      notThrown(Exception)
+      permission.id > 0
    }
 }
