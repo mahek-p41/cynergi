@@ -50,11 +50,9 @@ EXECUTE PROCEDURE last_updated_column_fn();
 CREATE TABLE region_to_store
  (
     region_id BIGINT REFERENCES region(id) NOT NULL,
-    company_id BIGINT REFERENCES company(id) NOT NULL,
     store_number INTEGER  CHECK( store_number > 0 ) NOT NULL,
     CONSTRAINT uq_region_to_store UNIQUE
     ( region_id,
-      company_id,
       store_number
     )
  );
