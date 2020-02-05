@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
@@ -15,6 +16,7 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
+import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
@@ -120,8 +122,16 @@ class AuditPermissionController @Inject constructor(
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun create() {
+   fun create(
+      @Body permission: AuditPermissionCreateUpdateDataTransferObject,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ): AuditPermissionValueObject {
+      logger.info("User {} requested creation of audit permission {}", authentication, permission)
 
+      val user = authenticationService.findUser(authentication)
+
+      return auditPermissionService.create(permission, user, httpRequest.findLocaleWithDefault())
    }
 
    @Put(processes = [APPLICATION_JSON])
