@@ -1,13 +1,12 @@
 package com.cynergisuite.middleware.audit.permission
 
 import com.cynergisuite.domain.DataTransferObject
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
-import com.cynergisuite.domain.ValueObject
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
@@ -19,15 +18,17 @@ data class AuditPermissionCreateUpdateDataTransferObject(
    @field:Positive
    val id: Long? = null,
 
+   @field:Valid
    @field:NotNull
-   val permission: SimpleIdentifiableDataTransferObject? = null,
+   val permissionType: SimpleIdentifiableDataTransferObject? = null,
 
+   @field:Valid
    @field:NotNull
    val department: SimpleIdentifiableDataTransferObject? = null
 ) {
    constructor(permission: AuditPermissionType, department: DepartmentEntity) :
       this(
-         permission = SimpleIdentifiableDataTransferObject(permission),
+         permissionType = SimpleIdentifiableDataTransferObject(permission),
          department = SimpleIdentifiableDataTransferObject(department)
       )
 }
