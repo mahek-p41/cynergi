@@ -37,4 +37,8 @@ class AuditPermissionService @Inject constructor(
 
       return auditPermissionRepository.insert(auditPermission).let { AuditPermissionValueObject(it, locale, localizationService) }
    }
+
+   fun update(@Valid permission: AuditPermissionCreateUpdateDataTransferObject) {
+      val auditPermission = auditPermissionValidator.validateUpdate(permission)
+   }
 }

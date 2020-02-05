@@ -199,5 +199,23 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       notThrown(Exception)
       permission.id > 0
+      permission.type.id == permissionType.id
+      permission.type.value == permissionType.value
+      permission.department.id == salesAssociateDepartment.id
+      permission.department.code == salesAssociateDepartment.code
+
+      when:
+      def salesAssociateAudit = get("/audit/${audit.id}", salesAssociateLogin)
+
+      then:
+      notThrown(Exception)
+      salesAssociateAudit.id == audit.id
+
+      when:
+      get("/audit/${audit.id}", deliveryDriveLogin)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == FORBIDDEN
    }
 }

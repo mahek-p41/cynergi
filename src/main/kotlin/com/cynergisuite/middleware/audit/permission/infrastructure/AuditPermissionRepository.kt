@@ -87,6 +87,16 @@ class AuditPermissionRepository @Inject constructor(
       return found
    }
 
+   fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_permission WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if AuditPermission: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
+
+   fun doesNotExist(id: Long) = !exists(id)
+
    fun findOneByAsset(asset: String, dataset: String): AuditPermissionEntity? {
       logger.debug("Searching for AuditPermission with asset {}", asset)
 

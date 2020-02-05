@@ -117,7 +117,7 @@ class AuditPermissionController @Inject constructor(
    @AccessControl("auditPermission-create", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Create a single audit permission", description = "Create a single audit permission associated with a department and permission type.", operationId = "auditPermission-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -139,13 +139,18 @@ class AuditPermissionController @Inject constructor(
    @AccessControl("auditPermission-update", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Create a single audit permission", description = "Create a single audit permission associated with a department and permission type.", operationId = "auditPermission-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun update() {
+   fun update(
+      @Body permission: AuditPermissionCreateUpdateDataTransferObject,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Requested update of audit permission {}", permission)
 
+      return auditPermissionService.update(permission)
    }
 
    @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
