@@ -46,11 +46,11 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.name <=> o2.name }.toList()
-      def pageOne = new StandardPageRequest(1, 5, "name", "ASC")
-      def pageTwo = new StandardPageRequest(2, 5, "name", "ASC")
-      def pageLast = new StandardPageRequest(4, 5, "name", "ASC")
-      def pageFive = new StandardPageRequest(5, 5, "name", "ASC")
+      def twentyShipVias = shipViaFactoryService.stream(20 ).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.description <=> o2.description }.toList()
+      def pageOne = new StandardPageRequest(1, 5, "description", "ASC")
+      def pageTwo = new StandardPageRequest(2, 5, "description", "ASC")
+      def pageLast = new StandardPageRequest(4, 5, "description", "ASC")
+      def pageFive = new StandardPageRequest(5, 5, "description", "ASC")
       def firstPageShipVia = twentyShipVias[0..4]
       def secondPageShipVia = twentyShipVias[5..9]
       def lastPageShipVia = twentyShipVias[15..19]
@@ -147,13 +147,12 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       then:
       response.id != null
       response.id > 0
-      response.name == shipVia.name
       response.description == shipVia.description
    }
 
    void "post null values to shipVia()"() {
       given:
-      final def shipVia = new ShipViaValueObject(null,null, null)
+      final def shipVia = new ShipViaValueObject(null, null)
 
       when:
       post("$path/", shipVia)
@@ -163,16 +162,15 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
 
       def result = exception.response.bodyAsJson()
-      result.size() == 2
+      result.size() == 1
       result.collect { new ErrorDataTransferObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "description"),
-         new ErrorDataTransferObject("Is required", "name")
+         new ErrorDataTransferObject("Is required", "description")
       ]
    }
 
    void "put valid shipVia"() {
       given:
-      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(it.id, "test", "test description")}
+      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(it.id, "test description")}
 
       when:
       def response = put("$path/", shipVia)
@@ -180,13 +178,12 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       then:
       response.id != null
       response.id > 0
-      response.name == "test"
       response.description == "test description"
    }
 
    void "put invalid shipVia"(){
       given:
-      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(it.id, null, null)}
+      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(it.id, null)}
 
       when:
       put("$path/", shipVia)
@@ -196,16 +193,15 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
 
       def result = exception.response.bodyAsJson()
-      result.size() == 2
+      result.size() == 1
       result.collect { new ErrorDataTransferObject(it) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "description"),
-         new ErrorDataTransferObject("Is required", "name")
+         new ErrorDataTransferObject("Is required", "description")
       ]
    }
 
    void "put invalid shipVia missing Id"(){
       given:
-      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(null, "test", "Gary was here")}
+      final def shipVia = shipViaFactoryService.single().with {new ShipViaValueObject(null, "Gary was here")}
 
       when:
       put("$path/", shipVia)
