@@ -7,7 +7,7 @@ CREATE TABLE division
     company_id         BIGINT REFERENCES company(id) NOT NULL,
     number             INTEGER DEFAULT 1 NOT NULL,
     name               varchar(50) DEFAULT 'Division' NOT NULL,
-    employee_number    INTEGER CHECK( employee_number > 0 ) NOT NULL,
+    employee_number    INTEGER CHECK( employee_number > 0 ),
     description        varchar(50),
     CONSTRAINT uq_division UNIQUE
     ( id,
