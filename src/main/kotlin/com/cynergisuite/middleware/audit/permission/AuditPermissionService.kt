@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.permission
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.authentication.User
@@ -26,7 +25,9 @@ class AuditPermissionService @Inject constructor(
 
    fun fetchAllPermissionTypes(pageRequest: StandardPageRequest, locale: Locale): Page<AuditPermissionTypeValueObject> {
       return auditPermissionRepository.findAllPermissionTypes(pageRequest).toPage {
-         AuditPermissionTypeValueObject(it, it.localizeMyDescription(locale, localizationService))
+         AuditPermissionTypeValueObject(
+            it,
+            it.localizeMyDescription(locale, localizationService))
       }
    }
 
@@ -35,10 +36,24 @@ class AuditPermissionService @Inject constructor(
    fun create(@Valid permission: AuditPermissionCreateUpdateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
       val auditPermission = auditPermissionValidator.validateCreate(permission, user)
 
-      return auditPermissionRepository.insert(auditPermission).let { AuditPermissionValueObject(it, locale, localizationService) }
+      return AuditPermissionValueObject(
+         entity = auditPermissionRepository.insert(auditPermission),
+         locale = locale,
+         localizationService = localizationService
+      )
    }
 
-   fun update(@Valid permission: AuditPermissionCreateUpdateDataTransferObject) {
-      val auditPermission = auditPermissionValidator.validateUpdate(permission)
+   fun update(@Valid permission: AuditPermissionCreateUpdateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
+      val auditPermission = auditPermissionValidator.validateUpdate(permission, user)
+
+      return AuditPermissionValueObject(
+         entity = auditPermissionRepository.update(auditPermission),
+         locale = locale,
+         localizationService = localizationService
+      )
+   }
+
+   fun deleteById(id: Long, dataset: String, locale: Locale): AuditPermissionValueObject? {
+      return return auditPermissionRepository.deleteById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 }

@@ -26,6 +26,13 @@ data class AuditPermissionCreateUpdateDataTransferObject(
    @field:NotNull
    val department: SimpleIdentifiableDataTransferObject? = null
 ) {
+   constructor(id: Long, permission: AuditPermissionType, department: DepartmentEntity) :
+      this(
+         id = id,
+         permissionType = SimpleIdentifiableDataTransferObject(permission),
+         department = SimpleIdentifiableDataTransferObject(department)
+      )
+
    constructor(permission: AuditPermissionType, department: DepartmentEntity) :
       this(
          permissionType = SimpleIdentifiableDataTransferObject(permission),

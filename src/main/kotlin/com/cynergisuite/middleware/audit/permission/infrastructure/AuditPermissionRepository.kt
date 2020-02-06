@@ -2,11 +2,13 @@ package com.cynergisuite.middleware.audit.permission.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -28,7 +30,7 @@ class AuditPermissionRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionRepository::class.java)
 
    fun findById(id: Long, dataset: String): AuditPermissionEntity? {
-      logger.debug("Searching for AuditPermission with id {}", id)
+      logger.debug("Searching for AuditPermission with id {}/{}", id, dataset)
 
       val found = jdbc.findFirstOrNull("""
          SELECT
@@ -196,13 +198,12 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.insertReturning("""
          INSERT INTO audit_permission(department, type_id, company_id)
-         VALUES (:department, :audit_permission_type_id, :company_id)
+         VALUES (:department, :type_id, :company_id)
          RETURNING
-            *
-         """,
+            *""",
          mapOf(
             "department" to auditPermission.department.code,
-            "audit_permission_type_id" to auditPermission.type.id,
+            "type_id" to auditPermission.type.id,
             "company_id" to auditPermission.company.id
          ),
          RowMapper { rs, _ ->
@@ -217,5 +218,68 @@ class AuditPermissionRepository @Inject constructor(
             )
          }
       )
+   }
+
+   @Transactional
+   fun update(auditPermission: AuditPermissionEntity): AuditPermissionEntity {
+      logger.debug("Updating AuditPermission {}", auditPermission)
+
+      return jdbc.updateReturning("""
+         UPDATE audit_permission
+         SET
+            department = :department,
+            type_id = :type_id,
+            company_id = :company_id
+         WHERE id = :id
+         RETURNING
+            *""",
+         mapOf(
+            "id" to auditPermission.id,
+            "department" to auditPermission.department.code,
+            "type_id" to auditPermission.type.id,
+            "company_id" to auditPermission.company.id
+         ),
+         RowMapper { rs, _ ->
+            AuditPermissionEntity(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               department = auditPermission.department.copy(),
+               type = auditPermission.type.copy(),
+               company = auditPermission.company.copy()
+            )
+         }
+      )
+   }
+
+   @Transactional
+   fun deleteById(id: Long, dataset: String): AuditPermissionEntity? {
+      logger.debug("Deleting AuditPermission using {}/{}", id, dataset)
+
+      val existingPermission = findById(id, dataset)
+
+      return if (existingPermission != null) {
+         jdbc.deleteReturning("""
+            DELETE FROM audit_permission
+            WHERE id = :id
+            RETURNING
+               *""",
+            mapOf("id" to id),
+            RowMapper { rs, _ ->
+               AuditPermissionEntity(
+                  id = rs.getLong("id"),
+                  uuRowId = rs.getUuid("uu_row_id"),
+                  timeCreated = rs.getOffsetDateTime("time_created"),
+                  timeUpdated = rs.getOffsetDateTime("time_updated"),
+                  department = existingPermission.department,
+                  type = existingPermission.type,
+                  company = existingPermission.company
+               )
+            }
+         )
+      } else {
+         null
+      }
    }
 }

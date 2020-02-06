@@ -151,7 +151,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
    }
 
-   void "check association of audit-fetchOne with with Sales Associate" () {
+   void "check association of audit-fetchOne with Sales Associate" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
       def store = storeFactoryService.random(company.datasetCode)
@@ -160,7 +160,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
       def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
-      def deliveryDriveLogin = loginEmployee(deliveryDriver)
+      def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
       def audit = auditFactoryService.single(store)
@@ -173,7 +173,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       salesAssociateAudit.id == audit.id
 
       when:
-      get("/audit/${audit.id}", deliveryDriveLogin)
+      get("/audit/${audit.id}", deliveryDriverLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -189,7 +189,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
       def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
-      def deliveryDriveLogin = loginEmployee(deliveryDriver)
+      def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def audit = auditFactoryService.single(store)
 
@@ -212,10 +212,97 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       salesAssociateAudit.id == audit.id
 
       when:
-      get("/audit/${audit.id}", deliveryDriveLogin)
+      get("/audit/${audit.id}", deliveryDriverLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == FORBIDDEN
+   }
+
+   void "audit-fetchOne from Sales Associate to Delivery Driver" () {
+      given:
+      def company = companyFactoryService.forDatasetCode("tstds1")
+      def store = storeFactoryService.random(company.datasetCode)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
+      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociateLogin = loginEmployee(salesAssociate)
+      def deliveryDriverLogin = loginEmployee(deliveryDriver)
+      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
+      def audit = auditFactoryService.single(store)
+
+      when:
+      def permissionUpdated = put("/audit/permission", new AuditPermissionCreateUpdateDataTransferObject(permission.id, permissionType, deliveryDriverDepartment))
+
+      then:
+      notThrown(Exception)
+      permissionUpdated.id == permission.id
+      permissionUpdated.type.id == permissionType.id
+      permissionUpdated.type.value == permissionType.value
+      permissionUpdated.department.id == deliveryDriverDepartment.id
+      permissionUpdated.department.code == deliveryDriverDepartment.code
+
+      when:
+      def deliveryDriverAudit = get("/audit/${audit.id}", deliveryDriverLogin)
+
+      then:
+      notThrown(Exception)
+      deliveryDriverAudit.id == audit.id
+
+      when:
+      get("/audit/${audit.id}", salesAssociateLogin)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == FORBIDDEN
+   }
+
+   void "delete association of audit-fetchOne with Sales Associate" () {
+      given:
+      def company = companyFactoryService.forDatasetCode("tstds1")
+      def store = storeFactoryService.random(company.datasetCode)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
+      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociateLogin = loginEmployee(salesAssociate)
+      def deliveryDriverLogin = loginEmployee(deliveryDriver)
+      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
+      def audit = auditFactoryService.single(store)
+
+      when:
+      def salesAssociateAudit = get("/audit/${audit.id}", salesAssociateLogin)
+
+      then:
+      notThrown(Exception)
+      salesAssociateAudit.id == audit.id
+
+      when:
+      get("/audit/${audit.id}", deliveryDriverLogin)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == FORBIDDEN
+
+      when:
+      def deletedAudit = delete("/audit/permission/${permission.id}")
+
+      then:
+      notThrown(Exception)
+      deletedAudit.id == permission.id
+      deletedAudit.type.id == permissionType.id
+      deletedAudit.type.value == permissionType.value
+      deletedAudit.department.id == salesAssociateDepartment.id
+      deletedAudit.department.code == salesAssociateDepartment.code
+
+      when:
+      def deliveryAuditResult = get("/audit/${audit.id}", deliveryDriverLogin)
+
+      then:
+      notThrown(Exception)
+      deliveryAuditResult.id == audit.id
    }
 }

@@ -9,6 +9,8 @@ import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import io.micronaut.context.ApplicationContext
 import io.micronaut.security.utils.SecurityService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,10 +27,11 @@ class AccessControlService @Inject constructor(
    private val applicationContext: ApplicationContext,
    private val authenticationService: AuthenticationService,
    private val securityService: SecurityService
-) : MethodInterceptor<Any, Any> {
+) : MethodInterceptor<Any, Any?> {
+   private val logger: Logger = LoggerFactory.getLogger(AccessControlService::class.java)
 
    @Throws(AccessException::class)
-   override fun intercept(context: MethodInvocationContext<Any, Any>): Any {
+   override fun intercept(context: MethodInvocationContext<Any, Any?>): Any? {
       val parameters = context.parameters
       val authenticatedUser: AuthenticatedUser = securityService.authentication.map { StandardAuthenticatedUser(it) }.orElseThrow { handleAccessDenied() }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
@@ -36,7 +39,13 @@ class AccessControlService @Inject constructor(
       val accessControlProviderClass = accessControl?.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
       val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
 
-      return if (securityService.isAuthenticated && asset != null && accessControlProvider.canUserAccess(authenticatedUser, asset, parameters)) {
+      logger.trace("Checking access of asset {} using {} of user {}", asset, accessControlProviderClass, authenticatedUser)
+
+      return if (
+         securityService.isAuthenticated
+         && asset != null
+         && accessControlProvider.canUserAccess(authenticatedUser, asset, parameters)
+      ) {
          context.proceed()
       } else {
          throw handleAccessDenied()
