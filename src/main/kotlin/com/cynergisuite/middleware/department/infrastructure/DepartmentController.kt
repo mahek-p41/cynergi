@@ -44,11 +44,13 @@ class DepartmentController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
    ): DepartmentValueObject {
       logger.info("Fetching department by {}", id)
 
-      val response = departmentService.fetchOne(id) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = departmentService.fetchOne(id, user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching department by {} resulted in {}", id, response)
 

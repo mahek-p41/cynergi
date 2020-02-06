@@ -4,11 +4,13 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateDataTransferObject
+import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreFactoryService
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
@@ -16,6 +18,7 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class AuditPermissionControllerSpecification extends ControllerSpecificationBase {
@@ -25,7 +28,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject StoreFactoryService storeFactoryService
 
-   void "fetch all permissions" () {
+   void "fetch all permission types" () {
       given:
       final pageRequest = new StandardPageRequest(1, 100, "id", "ASC")
 
@@ -149,6 +152,44 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
+   }
+
+   void "fetch all permissions" () {
+      given:
+      def excludePermission = AuditPermissionTypeFactory.findByValue("auditPermission-fetchAll") // because we don't want to impede our ability to call the fetchAll endpoint right now
+      def company = companyFactoryService.forDatasetCode("tstds1")
+      def permissions = auditPermissionFactoryService.stream(21, company, excludePermission).toList()
+      def firstPageRequest = new StandardPageRequest(1, 5, "id", "ASC")
+      def notAPage = new StandardPageRequest(5, 10, "id", "ASC")
+
+      when:
+      def firstPage = get("/audit/permission${firstPageRequest}")
+
+      then:
+      notThrown(Exception)
+      firstPage.requested.page == 1
+      firstPage.requested.size == 5
+      firstPage.requested.sortBy == "id"
+      firstPage.requested.sortDirection == "ASC"
+      firstPage.totalElements == 21
+      firstPage.elements.size() == 5
+      firstPage.elements[0].id == permissions[0].id
+      firstPage.elements[0].type.id == permissions[0].type.id
+      firstPage.elements[1].id == permissions[1].id
+      firstPage.elements[1].type.id == permissions[1].type.id
+      firstPage.elements[2].id == permissions[2].id
+      firstPage.elements[2].type.id == permissions[2].type.id
+      firstPage.elements[3].id == permissions[3].id
+      firstPage.elements[3].type.id == permissions[3].type.id
+      firstPage.elements[4].id == permissions[4].id
+      firstPage.elements[4].type.id == permissions[4].type.id
+
+      when:
+      get("/audit/permission${notAPage}")
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == NO_CONTENT
    }
 
    void "check association of audit-fetchOne with Sales Associate" () {
@@ -304,5 +345,21 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       notThrown(Exception)
       deliveryAuditResult.id == audit.id
+   }
+
+   void "delete one by ID that doesn't exist" () {
+      given:
+      def company = companyFactoryService.forDatasetCode("tstds1")
+      def department = departmentFactoryService.random(company.datasetCode)
+      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def permission = auditPermissionFactoryService.single(department, permissionType, company)
+
+      when:
+      delete("/audit/permission/${permission.id + 1}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == NOT_FOUND
+      exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
    }
 }

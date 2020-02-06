@@ -11,8 +11,8 @@ class DepartmentService @Inject constructor(
    private val departmentRepository: DepartmentRepository
 ) {
 
-   fun fetchOne(id: Long): DepartmentValueObject? =
-      departmentRepository.findOne(id)?.let { DepartmentValueObject(it) }
+   fun fetchOne(id: Long, dataset: String): DepartmentValueObject? =
+      departmentRepository.findOne(id, dataset)?.let { DepartmentValueObject(it) }
 
    fun fetchAll(pageRequest: PageRequest, dataset: String): Page<DepartmentValueObject> {
       val departments = departmentRepository.findAll(pageRequest, dataset)

@@ -48,3 +48,5 @@ CREATE TRIGGER update_audit_permission_trg
     ON audit_permission
     FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
+
+CREATE UNIQUE INDEX company_dataset_code_idx ON company (dataset_code);

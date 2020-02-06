@@ -38,5 +38,9 @@ object AuditPermissionTypeFactory {
    @JvmStatic
    fun random() =
       permissionTypes.random()
+
+   @JvmStatic
+   fun random(excludePermission: AuditPermissionType)
+      = permissionTypes.filter { it.id != excludePermission.id }.random()
 }
 

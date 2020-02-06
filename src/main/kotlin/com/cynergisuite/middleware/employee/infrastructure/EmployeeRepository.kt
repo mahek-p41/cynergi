@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.pgclient.impl.ArrayTuple
 import io.reactiverse.reactivex.pgclient.PgPool
@@ -136,6 +137,7 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
+   @Cacheable("user-cache")
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
       val params = mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myStoreNumber())
       val query = """

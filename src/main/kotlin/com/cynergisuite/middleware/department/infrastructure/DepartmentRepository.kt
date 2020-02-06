@@ -20,7 +20,7 @@ class DepartmentRepository @Inject constructor(
 ) : DatasetRepository {
    private val logger: Logger = LoggerFactory.getLogger(DepartmentRepository::class.java)
 
-   fun findOne(id: Long): DepartmentEntity? {
+   fun findOne(id: Long, dataset: String): DepartmentEntity? {
       logger.debug("Search for department by id {}", id)
 
       val found = jdbc.findFirstOrNull("""
@@ -33,8 +33,9 @@ class DepartmentRepository @Inject constructor(
             dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw
          WHERE id = :id
+               AND dataset = :dataset
          """.trimIndent(),
-         mapOf("id" to id),
+         mapOf("id" to id, "dataset" to dataset),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -115,15 +116,15 @@ class DepartmentRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.department_vw WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   fun exists(id: Long, dataset: String): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.department_vw WHERE id = :id AND dataset = :dataset)", mapOf("id" to id, "dataset" to dataset), Boolean::class.java)!!
 
       logger.trace("Checking if department: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun doesNotExist(id: Long, dataset: String): Boolean = !exists(id, dataset)
 
    fun mapRow(rs: ResultSet, columnPrefix: String = "d_"): DepartmentEntity =
       DepartmentEntity(

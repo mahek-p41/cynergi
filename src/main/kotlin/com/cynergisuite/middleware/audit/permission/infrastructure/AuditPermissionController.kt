@@ -63,8 +63,9 @@ class AuditPermissionController @Inject constructor(
       logger.debug("User {} requested Audit Permission by ID {}", authentication, id)
 
       val user = authenticationService.findUser(authentication)
+      val locale = httpRequest.findLocaleWithDefault()
 
-      return auditPermissionService.fetchById(id, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      return auditPermissionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -81,8 +82,18 @@ class AuditPermissionController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
-   ) {
+   ): Page<AuditPermissionValueObject> {
+      logger.debug("User {} requested Audit Permissions {}", authentication, pageRequest)
 
+      val user = authenticationService.findUser(authentication)
+      val locale = httpRequest.findLocaleWithDefault()
+      val page = auditPermissionService.fetchAll(pageRequest, user, locale)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
    }
 
    @Throws(PageOutOfBoundsException::class)

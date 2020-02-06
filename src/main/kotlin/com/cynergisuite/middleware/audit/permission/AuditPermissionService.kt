@@ -23,6 +23,12 @@ class AuditPermissionService @Inject constructor(
       return auditPermissionRepository.findById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 
+   fun fetchAll(pageRequest: StandardPageRequest, user: User, locale: Locale): Page<AuditPermissionValueObject> {
+      val found = auditPermissionRepository.findAll(pageRequest, user.myDataset())
+
+      return found.toPage { AuditPermissionValueObject(it, locale, localizationService) }
+   }
+
    fun fetchAllPermissionTypes(pageRequest: StandardPageRequest, locale: Locale): Page<AuditPermissionTypeValueObject> {
       return auditPermissionRepository.findAllPermissionTypes(pageRequest).toPage {
          AuditPermissionTypeValueObject(
@@ -54,6 +60,6 @@ class AuditPermissionService @Inject constructor(
    }
 
    fun deleteById(id: Long, dataset: String, locale: Locale): AuditPermissionValueObject? {
-      return return auditPermissionRepository.deleteById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
+      return auditPermissionRepository.deleteById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 }

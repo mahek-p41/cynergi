@@ -28,6 +28,22 @@ class AuditPermissionRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionRepository::class.java)
+   private val auditPermissionMapper = RowMapper<AuditPermissionEntity> { rs, _ ->
+      AuditPermissionEntity(
+         id = rs.getLong("ap_id"),
+         uuRowId = rs.getUuid("ap_uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("ap_time_created"),
+         timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
+         type = AuditPermissionType(
+            id = rs.getLong("aptd_id"),
+            value = rs.getString("aptd_value"),
+            description = rs.getString("aptd_description"),
+            localizationCode = rs.getString("aptd_localization_code")
+         ),
+         company = companyRepository.mapRow(rs, "comp_"),
+         department = departmentRepository.mapRow(rs, "dept_")
+      )
+   }
 
    fun findById(id: Long, dataset: String): AuditPermissionEntity? {
       logger.debug("Searching for AuditPermission with id {}/{}", id, dataset)
@@ -66,27 +82,64 @@ class AuditPermissionRepository @Inject constructor(
             JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND dept.dataset = :dataset
          WHERE ap.id = :id""",
          mapOf("id" to id, "dataset" to dataset),
-         RowMapper { rs, _ ->
-            AuditPermissionEntity(
-               id = rs.getLong("ap_id"),
-               uuRowId = rs.getUuid("ap_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("ap_time_created"),
-               timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
-               type = AuditPermissionType(
-                  id = rs.getLong("aptd_id"),
-                  value = rs.getString("aptd_value"),
-                  description = rs.getString("aptd_description"),
-                  localizationCode = rs.getString("aptd_localization_code")
-               ),
-               company = companyRepository.mapRow(rs, "comp_"),
-               department = departmentRepository.mapRow(rs, "dept_")
-            )
-         }
+         auditPermissionMapper
       )
 
       logger.trace("Searching for AuditPermission with id {} resulted in {}", id, found)
 
       return found
+   }
+
+   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<AuditPermissionEntity, PageRequest> {
+      logger.debug("Finding all Audit Permissions using {} and dataset: {}", pageRequest, dataset)
+
+      return jdbc.queryPaged("""
+         SELECT
+            ap.id                   AS ap_id,
+            ap.uu_row_id            AS ap_uu_row_id,
+            ap.time_created         AS ap_time_created,
+            ap.time_updated         AS ap_time_updated,
+            aptd.id                 AS aptd_id,
+            aptd.value              AS aptd_value,
+            aptd.description        AS aptd_description,
+            aptd.localization_code  AS aptd_localization_code,
+            comp.id                 AS comp_id,
+            comp.uu_row_id          AS comp_uu_row_id,
+            comp.time_created       AS comp_time_created,
+            comp.time_updated       AS comp_time_updated,
+            comp.name               AS comp_name,
+            comp.doing_business_as  AS comp_doing_business_as,
+            comp.client_code        AS comp_client_code,
+            comp.client_id          AS comp_client_id,
+            comp.dataset_code       AS comp_dataset_code,
+            comp.federal_tax_number AS comp_federal_tax_number,
+            dept.id                 AS dept_id,
+            dept.code               AS dept_code,
+            dept.description        AS dept_description,
+            dept.dataset            AS dept_dataset,
+            dept.security_profile   AS dept_security_profile,
+            dept.default_menu       AS dept_default_menu,
+            dept.time_created       AS dept_time_created,
+            dept.time_updated       AS dept_time_updated,
+            count(*) OVER() as total_elements
+         FROM audit_permission ap
+            JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
+            JOIN company comp ON ap.company_id = comp.id
+            JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND dept.dataset = :dataset
+         WHERE comp.dataset_code = :dataset
+         ORDER BY ap_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT :limit OFFSET :offset""",
+         mapOf(
+            "dataset" to dataset,
+            "limit" to pageRequest.size(),
+            "offset" to pageRequest.offset()
+         ),
+         pageRequest
+      ) { rs, elements ->
+         do {
+            elements.add(auditPermissionMapper.mapRow(rs, 0)!!)
+         } while(rs.next())
+      }
    }
 
    fun exists(id: Long): Boolean {
@@ -137,22 +190,7 @@ class AuditPermissionRepository @Inject constructor(
          WHERE aptd.value = :asset
                AND comp.dataset_code = :dataset_code""",
          mapOf("asset" to asset, "dataset_code" to dataset),
-         RowMapper { rs, _ ->
-            AuditPermissionEntity(
-               id = rs.getLong("ap_id"),
-               uuRowId = rs.getUuid("ap_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("ap_time_created"),
-               timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
-               type = AuditPermissionType(
-                  id = rs.getLong("aptd_id"),
-                  value = rs.getString("aptd_value"),
-                  description = rs.getString("aptd_description"),
-                  localizationCode = rs.getString("aptd_localization_code")
-               ),
-               company = companyRepository.mapRow(rs, "comp_"),
-               department = departmentRepository.mapRow(rs, "dept_")
-            )
-         }
+         auditPermissionMapper
       )
 
       logger.trace("Searching for AuditPermission with asset {} resulted in {}", asset, found)
