@@ -16,6 +16,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
     id BIGINT,
     code VARCHAR,
     description VARCHAR,
+    dataset VARCHAR,
     security_profile INTEGER,
     default_menu VARCHAR,
     time_created TIMESTAMPTZ,

@@ -50,3 +50,5 @@ CREATE TRIGGER update_audit_permission_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE UNIQUE INDEX company_dataset_code_idx ON company (dataset_code);
+
+DROP TABLE legacy_importation;
