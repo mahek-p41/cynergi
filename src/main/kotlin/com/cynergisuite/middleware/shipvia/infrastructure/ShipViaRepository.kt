@@ -22,7 +22,11 @@ class ShipViaRepository @Inject constructor(
    private val simpleShipViaRowMapper = ShipViaRowMapper()
 
    fun findOne(id: Long): ShipViaEntity? {
-      val found = jdbc.findFirstOrNull("SELECT id, uu_row_id, time_created, time_updated, description FROM ship_via WHERE id = :id", mapOf("id" to id), simpleShipViaRowMapper)
+      logger.debug("Searching for ShipVia by id {}", id)
+      val found = jdbc.findFirstOrNull("""SELECT sv.id, sv.uu_row_id, sv.time_created, sv.time_updated, sv.description, c.dataset_code as dataset 
+         FROM ship_via sv
+         JOIN company c on sv.company_id = c.id 
+         WHERE sv.id = :id""", mapOf("id" to id), simpleShipViaRowMapper)
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
@@ -39,16 +43,34 @@ class ShipViaRepository @Inject constructor(
    fun insert(entity: ShipViaEntity): ShipViaEntity {
       logger.debug("Inserting shipVia {}", entity)
 
-      return jdbc.insertReturning("""
-         INSERT INTO ship_via(description)
-         VALUES (:description)
+      return jdbc.insertReturning(
+         """
+         INSERT INTO ship_via(description, company_id)
+         VALUES (
+            :description,
+            (
+               SELECT id
+               FROM company c
+               WHERE c.dataset_code = :dataset
+            )
+         )
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "description" to entity.description
+            "description" to entity.description,
+            "dataset" to entity.dataset
          ),
-         simpleShipViaRowMapper
+         RowMapper { rs, _ ->
+            ShipViaEntity(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               description = rs.getString("description"),
+               dataset = entity.dataset
+            )
+         }
       )
    }
 
@@ -68,28 +90,43 @@ class ShipViaRepository @Inject constructor(
             "id" to entity.id,
             "description" to entity.description
          ),
-         simpleShipViaRowMapper
+         RowMapper { rs, _ ->
+            ShipViaEntity(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               description = rs.getString("description"),
+               dataset = entity.dataset
+            )
+         }
       )
    }
 
-   fun findAll(pageRequest: PageRequest): RepositoryPage<ShipViaEntity, PageRequest> {
+   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<ShipViaEntity, PageRequest> {
       var totalElements: Long? = null
       val shipVia = mutableListOf<ShipViaEntity>()
 
       jdbc.query("""
          SELECT
-            id,
-            uu_row_id,
-            time_created,
-            time_updated,
-            description,
+            sv.id,
+            sv.uu_row_id,
+            sv.time_created,
+            sv.time_updated,
+            sv.description,
+            c.dataset_code as dataset,
             count(*) OVER() as total_elements
-         FROM ship_via AS s
+         FROM ship_via AS sv
+         JOIN company c
+         ON sv.company_id = c.id
+         WHERE c.dataset_code = :dataset
          ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
          OFFSET ${pageRequest.offset()}
          """.trimIndent(),
-         emptyMap<String, Any>()
+         mapOf(
+            "dataset" to dataset
+         )
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -116,6 +153,7 @@ private class ShipViaRowMapper(
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         description = rs.getString("${columnPrefix}description")
+         description = rs.getString("${columnPrefix}description"),
+         dataset = rs.getString("${columnPrefix}dataset")
       )
 }
