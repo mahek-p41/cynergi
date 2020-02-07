@@ -17,7 +17,7 @@ import javax.validation.constraints.Size
 data class AuditPermissionTypeValueObject(
 
    @field:Positive
-   @field:Schema(name = "id", description = "This is a database driven primary key value defining the id of the status")
+   @field:Schema(name = "id", description = "This is the primary key")
    var id: Long,
 
    @field:NotNull

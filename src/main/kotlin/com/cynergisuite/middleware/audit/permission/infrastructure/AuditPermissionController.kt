@@ -173,9 +173,9 @@ class AuditPermissionController @Inject constructor(
 
    @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl("auditPermission-delete", accessControlProvider = AuditAccessControlProvider::class)
-   @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a single Audit Permission by it's system generated primary key", operationId = "auditPermission-fetchOne")
+   @Operation(tags = ["AuditPermissionEndpoints"], summary = "Delete a single Audit Permission", description = "Delete a single Audit Permission by it's system generated primary key", operationId = "auditPermission-delete")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Audit Permission was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
