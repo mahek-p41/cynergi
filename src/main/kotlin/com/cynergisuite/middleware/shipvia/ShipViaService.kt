@@ -1,19 +1,13 @@
 package com.cynergisuite.middleware.shipvia
 
-import com.cynergisuite.domain.CSVParsingService
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.load.legacy.LegacyCsvLoadingService
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
 import io.micronaut.validation.Validated
-import org.apache.commons.csv.CSVRecord
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -59,5 +53,4 @@ class ShipViaService @Inject constructor(
          entity = shipViaRepository.update(entity = ShipViaEntity(vo, employee.myDataset()))
       )
    }
-
 }
