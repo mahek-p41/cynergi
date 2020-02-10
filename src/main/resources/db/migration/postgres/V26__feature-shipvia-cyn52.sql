@@ -3,7 +3,8 @@ CREATE TABLE ship_via (
     uu_row_id          UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
-    description varchar(30) CHECK ( char_length(trim(description)) > 1)         NOT NULL
+    description varchar(30) CHECK ( char_length(trim(description)) > 1)         NOT NULL,
+    company_id BIGINT REFERENCES company(id)                                    NOT NULL
   );
 CREATE TRIGGER update_shipvia_trg
    BEFORE UPDATE
