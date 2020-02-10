@@ -188,14 +188,14 @@ task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask
 }
 
 openApiGenerate {
-   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
+   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/cynergi-middleware.yml".toString()
    validateSpec = false
    skipValidateSpec = false
 }
 
 task buildApiDocs(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
    generatorName = "html"
-   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/swagger.yml".toString()
+   inputSpec = "$buildDir/tmp/kapt3/classes/main/META-INF/swagger/cynergi-middleware.yml".toString()
    outputDir = "$buildDir/reports/openapi/".toString()
    version = releaseVersion.toString()
    auth = "Authorization:Bearer \${jwt}".toString()
