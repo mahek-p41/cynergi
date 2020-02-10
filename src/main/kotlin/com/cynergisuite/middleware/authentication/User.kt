@@ -7,7 +7,6 @@ interface User : AuthenticatedUser {
    fun myLastName(): String
    fun myPassCode(): String
    fun myLocation(): Location?
-   fun myDepartment(): String?
    fun amIActive(): Boolean
    fun doesAllowAutoStoreAssign(): Boolean
 }

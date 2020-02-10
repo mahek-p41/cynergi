@@ -35,7 +35,7 @@ class DepartmentController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("department-fetchOne")
+   @AccessControl("department-fetchOne", accessControlProvider = DepartmentAccessControlProvider::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
@@ -44,11 +44,13 @@ class DepartmentController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long
+      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
    ): DepartmentValueObject {
       logger.info("Fetching department by {}", id)
 
-      val response = departmentService.fetchOne(id) ?: throw NotFoundException(id)
+      val user = authenticationService.findUser(authentication)
+      val response = departmentService.fetchOne(id, user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching department by {} resulted in {}", id, response)
 
@@ -56,7 +58,7 @@ class DepartmentController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("department-fetchAll")
+   @AccessControl("department-fetchAll", accessControlProvider = DepartmentAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a listing of departments", description = "Fetch a paginated listing of departments", operationId = "department-fetchAll")
    @ApiResponses(value = [

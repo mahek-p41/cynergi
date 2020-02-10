@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.schedule.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
@@ -43,11 +44,12 @@ class AuditScheduleController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditSchedule-fetchOne")
+   @AccessControl("auditSchedule-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a single Audit Schedule", description = "Fetch a single Audit Schedule by it's system generated primary key", operationId = "auditSchedule-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit Schedule was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Audit Schedule was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -66,12 +68,13 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditSchedule-fetchAll")
+   @AccessControl("auditSchedule-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audit Schedules", operationId = "auditSchedule-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audit Schedules that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
       ApiResponse(responseCode = "204", description = "The requested Audit Schedule was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
@@ -91,12 +94,13 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("auditSchedule-create")
+   @AccessControl("auditSchedule-create", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "auditSchedule-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
@@ -116,12 +120,13 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("auditSchedule-update")
+   @AccessControl("auditSchedule-update", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])

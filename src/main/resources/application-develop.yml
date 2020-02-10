@@ -31,10 +31,6 @@ cynergi:
       jwt:
          pem:
             path: "classpath:security/local-dev.pem" #openssl genrsa -out security/local-dev.pem 2048
-   legacy:
-      import:
-         location: "./import/"
-         rename: false
    worker:
       pool:
          size: 5

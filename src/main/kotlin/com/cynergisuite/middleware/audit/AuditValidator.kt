@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.CREATED
+import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
@@ -19,7 +20,6 @@ import com.cynergisuite.middleware.localization.AuditUnableToChangeStatusFromTo
 import com.cynergisuite.middleware.localization.InvalidDataset
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.localization.ThruDateIsBeforeFrom
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
@@ -89,40 +89,35 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(audit: AuditUpdateValueObject, user: User, locale: Locale): Pair<AuditActionEntity, AuditEntity> {
+   fun validateCompleteOrCancel(audit: AuditUpdateValueObject, user: User, locale: Locale): Pair<AuditActionEntity, AuditEntity> {
       logger.debug("Validating Update Audit {}", audit)
 
       doValidation { errors ->
-         val id = audit.id
+         val id = audit.id!!
          val requestedStatus = auditStatusService.fetchByValue(audit.status!!.value)
+         val existingAudit = auditRepository.findOne(id, user.myDataset())
 
-         if (id == null) {
-            errors.add(element = ValidationError("id", NotNull("id")))
-         } else {
-            val existingAudit = auditRepository.findOne(id, user.myDataset())
+         if (existingAudit == null) {
+            errors.add(ValidationError("id", NotFound(id)))
+         } else if (requestedStatus != null) {
+            val currentStatus = existingAudit.currentStatus()
 
-            if (existingAudit == null) {
-               errors.add(ValidationError("id", NotFound(id)))
-            } else if (requestedStatus != null) {
-               val currentStatus = existingAudit.currentStatus()
-
-               if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus)) {
-                  errors.add(
-                     ValidationError(
-                        "status",
-                        AuditUnableToChangeStatusFromTo(
-                           id,
-                           currentStatus.localizeMyDescription(locale, localizationService),
-                           requestedStatus.localizeMyDescription(locale, localizationService)
-                        )
+            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) || requestedStatus == SIGNED_OFF) {
+               errors.add(
+                  ValidationError(
+                     "status",
+                     AuditUnableToChangeStatusFromTo(
+                        id,
+                        currentStatus.localizeMyDescription(locale, localizationService),
+                        requestedStatus.localizeMyDescription(locale, localizationService)
                      )
                   )
-               }
-            } else {
-               errors.add(
-                  ValidationError("status", AuditStatusNotFound(audit.status!!.value))
                )
             }
+         } else {
+            errors.add(
+               ValidationError("status", AuditStatusNotFound(audit.status!!.value))
+            )
          }
       }
 
@@ -133,6 +128,30 @@ class AuditValidator @Inject constructor(
          ),
          auditRepository.findOne(audit.id!!, user.myDataset())!!
       )
+   }
+
+   @Throws(ValidationException::class)
+   fun validateSignOff(audit: SimpleIdentifiableDataTransferObject, dataset: String, user: User, locale: Locale): AuditEntity {
+      val existingAudit = auditRepository.findOne(audit.myId()!!, dataset) ?: throw NotFoundException(audit.myId()!!)
+
+      doValidation { errors ->
+         val currentStatus = existingAudit.currentStatus()
+
+         if (!auditStatusService.requestedStatusIsValid(currentStatus, SIGNED_OFF)) {
+            errors.add(
+               ValidationError(
+                  "status",
+                  AuditUnableToChangeStatusFromTo(
+                     existingAudit.id!!,
+                     currentStatus.localizeMyDescription(locale, localizationService),
+                     SIGNED_OFF.localizeMyDescription(locale, localizationService)
+                  )
+               )
+            )
+         }
+      }
+
+      return existingAudit
    }
 
    @Throws(NotFoundException::class)

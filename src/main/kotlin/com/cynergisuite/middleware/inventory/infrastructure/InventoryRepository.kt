@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
+import com.cynergisuite.domain.infrastructure.DatasetRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
@@ -12,6 +13,7 @@ import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
@@ -20,7 +22,7 @@ import javax.inject.Singleton
 class InventoryRepository(
    private val jdbc: NamedParameterJdbcTemplate,
    private val storeRepository: StoreRepository
-) {
+) : DatasetRepository {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
 
    @Language("PostgreSQL")
@@ -81,6 +83,16 @@ class InventoryRepository(
       logger.debug("Search for Inventory by ID {} produced {}", id, inventory)
 
       return inventory
+   }
+
+   override fun findDataset(id: Long): String? {
+      logger.debug("Search for dataset of inventory item by id {}", id)
+
+      val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.inventory_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
+
+      logger.trace("Search for dataset of inventory item by id {} resulted in {}", id, found)
+
+      return found
    }
 
    fun exists(id: Long, dataset: String): Boolean {

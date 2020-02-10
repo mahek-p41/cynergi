@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware
 
 import com.cynergisuite.middleware.load.develop.DevelopDataLoader
-import com.cynergisuite.middleware.load.legacy.infrastructure.LegacyDataLoader
 import io.micronaut.runtime.Micronaut
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
@@ -41,13 +40,11 @@ object Application {
          .start()
 
       try {
-         mn.getBean(LegacyDataLoader::class.java).processLegacyImports() // FIXME when the loop that results with using this as a listener on the MigrationFinishedEvent
-
          if (mnEnvironment == "develop") {
-            mn.getBean(DevelopDataLoader::class.java).loadDemoData() // FIXME when above fix is put in
+            mn.getBean(DevelopDataLoader::class.java).loadDemoData() // FIXME when the loop that results with using this as a listener on the MigrationFinishedEvent
          }
       } catch (e: Throwable) {
-         logger.error("Unhandled error occurred during legacy data loading", e)
+         logger.error("Unhandled error occurred during data loading", e)
          exitProcess(-1)
       }
    }

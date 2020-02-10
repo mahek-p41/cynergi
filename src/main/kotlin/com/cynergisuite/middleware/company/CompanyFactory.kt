@@ -76,7 +76,11 @@ class CompanyFactoryService(
 ) {
 
    fun streamPredefined(): Stream<CompanyEntity> =
+      streamPredefined { it }
+
+   fun streamPredefined(preInsertMapper: (company: CompanyEntity) -> CompanyEntity): Stream<CompanyEntity> =
       CompanyFactory.predefined().stream()
+         .map(preInsertMapper)
          .map { companyRepository.insert(it) }
 
    fun stream(numberIn: Int = 1): Stream<CompanyEntity> =

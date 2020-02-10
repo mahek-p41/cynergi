@@ -37,9 +37,9 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       return client.exchange(POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.dataset)), BearerAccessRefreshToken).body().accessToken
    }
 
-   Object get(String path) throws HttpClientResponseException {
+   Object get(String path, String accessToken = cynergiAccessToken) throws HttpClientResponseException {
       return client.exchange(
-         GET("/${path}").header("Authorization", "Bearer $cynergiAccessToken"),
+         GET("/${path}").header("Authorization", "Bearer $accessToken"),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()
@@ -53,7 +53,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       ).bodyAsJson()
    }
 
-   Object put(String path, Object body) throws HttpClientResponseException {
+   Object put(String path, Object body, String accessToken = cynergiAccessToken) throws HttpClientResponseException {
       return client.exchange(
          PUT("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
          Argument.of(String),
@@ -61,9 +61,9 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       ).bodyAsJson()
    }
 
-   Object delete(String path) throws HttpClientResponseException {
+   Object delete(String path, String accessToken = cynergiAccessToken) throws HttpClientResponseException {
       return client.exchange(
-         DELETE("/${path}").header("Authorization", "Bearer $cynergiAccessToken"),
+         DELETE("/${path}").header("Authorization", "Bearer $accessToken"),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()

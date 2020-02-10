@@ -2,6 +2,7 @@ import java.text.SimpleDateFormat
 
 buildscript {
    repositories {
+      mavenCentral()
       maven {
          url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
       }
@@ -30,6 +31,7 @@ version "${releaseVersion}"
 group "com.hightouchinc.cynergi"
 
 repositories {
+   mavenCentral()
    maven {
       url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
    }
@@ -86,7 +88,6 @@ dependencies {
    compile "org.postgresql:postgresql:42.2.5"
 
    implementation "org.apache.commons:commons-lang3:3.8.1"
-   implementation "org.apache.commons:commons-csv:1.6"
    implementation "commons-io:commons-io:2.6"
    implementation "commons-codec:commons-codec:1.12"
    implementation ("com.google.guava:guava:28.0-jre") {

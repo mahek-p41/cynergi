@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AlwaysAllowAccessControlProvider
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeService
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject
@@ -33,7 +34,7 @@ class ScheduleTypeController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ScheduleTypeController::class.java)
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("scheduleType-fetchAll")
+   @AccessControl("scheduleType-fetchAll", AlwaysAllowAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ScheduleTypeEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
    @ApiResponses(value = [
