@@ -68,7 +68,6 @@ class AuthenticatedController @Inject constructor(
    }
 
    @Head("/check")
-   @AccessControl("check")
    @Operation(tags = ["AuthenticationEndpoints"], summary = "Check if an authentication is valid", description = "Simple HEAD operation that allows for checking if a token is valid or not.  Useful to check on application load if a stored token is still valid.", operationId = "authenticated-check")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the authentication token is valid"),

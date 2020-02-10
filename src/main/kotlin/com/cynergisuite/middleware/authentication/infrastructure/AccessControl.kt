@@ -4,6 +4,7 @@ import io.micronaut.aop.Around
 import io.micronaut.context.annotation.Type
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.reflect.KClass
 
 /**
  * Annotation that indicates to the Micronaut framework to wrap any method annotated by this annotation in checks
@@ -23,5 +24,6 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
 @Around
 @Type(AccessControlService::class)
 annotation class AccessControl(
-   val asset: String
+   val value: String,
+   val accessControlProvider: KClass<out AccessControlProvider> = DefaultAccessControlProvider::class
 )

@@ -1,0 +1,65 @@
+package com.cynergisuite.middleware.audit.permission
+
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
+import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.localization.LocalizationService
+import io.micronaut.validation.Validated
+import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Singleton
+import javax.validation.Valid
+import javax.validation.ValidationException
+
+@Singleton
+class AuditPermissionService @Inject constructor(
+   private val auditPermissionRepository: AuditPermissionRepository,
+   private val auditPermissionValidator: AuditPermissionValidator,
+   private val localizationService: LocalizationService
+) {
+
+   fun fetchById(id: Long, dataset: String, locale: Locale): AuditPermissionValueObject? {
+      return auditPermissionRepository.findById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
+   }
+
+   fun fetchAll(pageRequest: StandardPageRequest, user: User, locale: Locale): Page<AuditPermissionValueObject> {
+      val found = auditPermissionRepository.findAll(pageRequest, user.myDataset())
+
+      return found.toPage { AuditPermissionValueObject(it, locale, localizationService) }
+   }
+
+   fun fetchAllPermissionTypes(pageRequest: StandardPageRequest, locale: Locale): Page<AuditPermissionTypeValueObject> {
+      return auditPermissionRepository.findAllPermissionTypes(pageRequest).toPage {
+         AuditPermissionTypeValueObject(
+            it,
+            it.localizeMyDescription(locale, localizationService))
+      }
+   }
+
+   @Validated
+   @Throws(ValidationException::class)
+   fun create(@Valid permission: AuditPermissionCreateUpdateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
+      val auditPermission = auditPermissionValidator.validateCreate(permission, user)
+
+      return AuditPermissionValueObject(
+         entity = auditPermissionRepository.insert(auditPermission),
+         locale = locale,
+         localizationService = localizationService
+      )
+   }
+
+   fun update(@Valid permission: AuditPermissionCreateUpdateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
+      val auditPermission = auditPermissionValidator.validateUpdate(permission, user)
+
+      return AuditPermissionValueObject(
+         entity = auditPermissionRepository.update(auditPermission),
+         locale = locale,
+         localizationService = localizationService
+      )
+   }
+
+   fun deleteById(id: Long, dataset: String, locale: Locale): AuditPermissionValueObject? {
+      return auditPermissionRepository.deleteById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
+   }
+}

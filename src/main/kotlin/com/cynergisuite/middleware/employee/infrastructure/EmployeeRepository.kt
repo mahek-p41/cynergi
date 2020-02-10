@@ -137,6 +137,7 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
+   @Cacheable("user-cache")
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
       val params = mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myStoreNumber())
       val query = """
@@ -225,6 +226,7 @@ class EmployeeRepository @Inject constructor(
                lastName = row.getString("e_last_name"),
                firstNameMi = row.getString("e_first_name_mi"),
                passCode = row.getString("e_pass_code"),
+               department = row.getString("e_department"),
                store = storeRepository.mapRow(row, "s_"),
                active = row.getBoolean("e_active"),
                allowAutoStoreAssign = row.getBoolean("e_allow_auto_store_assign")
@@ -268,8 +270,8 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, allow_auto_store_assign, dataset)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :allow_auto_store_assign, :dataset)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, allow_auto_store_assign, dataset)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :allow_auto_store_assign, :dataset)
          RETURNING
             *
          """.trimIndent(),
@@ -280,6 +282,7 @@ class EmployeeRepository @Inject constructor(
             "pass_code" to passwordEncoderService.encode(entity.passCode),
             "store_number" to entity.store?.number,
             "active" to entity.active,
+            "department" to entity.department,
             "allow_auto_store_assign" to entity.allowAutoStoreAssign,
             "dataset" to entity.dataset
          ),
@@ -287,17 +290,6 @@ class EmployeeRepository @Inject constructor(
             mapDDLRow(rs, entity.store)
          }
       )
-   }
-
-   @Cacheable("user-cache")
-   fun canEmployeeAccess(employeeType: String, asset: String, id: Long): Boolean {
-      logger.debug("Check if user {} has access to asset {} via the database", id, asset)
-
-      return if(asset == "check") { // everyone authenticated should be able to access this asset
-         true
-      } else {
-         true // TODO do this check once the appropriate data from the menu/modules conversion is in place
-      }
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity  =

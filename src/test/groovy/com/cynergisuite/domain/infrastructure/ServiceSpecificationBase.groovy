@@ -10,7 +10,7 @@ abstract class ServiceSpecificationBase extends Specification {
    @Inject CompanyFactoryService companyFactoryService
    @Inject TruncateDatabaseService truncateDatabaseService
 
-   def List<CompanyEntity> companies
+   List<CompanyEntity> companies
 
    void setup() {
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies

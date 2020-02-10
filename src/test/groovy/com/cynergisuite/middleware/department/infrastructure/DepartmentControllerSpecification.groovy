@@ -8,9 +8,9 @@ import com.cynergisuite.middleware.department.DepartmentValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
-import org.apache.commons.lang3.StringUtils
 
 
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static org.apache.commons.lang3.StringUtils.trimToNull
@@ -21,7 +21,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department id" () {
       given:
-      def department = departmentFactoryService.random()
+      def department = departmentFactoryService.random(authenticatedEmployee.myDataset())
 
       when:
       def result = get("/department/${department.id}")
@@ -33,6 +33,20 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       result.description == department.description
       result.securityProfile == department.securityProfile
       result.defaultMenu == trimToNull(department.defaultMenu)
+   }
+
+   void "fetch one by department not associated with authenticated user's dataset" () {
+      given:
+      def department = departmentFactoryService.randomNotMatchingDataset(authenticatedEmployee.myDataset())
+
+      when:
+      def result = get("/department/${department.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == FORBIDDEN
+      final response = exception.response.bodyAsJson()
+      response.message == "Access denied"
    }
 
    void "fetch one by department id that doesn't exist"() {

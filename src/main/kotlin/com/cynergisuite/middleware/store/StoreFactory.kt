@@ -59,6 +59,10 @@ object StoreFactory {
       stores.filter { it.dataset == dataset }.random()
 
    @JvmStatic
+   fun randomNotMatchingDataset(dataset: String): StoreEntity =
+      stores.filter { it.dataset != dataset }.random()
+
+   @JvmStatic
    fun findByNumber(number: Int, dataset: String = "tstds1"): StoreEntity =
       stores.first { it.number == number && it.dataset == dataset }
 
@@ -83,6 +87,12 @@ class StoreFactoryService(
 
    fun random(): StoreEntity =
       store(StoreFactory.random()) ?: throw Exception("Unable to find a random StoreEntity")
+
+   fun randomNotMatchingDataset(dataset: String): StoreEntity {
+      val store = StoreFactory.randomNotMatchingDataset(dataset)
+
+      return store(store.number, store.dataset)
+   }
 
    fun random(dataset: String): StoreEntity =
       store(StoreFactory.random(dataset)) ?: throw Exception("Unable to find a random StoreEntity")

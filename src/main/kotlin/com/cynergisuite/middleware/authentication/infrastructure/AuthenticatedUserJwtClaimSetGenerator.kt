@@ -30,6 +30,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
             ?.claim("type", userDetails.myEmployeeType())
             ?.claim("stNum", userDetails.myStoreNumber())
             ?.claim("ds", userDetails.myDataset())
+            ?.claim("dep", userDetails.myDepartment())
       }
    }
 }

@@ -36,7 +36,7 @@ class StoreController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(StoreController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("store-fetchOne")
+   @AccessControl("store-fetchOne", StoreAccessControlProvider::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
@@ -59,7 +59,7 @@ class StoreController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("store-fetchAll")
+   @AccessControl("store-fetchAll", StoreAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["StoreEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
    @ApiResponses(value = [

@@ -37,6 +37,10 @@ object DepartmentFactory {
       departments.filter { it.dataset == dataset }.random()
 
    @JvmStatic
+   fun randomNotMatchingDataset(dataset: String) =
+      departments.filter { it.dataset != dataset }.random()
+
+   @JvmStatic
    fun all(): List<DepartmentEntity> = all("tstds1")
 
    @JvmStatic
@@ -62,5 +66,15 @@ class DepartmentFactoryService(
       val department = DepartmentFactory.random(dataset)
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
+   }
+
+   fun randomNotMatchingDataset(dataset: String): DepartmentEntity {
+      val department = DepartmentFactory.randomNotMatchingDataset(dataset)
+
+      return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
+   }
+
+   fun forThese(dataset: String, code: String): DepartmentEntity {
+      return departmentRepository.findOneByCodeAndDataset(code = code, dataset = dataset) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 }

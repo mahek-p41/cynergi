@@ -3,7 +3,7 @@ micronaut:
       name: cynergi-middleware
    caches:
       user-cache:
-         maximumSize: 50
+         maximum-size: 50
          expire-after-write: 3600s
    security:
       enabled: true
@@ -45,8 +45,3 @@ flyway:
          locations: classpath:db/migration/postgres
          clean-disabled: true
          async: false
-cynergi:
-   legacy:
-      import:
-         rename-extension: "processed"
-         process-startup: true

@@ -41,11 +41,12 @@ import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static java.util.Locale.US
 
 @MicronautTest(transactional = false)
 class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit"
-   private static final Locale locale = Locale.US
+   private static final Locale locale = US
 
    @Inject AuditDetailFactoryService auditDetailFactoryService
    @Inject AuditExceptionFactoryService auditExceptionFactoryService
@@ -816,7 +817,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "audit.id"
+      response[0].path == "completeOrCancel.audit.id"
       response[0].message == "Is required"
    }
 
@@ -966,7 +967,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
-      def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
+      def result = put("$path/sign-off", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1022,7 +1023,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
-      put(path, new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "SIGNED-OFF"])]))
+      put("$path/sign-off", new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "SIGNED-OFF"])]))
       def pageOneResult = get("/audit/${auditOne.id}/exception")
 
       then:
