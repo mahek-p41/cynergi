@@ -34,7 +34,7 @@ class SchedulePageRequest(
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
 
-   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): SchedulePageRequest =
+   protected override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): SchedulePageRequest =
       SchedulePageRequest(
          page = page,
          size = size,
