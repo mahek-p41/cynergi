@@ -93,13 +93,13 @@ class ShipViaController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Shipvia", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to save Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun save(
-      @Valid @Body vo: ShipViaValueObject,
+      @Body vo: ShipViaValueObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ShipViaValueObject {
@@ -115,9 +115,17 @@ class ShipViaController @Inject constructor(
 
    //TODO: Add access control annotation and lock this down
    @Put(processes = [APPLICATION_JSON])
+   @AccessControl("audit-update")
    @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-update")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to update Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
    fun update(
-      @Valid @Body vo: ShipViaValueObject,
+      @Body vo: ShipViaValueObject,
       authentication: Authentication
    ): ShipViaValueObject {
       logger.info("Requested Update ShipVia {}", vo)
