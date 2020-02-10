@@ -181,11 +181,11 @@ class AuditPermissionController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun delete(
-      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to delete the Audit Permission with", `in` = PATH) @QueryValue("id") id: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
-      logger.debug("User {} requested Audit Permission by ID {}", authentication, id)
+      logger.debug("User {} requested Audit Permission Deletion by ID {}", authentication, id)
 
       val user = authenticationService.findUser(authentication)
 
