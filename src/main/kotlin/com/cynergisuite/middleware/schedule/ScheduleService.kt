@@ -20,7 +20,7 @@ class ScheduleService @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleService::class.java)
 
-   @Scheduled(cron = "0 0 5 ? * *")
+   @Scheduled(cron = "0 30 5 * * *")
    internal fun runDailyScheduled() { // this is what is called by the scheduler
       val jobsRan = runDaily()
 
@@ -30,7 +30,7 @@ class ScheduleService @Inject constructor(
    fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek): Int { // useful for calling on-demand
       var jobsRan = 0
 
-      scheduleRepository.forEach(WEEKLY) { schedule ->
+      /*scheduleRepository.forEach(WEEKLY) { schedule ->
          val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
 
          if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) {
@@ -46,7 +46,7 @@ class ScheduleService @Inject constructor(
          } else {
             logger.error("Unable to find daily task for schedule {}", schedule)
          }
-      }
+      }*/
 
       return jobsRan
    }
