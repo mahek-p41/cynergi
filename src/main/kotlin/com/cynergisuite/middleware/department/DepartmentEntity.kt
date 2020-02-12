@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.department
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.company.Company
 import java.time.OffsetDateTime
 
 data class DepartmentEntity(
@@ -9,7 +10,8 @@ data class DepartmentEntity(
    val description: String,
    val securityProfile: Int,
    val defaultMenu: String,
-   val dataset: String // aka company
-) : Identifiable {
+   val company: Company // aka company
+) : Department {
    override fun myId(): Long? = id
+   override fun myCode(): String = code
 }

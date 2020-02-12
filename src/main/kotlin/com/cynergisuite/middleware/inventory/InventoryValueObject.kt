@@ -89,7 +89,7 @@ data class InventoryValueObject(
    val locationType: InventoryLocationTypeValueObject,
 
    @field:Schema(name = "dataset", description = "dataset item is associated with")
-   val dataset: String
+   val company: Company
 
 ) : ValueObjectBase<InventoryValueObject>() {
 

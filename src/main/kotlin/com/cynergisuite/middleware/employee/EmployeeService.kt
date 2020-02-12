@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.validation.Validated
@@ -18,18 +19,15 @@ class EmployeeService @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeService::class.java)
 
-   fun exists(id: Long, employeeType: String, dataset: String): Boolean =
-      employeeRepository.exists(id = id, employeeType = employeeType, dataset = dataset)
+   fun exists(id: Long, employeeType: String, company: Company): Boolean =
+      employeeRepository.exists(id = id, employeeType = employeeType, company = company)
 
    @Validated
-   fun create(@Valid vo: EmployeeValueObject): EmployeeValueObject {
+   fun create(@Valid vo: EmployeeValueObject, company: Company): EmployeeValueObject {
       employeeValidator.validateCreate(vo)
 
       return EmployeeValueObject(
-         entity = employeeRepository.insert(entity = EmployeeEntity(vo = vo))
+         entity = employeeRepository.insert(entity = EmployeeEntity(vo = vo, company = company))
       )
    }
-
-   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<EmployeeEntity> =
-      employeeRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
 }

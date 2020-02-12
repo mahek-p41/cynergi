@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.permission
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionTypeRepository
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.error.ValidationError

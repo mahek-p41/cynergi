@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailReposi
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
@@ -27,11 +27,11 @@ class AuditDetailService @Inject constructor(
    private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
-   fun fetchById(id: Long, dataset: String, locale: Locale): AuditDetailValueObject? =
+   fun fetchById(id: Long, company: Company, locale: Locale): AuditDetailValueObject? =
       auditDetailRepository.findOne(id, dataset)?.let { transformEntity(it, locale) }
 
    @Validated
-   fun fetchAll(auditId: Long, dataset: String, @Valid pageRequest: PageRequest, locale: Locale): Page<AuditDetailValueObject> {
+   fun fetchAll(auditId: Long, company: Company, @Valid pageRequest: PageRequest, locale: Locale): Page<AuditDetailValueObject> {
       val audit = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
       val found = auditDetailRepository.findAll(audit, dataset, pageRequest)
 
@@ -61,7 +61,7 @@ class AuditDetailService @Inject constructor(
    }
 
    @Validated
-   fun update(@Valid vo: AuditDetailValueObject, dataset: String, locale: Locale): AuditDetailValueObject {
+   fun update(@Valid vo: AuditDetailValueObject, company: Company, locale: Locale): AuditDetailValueObject {
       auditDetailValidator.validateUpdate(vo, dataset)
 
       val auditDetail = auditDetailRepository.findOne(vo.id!!, dataset) ?: throw NotFoundException(vo.id!!)

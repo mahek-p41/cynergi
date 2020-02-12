@@ -6,9 +6,10 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
-import io.reactiverse.reactivex.pgclient.Row
+import io.micronaut.cache.annotation.Cacheable
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
@@ -65,7 +66,7 @@ class CompanyRepository @Inject constructor(
          """,
          mapOf(
             "store_id" to store.id,
-            "dataset" to store.dataset
+            "dataset" to store.myCompany().myDataset()
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -75,6 +76,7 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
+   @Cacheable("company-cache")
    fun findOne(id: Long): CompanyEntity? {
       val found = jdbc.findFirstOrNull("$selectBase WHERE id = :id", mapOf("id" to id), simpleCompanyRowMapper)
 
@@ -134,15 +136,15 @@ class CompanyRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun exists(dataset_code: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT dataset_code FROM company WHERE dataset_code = :dataset_code)", mapOf("dataset_code" to dataset_code), Boolean::class.java)!!
+   fun doesNotExist(company: Company): Boolean {
+      val companyId = company.myId()
 
-      logger.trace("Checking if Company: {} exists using dataset_code resulted in {}", dataset_code, exists)
-
-      return exists
+      return if (companyId != null) {
+         !exists(companyId)
+      } else {
+         false
+      }
    }
-
-   fun doesNotExist(dataset_code: String): Boolean = !exists(dataset_code)
 
    fun insert(company: CompanyEntity): CompanyEntity {
       logger.debug("Inserting company {}", company)

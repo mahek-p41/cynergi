@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.audit.exception.infrastructure.AuditException
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
@@ -37,7 +37,7 @@ class AuditExceptionValidator @Inject constructor (
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionValidator::class.java)
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateCreate(auditId: Long, dataset: String, auditException: AuditExceptionCreateValueObject, scannedBy: User): AuditExceptionEntity {
+   fun validateCreate(auditId: Long, company: Company, auditException: AuditExceptionCreateValueObject, scannedBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 
@@ -95,7 +95,7 @@ class AuditExceptionValidator @Inject constructor (
       scanArea?.let { auditScanAreaRepository.findOne(it.value!!) }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(auditId: Long, dataset: String, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
+   fun validateUpdate(auditId: Long, company: Company, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 

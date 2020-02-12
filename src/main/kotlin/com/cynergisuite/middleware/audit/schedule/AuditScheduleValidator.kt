@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound

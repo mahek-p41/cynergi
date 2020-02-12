@@ -4,8 +4,9 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.StoreEntity
+import io.micronaut.cache.annotation.Cacheable
 import io.reactiverse.reactivex.pgclient.Row
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
@@ -23,11 +24,10 @@ class StoreRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) : DatasetRepository {
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
-   private val simpleStoreRowMapper = StoreRowMapper()
 
    @Language("PostgreSQL")
-   fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String, datasetParamKey: String = ":dataset"): String {
-      params["dataset"] = dataset
+   fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company, datasetParamKey: String = ":dataset"): String {
+      params["dataset"] = company.myDataset()
 
       return """
          SELECT
@@ -50,29 +50,30 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findOne(id: Long, dataset: String): StoreEntity? {
+   fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery(params, dataset)} AND id = :id"
-      val found = jdbc.findFirstOrNull(query, params, simpleStoreRowMapper)
+      val query = "${selectBaseQuery(params, company)} AND id = :id"
+      val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
 
       return found
    }
 
-   fun findOne(number: Int, dataset: String): StoreEntity? {
+   @Cacheable("store-cache")
+   fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number)
-      val query = "${selectBaseQuery(params, dataset)} AND number = :number"
-      val found = jdbc.findFirstOrNull(query, params, simpleStoreRowMapper)
+      val query = "${selectBaseQuery(params, company)} AND number = :number"
+      val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
 
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<StoreEntity, PageRequest> {
+   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<StoreEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>()
-      val query = "${selectBaseQuery(params, dataset)} AND number <> 9000"
+      val query = "${selectBaseQuery(params, company)} AND number <> 9000"
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 
@@ -95,7 +96,7 @@ class StoreRepository @Inject constructor(
             totalElements = rs.getLong("total_elements")
          }
 
-         elements.add(mapRow(rs))
+         elements.add(mapRow(rs, company))
       }
 
       return RepositoryPage(
@@ -123,45 +124,37 @@ class StoreRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun maybeMapRow(rs: ResultSet, columnPrefix: String): StoreEntity? =
+   fun mapRow(resultSet: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
+      StoreEntity(
+         id = resultSet.getLong("${columnPrefix}id"),
+         number = resultSet.getInt("${columnPrefix}number"),
+         name = resultSet.getString("${columnPrefix}name"),
+         company = company
+      )
+
+   fun maybeMapRow(rs: ResultSet, company: Company, columnPrefix: String): StoreEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, columnPrefix)
+         mapRow(rs, company, columnPrefix)
       } else {
          null
       }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
-      mapRowOrNull(rs, columnPrefix)!!
-
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity? =
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
-         simpleStoreRowMapper.mapRow(rs, columnPrefix)
+         mapRow(rs, company, columnPrefix)
       } else {
          null
       }
 
-   fun mapRow(row: Row, columnPrefix: String = EMPTY): StoreEntity? =
+   fun mapRow(row: Row, company: Company, columnPrefix: String = EMPTY): StoreEntity? =
       if (row.getLong("${columnPrefix}id") != null) {
          StoreEntity(
             id = row.getLong("${columnPrefix}id"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),
-            dataset = row.getString("${columnPrefix}dataset")
+            company = company
          )
       } else {
          null
       }
-}
-
-private class StoreRowMapper : RowMapper<StoreEntity> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): StoreEntity =
-      mapRow(rs, EMPTY)
-
-   fun mapRow(rs: ResultSet, columnPrefix: String): StoreEntity =
-      StoreEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         number = rs.getInt("${columnPrefix}number"),
-         name = rs.getString("${columnPrefix}name"),
-         dataset = rs.getString("${columnPrefix}dataset")
-      )
 }

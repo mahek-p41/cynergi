@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.authentication
 
 import com.cynergisuite.domain.ValueObject
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.company.Company
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -23,7 +25,7 @@ data class AuthenticatedUserInformation (
 
    @field:NotNull
    @field:Schema(name = "dataset", title = "Company dataset currently connected to", description = "Company dataset that data is being loaded from", required = true)
-   val dataset: String? = null
+   val company: Company? = null
 ) {
 
    constructor(user: AuthenticatedUser, loginStatus: String) :
@@ -31,6 +33,6 @@ data class AuthenticatedUserInformation (
          employeeNumber = user.myEmployeeNumber().toString(),
          storeNumber = user.myStoreNumber(),
          loginStatus = loginStatus,
-         dataset = user.myDataset()
+         company = user.myCompany()
       )
 }

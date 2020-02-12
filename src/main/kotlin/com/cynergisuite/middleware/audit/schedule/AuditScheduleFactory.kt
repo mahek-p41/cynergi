@@ -87,7 +87,7 @@ class AuditScheduleFactoryService @Inject constructor(
          .map { scheduleRepository.insert(it) }
    }
 
-   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, dataset: String? = null) :ScheduleEntity {
+   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, company: Company? = null) :ScheduleEntity {
       return stream(1, dayOfWeekIn, storesIn, employeeIn, dataset).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
    }
 }

@@ -16,7 +16,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -38,7 +38,7 @@ class AuditExceptionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   fun findOne(id: Long, dataset: String): AuditExceptionEntity? {
+   fun findOne(id: Long, company: Company): AuditExceptionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = """
          WITH ae_employees AS (
@@ -144,7 +144,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
+   fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
       val sql = """
       WITH paged AS (

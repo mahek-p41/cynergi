@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -41,7 +41,7 @@ class AuditScheduleService @Inject constructor(
    private val notificationService: NotificationService
 ) : DailySchedule {
 
-   fun fetchById(id: Long, dataset: String): AuditScheduleDataTransferObject? {
+   fun fetchById(id: Long, company: Company): AuditScheduleDataTransferObject? {
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
@@ -52,7 +52,7 @@ class AuditScheduleService @Inject constructor(
    }
 
    @Validated
-   fun fetchAll(@Valid pageRequest: PageRequest, dataset: String): Page<AuditScheduleDataTransferObject> {
+   fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<AuditScheduleDataTransferObject> {
       val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
 
       return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, dataset) }
@@ -88,7 +88,7 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, dataset: String): AuditScheduleDataTransferObject {
+   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, company: Company): AuditScheduleDataTransferObject {
       val stores = mutableListOf<StoreValueObject>()
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {

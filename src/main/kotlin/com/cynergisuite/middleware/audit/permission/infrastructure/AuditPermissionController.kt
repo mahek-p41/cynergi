@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateD
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -41,7 +41,7 @@ import javax.inject.Inject
 @Controller("/api/audit/permission")
 class AuditPermissionController @Inject constructor(
    private val auditPermissionService: AuditPermissionService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionController::class.java)
 
@@ -62,7 +62,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission by ID {}", authentication, id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
@@ -85,7 +85,7 @@ class AuditPermissionController @Inject constructor(
    ): Page<AuditPermissionValueObject> {
       logger.debug("User {} requested Audit Permissions {}", authentication, pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val page = auditPermissionService.fetchAll(pageRequest, user, locale)
 
@@ -139,7 +139,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.info("User {} requested creation of audit permission {}", authentication, permission)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.create(permission, user, locale)
@@ -162,7 +162,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.info("User {} requested update of audit permission {}", authentication, permission)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val result = auditPermissionService.update(permission, user, locale)
 
@@ -187,7 +187,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission Deletion by ID {}", authentication, id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
 
       return auditPermissionService.deleteById(id, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
    }

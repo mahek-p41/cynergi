@@ -33,11 +33,11 @@ object DepartmentFactory {
    fun random() = departments.random()
 
    @JvmStatic
-   fun random(dataset: String) =
+   fun random(company: Company) =
       departments.filter { it.dataset == dataset }.random()
 
    @JvmStatic
-   fun randomNotMatchingDataset(dataset: String) =
+   fun randomNotMatchingDataset(company: Company) =
       departments.filter { it.dataset != dataset }.random()
 
    @JvmStatic
@@ -53,7 +53,7 @@ class DepartmentFactoryService(
    private val departmentRepository: DepartmentRepository
 ) {
 
-   fun department(code: String, dataset: String) : DepartmentEntity =
+   fun department(code: String, company: Company) : DepartmentEntity =
       departmentRepository.findOneByCodeAndDataset(code, dataset) ?: throw Exception("Unable to find department $code")
 
    fun random(): DepartmentEntity {
@@ -62,19 +62,19 @@ class DepartmentFactoryService(
       return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 
-   fun random(dataset: String): DepartmentEntity {
+   fun random(company: Company): DepartmentEntity {
       val department = DepartmentFactory.random(dataset)
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 
-   fun randomNotMatchingDataset(dataset: String): DepartmentEntity {
+   fun randomNotMatchingDataset(company: Company): DepartmentEntity {
       val department = DepartmentFactory.randomNotMatchingDataset(dataset)
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.dataset) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 
-   fun forThese(dataset: String, code: String): DepartmentEntity {
+   fun forThese(company: Company, code: String): DepartmentEntity {
       return departmentRepository.findOneByCodeAndDataset(code = code, dataset = dataset) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 }

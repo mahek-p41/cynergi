@@ -55,15 +55,15 @@ object StoreFactory {
    fun random() = random(dataset = "tstds1")
 
    @JvmStatic
-   fun random(dataset: String): StoreEntity =
+   fun random(company: Company): StoreEntity =
       stores.filter { it.dataset == dataset }.random()
 
    @JvmStatic
-   fun randomNotMatchingDataset(dataset: String): StoreEntity =
+   fun randomNotMatchingDataset(company: Company): StoreEntity =
       stores.filter { it.dataset != dataset }.random()
 
    @JvmStatic
-   fun findByNumber(number: Int, dataset: String = "tstds1"): StoreEntity =
+   fun findByNumber(number: Int, company: Company = "tstds1"): StoreEntity =
       stores.first { it.number == number && it.dataset == dataset }
 
    @JvmStatic
@@ -82,19 +82,19 @@ class StoreFactoryService(
    fun store(number: Int): StoreEntity =
       store(number = number, dataset = "tstds1")
 
-   fun store(number: Int, dataset: String): StoreEntity =
+   fun store(number: Int, company: Company): StoreEntity =
       storeRepository.findOne(number, dataset) ?: throw Exception("Unable to find store $number")
 
    fun random(): StoreEntity =
       store(StoreFactory.random()) ?: throw Exception("Unable to find a random StoreEntity")
 
-   fun randomNotMatchingDataset(dataset: String): StoreEntity {
+   fun randomNotMatchingDataset(company: Company): StoreEntity {
       val store = StoreFactory.randomNotMatchingDataset(dataset)
 
       return store(store.number, store.dataset)
    }
 
-   fun random(dataset: String): StoreEntity =
+   fun random(company: Company): StoreEntity =
       store(StoreFactory.random(dataset)) ?: throw Exception("Unable to find a random StoreEntity")
 
    fun storeOneTstds1(): StoreEntity =

@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.permission
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.validation.Validated
 import java.util.Locale
@@ -19,7 +19,7 @@ class AuditPermissionService @Inject constructor(
    private val localizationService: LocalizationService
 ) {
 
-   fun fetchById(id: Long, dataset: String, locale: Locale): AuditPermissionValueObject? {
+   fun fetchById(id: Long, company: Company, locale: Locale): AuditPermissionValueObject? {
       return auditPermissionRepository.findById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 
@@ -59,7 +59,7 @@ class AuditPermissionService @Inject constructor(
       )
    }
 
-   fun deleteById(id: Long, dataset: String, locale: Locale): AuditPermissionValueObject? {
+   fun deleteById(id: Long, company: Company, locale: Locale): AuditPermissionValueObject? {
       return auditPermissionRepository.deleteById(id, dataset)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 }

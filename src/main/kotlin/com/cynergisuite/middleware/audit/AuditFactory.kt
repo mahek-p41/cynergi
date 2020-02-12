@@ -29,7 +29,7 @@ object AuditFactory {
          AuditEntity(
             store = store,
             actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet()),
-            dataset = store.dataset
+            company = store.company
          )
       }
    }
@@ -56,7 +56,7 @@ class AuditFactoryService @Inject constructor(
 
    fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?): Stream<AuditEntity> {
       val store = storeIn ?: storeFactoryService.random()
-      val changedBy = changedByIn ?: employeeFactoryService.single(datasetIn = store.dataset)
+      val changedBy = changedByIn ?: employeeFactoryService.single(datasetIn = store.company)
 
       return AuditFactory.stream(numberIn, store, changedBy, statusesIn)
          .map {

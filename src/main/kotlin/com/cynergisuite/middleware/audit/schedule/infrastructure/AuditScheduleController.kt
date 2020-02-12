@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -39,7 +39,7 @@ import javax.inject.Inject
 @Controller("/api/audit/schedule")
 class AuditScheduleController @Inject constructor(
    private val auditScheduleService: AuditScheduleService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleController::class.java)
 
@@ -59,7 +59,7 @@ class AuditScheduleController @Inject constructor(
    ): AuditScheduleDataTransferObject {
       logger.info("Fetching Audit Schedule by {}", id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditScheduleService.fetchById(id, user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit Schedule by {} resulted in {}", id, response)
@@ -83,7 +83,7 @@ class AuditScheduleController @Inject constructor(
    ): Page<AuditScheduleDataTransferObject> {
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val page = auditScheduleService.fetchAll(pageRequest, user.myDataset())
 
       if (page.elements.isEmpty()) {
@@ -111,7 +111,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditScheduleService.create(auditSchedule, user, locale)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
@@ -138,7 +138,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Requested update audit schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditScheduleService.update(auditSchedule, user, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)
