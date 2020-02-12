@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.AuditStatus
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -19,7 +20,7 @@ data class AuditEntity(
    val hasExceptionNotes: Boolean = false,
    val lastUpdated: OffsetDateTime? = null,
    val inventoryCount: Int = 0,
-   val dataset: String,
+   val company: Company,
    val actions: MutableSet<AuditActionEntity> = LinkedHashSet()
 ) : Entity<AuditEntity> {
 
@@ -34,7 +35,7 @@ data class AuditEntity(
          hasExceptionNotes = audit.hasExceptionNotes,
          inventoryCount = audit.inventoryCount,
          lastUpdated = audit.lastUpdated,
-         dataset = audit.dataset
+         company = audit.company
       )
 
    override fun myId(): Long? = id

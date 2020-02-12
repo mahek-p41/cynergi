@@ -45,7 +45,7 @@ class AuditPermissionRepository @Inject constructor(
       )
    }
 
-   fun findById(id: Long, dataset: String): AuditPermissionEntity? {
+   fun findById(id: Long, company: Company): AuditPermissionEntity? {
       logger.debug("Searching for AuditPermission with id {}/{}", id, dataset)
 
       val found = jdbc.findFirstOrNull("""
@@ -90,7 +90,7 @@ class AuditPermissionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<AuditPermissionEntity, PageRequest> {
+   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<AuditPermissionEntity, PageRequest> {
       logger.debug("Finding all Audit Permissions using {} and dataset: {}", pageRequest, dataset)
 
       return jdbc.queryPaged("""
@@ -152,7 +152,7 @@ class AuditPermissionRepository @Inject constructor(
 
    fun doesNotExist(id: Long) = !exists(id)
 
-   fun findOneByAsset(asset: String, dataset: String): AuditPermissionEntity? {
+   fun findOneByAsset(asset: String, company: Company): AuditPermissionEntity? {
       logger.debug("Searching for AuditPermission with asset {}", asset)
 
       val found = jdbc.findFirstOrNull("""
@@ -292,7 +292,7 @@ class AuditPermissionRepository @Inject constructor(
    }
 
    @Transactional
-   fun deleteById(id: Long, dataset: String): AuditPermissionEntity? {
+   fun deleteById(id: Long, company: Company): AuditPermissionEntity? {
       logger.debug("Deleting AuditPermission using {}/{}", id, dataset)
 
       val existingPermission = findById(id, dataset)

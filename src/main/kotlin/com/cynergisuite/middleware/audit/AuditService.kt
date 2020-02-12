@@ -12,7 +12,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
@@ -51,13 +51,13 @@ class AuditService @Inject constructor(
    private val reportalService: ReportalService
 ) {
 
-   fun fetchById(id: Long, dataset: String, locale: Locale): AuditValueObject? =
-      auditRepository.findOne(id, dataset)?.let { AuditValueObject(it, locale, localizationService) }
+   fun fetchById(id: Long, user: User, locale: Locale): AuditValueObject? =
+      auditRepository.findOne(id, user.myCompany())?.let { AuditValueObject(it, locale, localizationService) }
 
    @Validated
-   fun fetchAll(@Valid pageRequest: AuditPageRequest, dataset: String, locale: Locale): Page<AuditValueObject> {
-      val validaPageRequest = auditValidator.validationFetchAll(pageRequest, dataset)
-      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, dataset)
+   fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
+      val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
+      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany())
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
@@ -67,11 +67,11 @@ class AuditService @Inject constructor(
    fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, dataset: String, locale: Locale): List<AuditStatusCountDataTransferObject> {
-      val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, dataset)
+   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDataTransferObject> {
+      val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest, dataset)
+         .findAuditStatusCounts(validPageRequest, user.myCompany())
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }
@@ -108,7 +108,7 @@ class AuditService @Inject constructor(
 
    @Validated
    fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
-      val existing = auditValidator.validateSignOff(audit, user.myDataset(), user, locale)
+      val existing = auditValidator.validateSignOff(audit, user.myCompany(), user, locale)
       val changedBy = fromUser(user)
       val actions = existing.actions.toMutableSet()
 
@@ -135,7 +135,7 @@ class AuditService @Inject constructor(
 
    @Validated
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
-      val toSignOff = auditValidator.validateSignOffAll(audit, user.myDataset())
+      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany())
 
       return AuditSignOffAllExceptionsDataTransferObject(
          auditExceptionRepository.signOffAllExceptions(toSignOff, user)

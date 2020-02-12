@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @Controller("/api/store")
 class StoreController @Inject constructor(
    private val storeService: StoreService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(StoreController::class.java)
 
@@ -50,7 +50,7 @@ class StoreController @Inject constructor(
    ): StoreValueObject {
       logger.info("Fetching Store by {}", id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = storeService.fetchById(id = id, dataset = user.myDataset()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
@@ -73,7 +73,7 @@ class StoreController @Inject constructor(
    ): Page<StoreValueObject> {
       logger.info("Fetching all stores {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val page = storeService.fetchAll(pageRequest, user.myDataset())
 
       if (page.elements.isEmpty()) {

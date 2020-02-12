@@ -33,7 +33,7 @@ class AuditDetailRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
 
-   private fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String): String {
+   private fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company): String {
       return """
          WITH ad_employees AS (
             ${employeeRepository.selectBaseQuery(params, dataset)}
@@ -76,7 +76,7 @@ class AuditDetailRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, dataset: String): AuditDetailEntity? {
+   fun findOne(id: Long, company: Company): AuditDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery(params, dataset)} WHERE ad.id = :id"
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
@@ -92,7 +92,7 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
+   fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
       val query = """
          WITH paged AS (

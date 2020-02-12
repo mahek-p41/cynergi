@@ -2,9 +2,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
-import com.cynergisuite.middleware.authentication.AuthenticationService
-import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
-import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.LoggedIn
 import com.cynergisuite.middleware.localization.NotLoggedIn
@@ -31,7 +29,7 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
-   private val authenticationService: AuthenticationService,
+   private val userService: UserService,
    private val localizationService: LocalizationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticatedController::class.java)
@@ -49,13 +47,12 @@ class AuthenticatedController @Inject constructor(
       logger.debug("Checking authentication {}", authentication)
 
       return if (authentication != null) {
-         val user = authenticationService.findUser(authentication).let { EmployeeEntity.fromUser(it) }
+         val user = userService.findUser(authentication)
          val message = localizationService.localize(localizationCode = LoggedIn(authentication.name), locale = locale)
-         val authenticationDefinition = StandardAuthenticatedUser(user, user.store!!)
 
-         logger.debug("User is authenticated {}", authenticationDefinition)
+         logger.debug("User is authenticated {}", user)
 
-         HttpResponse.ok(AuthenticatedUserInformation(authenticationDefinition, message))
+         HttpResponse.ok(AuthenticatedUserInformation(user, message))
       } else {
          val message = localizationService.localize(NotLoggedIn(), locale)
 

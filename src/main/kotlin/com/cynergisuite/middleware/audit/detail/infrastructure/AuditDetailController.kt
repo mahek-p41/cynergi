@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -37,7 +37,7 @@ import javax.inject.Inject
 @Controller("/api/audit")
 class AuditDetailController @Inject constructor(
    private val auditDetailService: AuditDetailService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailController::class.java)
 
@@ -57,7 +57,7 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Fetching AuditDetail by {}", id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditDetailService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
@@ -82,7 +82,7 @@ class AuditDetailController @Inject constructor(
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val page =  auditDetailService.fetchAll(auditId, user.myDataset(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -110,7 +110,7 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditDetailService.create(auditId, vo, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)

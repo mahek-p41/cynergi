@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
-import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControlProvider
 import io.micronaut.core.type.MutableArgumentValue
 import javax.inject.Inject

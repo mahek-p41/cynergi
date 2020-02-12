@@ -27,7 +27,7 @@ data class StoreValueObject (
    var name: String? = null,
 
    @field:Schema(name = "dataset", required = false, nullable = true, description = "Dataset that this store belongs to")
-   var dataset: String? = null
+   var company: Company? = null
 
 ) : ValueObjectBase<StoreValueObject>() {
 

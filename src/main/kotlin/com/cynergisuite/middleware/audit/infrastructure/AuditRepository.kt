@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -36,10 +37,10 @@ class AuditRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
-   private fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String): String {
+   private fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company): String {
       return """
          WITH employees AS (
-            ${employeeRepository.selectBaseQuery(params, dataset)}
+            ${employeeRepository.selectBaseQuery(params, company)}
          )
          SELECT
             a.id AS id,
@@ -114,11 +115,11 @@ class AuditRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, dataset: String): AuditEntity? {
-      logger.debug("Searching for audit by id {} with dataset {}", id, dataset)
+   fun findOne(id: Long, company: Company): AuditEntity? {
+      logger.debug("Searching for audit by id {} with company {}", id, company)
 
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery(params, dataset)}\nWHERE a.id = :id"
+      val query = "${selectBaseQuery(params, company)}\nWHERE a.id = :id"
       val found = executeFindSingleQuery(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
@@ -128,7 +129,7 @@ class AuditRepository @Inject constructor(
 
    fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
       val params = mutableMapOf<String, Any?>("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
-      val query = "${selectBaseQuery(params, store.dataset)}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
+      val query = "${selectBaseQuery(params, store.myCompany())}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
 
@@ -157,7 +158,7 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest, dataset: String): RepositoryPage<AuditEntity, AuditPageRequest> {
+   fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>()
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
@@ -183,7 +184,7 @@ class AuditRepository @Inject constructor(
 
       val sql = """
          WITH employees AS (
-            ${employeeRepository.selectBaseQuery(params, dataset)}
+            ${employeeRepository.selectBaseQuery(params, company)}
          ), audits AS (
             WITH status AS (
                SELECT csastd.value AS current_status,
@@ -329,7 +330,7 @@ class AuditRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun findAuditStatusCounts(pageRequest: AuditPageRequest, dataset: String): List<AuditStatusCount> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company): List<AuditStatusCount> {
       val status = pageRequest.status
       val params = mutableMapOf<String, Any>("dataset" to dataset)
       val whereBuilder = StringBuilder()
@@ -401,7 +402,7 @@ class AuditRepository @Inject constructor(
       }
    }
 
-   fun countAuditsNotCompletedOrCanceled(storeNumber: Int, dataset: String): Int =
+   fun countAuditsNotCompletedOrCanceled(storeNumber: Int, company: Company): Int =
       jdbc.queryForObject("""
          SELECT COUNT (*)
          FROM (
@@ -434,7 +435,7 @@ class AuditRepository @Inject constructor(
 
       val audit = jdbc.insertReturning(
          """
-        INSERT INTO audit(store_number, inventory_count, dataset)
+        INSERT INTO audit(store_number, inventory_count, company_id)
          VALUES (
             :store_number,
             (
@@ -450,7 +451,7 @@ class AuditRepository @Inject constructor(
          RETURNING
             *
          """.trimMargin(),
-         mapOf("store_number" to entity.store.number, "dataset" to entity.store.dataset),
+         mapOf("store_number" to entity.store.number, "company_id" to entity.store.company.myId()),
          RowMapper { rs, _ ->
             AuditEntity(
                id = rs.getLong("id"),

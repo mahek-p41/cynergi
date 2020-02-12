@@ -119,7 +119,7 @@ class AuditExceptionFactoryService @Inject constructor(
    fun single(): AuditExceptionEntity =
       single(auditFactoryService.single())
 
-   fun single(dataset: String): AuditExceptionEntity =
+   fun single(company: Company): AuditExceptionEntity =
       stream(datasetIn = dataset).findFirst().orElseThrow { Exception("Unable to create AuditException") }
 
    fun single(auditIn: AuditEntity): AuditExceptionEntity =

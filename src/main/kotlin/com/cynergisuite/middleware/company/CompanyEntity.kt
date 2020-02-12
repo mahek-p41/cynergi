@@ -18,7 +18,7 @@ data class CompanyEntity(
    val clientId: Int,
    val datasetCode: String,
    val federalTaxNumber: String? = null
-) : Identifiable, Comparable<CompanyEntity> {
+) : Company {
 
    constructor(company: CompanyValueObject) :
       this(
@@ -32,6 +32,9 @@ data class CompanyEntity(
       )
 
    override fun myId(): Long? = id
+   override fun myClientCode(): String = clientCode
+   override fun myClientId(): Int = clientId
+   override fun myDataset(): String = datasetCode
 
    override fun hashCode(): Int =
       HashCodeBuilder()
@@ -59,14 +62,22 @@ data class CompanyEntity(
          false
       }
 
-   override fun compareTo(other: CompanyEntity): Int =
-      CompareToBuilder()
-         .append(this.id, other.id)
-         .append(this.name, other.name)
-         .append(this.doingBusinessAs, other.doingBusinessAs)
-         .append(this.clientCode, other.clientCode)
-         .append(this.clientId, other.clientId)
-         .append(this.datasetCode, other.datasetCode)
-         .append(this.federalTaxNumber, other.federalTaxNumber)
-         .toComparison()
+   override fun compareTo(other: Company): Int {
+      val compareToBuilder = CompareToBuilder()
+         .append(this.id, other.myId())
+         .append(this.clientCode, other.myClientCode())
+         .append(this.clientId, other.myClientId())
+         .append(this.datasetCode, other.myDataset())
+
+      return if (other is CompanyEntity) {
+         compareToBuilder
+            .append(this.name, other.name)
+            .append(this.doingBusinessAs, other.doingBusinessAs)
+            .append(this.federalTaxNumber, other.federalTaxNumber)
+            .toComparison()
+      } else {
+         compareToBuilder.toComparison()
+      }
+   }
 }
+

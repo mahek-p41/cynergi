@@ -75,7 +75,7 @@ class InventoryRepository(
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
    """.trimIndent()
 
-   fun findOne(id: Long, dataset: String): InventoryEntity? {
+   fun findOne(id: Long, company: Company): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
       val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.id = :id AND i.dataset = :dataset", mapOf("id" to id, "dataset" to dataset), RowMapper { rs, _ -> mapRow(rs)})
@@ -95,7 +95,7 @@ class InventoryRepository(
       return found
    }
 
-   fun exists(id: Long, dataset: String): Boolean {
+   fun exists(id: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.inventory_vw WHERE id = :id AND dataset = :dataset)", mapOf("id" to id, "dataset" to dataset), Boolean::class.java)!!
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)
@@ -103,10 +103,10 @@ class InventoryRepository(
       return exists
    }
 
-   fun doesNotExist(id: Long, dataset: String): Boolean =
+   fun doesNotExist(id: Long, company: Company): Boolean =
       !exists(id, dataset)
 
-   fun findByLookupKey(lookupKey: String, dataset: String): InventoryEntity? {
+   fun findByLookupKey(lookupKey: String, company: Company): InventoryEntity? {
       logger.debug("Finding Inventory by barcode with {}", lookupKey)
 
       val inventory = jdbc.findFirstOrNull("""
@@ -122,7 +122,7 @@ class InventoryRepository(
       return inventory;
    }
 
-   fun findAll(pageRequest: InventoryPageRequest, dataset: String): RepositoryPage<InventoryEntity, InventoryPageRequest> {
+   fun findAll(pageRequest: InventoryPageRequest, company: Company): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()

@@ -30,7 +30,7 @@ class EmployeeValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(vo: EmployeeValueObject, dataset: String) {
+   fun validateUpdate(vo: EmployeeValueObject, company: Company) {
       logger.trace("Validating Update Employee {}", vo)
 
       val errors = mutableSetOf<ValidationError>() // TODO some more validation when the Employee class gets richer

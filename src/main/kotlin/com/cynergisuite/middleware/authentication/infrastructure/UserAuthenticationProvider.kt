@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
-import com.cynergisuite.middleware.authentication.StandardAuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.security.authentication.AuthenticationFailed
@@ -39,7 +39,7 @@ class UserAuthenticationProvider @Inject constructor(
                if (employeeStore != null) { // if employee has store then proceed
                   logger.debug("Employee has store {} proceeding with login", employeeStore)
 
-                  just(StandardAuthenticatedUser(employee, employee.store))
+                  just(AuthenticatedUser(employee, employee.store))
                } else { // otherwise inform the client that a store is required for the provided user
                   logger.debug("Employee did not have store informing client of store requirement")
 

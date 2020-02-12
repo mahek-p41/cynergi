@@ -29,7 +29,7 @@ class AuditDetailValidator @Inject constructor (
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(auditId: Long, dataset: String, auditDetailCreate: AuditDetailCreateValueObject) {
+   fun validateCreate(auditId: Long, company: Company, auditDetailCreate: AuditDetailCreateValueObject) {
       logger.debug("Validating Create AuditDetail {}", auditDetailCreate)
 
       doValidation { errors ->
@@ -47,7 +47,7 @@ class AuditDetailValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(vo: AuditDetailValueObject, dataset: String) {
+   fun validateUpdate(vo: AuditDetailValueObject, company: Company) {
       logger.debug("Validating Update AuditDetail {}", vo)
 
       doValidation { errors ->
@@ -73,7 +73,7 @@ class AuditDetailValidator @Inject constructor (
       }
    }
 
-   private fun validateAudit(auditId: Long, dataset: String, errors: MutableSet<ValidationError>) {
+   private fun validateAudit(auditId: Long, company: Company, errors: MutableSet<ValidationError>) {
       val audit: AuditEntity = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
       val auditStatus = audit.currentStatus()
 

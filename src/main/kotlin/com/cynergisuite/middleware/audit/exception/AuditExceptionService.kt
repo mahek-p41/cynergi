@@ -5,7 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.validation.Validated
@@ -21,10 +21,10 @@ class AuditExceptionService @Inject constructor(
    private val auditExceptionValidator: AuditExceptionValidator,
    private val localizationService: LocalizationService
 ) {
-   fun fetchById(id: Long, dataset: String, locale: Locale): AuditExceptionValueObject? =
+   fun fetchById(id: Long, company: Company, locale: Locale): AuditExceptionValueObject? =
       auditExceptionRepository.findOne(id = id, dataset = dataset)?.let { transformEntity(it, locale) }
 
-   fun fetchAll(auditId: Long, dataset: String, pageRequest: PageRequest, locale: Locale): Page<AuditExceptionValueObject> {
+   fun fetchAll(auditId: Long, company: Company, pageRequest: PageRequest, locale: Locale): Page<AuditExceptionValueObject> {
       val audit = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
       val found = auditExceptionRepository.findAll(audit, dataset, pageRequest)
 

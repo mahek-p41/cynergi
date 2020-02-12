@@ -33,7 +33,7 @@ data class EmployeeValueObject(
    @field:NotNull
    @field:Size(min = 6, max = 6)
    @field:Schema(name = "dataset", description = "Key for determining a user's company via a dataset", minimum = "6", maximum = "6")
-   var dataset: String?,
+   var company: Company?,
 
    @field:NotNull
    @field:Size(min = 2, max = 15)
@@ -66,7 +66,7 @@ data class EmployeeValueObject(
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 
-   constructor(type: String, number: Int, dataset: String, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, allowAutoStoreAssign: Boolean, active: Boolean) :
+   constructor(type: String, number: Int, company: Company, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, allowAutoStoreAssign: Boolean, active: Boolean) :
       this(
          id = null,
          type = type,
