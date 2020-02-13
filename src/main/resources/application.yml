@@ -2,17 +2,8 @@ micronaut:
    application:
       name: cynergi-middleware
    caches:
-      user-cache:
-         maximum-size: 50
-         expire-after-write: 3600s
-      company-cache:
-         maximum-size: 10
-         expire-after-write: 3600s
-      department-cache:
-         maximum-size: 100
-         expire-after-write: 3600s
-      store-cache:
-         maximum-size: 200
+      creds-cache:
+         maximum-size: 300
          expire-after-write: 3600s
    security:
       enabled: true

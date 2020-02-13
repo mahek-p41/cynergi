@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.*
+import com.cynergisuite.middleware.authentication.user.infrastructure.AuthenticationRepository
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -36,9 +37,7 @@ private enum class JWTDetailKeys(
 @Singleton
 @Replaces(bean = JWTClaimsSetGenerator::class)
 class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
-   private val companyRepository: CompanyRepository,
-   private val departmentRepository: DepartmentRepository,
-   private val storeRepository: StoreRepository,
+   private val authenticationRepository: AuthenticationRepository,
 
    tokenConfiguration: TokenConfiguration,
    jwtIdGenerator: JwtIdGenerator?,
@@ -58,7 +57,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
             ?.claim(EMPLOYEE_TYPE.key, userDetails.myEmployeeType())
             ?.claim(COMPANY_ID.key, userDetails.myCompany().myId())
             ?.claim(DEPARTMENT.key, userDetails.myDepartment())
-            ?.claim(STORE_NUMBER.key, userDetails.myLocation()?.myNumber())
+            ?.claim(STORE_NUMBER.key, userDetails.myLocation().myNumber())
       }
    }
 
@@ -72,9 +71,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
       val departmentCode = authentication.attributes[DEPARTMENT.key]?.let { Objects.toString(it) }
       val storeNumber = authentication.attributes[STORE_NUMBER.key]?.let { Objects.toString(it).toInt() } ?: throw Exception("Unable to find store number")
 
-      val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company from authentication")
-      val department = if (departmentCode != null) departmentRepository.findOneByCodeAndDataset(departmentCode, company) else null
-      val location = storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
+      val (company, department, location) = authenticationRepository.findCredentialComponents(companyId, departmentCode, storeNumber)
 
       return AuthenticatedUser(
          id = employeeId,
@@ -82,9 +79,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
          number = employeeNumber,
          company = company,
          department = department,
-         location = location,
-         passCode = EMPTY,
-         allowAutoStoreAssign = false
+         location = location
       )
    }
 }

@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -40,7 +39,7 @@ class StoreRepository @Inject constructor(
       """
    }
 
-   override fun findDataset(id: Long): String? {
+   override fun existsForCompany(id: Long, company: Company): com.github.javafaker.Company? {
       logger.debug("Search for dataset of store by id {}", id)
 
       val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.store_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))

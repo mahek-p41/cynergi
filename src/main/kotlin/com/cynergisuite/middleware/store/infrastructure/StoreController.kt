@@ -51,7 +51,7 @@ class StoreController @Inject constructor(
       logger.info("Fetching Store by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = storeService.fetchById(id = id, dataset = user.myDataset()) ?: throw NotFoundException(id)
+      val response = storeService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
 
@@ -74,7 +74,7 @@ class StoreController @Inject constructor(
       logger.info("Fetching all stores {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = storeService.fetchAll(pageRequest, user.myDataset())
+      val page = storeService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

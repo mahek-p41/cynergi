@@ -6,9 +6,13 @@ import com.cynergisuite.middleware.authentication.user.EmployeeUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.DepartmentEntity
+import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.cache.annotation.Cacheable
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Row
 import io.reactiverse.reactivex.pgclient.Tuple
@@ -20,6 +24,9 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthenticationRepository @Inject constructor(
+   private val companyRepository: CompanyRepository,
+   private val departmentRepository: DepartmentRepository,
+   private val storeRepository: StoreRepository,
    private val passwordEncoderService: PasswordEncoderService,
    private val postgresClient: PgPool
 ) {
@@ -152,6 +159,16 @@ class AuthenticationRepository @Inject constructor(
                employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
             }
          }
+   }
+
+   @Throws(Exception::class)
+   @Cacheable("creds-cache")
+   fun findCredentialComponents(companyId: Long, departmentCode: String?, storeNumber: Int): Triple<CompanyEntity, DepartmentEntity?, StoreEntity> {
+      val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company from authentication")
+      val department = if (departmentCode != null) departmentRepository.findOneByCodeAndDataset(departmentCode, company) else null
+      val location = storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
+
+      return Triple(company, department, location)
    }
 
    private fun mapCompany(row: Row): Company {

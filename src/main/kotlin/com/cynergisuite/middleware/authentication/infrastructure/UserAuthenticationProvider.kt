@@ -3,9 +3,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
 import io.micronaut.security.authentication.AuthenticationProvider
@@ -36,11 +34,11 @@ class UserAuthenticationProvider @Inject constructor(
          userService
             .fetchUserByAuthentication(identity, secret, dataset, storeNumber)
             .flatMapPublisher { employee ->
-               val employeeStore = employee.myLocation()
-               val fallbackStore = employee.fallbackLocation
+               val employeeAssignedStore = employee.location // this can be null which unless user is a cynergi admin you must have a store assigned
+               val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
-               if(employeeStore != null) { // if doesn't have store, but is cynergi system admin
-                  logger.debug("Employee has store allowing access", employeeStore)
+               if(employeeAssignedStore != null) { // if doesn't have store, but is cynergi system admin
+                  logger.debug("Employee has store allowing access", employeeAssignedStore)
 
                   just(AuthenticatedUser(employee))
                } else if (employee.cynergiSystemAdmin) {
