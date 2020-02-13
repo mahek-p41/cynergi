@@ -50,7 +50,7 @@ class DepartmentController @Inject constructor(
       logger.info("Fetching department by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = departmentService.fetchOne(id, user.myDataset()) ?: throw NotFoundException(id)
+      val response = departmentService.fetchOne(id, user) ?: throw NotFoundException(id)
 
       logger.debug("Fetching department by {} resulted in {}", id, response)
 
@@ -73,7 +73,7 @@ class DepartmentController @Inject constructor(
       logger.info("Fetching all departments {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = departmentService.fetchAll(pageRequest, user.myDataset())
+      val page = departmentService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

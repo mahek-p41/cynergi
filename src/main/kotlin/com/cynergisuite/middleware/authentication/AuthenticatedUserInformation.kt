@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.authentication
 
 import com.cynergisuite.domain.ValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -28,10 +29,10 @@ data class AuthenticatedUserInformation (
    val company: Company? = null
 ) {
 
-   constructor(user: AuthenticatedUser, loginStatus: String) :
+   constructor(user: User, loginStatus: String) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
-         storeNumber = user.myStoreNumber(),
+         storeNumber = user.myLocation()?.myNumber(),
          loginStatus = loginStatus,
          company = user.myCompany()
       )
