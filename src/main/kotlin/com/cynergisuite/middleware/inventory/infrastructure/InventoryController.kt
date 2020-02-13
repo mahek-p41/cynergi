@@ -58,8 +58,8 @@ class InventoryController(
 
       logger.info("Requesting inventory available to user {} for page {}", user, pageRequest)
 
-      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
-      val page = inventoryService.fetchAll(pageToRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
+      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myLocation().myNumber()!!)
+      val page = inventoryService.fetchAll(pageToRequest, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
@@ -87,6 +87,6 @@ class InventoryController(
 
       val user = userService.findUser(authentication)
 
-      return inventoryService.fetchByLookupKey(lookupKey, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
+      return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }
 }

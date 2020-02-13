@@ -11,5 +11,5 @@ interface User {
    fun myEmployeeNumber(): Int
    fun myCompany(): Company
    fun myDepartment(): Department?
-   fun myLocation(): Location?
+   fun myLocation(): Location
 }

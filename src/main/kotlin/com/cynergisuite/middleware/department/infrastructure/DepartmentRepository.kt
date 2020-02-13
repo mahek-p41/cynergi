@@ -46,7 +46,7 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   override fun findDataset(id: Long): String? {
+   override fun existsForCompany(id: Long, company: Company): com.github.javafaker.Company? {
       logger.debug("Search for dataset of department by id {}", id)
 
       val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.department_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))

@@ -21,8 +21,8 @@ object EmployeeFactory {
    fun stream(
       numberIn: Int = 1,
       companyIn: Company? = null, department: DepartmentEntity? = null, store: StoreEntity? = null,
-      employeeNumberIn: Int? = null,  lastNameIn: String? = null, firstNameMi: String? = null, passCodeIn: String? = null,
-      activeIn: Boolean? = null, allowAutoStoreAssignIn: Boolean? = null
+      employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMi: String? = null, passCodeIn: String? = null,
+      activeIn: Boolean? = null, cynergiSystemAdminIn: Boolean? = null
    ): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
@@ -34,7 +34,7 @@ object EmployeeFactory {
       val lastName = lastNameIn ?: name.lastName()
       val passCode = passCodeIn ?: lorem.characters(3, 8)
       val active = activeIn ?: true
-      val allowAutoStoreAssign = allowAutoStoreAssignIn ?: false
+      val cynergiSystemAdmin = cynergiSystemAdminIn ?: false
 
       return IntStream.range(0, number).mapToObj {
          EmployeeEntity(
@@ -46,7 +46,7 @@ object EmployeeFactory {
             passCode = passCode,
             store = store,
             active = active,
-            allowAutoStoreAssign = allowAutoStoreAssign,
+            cynergiSystemAdmin = cynergiSystemAdmin,
             department = department
          )
       }
@@ -84,15 +84,15 @@ class EmployeeFactoryService @Inject constructor(
 ) {
 
    fun stream(numberIn: Int = 1,
-      employeeNumberIn: Int? = null,
-      companyIn: Company? = null,
-      lastNameIn: String? = null,
-      firstNameMi: String? = null,
-      passCodeIn: String? = null,
-      store: StoreEntity? = null,
-      activeIn: Boolean? = null,
-      allowAutoStoreAssignIn: Boolean? = null,
-      department: DepartmentEntity? = null
+              employeeNumberIn: Int? = null,
+              companyIn: Company? = null,
+              lastNameIn: String? = null,
+              firstNameMi: String? = null,
+              passCodeIn: String? = null,
+              store: StoreEntity? = null,
+              activeIn: Boolean? = null,
+              cynergiSystemAdminIn: Boolean? = null,
+              department: DepartmentEntity? = null
    ): Stream<EmployeeEntity> {
       val company = companyIn?: store?.company ?: companyFactoryService.random()
 
@@ -105,7 +105,7 @@ class EmployeeFactoryService @Inject constructor(
          passCodeIn = passCodeIn,
          store = store,
          activeIn = activeIn,
-         allowAutoStoreAssignIn = allowAutoStoreAssignIn,
+         cynergiSystemAdminIn = cynergiSystemAdminIn,
          department = department
       ).map {
          employeeRepository.insert(it).copy(passCode = it.passCode)
@@ -122,7 +122,7 @@ class EmployeeFactoryService @Inject constructor(
       firstNameMi: String? = null,
       passCodeIn: String? = null,
       store: StoreEntity? = null,
-      allowAutoStoreAssignIn: Boolean? = null,
+      cynergiSystemAdminIn: Boolean? = null,
       department: DepartmentEntity? = null
    ): EmployeeEntity =
       stream(
@@ -133,7 +133,7 @@ class EmployeeFactoryService @Inject constructor(
          passCodeIn = passCodeIn,
          store = store,
          activeIn = true,
-         allowAutoStoreAssignIn = allowAutoStoreAssignIn,
+         cynergiSystemAdminIn = cynergiSystemAdminIn,
          department = department
       ).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
 

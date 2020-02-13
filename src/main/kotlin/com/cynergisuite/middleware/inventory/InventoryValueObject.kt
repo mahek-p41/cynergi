@@ -89,7 +89,7 @@ data class InventoryValueObject(
    val locationType: InventoryLocationTypeValueObject,
 
    @field:Schema(name = "dataset", description = "dataset item is associated with")
-   val company: Company
+   val dataset: String
 
 ) : ValueObjectBase<InventoryValueObject>() {
 
@@ -121,7 +121,7 @@ data class InventoryValueObject(
          status = item.status,
          primaryLocation = StoreValueObject(item.primaryLocation),
          locationType = locationType,
-         dataset = item.dataset
+         dataset = item.primaryLocation.myCompany().myDataset()
       )
 
    override fun myId(): Long? = id

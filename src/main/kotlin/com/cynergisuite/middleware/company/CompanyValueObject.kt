@@ -53,6 +53,9 @@ data class CompanyValueObject(
          federalTaxNumber = entity.federalTaxNumber
       )
 
+   constructor(company: Company) :
+      this()
+
    override fun myId(): Long? = id
    override fun copyMe(): CompanyValueObject = copy()
 }

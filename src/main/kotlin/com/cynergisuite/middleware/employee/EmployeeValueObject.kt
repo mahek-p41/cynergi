@@ -31,11 +31,6 @@ data class EmployeeValueObject(
    var number: Int?,
 
    @field:NotNull
-   @field:Size(min = 6, max = 6)
-   @field:Schema(name = "dataset", description = "Key for determining a user's company via a dataset", minimum = "6", maximum = "6")
-   var company: Company?,
-
-   @field:NotNull
    @field:Size(min = 2, max = 15)
    @field:Schema(name = "lastName", description = "Employee's family name", minLength = 2, maxLength = 15, required = true, nullable = false)
    var lastName: String?,
@@ -57,27 +52,20 @@ data class EmployeeValueObject(
    @field:JsonIgnore
    @field:NotNull
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
-   var active: Boolean? = true,
-
-   @field:JsonIgnore
-   @field:NotNull
-   @field:Schema(name = "allowAutoStoreAssign", description = "true|false value describing whether an employee/user can have a store auto assigned by the system or not", hidden = true)
-   var allowAutoStoreAssign: Boolean? = false
+   var active: Boolean? = true
 
 ) : ValueObjectBase<EmployeeValueObject>() {
 
-   constructor(type: String, number: Int, company: Company, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, allowAutoStoreAssign: Boolean, active: Boolean) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean) :
       this(
          id = null,
          type = type,
          number = number,
-         dataset = dataset,
          lastName = lastName,
          firstNameMi = firstNameMi,
          passCode = passCode,
          store = store,
-         active = active,
-         allowAutoStoreAssign = allowAutoStoreAssign
+         active = active
       )
 
    constructor(entity: EmployeeEntity) :
@@ -85,13 +73,11 @@ data class EmployeeValueObject(
          id = entity.id,
          type = entity.type,
          number = entity.number,
-         dataset = entity.dataset,
          lastName = entity.lastName,
          firstNameMi = entity.firstNameMi,
          passCode = entity.passCode,
          store = entity.store?.let { StoreValueObject(it) },
-         active = entity.active,
-         allowAutoStoreAssign = entity.allowAutoStoreAssign
+         active = entity.active
       )
 
    override fun myId(): Long? = id

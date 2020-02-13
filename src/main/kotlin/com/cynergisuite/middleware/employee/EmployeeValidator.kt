@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -38,7 +39,7 @@ class EmployeeValidator @Inject constructor (
 
       if (id == null) {
          errors.add(element = ValidationError("id", NotNull("id")))
-      } else if ( !employeeRepository.exists(id = id, employeeType = vo.type!!, dataset = dataset) ) {
+      } else if ( !employeeRepository.exists(id = id, employeeType = vo.type!!, company = company) ) {
          errors.add(ValidationError("id", NotFound(id)))
       }
 

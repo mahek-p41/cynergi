@@ -22,6 +22,19 @@ data class EmployeeEntity(
    val department: Department?,
    val store: StoreEntity?
 ) : Identifiable {
+   constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
+      this(
+         id = vo.id,
+         type = vo.type!!,
+         number = vo.number!!,
+         lastName = vo.lastName!!,
+         firstNameMi = vo.firstNameMi,
+         passCode = vo.passCode,
+         active = vo.active!!,
+         company = company,
+         department = department,
+         store = store
+      )
 
    fun displayName(): String = "$number - $lastName"
    fun getEmpName() : String = "$firstNameMi $lastName"

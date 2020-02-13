@@ -16,6 +16,7 @@ abstract class DatasetLimitingAccessControlProvider(
          else -> super.canUserAccess(user, asset, parameters) // return the default value
       }
    }
+
    private fun processFetchOne(user: User, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       val id = parameters
          .filter { it.value.isAnnotationPresent(QueryValue::class.java) }
@@ -23,12 +24,7 @@ abstract class DatasetLimitingAccessControlProvider(
          .filter { it.value.type == Long::class.java }
          .map { it.value.value as Long }
          .first()
-      val dataset = datasetRepository.findDataset(id)
 
-      return if (dataset != null) {
-         dataset == user.myCompany().myDataset()
-      } else {
-         true
-      }
+      return datasetRepository.existsForCompany(id, user.myCompany())
    }
 }

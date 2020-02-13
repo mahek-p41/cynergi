@@ -14,12 +14,4 @@ data class EmployeeUser(
    val fallbackLocation: Location,
    val passCode: String,
    val cynergiSystemAdmin: Boolean
-) : User {
-
-   override fun myId(): Long = id
-   override fun myCompany(): Company = company
-   override fun myEmployeeType(): String = type
-   override fun myLocation(): Location? = location
-   override fun myEmployeeNumber(): Int = number
-   override fun myDepartment(): Department? = department
-}
+)

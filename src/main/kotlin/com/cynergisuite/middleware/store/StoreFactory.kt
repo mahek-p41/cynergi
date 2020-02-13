@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.store
 
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
@@ -11,60 +13,57 @@ object StoreFactory {
          id = 1,
          number = 1,
          name = "KANSAS CITY",
-         dataset = "tstds1"
+         company = CompanyFactory.tstds1()
       ),
       StoreEntity(
          id = 2,
          number = 3,
          name = "INDEPENDENCE",
-         dataset = "tstds1"
+         company = CompanyFactory.tstds1()
       ),
       StoreEntity(
          id = 4,
          number = 1,
          name = "Pelham Trading Post, Inc",
-         dataset = "tstds2"
+         company = CompanyFactory.tstds2()
       ),
       StoreEntity(
          id = 5,
          number = 2,
          name = "Camilla Trading Post, Inc.",
-         dataset = "tstds2"
+         company = CompanyFactory.tstds2()
       ),
       StoreEntity(
          id = 6,
          number = 3,
          name = "Arlington Trading Post",
-         dataset = "tstds2"
+         company = CompanyFactory.tstds2()
       ),
       StoreEntity(
          id = 7,
          number = 4,
          name = "Moultrie Trading Post, Inc",
-         dataset = "tstds2"
+         company = CompanyFactory.tstds2()
       ),
       StoreEntity(
          id = 8,
          number = 5,
          name = "Bainbridge Trading Post",
-         dataset = "tstds2"
+         company = CompanyFactory.tstds2()
       )
    )
 
    @JvmStatic
-   fun random() = random(dataset = "tstds1")
-
-   @JvmStatic
    fun random(company: Company): StoreEntity =
-      stores.filter { it.dataset == dataset }.random()
+      stores.filter { it.company == company }.random()
 
    @JvmStatic
    fun randomNotMatchingDataset(company: Company): StoreEntity =
-      stores.filter { it.dataset != dataset }.random()
+      stores.filter { it.company != company }.random()
 
    @JvmStatic
-   fun findByNumber(number: Int, company: Company = "tstds1"): StoreEntity =
-      stores.first { it.number == number && it.dataset == dataset }
+   fun findByNumber(number: Int, company: Company = CompanyFactory.tstds1()): StoreEntity =
+      stores.first { it.number == number && it.company == company }
 
    @JvmStatic
    fun storeOneTstds1(): StoreEntity = stores[0]
@@ -80,22 +79,25 @@ class StoreFactoryService(
 ) {
 
    fun store(number: Int): StoreEntity =
-      store(number = number, dataset = "tstds1")
+      store(number = number, company = CompanyFactory.random())
 
    fun store(number: Int, company: Company): StoreEntity =
-      storeRepository.findOne(number, dataset) ?: throw Exception("Unable to find store $number")
+      storeRepository.findOne(number, company) ?: throw Exception("Unable to find store $number with company $company")
 
-   fun random(): StoreEntity =
-      store(StoreFactory.random()) ?: throw Exception("Unable to find a random StoreEntity")
+   fun random(): StoreEntity {
+      val company = CompanyFactory.random()
+
+      return store(StoreFactory.random(company)) ?: throw Exception("Unable to find a random StoreEntity")
+   }
 
    fun randomNotMatchingDataset(company: Company): StoreEntity {
-      val store = StoreFactory.randomNotMatchingDataset(dataset)
+      val store = StoreFactory.randomNotMatchingDataset(company)
 
-      return store(store.number, store.dataset)
+      return store(store.number, store.company)
    }
 
    fun random(company: Company): StoreEntity =
-      store(StoreFactory.random(dataset)) ?: throw Exception("Unable to find a random StoreEntity")
+      store(StoreFactory.random(company)) ?: throw Exception("Unable to find a random StoreEntity")
 
    fun storeOneTstds1(): StoreEntity =
       store(StoreFactory.storeOneTstds1()) ?: throw Exception("Unable to find Store 1")
@@ -104,5 +106,5 @@ class StoreFactoryService(
       store(StoreFactory.storeThreeTstds1()) ?: throw Exception("Unable to find Store 3")
 
    private fun store(location: Location): StoreEntity? =
-      storeRepository.findOne(location.myNumber(), location.myDataset())
+      storeRepository.findOne(location.myNumber(), location.myCompany())
 }
