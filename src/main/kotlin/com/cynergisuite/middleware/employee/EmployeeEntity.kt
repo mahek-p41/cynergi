@@ -13,31 +13,18 @@ data class EmployeeEntity(
    val id: Long? = null,
    val type: String,
    val number: Int,
-   val company: Company,
    val lastName: String,
    val firstNameMi: String?,
-   val passCode: String,
-   val store: StoreEntity?,
-   val active: Boolean = true,
-   val allowAutoStoreAssign: Boolean = false,
-   val department: Department? = null
+   val passCode: String? = null,
+   val active: Boolean,
+   val cynergiSystemAdmin: Boolean = false,
+   val company: Company,
+   val department: Department?,
+   val store: StoreEntity?
 ) : Identifiable {
 
-   constructor(vo: EmployeeValueObject, company: Company) :
-      this(
-         id = vo.id,
-         type = vo.type!!,
-         number = vo.number!!,
-         company = company,
-         lastName = vo.lastName!!,
-         firstNameMi = vo.firstNameMi,
-         passCode = vo.passCode!!,
-         store = vo.store?.let { StoreEntity(it, company) },
-         active = vo.active!!,
-         allowAutoStoreAssign = vo.allowAutoStoreAssign!!
-      )
-
-   override fun myId(): Long? = id
    fun displayName(): String = "$number - $lastName"
    fun getEmpName() : String = "$firstNameMi $lastName"
+
+   override fun myId(): Long? = id
 }

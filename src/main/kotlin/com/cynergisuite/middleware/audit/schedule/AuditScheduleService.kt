@@ -122,12 +122,12 @@ class AuditScheduleService @Inject constructor(
          .filter { it.description == "employeeNumber" }
          .filterNotNull()
          .map { it.value.toInt() }
-         .map { employeeRepository.findOne(number = it, employeeType = null, dataset = dataset) }
+         .map { employeeRepository.findOne(number = it, company = company) }
          .firstOrNull() ?: throw ScheduleProcessingException("Unable to find employee who scheduled audit")
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
-            val store = storeRepository.findOne(arg.value.toInt(), dataset)!!
+            val store = storeRepository.findOne(arg.value.toInt(), company)!!
             val company = companyRepository.findCompanyByStore(store)!!
             val oneNote = NotificationValueObject(
                startDate = LocalDate.now(),

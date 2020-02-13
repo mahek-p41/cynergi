@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.LoginCredentials
+import com.cynergisuite.middleware.authentication.PasswordEncoderService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.employee.EmployeeService
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
@@ -18,7 +20,7 @@ import javax.inject.Singleton
 
 @Singleton
 class UserAuthenticationProvider @Inject constructor(
-   private val employeeService: EmployeeService
+   private val userService: UserService
 ) : AuthenticationProvider {
    private val logger: Logger = LoggerFactory.getLogger(UserAuthenticationProvider::class.java)
 
@@ -31,15 +33,20 @@ class UserAuthenticationProvider @Inject constructor(
       val dataset = if (authenticationRequest is LoginCredentials) authenticationRequest.dataset else null
 
       return if (identity != null && secret != null && dataset != null) {
-         employeeService
+         userService
             .fetchUserByAuthentication(identity, secret, dataset, storeNumber)
             .flatMapPublisher { employee ->
-               val employeeStore = employee.store
+               val employeeStore = employee.myLocation()
+               val fallbackStore = employee.fallbackLocation
 
-               if (employeeStore != null) { // if employee has store then proceed
-                  logger.debug("Employee has store {} proceeding with login", employeeStore)
+               if(employeeStore != null) { // if doesn't have store, but is cynergi system admin
+                  logger.debug("Employee has store allowing access", employeeStore)
 
-                  just(AuthenticatedUser(employee, employee.store))
+                  just(AuthenticatedUser(employee))
+               } else if (employee.cynergiSystemAdmin) {
+                  logger.debug("Employee is system admin")
+
+                  just(AuthenticatedUser(employee, employee.location ?: fallbackStore))
                } else { // otherwise inform the client that a store is required for the provided user
                   logger.debug("Employee did not have store informing client of store requirement")
 

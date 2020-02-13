@@ -14,25 +14,33 @@ data class AuthenticatedUser(
    val number: Int, // employee number
    val company: Company,
    val department: Department?,
-   val location: Location,
-   val passCode: String
+   val location: Location?
 ): User, UserDetails(number.toString(), mutableListOf()) {
 
-   constructor(employee: EmployeeEntity, overrideStore: StoreEntity) :
+   constructor(employee: EmployeeUser) :
       this(
-         id = employee.id!!, // this could cause a problem
+         id = employee.id, // this could cause a problem
          type = employee.type,
-         location = overrideStore,
          number = employee.number,
          company = employee.company,
          department = employee.department,
-         passCode = employee.passCode
+         location = employee.location
+      )
+
+   constructor(employee: EmployeeUser, overrideStore: Location) :
+      this(
+         id = employee.id, // this could cause a problem
+         type = employee.type,
+         number = employee.number,
+         company = employee.company,
+         department = employee.department,
+         location = overrideStore
       )
 
    override fun myId(): Long = id
    override fun myCompany(): Company = company
    override fun myEmployeeType(): String = type
-   override fun myLocation(): Location = location
+   override fun myLocation(): Location? = location
    override fun myEmployeeNumber(): Int = number
    override fun myDepartment(): Department? = department
 }

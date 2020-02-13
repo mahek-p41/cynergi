@@ -18,6 +18,6 @@ class UserService(
    fun findUser(authentication: Authentication): User =
       authenticatedUserJwtClaimSetGenerator.reversePopulateWithUserDetails(authentication)
 
-   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<User> =
+   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<EmployeeUser> =
       authenticationRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
 }

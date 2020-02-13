@@ -15,6 +15,8 @@ import io.micronaut.security.token.config.TokenConfiguration
 import io.micronaut.security.token.jwt.generator.claims.ClaimsAudienceProvider
 import io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator
 import io.micronaut.security.token.jwt.generator.claims.JwtIdGenerator
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Objects
@@ -26,9 +28,9 @@ private enum class JWTDetailKeys(
 ) {
    EMPLOYEE_ID("id"),
    EMPLOYEE_TYPE("tp"),
-   STORE_NUMBER("stn"),
+   STORE_NUMBER("sn"),
    COMPANY_ID("ci"),
-   DEPARTMENT("dep");
+   DEPARTMENT("dp");
 }
 
 @Singleton
@@ -80,7 +82,9 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
          number = employeeNumber,
          company = company,
          department = department,
-         location = location
+         location = location,
+         passCode = EMPTY,
+         allowAutoStoreAssign = false
       )
    }
 }

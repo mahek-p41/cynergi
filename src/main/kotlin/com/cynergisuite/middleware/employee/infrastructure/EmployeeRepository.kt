@@ -4,7 +4,11 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.department.Department
+import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -29,134 +33,122 @@ import javax.inject.Singleton
  */
 @Singleton
 class EmployeeRepository @Inject constructor(
+   private val companyRepository: CompanyRepository,
+   private val departmentRepository: DepartmentRepository,
    private val jdbc: NamedParameterJdbcTemplate,
-   private val passwordEncoderService: PasswordEncoderService,
    private val storeRepository: StoreRepository,
+   private val passwordEncoderService: PasswordEncoderService,
    private val postgresClient: PgPool
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
-   fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company, datasetParamKey: String = ":dataset"): String { // TODO may need to handle datasetParamkey better, but maybe not
-      return "${selectBaseWithoutEmployeeStoreJoinQuery(params, company.myDataset(), datasetParamKey)} ON e.store_number = s.number"
-   }
-
-   private fun selectBaseWithoutEmployeeStoreJoinQuery(params: MutableMap<String, Any?>, dataset: String, datasetParamKey: String = ":dataset"): String {
-      return """
-         WITH employees AS (
-            SELECT from_priority, id, number, dataset, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
-            FROM (
-               SELECT
-                  1 AS from_priority,
-                  fpie.id AS id,
-                  fpie.number AS number,
-                  fpie.last_name AS last_name,
-                  fpie.first_name_mi AS first_name_mi,
-                  fpie.pass_code AS pass_code,
-                  fpie.store_number AS store_number,
-                  fpie.active AS active,
-                  fpie.department AS department,
-                  FALSE AS allow_auto_store_assign,
-                  'sysz' AS employee_type,
-                  fpie.dataset AS dataset
-               FROM fastinfo_prod_import.employee_vw fpie
-               WHERE coalesce(trim(fpie.pass_code), '') <> ''
-               UNION
-               SELECT
-                  2 AS from_priority,
-                  e.id AS id,
-                  e.number AS number,
-                  e.last_name AS last_name,
-                  e.first_name_mi AS first_name_mi,
-                  e.pass_code AS pass_code,
-                  e.store_number AS store_number,
-                  e.active AS active,
-                  e.department AS department,
-                  e.allow_auto_store_assign AS allow_auto_store_assign,
-                  'eli' AS employee_type,
-                  e.dataset AS dataset
-               FROM employee e
-               WHERE coalesce(trim(e.pass_code), '') <> ''
-            ) AS inner_emp
-            ORDER BY from_priority
-         ), stores AS (
+   private val baseQuery = """
+      SELECT * FROM (
+         SELECT * FROM (
             SELECT
-               s.id AS id,
-               s.number AS number,
-               s.name AS name,
-               s.dataset AS dataset
-            FROM fastinfo_prod_import.store_vw s
-            WHERE s.dataset = $datasetParamKey
-         )
-         SELECT
-            e.from_priority AS e_priority,
-            e.id AS e_id,
-            e.number AS e_number,
-            e.dataset AS e_dataset,
-            e.last_name AS e_last_name,
-            NULLIF(TRIM(e.first_name_mi), '') AS e_first_name_mi,
-            e.pass_code AS e_pass_code,
-            e.active AS e_active,
-            e.department AS e_department,
-            e.employee_type AS e_employee_type,
-            e.allow_auto_store_assign AS e_allow_auto_store_assign,
-            s.id AS s_id,
-            s.number AS s_number,
-            s.name AS s_name,
-            s.dataset AS s_dataset,
-            ds.id AS ds_id,
-            ds.number AS ds_number,
-            ds.name AS ds_name,
-            ds.dataset AS ds_dataset
-         FROM employees e
-              JOIN stores ds ON ds.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
-              LEFT OUTER JOIN stores s
-      """.trimIndent()
-   }
+               1 AS from_priority,
+               emp.id AS emp_id,
+               'sysz' AS emp_type,
+               emp.number AS emp_number,
+               emp.active AS emp_active,
+               emp.last_name AS emp_last_name,
+               emp.first_name_mi AS emp_first_name_mi,
+               comp.id AS comp_id,
+               comp.uu_row_id AS comp_uu_row_id,
+               comp.time_created AS comp_time_created,
+               comp.time_updated AS comp_time_updated,
+               comp.name AS comp_name,
+               comp.doing_business_as AS comp_doing_business_as,
+               comp.client_code AS comp_client_code,
+               comp.client_id AS comp_client_id,
+               comp.dataset_code AS comp_dataset,
+               comp.federal_id_number AS comp_federal_id_number,
+               dept.id AS dept_id,
+               dept.code AS dept_code,
+               dept.description AS dept_description,
+               dept.security_profile AS dept_security_profile,
+               dept.default_menu AS dept_default_menu,
+               fpis.id AS fpis_id,
+               fpis.number AS fpis_number,
+               fpis.name AS fpis_name
+            FROM company comp
+               JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+               JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+            UNION
+            SELECT
+               2 AS from_priority,
+               emp.id AS emp_id,
+               'eli' AS emp_type,
+               emp.number AS emp_number,
+               emp.active AS emp_active,
+               emp.last_name AS emp_last_name,
+               emp.first_name_mi AS emp_first_name_mi,
+               comp.id AS comp_id,
+               comp.uu_row_id AS comp_uu_row_id,
+               comp.time_created AS comp_time_created,
+               comp.time_updated AS comp_time_updated,
+               comp.name AS comp_name,
+               comp.doing_business_as AS comp_doing_business_as,
+               comp.client_code AS comp_client_code,
+               comp.client_id AS comp_client_id,
+               comp.dataset_code AS comp_dataset,
+               comp.federal_id_number AS comp_federal_id_number,
+               dept.id AS dept_id,
+               dept.code AS dept_code,
+               dept.description AS dept_description,
+               dept.security_profile AS dept_security_profile,
+               dept.default_menu AS dept_default_menu,
+               fpis.id AS fpis_id,
+               fpis.number AS fpis_number,
+               fpis.name AS fpis_name
+            FROM company comp
+               JOIN employee emp ON comp.id = emp.company_id
+               JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+         ) AS inner_users
+         ORDER BY from_priority
+      ) AS users
+   """
 
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "employee_type" to employeeType)
-      val query = "${selectBaseQuery(params, company)} WHERE e.id = :id AND e.employee_type = :employee_type"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs, company) })
+      val found = jdbc.findFirstOrNull(
+         "$baseQuery WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for Employee: {} {} {} resulted in {}", id, employeeType, company, found)
 
       return found
    }
 
-   fun findOne(number: Int, employeeType: String? = null, company: Company): EmployeeEntity? {
-      val params = mutableMapOf<String, Any?>("number" to number)
-      val query = StringBuilder(selectBaseQuery(params, company)).append("\nWHERE e.number = :number")
+   fun findOne(number: Int, employeeType: String = "sysz", company: Company): EmployeeEntity? {
+      logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
-      if (employeeType != null) {
-         params["employee_type"] = employeeType
-         query.append("\nAND employee_type = :employee_type")
-      }
-
-      query.append("\nORDER BY e.from_priority\n LIMIT 1")
-
-      logger.debug("Searching for employee {}, {} with {}", number, employeeType, query)
-
-      val found = jdbc.findFirstOrNull(query.toString(), params, RowMapper { rs, _ -> mapRow(rs, company) })
+      val found = jdbc.findFirstOrNull(
+         "$baseQuery WHERE emp_number = :number AND emp_type = :emp_type LIMIT 1",
+         mapOf("emp_number" to number, "emp_type" to employeeType),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for Employee: {} {} resulted in {}", number, employeeType, found)
 
       return found
    }
 
-   @Cacheable("user-cache")
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
-      val params = mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myStoreNumber())
-      val query = """
-         ${selectBaseWithoutEmployeeStoreJoinQuery(params, user.myCompany())}
-            ON s.number = :store_number
-         WHERE e.id = :id
-               AND e.employee_type = :employee_type
-               AND e.dataset = :dataset
-         """.trimIndent()
+      logger.debug("Searching for Employee using {}", user)
 
-      logger.debug("Searching for Employee: {} with {} using {}", user, params, query)
-
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs, user.myCompany()) } )
+      val found = jdbc.findFirstOrNull("""
+         $baseQuery
+         WHERE emp_id = :id
+               AND emp_employee_type = :employee_type
+               AND comp_id = :comp_id
+         """,
+         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myCompany().myId()),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for Employee: {} resulted in {}", user, found)
 
@@ -164,25 +156,40 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun exists(id: Long, employeeType: String = "sysz", company: Company): Boolean {
-      val query = """
-      SELECT count(id) = 1
-      FROM (
-         SELECT id, 'sysz' AS employee_type, dataset AS dataset FROM fastinfo_prod_import.employee_vw fpie WHERE coalesce(trim(fpie.pass_code), '') <> ''
-         UNION
-         SELECT id, 'eli' AS employee_type, dataset AS dataset FROM employee e
-      ) AS e
-      WHERE e.id = :id
-            AND employee_type = :employee_type
-            AND dataset = :dataset
-      """
-      val exists = jdbc.queryForObject(query, mapOf("id" to id, "employee_type" to employeeType, "dataset" to dataset), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("""
+         SELECT count(emp_id) = 1 FROM (
+            SELECT * FROM (
+               SELECT
+                  1 AS from_priority,
+                  emp.id AS emp_id,
+                  'sysz' AS emp_type,
+                  comp.id AS comp_id
+               FROM company comp
+                  JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+                  JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+               UNION
+               SELECT
+                  2 AS from_priority,
+                  emp.id AS emp_id,
+                  'eli' AS emp_type,
+                  comp.id AS comp_id
+               FROM company comp
+                  JOIN employee emp ON comp.id = emp.company_id
+                  JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+            ) AS inner_users
+            ORDER BY from_priority
+         ) AS users
+         WHERE emp_id = :emp_id AND emp_type = :emp_type AND comp_id = :comp_id""",
+         mapOf("emp_id" to id, "emp_type" to employeeType, "comp_id" to company.myId()),
+         Boolean::class.java
+      )!!
 
       logger.trace("Checking if Employee: {} exists resulted in {}", id, exists)
 
       return exists
    }
-
-
 
    @Transactional
    fun insert(entity: EmployeeEntity): EmployeeEntity {
@@ -190,7 +197,7 @@ class EmployeeRepository @Inject constructor(
 
       return jdbc.insertReturning("""
          INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, allow_auto_store_assign, company_id)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :allow_auto_store_assign, :company_id)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id)
          RETURNING
             *
          """.trimIndent(),
@@ -199,20 +206,22 @@ class EmployeeRepository @Inject constructor(
             "last_name" to entity.lastName,
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to passwordEncoderService.encode(entity.passCode),
-            "store_number" to entity.store?.number,
             "active" to entity.active,
-            "department" to entity.department,
-            "allow_auto_store_assign" to entity.allowAutoStoreAssign,
-            "company_id" to entity.company.myId()
+            "cynergi_system_admin" to entity.cynergiSystemAdmin,
+            "company_id" to entity.company.myId(),
+            "department" to entity.department?.myCode(),
+            "store_number" to entity.store?.number
          ),
          RowMapper { rs, _ ->
-            mapDDLRow(rs, entity.company, entity.store)
+            mapDDLRow(rs, entity.company, entity.department, entity.store)
          }
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity  =
-      EmployeeEntity(
+   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity {
+      val company = companyRepository.mapRow(rs, companyColumnPrefix)
+
+      return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}employee_type"),
          number = rs.getInt("${columnPrefix}number"),
@@ -220,30 +229,32 @@ class EmployeeRepository @Inject constructor(
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
-         store = storeRepository.mapRowOrNull(rs, storeColumnPrefix),
+         store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
-         department = rs.getString("${columnPrefix}department"),
-         allowAutoStoreAssign = rs.getBoolean("${columnPrefix}allow_auto_store_assign")
+         department = departmentRepository.mapRow(rs, company, departmentColumnPrefix),
+         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin")
       )
+   }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, company, columnPrefix)
+         mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {
          null
       }
 
-   private fun mapDDLRow(rs: ResultSet, company: Company, store: StoreEntity?) : EmployeeEntity =
+   private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: StoreEntity?) : EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
          type = "eli",
          number = rs.getInt("number"),
-         company = company,
          lastName = rs.getString("last_name"),
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),
-         store = store,
          active = rs.getBoolean("active"),
-         department = rs.getString("department")
+         cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
+         company = company,
+         department = department,
+         store = store
       )
 }
