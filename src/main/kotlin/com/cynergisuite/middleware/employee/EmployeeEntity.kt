@@ -1,8 +1,13 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
+import java.util.UUID
 
 data class EmployeeEntity(
    val id: Long? = null,
@@ -16,7 +21,7 @@ data class EmployeeEntity(
    val active: Boolean = true,
    val allowAutoStoreAssign: Boolean = false,
    val department: Department? = null
-) {
+) : Identifiable {
 
    constructor(vo: EmployeeValueObject, company: Company) :
       this(
@@ -32,7 +37,7 @@ data class EmployeeEntity(
          allowAutoStoreAssign = vo.allowAutoStoreAssign!!
       )
 
-   fun copyMe(): EmployeeEntity = copy()
+   override fun myId(): Long? = id
    fun displayName(): String = "$number - $lastName"
    fun getEmpName() : String = "$firstNameMi $lastName"
 }

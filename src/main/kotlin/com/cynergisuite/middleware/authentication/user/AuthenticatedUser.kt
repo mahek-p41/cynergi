@@ -20,7 +20,7 @@ data class AuthenticatedUser(
 
    constructor(employee: EmployeeEntity, overrideStore: StoreEntity) :
       this(
-         id = employee.id!!,
+         id = employee.id!!, // this could cause a problem
          type = employee.type,
          location = overrideStore,
          number = employee.number,

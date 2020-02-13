@@ -1,10 +1,13 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.DepartmentEntity
+import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.StoreFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -17,15 +20,9 @@ object EmployeeFactory {
    @JvmStatic
    fun stream(
       numberIn: Int = 1,
-      employeeNumberIn: Int? = null,
-      datasetIn: String? = null,
-      lastNameIn: String? = null,
-      firstNameMi: String? = null,
-      passCodeIn: String? = null,
-      store: StoreEntity? = null,
-      activeIn: Boolean? = null,
-      allowAutoStoreAssignIn: Boolean? = null,
-      department: DepartmentEntity? = null
+      companyIn: Company? = null, department: DepartmentEntity? = null, store: StoreEntity? = null,
+      employeeNumberIn: Int? = null,  lastNameIn: String? = null, firstNameMi: String? = null, passCodeIn: String? = null,
+      activeIn: Boolean? = null, allowAutoStoreAssignIn: Boolean? = null
    ): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
@@ -33,7 +30,7 @@ object EmployeeFactory {
       val numbers = faker.number()
       val name = faker.name()
       val employeeNumber = employeeNumberIn ?: numbers.numberBetween(10, 10_000)
-      val dataset = datasetIn ?: store?.dataset ?: CompanyFactory.random().datasetCode
+      val company = companyIn ?: CompanyFactory.random()
       val lastName = lastNameIn ?: name.lastName()
       val passCode = passCodeIn ?: lorem.characters(3, 8)
       val active = activeIn ?: true
@@ -43,14 +40,14 @@ object EmployeeFactory {
          EmployeeEntity(
             type = "eli",
             number = employeeNumber,
-            dataset = dataset,
+            company = company,
             lastName = lastName,
             firstNameMi = firstNameMi,
             passCode = passCode,
             store = store,
             active = active,
             allowAutoStoreAssign = allowAutoStoreAssign,
-            department = department?.code
+            department = department
          )
       }
    }
@@ -60,25 +57,23 @@ object EmployeeFactory {
       stream(1).findFirst().orElseThrow { Exception("Unable to create Employee") }
 
    @JvmStatic
-   fun testEmployee(): EmployeeEntity =
-      EmployeeEntity(
+   fun testEmployee(): EmployeeEntity {
+      val store = StoreFactory.storeOneTstds1()
+      val department = DepartmentFactory.forThese(store.company, "SA")
+
+      return EmployeeEntity(
          id = 19,
          type = "sysz",
          number = 111,
-         dataset = "tstds1",
+         company = store.company,
          lastName = "MARTINEZ",
          firstNameMi = "DANIEL",
          passCode = "pass",
-         store = StoreEntity(
-            id = 1,
-            number = 1,
-            name = "KANSAS CITY",
-            dataset = "testds"
-         ),
+         store = store,
          active = true,
-         department = "SA"
+         department = department
       )
-
+   }
 }
 
 @Singleton
@@ -88,10 +83,9 @@ class EmployeeFactoryService @Inject constructor(
    private val employeeRepository: EmployeeRepository
 ) {
 
-   fun stream(
-      numberIn: Int = 1,
+   fun stream(numberIn: Int = 1,
       employeeNumberIn: Int? = null,
-      datasetIn: String? = null,
+      companyIn: Company? = null,
       lastNameIn: String? = null,
       firstNameMi: String? = null,
       passCodeIn: String? = null,
@@ -100,12 +94,12 @@ class EmployeeFactoryService @Inject constructor(
       allowAutoStoreAssignIn: Boolean? = null,
       department: DepartmentEntity? = null
    ): Stream<EmployeeEntity> {
-      val dataset = store?.dataset ?: datasetIn ?: companyFactoryService.random().datasetCode
+      val company = companyIn?: store?.company ?: companyFactoryService.random()
 
       return EmployeeFactory.stream(
          numberIn = numberIn,
          employeeNumberIn = employeeNumberIn,
-         datasetIn = dataset,
+         companyIn = company,
          lastNameIn = lastNameIn,
          firstNameMi = firstNameMi,
          passCodeIn = passCodeIn,
@@ -123,7 +117,7 @@ class EmployeeFactoryService @Inject constructor(
 
    fun single(
       employeeNumberIn: Int? = null,
-      datasetIn: String? = null,
+      companyIn: Company? = null,
       lastNameIn: String? = null,
       firstNameMi: String? = null,
       passCodeIn: String? = null,
@@ -133,7 +127,7 @@ class EmployeeFactoryService @Inject constructor(
    ): EmployeeEntity =
       stream(
          employeeNumberIn = employeeNumberIn,
-         datasetIn = datasetIn,
+         companyIn = companyIn,
          lastNameIn = lastNameIn,
          firstNameMi = firstNameMi,
          passCodeIn = passCodeIn,
