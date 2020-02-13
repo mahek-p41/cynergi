@@ -4,6 +4,8 @@ import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -19,11 +21,11 @@ import javax.inject.Singleton
 object AuditFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: User? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val store = storeIn?: StoreFactory.random()
       val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.created())
-      val changedBy = changedByIn ?: EmployeeFactory.testEmployee()
+      val changedBy = changedByIn ?: AuthenticatedUser(EmployeeFactory.testEmployee(), store)
 
       return IntStream.range(0, number).mapToObj {
          AuditEntity(

@@ -15,7 +15,6 @@ import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.StoreEntity
@@ -85,13 +84,13 @@ class AuditService @Inject constructor(
       return AuditValueObject(audit, locale, localizationService)
    }
 
-   fun findOrCreate(store: StoreEntity, employee: EmployeeEntity, locale: Locale): AuditValueObject {
+   fun findOrCreate(store: StoreEntity, user: User, locale: Locale): AuditValueObject {
       val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
 
       return if (createdOrInProgressAudit != null) {
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
-         create(AuditCreateValueObject(StoreValueObject(store)), employee, locale)
+         create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
       }
    }
 
@@ -109,10 +108,9 @@ class AuditService @Inject constructor(
    @Validated
    fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateSignOff(audit, user.myCompany(), user, locale)
-      val changedBy = fromUser(user)
       val actions = existing.actions.toMutableSet()
 
-      actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = changedBy))
+      actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = user))
 
       val updated = auditRepository.update(existing.copy(actions = actions))
 
@@ -155,14 +153,12 @@ class AuditService @Inject constructor(
       val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
-      val beginAction =  audit.actions.asSequence()
-         .first { it.status == IN_PROGRESS}
+      val beginAction =  audit.actions.asSequence().first { it.status == IN_PROGRESS}
       val beginDate = dateFormatter.format(beginAction.timeCreated)
 
-      val endAction =  audit.actions.asSequence()
-         .first { it.status == COMPLETED}
+      val endAction =  audit.actions.asSequence().first { it.status == COMPLETED}
       val endDate = dateFormatter.format(endAction.timeCreated)
-      val endEmployee = endAction.changedBy.getEmpName()
+      val endEmployee = (endAction.changedBy as EmployeeEntity).getEmpName() // TODO this seems dangerous
 
       val headerBorder = Rectangle(0f, 0f)
       headerBorder.borderWidthLeft = 0f

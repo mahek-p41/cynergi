@@ -19,3 +19,5 @@ WHERE e.dataset = comp.dataset_code;
 
 ALTER TABLE employee ALTER COLUMN company_id SET NOT NULL;
 ALTER TABLE employee DROP COLUMN dataset;
+
+ALTER TABLE company RENAME COLUMN federal_tax_number TO federal_id_number;
