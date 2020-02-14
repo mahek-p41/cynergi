@@ -25,6 +25,6 @@ abstract class DatasetLimitingAccessControlProvider(
          .map { it.value.value as Long }
          .first()
 
-      return datasetRepository.existsForCompany(id, user.myCompany())
+      return datasetRepository.exists(id, user.myCompany())
    }
 }

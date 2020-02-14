@@ -5,6 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -45,7 +46,7 @@ class AuditScheduleService @Inject constructor(
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
-         buildAuditScheduleValueObjectFromSchedule(schedule, dataset)
+         buildAuditScheduleValueObjectFromSchedule(schedule, company)
       } else {
          null
       }
@@ -55,7 +56,7 @@ class AuditScheduleService @Inject constructor(
    fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<AuditScheduleDataTransferObject> {
       val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
 
-      return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, dataset) }
+      return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, company) }
    }
 
    @Validated
@@ -93,7 +94,7 @@ class AuditScheduleService @Inject constructor(
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
-            val store = storeRepository.findOne(arg.value.toInt(), dataset)!!
+            val store = storeRepository.findOne(arg.value.toInt(), company)!!
 
             stores.add(StoreValueObject(store))
          }
@@ -113,7 +114,7 @@ class AuditScheduleService @Inject constructor(
    override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
-      val dataset = schedule.arguments.firstOrNull { it.description == "dataset" }?.value ?: throw ScheduleProcessingException("Unable to determine dataset for schedule")
+      val dataset = schedule.arguments.firstOrNull { it.description == "comp_id" }?.value ?: throw ScheduleProcessingException("Unable to determine dataset for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }

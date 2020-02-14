@@ -60,7 +60,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Fetching Audit Schedule by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = auditScheduleService.fetchById(id, user.myDataset()) ?: throw NotFoundException(id)
+      val response = auditScheduleService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit Schedule by {} resulted in {}", id, response)
 
@@ -84,7 +84,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = auditScheduleService.fetchAll(pageRequest, user.myDataset())
+      val page = auditScheduleService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)

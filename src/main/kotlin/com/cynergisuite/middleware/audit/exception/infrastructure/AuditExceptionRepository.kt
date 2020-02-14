@@ -16,7 +16,9 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
+import com.cynergisuite.middleware.authentication.user.IdentifiableUser
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -42,7 +44,7 @@ class AuditExceptionRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = """
          WITH ae_employees AS (
-            ${employeeRepository.selectBaseQuery(params, dataset)}
+            ${employeeRepository.employeeBaseQuery()}
          )
          SELECT
             ae.id AS ae_id,
@@ -149,7 +151,7 @@ class AuditExceptionRepository @Inject constructor(
       val sql = """
       WITH paged AS (
          WITH ae_employees AS (
-            ${employeeRepository.selectBaseQuery(params, dataset)}
+            ${employeeRepository.employeeBaseQuery()}
          ),
          audit_exceptions AS (
             SELECT ae.id AS ae_id,
@@ -275,7 +277,8 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
-      var result = findAll(audit, audit.dataset, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      val auditCompany = audit.store.company
+      var result = findAll(audit, auditCompany, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
       while(result.elements.isNotEmpty()) {
@@ -284,7 +287,7 @@ class AuditExceptionRepository @Inject constructor(
             index++
          }
 
-         result = findAll(audit, audit.dataset, result.requested.nextPage())
+         result = findAll(audit, auditCompany, result.requested.nextPage())
       }
    }
 
@@ -316,7 +319,7 @@ class AuditExceptionRepository @Inject constructor(
             "serial_number" to entity.serialNumber,
             "inventory_brand" to entity.inventoryBrand,
             "inventory_model" to entity.inventoryModel,
-            "scanned_by" to entity.scannedBy.number,
+            "scanned_by" to entity.scannedBy.myEmployeeNumber(),
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
             "signed_off_by" to entity.signedOffBy?.myEmployeeNumber(),
@@ -377,7 +380,7 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, signedOffBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: IdentifiableUser, signedOffBy: IdentifiableUser?, audit: Identifiable, columnPrefix: String = EMPTY): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),

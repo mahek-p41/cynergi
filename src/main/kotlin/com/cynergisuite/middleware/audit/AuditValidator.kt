@@ -11,7 +11,6 @@ import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -68,24 +67,24 @@ class AuditValidator @Inject constructor(
       doValidation { errors ->
          val storeNumber = audit.store?.number
 
-         if (storeNumber != null && !storeRepository.exists(number = storeNumber)) {
+         if (storeNumber != null && !storeRepository.exists(number = storeNumber, company = user.myCompany())) {
             errors.add(ValidationError("storeNumber", NotFound(storeNumber)))
          }
 
-         if (storeNumber != null && auditRepository.countAuditsNotCompletedOrCanceled(storeNumber = storeNumber, dataset = user.myDataset()) > 0) {
+         if (storeNumber != null && auditRepository.countAuditsNotCompletedOrCanceled(storeNumber = storeNumber, company = user.myCompany()) > 0) {
             errors.add(ValidationError("storeNumber", AuditOpenAtStore(storeNumber)))
          }
       }
 
       return AuditEntity(
-         store = storeRepository.findOne(number = audit.store!!.number!!, dataset = user.myDataset())!!,
+         store = storeRepository.findOne(number = audit.store!!.number!!, company = user.myCompany())!!,
          actions = mutableSetOf(
             AuditActionEntity(
                status = CREATED,
-               changedBy = fromUser(user)
+               changedBy = user
             )
          ),
-         dataset = user.myDataset()
+         company = user.myCompany()
       )
    }
 
@@ -96,7 +95,7 @@ class AuditValidator @Inject constructor(
       doValidation { errors ->
          val id = audit.id!!
          val requestedStatus = auditStatusService.fetchByValue(audit.status!!.value)
-         val existingAudit = auditRepository.findOne(id, user.myDataset())
+         val existingAudit = auditRepository.findOne(id, user.myCompany())
 
          if (existingAudit == null) {
             errors.add(ValidationError("id", NotFound(id)))
@@ -125,15 +124,15 @@ class AuditValidator @Inject constructor(
       return Pair(
          AuditActionEntity(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
-            changedBy = fromUser(user)
+            changedBy = user
          ),
-         auditRepository.findOne(audit.id!!, user.myDataset())!!
+         auditRepository.findOne(audit.id!!, user.myCompany())!!
       )
    }
 
    @Throws(ValidationException::class)
    fun validateSignOff(audit: SimpleIdentifiableDataTransferObject, company: Company, user: User, locale: Locale): AuditEntity {
-      val existingAudit = auditRepository.findOne(audit.myId()!!, dataset) ?: throw NotFoundException(audit.myId()!!)
+      val existingAudit = auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
 
       doValidation { errors ->
          val currentStatus = existingAudit.currentStatus()
@@ -157,6 +156,6 @@ class AuditValidator @Inject constructor(
 
    @Throws(NotFoundException::class)
    fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject, company: Company): AuditEntity {
-      return auditRepository.findOne(audit.myId()!!, dataset) ?: throw NotFoundException(audit.myId()!!)
+      return auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
    }
 }

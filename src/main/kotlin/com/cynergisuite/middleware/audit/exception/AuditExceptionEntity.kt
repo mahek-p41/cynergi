@@ -5,8 +5,9 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
+import com.cynergisuite.middleware.authentication.user.IdentifiableUser
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -23,16 +24,16 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: EmployeeEntity,
+   val scannedBy: IdentifiableUser,
    val exceptionCode: String,
    val signedOff: Boolean = false,
-   val signedOffBy: EmployeeEntity? = null,
+   val signedOffBy: IdentifiableUser? = null,
    val lookupKey: String?,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
    val audit: Identifiable
 ) : Entity<AuditExceptionEntity> {
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: User, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -41,13 +42,13 @@ data class AuditExceptionEntity(
          serialNumber = inventory.serialNumber,
          inventoryBrand = inventory.brand,
          inventoryModel = inventory.modelNumber,
-         scannedBy = fromUser(scannedBy),
+         scannedBy = scannedBy,
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: User, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = barcode,

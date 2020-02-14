@@ -1,15 +1,13 @@
 package com.cynergisuite.domain.infrastructure
 
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeService
-import groovy.json.JsonSlurper
+import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.UserService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.security.authentication.UsernamePasswordCredentials
 import io.micronaut.security.token.jwt.render.BearerAccessRefreshToken
 
 import javax.inject.Inject
@@ -21,20 +19,20 @@ import static io.micronaut.http.HttpRequest.PUT
 
 abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    @Client("/api") @Inject RxHttpClient httpClient
-   @Inject EmployeeService employeeService
+   @Inject UserService userService
 
    protected BlockingHttpClient client
    protected String cynergiAccessToken
-   protected EmployeeEntity authenticatedEmployee
+   protected EmployeeUser authenticatedEmployee
 
    void setup() {
       client = httpClient.toBlocking()
-      authenticatedEmployee = employeeService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet()
+      authenticatedEmployee = userService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet().with { new EmployeeUser(it, 'pass') }
       cynergiAccessToken = loginEmployee(authenticatedEmployee)
    }
 
-   String loginEmployee(EmployeeEntity employee) {
-      return client.exchange(POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.dataset)), BearerAccessRefreshToken).body().accessToken
+   String loginEmployee(EmployeeUser employee) {
+      return client.exchange(POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.location.myNumber(), employee.company.myDataset())), BearerAccessRefreshToken).body().accessToken
    }
 
    Object get(String path, String accessToken = cynergiAccessToken) throws HttpClientResponseException {

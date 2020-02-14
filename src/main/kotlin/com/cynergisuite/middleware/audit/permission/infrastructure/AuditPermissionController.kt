@@ -65,7 +65,7 @@ class AuditPermissionController @Inject constructor(
       val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
-      return auditPermissionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
+      return auditPermissionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -189,6 +189,6 @@ class AuditPermissionController @Inject constructor(
 
       val user = userService.findUser(authentication)
 
-      return auditPermissionService.deleteById(id, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      return auditPermissionService.deleteById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
    }
 }

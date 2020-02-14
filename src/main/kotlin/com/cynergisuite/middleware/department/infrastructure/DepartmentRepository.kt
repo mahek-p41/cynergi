@@ -46,16 +46,6 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   override fun existsForCompany(id: Long, company: Company): com.github.javafaker.Company? {
-      logger.debug("Search for dataset of department by id {}", id)
-
-      val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.department_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
-
-      logger.trace("Search for dataset of department by id {} resulted in {}", id, found)
-
-      return found
-   }
-
    @Cacheable("department-cache")
    fun findOneByCodeAndDataset(code: String, company: Company): DepartmentEntity? {
       logger.debug("Searching for department by code {}", code)
@@ -119,7 +109,7 @@ class DepartmentRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long, company: Company): Boolean {
+   override fun exists(id: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.department_vw WHERE id = :id AND dataset = :dataset)", mapOf("id" to id, "dataset" to company.myDataset()), Boolean::class.java)!!
 
       logger.trace("Checking if department: {} exists resulted in {}", id, exists)

@@ -33,6 +33,8 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    department VARCHAR,
    pass_code VARCHAR,
    active BOOLEAN,
+   alternative_store_indicator VARCHAR,
+   alternative_area INTEGER,
    time_created TIMESTAMPTZ,
    time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
