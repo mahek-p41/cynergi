@@ -131,6 +131,8 @@ BEGIN
             emp_last_name                         AS last_name,
             NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
             emp_dept                              AS department,
+            emp_alt_store_indr AS alternative_store_indicator,
+            emp_alt_area AS alternative_area,
             TRIM(BOTH FROM
                CAST(emp_pass_1 AS TEXT) ||
                CAST(emp_pass_2 AS TEXT) ||
@@ -278,6 +280,8 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    department VARCHAR,
    pass_code VARCHAR,
    active BOOLEAN,
+   alternative_store_indicator VARCHAR,
+   alternative_area INTEGER,
    time_created TIMESTAMPTZ,
    time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');

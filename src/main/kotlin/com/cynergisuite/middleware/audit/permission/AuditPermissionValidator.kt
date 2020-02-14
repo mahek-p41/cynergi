@@ -30,14 +30,14 @@ class AuditPermissionValidator(
             errors.add(ValidationError("permission.id", NotFound(permissionTypeId)))
          }
 
-         if (departmentRepository.doesNotExist(departmentId, user.myDataset())) {
+         if (departmentRepository.doesNotExist(departmentId, user.myCompany())) {
             errors.add(ValidationError("department.id", NotFound(departmentId)))
          }
       }
 
+      val company = user.myCompany()
       val permissionType = auditPermissionTypeRepository.findOne(permission.permissionType!!.myId()!!)!!
-      val company = companyRepository.findByDataset(user.myDataset())!!
-      val department = departmentRepository.findOne(permission.department!!.myId()!!, user.myDataset())!!
+      val department = departmentRepository.findOne(permission.department!!.myId()!!, company)!!
 
       return AuditPermissionEntity(
          type = permissionType,
@@ -62,14 +62,14 @@ class AuditPermissionValidator(
             errors.add(ValidationError("permission.id", NotFound(permissionTypeId)))
          }
 
-         if (departmentRepository.doesNotExist(departmentId, user.myDataset())) {
+         if (departmentRepository.doesNotExist(departmentId, user.myCompany())) {
             errors.add(ValidationError("department.id", NotFound(departmentId)))
          }
       }
 
-      val existingPermission = auditPermissionRepository.findById(permission.id!!, user.myDataset())!!
+      val existingPermission = auditPermissionRepository.findById(permission.id!!, user.myCompany())!!
       val permissionType = auditPermissionTypeRepository.findOne(permission.permissionType!!.myId()!!)!!
-      val department = departmentRepository.findOne(permission.department!!.myId()!!, user.myDataset())!!
+      val department = departmentRepository.findOne(permission.department!!.myId()!!, user.myCompany())!!
 
       return existingPermission.copy(
          type = permissionType,

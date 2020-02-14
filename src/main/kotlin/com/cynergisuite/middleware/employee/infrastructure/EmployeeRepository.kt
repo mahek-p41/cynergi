@@ -12,12 +12,8 @@ import com.cynergisuite.middleware.department.infrastructure.DepartmentRepositor
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
-import io.reactiverse.pgclient.impl.ArrayTuple
 import io.reactiverse.reactivex.pgclient.PgPool
-import io.reactiverse.reactivex.pgclient.Tuple
-import io.reactivex.Maybe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -42,7 +38,7 @@ class EmployeeRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
-   private val baseQuery = """
+   public fun employeeBaseQuery() = """
       SELECT * FROM (
          SELECT * FROM (
             SELECT
@@ -50,9 +46,11 @@ class EmployeeRepository @Inject constructor(
                emp.id AS emp_id,
                'sysz' AS emp_type,
                emp.number AS emp_number,
-               emp.active AS emp_active,
                emp.last_name AS emp_last_name,
                emp.first_name_mi AS emp_first_name_mi,
+               emp.pass_code AS emp_pass_code,
+               emp.active AS emp_active,
+               false AS emp_cyergi_system_admin,
                comp.id AS comp_id,
                comp.uu_row_id AS comp_uu_row_id,
                comp.time_created AS comp_time_created,
@@ -81,9 +79,11 @@ class EmployeeRepository @Inject constructor(
                emp.id AS emp_id,
                'eli' AS emp_type,
                emp.number AS emp_number,
-               emp.active AS emp_active,
                emp.last_name AS emp_last_name,
                emp.first_name_mi AS emp_first_name_mi,
+               emp.pass_code AS emp_pass_code,
+               emp.active AS emp_active,
+               emp.cynergi_system_admin AS emp_cyergi_system_admin,
                comp.id AS comp_id,
                comp.uu_row_id AS comp_uu_row_id,
                comp.time_created AS comp_time_created,
@@ -106,14 +106,14 @@ class EmployeeRepository @Inject constructor(
                JOIN employee emp ON comp.id = emp.company_id
                JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
-         ) AS inner_users
+         ) AS inner_employees
          ORDER BY from_priority
-      ) AS users
+      ) AS employees
    """
 
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
-         "$baseQuery WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
          mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -127,7 +127,7 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
       val found = jdbc.findFirstOrNull(
-         "$baseQuery WHERE emp_number = :number AND emp_type = :emp_type LIMIT 1",
+         "${employeeBaseQuery()} WHERE emp_number = :number AND emp_type = :emp_type LIMIT 1",
          mapOf("emp_number" to number, "emp_type" to employeeType),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -141,7 +141,7 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Searching for Employee using {}", user)
 
       val found = jdbc.findFirstOrNull("""
-         $baseQuery
+         ${employeeBaseQuery()}
          WHERE emp_id = :id
                AND emp_employee_type = :employee_type
                AND comp_id = :comp_id
@@ -178,9 +178,9 @@ class EmployeeRepository @Inject constructor(
                   JOIN employee emp ON comp.id = emp.company_id
                   JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
-            ) AS inner_users
+            ) AS inner_employees
             ORDER BY from_priority
-         ) AS users
+         ) AS employees
          WHERE emp_id = :emp_id AND emp_type = :emp_type AND comp_id = :comp_id""",
          mapOf("emp_id" to id, "emp_type" to employeeType, "comp_id" to company.myId()),
          Boolean::class.java

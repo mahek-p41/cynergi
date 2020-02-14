@@ -39,16 +39,6 @@ class StoreRepository @Inject constructor(
       """
    }
 
-   override fun existsForCompany(id: Long, company: Company): com.github.javafaker.Company? {
-      logger.debug("Search for dataset of store by id {}", id)
-
-      val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.store_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
-
-      logger.trace("Search for dataset of store by id {} resulted in {}", id, found)
-
-      return found
-   }
-
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery(params, company)} AND id = :id"
@@ -105,23 +95,33 @@ class StoreRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.store_vw WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   override fun exists(id: Long, company: Company): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT count(store.id) > 0
+         FROM company comp
+              JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset
+         WHERE store.id = :store_id AND comp.id = :comp_id
+      """.trimIndent(), mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun exists(number: Int): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT number FROM fastinfo_prod_import.store_vw WHERE number = :number)", mapOf("number" to number), Boolean::class.java)!!
+   fun exists(number: Int, company: Company): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT count(store.id) > 0
+         FROM company comp
+              JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset
+         WHERE store.number = :store_number AND comp.id = :comp_id
+      """.trimIndent(), mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java)!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", number, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
    fun mapRow(resultSet: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(

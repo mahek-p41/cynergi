@@ -22,6 +22,8 @@ ALTER TABLE employee DROP COLUMN dataset;
 ALTER TABLE employee RENAME COLUMN allow_auto_store_assign TO cynergi_system_admin;
 ALTER TABLE employee ALTER COLUMN cynergi_system_admin SET DEFAULT FALSE;
 ALTER TABLE employee ALTER COLUMN cynergi_system_admin SET NOT NULL;
+ALTER TABLE employee ADD COLUMN alternative_store_indicator VARCHAR(1) DEFAULT 'N'   NOT NULL;
+
 
 UPDATE employee
 SET cynergi_system_admin        = true,

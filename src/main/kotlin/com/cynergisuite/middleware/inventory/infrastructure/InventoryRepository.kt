@@ -101,16 +101,12 @@ class InventoryRepository(
       return inventory
    }
 
-   override fun existsForCompany(id: Long, company: Company): Boolean {
-      return exists(id, company)
-   }
-
-   fun exists(id: Long, company: Company): Boolean {
+   override fun exists(id: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(i.id) > 0
          FROM company comp
               JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
-         WHERE i.id = i_id AND comp.id = :comp_id
+         WHERE i.id = :i_id AND comp.id = :comp_id
       """.trimIndent(), mapOf("i_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)

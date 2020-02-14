@@ -85,10 +85,10 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
-   fun findByDataset(dataset_code: String): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE dataset_code = :dataset_code", mapOf("dataset_code" to dataset_code), simpleCompanyRowMapper)
+   fun findByDataset(datasetCode: String): CompanyEntity? {
+      val found = jdbc.findFirstOrNull("$selectBase WHERE dataset_code = :dataset_code", mapOf("dataset_code" to datasetCode), simpleCompanyRowMapper)
 
-      logger.trace("Searching for Company: {} resulted in {}", dataset_code, found)
+      logger.trace("Searching for Company: {} resulted in {}", datasetCode, found)
 
       return found
    }
