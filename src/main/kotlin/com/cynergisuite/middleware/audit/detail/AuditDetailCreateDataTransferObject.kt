@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull
 
 @ValueObject
 @Schema(name = "AuditDetailCreate", title = "Requirements for creating an Audit Detail", description = "Payload required to create an audit detail entity")
-data class AuditDetailCreateValueObject(
+data class AuditDetailCreateDataTransferObject(
 
    @field:Valid
    @field:NotNull

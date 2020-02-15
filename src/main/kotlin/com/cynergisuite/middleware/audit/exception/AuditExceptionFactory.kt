@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
@@ -94,37 +95,5 @@ class AuditExceptionFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, datasetIn: String? = null, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
-      val dataset = datasetIn ?: auditIn?.dataset ?: scannedByIn?.dataset ?: CompanyFactory.random().datasetCode
-      val store = auditIn?.store ?: storeFactoryService.random(dataset)
-      val audit = auditIn ?: auditFactoryService.single(storeIn = store)
-      val scannedBy = scannedByIn ?: employeeFactoryService.single(datasetIn = dataset)
-      val scanArea = auditScanAreaFactoryService.random()
 
-      return AuditExceptionFactory.stream(numberIn, audit, scannedBy, scanArea, signedOffIn)
-         .map {
-            auditExceptionRepository.insert(it)
-         }
-   }
-
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null) =
-      stream(numberIn, auditIn?.dataset, auditIn, scannedByIn, null, false)
-
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, signedOffIn: Boolean? = null) =
-      stream(numberIn, auditIn?.dataset, auditIn, scannedByIn, null, signedOffIn)
-
-   fun generate(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null) =
-      stream(numberIn, auditIn?.dataset, auditIn, scannedByIn, scanAreaIn).forEach {  }
-
-   fun single(): AuditExceptionEntity =
-      single(auditFactoryService.single())
-
-   fun single(company: Company): AuditExceptionEntity =
-      stream(datasetIn = dataset).findFirst().orElseThrow { Exception("Unable to create AuditException") }
-
-   fun single(auditIn: AuditEntity): AuditExceptionEntity =
-      single(auditIn, null)
-
-   fun single(auditIn: AuditEntity, scannedByIn: EmployeeEntity?): AuditExceptionEntity =
-      stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditException") }
 }

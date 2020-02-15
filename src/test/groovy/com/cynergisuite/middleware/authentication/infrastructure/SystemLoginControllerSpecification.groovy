@@ -4,7 +4,6 @@ import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreService
@@ -24,16 +23,16 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
    @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeService employeeService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject StoreService storeService
    @Inject StoreFactoryService storeFactoryService
 
    void "login successful" () {
       given:
-      final department = departmentFactoryService.random('tstds1')
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final department = departmentFactoryService.random(company)
       final store = storeFactoryService.storeThreeTstds1()
-      final employee = employeeFactoryService.single(123, 'tstds1', null, null, null, store, false, department)
+      final employee = employeeFactoryService.single(123, company, null, null, null, store, false, department)
 
       when:
       def authResponse = httpClient.toBlocking()

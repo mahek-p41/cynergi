@@ -6,7 +6,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
@@ -176,7 +176,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = AuditScanAreaFactory.random()
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -195,9 +195,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       given:
       final scanArea = AuditScanAreaFactory.random()
       final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final detail = new AuditDetailCreateValueObject(null, null)
-      final secondDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: null]), new AuditScanAreaValueObject([value: null]))
-      final thirdDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: 800000]), new AuditScanAreaValueObject(scanArea))
+      final detail = new AuditDetailCreateDataTransferObject(null, null)
+      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: null]), new AuditScanAreaValueObject([value: null]))
+      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: 800000]), new AuditScanAreaValueObject(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -254,7 +254,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = AuditScanAreaFactory.random()
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)

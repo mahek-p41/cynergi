@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
@@ -58,7 +58,7 @@ class AuditDetailController @Inject constructor(
       logger.info("Fetching AuditDetail by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = auditDetailService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val response = auditDetailService.fetchById(id = id, company = user.myCompany(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 
@@ -83,7 +83,7 @@ class AuditDetailController @Inject constructor(
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
       val user = userService.findUser(authentication)
-      val page =  auditDetailService.fetchAll(auditId, user.myDataset(), pageRequest, httpRequest.findLocaleWithDefault())
+      val page =  auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -103,10 +103,10 @@ class AuditDetailController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Body vo: AuditDetailCreateValueObject,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+           @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
+           @Body vo: AuditDetailCreateDataTransferObject,
+           authentication: Authentication,
+           httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 

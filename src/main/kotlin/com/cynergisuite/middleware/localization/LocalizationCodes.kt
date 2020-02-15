@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.localization
 
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.time.OffsetDateTime
@@ -52,7 +53,9 @@ class AuditHasBeenSignedOffNoNewNotesAllowed(auditId: Long): Cynergi("cynergi.au
 class AuditUpdateRequiresSignedOffOrNote(): Cynergi("cynergi.audit.update.requires.sigenedoff.or.note", emptyArray())
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
-class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable))
+class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable)) {
+   constructor(user: User) : this(user.myEmployeeNumber())
+}
 class InternalError: SystemCode("system.internal.error", emptyArray())
 class RouteError(routeArgument: String): SystemCode("system.route.error", arrayOf(routeArgument))
 class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))

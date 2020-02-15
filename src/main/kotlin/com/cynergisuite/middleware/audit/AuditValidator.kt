@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.audit.status.SIGNED_OFF
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -24,6 +25,7 @@ import com.cynergisuite.middleware.localization.ThruDateIsBeforeFrom
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -33,6 +35,7 @@ class AuditValidator @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditStatusService: AuditStatusService,
    private val companyRepository: CompanyRepository,
+   private val employeeRepository: EmployeeRepository,
    private val localizationService: LocalizationService,
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
@@ -74,17 +77,26 @@ class AuditValidator @Inject constructor(
          if (storeNumber != null && auditRepository.countAuditsNotCompletedOrCanceled(storeNumber = storeNumber, company = user.myCompany()) > 0) {
             errors.add(ValidationError("storeNumber", AuditOpenAtStore(storeNumber)))
          }
+
+         if (employeeRepository.doesNotExist(user)) {
+            errors.add(ValidationError("user", NotFound(user.myEmployeeNumber())))
+         }
       }
 
       return AuditEntity(
          store = storeRepository.findOne(number = audit.store!!.number!!, company = user.myCompany())!!,
+         number = 0,
+         totalDetails = 0,
+         totalExceptions = 0,
+         hasExceptionNotes = false,
+         lastUpdated = OffsetDateTime.now(),
+         inventoryCount = 0,
          actions = mutableSetOf(
             AuditActionEntity(
                status = CREATED,
-               changedBy = user
+               changedBy = employeeRepository.findOne(user)!!
             )
-         ),
-         company = user.myCompany()
+         )
       )
    }
 
@@ -119,12 +131,16 @@ class AuditValidator @Inject constructor(
                ValidationError("status", AuditStatusNotFound(audit.status!!.value))
             )
          }
+
+         if (employeeRepository.doesNotExist(user)) {
+            errors.add(ValidationError("user", NotFound(user.myEmployeeNumber())))
+         }
       }
 
       return Pair(
          AuditActionEntity(
             status = auditStatusService.fetchByValue(audit.status!!.value)!!,
-            changedBy = user
+            changedBy = employeeRepository.findOne(user)!!
          ),
          auditRepository.findOne(audit.id!!, user.myCompany())!!
       )

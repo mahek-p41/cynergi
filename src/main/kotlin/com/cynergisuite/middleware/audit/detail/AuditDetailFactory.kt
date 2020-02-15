@@ -62,7 +62,7 @@ class AuditDetailFactoryService @Inject constructor(
 
    fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
       val audit = auditIn ?: auditFactoryService.single()
-      val scannedIn = scannedByIn ?: employeeFactoryService.single()
+      val scannedIn = scannedByIn ?: employeeFactoryService.single(audit.store)
 
       return AuditDetailFactory.stream(numberIn, audit, scannedIn, scanAreaIn)
          .map {

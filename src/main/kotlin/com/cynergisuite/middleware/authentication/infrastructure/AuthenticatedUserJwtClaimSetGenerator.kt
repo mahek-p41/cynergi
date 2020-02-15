@@ -4,9 +4,6 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.*
 import com.cynergisuite.middleware.authentication.user.infrastructure.AuthenticationRepository
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.nimbusds.jwt.JWTClaimsSet.Builder
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.runtime.ApplicationConfiguration
@@ -16,8 +13,6 @@ import io.micronaut.security.token.config.TokenConfiguration
 import io.micronaut.security.token.jwt.generator.claims.ClaimsAudienceProvider
 import io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator
 import io.micronaut.security.token.jwt.generator.claims.JwtIdGenerator
-import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Objects

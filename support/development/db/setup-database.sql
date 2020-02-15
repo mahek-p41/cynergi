@@ -125,14 +125,11 @@ BEGIN
       || unionAll || '
          SELECT
             id                                    AS id,
+            created_at AT TIME ZONE ''UTC''       AS time_created,
+            updated_at AT TIME ZONE ''UTC''       AS time_updated,
             emp_nbr                               AS number,
-            emp_store_nbr                         AS store_number,
-            ''' || r.schema_name || '''::text     AS dataset,
             emp_last_name                         AS last_name,
             NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
-            emp_dept                              AS department,
-            emp_alt_store_indr AS alternative_store_indicator,
-            emp_alt_area AS alternative_area,
             TRIM(BOTH FROM
                CAST(emp_pass_1 AS TEXT) ||
                CAST(emp_pass_2 AS TEXT) ||
@@ -141,9 +138,13 @@ BEGIN
                CAST(emp_pass_5 AS TEXT) ||
                CAST(emp_pass_6 AS TEXT)
             )                                     AS pass_code,
+            emp_store_nbr                         AS store_number,
             emp_termination_date IS NULL          AS active,
-            created_at AT TIME ZONE ''UTC''       AS time_created,
-            updated_at AT TIME ZONE ''UTC''       AS time_updated
+            emp_dept                              AS department,
+            FALSE                                 AS cynergi_system_admin,
+            ''' || r.schema_name || '''::text     AS dataset,
+            emp_alt_store_indr                    AS alternative_store_indicator,
+            emp_alt_area                          AS alternative_area,
          FROM ' || r.schema_name || '.level1_loc_emps
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM

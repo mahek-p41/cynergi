@@ -14,12 +14,12 @@ data class AuditEntity(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val store: StoreEntity,
-   val number: Int = 0,
-   val totalDetails: Int = 0,
-   val totalExceptions: Int = 0,
-   val hasExceptionNotes: Boolean = false,
+   val number: Int,
+   val totalDetails: Int,
+   val totalExceptions: Int,
+   val hasExceptionNotes: Boolean,
    val lastUpdated: OffsetDateTime? = null,
-   val inventoryCount: Int = 0,
+   val inventoryCount: Int,
    val actions: MutableSet<AuditActionEntity> = LinkedHashSet()
 ) : Entity<AuditEntity> {
 

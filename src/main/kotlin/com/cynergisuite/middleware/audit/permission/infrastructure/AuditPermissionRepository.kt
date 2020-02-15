@@ -80,7 +80,6 @@ class AuditPermissionRepository @Inject constructor(
                   description = rs.getString("aptd_description"),
                   localizationCode = rs.getString("aptd_localization_code")
                ),
-               company = companyRepository.mapRow(rs, "comp_"),
                department = departmentRepository.mapRow(rs, company, "dept_")
             )
          }
@@ -148,7 +147,6 @@ class AuditPermissionRepository @Inject constructor(
                   description = rs.getString("aptd_description"),
                   localizationCode = rs.getString("aptd_localization_code")
                ),
-               company = companyRepository.mapRow(rs, "comp_"),
                department = departmentRepository.mapRow(rs, company, "dept_")
             )
 
@@ -217,7 +215,6 @@ class AuditPermissionRepository @Inject constructor(
                   description = rs.getString("aptd_description"),
                   localizationCode = rs.getString("aptd_localization_code")
                ),
-               company = companyRepository.mapRow(rs, "comp_"),
                department = departmentRepository.mapRow(rs, company, "dept_")
             )
          }
@@ -272,7 +269,7 @@ class AuditPermissionRepository @Inject constructor(
          mapOf(
             "department" to auditPermission.department.code,
             "type_id" to auditPermission.type.id,
-            "company_id" to auditPermission.company.id
+            "company_id" to auditPermission.department.company.myId()
          ),
          RowMapper { rs, _ ->
             AuditPermissionEntity(
@@ -281,15 +278,14 @@ class AuditPermissionRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                department = auditPermission.department.copy(),
-               type = auditPermission.type.copy(),
-               company = auditPermission.company.copy()
+               type = auditPermission.type.copy()
             )
          }
       )
    }
 
    @Transactional
-   fun update(auditPermission: AuditPermissionEntity): AuditPermissionEntity {
+   fun update(auditPermission: AuditPermissionEntity, company: Company): AuditPermissionEntity {
       logger.debug("Updating AuditPermission {}", auditPermission)
 
       return jdbc.updateReturning("""
@@ -305,7 +301,7 @@ class AuditPermissionRepository @Inject constructor(
             "id" to auditPermission.id,
             "department" to auditPermission.department.code,
             "type_id" to auditPermission.type.id,
-            "company_id" to auditPermission.company.id
+            "company_id" to company.myId()
          ),
          RowMapper { rs, _ ->
             AuditPermissionEntity(
@@ -314,8 +310,7 @@ class AuditPermissionRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                department = auditPermission.department.copy(),
-               type = auditPermission.type.copy(),
-               company = auditPermission.company.copy()
+               type = auditPermission.type.copy()
             )
          }
       )
@@ -341,8 +336,7 @@ class AuditPermissionRepository @Inject constructor(
                   timeCreated = rs.getOffsetDateTime("time_created"),
                   timeUpdated = rs.getOffsetDateTime("time_updated"),
                   department = existingPermission.department,
-                  type = existingPermission.type,
-                  company = existingPermission.company
+                  type = existingPermission.type
                )
             }
          )

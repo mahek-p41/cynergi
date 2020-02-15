@@ -12,20 +12,16 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
+import com.cynergisuite.middleware.authentication.user.IdentifiableUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreValueObject
-import com.lowagie.text.Document
-import com.lowagie.text.Element
-import com.lowagie.text.Font
-import com.lowagie.text.FontFactory
-import com.lowagie.text.PageSize
-import com.lowagie.text.Phrase
-import com.lowagie.text.Rectangle
+import com.lowagie.text.*
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
@@ -35,7 +31,7 @@ import java.awt.Color
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -46,6 +42,7 @@ class AuditService @Inject constructor(
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditValidator: AuditValidator,
    private val companyRepository: CompanyRepository,
+   private val employeeRepository: EmployeeRepository,
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
 ) {
@@ -109,8 +106,9 @@ class AuditService @Inject constructor(
    fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateSignOff(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
+      val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
 
-      actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = user))
+      actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = changedBy))
 
       val updated = auditRepository.update(existing.copy(actions = actions))
 
@@ -158,7 +156,7 @@ class AuditService @Inject constructor(
 
       val endAction =  audit.actions.asSequence().first { it.status == COMPLETED}
       val endDate = dateFormatter.format(endAction.timeCreated)
-      val endEmployee = (endAction.changedBy as EmployeeEntity).getEmpName() // TODO this seems dangerous
+      val endEmployee = endAction.changedBy.getEmpName()
 
       val headerBorder = Rectangle(0f, 0f)
       headerBorder.borderWidthLeft = 0f

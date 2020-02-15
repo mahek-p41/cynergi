@@ -4,10 +4,10 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
+import com.cynergisuite.middleware.authentication.user.EmployeeUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
@@ -35,7 +35,6 @@ class AuditScheduleService @Inject constructor(
    private val auditService: AuditService,
    private val auditScheduleValidator: AuditScheduleValidator,
    private val companyRepository: CompanyRepository,
-   private val departmentRepository: DepartmentRepository,
    private val employeeRepository: EmployeeRepository,
    private val scheduleRepository: ScheduleRepository,
    private val storeRepository: StoreRepository,
@@ -114,7 +113,7 @@ class AuditScheduleService @Inject constructor(
    override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
-      val dataset = schedule.arguments.firstOrNull { it.description == "comp_id" }?.value ?: throw ScheduleProcessingException("Unable to determine dataset for schedule")
+      val company = schedule.arguments.firstOrNull { it.description == "comp_id" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }
@@ -129,7 +128,15 @@ class AuditScheduleService @Inject constructor(
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOne(arg.value.toInt(), company)!!
-            val company = companyRepository.findCompanyByStore(store)!!
+            val employeeUser = EmployeeUser(
+               id = employee.id!!,
+               type = employee.type,
+               number = employee.number,
+               company = employee.company,
+               department = employee.department,
+               location = store,
+               passCode = employee.passCode!!
+            )
             val oneNote = NotificationValueObject(
                startDate = LocalDate.now(),
                dateCreated = null,
@@ -140,7 +147,7 @@ class AuditScheduleService @Inject constructor(
                notificationType = STORE.value
             )
 
-            val audit = auditService.findOrCreate(store, employee, locale)
+            val audit = auditService.findOrCreate(store, employeeUser, locale)
             val notification = notificationService.create(oneNote)
 
             audits.add(audit)

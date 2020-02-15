@@ -39,7 +39,7 @@ class CompanyRepository @Inject constructor(
          c.client_code         AS client_code,
          c.client_id           AS client_id,
          c.dataset_code        AS dataset_code,
-         c.federal_tax_number  AS federal_tax_number
+         c.federal_id_number  AS federal_id_number
       FROM company c
    """
 
@@ -57,7 +57,7 @@ class CompanyRepository @Inject constructor(
            c.client_code         AS client_code,
            c.client_id           AS client_id,
            c.dataset_code        AS dataset_code,
-           c.federal_tax_number  AS federal_tax_number
+           c.federal_id_number  AS federal_id_number
          FROM company c
               JOIN fastinfo_prod_import.store_vw s
                 ON c.dataset_code = s.dataset
@@ -150,8 +150,8 @@ class CompanyRepository @Inject constructor(
       logger.debug("Inserting company {}", company)
 
       return jdbc.insertReturning("""
-         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_tax_number)
-         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_tax_number)
+         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number)
          RETURNING
             *
          """,
@@ -161,7 +161,7 @@ class CompanyRepository @Inject constructor(
             "client_code" to company.clientCode,
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
-            "federal_tax_number" to company.federalTaxNumber
+            "federal_id_number" to company.federalTaxNumber
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -186,6 +186,6 @@ private class CompanyRowMapper : RowMapper<CompanyEntity> {
          clientCode = rs.getString("${columnPrefix}client_code"),
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
-         federalTaxNumber = rs.getString("${columnPrefix}federal_tax_number")
+         federalTaxNumber = rs.getString("${columnPrefix}federal_id_number")
       )
 }
