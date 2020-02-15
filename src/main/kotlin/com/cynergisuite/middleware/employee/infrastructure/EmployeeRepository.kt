@@ -5,6 +5,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
@@ -111,6 +112,9 @@ class EmployeeRepository @Inject constructor(
       ) AS employees
    """
 
+   fun findOne(user: User): EmployeeEntity? =
+      findOne(user.myId()!!, user.myEmployeeType(), user.myCompany())
+
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
          "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
@@ -155,6 +159,9 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
+   fun exists(user: User): Boolean =
+      exists(user.myId()!!, user.myEmployeeType(), user.myCompany())
+
    fun exists(id: Long, employeeType: String = "sysz", company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(emp_id) = 1 FROM (
@@ -190,6 +197,9 @@ class EmployeeRepository @Inject constructor(
 
       return exists
    }
+
+   fun doesNotExist(user: User) =
+      !exists(user)
 
    @Transactional
    fun insert(entity: EmployeeEntity): EmployeeEntity {

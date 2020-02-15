@@ -8,7 +8,9 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
+import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
+import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
@@ -448,8 +450,10 @@ class AuditRepository @Inject constructor(
                number = rs.getInt("number"),
                totalDetails = 0,
                totalExceptions = 0,
+               hasExceptionNotes = false,
                inventoryCount = rs.getInt("inventory_count"),
-               lastUpdated = null
+               lastUpdated = null,
+               actions = mutableSetOf<AuditActionEntity>()
             )
          }
       )

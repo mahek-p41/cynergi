@@ -46,17 +46,5 @@ class AuditExceptionNoteFactoryService @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeFactoryService: EmployeeFactoryService
 ) {
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
-      val dataset = enteredByIn?.dataset ?: CompanyFactory.random().datasetCode
-      val auditException = auditExceptionIn ?: auditExceptionFactoryService.single(dataset)
-      val enteredBy = enteredByIn ?: employeeFactoryService.single()
 
-      return AuditExceptionNoteFactory.stream(numberIn, auditException, enteredBy)
-         .map {
-            auditExceptionNoteRepository.insert(it)
-         }
-   }
-
-   fun single(auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): AuditExceptionNote =
-      stream(1, auditExceptionIn, enteredByIn).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
 }

@@ -41,7 +41,6 @@ class AuditPermissionValidator(
 
       return AuditPermissionEntity(
          type = permissionType,
-         company = company,
          department = department
       )
    }

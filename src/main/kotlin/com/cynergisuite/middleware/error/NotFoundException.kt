@@ -6,4 +6,7 @@ class NotFoundException(
 
    constructor(id: Long):
       this(notFound = id.toString())
+
+   constructor(any: Any):
+      this(notFound = any.toString())
 }

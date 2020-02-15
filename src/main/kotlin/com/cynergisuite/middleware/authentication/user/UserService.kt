@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.authentication.user
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.infrastructure.AuthenticatedUserJwtClaimSetGenerator
 import com.cynergisuite.middleware.authentication.user.infrastructure.AuthenticationRepository
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.security.authentication.Authentication
 import io.reactivex.Maybe
@@ -18,6 +19,6 @@ class UserService(
    fun findUser(authentication: Authentication): User =
       authenticatedUserJwtClaimSetGenerator.reversePopulateWithUserDetails(authentication)
 
-   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<EmployeeUser> =
+   fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<AuthenticatedEmployee> =
       authenticationRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
 }

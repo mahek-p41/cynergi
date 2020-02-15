@@ -1,7 +1,8 @@
 package com.cynergisuite.middleware.authentication.user
 
-interface IdentifiableUser {
-   fun myId(): Long
+import com.cynergisuite.domain.Identifiable
+
+interface IdentifiableUser: Identifiable {
    fun myEmployeeType(): String
    fun myEmployeeNumber(): Int
 }

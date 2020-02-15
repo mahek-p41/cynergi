@@ -63,7 +63,7 @@ class AuditExceptionController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val response = auditExceptionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
+      val response = auditExceptionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditException by {} resulted in", id, response)
 
@@ -90,7 +90,7 @@ class AuditExceptionController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val page =  auditExceptionService.fetchAll(auditId, user.myDataset(), pageRequest, locale)
+      val page =  auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest, locale)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)

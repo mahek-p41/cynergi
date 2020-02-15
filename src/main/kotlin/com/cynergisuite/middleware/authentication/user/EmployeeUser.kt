@@ -7,40 +7,17 @@ import com.cynergisuite.middleware.location.Location
 
 data class EmployeeUser(
    val id: Long,
-   val type: String, // sysz or eli
-   val number: Int, // employee number
+   val type: String,
+   val number: Int,
    val company: Company,
    val department: Department?,
-   val location: Location?,
-   val fallbackLocation: Location,
-   val passCode: String,
-   val cynergiSystemAdmin: Boolean
-) : IdentifiableUser {
-   constructor(user: EmployeeUser, passCodeOverride: String) :
-      this(
-         id = user.id,
-         type = user.type,
-         number = user.number,
-         company = user.company,
-         department = user.department,
-         location = user.location,
-         fallbackLocation = user.fallbackLocation,
-         passCode = passCodeOverride,
-         cynergiSystemAdmin = user.cynergiSystemAdmin
-      )
-
-   constructor(user: EmployeeEntity) :
-      this(
-         id = user.id!!,
-         type = user.type,
-         number = user.number,
-         company = user.company,
-         department = user.department,
-         location = user.store,
-         fallbackLocation = user
-      )
-
-   override fun myId(): Long = id
+   val location: Location,
+   val passCode: String
+) : User {
+   override fun myId(): Long? = id
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
+   override fun myCompany(): Company = company
+   override fun myDepartment(): Department? = department
+   override fun myLocation(): Location = location
 }

@@ -54,7 +54,7 @@ class AuditPermissionService @Inject constructor(
       val auditPermission = auditPermissionValidator.validateUpdate(permission, user)
 
       return AuditPermissionValueObject(
-         entity = auditPermissionRepository.update(auditPermission),
+         entity = auditPermissionRepository.update(auditPermission, user.myCompany()),
          locale = locale,
          localizationService = localizationService
       )

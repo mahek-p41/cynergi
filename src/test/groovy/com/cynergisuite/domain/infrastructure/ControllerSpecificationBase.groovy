@@ -1,7 +1,7 @@
 package com.cynergisuite.domain.infrastructure
 
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.UserService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.BlockingHttpClient
@@ -23,15 +23,15 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
 
    protected BlockingHttpClient client
    protected String cynergiAccessToken
-   protected EmployeeUser authenticatedEmployee
+   protected AuthenticatedEmployee authenticatedEmployee
 
    void setup() {
       client = httpClient.toBlocking()
-      authenticatedEmployee = userService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet().with { new EmployeeUser(it, 'pass') }
+      authenticatedEmployee = userService.fetchUserByAuthentication(111, 'pass', 'tstds1', null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       cynergiAccessToken = loginEmployee(authenticatedEmployee)
    }
 
-   String loginEmployee(EmployeeUser employee) {
+   String loginEmployee(AuthenticatedEmployee employee) {
       return client.exchange(POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.location.myNumber(), employee.company.myDataset())), BearerAccessRefreshToken).body().accessToken
    }
 

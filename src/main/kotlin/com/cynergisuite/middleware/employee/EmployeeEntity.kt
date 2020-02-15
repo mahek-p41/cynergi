@@ -1,13 +1,9 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.Entity
-import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.IdentifiableUser
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
-import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
-import java.util.UUID
 
 data class EmployeeEntity(
    val id: Long? = null,
@@ -21,7 +17,8 @@ data class EmployeeEntity(
    val company: Company,
    val department: Department?,
    val store: StoreEntity?
-) : Identifiable {
+) : IdentifiableUser {
+
    constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
       this(
          id = vo.id,
@@ -36,8 +33,10 @@ data class EmployeeEntity(
          store = store
       )
 
-   fun displayName(): String = "$number - $lastName"
    fun getEmpName() : String = "$firstNameMi $lastName"
+   fun displayName(): String = "$number - $lastName"
 
    override fun myId(): Long? = id
+   override fun myEmployeeType(): String = type
+   override fun myEmployeeNumber(): Int = number
 }

@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -36,7 +37,7 @@ class AuditDetailRepository @Inject constructor(
    private fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company): String {
       return """
          WITH ad_employees AS (
-            ${employeeRepository.selectBaseQuery(params, dataset)}
+            ${employeeRepository.employeeBaseQuery()}
          )
          SELECT
             ad.id AS ad_id,
@@ -78,7 +79,7 @@ class AuditDetailRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): AuditDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery(params, dataset)} WHERE ad.id = :id"
+      val query = "${selectBaseQuery(params, company)} WHERE ad.id = :id"
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "e_")
             val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
@@ -96,7 +97,7 @@ class AuditDetailRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
       val query = """
          WITH paged AS (
-            ${selectBaseQuery(params, dataset)}
+            ${selectBaseQuery(params, company)}
          )
          SELECT
             p.*,

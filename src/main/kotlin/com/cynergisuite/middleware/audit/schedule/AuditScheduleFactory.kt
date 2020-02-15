@@ -23,51 +23,7 @@ import javax.inject.Singleton
 
 object AuditScheduleFactory {
 
-   @JvmStatic
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, datasetIn: String? = null): Stream<ScheduleEntity> {
-      val faker = Faker()
-      val chuckNorris = faker.chuckNorris()
-      val number = if (numberIn > 0) numberIn else 1
-      val dayOfWeek = dayOfWeekIn ?: DayOfWeek.values().random()
-      val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(StoreFactory.random())
-      val employee = employeeIn ?: EmployeeFactory.single()
-      val arguments = mutableSetOf<ScheduleArgumentEntity>()
-      val dataset = datasetIn ?: "tstds1"
 
-      for (store in stores) {
-         arguments.add(
-            ScheduleArgumentEntity(
-               value = store.number.toString(),
-               description = "storeNumber"
-            )
-         )
-      }
-
-      arguments.add(
-         ScheduleArgumentEntity(
-            dataset,
-            "dataset"
-         )
-      )
-
-      arguments.add(
-         ScheduleArgumentEntity(
-            employee.number.toString(),
-            "employeeNumber"
-         )
-      )
-
-      return IntStream.range(0, number).mapToObj {
-         ScheduleEntity(
-            title = chuckNorris.fact().truncate(36)!!,
-            description = chuckNorris.fact().truncate(256),
-            schedule = dayOfWeek.name,
-            command = ScheduleCommandTypeFactory.auditSchedule(),
-            type = ScheduleTypeFactory.weekly(),
-            arguments = arguments
-         )
-      }
-   }
 }
 
 @Singleton
@@ -78,16 +34,5 @@ class AuditScheduleFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, datasetIn: String? = null): Stream<ScheduleEntity> {
-      val dataset = datasetIn ?: storesIn?.firstOrNull()?.dataset ?: CompanyFactory.random().datasetCode
-      val stores = if ( !storesIn.isNullOrEmpty() ) storesIn else listOf(storeFactoryService.random(dataset))
-      val employee = employeeIn ?: employeeFactoryService.single(datasetIn = dataset)
 
-      return AuditScheduleFactory.stream(numberIn, dayOfWeekIn, stores, employee, dataset)
-         .map { scheduleRepository.insert(it) }
-   }
-
-   fun single(dayOfWeekIn: DayOfWeek? = null, storesIn: List<StoreEntity>? = null, employeeIn: EmployeeEntity? = null, company: Company? = null) :ScheduleEntity {
-      return stream(1, dayOfWeekIn, storesIn, employeeIn, dataset).findFirst().orElseThrow { Exception("Unable to create Audit Schedule") }
-   }
 }

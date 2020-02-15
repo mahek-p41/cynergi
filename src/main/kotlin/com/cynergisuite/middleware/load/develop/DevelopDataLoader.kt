@@ -44,8 +44,8 @@ class DevelopDataLoader @Inject constructor(
          }
       }.toList()
       val companyTstds1 = companies.first { it.datasetCode == "corrto" }
-      val storeOne = storeFactoryService.store(1, companyTstds1.datasetCode)
-      val storeThree = storeFactoryService.store(3, companyTstds1.datasetCode)
+      val storeOne = storeFactoryService.store(1, companyTstds1)
+      val storeThree = storeFactoryService.store(3, companyTstds1)
       val storeOneEmployee = employeeFactoryService.single(store = storeOne)
       val storeThreeEmployee = employeeFactoryService.single(store = storeThree)
 
@@ -55,42 +55,42 @@ class DevelopDataLoader @Inject constructor(
       val storeroom = auditScanAreaFactoryService.storeroom()
 
       // setup store one open audit
-      val openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      val openStoreOneAudit = auditFactoryService.single(storeOneEmployee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
       auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
-      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
+      //auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
 
       // setup store three open audit
-      val openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
+      val openStoreThreeAudit = auditFactoryService.single(storeThreeEmployee)
       auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
-      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
+      //auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
 
       // setup store one canceled audit
-      auditFactoryService.single(storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
+      auditFactoryService.single(storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
 
       // setup store three canceled audit
-      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
+      auditFactoryService.single(storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
 
       // setup store three in-progress audit
-      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress()))
+      auditFactoryService.single(storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress()))
 
       // setup store one completed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      auditFactoryService.generate(3, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
       // setup store three completed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
       // setup store one signed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      auditFactoryService.generate(3, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
       // setup store three signed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
-      auditScheduleScheduleFactoryService.single(DayOfWeek.TUESDAY, listOf(storeOne))
-      auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree))
+      //auditScheduleScheduleFactoryService.single(DayOfWeek.TUESDAY, listOf(storeOne))
+      //auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree))
 
       logger.info("Finished loading develop data")
       logger.info("Store one employee {}", storeOneEmployee)

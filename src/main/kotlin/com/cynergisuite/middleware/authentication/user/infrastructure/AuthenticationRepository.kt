@@ -1,9 +1,7 @@
 package com.cynergisuite.middleware.authentication.user.infrastructure
 
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
-import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
-import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -36,7 +34,7 @@ class AuthenticationRepository @Inject constructor(
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
     * pointed at FastInfo to pull in Zortec data about an Employee
     */
-   fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int?): Maybe<EmployeeUser> {
+   fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int?): Maybe<AuthenticatedEmployee> {
       logger.trace("Checking authentication for {} {} {}", employeeNumber, dataset, storeNumber)
 
       val query = """
@@ -136,7 +134,7 @@ class AuthenticationRepository @Inject constructor(
             val fallbackLocation = mapLocation(row, company, "fallbackLoc_")!!
             val employeeLocation = mapLocation(row, company, "loc_")
 
-            EmployeeUser(
+            AuthenticatedEmployee(
                id = row.getLong("emp_id"),
                type = row.getString("emp_type"),
                number = row.getInteger("emp_number"),

@@ -18,45 +18,6 @@ import javax.inject.Singleton
 object EmployeeFactory {
 
    @JvmStatic
-   fun stream(
-      numberIn: Int = 1,
-      companyIn: Company? = null, department: DepartmentEntity? = null, store: StoreEntity? = null,
-      employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMi: String? = null, passCodeIn: String? = null,
-      activeIn: Boolean? = null, cynergiSystemAdminIn: Boolean? = null
-   ): Stream<EmployeeEntity> {
-      val number = if (numberIn > 0) numberIn else 1
-      val faker = Faker()
-      val lorem = faker.lorem()
-      val numbers = faker.number()
-      val name = faker.name()
-      val employeeNumber = employeeNumberIn ?: numbers.numberBetween(10, 10_000)
-      val company = companyIn ?: CompanyFactory.random()
-      val lastName = lastNameIn ?: name.lastName()
-      val passCode = passCodeIn ?: lorem.characters(3, 8)
-      val active = activeIn ?: true
-      val cynergiSystemAdmin = cynergiSystemAdminIn ?: false
-
-      return IntStream.range(0, number).mapToObj {
-         EmployeeEntity(
-            type = "eli",
-            number = employeeNumber,
-            company = company,
-            lastName = lastName,
-            firstNameMi = firstNameMi,
-            passCode = passCode,
-            store = store,
-            active = active,
-            cynergiSystemAdmin = cynergiSystemAdmin,
-            department = department
-         )
-      }
-   }
-
-   @JvmStatic
-   fun single(): EmployeeEntity =
-      stream(1).findFirst().orElseThrow { Exception("Unable to create Employee") }
-
-   @JvmStatic
    fun testEmployee(): EmployeeEntity {
       val store = StoreFactory.storeOneTstds1()
       val department = DepartmentFactory.forThese(store.company, "SA")
@@ -83,60 +44,5 @@ class EmployeeFactoryService @Inject constructor(
    private val employeeRepository: EmployeeRepository
 ) {
 
-   fun stream(numberIn: Int = 1,
-              employeeNumberIn: Int? = null,
-              companyIn: Company? = null,
-              lastNameIn: String? = null,
-              firstNameMi: String? = null,
-              passCodeIn: String? = null,
-              store: StoreEntity? = null,
-              activeIn: Boolean? = null,
-              cynergiSystemAdminIn: Boolean? = null,
-              department: DepartmentEntity? = null
-   ): Stream<EmployeeEntity> {
-      val company = companyIn?: store?.company ?: companyFactoryService.random()
 
-      return EmployeeFactory.stream(
-         numberIn = numberIn,
-         employeeNumberIn = employeeNumberIn,
-         companyIn = company,
-         lastNameIn = lastNameIn,
-         firstNameMi = firstNameMi,
-         passCodeIn = passCodeIn,
-         store = store,
-         activeIn = activeIn,
-         cynergiSystemAdminIn = cynergiSystemAdminIn,
-         department = department
-      ).map {
-         employeeRepository.insert(it).copy(passCode = it.passCode)
-      }
-   }
-
-   fun single(): EmployeeEntity =
-      single(employeeNumberIn = null)
-
-   fun single(
-      employeeNumberIn: Int? = null,
-      companyIn: Company? = null,
-      lastNameIn: String? = null,
-      firstNameMi: String? = null,
-      passCodeIn: String? = null,
-      store: StoreEntity? = null,
-      cynergiSystemAdminIn: Boolean? = null,
-      department: DepartmentEntity? = null
-   ): EmployeeEntity =
-      stream(
-         employeeNumberIn = employeeNumberIn,
-         companyIn = companyIn,
-         lastNameIn = lastNameIn,
-         firstNameMi = firstNameMi,
-         passCodeIn = passCodeIn,
-         store = store,
-         activeIn = true,
-         cynergiSystemAdminIn = cynergiSystemAdminIn,
-         department = department
-      ).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
-
-   fun single(store: StoreEntity): EmployeeEntity =
-      single(employeeNumberIn = null, store = store)
 }

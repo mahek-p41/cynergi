@@ -25,9 +25,9 @@ class StoreService @Inject constructor(
       }
    }
 
-   fun exists(id: Long): Boolean =
-      storeRepository.exists(id = id)
+   fun exists(id: Long, company: Company): Boolean =
+      storeRepository.exists(id = id, company = company)
 
-   fun exists(number: Int): Boolean =
-      storeRepository.exists(number = number)
+   fun exists(number: Int, company: Company): Boolean =
+      storeRepository.exists(number = number, company = company)
 }

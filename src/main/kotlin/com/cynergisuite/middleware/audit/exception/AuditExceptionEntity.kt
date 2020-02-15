@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.authentication.user.IdentifiableUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
+import com.cynergisuite.middleware.notification.Employee
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -24,16 +25,16 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: IdentifiableUser,
+   val scannedBy: EmployeeEntity,
    val exceptionCode: String,
    val signedOff: Boolean = false,
-   val signedOffBy: IdentifiableUser? = null,
+   val signedOffBy: EmployeeEntity? = null,
    val lookupKey: String?,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
    val audit: Identifiable
 ) : Entity<AuditExceptionEntity> {
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: User, exceptionCode: String) :
+   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -48,7 +49,7 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: User, exceptionCode: String) :
+   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = barcode,

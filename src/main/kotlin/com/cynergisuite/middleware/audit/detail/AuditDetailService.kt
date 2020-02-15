@@ -2,13 +2,12 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -28,12 +27,12 @@ class AuditDetailService @Inject constructor(
    private val localizationService: LocalizationService
 ) {
    fun fetchById(id: Long, company: Company, locale: Locale): AuditDetailValueObject? =
-      auditDetailRepository.findOne(id, dataset)?.let { transformEntity(it, locale) }
+      auditDetailRepository.findOne(id, company)?.let { transformEntity(it, locale) }
 
    @Validated
    fun fetchAll(auditId: Long, company: Company, @Valid pageRequest: PageRequest, locale: Locale): Page<AuditDetailValueObject> {
-      val audit = auditRepository.findOne(auditId, dataset) ?: throw NotFoundException(auditId)
-      val found = auditDetailRepository.findAll(audit, dataset, pageRequest)
+      val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
+      val found = auditDetailRepository.findAll(audit, company, pageRequest)
 
       return found.toPage { transformEntity(it, locale) }
    }
@@ -42,34 +41,16 @@ class AuditDetailService @Inject constructor(
       auditDetailRepository.exists(id = id)
 
    @Validated
-   fun create(auditId: Long, @Valid vo: AuditDetailCreateValueObject, @Valid scannedBy: User, locale: Locale): AuditDetailValueObject {
-      auditDetailValidator.validateCreate(auditId, scannedBy.myDataset(), vo)
+   fun create(auditId: Long, @Valid vo: AuditDetailCreateDataTransferObject, scannedBy: User, locale: Locale): AuditDetailValueObject {
+      val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, vo)
 
-      val scanArea = auditScanAreaRepository.findOne(vo.scanArea!!.value!!)!!
-      val inventory = inventoryRepository.findOne(vo.inventory!!.id!!, scannedBy.myDataset())!!
-
-      val auditDetail = auditDetailRepository.insert(
-         AuditDetailEntity(
-            inventory,
-            scanArea = scanArea,
-            scannedBy = fromUser(scannedBy),
-            audit = SimpleIdentifiableEntity(auditId)
-         )
-      )
-
-      return transformEntity(auditDetail, locale)
+      return transformEntity(auditDetailRepository.insert(auditDetail), locale)
    }
 
    @Validated
    fun update(@Valid vo: AuditDetailValueObject, company: Company, locale: Locale): AuditDetailValueObject {
-      auditDetailValidator.validateUpdate(vo, dataset)
-
-      val auditDetail = auditDetailRepository.findOne(vo.id!!, dataset) ?: throw NotFoundException(vo.id!!)
-      val auditDetailUpdated = auditDetailRepository.update(
-         auditDetail.copy(
-            scanArea = auditScanAreaRepository.findOne(vo.scanArea!!.value!!)!!
-         )
-      )
+      val auditDetail = auditDetailValidator.validateUpdate(vo, company)
+      val auditDetailUpdated = auditDetailRepository.update(auditDetail)
 
       return transformEntity(auditDetailUpdated, locale)
    }
