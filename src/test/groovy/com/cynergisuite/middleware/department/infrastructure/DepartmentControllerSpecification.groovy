@@ -21,7 +21,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department id" () {
       given:
-      def department = departmentFactoryService.random(authenticatedEmployee.myDataset())
+      def department = departmentFactoryService.random(authenticatedEmployee.company)
 
       when:
       def result = get("/department/${department.id}")
@@ -37,16 +37,16 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department not associated with authenticated user's dataset" () {
       given:
-      def department = departmentFactoryService.randomNotMatchingDataset(authenticatedEmployee.myDataset())
+      def department = departmentFactoryService.randomNotMatchingDataset(authenticatedEmployee.company)
 
       when:
       def result = get("/department/${department.id}")
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
+      exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.message == "Access denied"
+      response.message == "${department.id} was unable to be found"
    }
 
    void "fetch one by department id that doesn't exist"() {

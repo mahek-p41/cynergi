@@ -9,9 +9,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
-import io.micronaut.cache.annotation.Cacheable
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -27,20 +25,19 @@ class CompanyRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(CompanyRepository::class.java)
    private val simpleCompanyRowMapper = CompanyRowMapper()
 
-   @Language("PostgreSQL")
-   final val selectBase = """
+   fun companyBaseQuery() = """
       SELECT
-         c.id                  AS id,
-         c.uu_row_id           AS uu_row_id,
-         c.time_created        AS time_created,
-         c.time_updated        AS time_updated,
-         c.name                AS name,
-         c.doing_business_as   AS doing_business_as,
-         c.client_code         AS client_code,
-         c.client_id           AS client_id,
-         c.dataset_code        AS dataset_code,
-         c.federal_id_number  AS federal_id_number
-      FROM company c
+         comp.id                  AS id,
+         comp.uu_row_id           AS uu_row_id,
+         comp.time_created        AS time_created,
+         comp.time_updated        AS time_updated,
+         comp.name                AS name,
+         comp.doing_business_as   AS doing_business_as,
+         comp.client_code         AS client_code,
+         comp.client_id           AS client_id,
+         comp.dataset_code        AS dataset_code,
+         comp.federal_id_number  AS federal_id_number
+      FROM company comp
    """
 
    fun findCompanyByStore(store: StoreEntity): CompanyEntity? {
@@ -48,17 +45,17 @@ class CompanyRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull("""
          SELECT
-           c.id                  AS id,
-           c.uu_row_id           AS uu_row_id,
-           c.time_created        AS time_created,
-           c.time_updated        AS time_updated,
-           c.name                AS name,
-           c.doing_business_as   AS doing_business_as,
-           c.client_code         AS client_code,
-           c.client_id           AS client_id,
-           c.dataset_code        AS dataset_code,
-           c.federal_id_number  AS federal_id_number
-         FROM company c
+           comp.id                  AS id,
+           comp.uu_row_id           AS uu_row_id,
+           comp.time_created        AS time_created,
+           comp.time_updated        AS time_updated,
+           comp.name                AS name,
+           comp.doing_business_as   AS doing_business_as,
+           comp.client_code         AS client_code,
+           comp.client_id           AS client_id,
+           comp.dataset_code        AS dataset_code,
+           comp.federal_id_number  AS federal_id_number
+         FROM company comp
               JOIN fastinfo_prod_import.store_vw s
                 ON c.dataset_code = s.dataset
          WHERE s.id = :store_id
@@ -76,9 +73,8 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
-   @Cacheable("company-cache")
    fun findOne(id: Long): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE id = :id", mapOf("id" to id), simpleCompanyRowMapper)
+      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE id = :id", mapOf("id" to id), simpleCompanyRowMapper)
 
       logger.trace("Searching for Company: {} resulted in {}", id, found)
 
@@ -86,7 +82,7 @@ class CompanyRepository @Inject constructor(
    }
 
    fun findByDataset(datasetCode: String): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("$selectBase WHERE dataset_code = :dataset_code", mapOf("dataset_code" to datasetCode), simpleCompanyRowMapper)
+      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE dataset_code = :dataset_code", mapOf("dataset_code" to datasetCode), simpleCompanyRowMapper)
 
       logger.trace("Searching for Company: {} resulted in {}", datasetCode, found)
 
@@ -100,7 +96,7 @@ class CompanyRepository @Inject constructor(
       jdbc.query(
          """
          WITH paged AS (
-            $selectBase
+            ${companyBaseQuery()}
          )
          SELECT
             p.*,
@@ -161,7 +157,7 @@ class CompanyRepository @Inject constructor(
             "client_code" to company.clientCode,
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
-            "federal_id_number" to company.federalTaxNumber
+            "federal_id_number" to company.federalIdNumber
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -186,6 +182,6 @@ private class CompanyRowMapper : RowMapper<CompanyEntity> {
          clientCode = rs.getString("${columnPrefix}client_code"),
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
-         federalTaxNumber = rs.getString("${columnPrefix}federal_id_number")
+         federalIdNumber = rs.getString("${columnPrefix}federal_id_number")
       )
 }

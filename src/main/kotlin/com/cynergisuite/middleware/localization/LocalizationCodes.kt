@@ -61,7 +61,7 @@ class RouteError(routeArgument: String): SystemCode("system.route.error", arrayO
 class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class LoggedIn(user: String): SystemCode("system.logged.in", arrayOf(user))
 class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())
-class AccessDenied(): SystemCode("system.access.denied", emptyArray())
+class AccessDenied: SystemCode("system.access.denied", emptyArray())
 class AccessDeniedCredentialsDoNotMatch(user: String): SystemCode("system.access.denied.creds.do.not.match", arrayOf(user))
 class AccessDeniedStore(user: String): SystemCode("system.access.denied.store", arrayOf(user))
 class Unknown: SystemCode("system.word.unknown", arrayOf())

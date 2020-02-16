@@ -50,7 +50,7 @@ data class CompanyValueObject(
          clientCode = entity.clientCode,
          clientId = entity.clientId,
          datasetCode = entity.datasetCode,
-         federalTaxNumber = entity.federalTaxNumber
+         federalTaxNumber = entity.federalIdNumber
       )
 
    constructor(company: Company) :

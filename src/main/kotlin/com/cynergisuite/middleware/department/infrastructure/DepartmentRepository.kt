@@ -110,7 +110,15 @@ class DepartmentRepository @Inject constructor(
    }
 
    override fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.department_vw WHERE id = :id AND dataset = :dataset)", mapOf("id" to id, "dataset" to company.myDataset()), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("""
+         SELECT count(dept.id) > 0
+         FROM fastinfo_prod_import.department_vw dept
+              JOIN company comp ON dept.dataset = comp.dataset_code
+         WHERE dept.id = :dept_id AND comp.id = :comp_id
+         """.trimIndent(),
+         mapOf("dept_id" to id, "comp_id" to company.myId()),
+         Boolean::class.java
+      )!!
 
       logger.trace("Checking if department: {} exists resulted in {}", id, exists)
 

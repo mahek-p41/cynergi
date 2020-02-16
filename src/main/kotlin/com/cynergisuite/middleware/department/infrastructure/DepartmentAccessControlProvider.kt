@@ -5,5 +5,5 @@ import javax.inject.Singleton
 
 @Singleton
 class DepartmentAccessControlProvider(
-   private val departmentRepository: DepartmentRepository
+   departmentRepository: DepartmentRepository
 ): DatasetLimitingAccessControlProvider(departmentRepository)

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.domain.Identifiable
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -17,7 +16,7 @@ data class CompanyEntity(
    val clientCode: String,
    val clientId: Int,
    val datasetCode: String,
-   val federalTaxNumber: String? = null
+   val federalIdNumber: String? = null
 ) : Company {
 
    override fun myId(): Long? = id
@@ -33,7 +32,7 @@ data class CompanyEntity(
          .append(this.clientCode)
          .append(this.clientId)
          .append(this.datasetCode)
-         .append(this.federalTaxNumber)
+         .append(this.federalIdNumber)
          .toHashCode()
 
    override fun equals(other: Any?): Boolean =
@@ -45,7 +44,7 @@ data class CompanyEntity(
             .append(this.clientCode, other.clientCode)
             .append(this.clientId, other.clientId)
             .append(this.datasetCode, other.datasetCode)
-            .append(this.federalTaxNumber, other.federalTaxNumber)
+            .append(this.federalIdNumber, other.federalIdNumber)
             .isEquals
       } else {
          false
@@ -62,7 +61,7 @@ data class CompanyEntity(
          compareToBuilder
             .append(this.name, other.name)
             .append(this.doingBusinessAs, other.doingBusinessAs)
-            .append(this.federalTaxNumber, other.federalTaxNumber)
+            .append(this.federalIdNumber, other.federalIdNumber)
             .toComparison()
       } else {
          compareToBuilder.toComparison()
