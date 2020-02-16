@@ -1,14 +1,27 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # uses the pg_is_ready command documented https://www.postgresql.org/docs/9.3/app-pg-isready.html
 
-MAX_TRIES=10
-SLEEP_SECONDS=30
+SLEEP_SECONDS=5
 
 # possible exit status
 # 0 success (server is accepting connections)
 # 1 failure (server is rejecting connections)
 # 2 failure (there was no response from the server)
 # 3 failure (no attempt was made) I don't know really what this means docs says "for example due to invalid parameters"
-pg_isready -q --host=cynergitestdb # TODO put this in a loop testing the exit status each time until success or a max tries is reached
+printf "%s" "Waiting for cynergitestdb to become ready"
+for count in {1..20}; do
+  pg_isready --host=cynergitestdb --port=5432 > /dev/null 2> /dev/null
+  if [ $? -eq 0 ]; then
+    printf "\n%s\n" "cynergitestdb is accepting connections"
+    exit 0
+  elif [ $? -eq 3 ]; then
+    printf "\n%s\n" "no attempt was made due to invalid parameters"
+    exit 3
+  else
+    printf "%s" "."
+    sleep $SLEEP_SECONDS
+  fi
+done
 
-exit $? # exit with value returned by pg_isready, should propigate out of the docker container (I think)
+echo "cynergitestdb may not have started"
+exit 1 # exit with value returned by pg_isready, should propigate out of the docker container (I think)
