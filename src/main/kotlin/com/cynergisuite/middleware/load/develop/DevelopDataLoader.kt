@@ -6,17 +6,15 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.company.CompanyFactoryService
+import com.cynergisuite.middleware.company.CompanyFactory
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.DayOfWeek
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.streams.toList
 
 @Singleton
 @Requires(env = ["develop"])
@@ -26,8 +24,7 @@ class DevelopDataLoader @Inject constructor(
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val auditScheduleScheduleFactoryService: AuditScheduleFactoryService,
-   private val companyFactoryService: CompanyFactoryService,
-   private val employeeRepository: EmployeeRepository,
+   private val companyRepository: CompanyRepository,
    private val employeeFactoryService: EmployeeFactoryService,
    private val storeFactoryService: StoreFactoryService
 ) {
@@ -36,13 +33,16 @@ class DevelopDataLoader @Inject constructor(
    fun loadDemoData() {
       logger.info("Loading develop data")
 
-      val companies = companyFactoryService.streamPredefined { company ->
-         when(company.datasetCode) {
-            "tstds1" -> company.copy(datasetCode = "corrto")
-            "tstds2" -> company.copy(datasetCode = "corptp")
-            else -> company
+      val companies = CompanyFactory.predefined().asSequence()
+         .map { company ->
+            when(company.datasetCode) {
+               "tstds1" -> company.copy(datasetCode = "corrto")
+               "tstds2" -> company.copy(datasetCode = "corptp")
+               else -> company
+            }
          }
-      }.toList()
+         .map { companyRepository.insert(it) }
+         .toList()
       val companyTstds1 = companies.first { it.datasetCode == "corrto" }
       val storeOne = storeFactoryService.store(1, companyTstds1)
       val storeThree = storeFactoryService.store(3, companyTstds1)

@@ -12,7 +12,6 @@ object CompanyFactory {
    @JvmStatic
    private val companies: List<CompanyEntity> = listOf(
       CompanyEntity(
-         id = 4,
          name = "RENTAL CITY",
          doingBusinessAs = null,
          clientCode = "RCT",
@@ -20,7 +19,6 @@ object CompanyFactory {
          datasetCode = "tstds1",
          federalIdNumber = "A1000B200"),
       CompanyEntity(
-         id = 1,
          name = "Pelham Trading Post, Inc.",
          doingBusinessAs = "RentACenter",
          clientCode = "PTP",
@@ -62,11 +60,6 @@ object CompanyFactory {
 
    @JvmStatic
    fun tstds2() = companies.first { it.datasetCode == "tstds2" }
-
-   @JvmStatic
-   fun forDatasetCode(datasetCode: String): CompanyEntity =
-      companies.first { it.datasetCode == datasetCode }
-
 }
 
 @Singleton
@@ -76,11 +69,7 @@ class CompanyFactoryService(
 ) {
 
    fun streamPredefined(): Stream<CompanyEntity> =
-      streamPredefined { it }
-
-   fun streamPredefined(preInsertMapper: (company: CompanyEntity) -> CompanyEntity): Stream<CompanyEntity> =
       CompanyFactory.predefined().stream()
-         .map(preInsertMapper)
          .map { companyRepository.insert(it) }
 
    fun stream(numberIn: Int = 1): Stream<CompanyEntity> =
@@ -88,15 +77,7 @@ class CompanyFactoryService(
          .map { companyRepository.insert(it) }
 
    fun forDatasetCode(datasetCode: String): CompanyEntity {
-      val found = companyRepository.findByDataset(datasetCode)
-
-      return if (found != null) {
-         found
-      } else {
-         val predefined = CompanyFactory.forDatasetCode(datasetCode)
-
-         companyRepository.insert(predefined)
-      }
+      return companyRepository.findByDataset(datasetCode) ?: throw Exception("Unable to find CompanyEntity")
    }
 
    fun random(): CompanyEntity =

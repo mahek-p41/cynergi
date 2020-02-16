@@ -22,12 +22,11 @@ import javax.inject.Singleton
 object AuditFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null, storeIn: StoreEntity? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+   fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null, store: StoreEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
       val changedBy = changedByIn ?: EmployeeFactory.testEmployee(CompanyFactory.random())
-      val store = storeIn ?: StoreFactory.random(changedBy.company)
       val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.created())
 
       return IntStream.range(0, number).mapToObj {
