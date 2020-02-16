@@ -15,14 +15,14 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page without locationType" () {
       given:
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, inventoryStatus: ["N", "O", "R", "D"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
       when:
       def pageOneResult = get("${path}${pageOne}&extraParamter=one&exParamTwo=2")
 
       then:
       notThrown(HttpClientResponseException)
       pageOneResult.locationType == null
-      pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
+      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
@@ -67,7 +67,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
+      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
       pageOneResult.requested.locationType == "STORE"
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
@@ -107,13 +107,13 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory with status of N" () {
       given:
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, inventoryStatus: ["N"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), inventoryStatus: ["N"]])
       when:
       def pageOneResult = get("${path}${pageOne}")
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
+      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
       pageOneResult.requested.inventoryStatus.size() == 1
       pageOneResult.requested.inventoryStatus == ["N"]
       pageOneResult.elements != null
@@ -153,14 +153,14 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by location type store"() {
       given:
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
 
       when:
       def pageOneResult = get("${path}${pageOne}")
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == authenticatedEmployee.store.number
+      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5

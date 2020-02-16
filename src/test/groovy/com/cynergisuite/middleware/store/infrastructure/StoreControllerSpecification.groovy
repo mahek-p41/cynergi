@@ -8,7 +8,6 @@ import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
 
 
-import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -27,7 +26,6 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       result.id == 1
       result.storeNumber == 1
       result.name == "KANSAS CITY"
-      result.dataset == "tstds1"
    }
 
    void "fetch one store by id not found" () {
@@ -44,16 +42,16 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one store from different dataset than one associated with authenticated user" () {
       given:
-      def store = storeFactoryService.randomNotMatchingDataset(authenticatedEmployee.myDataset())
+      def store = storeFactoryService.randomNotMatchingDataset(authenticatedEmployee.location.myCompany())
 
       when:
       get("$path/${store.myId()}")
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.response.status == FORBIDDEN
+      exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.message == "Access denied"
+      response.message == "${store.myId()} was unable to be found"
    }
 
    void "fetch all stores" () {
@@ -72,11 +70,9 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].dataset == "tstds1"
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].dataset == "tstds1"
 
       when:
       get("${path}${pageTwo}")
