@@ -44,20 +44,22 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
    override fun populateWithUserDetails(builder: Builder?, userDetails: UserDetails?) {
       super.populateWithUserDetails(builder, userDetails)
 
-      logger.info("Populating JWT with {}", userDetails)
+      logger.debug("Populating JWT with {}", userDetails)
 
       if (userDetails is User) {
          builder
             ?.claim(EMPLOYEE_ID.key, userDetails.myId())
             ?.claim(EMPLOYEE_TYPE.key, userDetails.myEmployeeType())
             ?.claim(COMPANY_ID.key, userDetails.myCompany().myId())
-            ?.claim(DEPARTMENT.key, userDetails.myDepartment())
+            ?.claim(DEPARTMENT.key, userDetails.myDepartment()?.myCode())
             ?.claim(STORE_NUMBER.key, userDetails.myLocation().myNumber())
       }
+
+      logger.debug("Finished populating JWT with {}", userDetails)
    }
 
    fun reversePopulateWithUserDetails(authentication: Authentication): User {
-      logger.info("Deserializing {} into an User {}", authentication)
+      logger.debug("Deserializing {} into an User {}", authentication)
 
       val employeeId = authentication.attributes[EMPLOYEE_ID.key]?.let { Objects.toString(it).toLong() } ?: throw Exception("Unable to find employee ID")
       val employeeType = authentication.attributes[EMPLOYEE_TYPE.key]?.let { Objects.toString(it) } ?: throw Exception("Unable to find employee type")
