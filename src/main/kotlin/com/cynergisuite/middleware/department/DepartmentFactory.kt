@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.department
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
@@ -40,22 +41,25 @@ object DepartmentFactory {
 
    @JvmStatic
    fun randomNotMatchingDataset(company: Company) =
-      departments.filter { it.company != company }.random()
+      departments.filter { it.company.myDataset() != company.myDataset() }.random()
 
    @JvmStatic
    fun forThese(company: Company, code: String): DepartmentEntity =
-      departments.first { it.company == company && it.code == code }
+      departments.first { it.company.myDataset() == company.myDataset() && it.code == code }
 
    @JvmStatic
-   fun all(): List<DepartmentEntity> = all(CompanyFactory.tstds1())
+   fun all(): List<DepartmentEntity> =
+      all(CompanyFactory.tstds1())
 
    @JvmStatic
-   fun all(company: Company = CompanyFactory.tstds1()): List<DepartmentEntity> = departments.filter { it.company == company }
+   fun all(company: Company = CompanyFactory.tstds1()): List<DepartmentEntity> =
+      departments.filter { it.company.myDataset() == company.myDataset() }
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
 class DepartmentFactoryService(
+   private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository
 ) {
 
@@ -75,7 +79,9 @@ class DepartmentFactoryService(
    }
 
    fun randomNotMatchingDataset(company: Company): DepartmentEntity {
-      val department = DepartmentFactory.randomNotMatchingDataset(company).copy(company = company)
+      val randomDepartment = DepartmentFactory.randomNotMatchingDataset(company) // find predfined departments using the provided company
+      val departmentCompany = companyRepository.findByDataset(randomDepartment.company.myDataset())!! // look up the Company saved in the company table
+      val department = randomDepartment.copy(company = departmentCompany) // copy that found company to the final department that will be used for the lookup
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.company) ?: throw Exception("Unable to find random DepartmentEntity")
    }

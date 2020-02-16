@@ -18,7 +18,7 @@ object CompanyFactory {
          clientCode = "RCT",
          clientId = 1234,
          datasetCode = "tstds1",
-         federalTaxNumber = "A1000B200"),
+         federalIdNumber = "A1000B200"),
       CompanyEntity(
          id = 1,
          name = "Pelham Trading Post, Inc.",
@@ -26,7 +26,7 @@ object CompanyFactory {
          clientCode = "PTP",
          clientId = 4321,
          datasetCode = "tstds2",
-         federalTaxNumber = "BX101010")
+         federalIdNumber = "BX101010")
    )
 
    @JvmStatic
@@ -46,7 +46,7 @@ object CompanyFactory {
             clientCode = lorem.characters(3, 3).toUpperCase(),
             clientId = random.nextInt(1000, 10000),
             datasetCode = lorem.characters(6, 6, false),
-            federalTaxNumber = numbers.valid()
+            federalIdNumber = numbers.valid()
          )
       }
    }

@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
@@ -32,7 +33,7 @@ class AccessControlService @Inject constructor(
    @Throws(AccessException::class)
    override fun intercept(context: MethodInvocationContext<Any, Any?>): Any? {
       val parameters = context.parameters
-      val authenticatedUser: User = securityService.authentication.map { userService.findUser(it) }.orElseThrow { handleAccessDenied() }
+      val authenticatedUser: User = securityService.authentication.map { userService.findUser(it) }.orElseThrow { AccessException(AccessDenied(), securityService.username().orElse(null)) }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset: String? = accessControl?.stringValue()?.orElse(null)
       val accessControlProviderClass = accessControl?.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
@@ -47,14 +48,7 @@ class AccessControlService @Inject constructor(
       ) {
          context.proceed()
       } else {
-         throw handleAccessDenied()
+         throw accessControlProvider.generateException(authenticatedUser, asset, parameters)
       }
-   }
-
-   @Throws(AccessException::class)
-   private fun handleAccessDenied(): AccessException { // this method handles in a reusable way what to do if a user doesn't have access
-      val username = securityService.username().orElse(null)
-
-      return AccessException(AccessDenied(), username)
    }
 }
