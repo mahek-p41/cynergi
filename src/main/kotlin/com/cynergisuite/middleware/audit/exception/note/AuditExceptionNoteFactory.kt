@@ -18,10 +18,9 @@ import javax.inject.Singleton
 object AuditExceptionNoteFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
+   fun stream(numberIn: Int = 1, auditException: AuditExceptionEntity, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
-      val auditException = auditExceptionIn ?: AuditExceptionFactory.single(null)
       val enteredBy = enteredByIn ?: EmployeeFactory.single(auditException.scannedBy.company)
       val lorem = faker.lorem()
 
@@ -38,9 +37,7 @@ object AuditExceptionNoteFactory {
       }
    }
 
-   fun single(): AuditExceptionNote {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
-   }
+
 }
 
 @Singleton

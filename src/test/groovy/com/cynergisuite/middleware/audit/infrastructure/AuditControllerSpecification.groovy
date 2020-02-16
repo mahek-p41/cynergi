@@ -61,7 +61,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit by id" () {
       given:
-      final store = storeFactoryService.store(3)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final savedAudit = auditFactoryService.single(store)
 
       when:
