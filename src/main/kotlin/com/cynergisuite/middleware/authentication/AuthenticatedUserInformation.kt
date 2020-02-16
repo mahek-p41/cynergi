@@ -26,14 +26,14 @@ data class AuthenticatedUserInformation (
 
    @field:NotNull
    @field:Schema(name = "dataset", title = "Company dataset currently connected to", description = "Company dataset that data is being loaded from", required = true)
-   val company: Company? = null
+   val dataset: String? = null
 ) {
 
    constructor(user: User, loginStatus: String) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
-         storeNumber = user.myLocation()?.myNumber(),
+         storeNumber = user.myLocation().myNumber(),
          loginStatus = loginStatus,
-         company = user.myCompany()
+         dataset = user.myCompany().myDataset()
       )
 }

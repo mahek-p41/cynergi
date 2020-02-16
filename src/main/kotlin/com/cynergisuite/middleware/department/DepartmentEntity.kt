@@ -14,4 +14,5 @@ data class DepartmentEntity(
 ) : Department {
    override fun myId(): Long? = id
    override fun myCode(): String = code
+   override fun myCompany(): Company = company
 }

@@ -93,7 +93,7 @@ class CompanyFactoryService(
       return if (found != null) {
          found
       } else {
-         val predefined = forDatasetCode(datasetCode)
+         val predefined = CompanyFactory.forDatasetCode(datasetCode)
 
          companyRepository.insert(predefined)
       }

@@ -60,7 +60,7 @@ class InventoryRepository(
          comp.doing_business_as AS comp_doing_business_as,
          comp.client_code AS comp_client_code,
          comp.client_id AS comp_client_id,
-         comp.dataset_code AS comp_dataset,
+         comp.dataset_code AS comp_dataset_code,
          comp.federal_id_number AS comp_federal_id_number,
          primaryStore.id AS primary_store_id,
          primaryStore.number AS primary_store_number,

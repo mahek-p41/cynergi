@@ -22,8 +22,8 @@ object AuditDetailFactory {
    @JvmStatic
    fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
       val number = if (numberIn > 0) numberIn else 1
-      val audit = auditIn ?: AuditFactory.single()
-      val scannedBy = scannedByIn ?: EmployeeFactory.single()
+      val scannedBy = scannedByIn ?: EmployeeFactory.single(auditIn?.store?.company ?: scannedByIn?.company)
+      val audit = auditIn ?: AuditFactory.single(scannedBy)
       val faker = Faker()
       val barcode = faker.code()
       val commerce = faker.commerce()
