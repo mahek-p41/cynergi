@@ -429,17 +429,21 @@ class AuditRepository @Inject constructor(
             (
                SELECT COUNT (id)
                FROM fastinfo_prod_import.inventory_vw i
+                    JOIN company comp ON i.dataset = comp.dataset_code
                WHERE i.primary_location = :store_number
                      AND i.location = :store_number
                      AND i.status in ('N', 'R')
-                     AND i.dataset = :dataset
+                     AND comp.id = :company_id
             ),
-            :dataset
+            :company_id
          )
          RETURNING
             *
          """.trimMargin(),
-         mapOf("store_number" to entity.store.number, "company_id" to entity.store.company.myId()),
+         mapOf(
+            "store_number" to entity.store.number,
+            "company_id" to entity.store.company.myId()
+         ),
          RowMapper { rs, _ ->
             AuditEntity(
                id = rs.getLong("id"),

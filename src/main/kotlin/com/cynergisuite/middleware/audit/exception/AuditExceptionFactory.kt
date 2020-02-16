@@ -39,14 +39,13 @@ object AuditExceptionFactory {
    }
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null, signedOffIn: Boolean? = null): Stream<AuditExceptionEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
       val lorem = faker.lorem()
-      val scannedBy = scannedByIn ?: EmployeeFactory.single(auditIn?.store?.company)
+      val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.company)
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
-      val audit = auditIn ?: AuditFactory.single(scannedBy)
       val signedOff = signedOffIn ?: random.nextBoolean()
       val signedOffBy = if (signedOff) scannedByIn else null
 
@@ -67,11 +66,6 @@ object AuditExceptionFactory {
             audit = SimpleIdentifiableEntity(audit)
          )
       }
-   }
-
-   @JvmStatic
-   fun single(changedByIn: EmployeeEntity?): AuditExceptionEntity {
-      return single(AuditFactory.single(changedByIn))
    }
 
    @JvmStatic
