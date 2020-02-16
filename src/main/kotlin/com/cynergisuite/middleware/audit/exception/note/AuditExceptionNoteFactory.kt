@@ -21,9 +21,13 @@ object AuditExceptionNoteFactory {
    fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
-      val auditException = auditExceptionIn ?: AuditExceptionFactory.single()
-      val enteredBy = enteredByIn ?: EmployeeFactory.single()
+      val auditException = auditExceptionIn ?: AuditExceptionFactory.single(null)
+      val enteredBy = enteredByIn ?: EmployeeFactory.single(auditException.scannedBy.company)
       val lorem = faker.lorem()
+
+      if (auditException.scannedBy.company != enteredBy.company) {
+         throw Exception("AuditException Company does not equal enteredBy Company")
+      }
 
       return IntStream.range(0, number).mapToObj {
          AuditExceptionNote(

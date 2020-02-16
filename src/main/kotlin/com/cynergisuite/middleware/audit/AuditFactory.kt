@@ -4,9 +4,6 @@ import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
-import com.cynergisuite.middleware.authentication.user.IdentifiableUser
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
@@ -29,7 +26,7 @@ object AuditFactory {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
-      val changedBy = changedByIn ?: EmployeeFactory.testEmployee()
+      val changedBy = changedByIn ?: EmployeeFactory.testEmployee(CompanyFactory.random())
       val store = storeIn ?: StoreFactory.random(changedBy.company)
       val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.created())
 
@@ -48,7 +45,7 @@ object AuditFactory {
    }
 
    @JvmStatic
-   fun single(changedByIn: EmployeeEntity? = null): AuditEntity {
+   fun single(changedByIn: EmployeeEntity?): AuditEntity {
       return stream(1, changedByIn = changedByIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
    }
 }
@@ -61,7 +58,7 @@ class AuditFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
    fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null, storeIn: StoreEntity? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
-      val changedBy = changedByIn ?: employeeFactoryService.single()
+      val changedBy = changedByIn ?: employeeFactoryService.single(storeIn)
       val store = storeFactoryService.random(changedBy.company)
 
       return AuditFactory.stream(numberIn, changedBy, store, statusesIn)

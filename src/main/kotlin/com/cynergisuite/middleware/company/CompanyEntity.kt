@@ -20,17 +20,6 @@ data class CompanyEntity(
    val federalTaxNumber: String? = null
 ) : Company {
 
-   constructor(company: CompanyValueObject) :
-      this(
-         id = company.id,
-         name = company.name!!,
-         doingBusinessAs = company.doingBusinessAs,
-         clientCode = company.clientCode!!,
-         clientId = company.clientId!!,
-         datasetCode = company.datasetCode!!,
-         federalTaxNumber = company.federalTaxNumber
-      )
-
    override fun myId(): Long? = id
    override fun myClientCode(): String = clientCode
    override fun myClientId(): Int = clientId

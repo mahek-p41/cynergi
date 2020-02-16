@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.store
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
-import com.cynergisuite.middleware.location.Location
+import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
@@ -66,15 +66,20 @@ object StoreFactory {
       stores.first { it.number == number && it.company == company }
 
    @JvmStatic
-   fun storeOneTstds1(): StoreEntity = stores[0]
+   fun storeOneTstds1(): StoreEntity{
+      return stores.first { it.number == 1 && it.company.myDataset() == "tstds1" }
+   }
 
    @JvmStatic
-   fun storeThreeTstds1(): StoreEntity = stores[1]
+   fun storeThreeTstds1(): StoreEntity{
+      return stores.first { it.number == 3 && it.company.myDataset() == "tstds1" }
+   }
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
 class StoreFactoryService(
+   private val companyFactoryService: CompanyFactoryService,
    private val storeRepository: StoreRepository
 ) {
 
@@ -99,12 +104,20 @@ class StoreFactoryService(
    fun random(company: Company): StoreEntity =
       store(StoreFactory.random(company)) ?: throw Exception("Unable to find a random StoreEntity")
 
-   fun storeOneTstds1(): StoreEntity =
-      store(StoreFactory.storeOneTstds1()) ?: throw Exception("Unable to find Store 1")
+   fun storeOneTstds1(): StoreEntity {
+      val company = companyFactoryService.forDatasetCode("tstds1")
+      val store = StoreFactory.storeOneTstds1().copy(company = company)
 
-   fun storeThreeTstds1(): StoreEntity =
-      store(StoreFactory.storeThreeTstds1()) ?: throw Exception("Unable to find Store 3")
+      return store(store) ?: throw Exception("Unable to find Store 1")
+   }
 
-   private fun store(location: Location): StoreEntity? =
+   fun storeThreeTstds1(): StoreEntity {
+      val company = companyFactoryService.forDatasetCode("tstds1")
+      val store = StoreFactory.storeThreeTstds1().copy(company = company)
+
+      return store(store) ?: throw Exception("Unable to find Store 3")
+   }
+
+   private fun store(location: StoreEntity): StoreEntity? =
       storeRepository.findOne(location.myNumber(), location.myCompany())
 }

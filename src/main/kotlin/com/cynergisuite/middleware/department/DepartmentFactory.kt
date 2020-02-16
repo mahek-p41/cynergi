@@ -36,7 +36,7 @@ object DepartmentFactory {
 
    @JvmStatic
    fun random(company: Company) =
-      departments.filter { it.company == company }.random()
+      departments.filter { it.company.myDataset() == company.myDataset() }.random()
 
    @JvmStatic
    fun randomNotMatchingDataset(company: Company) =
@@ -69,17 +69,17 @@ class DepartmentFactoryService(
    }
 
    fun random(company: Company): DepartmentEntity {
-      val department = DepartmentFactory.random(company)
+      val department = DepartmentFactory.random(company).copy(company = company)
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.company) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 
    fun randomNotMatchingDataset(company: Company): DepartmentEntity {
-      val department = DepartmentFactory.randomNotMatchingDataset(company)
+      val department = DepartmentFactory.randomNotMatchingDataset(company).copy(company = company)
 
       return departmentRepository.findOneByCodeAndDataset(department.code, department.company) ?: throw Exception("Unable to find random DepartmentEntity")
    }
 
    fun forThese(company: Company, code: String): DepartmentEntity =
-      departmentRepository.findOneByCodeAndDataset(code = code, company = company) ?: throw Exception("Unable to find random DepartmentEntity")
+      departmentRepository.findOneByCodeAndDataset(code = code, company = company)?.also { it.copy(company = company) } ?: throw Exception("Unable to find random DepartmentEntity")
 }

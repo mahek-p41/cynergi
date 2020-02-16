@@ -46,7 +46,8 @@ class AuthenticationRepository @Inject constructor(
                   'sysz'                 AS emp_type,
                   emp.number             AS emp_number,
                   emp.active             AS emp_active,
-                  false                  AS emp_cynergi_system_admin
+                  false                  AS emp_cynergi_system_admin,
+                  emp.pass_code          AS emp_pass_code,
                   comp.id                AS comp_id,
                   comp.uu_row_id         AS comp_uu_row_id,
                   comp.time_created      AS comp_time_created,
@@ -55,7 +56,7 @@ class AuthenticationRepository @Inject constructor(
                   comp.doing_business_as AS comp_doing_business_as,
                   comp.client_code       AS comp_client_code,
                   comp.client_id         AS comp_client_id,
-                  comp.dataset_code      AS comp_dataset,
+                  comp.dataset_code      AS comp_dataset_code,
                   comp.federal_id_number AS comp_federal_id_number,
                   dept.id                AS dept_id,
                   dept.code              AS dept_code,
@@ -65,9 +66,9 @@ class AuthenticationRepository @Inject constructor(
                   loc.id                 AS loc_id,
                   loc.number             AS loc_number,
                   loc.name               AS loc_name,
-                  fallbackLoc.id          AS fallbackLoc_id,
-                  fallbackLoc.number      AS fallbackLoc_number,
-                  fallbackLoc.name        AS fallbackLoc_name
+                  fallbackLoc.id         AS fallbackLoc_id,
+                  fallbackLoc.number     AS fallbackLoc_number,
+                  fallbackLoc.name       AS fallbackLoc_name
                FROM company comp
                   JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
@@ -81,6 +82,7 @@ class AuthenticationRepository @Inject constructor(
                   emp.number                  AS emp_number,
                   emp.active                  AS emp_active,
                   emp.cynergi_system_admin    AS emp_cynergi_system_admin,
+                  emp.pass_code               AS emp_pass_code,
                   comp.id                     AS comp_id,
                   comp.uu_row_id              AS comp_uu_row_id,
                   comp.time_created           AS comp_time_created,
@@ -89,7 +91,7 @@ class AuthenticationRepository @Inject constructor(
                   comp.doing_business_as      AS comp_doing_business_as,
                   comp.client_code            AS comp_client_code,
                   comp.client_id              AS comp_client_id,
-                  comp.dataset_code           AS comp_dataset,
+                  comp.dataset_code           AS comp_dataset_code,
                   comp.federal_id_number      AS comp_federal_id_number,
                   dept.id                     AS dept_id,
                   dept.code                   AS dept_code,
@@ -111,7 +113,7 @@ class AuthenticationRepository @Inject constructor(
             WHERE emp_active = true
             ORDER BY from_priority
          ) AS users
-         WHERE comp_dataset = $1
+         WHERE comp_dataset_code = $1
                AND emp_number = $2
                ${if (storeNumber != null) "AND loc_number = $3" else ""}
       """.trimIndent()
@@ -131,7 +133,7 @@ class AuthenticationRepository @Inject constructor(
 
             val company = mapCompany(row)
             val department = mapDepartment(row, company)
-            val fallbackLocation = mapLocation(row, company, "fallbackLoc_")!!
+            val fallbackLocation = mapLocation(row, company, "fallbackloc_")!!
             val employeeLocation = mapLocation(row, company, "loc_")
 
             AuthenticatedEmployee(

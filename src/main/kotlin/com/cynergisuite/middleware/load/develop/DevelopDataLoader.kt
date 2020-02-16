@@ -46,8 +46,8 @@ class DevelopDataLoader @Inject constructor(
       val companyTstds1 = companies.first { it.datasetCode == "corrto" }
       val storeOne = storeFactoryService.store(1, companyTstds1)
       val storeThree = storeFactoryService.store(3, companyTstds1)
-      val storeOneEmployee = employeeFactoryService.single(store = storeOne)
-      val storeThreeEmployee = employeeFactoryService.single(store = storeThree)
+      val storeOneEmployee = employeeFactoryService.single(storeIn = storeOne)
+      val storeThreeEmployee = employeeFactoryService.single(storeIn = storeThree)
 
       // audit store holding areas
       val warehouse = auditScanAreaFactoryService.warehouse()

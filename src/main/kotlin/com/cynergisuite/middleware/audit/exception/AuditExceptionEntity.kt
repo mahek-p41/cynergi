@@ -5,11 +5,8 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
-import com.cynergisuite.middleware.authentication.user.IdentifiableUser
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
-import com.cynergisuite.middleware.notification.Employee
 import java.time.OffsetDateTime
 import java.util.UUID
 

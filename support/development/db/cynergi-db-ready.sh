@@ -23,5 +23,5 @@ for count in {1..72}; do
   fi
 done
 
-printf "\n%s" "cynergidb may not have started"
-exit 1 # exit with value returned by pg_isready, should propigate out of the docker container (I think)
+printf "\n%s\n" "cynergidb may not have started"
+exit 1

@@ -60,7 +60,7 @@ class EmployeeRepository @Inject constructor(
                comp.doing_business_as AS comp_doing_business_as,
                comp.client_code AS comp_client_code,
                comp.client_id AS comp_client_id,
-               comp.dataset_code AS comp_dataset,
+               comp.dataset_code AS comp_dataset_code,
                comp.federal_id_number AS comp_federal_id_number,
                dept.id AS dept_id,
                dept.code AS dept_code,
@@ -93,7 +93,7 @@ class EmployeeRepository @Inject constructor(
                comp.doing_business_as AS comp_doing_business_as,
                comp.client_code AS comp_client_code,
                comp.client_id AS comp_client_id,
-               comp.dataset_code AS comp_dataset,
+               comp.dataset_code AS comp_dataset_code,
                comp.federal_id_number AS comp_federal_id_number,
                dept.id AS dept_id,
                dept.code AS dept_code,
@@ -206,7 +206,7 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, allow_auto_store_assign, company_id)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id)
          VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id)
          RETURNING
             *

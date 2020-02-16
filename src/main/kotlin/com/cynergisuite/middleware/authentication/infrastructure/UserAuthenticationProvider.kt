@@ -37,18 +37,22 @@ class UserAuthenticationProvider @Inject constructor(
                val employeeAssignedStore = employee.location // this can be null which unless user is a cynergi admin you must have a store assigned
                val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
-               if(employeeAssignedStore != null) { // if doesn't have store, but is cynergi system admin
-                  logger.debug("Employee has store allowing access", employeeAssignedStore)
+               when {
+                   employeeAssignedStore != null -> { // if doesn't have store, but is cynergi system admin
+                      logger.debug("Employee has store allowing access", employeeAssignedStore)
 
-                  just(AuthenticatedUser(employee))
-               } else if (employee.cynergiSystemAdmin) {
-                  logger.debug("Employee is system admin")
+                      just(AuthenticatedUser(employee))
+                   }
+                   employee.cynergiSystemAdmin -> {
+                      logger.debug("Employee is system admin")
 
-                  just(AuthenticatedUser(employee, employee.location ?: fallbackStore))
-               } else { // otherwise inform the client that a store is required for the provided user
-                  logger.debug("Employee did not have store informing client of store requirement")
+                      just(AuthenticatedUser(employee, employee.location ?: fallbackStore))
+                   }
+                   else -> { // otherwise inform the client that a store is required for the provided user
+                      logger.debug("Employee did not have store informing client of store requirement")
 
-                  just(AuthenticationResponseStoreRequired(identity))
+                      just(AuthenticationResponseStoreRequired(identity))
+                   }
                }
             }
             .defaultIfEmpty(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
