@@ -144,7 +144,7 @@ BEGIN
             FALSE                                 AS cynergi_system_admin,
             ''' || r.schema_name || '''::text     AS dataset,
             emp_alt_store_indr                    AS alternative_store_indicator,
-            emp_alt_area                          AS alternative_area,
+            emp_alt_area                          AS alternative_area
          FROM ' || r.schema_name || '.level1_loc_emps
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM
@@ -273,18 +273,19 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
    id BIGINT,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
    number INTEGER,
-   store_number INTEGER,
-   dataset VARCHAR,
    last_name VARCHAR,
    first_name_mi VARCHAR,
-   department VARCHAR,
    pass_code VARCHAR,
+   store_number INTEGER,
    active BOOLEAN,
+   department VARCHAR,
+   cynergi_system_admin BOOLEAN,
+   dataset VARCHAR,
    alternative_store_indicator VARCHAR,
-   alternative_area INTEGER,
-   time_created TIMESTAMPTZ,
-   time_updated TIMESTAMPTZ
+   alternative_area INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (

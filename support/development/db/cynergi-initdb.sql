@@ -12,6 +12,16 @@ CREATE USER MAPPING FOR cynergiuser
     SERVER fastinfo
     OPTIONS (USER 'postgres', PASSWORD 'password');
 
+CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
+    id BIGINT,
+    number INTEGER,
+    name VARCHAR,
+    dataset VARCHAR,
+    company_id BIGINT,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
+
 CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
     id BIGINT,
     code VARCHAR,
@@ -24,30 +34,21 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
-   id BIGINT,
-   number INTEGER,
-   store_number INTEGER,
-   dataset VARCHAR,
-   last_name VARCHAR,
-   first_name_mi VARCHAR,
-   department VARCHAR,
-   pass_code VARCHAR,
-   active BOOLEAN,
-   alternative_store_indicator VARCHAR,
-   alternative_area INTEGER,
-   time_created TIMESTAMPTZ,
-   time_updated TIMESTAMPTZ
+    id BIGINT,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    number INTEGER,
+    last_name VARCHAR,
+    first_name_mi VARCHAR,
+    pass_code VARCHAR,
+    store_number INTEGER,
+    active BOOLEAN,
+    department VARCHAR,
+    cynergi_system_admin BOOLEAN,
+    dataset VARCHAR,
+    alternative_store_indicator VARCHAR,
+    alternative_area INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
-
-CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
-   id BIGINT,
-   company_id BIGINT,
-   number INTEGER,
-   name VARCHAR,
-   dataset VARCHAR,
-   time_created TIMESTAMPTZ,
-   time_updated TIMESTAMPTZ
-) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     id BIGINT,
