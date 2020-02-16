@@ -55,11 +55,11 @@ object StoreFactory {
 
    @JvmStatic
    fun random(company: Company): StoreEntity =
-      stores.filter { it.company == company }.random()
+      stores.filter { it.company.myDataset() == company.myDataset() }.random()
 
    @JvmStatic
    fun randomNotMatchingDataset(company: Company): StoreEntity =
-      stores.filter { it.company != company }.random()
+      stores.filter { it.company.myDataset() != company.myDataset() }.random()
 
    @JvmStatic
    fun findByNumber(number: Int, company: Company = CompanyFactory.tstds1()): StoreEntity =
