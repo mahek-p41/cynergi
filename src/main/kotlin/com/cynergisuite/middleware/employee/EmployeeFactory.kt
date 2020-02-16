@@ -102,4 +102,8 @@ class EmployeeFactoryService @Inject constructor(
    fun single(storeIn: StoreEntity?, departmentIn: Department?): EmployeeEntity {
       return stream(storeIn = storeIn, departmentIn = departmentIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
+
+   fun single(employeeNumberIn: Int?, companyIn: Company?, lastNameIn: String?, firstNameMiIn: String?, passCode: String?, cynergiSystemAdminIn: Boolean): EmployeeEntity {
+      return stream(employeeNumberIn = employeeNumberIn, companyIn = companyIn, lastNameIn = lastNameIn, firstNameMiIn = firstNameMiIn, passCode = passCode, cynergiSystemAdminIn = cynergiSystemAdminIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
+   }
 }
