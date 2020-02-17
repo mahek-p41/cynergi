@@ -72,7 +72,7 @@ class EmployeeRepository @Inject constructor(
                fpis.name AS fpis_name
             FROM company comp
                JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
-               JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
             UNION
             SELECT
@@ -105,7 +105,7 @@ class EmployeeRepository @Inject constructor(
                fpis.name AS fpis_name
             FROM company comp
                JOIN employee emp ON comp.id = emp.company_id
-               JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
          ) AS inner_employees
          ORDER BY from_priority
@@ -228,7 +228,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c_", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix)
 
       return EmployeeEntity(

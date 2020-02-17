@@ -25,17 +25,26 @@ class StoreRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
 
    @Language("PostgreSQL")
-   fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company, datasetParamKey: String = ":dataset"): String {
+   fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company): String {
       params["dataset"] = company.myDataset()
 
       return """
          SELECT
-            s.id AS id,
-            s.number AS number,
-            s.name AS name,
-            s.dataset AS dataset
-         FROM fastinfo_prod_import.store_vw s
-         WHERE s.dataset = $datasetParamKey
+            store.id AS id,
+            store.number AS number,
+            store.name AS name,
+            comp.id AS comp_id,
+            comp.uu_row_id AS comp_uu_row_id,
+            comp.time_created AS comp_time_created,
+            comp.time_updated AS comp_time_updated,
+            comp.name AS comp_name,
+            comp.doing_business_as AS comp_doing_business_as,
+            comp.client_code AS comp_client_code,
+            comp.client_id AS comp_client_id,
+            comp.dataset_code AS comp_dataset_code,
+            comp.federal_id_number
+         FROM fastinfo_prod_import.store_vw store
+              JOIN company comp ON comp.dataset_code = store.dataset
       """
    }
 
