@@ -60,6 +60,7 @@ class EmployeeRepository @Inject constructor(
                   fpie.dataset AS dataset
                FROM fastinfo_prod_import.employee_vw fpie
                WHERE coalesce(trim(fpie.pass_code), '') <> ''
+               AND fpie.dataset = :dataset
                UNION
                SELECT
                   2 AS from_priority,
@@ -76,6 +77,7 @@ class EmployeeRepository @Inject constructor(
                   e.dataset AS dataset
                FROM employee e
                WHERE coalesce(trim(e.pass_code), '') <> ''
+               AND e.dataset = :dataset
             ) AS inner_emp
             ORDER BY from_priority
          ), stores AS (
