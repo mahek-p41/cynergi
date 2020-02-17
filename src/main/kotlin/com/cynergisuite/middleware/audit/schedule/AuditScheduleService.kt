@@ -1,0 +1,152 @@
+package com.cynergisuite.middleware.audit.schedule
+
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditValueObject
+import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.notification.NotificationService
+import com.cynergisuite.middleware.notification.NotificationValueObject
+import com.cynergisuite.middleware.notification.STORE
+import com.cynergisuite.middleware.schedule.DailySchedule
+import com.cynergisuite.middleware.schedule.ScheduleEntity
+import com.cynergisuite.middleware.schedule.ScheduleName
+import com.cynergisuite.middleware.schedule.ScheduleProcessingException
+import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
+import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
+import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
+import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.validation.Validated
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Singleton
+import javax.validation.Valid
+
+@Singleton
+@ScheduleName("AuditSchedule")
+class AuditScheduleService @Inject constructor(
+   private val auditService: AuditService,
+   private val auditScheduleValidator: AuditScheduleValidator,
+   private val companyRepository: CompanyRepository,
+   private val departmentRepository: DepartmentRepository,
+   private val employeeRepository: EmployeeRepository,
+   private val scheduleRepository: ScheduleRepository,
+   private val storeRepository: StoreRepository,
+   private val notificationService: NotificationService
+) : DailySchedule {
+
+   fun fetchById(id: Long, dataset: String): AuditScheduleDataTransferObject? {
+      val schedule = scheduleRepository.findOne(id)
+
+      return if (schedule != null) {
+         buildAuditScheduleValueObjectFromSchedule(schedule, dataset)
+      } else {
+         null
+      }
+   }
+
+   @Validated
+   fun fetchAll(@Valid pageRequest: PageRequest, dataset: String): Page<AuditScheduleDataTransferObject> {
+      val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
+
+      return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, dataset) }
+   }
+
+   @Validated
+   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, employee: User, locale: Locale): AuditScheduleDataTransferObject {
+      val (schedule, stores) = auditScheduleValidator.validateCreate(dto, employee, locale)
+      val inserted = scheduleRepository.insert(schedule)
+
+      return AuditScheduleDataTransferObject(
+         id = inserted.id,
+         title = inserted.title,
+         description = inserted.description,
+         schedule = DayOfWeek.valueOf(inserted.schedule),
+         stores = stores.map { StoreValueObject(it) },
+         enabled = inserted.enabled
+      )
+   }
+
+   @Validated
+   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): AuditScheduleDataTransferObject {
+      val (schedule, stores) = auditScheduleValidator.validateUpdate(dto, user, locale)
+      val updated = scheduleRepository.update(schedule)
+
+      return AuditScheduleDataTransferObject(
+         id = updated.id,
+         title = updated.title,
+         description = updated.description,
+         schedule = DayOfWeek.valueOf(schedule.schedule),
+         stores = stores.map { StoreValueObject(it) },
+         enabled = updated.enabled
+      )
+   }
+
+   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, dataset: String): AuditScheduleDataTransferObject {
+      val stores = mutableListOf<StoreValueObject>()
+
+      for (arg: ScheduleArgumentEntity in schedule.arguments) {
+         if (arg.description == "storeNumber") {
+            val store = storeRepository.findOne(arg.value.toInt(), dataset)!!
+
+            stores.add(StoreValueObject(store))
+         }
+      }
+
+      return AuditScheduleDataTransferObject(
+         id = schedule.id,
+         title = schedule.title,
+         description = schedule.description,
+         schedule = DayOfWeek.valueOf(schedule.schedule),
+         stores = stores,
+         enabled = schedule.enabled
+      )
+   }
+
+   @Throws(ScheduleProcessingException::class)
+   override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
+      val notifications = mutableListOf<NotificationValueObject>()
+      val audits = mutableListOf<AuditValueObject>()
+      val dataset = schedule.arguments.firstOrNull { it.description == "dataset" }?.value ?: throw ScheduleProcessingException("Unable to determine dataset for schedule")
+      val locale = schedule.arguments.asSequence()
+         .filter { it.description == "locale" }
+         .map { Locale.forLanguageTag(it.value) }
+         .firstOrNull() ?: Locale.getDefault()
+      val employee = schedule.arguments.asSequence()
+         .filter { it.description == "employeeNumber" }
+         .filterNotNull()
+         .map { it.value.toInt() }
+         .map { employeeRepository.findOne(number = it, employeeType = null, dataset = dataset) }
+         .firstOrNull() ?: throw ScheduleProcessingException("Unable to find employee who scheduled audit")
+
+      for (arg: ScheduleArgumentEntity in schedule.arguments) {
+         if (arg.description == "storeNumber") {
+            val store = storeRepository.findOne(arg.value.toInt(), dataset)!!
+            val company = companyRepository.findCompanyByStore(store)!!
+            val oneNote = NotificationValueObject(
+               startDate = LocalDate.now(),
+               dateCreated = null,
+               expirationDate = LocalDate.now().plusDays(7),
+               company = company.id.toString(),
+               message = schedule.description!!,
+               sendingEmployee = employee.number.toString(),
+               notificationType = STORE.value
+            )
+
+            val audit = auditService.findOrCreate(store, employee, locale)
+            val notification = notificationService.create(oneNote)
+
+            audits.add(audit)
+            notifications.add(notification)
+         }
+      }
+
+      return AuditScheduleResult(audits, notifications)
+   }
+}

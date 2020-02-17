@@ -1,0 +1,19 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>false</withJansi>
+        <encoder>
+            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{10}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org" level="ERROR" />
+    <logger name="com.zaxxer" level="ERROR" />
+    <logger name="io.netty" level="ERROR" />
+    <logger name="io.micronaut" level="INFO" />
+    <logger name="com.hightouchinc" level="TRACE" />
+    <logger name="org.flywaydb" level="INFO" />
+
+    <root level="TRACE">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

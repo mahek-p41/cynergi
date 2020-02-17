@@ -1,5 +1,5 @@
 profile: service
-defaultPackage: com.hightouchinc.cynergi.middleware
+defaultPackage: com.cynergisuite.middleware
 ---
 testFramework: spock
 sourceLanguage: kotlin

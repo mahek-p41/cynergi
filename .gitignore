@@ -647,3 +647,8 @@ healthchecksdb
 .settings/
 
 .project
+.vertx/
+
+*.dump
+*.dump.*
+.kotlintest
