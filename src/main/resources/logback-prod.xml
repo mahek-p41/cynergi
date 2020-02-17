@@ -1,0 +1,32 @@
+<configuration>
+    <property name="LOG_FILE_HOME" value="/opt/cyn/v01/cynmid/logs" />
+    <property name="BASE_LOG_FILE_NAME" value="cynergi-middleware"/>
+
+    <appender name="PROD_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE_HOME}/${BASE_LOG_FILE_NAME}.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_HOME}/${BASE_LOG_FILE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="org" level="ERROR" />
+    <logger name="com.zaxxer" level="ERROR" />
+    <logger name="io.netty" level="ERROR" />
+    <logger name="io.micronaut" level="DEBUG" />
+    <logger name="io.micronaut.context" level="ERROR" />
+    <logger name="io.micronaut.core.beans" level="ERROR" />
+    <logger name="io.micronaut.core.reflect" level="ERROR" />
+    <logger name="io.micronaut.context.event" level="ERROR" />
+    <logger name="io.micronaut.management" level="ERROR" />
+    <logger name="com.cynergisuite" level="TRACE" />
+    <logger name="org.flywaydb" level="INFO" />
+
+    <root level="DEBUG">
+        <appender-ref ref="PROD_FILE"/>
+    </root>
+</configuration>

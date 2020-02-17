@@ -1,0 +1,3 @@
+moduleName = cynergi-testing-module
+moduleVersion = 1.0
+extensionClasses = com.cynergisuite.domain.infrastructure.HttpResponseExtension
