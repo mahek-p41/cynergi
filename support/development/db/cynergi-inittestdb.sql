@@ -9,15 +9,15 @@ CREATE TABLE fastinfo_prod_import.store_vw (
    time_created TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL,
    time_updated TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL
 );
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (1, 'KANSAS CITY', 'tstds1');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (3, 'INDEPENDENCE', 'tstds1');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (9000, 'HOME OFFICE', 'tstds1');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (1, 'Pelham Trading Post, Inc', 'tstds2');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (2, 'Camilla Trading Post, Inc.', 'tstds2');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (3, 'Arlington Trading Post', 'tstds2');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (4, 'Moultrie Trading Post, Inc', 'tstds2');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (5, 'Bainbridge Trading Post', 'tstds2');
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (9000, 'HOME OFFICE', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (1, 'KANSAS CITY', 'tstds1');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (3, 'INDEPENDENCE', 'tstds1');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (9000, 'HOME OFFICE', 'tstds1');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (1, 'Pelham Trading Post, Inc', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (2, 'Camilla Trading Post, Inc.', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (3, 'Arlington Trading Post', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (4, 'Moultrie Trading Post, Inc', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (5, 'Bainbridge Trading Post', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (9000, 'HOME OFFICE', 'tstds2');
 
 CREATE TABLE fastinfo_prod_import.department_vw (
     id               BIGSERIAL                              NOT NULL PRIMARY KEY,

@@ -67,16 +67,6 @@ object AuditExceptionFactory {
          )
       }
    }
-
-   @JvmStatic
-   fun single(auditIn: AuditEntity): AuditExceptionEntity {
-      return single(auditIn, scannedByIn = null)
-   }
-
-   @JvmStatic
-   fun single(auditIn: AuditEntity, scannedByIn: EmployeeEntity?): AuditExceptionEntity {
-      return stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDiscrepancy") }
-   }
 }
 
 @Singleton
@@ -89,5 +79,8 @@ class AuditExceptionFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-
+   fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditExceptionEntity> {
+      return AuditExceptionFactory.stream(numberIn, audit)
+         .map { auditExceptionRepository.insert(it) }
+   }
 }

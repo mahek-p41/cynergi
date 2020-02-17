@@ -79,7 +79,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.totalExceptions == 0
       result.store.storeNumber == store.number
       result.store.name == store.name
-      result.store.dataset == store.dataset
       result.actions.size() == 1
       result.actions[0].id > 0
       result.actions[0].status.value == 'CREATED'
@@ -91,7 +90,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit by id with superfluous URL parameters" () {
       given:
-      final store = storeFactoryService.store(3)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final savedAudit = auditFactoryService.single(store)
 
       when:
@@ -108,7 +108,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.totalExceptions == 0
       result.store.storeNumber == store.number
       result.store.name == store.name
-      result.store.dataset == store.dataset
       result.actions.size() == 1
       result.actions[0].id > 0
       result.actions[0].status.value == 'CREATED'
@@ -120,9 +119,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit by id that has associated exceptions" () {
       given:
-      final store = storeFactoryService.store(1)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
-      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, null, null).toList()
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit).toList()
 
       when:
       def result = get("$path/${savedAudit.id}")
@@ -139,7 +139,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.hasExceptionNotes == false
       result.store.storeNumber == store.number
       result.store.name == store.name
-      result.store.dataset == store.dataset
       result.actions.size() == 1
       result.actions[0].id > 0
       result.actions[0].status.value == 'CREATED'
@@ -153,10 +152,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit by id that has associated exceptions and notes" () {
       given:
-      final store = storeFactoryService.store(1)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(1, company)
       final scanningEmployee = employeeFactoryService.single(store)
       final savedAudit = auditFactoryService.single(store)
-      final exceptionsWithoutNotes = auditExceptionFactoryService.stream(19, savedAudit, null, null).toList()
+      final exceptionsWithoutNotes = auditExceptionFactoryService.stream(19, savedAudit).toList()
       final exceptionWithNotes = auditExceptionFactoryService.single(savedAudit, scanningEmployee)
       final exceptionNotes = auditExceptionNoteFactoryService.stream(2, exceptionWithNotes, scanningEmployee).toList()
 

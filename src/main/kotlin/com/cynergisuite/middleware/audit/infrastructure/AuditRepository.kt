@@ -15,6 +15,9 @@ import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.department.DepartmentEntity
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -30,6 +33,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditRepository @Inject constructor(
+   private val auditActionRepository: AuditActionRepository,
+   private val auditStatusRepository: AuditStatusRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -41,7 +46,6 @@ class AuditRepository @Inject constructor(
          ${employeeRepository.employeeBaseQuery()}
       )
       SELECT
-         a.id                                                          AS id,
          a.id                                                          AS a_id,
          a.uu_row_id                                                   AS a_uu_row_id,
          a.time_created                                                AS a_time_created,
@@ -84,10 +88,14 @@ class AuditRepository @Inject constructor(
          auditActionEmployee.emp_pass_code                             AS auditEmployee_pass_code,
          auditActionEmployee.emp_active                                AS auditEmployee_active,
          auditActionEmployee.emp_type                                  AS auditEmployee_type,
-         auditActionEmployee.emp_cyergi_system_admin                   AS auditEmployee_emp_cyergi_system_admin,
+         auditActionEmployee.emp_cynergi_system_admin                  AS auditEmployee_cynergi_system_admin,
+         auditActionEmployee.dept_id                                   AS auditEmployeeDept_id,
+         auditActionEmployee.dept_code                                 AS auditEmployeeDept_code,
+         auditActionEmployee.dept_description                          AS auditEmployeeDept_description,
+         auditActionEmployee.dept_security_profile                     AS auditEmployeeDept_security_profile,
+         auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
+         auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
          auditStore.id                                                 AS auditStore_id,
-         auditStore.time_created                                       AS auditStore_time_created,
-         auditStore.time_updated                                       AS auditStore_time_updated,
          auditStore.name                                               AS auditStore_name,
          auditStore.number                                             AS auditStore_number,
          auditStore.dataset                                            AS auditStore_dataset,
@@ -98,6 +106,7 @@ class AuditRepository @Inject constructor(
          comp.name                                                     AS comp_name,
          comp.doing_business_as                                        AS comp_doing_business_as,
          comp.client_code                                              AS comp_client_code,
+         comp.client_id                                                AS comp_client_id,
          comp.dataset_code                                             AS comp_dataset_code,
          comp.federal_id_number                                        AS comp_federal_id_number
       FROM audit a
@@ -113,7 +122,7 @@ class AuditRepository @Inject constructor(
 
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()}\nWHERE a.id = :id"
-      val found = executeFindSingleQuery(query, params, company)
+      val found = executeFindSingleQuery(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
 
@@ -126,7 +135,7 @@ class AuditRepository @Inject constructor(
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
 
-      val found = executeFindSingleQuery(query, params, store.company)
+      val found = executeFindSingleQuery(query, params)
 
       logger.debug("Searching for audit not completed or canceled for store {} resulted in {}", store, found)
 
@@ -138,7 +147,7 @@ class AuditRepository @Inject constructor(
          val audit = this.mapRow(rs)
 
          do {
-            auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
+            audit.actions.add(mapAuditAction(rs))
          } while(rs.next())
 
          audit
@@ -237,7 +246,6 @@ class AuditRepository @Inject constructor(
             a.uu_row_id AS a_uu_row_id,
             a.time_created AS a_time_created,
             a.time_updated AS a_time_updated,
-            a.store_number AS store_number,
             a.number AS a_number,
             a.total_details AS a_total_details,
             a.total_exceptions AS a_total_exceptions,
@@ -299,7 +307,7 @@ class AuditRepository @Inject constructor(
             val tempId = rs.getLong("a_id")
             val tempParentEntity: AuditEntity = if (tempId != currentId) {
                currentId = tempId
-               currentParentEntity = mapRow(rs, company)
+               currentParentEntity = mapRow(rs)
                elements.add(currentParentEntity)
                currentParentEntity
             } else {
@@ -487,12 +495,12 @@ class AuditRepository @Inject constructor(
    }
 
    private fun mapRow(rs: ResultSet): AuditEntity {
-      AuditEntity(
+      return AuditEntity(
          id = rs.getLong("a_id"),
          uuRowId = rs.getUuid("a_uu_row_id"),
          timeCreated = rs.getOffsetDateTime("a_time_created"),
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
-         store = storeRepository.mapRow(rs, company, "s_"),
+         store = mapStore(rs),
          number = rs.getInt("a_number"),
          totalDetails = rs.getInt("a_total_details"),
          totalExceptions = rs.getInt("a_total_exceptions"),
@@ -500,6 +508,72 @@ class AuditRepository @Inject constructor(
          inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
       )
+   }
+
+   private fun mapStore(rs: ResultSet): StoreEntity {
+      return StoreEntity(
+         id = rs.getLong("auditStore_id"),
+         number = rs.getInt("auditStore_number"),
+         name = rs.getString("auditStore_name"),
+         company = mapCompany(rs)
+      )
+   }
+
+   private fun mapCompany(rs: ResultSet): Company {
+      return CompanyEntity(
+         id = rs.getLong("comp_id"),
+         uuRowId = rs.getUuid("comp_uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("comp_time_created"),
+         timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
+         name = rs.getString("comp_name"),
+         doingBusinessAs = rs.getString("comp_doing_business_as"),
+         clientCode = rs.getString("comp_client_code"),
+         clientId = rs.getInt("comp_client_id"),
+         federalIdNumber = rs.getString("comp_federal_id_number"),
+         datasetCode = rs.getString("comp_dataset_code")
+      )
+   }
+
+   private fun mapAuditAction(rs: ResultSet): AuditActionEntity {
+      return AuditActionEntity(
+         id = rs.getLong("auditAction_id"),
+         uuRowId = rs.getUuid("auditAction_uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("auditAction_time_created"),
+         timeUpdated = rs.getOffsetDateTime("auditAction_time_updated"),
+         status = auditStatusRepository.mapRow(rs, "astd_"),
+         changedBy = mapAuditActionEmployee(rs)
+      )
+   }
+
+   private fun mapAuditActionEmployee(rs: ResultSet): EmployeeEntity {
+      return EmployeeEntity(
+         id = rs.getLong("auditEmployee_id"),
+         type = rs.getString("auditEmployee_type"),
+         number = rs.getInt("auditEmployee_number"),
+         company = mapCompany(rs),
+         lastName = rs.getString("auditEmployee_last_name"),
+         firstNameMi = rs.getString("auditEmployee_first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
+         passCode = rs.getString("auditEmployee_pass_code"),
+         store = mapStore(rs),
+         active = rs.getBoolean("auditEmployee_active"),
+         department = mapAuditActionEmployeeDepartment(rs),
+         cynergiSystemAdmin = rs.getBoolean("auditEmployee_cynergi_system_admin")
+      )
+   }
+
+   private fun mapAuditActionEmployeeDepartment(rs: ResultSet): DepartmentEntity? {
+      return if (rs.getString("auditEmployeeDept_id") != null) {
+         DepartmentEntity(
+            id = rs.getLong("auditEmployeeDept_id"),
+            code = rs.getString("auditEmployeeDept_code"),
+            description = rs.getString("auditEmployeeDept_description"),
+            securityProfile = rs.getInt("auditEmployeeDept_security_profile"),
+            defaultMenu = rs.getString("auditEmployeeDept_default_menu"),
+            company = mapCompany(rs)
+         )
+      } else {
+         null
+      }
    }
 
    private fun loadNextStates(audit: AuditEntity) {
