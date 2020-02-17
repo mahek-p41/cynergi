@@ -17,7 +17,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
     number INTEGER,
     name VARCHAR,
     dataset VARCHAR,
-    company_id BIGINT,
     time_created TIMESTAMPTZ,
     time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');

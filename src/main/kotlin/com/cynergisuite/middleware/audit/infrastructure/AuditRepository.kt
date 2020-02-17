@@ -30,11 +30,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditRepository @Inject constructor(
-   private val auditActionRepository: AuditActionRepository,
-   private val auditStatusRepository: AuditStatusRepository,
    private val employeeRepository: EmployeeRepository,
-   private val jdbc: NamedParameterJdbcTemplate,
-   private val storeRepository: StoreRepository
+   private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
@@ -44,62 +41,71 @@ class AuditRepository @Inject constructor(
          ${employeeRepository.employeeBaseQuery()}
       )
       SELECT
-         a.id AS id,
-         a.id AS a_id,
-         a.uu_row_id AS a_uu_row_id,
-         a.time_created AS a_time_created,
-         a.time_updated AS a_time_updated,
-         a.store_number AS store_number,
-         a.number AS a_number,
-         (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS a_total_details,
+         a.id                                                          AS id,
+         a.id                                                          AS a_id,
+         a.uu_row_id                                                   AS a_uu_row_id,
+         a.time_created                                                AS a_time_created,
+         a.time_updated                                                AS a_time_updated,
+         a.store_number                                                AS store_number,
+         a.number                                                      AS a_number,
+         (SELECT count(id) FROM audit_detail WHERE audit_id = a.id)    AS a_total_details,
          (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
          (
           SELECT count(aen.id) > 0
           FROM audit_exception ae
                JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
           WHERE ae.audit_id = a.id
-         ) AS a_exception_has_notes,
+         )                                                             AS a_exception_has_notes,
          (SELECT max(time_updated)
             FROM (
                  SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                  UNION
                  SELECT time_updated FROM audit_exception WHERE audit_id = a.id
                ) AS m
-         ) AS a_last_updated,
-         a.inventory_count as a_inventory_count,
+         )                                                             AS a_last_updated,
+         a.inventory_count                                             AS a_inventory_count,
          (SELECT csastd.value
           FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
           WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
-         ) AS current_status,
-         auditAction.id AS aa_id,
-         auditAction.uu_row_id AS aa_uu_row_id,
-         auditAction.time_created AS aa_time_created,
-         auditAction.time_updated AS aa_time_updated,
-         astd.id AS astd_id,
-         astd.value AS astd_value,
-         astd.description AS astd_description,
-         astd.color AS astd_color,
-         astd.localization_code AS astd_localization_code,
-         auditActionEmployee.emp_id AS auditEmployee_id,
-         auditActionEmployee.emp_number AS auditEmployee_number,
-         auditActionEmployee.emp_last_name AS auditEmployee_last_name,
-         auditActionEmployee.emp_first_name_mi AS auditEmployee_first_name_mi,
-         auditActionEmployee.emp_pass_code AS auditEmployee_pass_code,
-         auditActionEmployee.emp_active AS auditEmployee_active,
-         auditActionEmployee.emp_type AS auditEmployee_type,
-         auditActionEmployee.emp_cyergi_system_admin AS auditEmployee_emp_cyergi_system_admin,
-         s.id AS s_id,
-         s.time_created AS s_time_created,
-         s.time_updated AS s_time_updated,
-         s.name AS s_name,
-         s.number AS s_number,
-         s.dataset AS s_dataset
+         )                                                             AS current_status,
+         auditAction.id                                                AS auditAction_id,
+         auditAction.uu_row_id                                         AS auditAction_uu_row_id,
+         auditAction.time_created                                      AS auditAction_time_created,
+         auditAction.time_updated                                      AS auditAction_time_updated,
+         astd.id                                                       AS astd_id,
+         astd.value                                                    AS astd_value,
+         astd.description                                              AS astd_description,
+         astd.color                                                    AS astd_color,
+         astd.localization_code                                        AS astd_localization_code,
+         auditActionEmployee.emp_id                                    AS auditEmployee_id,
+         auditActionEmployee.emp_number                                AS auditEmployee_number,
+         auditActionEmployee.emp_last_name                             AS auditEmployee_last_name,
+         auditActionEmployee.emp_first_name_mi                         AS auditEmployee_first_name_mi,
+         auditActionEmployee.emp_pass_code                             AS auditEmployee_pass_code,
+         auditActionEmployee.emp_active                                AS auditEmployee_active,
+         auditActionEmployee.emp_type                                  AS auditEmployee_type,
+         auditActionEmployee.emp_cyergi_system_admin                   AS auditEmployee_emp_cyergi_system_admin,
+         auditStore.id                                                 AS auditStore_id,
+         auditStore.time_created                                       AS auditStore_time_created,
+         auditStore.time_updated                                       AS auditStore_time_updated,
+         auditStore.name                                               AS auditStore_name,
+         auditStore.number                                             AS auditStore_number,
+         auditStore.dataset                                            AS auditStore_dataset,
+         comp.id                                                       AS comp_id,
+         comp.uu_row_id                                                AS comp_uu_row_id,
+         comp.time_created                                             AS comp_time_created,
+         comp.time_updated                                             AS comp_time_updated,
+         comp.name                                                     AS comp_name,
+         comp.doing_business_as                                        AS comp_doing_business_as,
+         comp.client_code                                              AS comp_client_code,
+         comp.dataset_code                                             AS comp_dataset_code,
+         comp.federal_id_number                                        AS comp_federal_id_number
       FROM audit a
            JOIN company comp ON a.company_id = comp.id
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
            JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
-           JOIN fastinfo_prod_import.store_vw s ON comp.id = s.company_id AND a.store_number = s.number
+           JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
    """
 
    fun findOne(id: Long, company: Company): AuditEntity? {
@@ -127,9 +133,9 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   private fun executeFindSingleQuery(query: String, params: Map<String, Any?>, company: Company): AuditEntity? {
+   private fun executeFindSingleQuery(query: String, params: Map<String, Any?>): AuditEntity? {
       val found = jdbc.findFirstOrNull(query, params) { rs ->
-         val audit = this.mapRow(rs, company)
+         val audit = this.mapRow(rs)
 
          do {
             auditActionRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
@@ -480,7 +486,7 @@ class AuditRepository @Inject constructor(
       return entity.copy(actions = actions)
    }
 
-   private fun mapRow(rs: ResultSet, company: Company): AuditEntity =
+   private fun mapRow(rs: ResultSet): AuditEntity {
       AuditEntity(
          id = rs.getLong("a_id"),
          uuRowId = rs.getUuid("a_uu_row_id"),
@@ -494,6 +500,7 @@ class AuditRepository @Inject constructor(
          inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")
       )
+   }
 
    private fun loadNextStates(audit: AuditEntity) {
       val actions = audit.actions.map { action ->

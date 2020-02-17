@@ -81,7 +81,6 @@ BEGIN
       || unionAll || '
          SELECT
             loc_trans.id AS id,
-            loc_trans2.id AS company_id,
             loc_trans.loc_tran_loc AS number,
             loc_trans.loc_transfer_desc AS name,
             ''' || r.schema_name || '''::text AS dataset,
@@ -255,7 +254,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
     number INTEGER,
     name VARCHAR,
     dataset VARCHAR,
-    company_id BIGINT,
     time_created TIMESTAMPTZ,
     time_updated TIMESTAMPTZ
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
