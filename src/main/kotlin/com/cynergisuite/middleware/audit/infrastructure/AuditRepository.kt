@@ -161,10 +161,11 @@ class AuditRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
-      val params = mutableMapOf<String, Any?>()
+      val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
-      val whereBuilder = StringBuilder("WHERE a.dataset = :dataset ")
+      val whereBuilder = StringBuilder("WHERE comp_id = :comp_id ")
+      val wherePageBuilder = StringBuilder()
       val from = pageRequest.from
       val thru = pageRequest.thru
 
@@ -181,123 +182,24 @@ class AuditRepository @Inject constructor(
 
       if (status != null && status.isNotEmpty()) {
          params["current_status"] = status
-         whereBuilder.append(" AND current_status IN (:current_status) ")
+         wherePageBuilder.append(" WHERE current_status IN (:current_status) ")
       }
 
       val sql = """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         ), audits AS (
-            WITH status AS (
-               SELECT csastd.value AS current_status,
-                      csaa.audit_id AS audit_id, csaa.id
-               FROM audit_action csaa
-                    JOIN audit_status_type_domain csastd
-                         ON csaa.status_id = csastd.id
-            ), maxStatus AS (
-               SELECT MAX(id) AS current_status_id, audit_id
-               FROM audit_action
-               GROUP BY audit_id
-            )
-            SELECT
-               a.id AS id,
-               a.uu_row_id AS uu_row_id,
-               a.time_created AS time_created,
-               a.time_updated AS time_updated,
-               a.store_number AS store_number,
-               a.number AS number,
-               (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
-               (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
-               (
-                SELECT count(aen.id) > 0
-                FROM audit_exception ae
-                     JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
-                WHERE ae.audit_id = a.id
-               ) AS exception_has_notes,
-               (SELECT max(time_updated)
-                  FROM (
-                       SELECT time_updated FROM audit_detail WHERE audit_id = a.id
-                       UNION
-                       SELECT time_updated FROM audit_exception WHERE audit_id = a.id
-                     ) AS m
-               ) AS last_updated,
-               a.inventory_count AS inventory_count,
-               a.dataset AS dataset,
-               s.current_status AS current_status,
-               (SELECT count(a.id)
-                FROM audit a
-                    JOIN status s
-                      ON s.audit_id = a.id
-                    JOIN maxStatus ms
-                      ON s.id = ms.current_status_id
-                $whereBuilder) AS total_elements
-            FROM audit a
-                 JOIN status s
-                      ON s.audit_id = a.id
-                 JOIN maxStatus ms
-                      ON s.id = ms.current_status_id
+         WITH paged AS (
+            ${selectBaseQuery()}
             $whereBuilder
-            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-            LIMIT ${pageRequest.size()}
-               OFFSET ${pageRequest.offset()}
+            ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+            LIMIT :limit OFFSET :offset
          )
          SELECT
-            a.id AS a_id,
-            a.uu_row_id AS a_uu_row_id,
-            a.time_created AS a_time_created,
-            a.time_updated AS a_time_updated,
-            a.number AS a_number,
-            a.total_details AS a_total_details,
-            a.total_exceptions AS a_total_exceptions,
-            a.current_status AS current_status,
-            a.last_updated AS a_last_updated,
-            a.inventory_count AS a_inventory_count,
-            a.exception_has_notes AS a_exception_has_notes,
-            a.dataset AS a_dataset,
-            aa.id AS aa_id,
-            aa.uu_row_id AS aa_uu_row_id,
-            aa.time_created AS aa_time_created,
-            aa.time_updated AS aa_time_updated,
-            astd.id AS astd_id,
-            astd.value AS astd_value,
-            astd.description AS astd_description,
-            astd.color AS astd_color,
-            astd.localization_code AS astd_localization_code,
-            aer.e_id AS aer_id,
-            aer.e_number AS aer_number,
-            aer.e_dataset AS aer_dataset,
-            aer.e_last_name AS aer_last_name,
-            aer.e_first_name_mi AS aer_first_name_mi,
-            aer.e_pass_code AS aer_pass_code,
-            aer.e_active AS aer_active,
-            aer.e_department AS aer_department,
-            aer.e_employee_type AS aer_employee_type,
-            aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
-            s.id AS s_id,
-            s.name AS s_name,
-            s.number AS s_number,
-            s.dataset AS s_dataset,
-            se.id AS se_id,
-            se.name AS se_name,
-            se.dataset AS s_dataset,
-            total_elements AS total_elements
-         FROM audits a
-              JOIN audit_action aa
-                  ON a.id = aa.audit_id
-              JOIN audit_status_type_domain astd
-                  ON aa.status_id = astd.id
-              JOIN employees aer
-                  ON aa.changed_by = aer.e_number
-              JOIN fastinfo_prod_import.store_vw s
-                  ON a.store_number = s.number
-                  AND s.dataset = :dataset
-              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
-                  ON aer.s_number = se.number
-                  AND se.dataset = :dataset
-         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-      """.trimIndent()
+            paged.*,
+            (SELECT count(*) FROM audit a $whereBuilder) AS total_elements
+         FROM paged
+         $wherePageBuilder
+         """.trimIndent()
 
-      logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
+      logger.trace("Finding all audits using {}\n{}", params, sql)
 
       val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
          var currentId: Long = -1
@@ -314,7 +216,7 @@ class AuditRepository @Inject constructor(
                currentParentEntity!!
             }
 
-            tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
+            tempParentEntity.actions.add(mapAuditAction(rs))
          } while(rs.next())
       }
 

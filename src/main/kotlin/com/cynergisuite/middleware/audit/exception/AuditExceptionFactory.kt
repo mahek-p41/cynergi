@@ -2,14 +2,11 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
-import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -82,5 +79,21 @@ class AuditExceptionFactoryService @Inject constructor(
    fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditExceptionEntity> {
       return AuditExceptionFactory.stream(numberIn, audit)
          .map { auditExceptionRepository.insert(it) }
+   }
+
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, signedOff: Boolean): Stream<AuditExceptionEntity> {
+      return AuditExceptionFactory.stream(numberIn, audit = audit, scannedByIn = scannedBy, signedOffIn = signedOff)
+         .map { auditExceptionRepository.insert(it) }
+   }
+
+   fun single(audit: AuditEntity, scannedBy: EmployeeEntity): AuditExceptionEntity {
+      return AuditExceptionFactory.stream(audit = audit, scannedByIn = scannedBy)
+         .map { auditExceptionRepository.insert(it) }
+         .findFirst().orElseThrow { Exception("Unable to create AuditExceptionEntity") }
+   }
+
+   fun generate(numberIn: Int, audit: AuditEntity, scannedBy: EmployeeEntity) {
+      AuditExceptionFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy)
+         .forEach{ auditExceptionRepository.insert(it) }
    }
 }

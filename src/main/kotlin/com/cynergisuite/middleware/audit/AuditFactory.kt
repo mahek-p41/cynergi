@@ -44,6 +44,11 @@ object AuditFactory {
          )
       }
    }
+
+   @JvmStatic
+   fun single(store: StoreEntity): AuditEntity {
+      return stream(store = store).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
 }
 
 @Singleton
@@ -54,28 +59,47 @@ class AuditFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, store: StoreEntity, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
-      val changedBy = changedByIn ?: employeeFactoryService.single(store)
+   fun stream(numberIn: Int = 1, store: StoreEntity): Stream<AuditEntity> {
+      val changedBy = employeeFactoryService.single(store)
 
-      return AuditFactory.stream(numberIn = 1, store = store, changedByIn = changedBy, statusesIn = statusesIn)
+      return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy)
          .map { auditRepository.insert(it) }
    }
 
-   fun single(changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>? = null): AuditEntity {
+   fun stream(numberIn: Int = 1, store: StoreEntity, changedByIn: EmployeeEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+      val changedBy = changedByIn ?: employeeFactoryService.single(store)
+
+      return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy, statusesIn = statusesIn)
+         .map { auditRepository.insert(it) }
+   }
+
+   fun single(changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
       val company = changedBy.company
       val store = changedBy.store ?: storeFactoryService.random(company)
 
-      return stream(store = store, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+      return stream(store = store, changedByIn = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
+
+   fun single(store: StoreEntity, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
+      return stream(store = store, changedByIn = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
    fun single(store: StoreEntity): AuditEntity {
       return stream(store = store).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
+   fun single(store: StoreEntity, changedBy: EmployeeEntity): AuditEntity {
+      return stream(store = store, changedByIn = changedBy).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
+
    fun generate(numberIn: Int, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
       val company = changedBy.company
       val store = changedBy.store ?: storeFactoryService.random(company)
 
+      stream(numberIn = numberIn, store= store, changedByIn = changedBy, statusesIn = statuses).forEach {  }
+   }
+
+   fun generate(numberIn: Int, store: StoreEntity, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
       stream(numberIn = numberIn, store= store, changedByIn = changedBy, statusesIn = statuses).forEach {  }
    }
 }
