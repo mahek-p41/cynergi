@@ -10,7 +10,6 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
-import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
@@ -427,7 +426,7 @@ class AuditRepository @Inject constructor(
          VALUES (
             :store_number,
             (
-               SELECT COUNT (id)
+               SELECT COUNT (i.id)
                FROM fastinfo_prod_import.inventory_vw i
                     JOIN company comp ON i.dataset = comp.dataset_code
                WHERE i.primary_location = :store_number
