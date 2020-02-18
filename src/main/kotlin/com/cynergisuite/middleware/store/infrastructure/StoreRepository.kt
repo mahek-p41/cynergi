@@ -25,9 +25,7 @@ class StoreRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
 
    @Language("PostgreSQL")
-   fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company): String {
-      params["dataset"] = company.myDataset()
-
+   private fun selectBaseQuery(): String {
       return """
          SELECT
             store.id AS id,
@@ -50,7 +48,7 @@ class StoreRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery(params, company)} AND id = :id"
+      val query = "${selectBaseQuery()} AND store.id = :id"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
@@ -61,7 +59,7 @@ class StoreRepository @Inject constructor(
    @Cacheable("store-cache")
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number)
-      val query = "${selectBaseQuery(params, company)} AND number = :number"
+      val query = "${selectBaseQuery()} AND store.number = :number"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
@@ -70,24 +68,20 @@ class StoreRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<StoreEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>()
-      val query = "${selectBaseQuery(params, company)} AND number <> 9000"
+      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
 
-      jdbc.query(
-         """
+      jdbc.query("""
          WITH paged AS (
-            ${query}
+            ${selectBaseQuery()} WHERE comp.id = :comp_id AND store.number <> 9000
          )
          SELECT
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-         LIMIT ${pageRequest.size()}
-            OFFSET ${pageRequest.offset()}
-         """,
+         LIMIT :limit OFFSET :offset""",
          params
       ) { rs ->
          if (totalElements == null) {
