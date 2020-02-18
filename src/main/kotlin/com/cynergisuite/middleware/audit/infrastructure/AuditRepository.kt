@@ -165,7 +165,6 @@ class AuditRepository @Inject constructor(
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder("WHERE comp_id = :comp_id ")
-      val wherePageBuilder = StringBuilder()
       val from = pageRequest.from
       val thru = pageRequest.thru
 
@@ -182,7 +181,15 @@ class AuditRepository @Inject constructor(
 
       if (status != null && status.isNotEmpty()) {
          params["current_status"] = status
-         wherePageBuilder.append(" WHERE current_status IN (:current_status) ")
+         whereBuilder.append(""" AND
+            ((SELECT csastd.value
+              FROM audit_action csaa
+                 JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
+              WHERE csaa.audit_id = a.id
+              ORDER BY csaa.id DESC
+              LIMIT 1
+            )) IN (:current_status)
+         """.trimIndent())
       }
 
       val sql = """
@@ -193,10 +200,8 @@ class AuditRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          )
          SELECT
-            paged.*,
-            (SELECT count(*) FROM audit a $whereBuilder) AS total_elements
+            paged.*
          FROM paged
-         $wherePageBuilder
          """.trimIndent()
 
       logger.trace("Finding all audits using {}\n{}", params, sql)
