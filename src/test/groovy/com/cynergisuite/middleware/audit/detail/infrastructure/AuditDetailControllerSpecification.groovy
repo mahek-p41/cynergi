@@ -43,7 +43,10 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit detail by id" () {
       given:
-      final savedAuditDetail = auditDetailFactoryService.single()
+      final store = storeFactoryService.random()
+      final employee = employeeFactoryService.single(store)
+      final audit = auditFactoryService.single(store)
+      final savedAuditDetail = auditDetailFactoryService.single(audit, employee)
 
       when:
       def result = get("$path/${savedAuditDetail.id}")
@@ -62,8 +65,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit details related to an audit" () {
       given:
-      final employee = employeeFactoryService.single()
-      final audit = auditFactoryService.single()
+      final store = storeFactoryService.random()
+      final employee = employeeFactoryService.single(store)
+      final audit = auditFactoryService.single(store)
       final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, employee, null).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -106,8 +110,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit details related to an audit where there are 2 audits both have details" () {
       given:
-      final employee = employeeFactoryService.single()
       final store = storeFactoryService.store(1)
+      final employee = employeeFactoryService.single(store)
       final List<AuditEntity> audits = auditFactoryService.stream(2, store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).toList()
       final audit = audits[0]
       final secondAudit = audits[1]

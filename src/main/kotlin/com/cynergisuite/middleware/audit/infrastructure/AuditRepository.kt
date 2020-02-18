@@ -99,7 +99,7 @@ class AuditRepository @Inject constructor(
             se.name AS se_name,
             se.dataset AS s_dataset
          FROM audit a
-              JOIN audit_action aa
+              LEFT OUTER JOIN audit_action aa
                    ON a.id = aa.audit_id
               JOIN audit_status_type_domain astd
                    ON aa.status_id = astd.id
@@ -280,7 +280,7 @@ class AuditRepository @Inject constructor(
             se.dataset AS s_dataset,
             total_elements AS total_elements
          FROM audits a
-              JOIN audit_action aa
+              LEFT OUTER JOIN audit_action aa
                   ON a.id = aa.audit_id
               JOIN audit_status_type_domain astd
                   ON aa.status_id = astd.id
@@ -409,7 +409,7 @@ class AuditRepository @Inject constructor(
             FROM (
                   SELECT a.id, MAX(aa.status_id) AS max_status
                   FROM audit a
-                      JOIN audit_action aa
+                      LEFT OUTER JOIN audit_action aa
                         ON a.id = aa.audit_id
                   WHERE a.store_number = :store_number
                        AND a.dataset = :dataset
