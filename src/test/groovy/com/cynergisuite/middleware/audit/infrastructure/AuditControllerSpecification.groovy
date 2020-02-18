@@ -614,7 +614,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.store.number
+      result.store.storeNumber == authenticatedEmployee.location.myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -648,7 +648,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.store.number
+      result.store.storeNumber == authenticatedEmployee.location.myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -669,7 +669,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.store.number
+      result.store.storeNumber == authenticatedEmployee.location.myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -989,7 +989,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.dataset) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.company) == 0
 
       when:
       def result = post(path, new AuditCreateValueObject())
@@ -998,7 +998,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > audit.id
-      result.store.storeNumber == authenticatedEmployee.store.number
+      result.store.storeNumber == authenticatedEmployee.location.myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"

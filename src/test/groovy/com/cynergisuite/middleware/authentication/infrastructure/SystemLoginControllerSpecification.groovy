@@ -28,7 +28,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login successful with user who doesn't have department" () {
       given:
-      final store = storeFactoryService.storeThreeTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store)
 
       when:
@@ -72,7 +73,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user who has department assigned" () {
       given:
-      final store = storeFactoryService.storeThreeTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.company)
       final employee = employeeFactoryService.single(store, department)
 
@@ -117,7 +119,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login failure due to invalid store" () {
       given:
-      final store = storeFactoryService.storeThreeTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.company)
       final validEmployee = employeeFactoryService.single(store, department)
 
@@ -138,7 +141,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login failure due to missing dataset" () {
       given:
-      final store = storeFactoryService.storeThreeTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.company)
       final validEmployee = employeeFactoryService.single(store, department)
 
@@ -161,7 +165,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user who isn't authorized for tstds2" () {
       given:
-      final storeOneTstds1 = storeFactoryService.storeOneTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final storeOneTstds1 = storeFactoryService.store(3, company)
       final user = employeeFactoryService.single(storeOneTstds1)
 
       when:
@@ -227,7 +232,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with superfluous URL parameters" () {
       given:
-      final store = storeFactoryService.storeThreeTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.company)
       final employee = employeeFactoryService.single(store, department)
 

@@ -164,7 +164,7 @@ class AuditRepository @Inject constructor(
       val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
-      val whereBuilder = StringBuilder("WHERE comp_id = :comp_id ")
+      val whereBuilder = StringBuilder("WHERE a.company_id = :comp_id ")
       val from = pageRequest.from
       val thru = pageRequest.thru
 
@@ -181,28 +181,122 @@ class AuditRepository @Inject constructor(
 
       if (status != null && status.isNotEmpty()) {
          params["current_status"] = status
-         whereBuilder.append(""" AND
-            ((SELECT csastd.value
-              FROM audit_action csaa
-                 JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
-              WHERE csaa.audit_id = a.id
-              ORDER BY csaa.id DESC
-              LIMIT 1
-            )) IN (:current_status)
-         """.trimIndent())
+         whereBuilder.append(" AND current_status IN (:current_status) ")
       }
 
       val sql = """
-         WITH paged AS (
-            ${selectBaseQuery()}
+         WITH employees AS (
+            ${employeeRepository.employeeBaseQuery()}
+         ), audits AS (
+            WITH status AS (
+               SELECT
+                  csastd.value AS current_status,
+                  csaa.audit_id AS audit_id, csaa.id
+               FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
+            ), maxStatus AS (
+               SELECT MAX(id) AS current_status_id, audit_id
+               FROM audit_action
+               GROUP BY audit_id
+            )
+            SELECT
+               a.id AS id,
+               a.uu_row_id AS uu_row_id,
+               a.time_created AS time_created,
+               a.time_updated AS time_updated,
+               a.store_number AS store_number,
+               a.number AS number,
+               (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
+               (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
+               (  SELECT count(aen.id) > 0
+                  FROM audit_exception ae
+                     JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
+                  WHERE ae.audit_id = a.id
+               ) AS exception_has_notes,
+               (SELECT max(time_updated)
+                FROM (
+                   SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                   UNION
+                   SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                ) AS m
+               ) AS last_updated,
+               a.inventory_count AS inventory_count,
+               a.company_id AS company_id,
+               s.current_status AS current_status,
+               (SELECT count(a.id)
+                FROM audit a
+                    JOIN status s
+                      ON s.audit_id = a.id
+                    JOIN maxStatus ms
+                      ON s.id = ms.current_status_id
+                $whereBuilder) AS total_elements
+            FROM audit a
+                 JOIN status s
+                      ON s.audit_id = a.id
+                 JOIN maxStatus ms
+                      ON s.id = ms.current_status_id
             $whereBuilder
-            ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          )
          SELECT
-            paged.*
-         FROM paged
-         """.trimIndent()
+            a.id                                         AS a_id,
+            a.uu_row_id                                  AS a_uu_row_id,
+            a.time_created                               AS a_time_created,
+            a.time_updated                               AS a_time_updated,
+            a.store_number                               AS store_number,
+            a.number                                     AS a_number,
+            a.total_details                              AS a_total_details,
+            a.total_exceptions                           AS a_total_exceptions,
+            a.current_status                             AS current_status,
+            a.last_updated                               AS a_last_updated,
+            a.inventory_count                            AS a_inventory_count,
+            a.exception_has_notes                        AS a_exception_has_notes,
+            auditAction.id                               AS auditAction_id,
+            auditAction.uu_row_id                        AS auditAction_uu_row_id,
+            auditAction.time_created                     AS auditAction_time_created,
+            auditAction.time_updated                     AS auditAction_time_updated,
+            astd.id                                      AS astd_id,
+            astd.value                                   AS astd_value,
+            astd.description                             AS astd_description,
+            astd.color                                   AS astd_color,
+            astd.localization_code                       AS astd_localization_code,
+            auditActionEmployee.emp_id                   AS auditEmployee_id,
+            auditActionEmployee.emp_number               AS auditEmployee_number,
+            auditActionEmployee.emp_last_name            AS auditEmployee_last_name,
+            auditActionEmployee.emp_first_name_mi        AS auditEmployee_first_name_mi,
+            auditActionEmployee.emp_pass_code            AS auditEmployee_pass_code,
+            auditActionEmployee.emp_active               AS auditEmployee_active,
+            auditActionEmployee.emp_type                 AS auditEmployee_type,
+            auditActionEmployee.emp_cynergi_system_admin AS auditEmployee_cynergi_system_admin,
+            auditActionEmployee.dept_id                  AS auditEmployeeDept_id,
+            auditActionEmployee.dept_code                AS auditEmployeeDept_code,
+            auditActionEmployee.dept_description         AS auditEmployeeDept_description,
+            auditActionEmployee.dept_security_profile    AS auditEmployeeDept_security_profile,
+            auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
+            auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
+            auditStore.id                                AS auditStore_id,
+            auditStore.name                              AS auditStore_name,
+            auditStore.number                            AS auditStore_number,
+            auditStore.dataset                           AS auditStore_dataset,
+            comp.id                                      AS comp_id,
+            comp.uu_row_id                               AS comp_uu_row_id,
+            comp.time_created                            AS comp_time_created,
+            comp.time_updated                            AS comp_time_updated,
+            comp.name                                    AS comp_name,
+            comp.doing_business_as                       AS comp_doing_business_as,
+            comp.client_code                             AS comp_client_code,
+            comp.client_id                               AS comp_client_id,
+            comp.dataset_code                            AS comp_dataset_code,
+            comp.federal_id_number                       AS comp_federal_id_number,
+            total_elements AS total_elements
+         FROM audits a
+              JOIN company comp ON a.company_id = comp.id
+              JOIN audit_action auditAction ON a.id = auditAction.audit_id
+              JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
+              JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+      """.trimIndent()
 
       logger.trace("Finding all audits using {}\n{}", params, sql)
 
@@ -288,9 +382,11 @@ class AuditRepository @Inject constructor(
             status.current_status_color AS current_status_color,
             count(*) AS current_status_count
          FROM audit a
+            JOIN company comp ON a.company_id = comp.id
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-            JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number AND store.dataset = :dataset
+            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+         WHERE comp.id = :comp_id
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,
@@ -318,10 +414,8 @@ class AuditRepository @Inject constructor(
             FROM (
                   SELECT a.id, MAX(aa.status_id) AS max_status
                   FROM audit a
-                      JOIN audit_action aa
-                        ON a.id = aa.audit_id
-                  WHERE a.store_number = :store_number
-                       AND a.dataset = :dataset
+                      JOIN audit_action aa ON a.id = aa.audit_id
+                  WHERE a.store_number = :store_number AND a.company_id = :comp_id
                   GROUP BY a.id
             ) b
             JOIN audit_status_type_domain astd

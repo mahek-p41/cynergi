@@ -228,12 +228,12 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c_", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "fpis_"): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix)
 
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
-         type = rs.getString("${columnPrefix}employee_type"),
+         type = rs.getString("${columnPrefix}type"),
          number = rs.getInt("${columnPrefix}number"),
          company = company,
          lastName = rs.getString("${columnPrefix}last_name"),
