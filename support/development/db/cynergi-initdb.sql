@@ -16,9 +16,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
     id BIGINT,
     number INTEGER,
     name VARCHAR,
-    dataset VARCHAR,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
+    dataset VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
@@ -27,9 +25,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
     description VARCHAR,
     dataset VARCHAR,
     security_profile INTEGER,
-    default_menu VARCHAR,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
+    default_menu VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
@@ -49,18 +45,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
     alternative_area INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
 
-<<<<<<< HEAD
-=======
-CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
-   id BIGINT,
-   number INTEGER,
-   name VARCHAR,
-   dataset VARCHAR,
-   time_created TIMESTAMPTZ,
-   time_updated TIMESTAMPTZ
-) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
-
->>>>>>> staging
 CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     id BIGINT,
     dataset VARCHAR,
@@ -88,9 +72,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     location INTEGER,
     status VARCHAR,
     primary_location INTEGER,
-    location_type INTEGER,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
+    location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;

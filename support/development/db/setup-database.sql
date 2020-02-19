@@ -44,9 +44,7 @@ BEGIN
             loc_dept_desc AS description,
             loc_dept_security_profile AS security_profile,
             loc_dept_default_menu AS default_menu,
-            ''' || r.schema_name || '''::text AS dataset,
-            created_at AT TIME ZONE ''UTC'' AS time_created,
-            updated_at AT TIME ZONE ''UTC'' AS time_updated
+            ''' || r.schema_name || '''::text AS dataset
          FROM ' || r.schema_name || '.level2_departments
          WHERE loc_dept_code IS NOT NULL
                AND loc_dept_desc IS NOT NULL
@@ -83,9 +81,7 @@ BEGIN
             id AS id,
             loc_tran_loc AS number,
             loc_transfer_desc AS name,
-            ''' || r.schema_name || '''::text AS dataset,
-            created_at AT TIME ZONE ''UTC'' AS time_created,
-            updated_at AT TIME ZONE ''UTC'' AS time_updated
+            ''' || r.schema_name || '''::text AS dataset
          FROM ' || r.schema_name || '.level2_stores
          WHERE loc_transfer_desc IS NOT NULL
       ';
@@ -117,26 +113,24 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            employee.id                                    AS id,
-            created_at AT TIME ZONE ''UTC''       AS time_created,
-            updated_at AT TIME ZONE ''UTC''       AS time_updated,
-            emp_nbr                               AS number,
-            emp_last_name                         AS last_name,
-            NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
+            employee.id                              AS id,
+            employee.created_at AT TIME ZONE ''UTC'' AS time_created,
+            employee.updated_at AT TIME ZONE ''UTC'' AS time_updated
+            emp_nbr                                  AS number,
+            emp_last_name                            AS last_name,
+            NULLIF(TRIM(emp_first_name_mi), '''')    AS first_name_mi,
             department.loc_dept_code AS department,
             TRIM(BOTH FROM
                CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
-            ) AS pass_code,
-            true AS active,
-            employee.created_at AT TIME ZONE ''UTC'' AS time_created,
-            employee.updated_at AT TIME ZONE ''UTC'' AS time_updated
-            emp_store_nbr                         AS store_number,
-            emp_termination_date IS NULL          AS active,
-            emp_dept                              AS department,
-            FALSE                                 AS cynergi_system_admin,
-            ''' || r.schema_name || '''::text     AS dataset,
-            emp_alt_store_indr                    AS alternative_store_indicator,
-            emp_alt_area                          AS alternative_area
+            )                                        AS pass_code,
+            true                                     AS active,
+            emp_store_nbr                            AS store_number,
+            emp_termination_date IS NULL             AS active,
+            emp_dept                                 AS department,
+            FALSE                                    AS cynergi_system_admin,
+            ''' || r.schema_name || '''::text        AS dataset,
+            emp_alt_store_indr                       AS alternative_store_indicator,
+            emp_alt_area                             AS alternative_area
          FROM ' || r.schema_name || '.level1_loc_emps
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM
@@ -206,9 +200,7 @@ BEGIN
             inv_recs.inv_location_rec_1 AS location,
             inv_recs.inv_status AS status,
             loc_trans.loc_tran_primary_loc AS primary_location,
-            loc_trans2.loc_transfer_loc_type AS location_type,
-            loc_trans2.created_at AT TIME ZONE ''UTC'' AS time_created,
-            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated
+            loc_trans2.loc_transfer_loc_type AS location_type
          FROM ' || r.schema_name || '.level1_ninvrecs inv_recs '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans ON inv_location_rec_1 = loc_trans.loc_tran_loc '
       || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2 ON loc_trans.loc_tran_primary_loc = loc_trans2.loc_tran_loc '
@@ -252,9 +244,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
   description VARCHAR,
   dataset VARCHAR,
   security_profile INTEGER,
-  default_menu VARCHAR,
-  time_created TIMESTAMPTZ,
-  time_updated TIMESTAMPTZ
+  default_menu VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
@@ -301,9 +291,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     location INTEGER,
     status VARCHAR,
     primary_location INTEGER,
-    location_type INTEGER,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
+    location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
