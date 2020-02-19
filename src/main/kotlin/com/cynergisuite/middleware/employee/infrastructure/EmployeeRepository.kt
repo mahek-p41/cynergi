@@ -45,7 +45,7 @@ class EmployeeRepository @Inject constructor(
             SELECT
                1 AS from_priority,
                emp.id AS emp_id,
-               'sysz' AS emp_type,
+               'sysz' AS emp_emp_type,
                emp.number AS emp_number,
                emp.last_name AS emp_last_name,
                emp.first_name_mi AS emp_first_name_mi,
@@ -71,14 +71,14 @@ class EmployeeRepository @Inject constructor(
                fpis.number AS fpis_number,
                fpis.name AS fpis_name
             FROM company comp
-               JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+               JOIN employee emp ON comp.id = emp.company_id
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
             UNION
             SELECT
                2 AS from_priority,
                emp.id AS emp_id,
-               'eli' AS emp_type,
+               'eli' AS emp_emp_type,
                emp.number AS emp_number,
                emp.last_name AS emp_last_name,
                emp.first_name_mi AS emp_first_name_mi,
@@ -117,8 +117,8 @@ class EmployeeRepository @Inject constructor(
 
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
-         mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType),
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_emp_type = :emp_emp_type",
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_emp_type" to employeeType),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -131,8 +131,8 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
       val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE emp_number = :number AND emp_type = :emp_type LIMIT 1",
-         mapOf("emp_number" to number, "emp_type" to employeeType),
+         "${employeeBaseQuery()} WHERE emp_number = :number AND emp_emp_type = :emp_emp_type LIMIT 1",
+         mapOf("emp_number" to number, "emp_emp_type" to employeeType),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -147,10 +147,10 @@ class EmployeeRepository @Inject constructor(
       val found = jdbc.findFirstOrNull("""
          ${employeeBaseQuery()}
          WHERE emp_id = :id
-               AND emp_employee_type = :employee_type
+               AND emp_emp_type = :emp_emp_type
                AND comp_id = :comp_id
          """,
-         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myCompany().myId()),
+         mutableMapOf("id" to user.myId(), "emp_emp_type" to user.myEmployeeType(), "store_number" to user.myCompany().myId()),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -169,17 +169,17 @@ class EmployeeRepository @Inject constructor(
                SELECT
                   1 AS from_priority,
                   emp.id AS emp_id,
-                  'sysz' AS emp_type,
+                  'sysz' AS emp_emp_type,
                   comp.id AS comp_id
                FROM company comp
-                  JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+                  JOIN employee emp ON comp.id = emp.company_id
                   JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
                UNION
                SELECT
                   2 AS from_priority,
                   emp.id AS emp_id,
-                  'eli' AS emp_type,
+                  'eli' AS emp_emp_type,
                   comp.id AS comp_id
                FROM company comp
                   JOIN employee emp ON comp.id = emp.company_id
@@ -188,8 +188,8 @@ class EmployeeRepository @Inject constructor(
             ) AS inner_employees
             ORDER BY from_priority
          ) AS employees
-         WHERE emp_id = :emp_id AND emp_type = :emp_type AND comp_id = :comp_id""",
-         mapOf("emp_id" to id, "emp_type" to employeeType, "comp_id" to company.myId()),
+         WHERE emp_id = :emp_id AND emp_emp_type = :emp_emp_type AND comp_id = :comp_id""",
+         mapOf("emp_id" to id, "emp_emp_type" to employeeType, "comp_id" to company.myId()),
          Boolean::class.java
       )!!
 
@@ -228,12 +228,12 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c_", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "c_", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix)
 
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
-         type = rs.getString("${columnPrefix}employee_type"),
+         type = rs.getString("${columnPrefix}emp_type"),
          number = rs.getInt("${columnPrefix}number"),
          company = company,
          lastName = rs.getString("${columnPrefix}last_name"),
@@ -246,7 +246,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "c_", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {

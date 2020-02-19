@@ -27,17 +27,18 @@ class DepartmentRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull("""
          SELECT
-            id AS d_id,
-            code AS d_code,
-            description AS d_description,
-            security_profile AS d_security_profile,
-            default_menu AS d_default_menu,
-            dataset AS d_dataset
-         FROM fastinfo_prod_import.department_vw
-         WHERE id = :id
-               AND dataset = :dataset
+            dept.id AS d_id,
+            dept.code AS d_code,
+            dept.description AS d_description,
+            dept.security_profile AS d_security_profile,
+            dept.dataset AS d_dataset,
+            dept.default_menu AS d_default_menu
+         FROM fastinfo_prod_import.department_vw dept
+         JOIN company comp ON comp.dataset_code = dept.dataset
+         WHERE d_id = :id
+               AND comp.id = :comp_id
          """.trimIndent(),
-         mapOf("id" to id, "dataset" to company.myDataset()),
+         mapOf("id" to id, "comp_id" to company.myId()),
          RowMapper { rs, _ -> mapRow(rs, company) }
       )
 
@@ -52,19 +53,19 @@ class DepartmentRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull("""
          SELECT
-            id AS d_id,
-            code AS d_code,
-            description AS d_description,
-            security_profile AS d_security_profile,
-            default_menu AS d_default_menu,
-            dataset AS d_dataset
-         FROM fastinfo_prod_import.department_vw
-         WHERE code = :code
-               AND dataset = :dataset
+            dept.id AS d_id,
+            dept.code AS d_code,
+            dept.description AS d_description,
+            dept.security_profile AS d_security_profile,
+            dept.default_menu AS d_default_menu
+         FROM fastinfo_prod_import.department_vw dept
+         JOIN company comp ON comp.dataset_code = dept.dataset
+         WHERE dept.code = :code
+               AND comp.id = :comp_id
          """.trimIndent(),
          mapOf(
             "code" to code,
-            "dataset" to company.myDataset()
+            "comp_id" to company.myId()
          ),
          RowMapper { rs, _ -> mapRow(rs, company) }
       )
@@ -80,20 +81,20 @@ class DepartmentRepository @Inject constructor(
 
       jdbc.query("""
          SELECT
-            id AS d_id,
-            code AS d_code,
-            description AS d_description,
-            security_profile AS d_security_profile,
-            default_menu AS d_default_menu,
-            dataset AS d_dataset,
+            dept.id AS d_id,
+            dept.code AS d_code,
+            dept.description AS d_description,
+            dept.security_profile AS d_security_profile,
+            dept.default_menu AS d_default_menu,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
-         FROM fastinfo_prod_import.department_vw
-         WHERE dataset = :dataset
+         FROM fastinfo_prod_import.department_vw dept
+         JOIN company comp ON comp.dataset_code = dept.dataset
+         WHERE d_company = :comp_id
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
          """.trimIndent(),
-         mapOf("dataset" to company.myDataset())
+         mapOf("dataset" to company.myDataset(),"comp_id" to company.myId())
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -113,7 +114,7 @@ class DepartmentRepository @Inject constructor(
       val exists = jdbc.queryForObject("""
          SELECT count(dept.id) > 0
          FROM fastinfo_prod_import.department_vw dept
-              JOIN company comp ON dept.dataset = comp.dataset_code
+              JOIN company comp ON dept.company = comp.id
          WHERE dept.id = :dept_id AND comp.id = :comp_id
          """.trimIndent(),
          mapOf("dept_id" to id, "comp_id" to company.myId()),

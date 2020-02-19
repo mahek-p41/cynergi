@@ -57,7 +57,7 @@ class CompanyRepository @Inject constructor(
            comp.federal_id_number  AS federal_id_number
          FROM company comp
               JOIN fastinfo_prod_import.store_vw s
-                ON c.dataset_code = s.dataset
+                ON comp.dataset_code = s.dataset
          WHERE s.id = :store_id
                AND s.dataset = :dataset
          """,

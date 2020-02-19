@@ -51,27 +51,38 @@ class AuditDetailRepository @Inject constructor(
             ad.inventory_brand AS ad_inventory_brand,
             ad.inventory_model AS ad_inventory_model,
             ad.audit_id AS ad_audit_id,
-            e.e_id AS e_id,
-            e.e_number AS e_number,
-            e.e_dataset AS e_dataset,
-            e.e_last_name AS e_last_name,
-            e.e_first_name_mi AS e_first_name_mi,
-            e.e_pass_code AS  e_pass_code,
-            e.e_department AS e_department,
-            e.e_active AS e_active,
-            e.e_employee_type AS e_employee_type,
-            e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
-            e.s_id AS s_id,
-            e.s_number AS s_number,
-            e.s_name AS s_name,
-            e.s_dataset AS s_dataset,
+            e.emp_id AS emp_id,
+            e.emp_number AS emp_number,
+            e.emp_last_name AS emp_last_name,
+            e.emp_first_name_mi AS emp_first_name_mi,
+            e.emp_emp_type AS emp_emp_type,
+            e.emp_pass_code AS emp_pass_code,
+            e.emp_active AS emp_active,
+            e.fpis_id AS s_id,
+            e.fpis_number AS s_number,
+            e.fpis_name AS s_name,
+            e.comp_id AS c_id,
+            e.comp_uu_row_id AS c_uu_row_id,
+            e.comp_time_created AS c_time_created,
+            e.comp_time_updated AS c_time_updated,
+            e.comp_name AS c_name,
+            e.comp_doing_business_as AS c_doing_business_as,
+            e.comp_client_code AS c_client_code,
+            e.comp_client_id AS c_client_id,
+            e.comp_dataset_code AS c_dataset_code,
+            e.comp_federal_id_number AS c_federal_id_number,
+            e.dept_id AS d_id,
+            e.dept_code AS d_code,
+            e.dept_description AS d_description,
+            e.dept_security_profile AS d_security_profile,
+            e.dept_default_menu AS d_default_menu,
             asatd.id AS asatd_id,
             asatd.value AS asatd_value,
             asatd.description AS asatd_description,
             asatd.localization_code AS asatd_localization_code
          FROM audit_detail ad
               JOIN ad_employees e
-                ON ad.scanned_by = e.e_number
+                ON ad.scanned_by = e.emp_number
               JOIN audit_scan_area_type_domain asatd
                 ON ad.scan_area_id = asatd.id
       """
@@ -81,7 +92,7 @@ class AuditDetailRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery(params, company)} WHERE ad.id = :id"
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
+            val scannedBy = employeeRepository.mapRow(rs, "emp_")
             val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
             mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_")
@@ -111,7 +122,7 @@ class AuditDetailRepository @Inject constructor(
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
       jdbc.query(query, params) { rs ->
-         val scannedBy = employeeRepository.mapRow(rs, "e_")
+         val scannedBy = employeeRepository.mapRow(rs, "emp_")
          val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
          resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_"))

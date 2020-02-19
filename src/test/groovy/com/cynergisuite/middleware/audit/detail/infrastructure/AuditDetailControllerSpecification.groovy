@@ -43,7 +43,11 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit detail by id" () {
       given:
-      final savedAuditDetail = auditDetailFactoryService.single()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final employee = employeeFactoryService.single(store)
+      final savedAuditDetail = auditDetailFactoryService.single(audit, employee)
 
       when:
       def result = get("$path/${savedAuditDetail.id}")
