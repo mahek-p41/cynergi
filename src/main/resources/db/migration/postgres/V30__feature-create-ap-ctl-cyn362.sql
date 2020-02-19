@@ -13,13 +13,12 @@ CREATE TABLE accounts_payable_control (
     general_ledger_corporate_accounts_receivable    integer,
     general_ledger_corporate_sales             integer,
     general_ledger_corporate_purchase          integer,
+    general_ledger_inventory_account           integer,
     print_currency_indicator            varchar(1) DEFAULT 'N'              NOT NULL,
     lock_inventory_indicator            BOOLEAN DEFAULT FALSE               NOT NULL,
     purchase_order_number_required_indicator varchar(1)  DEFAULT 'V'        NOT NULL
 );
 
-
-CREATE UNIQUE INDEX co_code_index ON accounts_payable_control(company_id,code);
 
 CREATE TRIGGER accounts_payable_control_trg
    BEFORE UPDATE
