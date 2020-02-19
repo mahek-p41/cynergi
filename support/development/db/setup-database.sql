@@ -44,7 +44,7 @@ BEGIN
             loc_dept_desc AS description,
             loc_dept_security_profile AS security_profile,
             loc_dept_default_menu AS default_menu,
-            ''' || r.schema_name || ''' AS dataset,
+            ''' || r.schema_name || '''::text AS dataset,
             created_at AT TIME ZONE ''UTC'' AS time_created,
             updated_at AT TIME ZONE ''UTC'' AS time_updated
          FROM ' || r.schema_name || '.level2_departments
@@ -80,20 +80,14 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            loc_trans.id AS id,
-            loc_trans.loc_tran_loc AS number,
-            loc_trans.loc_transfer_desc AS name,
+            id AS id,
+            loc_tran_loc AS number,
+            loc_transfer_desc AS name,
             ''' || r.schema_name || '''::text AS dataset,
-            loc_trans.created_at AT TIME ZONE ''UTC'' AS time_created,
-            loc_trans.updated_at AT TIME ZONE ''UTC'' AS time_updated
-         FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-              JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
-                ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
-         WHERE loc_trans.loc_tran_rec_type = ''4''
-               AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
-               AND loc_trans2.loc_tran_rec_type = ''4''
-               AND loc_trans2.loc_tran_loc = 0
-               AND loc_trans.loc_transfer_desc IS NOT NULL
+            created_at AT TIME ZONE ''UTC'' AS time_created,
+            updated_at AT TIME ZONE ''UTC'' AS time_updated
+         FROM ' || r.schema_name || '.level2_stores
+         WHERE loc_transfer_desc IS NOT NULL
       ';
 
       unionAll := ' UNION ALL ';
@@ -123,20 +117,19 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            id                                    AS id,
+            employee.id                                    AS id,
             created_at AT TIME ZONE ''UTC''       AS time_created,
             updated_at AT TIME ZONE ''UTC''       AS time_updated,
             emp_nbr                               AS number,
             emp_last_name                         AS last_name,
             NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
+            department.loc_dept_code AS department,
             TRIM(BOTH FROM
-               CAST(emp_pass_1 AS TEXT) ||
-               CAST(emp_pass_2 AS TEXT) ||
-               CAST(emp_pass_3 AS TEXT) ||
-               CAST(emp_pass_4 AS TEXT) ||
-               CAST(emp_pass_5 AS TEXT) ||
-               CAST(emp_pass_6 AS TEXT)
-            )                                     AS pass_code,
+               CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
+            ) AS pass_code,
+            true AS active,
+            employee.created_at AT TIME ZONE ''UTC'' AS time_created,
+            employee.updated_at AT TIME ZONE ''UTC'' AS time_updated
             emp_store_nbr                         AS store_number,
             emp_termination_date IS NULL          AS active,
             emp_dept                              AS department,
@@ -147,12 +140,7 @@ BEGIN
          FROM ' || r.schema_name || '.level1_loc_emps
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM
-                  CAST(emp_pass_1 AS TEXT) ||
-                  CAST(emp_pass_2 AS TEXT) ||
-                  CAST(emp_pass_3 AS TEXT) ||
-                  CAST(emp_pass_4 AS TEXT) ||
-                  CAST(emp_pass_5 AS TEXT) ||
-                  CAST(emp_pass_6 AS TEXT)
+                  CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
                ) <> ''''
       ';
 

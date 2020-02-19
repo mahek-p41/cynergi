@@ -49,6 +49,18 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
     alternative_area INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
 
+<<<<<<< HEAD
+=======
+CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
+   id BIGINT,
+   number INTEGER,
+   name VARCHAR,
+   dataset VARCHAR,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
+
+>>>>>>> staging
 CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     id BIGINT,
     dataset VARCHAR,
