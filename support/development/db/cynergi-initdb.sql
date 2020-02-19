@@ -39,7 +39,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
 
 CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
    id BIGINT,
-   company_id BIGINT,
    number INTEGER,
    name VARCHAR,
    dataset VARCHAR,
