@@ -71,7 +71,7 @@ class EmployeeRepository @Inject constructor(
                fpis.number AS fpis_number,
                fpis.name AS fpis_name
             FROM company comp
-               JOIN employee emp ON comp.id = emp.company_id
+               JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
             UNION
@@ -172,7 +172,7 @@ class EmployeeRepository @Inject constructor(
                   'sysz' AS emp_emp_type,
                   comp.id AS comp_id
                FROM company comp
-                  JOIN employee emp ON comp.id = emp.company_id
+                  JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
                   JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
                UNION

@@ -36,7 +36,7 @@ class CompanyRepository @Inject constructor(
          comp.client_code         AS client_code,
          comp.client_id           AS client_id,
          comp.dataset_code        AS dataset_code,
-         comp.federal_id_number  AS federal_id_number
+         comp.federal_id_number   AS federal_id_number
       FROM company comp
    """
 

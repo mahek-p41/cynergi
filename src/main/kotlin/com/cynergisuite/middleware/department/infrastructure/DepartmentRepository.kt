@@ -35,7 +35,7 @@ class DepartmentRepository @Inject constructor(
             dept.default_menu AS d_default_menu
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
-         WHERE d_id = :id
+         WHERE dept.id = :id
                AND comp.id = :comp_id
          """.trimIndent(),
          mapOf("id" to id, "comp_id" to company.myId()),
@@ -57,6 +57,7 @@ class DepartmentRepository @Inject constructor(
             dept.code AS d_code,
             dept.description AS d_description,
             dept.security_profile AS d_security_profile,
+            dept.dataset AS d_dataset,
             dept.default_menu AS d_default_menu
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
@@ -85,11 +86,12 @@ class DepartmentRepository @Inject constructor(
             dept.code AS d_code,
             dept.description AS d_description,
             dept.security_profile AS d_security_profile,
+            dept.dataset AS d_dataset,
             dept.default_menu AS d_default_menu,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
-         WHERE d_company = :comp_id
+         WHERE dept.company = :comp_id
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
@@ -114,7 +116,7 @@ class DepartmentRepository @Inject constructor(
       val exists = jdbc.queryForObject("""
          SELECT count(dept.id) > 0
          FROM fastinfo_prod_import.department_vw dept
-              JOIN company comp ON dept.company = comp.id
+              JOIN company comp ON dept.dataset = comp.dataset_code
          WHERE dept.id = :dept_id AND comp.id = :comp_id
          """.trimIndent(),
          mapOf("dept_id" to id, "comp_id" to company.myId()),

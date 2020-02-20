@@ -58,6 +58,7 @@ class AuditDetailRepository @Inject constructor(
             e.emp_emp_type AS emp_emp_type,
             e.emp_pass_code AS emp_pass_code,
             e.emp_active AS emp_active,
+            e.emp_cynergi_system_admin AS emp_cynergi_system_admin,
             e.fpis_id AS s_id,
             e.fpis_number AS s_number,
             e.fpis_name AS s_name,
