@@ -94,11 +94,15 @@ class EmployeeFactoryService @Inject constructor(
          .map { employeeRepository.insert(it).copy(passCode = it.passCode) }
    }
 
-   fun single(storeIn: StoreEntity?): EmployeeEntity {
+   fun single(company: Company): EmployeeEntity {
+      return stream(companyIn = company).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
+   }
+
+   fun single(storeIn: StoreEntity): EmployeeEntity {
       return stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
-   fun single(storeIn: StoreEntity?, departmentIn: Department?): EmployeeEntity {
+   fun single(storeIn: StoreEntity, departmentIn: Department): EmployeeEntity {
       return stream(storeIn = storeIn, departmentIn = departmentIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 

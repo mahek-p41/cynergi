@@ -72,14 +72,18 @@ class AuditDetailFactoryService @Inject constructor(
          }
    }
 
-   fun generate(numberIn: Int = 1, audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null) =
-      stream(numberIn, audit, scannedByIn, scanAreaIn).forEach {  }
-
-   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity? = null): AuditDetailEntity {
-      return single(audit, scannedByIn, null)
+   fun generate(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, scanArea: AuditScanArea) {
+      AuditDetailFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy, scanAreaIn = scanArea)
+         .forEach { auditDetailRepository.insert(it) }
    }
 
    fun single(audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): AuditDetailEntity {
       return stream(1, audit, scannedByIn, scanAreaIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
    }
-}
+
+   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
+         return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
+            .map { auditDetailRepository.insert(it) }
+            .findFirst().orElseThrow { Exception("Uanble to create AuditDetailEntity") }
+   }
+   }

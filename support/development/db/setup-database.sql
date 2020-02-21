@@ -44,9 +44,7 @@ BEGIN
             loc_dept_desc AS description,
             loc_dept_security_profile AS security_profile,
             loc_dept_default_menu AS default_menu,
-            ''' || r.schema_name || ''' AS dataset,
-            created_at AT TIME ZONE ''UTC'' AS time_created,
-            updated_at AT TIME ZONE ''UTC'' AS time_updated
+            ''' || r.schema_name || '''::text AS dataset
          FROM ' || r.schema_name || '.level2_departments
          WHERE loc_dept_code IS NOT NULL
                AND loc_dept_desc IS NOT NULL
@@ -80,20 +78,12 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            loc_trans.id AS id,
-            loc_trans.loc_tran_loc AS number,
-            loc_trans.loc_transfer_desc AS name,
-            ''' || r.schema_name || '''::text AS dataset,
-            loc_trans.created_at AT TIME ZONE ''UTC'' AS time_created,
-            loc_trans.updated_at AT TIME ZONE ''UTC'' AS time_updated
-         FROM ' || r.schema_name || '.level1_loc_trans loc_trans
-              JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2
-                ON loc_trans.loc_tran_company_nbr = loc_trans2.loc_tran_company_nbr
-         WHERE loc_trans.loc_tran_rec_type = ''4''
-               AND loc_trans.loc_tran_loc = loc_trans.loc_tran_primary_loc
-               AND loc_trans2.loc_tran_rec_type = ''4''
-               AND loc_trans2.loc_tran_loc = 0
-               AND loc_trans.loc_transfer_desc IS NOT NULL
+            id AS id,
+            loc_tran_loc AS number,
+            loc_transfer_desc AS name,
+            ''' || r.schema_name || '''::text AS dataset
+         FROM ' || r.schema_name || '.level2_stores
+         WHERE loc_transfer_desc IS NOT NULL
       ';
 
       unionAll := ' UNION ALL ';
@@ -123,36 +113,28 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            id                                    AS id,
-            created_at AT TIME ZONE ''UTC''       AS time_created,
-            updated_at AT TIME ZONE ''UTC''       AS time_updated,
-            emp_nbr                               AS number,
-            emp_last_name                         AS last_name,
-            NULLIF(TRIM(emp_first_name_mi), '''') AS first_name_mi,
+            employee.id                              AS id,
+            employee.created_at AT TIME ZONE ''UTC'' AS time_created,
+            employee.updated_at AT TIME ZONE ''UTC'' AS time_updated
+            emp_nbr                                  AS number,
+            emp_last_name                            AS last_name,
+            NULLIF(TRIM(emp_first_name_mi), '''')    AS first_name_mi,
+            department.loc_dept_code AS department,
             TRIM(BOTH FROM
-               CAST(emp_pass_1 AS TEXT) ||
-               CAST(emp_pass_2 AS TEXT) ||
-               CAST(emp_pass_3 AS TEXT) ||
-               CAST(emp_pass_4 AS TEXT) ||
-               CAST(emp_pass_5 AS TEXT) ||
-               CAST(emp_pass_6 AS TEXT)
-            )                                     AS pass_code,
-            emp_store_nbr                         AS store_number,
-            emp_termination_date IS NULL          AS active,
-            emp_dept                              AS department,
-            FALSE                                 AS cynergi_system_admin,
-            ''' || r.schema_name || '''::text     AS dataset,
-            emp_alt_store_indr                    AS alternative_store_indicator,
-            emp_alt_area                          AS alternative_area
+               CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
+            )                                        AS pass_code,
+            true                                     AS active,
+            emp_store_nbr                            AS store_number,
+            emp_termination_date IS NULL             AS active,
+            emp_dept                                 AS department,
+            FALSE                                    AS cynergi_system_admin,
+            ''' || r.schema_name || '''::text        AS dataset,
+            emp_alt_store_indr                       AS alternative_store_indicator,
+            emp_alt_area                             AS alternative_area
          FROM ' || r.schema_name || '.level1_loc_emps
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM
-                  CAST(emp_pass_1 AS TEXT) ||
-                  CAST(emp_pass_2 AS TEXT) ||
-                  CAST(emp_pass_3 AS TEXT) ||
-                  CAST(emp_pass_4 AS TEXT) ||
-                  CAST(emp_pass_5 AS TEXT) ||
-                  CAST(emp_pass_6 AS TEXT)
+                  CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
                ) <> ''''
       ';
 
@@ -183,48 +165,53 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            inv_recs.id AS id,
+            inventory.id AS id,
             ''' || r.schema_name || '''::text AS dataset,
-            inv_recs.inv_serial_nbr_key AS serial_number,
+            inventory.inv_serial_nbr_key AS serial_number,
             CASE
-               WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN inv_recs.inv_alt_id
-               ELSE inv_recs.inv_serial_nbr_key
+               WHEN LEFT(location.loc_tran_strip_dir, 1) = ''B'' THEN inventory.inv_alt_id
+               ELSE inventory.inv_serial_nbr_key
             END AS lookup_key,
             CASE
-               WHEN LEFT(loc_trans2.loc_tran_strip_dir, 1) = ''B'' THEN ''BARCODE''
+               WHEN LEFT(location.loc_tran_strip_dir, 1) = ''B'' THEN ''BARCODE''
                ELSE ''SERIAL''
             END AS lookup_key_type,
-            inv_recs.inv_serial_nbr_key AS barcode,
-            inv_recs.inv_alt_id AS alt_id,
+            inventory.inv_serial_nbr_key AS barcode,
+            inventory.inv_alt_id AS alt_id,
             manufacturer.manufile_manu_name AS brand,
-            inv_recs.inv_mk_model_nbr AS model_number,
-            LEFT(inv_recs.inv_mk_model_nbr, 1) || ''-'' || inv_recs.inv_desc AS product_code,
-            inv_recs.inv_desc AS description,
-            inv_recs.inv_date_received AS received_date,
-            inv_recs.inv_original_cost AS original_cost,
-            inv_recs.inv_actual_cost AS actual_cost,
-            inv_recs.inv_model_nbr_category AS model_category,
-            inv_recs.inv_total_times_rented AS times_rented,
-            inv_recs.inv_total_revenue AS total_revenue,
-            inv_recs.inv_remain_bk_value AS remaining_value,
-            inv_recs.inv_sell_price AS sell_price,
-            inv_recs.inv_assigned_value AS assigned_value,
-            inv_recs.inv_nbr_idle_days AS idle_days,
-            inv_recs.inv_condition AS condition,
+            inventory.inv_model_nbr_manufacturer AS model_number,
+            LEFT(inventory.inv_model_nbr_manufacturer, 1) || ''-'' || inventory.inv_desc AS product_code,
+            inventory.inv_desc AS description,
+            inventory.inv_date_received AS received_date,
+            inventory.inv_original_cost AS original_cost,
+            inventory.inv_actual_cost AS actual_cost,
+            inventory.inv_model_nbr_category AS model_category,
+            inventory.inv_total_times_rented AS times_rented,
+            inventory.inv_total_revenue AS total_revenue,
+            inventory.inv_remain_bk_value AS remaining_value,
+            inventory.inv_sell_price AS sell_price,
+            inventory.inv_assigned_value AS assigned_value,
+            inventory.inv_nbr_idle_days AS idle_days,
+            inventory.inv_condition AS condition,
+            inventory.inventory_status_id,
+            inventory.model_id,
             CASE
-               WHEN inv_recs.inv_status = ''R'' AND inv_recs.inv_date_returned IS NOT NULL THEN inv_recs.inv_date_returned
-               ELSE NULL
+               WHEN inventoryStatus.status_code = ''R'' AND inventory.inv_date_returned IS NOT NULL THEN inventory.inv_date_returned
             END AS returned_date,
-            inv_recs.inv_location_rec_1 AS location,
-            inv_recs.inv_status AS status,
-            loc_trans.loc_tran_primary_loc AS primary_location,
-            loc_trans2.loc_transfer_loc_type AS location_type,
-            loc_trans2.created_at AT TIME ZONE ''UTC'' AS time_created,
-            inv_recs.updated_at AT TIME ZONE ''UTC'' AS time_updated
-         FROM ' || r.schema_name || '.level1_ninvrecs inv_recs '
-      || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans ON inv_location_rec_1 = loc_trans.loc_tran_loc '
-      || '     JOIN ' || r.schema_name || '.level1_loc_trans loc_trans2 ON loc_trans.loc_tran_primary_loc = loc_trans2.loc_tran_loc '
-      || '     LEFT JOIN ' || r.schema_name || '.level1_manufiles manufacturer ON SUBSTRING(inv_mk_model_nbr, 3, 3) = manufile_manu_code_an3
+            inventory.inv_date_returned,
+            inventory.inv_location_rec_1 AS location,
+            inventoryStatus.status_code AS status,
+            store.id AS store_id,
+            store.loc_tran_loc AS primary_location,
+            store.loc_transfer_desc AS store_name,
+            locationType.location_type_code AS location_type
+        FROM ' || r.schema_name || '.level2_inventories inventory
+             JOIN ' || r.schema_name || '.level2_inventory_statuses inventoryStatus ON inventory.inventory_status_id = inventoryStatus.id
+             JOIN ' || r.schema_name || '.level2_models model ON inventory.model_id = model.id
+             JOIN ' || r.schema_name || '.level2_manufacturers manufacturer ON model.manufacturer_id = manufacturer.id
+             JOIN ' || r.schema_name || '.level2_locations location ON inventory.location_id = location.id
+             JOIN ' || r.schema_name || '.level2_location_types locationType ON location.location_type_id = locationType.id
+             JOIN ' || r.schema_name || '.level2_stores store ON location.store_id = store.id
       ';
 
       unionAll := ' UNION ALL ';
@@ -264,9 +251,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
   description VARCHAR,
   dataset VARCHAR,
   security_profile INTEGER,
-  default_menu VARCHAR,
-  time_created TIMESTAMPTZ,
-  time_updated TIMESTAMPTZ
+  default_menu VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
@@ -313,9 +298,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     location INTEGER,
     status VARCHAR,
     primary_location INTEGER,
-    location_type INTEGER,
-    time_created TIMESTAMPTZ,
-    time_updated TIMESTAMPTZ
+    location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;

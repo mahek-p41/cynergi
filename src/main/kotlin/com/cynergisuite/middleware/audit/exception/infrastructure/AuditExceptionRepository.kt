@@ -203,8 +203,10 @@ class AuditExceptionRepository @Inject constructor(
             FROM audit_exception ae
                  JOIN ae_employees e
                    ON ae.scanned_by = e.e_number
+                   AND e.s_dataset = :dataset
                  LEFT OUTER JOIN ae_employees e2
                            ON ae.signed_off_by = e2.e_number
+                           AND e2.e_dataset = :dataset
                  LEFT OUTER JOIN audit_scan_area_type_domain asatd
                    ON ae.scan_area_id = asatd.id
             WHERE ae.audit_id = :audit_id
@@ -238,6 +240,7 @@ class AuditExceptionRepository @Inject constructor(
                 ON ae.ae_id = aen.audit_exception_id
               LEFT OUTER JOIN ae_employees noteEmployee
                 ON aen.entered_by = noteEmployee.e_number
+                AND ae.e_dataset = noteEmployee.s_dataset
          ORDER BY ae.ae_id, aen.id ASC
       )
       SELECT p.* FROM paged AS p

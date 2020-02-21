@@ -118,7 +118,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
-   //Fails
+   //Passes
    void "fetch all audit details related to an audit where there are 2 audits both have details" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')

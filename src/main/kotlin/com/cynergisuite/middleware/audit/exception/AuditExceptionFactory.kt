@@ -46,6 +46,8 @@ object AuditExceptionFactory {
       val lorem = faker.lorem()
       val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.company)
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
+      //TODO
+      //val audit = auditIn ?: AuditFactory.single()
       val signedOff = signedOffIn ?: random.nextBoolean()
       val signedOffBy = if (signedOff) scannedByIn else null
 
@@ -82,5 +84,21 @@ class AuditExceptionFactoryService @Inject constructor(
    fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditExceptionEntity> {
       return AuditExceptionFactory.stream(numberIn, audit)
          .map { auditExceptionRepository.insert(it) }
+   }
+
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, signedOff: Boolean): Stream<AuditExceptionEntity> {
+      return AuditExceptionFactory.stream(numberIn, audit = audit, scannedByIn = scannedBy, signedOffIn = signedOff)
+         .map { auditExceptionRepository.insert(it) }
+   }
+
+   fun single(audit: AuditEntity, scannedBy: EmployeeEntity): AuditExceptionEntity {
+      return AuditExceptionFactory.stream(audit = audit, scannedByIn = scannedBy)
+         .map { auditExceptionRepository.insert(it) }
+         .findFirst().orElseThrow { Exception("Unable to create AuditExceptionEntity") }
+   }
+
+   fun generate(numberIn: Int, audit: AuditEntity, scannedBy: EmployeeEntity) {
+      AuditExceptionFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy)
+         .forEach{ auditExceptionRepository.insert(it) }
    }
 }

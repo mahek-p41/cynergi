@@ -1,7 +1,12 @@
 package com.cynergisuite.middleware.reportal
 
+import com.cynergisuite.middleware.company.CompanyFactory
+import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.store.StoreFactory
+import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.threading.CynergiExecutor
+
+import javax.inject.Inject
 import java.util.concurrent.CountDownLatch
 import kotlin.Unit
 import kotlin.jvm.functions.Function0
@@ -12,9 +17,13 @@ import spock.lang.Specification
 class ReportalServiceSpecification extends Specification {
    @Rule TemporaryFolder temporaryFolder
 
+   @Inject CompanyFactoryService companyFactoryService
+   @Inject StoreFactoryService storeFactoryService
+
    void "store reportal doc generation" () {
       setup:
-      final store = StoreFactory.random()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final syncLatch = new CountDownLatch(1)
       final reportalDir = temporaryFolder.newFolder()
       final storeDir = new File(reportalDir, "store${store.number}")

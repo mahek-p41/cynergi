@@ -87,13 +87,12 @@ class AuditRepository @Inject constructor(
          auditActionEmployee.emp_first_name_mi                         AS auditEmployee_first_name_mi,
          auditActionEmployee.emp_pass_code                             AS auditEmployee_pass_code,
          auditActionEmployee.emp_active                                AS auditEmployee_active,
-         auditActionEmployee.emp_emp_type                              AS auditEmployee_type,
+         auditActionEmployee.emp_type                                  AS auditEmployee_type,
          auditActionEmployee.emp_cynergi_system_admin                  AS auditEmployee_cynergi_system_admin,
          auditActionEmployee.dept_id                                   AS auditEmployeeDept_id,
          auditActionEmployee.dept_code                                 AS auditEmployeeDept_code,
          auditActionEmployee.dept_description                          AS auditEmployeeDept_description,
          auditActionEmployee.dept_security_profile                     AS auditEmployeeDept_security_profile,
-         auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
          auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
          auditStore.id                                                 AS auditStore_id,
          auditStore.name                                               AS auditStore_name,
@@ -161,10 +160,10 @@ class AuditRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
-      val params = mutableMapOf<String, Any?>()
+      val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       val storeNumber = pageRequest.storeNumber
       val status = pageRequest.status
-      val whereBuilder = StringBuilder("WHERE a.dataset = :dataset ")
+      val whereBuilder = StringBuilder("WHERE a.company_id = :comp_id ")
       val from = pageRequest.from
       val thru = pageRequest.thru
 
@@ -189,11 +188,10 @@ class AuditRepository @Inject constructor(
             ${employeeRepository.employeeBaseQuery()}
          ), audits AS (
             WITH status AS (
-               SELECT csastd.value AS current_status,
-                      csaa.audit_id AS audit_id, csaa.id
-               FROM audit_action csaa
-                    JOIN audit_status_type_domain csastd
-                         ON csaa.status_id = csastd.id
+               SELECT
+                  csastd.value AS current_status,
+                  csaa.audit_id AS audit_id, csaa.id
+               FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
             ), maxStatus AS (
                SELECT MAX(id) AS current_status_id, audit_id
                FROM audit_action
@@ -208,21 +206,20 @@ class AuditRepository @Inject constructor(
                a.number AS number,
                (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
                (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
-               (
-                SELECT count(aen.id) > 0
-                FROM audit_exception ae
+               (  SELECT count(aen.id) > 0
+                  FROM audit_exception ae
                      JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
-                WHERE ae.audit_id = a.id
+                  WHERE ae.audit_id = a.id
                ) AS exception_has_notes,
                (SELECT max(time_updated)
-                  FROM (
-                       SELECT time_updated FROM audit_detail WHERE audit_id = a.id
-                       UNION
-                       SELECT time_updated FROM audit_exception WHERE audit_id = a.id
-                     ) AS m
+                FROM (
+                   SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                   UNION
+                   SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                ) AS m
                ) AS last_updated,
                a.inventory_count AS inventory_count,
-               a.dataset AS dataset,
+               a.company_id AS company_id,
                s.current_status AS current_status,
                (SELECT count(a.id)
                 FROM audit a
@@ -238,66 +235,68 @@ class AuditRepository @Inject constructor(
                       ON s.id = ms.current_status_id
             $whereBuilder
             ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-            LIMIT ${pageRequest.size()}
-               OFFSET ${pageRequest.offset()}
+            LIMIT :limit OFFSET :offset
          )
          SELECT
-            a.id AS a_id,
-            a.uu_row_id AS a_uu_row_id,
-            a.time_created AS a_time_created,
-            a.time_updated AS a_time_updated,
-            a.number AS a_number,
-            a.total_details AS a_total_details,
-            a.total_exceptions AS a_total_exceptions,
-            a.current_status AS current_status,
-            a.last_updated AS a_last_updated,
-            a.inventory_count AS a_inventory_count,
-            a.exception_has_notes AS a_exception_has_notes,
-            a.dataset AS a_dataset,
-            aa.id AS aa_id,
-            aa.uu_row_id AS aa_uu_row_id,
-            aa.time_created AS aa_time_created,
-            aa.time_updated AS aa_time_updated,
-            astd.id AS astd_id,
-            astd.value AS astd_value,
-            astd.description AS astd_description,
-            astd.color AS astd_color,
-            astd.localization_code AS astd_localization_code,
-            aer.emp_id AS aer_id,
-            aer.emp_number AS aer_number,
-            aer.emp_dataset AS aer_dataset,
-            aer.emp_last_name AS aer_last_name,
-            aer.emp_first_name_mi AS aer_first_name_mi,
-            aer.emp_pass_code AS aer_pass_code,
-            aer.emp_active AS aer_active,
-            aer.emp_department AS aer_department,
-            aer.emp_emp_type AS aer_employee_type,
-            aer.emp_allow_auto_store_assign AS aer_allow_auto_store_assign,
-            s.id AS s_id,
-            s.name AS s_name,
-            s.number AS s_number,
-            s.dataset AS s_dataset,
-            se.id AS se_id,
-            se.name AS se_name,
-            se.dataset AS s_dataset,
-            total_elements AS total_elements
+            a.id                                         AS a_id,
+            a.uu_row_id                                  AS a_uu_row_id,
+            a.time_created                               AS a_time_created,
+            a.time_updated                               AS a_time_updated,
+            a.store_number                               AS store_number,
+            a.number                                     AS a_number,
+            a.total_details                              AS a_total_details,
+            a.total_exceptions                           AS a_total_exceptions,
+            a.current_status                             AS current_status,
+            a.last_updated                               AS a_last_updated,
+            a.inventory_count                            AS a_inventory_count,
+            a.exception_has_notes                        AS a_exception_has_notes,
+            auditAction.id                               AS auditAction_id,
+            auditAction.uu_row_id                        AS auditAction_uu_row_id,
+            auditAction.time_created                     AS auditAction_time_created,
+            auditAction.time_updated                     AS auditAction_time_updated,
+            astd.id                                      AS astd_id,
+            astd.value                                   AS astd_value,
+            astd.description                             AS astd_description,
+            astd.color                                   AS astd_color,
+            astd.localization_code                       AS astd_localization_code,
+            auditActionEmployee.emp_id                   AS auditEmployee_id,
+            auditActionEmployee.emp_number               AS auditEmployee_number,
+            auditActionEmployee.emp_last_name            AS auditEmployee_last_name,
+            auditActionEmployee.emp_first_name_mi        AS auditEmployee_first_name_mi,
+            auditActionEmployee.emp_pass_code            AS auditEmployee_pass_code,
+            auditActionEmployee.emp_active               AS auditEmployee_active,
+            auditActionEmployee.emp_type                 AS auditEmployee_type,
+            auditActionEmployee.emp_cynergi_system_admin AS auditEmployee_cynergi_system_admin,
+            auditActionEmployee.dept_id                  AS auditEmployeeDept_id,
+            auditActionEmployee.dept_code                AS auditEmployeeDept_code,
+            auditActionEmployee.dept_description         AS auditEmployeeDept_description,
+            auditActionEmployee.dept_security_profile    AS auditEmployeeDept_security_profile,
+            auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
+            auditStore.id                                AS auditStore_id,
+            auditStore.name                              AS auditStore_name,
+            auditStore.number                            AS auditStore_number,
+            auditStore.dataset                           AS auditStore_dataset,
+            comp.id                                      AS comp_id,
+            comp.uu_row_id                               AS comp_uu_row_id,
+            comp.time_created                            AS comp_time_created,
+            comp.time_updated                            AS comp_time_updated,
+            comp.name                                    AS comp_name,
+            comp.doing_business_as                       AS comp_doing_business_as,
+            comp.client_code                             AS comp_client_code,
+            comp.client_id                               AS comp_client_id,
+            comp.dataset_code                            AS comp_dataset_code,
+            comp.federal_id_number                       AS comp_federal_id_number,
+            total_elements                               AS total_elements
          FROM audits a
-              JOIN audit_action aa
-                  ON a.id = aa.audit_id
-              JOIN audit_status_type_domain astd
-                  ON aa.status_id = astd.id
-              JOIN employees aer
-                  ON aa.changed_by = aer.e_number
-              JOIN fastinfo_prod_import.store_vw s
-                  ON a.store_number = s.number
-                  AND s.dataset = :dataset
-              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
-                  ON aer.s_number = se.number
-                  AND se.dataset = :dataset
+              JOIN company comp ON a.company_id = comp.id
+              JOIN audit_action auditAction ON a.id = auditAction.audit_id
+              JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
+              JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
-      logger.trace("Finding all audits for {} using {}\n{}", pageRequest, params, sql)
+      logger.trace("Finding all audits using {}\n{}", params, sql)
 
       val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
          var currentId: Long = -1
@@ -314,7 +313,7 @@ class AuditRepository @Inject constructor(
                currentParentEntity!!
             }
 
-            tempParentEntity.actions.add(auditActionRepository.mapRow(rs))
+            tempParentEntity.actions.add(mapAuditAction(rs))
          } while(rs.next())
       }
 
@@ -381,9 +380,11 @@ class AuditRepository @Inject constructor(
             status.current_status_color AS current_status_color,
             count(*) AS current_status_count
          FROM audit a
+            JOIN company comp ON a.company_id = comp.id
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-            JOIN fastinfo_prod_import.store_vw store ON a.store_number = store.number AND store.dataset = :dataset
+            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+         WHERE comp.id = :comp_id
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,
@@ -411,10 +412,8 @@ class AuditRepository @Inject constructor(
             FROM (
                   SELECT a.id, MAX(aa.status_id) AS max_status
                   FROM audit a
-                      JOIN audit_action aa
-                        ON a.id = aa.audit_id
-                  WHERE a.store_number = :store_number
-                       AND a.dataset = :dataset
+                      JOIN audit_action aa ON a.id = aa.audit_id
+                  WHERE a.store_number = :store_number AND a.company_id = :comp_id
                   GROUP BY a.id
             ) b
             JOIN audit_status_type_domain astd

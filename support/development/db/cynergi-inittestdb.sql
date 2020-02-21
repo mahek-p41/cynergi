@@ -177,9 +177,7 @@ CREATE TABLE fastinfo_prod_import.inventory_vw (
    location         INTEGER                               NOT NULL,
    status           VARCHAR(1)                            NOT NULL,
    primary_location INTEGER                               NOT NULL,
-   location_type    INTEGER                               NOT NULL,
-   time_created     TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
-   time_updated     TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL
+   location_type    INTEGER                               NOT NULL
 );
 
 COPY fastinfo_prod_import.inventory_vw(
