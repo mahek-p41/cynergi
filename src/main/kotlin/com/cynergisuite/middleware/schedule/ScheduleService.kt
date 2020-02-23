@@ -33,7 +33,7 @@ class ScheduleService @Inject constructor(
       scheduleRepository.forEach(WEEKLY) { schedule ->
          val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
 
-         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) {
+         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
             val dailyTask = applicationContext.getBean(DailySchedule::class.java, DailyScheduleNameBeanQualifier(schedule.command.value))
 
             logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
