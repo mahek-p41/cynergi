@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.authentication.user.EmployeeUser
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.store.StoreFactory
@@ -26,7 +27,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final employee = employeeFactoryService.single(store)
+      final employee = employeeFactoryService.single(store).with { new EmployeeUser(it, store) }
       final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
 
       when:
@@ -48,9 +49,10 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "two store test"() {
       given:
-      final store1 = StoreFactory.storeOneTstds1()
-      final store3 = StoreFactory.storeThreeTstds1()
-      final employee = employeeFactoryService.single(store1)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store1 = storeFactoryService.store(1, company)
+      final store3 = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store1).with { new EmployeeUser(it, store1) }
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
 
       when:
@@ -79,8 +81,9 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "one store with already CREATED audit" () {
       given:
-      final store1 = StoreFactory.storeOneTstds1()
-      final employee = employeeFactoryService.single(store1)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store1 = storeFactoryService.store(1, company)
+      final employee = employeeFactoryService.single(store1).with { new EmployeeUser(it, store1) }
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], employee, company)
 
