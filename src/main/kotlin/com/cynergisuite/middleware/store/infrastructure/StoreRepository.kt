@@ -6,13 +6,11 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.StoreEntity
-import io.micronaut.cache.annotation.Cacheable
 import io.reactiverse.reactivex.pgclient.Row
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -47,8 +45,8 @@ class StoreRepository @Inject constructor(
    }
 
    fun findOne(id: Long, company: Company): StoreEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery()} AND store.id = :id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+      val query = "${selectBaseQuery()} AND store.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
@@ -56,10 +54,9 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   @Cacheable("store-cache")
    fun findOne(number: Int, company: Company): StoreEntity? {
-      val params = mutableMapOf<String, Any?>("number" to number)
-      val query = "${selectBaseQuery()} AND store.number = :number"
+      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
+      val query = "${selectBaseQuery()} AND store.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)

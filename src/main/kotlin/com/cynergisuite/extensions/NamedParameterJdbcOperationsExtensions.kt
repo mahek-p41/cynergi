@@ -21,7 +21,7 @@ fun <ENTITY> NamedParameterJdbcOperations.findFirstOrNull(query: String, params:
 }
 
 fun <ENTITY: Identifiable> NamedParameterJdbcOperations.findFirstOrNull(query: String, params: Map<String, *> = emptyMap<String, Any>(), mapper: (rs: ResultSet) -> ENTITY): ENTITY? {
-   val resultList = this.queryFullList(query, params, { rs, elements: MutableList<ENTITY> ->  elements.add(mapper(rs)) })
+   val resultList = this.query(query, params) { rs, _ -> mapper(rs) }
 
    return mineListForFirstElement(query, resultList, params)
 }
