@@ -42,7 +42,8 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one store from different dataset than one associated with authenticated user" () {
       given:
-      def store = storeFactoryService.randomNotMatching(authenticatedEmployee.location.myCompany())
+      def company = companyFactoryService.forDatasetCode('tstds2')
+      def store = storeFactoryService.random(company)
 
       when:
       get("$path/${store.myId()}")

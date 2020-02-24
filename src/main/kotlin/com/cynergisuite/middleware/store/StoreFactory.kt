@@ -58,11 +58,6 @@ object StoreFactory {
    fun random(company: Company): StoreEntity {
       return stores.filter { it.company.myDataset() == company.myDataset() }.random().copy(company = company)
    }
-
-   @JvmStatic
-   fun randomNotMatching(company: Company): StoreEntity {
-      return stores.filter { it.company.myDataset() != company.myDataset() }.random().copy(company = company)
-   }
 }
 
 @Singleton
@@ -76,12 +71,6 @@ class StoreFactoryService(
 
    fun random(company: Company): StoreEntity {
       val randomStore = StoreFactory.random(company)
-
-      return storeRepository.findOne(randomStore.number, company) ?: throw Exception("Unable to find StoreEntity")
-   }
-
-   fun randomNotMatching(company: Company): StoreEntity {
-      val randomStore = StoreFactory.randomNotMatching(company)
 
       return storeRepository.findOne(randomStore.number, company) ?: throw Exception("Unable to find StoreEntity")
    }

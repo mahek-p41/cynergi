@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -40,7 +40,7 @@ data class CompanyValueObject(
    @field:Schema(name = "federalTaxNumber", required = true, nullable = false, description = "Federal taxpayer identification number")
    var federalTaxNumber: String? = null
 
-) : ValueObjectBase<CompanyValueObject>() {
+) : Identifiable {
 
    constructor(entity: CompanyEntity) :
       this(
@@ -57,5 +57,4 @@ data class CompanyValueObject(
       this()
 
    override fun myId(): Long? = id
-   override fun copyMe(): CompanyValueObject = copy()
 }

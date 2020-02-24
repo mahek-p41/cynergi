@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.permission
 
-import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -10,7 +9,6 @@ import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
-@DataTransferObject
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditPermissionCreateUpdate", description = "Payload for creating or updating an audit permission")
 data class AuditPermissionCreateUpdateDataTransferObject(

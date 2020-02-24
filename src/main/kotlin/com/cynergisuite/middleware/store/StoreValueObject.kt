@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.store
 
-import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyValueObject
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.location.Location
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -28,7 +26,7 @@ data class StoreValueObject (
    @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a store")
    var name: String? = null
 
-) : ValueObjectBase<StoreValueObject>() {
+) : Identifiable {
 
    constructor(entity: StoreEntity) :
       this(
@@ -45,5 +43,4 @@ data class StoreValueObject (
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): StoreValueObject = copy()
 }
