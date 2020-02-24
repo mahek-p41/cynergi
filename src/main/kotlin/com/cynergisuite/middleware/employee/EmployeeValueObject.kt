@@ -23,31 +23,31 @@ data class EmployeeValueObject(
    @field:JsonIgnore
    @field:NotNull
    @field:Schema(name = "type", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
-   var type: String?,
+   var type: String? = null,
 
    @field:NotNull
    @field:Min(1)
    @field:Schema(name = "number", description = "System generated number for the employee", minimum = "1", required = true, nullable = false)
-   var number: Int?,
+   var number: Int? = null,
 
    @field:NotNull
    @field:Size(min = 2, max = 15)
    @field:Schema(name = "lastName", description = "Employee's family name", minLength = 2, maxLength = 15, required = true, nullable = false)
-   var lastName: String?,
+   var lastName: String? = null,
 
    @field:Size(min = 0, max = 15)
    @field:Schema(name = "firstNameMi", description = "Employee's given name", minLength = 2, maxLength = 15, required = true, nullable = false)
-   var firstNameMi: String?,
+   var firstNameMi: String? = null,
 
    @field:JsonIgnore
    @field:NotNull
    @field:Size(min = 3)
    @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", hidden = true)
-   var passCode: String?,
+   var passCode: String? = null,
 
    @field:JsonIgnore
    @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
-   var store: StoreValueObject?,
+   var store: StoreValueObject? = null,
 
    @field:JsonIgnore
    @field:NotNull
