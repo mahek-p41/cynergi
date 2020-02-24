@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -13,7 +13,6 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
@@ -23,9 +22,9 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import javax.inject.Inject
 import org.apache.commons.lang3.RandomUtils
 
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -235,7 +234,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Is required", "inventory"),
          new ErrorDataTransferObject("Is required", "scanArea"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -248,7 +247,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       secondException.status == BAD_REQUEST
       final secondResponse = secondException.response.bodyAsJson()
       secondResponse.size() == 2
-      secondResponse.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      secondResponse.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Is required", "inventory.id"),
          new ErrorDataTransferObject("Is required", "scanArea.value"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -260,7 +259,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final auditNotFoundException = thrown(HttpClientResponseException)
       auditNotFoundException.status == NOT_FOUND
       final auditNotFoundResponse = auditNotFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(auditNotFoundResponse) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
+      new ErrorDataTransferObject(auditNotFoundResponse.message, auditNotFoundResponse.path) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
 
       when: // an unknown Inventory item
       post("/audit/${audit.id}/detail", thirdDetail)
@@ -270,7 +269,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == BAD_REQUEST
       final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
       inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
+      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
    }
 
    //Fails: No such property: store for class: com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee 279
@@ -294,7 +293,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its details", "audit.status")
       ]
    }
