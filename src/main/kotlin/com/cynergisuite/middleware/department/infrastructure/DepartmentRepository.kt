@@ -134,6 +134,13 @@ class DepartmentRepository @Inject constructor(
 
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "d_"): DepartmentEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, company, columnPrefix)
+      } else {
+         null
+      }
+
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "d_"): DepartmentEntity =
       DepartmentEntity(
          id = rs.getLong("${columnPrefix}id"),

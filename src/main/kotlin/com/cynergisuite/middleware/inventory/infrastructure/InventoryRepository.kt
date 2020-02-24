@@ -147,8 +147,6 @@ class InventoryRepository(
          "offset" to pageRequest.offset()
       )
 
-      logger.debug("Finding all Inventory with {} and {}", pageRequest, params)
-
       if (statuses.isNotEmpty()) {
          params["statuses"] = statuses
       }

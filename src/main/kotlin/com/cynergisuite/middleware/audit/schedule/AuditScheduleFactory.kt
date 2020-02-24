@@ -56,6 +56,13 @@ object AuditScheduleFactory {
 
       arguments.add(
          ScheduleArgumentEntity(
+            user.myEmployeeType(),
+            "employeeType"
+         )
+      )
+
+      arguments.add(
+         ScheduleArgumentEntity(
             user.myEmployeeNumber().toString(),
             "employeeNumber"
          )
@@ -66,7 +73,8 @@ object AuditScheduleFactory {
          description = if (bool.bool()) chuckNorris.fact().truncate(255) else null,
          schedule = dayOfWeek.name,
          command = ScheduleCommandTypeFactory.auditSchedule(),
-         type = ScheduleTypeFactory.weekly()
+         type = ScheduleTypeFactory.weekly(),
+         arguments = arguments
       )
    }
 }

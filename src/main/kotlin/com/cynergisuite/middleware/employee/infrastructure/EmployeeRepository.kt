@@ -71,8 +71,8 @@ class EmployeeRepository @Inject constructor(
                fpis.id AS fpis_id,
                fpis.number AS fpis_number,
                fpis.name AS fpis_name
-            FROM company comp
-               JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+            FROM fastinfo_prod_import.employee_vw emp
+               JOIN company comp ON emp.dataset = comp.dataset_code
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
             UNION
@@ -105,8 +105,8 @@ class EmployeeRepository @Inject constructor(
                fpis.id AS fpis_id,
                fpis.number AS fpis_number,
                fpis.name AS fpis_name
-            FROM company comp
-               JOIN employee emp ON comp.id = emp.company_id
+            FROM employee emp
+               JOIN company comp ON emp.company_id = comp.id
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
          ) AS inner_employees
@@ -129,12 +129,12 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun findOne(number: Int, employeeType: String = "sysz", company: Company): EmployeeEntity? {
+   fun findOne(number: Int, employeeType: String, company: Company): EmployeeEntity? {
       logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
       val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE emp_number = :number AND emp_type = :emp_type LIMIT 1",
-         mapOf("emp_number" to number, "emp_type" to employeeType),
+         "${employeeBaseQuery()} WHERE emp_number = :emp_number AND emp_type = :emp_type AND comp_id = :comp_id",
+         mapOf("emp_number" to number, "emp_type" to employeeType, "comp_id" to company.myId()),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -164,18 +164,18 @@ class EmployeeRepository @Inject constructor(
    fun exists(user: User): Boolean =
       exists(user.myId()!!, user.myEmployeeType(), user.myCompany())
 
-   fun exists(id: Long, employeeType: String = "sysz", company: Company): Boolean {
+   fun exists(id: Long, employeeType: String, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(emp_id) = 1 FROM (
-            SELECT * FROM (
+            SELECT emp_id, emp_type, comp_id FROM (
                SELECT
                   1 AS from_priority,
                   emp.id AS emp_id,
                   'sysz' AS emp_type,
                   comp.id AS comp_id
-               FROM company comp
-                  JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
-                  JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               FROM fastinfo_prod_import.employee_vw emp
+                  JOIN company comp ON emp.dataset = comp.dataset_code
+                  LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
                UNION
                SELECT
@@ -183,9 +183,9 @@ class EmployeeRepository @Inject constructor(
                   emp.id AS emp_id,
                   'eli' AS emp_type,
                   comp.id AS comp_id
-               FROM company comp
-                  JOIN employee emp ON comp.id = emp.company_id
-                  JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               FROM employee emp
+                  JOIN company comp ON emp.company_id = comp.id
+                  LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
             ) AS inner_employees
             ORDER BY from_priority
@@ -195,7 +195,7 @@ class EmployeeRepository @Inject constructor(
          Boolean::class.java
       )!!
 
-      logger.trace("Checking if Employee: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, employeeType, company, exists)
 
       return exists
    }
@@ -243,7 +243,7 @@ class EmployeeRepository @Inject constructor(
          passCode = rs.getString("${columnPrefix}pass_code"),
          store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
-         department = departmentRepository.mapRow(rs, company, departmentColumnPrefix),
+         department = departmentRepository.mapRowOrNull(rs, company, departmentColumnPrefix),
          cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin")
       )
    }

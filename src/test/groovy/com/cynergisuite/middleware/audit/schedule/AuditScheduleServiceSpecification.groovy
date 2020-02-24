@@ -83,9 +83,9 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store1 = storeFactoryService.store(1, company)
-      final employee = employeeFactoryService.single(store1).with { new EmployeeUser(it, store1) }
+      final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new EmployeeUser(employee, store1), company)
 
       when:
       def result = auditScheduleService.processDaily(schedule)

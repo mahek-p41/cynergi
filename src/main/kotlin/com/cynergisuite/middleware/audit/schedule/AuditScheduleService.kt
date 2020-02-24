@@ -113,16 +113,20 @@ class AuditScheduleService @Inject constructor(
    override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
-      val company = schedule.arguments.firstOrNull { it.description == "company_id" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
+      val company = schedule.arguments.firstOrNull { it.description == "companyId" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }
          .firstOrNull() ?: Locale.getDefault()
+      val employeeType = schedule.arguments.asSequence()
+         .filter { it.description == "employeeType" }
+         .map { it.value }
+         .firstOrNull() ?: "sysz" // TODO remove this when employees are all managed by cynergidb
       val employee = schedule.arguments.asSequence()
          .filter { it.description == "employeeNumber" }
          .filterNotNull()
          .map { it.value.toInt() }
-         .map { employeeRepository.findOne(number = it, company = company) }
+         .map { employeeRepository.findOne(number = it, employeeType = employeeType, company = company) }
          .firstOrNull() ?: throw ScheduleProcessingException("Unable to find employee who scheduled audit")
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
