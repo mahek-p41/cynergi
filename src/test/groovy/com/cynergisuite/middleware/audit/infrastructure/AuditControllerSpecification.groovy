@@ -543,7 +543,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
 
       when:
-      def counts = get("${path}/counts").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
@@ -569,7 +569,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
 
       when:
-      def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
@@ -595,7 +595,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
 
       when:
-      def counts = get("${path}/counts?from=${from}&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts?from=${from}&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
@@ -704,7 +704,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Store ${store.number} has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Store ${store.number} has an audit already in progress", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {

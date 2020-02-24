@@ -106,7 +106,7 @@ class AuditValidator @Inject constructor(
 
       doValidation { errors ->
          val id = audit.id!!
-         val requestedStatus = auditStatusService.fetchByValue(audit.status!!.value)
+         val requestedStatus = auditStatusService.fetchByValue(audit.status!!.value!!)
          val existingAudit = auditRepository.findOne(id, user.myCompany())
 
          if (existingAudit == null) {
@@ -128,7 +128,7 @@ class AuditValidator @Inject constructor(
             }
          } else {
             errors.add(
-               ValidationError("status", AuditStatusNotFound(audit.status!!.value))
+               ValidationError("status", AuditStatusNotFound(audit.status!!.value!!))
             )
          }
 
@@ -139,7 +139,7 @@ class AuditValidator @Inject constructor(
 
       return Pair(
          AuditActionEntity(
-            status = auditStatusService.fetchByValue(audit.status!!.value)!!,
+            status = auditStatusService.fetchByValue(audit.status!!.value!!)!!,
             changedBy = employeeRepository.findOne(user)!!
          ),
          auditRepository.findOne(audit.id!!, user.myCompany())!!
