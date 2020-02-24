@@ -87,7 +87,7 @@ class DepartmentRepository @Inject constructor(
             dept.description AS d_description,
             dept.security_profile AS d_security_profile,
             dept.dataset AS d_dataset,
-            dept.default_menu AS d_default_menu
+            dept.default_menu AS d_default_menu,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
