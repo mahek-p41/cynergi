@@ -62,7 +62,7 @@ class DevelopDataLoader @Inject constructor(
       //auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
 
       // setup store three open audit
-      val openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
+      val openStoreThreeAudit = auditFactoryService.single(storeThreeEmployee.store!!)
       auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)

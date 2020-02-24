@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires

@@ -1008,7 +1008,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    void "update completed audit to signed-off and sign-off on exceptions" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final employee = employeeFactoryService.single(company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
       final store = storeFactoryService.store(1, company)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()

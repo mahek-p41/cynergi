@@ -94,7 +94,6 @@ class AuditRepository @Inject constructor(
          auditActionEmployee.dept_description                          AS auditEmployeeDept_description,
          auditActionEmployee.dept_security_profile                     AS auditEmployeeDept_security_profile,
          auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
-         auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
          auditStore.id                                                 AS auditStore_id,
          auditStore.name                                               AS auditStore_name,
          auditStore.number                                             AS auditStore_number,
@@ -273,7 +272,6 @@ class AuditRepository @Inject constructor(
             auditActionEmployee.dept_description         AS auditEmployeeDept_description,
             auditActionEmployee.dept_security_profile    AS auditEmployeeDept_security_profile,
             auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
-            auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
             auditStore.id                                AS auditStore_id,
             auditStore.name                              AS auditStore_name,
             auditStore.number                            AS auditStore_number,
@@ -288,7 +286,7 @@ class AuditRepository @Inject constructor(
             comp.client_id                               AS comp_client_id,
             comp.dataset_code                            AS comp_dataset_code,
             comp.federal_id_number                       AS comp_federal_id_number,
-            total_elements AS total_elements
+            total_elements                               AS total_elements
          FROM audits a
               JOIN company comp ON a.company_id = comp.id
               JOIN audit_action auditAction ON a.id = auditAction.audit_id

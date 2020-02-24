@@ -51,6 +51,7 @@ class EmployeeRepository @Inject constructor(
                emp.first_name_mi AS emp_first_name_mi,
                emp.pass_code AS emp_pass_code,
                emp.active AS emp_active,
+               emp.department AS emp_department,
                false AS emp_cynergi_system_admin,
                comp.id AS comp_id,
                comp.uu_row_id AS comp_uu_row_id,
@@ -84,6 +85,7 @@ class EmployeeRepository @Inject constructor(
                emp.first_name_mi AS emp_first_name_mi,
                emp.pass_code AS emp_pass_code,
                emp.active AS emp_active,
+               emp.department AS emp_department,
                emp.cynergi_system_admin AS emp_cynergi_system_admin,
                comp.id AS comp_id,
                comp.uu_row_id AS comp_uu_row_id,
@@ -147,10 +149,10 @@ class EmployeeRepository @Inject constructor(
       val found = jdbc.findFirstOrNull("""
          ${employeeBaseQuery()}
          WHERE emp_id = :id
-               AND emp_employee_type = :employee_type
+               AND emp_type = :employee_type
                AND comp_id = :comp_id
          """,
-         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myCompany().myId()),
+         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "comp_id" to user.myCompany().myId()),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
@@ -246,7 +248,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "e_", companyColumnPrefix: String = "c", departmentColumnPrefix: String = "d_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "fpis_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {

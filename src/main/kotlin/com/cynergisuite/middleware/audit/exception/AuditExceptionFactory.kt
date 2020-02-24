@@ -2,11 +2,14 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.AuditEntity
+import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -43,6 +46,8 @@ object AuditExceptionFactory {
       val lorem = faker.lorem()
       val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.company)
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
+      //TODO
+      //val audit = auditIn ?: AuditFactory.single()
       val signedOff = signedOffIn ?: random.nextBoolean()
       val signedOffBy = if (signedOff) scannedByIn else null
 

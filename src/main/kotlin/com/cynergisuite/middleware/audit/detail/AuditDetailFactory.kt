@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.AuditEntity
+import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
@@ -47,6 +48,11 @@ object AuditDetailFactory {
          )
       }
    }
+
+   @JvmStatic
+   fun single(auditIn: AuditEntity, scannedByIn: EmployeeEntity? = null): AuditDetailEntity {
+      return stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
+   }
 }
 
 @Singleton
@@ -57,11 +63,22 @@ class AuditDetailFactoryService @Inject constructor(
    private val employeeFactoryService: EmployeeFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditDetailEntity> {
-      val scannedBy = employeeFactoryService.single(audit.store)
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
+      val scannedIn = scannedByIn ?: employeeFactoryService.single(audit.store)
 
-      return AuditDetailFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy)
-         .map { auditDetailRepository.insert(it) }
+      return AuditDetailFactory.stream(numberIn, audit, scannedIn, scanAreaIn)
+         .map {
+            auditDetailRepository.insert(it)
+         }
+   }
+
+   fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditDetailEntity> {
+      val scannedIn = employeeFactoryService.single(audit.store)
+
+      return AuditDetailFactory.stream(numberIn, audit, scannedIn)
+         .map {
+            auditDetailRepository.insert(it)
+         }
    }
 
    fun generate(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, scanArea: AuditScanArea) {
@@ -69,9 +86,13 @@ class AuditDetailFactoryService @Inject constructor(
          .forEach { auditDetailRepository.insert(it) }
    }
 
-   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
-      return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
-         .map { auditDetailRepository.insert(it) }
-         .findFirst().orElseThrow { Exception("Uanble to create AuditDetailEntity") }
+   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): AuditDetailEntity {
+      return stream(1, audit, scannedByIn, scanAreaIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
    }
-}
+
+   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
+         return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
+            .map { auditDetailRepository.insert(it) }
+            .findFirst().orElseThrow { Exception("Uanble to create AuditDetailEntity") }
+   }
+   }
