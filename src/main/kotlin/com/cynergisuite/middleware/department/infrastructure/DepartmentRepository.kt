@@ -91,12 +91,16 @@ class DepartmentRepository @Inject constructor(
             (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
-         WHERE dept.company = :comp_id
-         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-         LIMIT ${pageRequest.size()}
-            OFFSET ${pageRequest.offset()}
+         WHERE comp.id = :comp_id
+         ORDER BY d_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf("dataset" to company.myDataset(),"comp_id" to company.myId())
+         mapOf(
+            "dataset" to company.myDataset(),
+            "comp_id" to company.myId(),
+            "limit" to pageRequest.size(),
+            "offset" to pageRequest.offset()
+         )
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")

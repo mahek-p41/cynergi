@@ -27,7 +27,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, "tstds1")
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
 
       when:
       def result = auditScheduleService.processDaily(schedule)
@@ -51,7 +51,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = StoreFactory.storeOneTstds1()
       final store3 = StoreFactory.storeThreeTstds1()
       final employee = employeeFactoryService.single(store1)
-      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, "tstds1")
+      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
 
       when:
       def result = auditScheduleService.processDaily(schedule)
@@ -82,7 +82,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = StoreFactory.storeOneTstds1()
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], employee, "tstds1")
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], employee, company)
 
       when:
       def result = auditScheduleService.processDaily(schedule)
