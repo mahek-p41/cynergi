@@ -281,7 +281,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final def audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created()] as Set)
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final scanArea = AuditScanAreaFactory.random()
 

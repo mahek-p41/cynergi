@@ -113,7 +113,7 @@ class AuditScheduleService @Inject constructor(
    override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
-      val company = schedule.arguments.firstOrNull { it.description == "comp_id" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
+      val company = schedule.arguments.firstOrNull { it.description == "company_id" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }

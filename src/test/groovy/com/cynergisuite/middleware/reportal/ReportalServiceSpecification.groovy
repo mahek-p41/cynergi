@@ -17,7 +17,6 @@ import spock.lang.Specification
 class ReportalServiceSpecification extends Specification {
    @Rule TemporaryFolder temporaryFolder
 
-   @Inject CompanyFactoryService companyFactoryService
    @Inject StoreFactoryService storeFactoryService
 
    void "store reportal doc generation" () {
