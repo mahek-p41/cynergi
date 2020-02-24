@@ -41,7 +41,8 @@ class AuditExceptionRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
    fun findOne(id: Long, company: Company): AuditExceptionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id)
+      val comp_id = company.myId()
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to comp_id)
       val query = """
          WITH ae_employees AS (
             ${employeeRepository.employeeBaseQuery()}
@@ -62,30 +63,25 @@ class AuditExceptionRepository @Inject constructor(
             ae.signed_off AS ae_signed_off,
             ae.signed_off_by AS ae_signed_off_by,
             ae.lookup_key AS ae_lookup_key,
-            e.e_id AS e_id,
-            e.e_number AS e_number,
-            e.e_last_name AS e_last_name,
-            e.e_first_name_mi AS e_first_name_mi,
-            e.e_pass_code AS  e_pass_code,
-            e.e_active AS e_active,
-            e.e_department AS e_department,
-            e.e_employee_type AS e_employee_type,
-            e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
-            e.e_dataset AS e_dataset,
-            e2.e_id AS e2_id,
-            e2.e_number AS e2_number,
-            e2.e_last_name AS e2_last_name,
-            e2.e_first_name_mi AS e2_first_name_mi,
-            e2.e_pass_code AS  e2_pass_code,
-            e2.e_active AS e2_active,
-            e2.e_department AS e2_department,
-            e2.e_employee_type AS e2_employee_type,
-            e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
-            e2.e_dataset AS e2_dataset,
-            e.s_id AS s_id,
-            e.s_number AS s_number,
-            e.s_name AS s_name,
-            e.s_dataset AS s_dataset,
+            e.emp_id AS e_id,
+            e.emp_number AS e_number,
+            e.emp_last_name AS e_last_name,
+            e.emp_first_name_mi AS e_first_name_mi,
+            e.emp_pass_code AS  e_pass_code,
+            e.emp_active AS e_active,
+            e.emp_department AS e_department,
+            e.emp_type AS e_employee_type,
+            e2.emp_id AS e2_id,
+            e2.emp_number AS e2_number,
+            e2.emp_last_name AS e2_last_name,
+            e2.emp_first_name_mi AS e2_first_name_mi,
+            e2.emp_pass_code AS  e2_pass_code,
+            e2.emp_active AS e2_active,
+            e2.emp_department AS e2_department,
+            e2.emp_type AS e2_employee_type,
+            e.fpis_id AS s_id,
+            e.fpis_number AS s_number,
+            e.fpis_name AS s_name,
             asatd.id AS asatd_id,
             asatd.value AS asatd_value,
             asatd.description AS asatd_description,
@@ -97,31 +93,28 @@ class AuditExceptionRepository @Inject constructor(
             aen.note AS aen_note,
             aen.entered_by AS aen_entered_by,
             aen.audit_exception_id AS aen_audit_exception_id,
-            noteEmployee.e_id AS noteEmployee_id,
-            noteEmployee.e_number AS noteEmployee_number,
-            noteEmployee.e_last_name AS noteEmployee_last_name,
-            noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
-            noteEmployee.e_pass_code AS noteEmployee_pass_code,
-            noteEmployee.e_active AS noteEmployee_active,
-            noteEmployee.e_department AS noteEmployee_department,
-            noteEmployee.e_employee_type AS noteEmployee_employee_type,
-            noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
-            noteEmployee.e_dataset AS noteEmployee_dataset,
-            noteEmployee.s_id AS noteEmployee_store_id,
-            noteEmployee.s_number AS noteEmployee_store_number,
-            noteEmployee.s_name AS noteEmployee_store_name,
-            noteEmployee.s_dataset AS noteEmployee_store_dataset
+            noteEmployee.emp_id AS noteEmployee_id,
+            noteEmployee.emp_number AS noteEmployee_number,
+            noteEmployee.emp_last_name AS noteEmployee_last_name,
+            noteEmployee.emp_first_name_mi AS noteEmployee_first_name_mi,
+            noteEmployee.emp_pass_code AS noteEmployee_pass_code,
+            noteEmployee.emp_active AS noteEmployee_active,
+            noteEmployee.emp_department AS noteEmployee_department,
+            noteEmployee.emp_type AS noteEmployee_employee_type,
+            noteEmployee.fpis_id AS noteEmployee_store_id,
+            noteEmployee.fpis_number AS noteEmployee_store_number,
+            noteEmployee.fpis_name AS noteEmployee_store_name
          FROM audit_exception ae
               JOIN ae_employees e
-                ON ae.scanned_by = e.e_number AND e.e_dataset = :dataset
+                ON ae.scanned_by = e.emp_number AND e.comp_id = :comp_id
               LEFT OUTER JOIN ae_employees e2
-                ON ae.signed_off_by = e2.e_number AND e2.e_dataset = :dataset
+                ON ae.signed_off_by = e2.emp_number AND e2.comp_id = :comp_id
               LEFT OUTER JOIN audit_scan_area_type_domain asatd
                 ON ae.scan_area_id = asatd.id
               LEFT OUTER JOIN audit_exception_note aen
                 ON ae.id = aen.audit_exception_id
               LEFT OUTER JOIN ae_employees noteEmployee
-                ON aen.entered_by = noteEmployee.e_number AND noteEmployee.e_dataset = :dataset
+                ON aen.entered_by = noteEmployee.emp_number AND noteEmployee.comp_id = :comp_id
          WHERE ae.id = :id"""
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
@@ -147,7 +140,8 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
+      val comp_id = company.myId()
+      val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to comp_id)
       val sql = """
       WITH paged AS (
          WITH ae_employees AS (
@@ -171,30 +165,40 @@ class AuditExceptionRepository @Inject constructor(
                ae.lookup_key AS ae_lookup_key,
                ae.scanned_by as ae_scanned_by,
                ae.scan_area_id as ae_scan_area_id,
-               e.e_id AS e_id,
-               e.e_number AS e_number,
-               e.e_dataset AS e_dataset,
-               e.e_last_name AS e_last_name,
-               e.e_first_name_mi AS e_first_name_mi,
-               e.e_pass_code AS e_pass_code,
-               e.e_active AS e_active,
-               e.e_department AS e_department,
-               e.e_employee_type AS e_employee_type,
-               e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
-               e2.e_id AS e2_id,
-               e2.e_number AS e2_number,
-               e2.e_dataset AS e2_dataset,
-               e2.e_last_name AS e2_last_name,
-               e2.e_first_name_mi AS e2_first_name_mi,
-               e2.e_pass_code AS  e2_pass_code,
-               e2.e_active AS e2_active,
-               e2.e_department AS e2_department,
-               e2.e_employee_type AS e2_employee_type,
-               e2.e_allow_auto_store_assign AS e2_allow_auto_store_assign,
-               e.s_id AS s_id,
-               e.s_number AS s_number,
-               e.s_name AS s_name,
-               e.s_dataset AS s_dataset,
+               e.comp_id AS comp_id,
+               e.comp_uu_row_id AS comp_uu_row_id,
+               e.comp_time_created AS comp_time_created,
+               e.comp_time_updated AS comp_time_updated,
+               e.comp_name AS comp_name,
+               e.comp_doing_business_as AS comp_doing_business_as,
+               e.comp_client_code AS comp_client_code,
+               e.comp_client_id AS comp_client_id,
+               e.comp_dataset_code AS comp_dataset_code,
+               e.comp_federal_id_number AS comp_federal_id_number,
+               e.dept_id AS dept_id,
+               e.dept_code AS dept_code,
+               e.dept_description AS dept_description,
+               e.dept_security_profile AS dept_security_profile,
+               e.dept_default_menu AS dept_default_menu,
+               e.emp_id AS e_id,
+               e.emp_number AS e_number,
+               e.emp_last_name AS e_last_name,
+               e.emp_first_name_mi AS e_first_name_mi,
+               e.emp_pass_code AS e_pass_code,
+               e.emp_active AS e_active,
+               e.emp_department AS e_department,
+               e.emp_type AS e_type,
+               e2.emp_id AS e2_id,
+               e2.emp_number AS e2_number,
+               e2.emp_last_name AS e2_last_name,
+               e2.emp_first_name_mi AS e2_first_name_mi,
+               e2.emp_pass_code AS  e2_pass_code,
+               e2.emp_active AS e2_active,
+               e2.emp_department AS e2_department,
+               e2.emp_type AS e2_type,
+               e.fpis_id AS fpis_id,
+               e.fpis_number AS s_number,
+               e.fpis_name AS s_name,
                asatd.id AS asatd_id,
                asatd.value AS asatd_value,
                asatd.description AS asatd_description,
@@ -202,11 +206,11 @@ class AuditExceptionRepository @Inject constructor(
                count(*) OVER() as total_elements
             FROM audit_exception ae
                  JOIN ae_employees e
-                   ON ae.scanned_by = e.e_number
-                   AND e.s_dataset = :dataset
+                   ON ae.scanned_by = e.emp_number
+                   AND e.comp_id = :comp_id
                  LEFT OUTER JOIN ae_employees e2
-                           ON ae.signed_off_by = e2.e_number
-                           AND e2.e_dataset = :dataset
+                           ON ae.signed_off_by = e2.emp_number
+                           AND e2.comp_id = :comp_id
                  LEFT OUTER JOIN audit_scan_area_type_domain asatd
                    ON ae.scan_area_id = asatd.id
             WHERE ae.audit_id = :audit_id
@@ -221,26 +225,23 @@ class AuditExceptionRepository @Inject constructor(
             aen.time_updated AS aen_time_updated,
             aen.note AS aen_note,
             aen.audit_exception_id AS aen_audit_exception_id,
-            noteEmployee.e_id AS noteEmployee_id,
-            noteEmployee.e_number AS noteEmployee_number,
-            noteEmployee.e_dataset AS noteEmployee_dataset,
-            noteEmployee.e_last_name AS noteEmployee_last_name,
-            noteEmployee.e_first_name_mi AS noteEmployee_first_name_mi,
-            noteEmployee.e_pass_code AS noteEmployee_pass_code,
-            noteEmployee.e_active AS noteEmployee_active,
-            noteEmployee.e_department AS noteEmployee_department,
-            noteEmployee.e_employee_type AS noteEmployee_employee_type,
-            noteEmployee.e_allow_auto_store_assign AS noteEmployee_allow_auto_store_assign,
-            noteEmployee.s_id AS noteEmployee_store_id,
-            noteEmployee.s_number AS noteEmployee_store_number,
-            noteEmployee.s_name AS noteEmployee_store_name,
-            noteEmployee.s_dataset AS noteEmployee_store_dataset
+            noteEmployee.emp_id AS noteEmployee_id,
+            noteEmployee.emp_number AS noteEmployee_number,
+            noteEmployee.emp_last_name AS noteEmployee_last_name,
+            noteEmployee.emp_first_name_mi AS noteEmployee_first_name_mi,
+            noteEmployee.emp_pass_code AS noteEmployee_pass_code,
+            noteEmployee.emp_active AS noteEmployee_active,
+            noteEmployee.emp_department AS noteEmployee_department,
+            noteEmployee.emp_type AS noteEmployee_employee_type,
+            noteEmployee.fpis_id AS noteEmployee_store_id,
+            noteEmployee.fpis_number AS noteEmployee_store_number,
+            noteEmployee.fpis_name AS noteEmployee_store_name
          FROM audit_exceptions ae
               LEFT OUTER JOIN audit_exception_note aen
                 ON ae.ae_id = aen.audit_exception_id
               LEFT OUTER JOIN ae_employees noteEmployee
-                ON aen.entered_by = noteEmployee.e_number
-                AND ae.e_dataset = noteEmployee.s_dataset
+                ON aen.entered_by = noteEmployee.emp_number
+                AND ae.comp_id = noteEmployee.comp_id
          ORDER BY ae.ae_id, aen.id ASC
       )
       SELECT p.* FROM paged AS p

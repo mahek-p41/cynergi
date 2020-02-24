@@ -72,6 +72,15 @@ class AuditDetailFactoryService @Inject constructor(
          }
    }
 
+   fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditDetailEntity> {
+      val scannedIn = employeeFactoryService.single(audit.store)
+
+      return AuditDetailFactory.stream(numberIn, audit, scannedIn)
+         .map {
+            auditDetailRepository.insert(it)
+         }
+   }
+
    fun generate(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, scanArea: AuditScanArea) {
       AuditDetailFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy, scanAreaIn = scanArea)
          .forEach { auditDetailRepository.insert(it) }
