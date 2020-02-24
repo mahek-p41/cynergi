@@ -1,12 +1,9 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.extensions.truncate
-import com.cynergisuite.middleware.company.CompanyFactory
-import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeFactory
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
-import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
@@ -21,8 +18,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 object AuditScheduleFactory {
+   fun single(dayOfWeek: DayOfWeek, stores: List<StoreEntity>, company: Company): ScheduleEntity {
+      val faker = Faker()
+      val bool = faker.bool()
+      val chuckNorris = faker.chuckNorris()
 
-
+      return ScheduleEntity(
+         title = chuckNorris.fact().truncate(36)!!,
+         description = if (bool.bool()) chuckNorris.fact().truncate(255) else null,
+         schedule = dayOfWeek.name,
+         command = ScheduleCommandTypeFactory.auditSchedule(),
+         type = ScheduleTypeFactory.weekly()
+      )
+   }
 }
 
 @Singleton

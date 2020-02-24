@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.inventory
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -91,7 +91,7 @@ data class InventoryValueObject(
    @field:Schema(name = "dataset", description = "dataset item is associated with")
    val dataset: String
 
-) : ValueObjectBase<InventoryValueObject>() {
+) : Identifiable {
 
    constructor(item: InventoryEntity, locationType: InventoryLocationTypeValueObject) :
       this(
@@ -125,5 +125,4 @@ data class InventoryValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): InventoryValueObject = copy()
 }

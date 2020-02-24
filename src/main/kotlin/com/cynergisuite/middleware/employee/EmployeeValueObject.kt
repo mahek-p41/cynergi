@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.store.StoreValueObject
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -54,7 +54,7 @@ data class EmployeeValueObject(
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
    var active: Boolean? = true
 
-) : ValueObjectBase<EmployeeValueObject>() {
+) : Identifiable {
 
    constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean) :
       this(
@@ -81,7 +81,6 @@ data class EmployeeValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): EmployeeValueObject = copy()
 
    override fun equals(other: Any?): Boolean =
       if (other is EmployeeValueObject) {

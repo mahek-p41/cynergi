@@ -1,10 +1,5 @@
 micronaut:
    environment: develop
-   router:
-      static-resources:
-         swagger:
-            paths: classpath:META-INF/swagger
-            mapping: /swagger/**
    security.token.jwt.signatures.secret.generator.secret: kdjfapoiejfaoijefkdkjfoieieiwyqhfueudjdjfue92839237401hdusu
 postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
    reactive:

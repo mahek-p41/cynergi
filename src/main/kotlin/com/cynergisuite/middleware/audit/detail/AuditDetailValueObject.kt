@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
-import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -60,7 +59,7 @@ data class AuditDetailValueObject (
    @field:NotNull
    var audit: Identifiable?
 
-) : ValueObjectBase<AuditDetailValueObject>() {
+) : Identifiable {
 
    constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
       this(
@@ -84,5 +83,4 @@ data class AuditDetailValueObject (
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditDetailValueObject = copy()
 }
