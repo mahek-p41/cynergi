@@ -58,6 +58,11 @@ object StoreFactory {
    fun random(company: Company): StoreEntity {
       return stores.filter { it.company.myDataset() == company.myDataset() }.random()
    }
+
+   @JvmStatic
+   fun store(number: Int, company: Company): StoreEntity {
+      return stores.filter { it.company.myDataset() == company.myDataset() && it.number == number}.first()
+   }
 }
 
 @Singleton
