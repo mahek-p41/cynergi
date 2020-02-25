@@ -3,6 +3,7 @@ package com.cynergisuite.domain.infrastructure
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.RxHttpClient

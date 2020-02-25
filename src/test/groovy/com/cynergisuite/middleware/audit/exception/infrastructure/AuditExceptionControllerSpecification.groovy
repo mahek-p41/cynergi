@@ -389,9 +389,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "test", EMPTY, "7890", true, false, null)
+      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "test", EMPTY, "7890", true, false, company, department, store)
       final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
-      final authToken = loginEmployee(noFirstNameGuy)
+      final authToken = loginEmployee(savedNoFirstNameGuy)
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
@@ -475,7 +475,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Cannot be blank", "exceptionCode"),
          new ErrorDataTransferObject("Is required", "exceptionCode"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -497,11 +497,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(notFoundResponse) == new ErrorDataTransferObject("-1 was unable to be found", null)
+      new ErrorDataTransferObject(notFoundResponse.message, notFoundResponse.path) == new ErrorDataTransferObject("-1 was unable to be found", null)
    }
 
    void "create audit exception where inventory id is null" () {
-      given:
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
@@ -518,7 +517,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Is required", "inventory.id") ]
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Is required", "inventory.id") ]
    }
 
    void "create audit exception when audit is in state OPENED" () {
@@ -540,7 +539,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its exceptions", "audit.status")
       ]
    }
@@ -594,7 +593,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Must provide either an Inventory item or a barcode", "barcode")
       ]
    }
@@ -689,7 +688,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} has already been Signed Off. No new notes allowed", null)
       ]
    }

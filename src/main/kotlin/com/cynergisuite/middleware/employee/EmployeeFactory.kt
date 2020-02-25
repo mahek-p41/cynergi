@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
@@ -109,4 +110,8 @@ class EmployeeFactoryService @Inject constructor(
    fun single(employeeNumberIn: Int?, companyIn: Company?, lastNameIn: String?, firstNameMiIn: String?, passCode: String?, cynergiSystemAdminIn: Boolean): EmployeeEntity {
       return stream(employeeNumberIn = employeeNumberIn, companyIn = companyIn, lastNameIn = lastNameIn, firstNameMiIn = firstNameMiIn, passCode = passCode, cynergiSystemAdminIn = cynergiSystemAdminIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
+
+   /*fun single(employeeNumberIn: Int, lastNameIn: String, firstNameIn: String, passCodeIn: String, activeIn: Boolean, cynergiSystemAdmin: Boolean, company: Company, department: Department, store: StoreEntity): AuthenticatedEmployee {
+
+   }*/
 }

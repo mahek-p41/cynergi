@@ -28,7 +28,17 @@ class AuditExceptionNoteRepository(
             "entered_by" to note.enteredBy.number,
             "audit_exception_id" to note.auditException.myId()
          ),
-         RowMapper { rs, _ -> mapRow(rs, note.enteredBy)!! }
+         RowMapper { rs, _ ->
+            AuditExceptionNote(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               note = rs.getString("note"),
+               enteredBy = note.enteredBy,
+               auditException = SimpleIdentifiableEntity(rs.getLong("audit_exception_id"))
+            )
+         }
       )
 
    fun upsert(note: AuditExceptionNote): AuditExceptionNote =

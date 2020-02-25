@@ -88,7 +88,7 @@ data class AuditExceptionValueObject (
 
    @field:Size(min = 2, max = 200)
    @field:Schema(name = "lookupKey", description = "The key that can be used to determine what inventory entry lines up with this exception")
-   var lookupKey: String?,
+   var lookupKey: String? = null,
 
    @field:Schema(name = "notes", description = "Listing of notes associated with an AuditException")
    var notes: MutableList<AuditExceptionNoteValueObject> = mutableListOf(),

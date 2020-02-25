@@ -27,7 +27,8 @@ ALTER TABLE employee ADD COLUMN alternative_area INTEGER DEFAULT 0 NOT NULL;
 
 UPDATE employee
 SET cynergi_system_admin        = true,
-    alternative_store_indicator = 'A'
+    alternative_store_indicator = 'A',
+    pass_code = '$2a$10$DARfnaJtvWn02b8EfUoQSOPBnfQkyc.U/FO7RmSis28c7BqlZMy3y'
 WHERE number = 998;
 
 -- Alter company table

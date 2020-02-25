@@ -68,14 +68,13 @@ class EmployeeRepository @Inject constructor(
                dept.description AS dept_description,
                dept.security_profile AS dept_security_profile,
                dept.default_menu AS dept_default_menu,
-               fpis.id AS fpis_id,
-               fpis.uu_row_id AS fpis_uu_row_id,
-               fpis.number AS fpis_number,
-               fpis.name AS fpis_name
+               store.id AS store_id,
+               store.number AS store_number,
+               store.name AS store_name
             FROM fastinfo_prod_import.employee_vw emp
                JOIN company comp ON emp.dataset = comp.dataset_code
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-               LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+               LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
             UNION
             SELECT
                2 AS from_priority,
@@ -103,14 +102,13 @@ class EmployeeRepository @Inject constructor(
                dept.description AS dept_description,
                dept.security_profile AS dept_security_profile,
                dept.default_menu AS dept_default_menu,
-               fpis.id AS fpis_id,
-               fpis.uu_row_id AS fpis_uu_row_id,
-               fpis.number AS fpis_number,
-               fpis.name AS fpis_name
+               store.id AS store_id,
+               store.number AS store_number,
+               store.name AS store_name
             FROM employee emp
                JOIN company comp ON emp.company_id = comp.id
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-               LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+               LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
          ) AS inner_employees
          ORDER BY from_priority
       ) AS employees
@@ -178,7 +176,7 @@ class EmployeeRepository @Inject constructor(
                FROM fastinfo_prod_import.employee_vw emp
                   JOIN company comp ON emp.dataset = comp.dataset_code
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
                UNION
                SELECT
                   2 AS from_priority,
@@ -188,7 +186,7 @@ class EmployeeRepository @Inject constructor(
                FROM employee emp
                   JOIN company comp ON emp.company_id = comp.id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw fpis ON comp.dataset_code = fpis.dataset AND emp.store_number = fpis.number
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
             ) AS inner_employees
             ORDER BY from_priority
          ) AS employees
@@ -232,7 +230,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "fpis_"): EmployeeEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix)
 
       return EmployeeEntity(
@@ -250,7 +248,7 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "fpis_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {
