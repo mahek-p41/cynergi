@@ -126,7 +126,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "fetch one by ID" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def department = departmentFactoryService.random(company.datasetCode)
+      //final store = storeFactoryService.store(3, company)
+      def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 

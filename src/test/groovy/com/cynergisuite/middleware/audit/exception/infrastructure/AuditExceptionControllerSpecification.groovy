@@ -389,7 +389,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "tstds1", "test", EMPTY, "7890", 3, true, false, null)
+      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "test", EMPTY, "7890", true, false, null)
       final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
       final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US

@@ -69,6 +69,7 @@ class EmployeeRepository @Inject constructor(
                dept.security_profile AS dept_security_profile,
                dept.default_menu AS dept_default_menu,
                fpis.id AS fpis_id,
+               fpis.uu_row_id AS fpis_uu_row_id,
                fpis.number AS fpis_number,
                fpis.name AS fpis_name
             FROM fastinfo_prod_import.employee_vw emp
@@ -103,6 +104,7 @@ class EmployeeRepository @Inject constructor(
                dept.security_profile AS dept_security_profile,
                dept.default_menu AS dept_default_menu,
                fpis.id AS fpis_id,
+               fpis.uu_row_id AS fpis_uu_row_id,
                fpis.number AS fpis_number,
                fpis.name AS fpis_name
             FROM employee emp
