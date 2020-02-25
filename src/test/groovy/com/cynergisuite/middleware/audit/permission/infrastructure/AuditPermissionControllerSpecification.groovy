@@ -126,7 +126,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "fetch one by ID" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def department = departmentFactoryService.random(company.datasetCode)
+      def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
@@ -141,7 +141,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "fetch one by ID that doesn't exist" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def department = departmentFactoryService.random(company.datasetCode)
+      def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
@@ -195,11 +195,11 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "check association of audit-fetchOne with Sales Associate" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company.datasetCode)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
-      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def store = storeFactoryService.random(company)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -224,11 +224,11 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "associate audit-fetchOne with Sales Associate" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company.datasetCode)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
-      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def store = storeFactoryService.random(company)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -263,11 +263,11 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "audit-fetchOne from Sales Associate to Delivery Driver" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company.datasetCode)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
-      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def store = storeFactoryService.random(company)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -303,11 +303,11 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "delete association of audit-fetchOne with Sales Associate" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company.datasetCode)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company.datasetCode)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company.datasetCode)
-      def salesAssociate = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company.datasetCode, null, null, null, store, false, deliveryDriverDepartment)
+      def store = storeFactoryService.random(company)
+      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -350,7 +350,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "delete one by ID that doesn't exist" () {
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
-      def department = departmentFactoryService.random(company.datasetCode)
+      def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
