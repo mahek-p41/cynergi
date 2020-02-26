@@ -86,6 +86,15 @@ class AuditScheduleFactoryService @Inject constructor(
    private val scheduleRepository: ScheduleRepository,
    private val storeFactoryService: StoreFactoryService
 ) {
+
+   fun stream(numberIn: Int = 1, dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): Stream<ScheduleEntity> {
+      val number = if (numberIn > 0) numberIn else 1
+
+      return IntStream.range(0, number).mapToObj {
+         single(dayOfWeek, stores, user, company)
+      }
+   }
+
    fun single(dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): ScheduleEntity {
       return AuditScheduleFactory.single(dayOfWeek, stores, user, company)
          .let { scheduleRepository.insert(it) }
