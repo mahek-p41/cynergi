@@ -4,13 +4,11 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateDataTransferObject
-import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreFactoryService
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
@@ -198,8 +196,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def store = storeFactoryService.random(company)
       def salesAssociateDepartment = departmentFactoryService.department("SA", company)
       def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -227,8 +225,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def store = storeFactoryService.random(company)
       def salesAssociateDepartment = departmentFactoryService.department("SA", company)
       def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -266,8 +264,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def store = storeFactoryService.random(company)
       def salesAssociateDepartment = departmentFactoryService.department("SA", company)
       def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
@@ -306,8 +304,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       def store = storeFactoryService.random(company)
       def salesAssociateDepartment = departmentFactoryService.department("SA", company)
       def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.single(null, company, null, null, null, store, false, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.single(null, company, null, null, null, store, false, deliveryDriverDepartment)
+      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
       def salesAssociateLogin = loginEmployee(salesAssociate)
       def deliveryDriverLogin = loginEmployee(deliveryDriver)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")

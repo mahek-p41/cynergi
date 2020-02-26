@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
@@ -16,10 +16,8 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueO
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -27,10 +25,10 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import java.time.OffsetDateTime
+import javax.inject.Inject
 import org.apache.commons.lang3.RandomUtils
 
-import javax.inject.Inject
-import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -45,7 +43,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeRepository employeeRepository
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
    @Inject StoreFactoryService storeFactoryService
@@ -389,9 +386,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "test", EMPTY, "7890", true, false, company, department, store)
-      final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
-      final authToken = loginEmployee(savedNoFirstNameGuy)
+      final noFirstNameGuy = employeeFactoryService.singleAuthenticated(company, store, department, 'TEST', EMPTY)
+      final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
@@ -570,9 +566,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryModel == null
       result.scanArea.value == scanArea.value
       result.scanArea.description == scanArea.description
-      result.scannedBy.number == authenticatedEmployee.number
-      result.scannedBy.lastName == authenticatedEmployee.lastName
-      result.scannedBy.firstNameMi == authenticatedEmployee.firstNameMi
+      result.scannedBy.number == 111
+      result.scannedBy.lastName == 'MARTINEZ'
+      result.scannedBy.firstNameMi == 'DANIEL'
       result.audit.id == audit.myId()
    }
 
@@ -604,8 +600,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store)
       final savedAuditException = auditExceptionFactoryService.single(audit, employee)
-      final audit = savedAuditException.getAudit()
       final noteText = "Test Note"
 
       when:
