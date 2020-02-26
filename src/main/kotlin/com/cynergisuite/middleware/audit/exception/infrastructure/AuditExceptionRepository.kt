@@ -43,107 +43,107 @@ class AuditExceptionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   private fun baseQuery(): String = """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         )
-         SELECT
-            auditException.id                                    AS auditException_id,
-            auditException.uu_row_id                             AS auditException_uu_row_id,
-            auditException.time_created                          AS auditException_time_created,
-            auditException.time_updated                          AS auditException_time_updated,
-            auditException.barcode                               AS auditException_barcode,
-            auditException.product_code                          AS auditException_product_code,
-            auditException.alt_id                                AS auditException_alt_id,
-            auditException.serial_number                         AS auditException_serial_number,
-            auditException.inventory_brand                       AS auditException_inventory_brand,
-            auditException.inventory_model                       AS auditException_inventory_model,
-            auditException.exception_code                        AS auditException_exception_code,
-            auditException.audit_id                              AS auditException_audit_id,
-            auditException.signed_off                            AS auditException_signed_off,
-            auditException.signed_off_by                         AS auditException_signed_off_by,
-            auditException.lookup_key                            AS auditException_lookup_key,
-            auditScanArea.id                                     AS auditScanArea_id,
-            auditScanArea.value                                  AS auditScanArea_value,
-            auditScanArea.description                            AS auditScanArea_description,
-            auditScanArea.localization_code                      AS auditScanArea_localization_code,
-            comp.id                                              AS comp_id,
-            comp.uu_row_id                                       AS comp_uu_row_id,
-            comp.time_created                                    AS comp_time_created,
-            comp.time_updated                                    AS comp_time_updated,
-            comp.name                                            AS comp_name,
-            comp.doing_business_as                               AS comp_doing_business_as,
-            comp.client_code                                     AS comp_client_code,
-            comp.client_id                                       AS comp_client_id,
-            comp.dataset_code                                    AS comp_dataset_code,
-            comp.federal_id_number                               AS comp_federal_id_number,
-            scannedBy.emp_id                                     AS scannedBy_id,
-            scannedBy.emp_type                                   AS scannedBy_type,
-            scannedBy.emp_number                                 AS scannedBy_number,
-            scannedBy.emp_last_name                              AS scannedBy_last_name,
-            scannedBy.emp_first_name_mi                          AS scannedBy_first_name_mi,
-            scannedBy.emp_pass_code                              AS scannedBy_pass_code,
-            scannedBy.emp_active                                 AS scannedBy_active,
-            scannedBy.emp_cynergi_system_admin                   AS scannedBy_cynergi_system_admin,
-            scannedBy.dept_id                                    AS scannedBy_dept_id,
-            scannedBy.dept_code                                  AS scannedBy_dept_code,
-            scannedBy.dept_description                           AS scannedBy_dept_description,
-            scannedBy.dept_security_profile                      AS scannedBy_dept_security_profile,
-            scannedBy.dept_default_menu                          AS scannedBy_dept_default_menu,
-            scannedBy.store_id                                   AS scannedBy_store_id,
-            scannedBy.store_number                               AS scannedBy_store_number,
-            scannedBy.store_name                                 AS scannedBy_store_name,
-            signedOffBy.emp_id                                   AS signedOffBy_id,
-            signedOffBy.emp_type                                 AS signedOffBy_type,
-            signedOffBy.emp_number                               AS signedOffBy_number,
-            signedOffBy.emp_last_name                            AS signedOffBy_last_name,
-            signedOffBy.emp_first_name_mi                        AS signedOffBy_first_name_mi,
-            signedOffBy.emp_pass_code                            AS signedOffBy_pass_code,
-            signedOffBy.emp_active                               AS signedOffBy_active,
-            signedOffBy.emp_cynergi_system_admin                 AS signedOffBy_cynergi_system_admin,
-            signedOffBy.dept_id                                  AS signedOffBy_dept_id,
-            signedOffBy.dept_code                                AS signedOffBy_dept_code,
-            signedOffBy.dept_description                         AS signedOffBy_dept_description,
-            signedOffBy.dept_security_profile                    AS signedOffBy_dept_security_profile,
-            signedOffBy.dept_default_menu                        AS signedOffBy_dept_default_menu,
-            signedOffBy.store_id                                 AS signedOffBy_store_id,
-            signedOffBy.store_number                             AS signedOffBy_store_number,
-            signedOffBy.store_name                               AS signedOffBy_store_name,
-            auditExceptionNote.id                                AS auditExceptionNote_id,
-            auditExceptionNote.uu_row_id                         AS auditExceptionNote_uu_row_id,
-            auditExceptionNote.time_created                      AS auditExceptionNote_time_created,
-            auditExceptionNote.time_updated                      AS auditExceptionNote_time_updated,
-            auditExceptionNote.note                              AS auditExceptionNote_note,
-            auditExceptionNoteEmployee.emp_id                    AS auditExceptionNoteEmployee_id,
-            auditExceptionNoteEmployee.emp_type                  AS auditExceptionNoteEmployee_type,
-            auditExceptionNoteEmployee.emp_number                AS auditExceptionNoteEmployee_number,
-            auditExceptionNoteEmployee.emp_last_name             AS auditExceptionNoteEmployee_last_name,
-            auditExceptionNoteEmployee.emp_first_name_mi         AS auditExceptionNoteEmployee_first_name_mi,
-            auditExceptionNoteEmployee.emp_pass_code             AS auditExceptionNoteEmployee_pass_code,
-            auditExceptionNoteEmployee.emp_active                AS auditExceptionNoteEmployee_active,
-            auditExceptionNoteEmployee.emp_cynergi_system_admin  AS auditExceptionNoteEmployee_cynergi_system_admin,
-            auditExceptionNoteEmployee.dept_id                   AS auditExceptionNoteEmployee_dept_id,
-            auditExceptionNoteEmployee.dept_code                 AS auditExceptionNoteEmployee_dept_code,
-            auditExceptionNoteEmployee.dept_description          AS auditExceptionNoteEmployee_dept_description,
-            auditExceptionNoteEmployee.dept_security_profile     AS auditExceptionNoteEmployee_dept_security_profile,
-            auditExceptionNoteEmployee.dept_default_menu         AS auditExceptionNoteEmployee_dept_default_menu,
-            auditExceptionNoteEmployee.store_id                  AS auditExceptionNoteEmployee_store_id,
-            auditExceptionNoteEmployee.store_number              AS auditExceptionNoteEmployee_store_number,
-            auditExceptionNoteEmployee.store_name                AS auditExceptionNoteEmployee_store_name
-         FROM audit_exception auditException
-              JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
-              JOIN audit a ON auditException.audit_id = a.id
-              JOIN company comp ON a.company_id = comp.id
-              JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
-              LEFT OUTER JOIN employees signedOffBy ON auditException.signed_off_by = signedOffBy.emp_number AND comp.id = signedOffBy.comp_id
-              LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
-              LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
-         """
+   private fun findOneQuery(): String = """
+      WITH employees AS (
+         ${employeeRepository.employeeBaseQuery()}
+      )
+      SELECT
+         auditException.id                                    AS auditException_id,
+         auditException.uu_row_id                             AS auditException_uu_row_id,
+         auditException.time_created                          AS auditException_time_created,
+         auditException.time_updated                          AS auditException_time_updated,
+         auditException.barcode                               AS auditException_barcode,
+         auditException.product_code                          AS auditException_product_code,
+         auditException.alt_id                                AS auditException_alt_id,
+         auditException.serial_number                         AS auditException_serial_number,
+         auditException.inventory_brand                       AS auditException_inventory_brand,
+         auditException.inventory_model                       AS auditException_inventory_model,
+         auditException.exception_code                        AS auditException_exception_code,
+         auditException.audit_id                              AS auditException_audit_id,
+         auditException.signed_off                            AS auditException_signed_off,
+         auditException.signed_off_by                         AS auditException_signed_off_by,
+         auditException.lookup_key                            AS auditException_lookup_key,
+         auditScanArea.id                                     AS auditScanArea_id,
+         auditScanArea.value                                  AS auditScanArea_value,
+         auditScanArea.description                            AS auditScanArea_description,
+         auditScanArea.localization_code                      AS auditScanArea_localization_code,
+         comp.id                                              AS comp_id,
+         comp.uu_row_id                                       AS comp_uu_row_id,
+         comp.time_created                                    AS comp_time_created,
+         comp.time_updated                                    AS comp_time_updated,
+         comp.name                                            AS comp_name,
+         comp.doing_business_as                               AS comp_doing_business_as,
+         comp.client_code                                     AS comp_client_code,
+         comp.client_id                                       AS comp_client_id,
+         comp.dataset_code                                    AS comp_dataset_code,
+         comp.federal_id_number                               AS comp_federal_id_number,
+         scannedBy.emp_id                                     AS scannedBy_id,
+         scannedBy.emp_type                                   AS scannedBy_type,
+         scannedBy.emp_number                                 AS scannedBy_number,
+         scannedBy.emp_last_name                              AS scannedBy_last_name,
+         scannedBy.emp_first_name_mi                          AS scannedBy_first_name_mi,
+         scannedBy.emp_pass_code                              AS scannedBy_pass_code,
+         scannedBy.emp_active                                 AS scannedBy_active,
+         scannedBy.emp_cynergi_system_admin                   AS scannedBy_cynergi_system_admin,
+         scannedBy.dept_id                                    AS scannedBy_dept_id,
+         scannedBy.dept_code                                  AS scannedBy_dept_code,
+         scannedBy.dept_description                           AS scannedBy_dept_description,
+         scannedBy.dept_security_profile                      AS scannedBy_dept_security_profile,
+         scannedBy.dept_default_menu                          AS scannedBy_dept_default_menu,
+         scannedBy.store_id                                   AS scannedBy_store_id,
+         scannedBy.store_number                               AS scannedBy_store_number,
+         scannedBy.store_name                                 AS scannedBy_store_name,
+         signedOffBy.emp_id                                   AS signedOffBy_id,
+         signedOffBy.emp_type                                 AS signedOffBy_type,
+         signedOffBy.emp_number                               AS signedOffBy_number,
+         signedOffBy.emp_last_name                            AS signedOffBy_last_name,
+         signedOffBy.emp_first_name_mi                        AS signedOffBy_first_name_mi,
+         signedOffBy.emp_pass_code                            AS signedOffBy_pass_code,
+         signedOffBy.emp_active                               AS signedOffBy_active,
+         signedOffBy.emp_cynergi_system_admin                 AS signedOffBy_cynergi_system_admin,
+         signedOffBy.dept_id                                  AS signedOffBy_dept_id,
+         signedOffBy.dept_code                                AS signedOffBy_dept_code,
+         signedOffBy.dept_description                         AS signedOffBy_dept_description,
+         signedOffBy.dept_security_profile                    AS signedOffBy_dept_security_profile,
+         signedOffBy.dept_default_menu                        AS signedOffBy_dept_default_menu,
+         signedOffBy.store_id                                 AS signedOffBy_store_id,
+         signedOffBy.store_number                             AS signedOffBy_store_number,
+         signedOffBy.store_name                               AS signedOffBy_store_name,
+         auditExceptionNote.id                                AS auditExceptionNote_id,
+         auditExceptionNote.uu_row_id                         AS auditExceptionNote_uu_row_id,
+         auditExceptionNote.time_created                      AS auditExceptionNote_time_created,
+         auditExceptionNote.time_updated                      AS auditExceptionNote_time_updated,
+         auditExceptionNote.note                              AS auditExceptionNote_note,
+         auditExceptionNoteEmployee.emp_id                    AS auditExceptionNoteEmployee_id,
+         auditExceptionNoteEmployee.emp_type                  AS auditExceptionNoteEmployee_type,
+         auditExceptionNoteEmployee.emp_number                AS auditExceptionNoteEmployee_number,
+         auditExceptionNoteEmployee.emp_last_name             AS auditExceptionNoteEmployee_last_name,
+         auditExceptionNoteEmployee.emp_first_name_mi         AS auditExceptionNoteEmployee_first_name_mi,
+         auditExceptionNoteEmployee.emp_pass_code             AS auditExceptionNoteEmployee_pass_code,
+         auditExceptionNoteEmployee.emp_active                AS auditExceptionNoteEmployee_active,
+         auditExceptionNoteEmployee.emp_cynergi_system_admin  AS auditExceptionNoteEmployee_cynergi_system_admin,
+         auditExceptionNoteEmployee.dept_id                   AS auditExceptionNoteEmployee_dept_id,
+         auditExceptionNoteEmployee.dept_code                 AS auditExceptionNoteEmployee_dept_code,
+         auditExceptionNoteEmployee.dept_description          AS auditExceptionNoteEmployee_dept_description,
+         auditExceptionNoteEmployee.dept_security_profile     AS auditExceptionNoteEmployee_dept_security_profile,
+         auditExceptionNoteEmployee.dept_default_menu         AS auditExceptionNoteEmployee_dept_default_menu,
+         auditExceptionNoteEmployee.store_id                  AS auditExceptionNoteEmployee_store_id,
+         auditExceptionNoteEmployee.store_number              AS auditExceptionNoteEmployee_store_number,
+         auditExceptionNoteEmployee.store_name                AS auditExceptionNoteEmployee_store_name
+      FROM audit_exception auditException
+           JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+           JOIN audit a ON auditException.audit_id = a.id
+           JOIN company comp ON a.company_id = comp.id
+           JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+           LEFT OUTER JOIN employees signedOffBy ON auditException.signed_off_by = signedOffBy.emp_number AND comp.id = signedOffBy.comp_id
+           LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
+           LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
+      """.trimIndent()
 
    fun findOne(id: Long, company: Company): AuditExceptionEntity? {
       val comp_id = company.myId()
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to comp_id)
-      val query = "${baseQuery()}\nWHERE auditException.id = :id AND comp.id = :comp_id"
+      val query = "${findOneQuery()}\nWHERE auditException.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for AuditExceptions using {} {}", query, params)
 
@@ -181,15 +181,109 @@ class AuditExceptionRepository @Inject constructor(
       val comp_id = company.myId()
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to comp_id, "limit" to page.size(), "offset" to page.offset())
       val sql = """
-         WITH paged AS (
-            ${baseQuery()}
-            WHERE auditException.audit_id = :audit_id
-            ORDER by auditException_${page.snakeSortBy()} ${page.sortDirection()}
+         WITH employees AS (
+            ${employeeRepository.employeeBaseQuery()}
+         ), paged AS (
+            SELECT
+               auditException.id AS auditException_id,
+               auditException.uu_row_id AS auditException_uu_row_id,
+               auditException.time_created AS auditException_time_created,
+               auditException.time_updated AS auditException_time_updated,
+               auditException.barcode AS auditException_barcode,
+               auditException.product_code AS auditException_product_code,
+               auditException.alt_id AS auditException_alt_id,
+               auditException.serial_number AS auditException_serial_number,
+               auditException.inventory_brand AS auditException_inventory_brand,
+               auditException.inventory_model AS auditException_inventory_model,
+               auditException.exception_code AS auditException_exception_code,
+               auditException.audit_id AS auditException_audit_id,
+               auditException.signed_off AS auditException_signed_off,
+               auditException.signed_off_by AS auditException_signed_off_by,
+               auditException.lookup_key AS auditException_lookup_key,
+               auditScanArea.id AS auditScanArea_id,
+               auditScanArea.value AS auditScanArea_value,
+               auditScanArea.description AS auditScanArea_description,
+               auditScanArea.localization_code AS auditScanArea_localization_code,
+               comp.id AS comp_id,
+               comp.uu_row_id AS comp_uu_row_id,
+               comp.time_created AS comp_time_created,
+               comp.time_updated AS comp_time_updated,
+               comp.name AS comp_name,
+               comp.doing_business_as AS comp_doing_business_as,
+               comp.client_code AS comp_client_code,
+               comp.client_id AS comp_client_id,
+               comp.dataset_code AS comp_dataset_code,
+               comp.federal_id_number AS comp_federal_id_number,
+               scannedBy.emp_id AS scannedBy_id,
+               scannedBy.emp_type AS scannedBy_type,
+               scannedBy.emp_number AS scannedBy_number,
+               scannedBy.emp_last_name AS scannedBy_last_name,
+               scannedBy.emp_first_name_mi AS scannedBy_first_name_mi,
+               scannedBy.emp_pass_code AS scannedBy_pass_code,
+               scannedBy.emp_active AS scannedBy_active,
+               scannedBy.emp_cynergi_system_admin AS scannedBy_cynergi_system_admin,
+               scannedBy.dept_id AS scannedBy_dept_id,
+               scannedBy.dept_code AS scannedBy_dept_code,
+               scannedBy.dept_description AS scannedBy_dept_description,
+               scannedBy.dept_security_profile AS scannedBy_dept_security_profile,
+               scannedBy.dept_default_menu AS scannedBy_dept_default_menu,
+               scannedBy.store_id AS scannedBy_store_id,
+               scannedBy.store_number AS scannedBy_store_number,
+               scannedBy.store_name AS scannedBy_store_name,
+               signedOffBy.emp_id AS signedOffBy_id,
+               signedOffBy.emp_type AS signedOffBy_type,
+               signedOffBy.emp_number AS signedOffBy_number,
+               signedOffBy.emp_last_name AS signedOffBy_last_name,
+               signedOffBy.emp_first_name_mi AS signedOffBy_first_name_mi,
+               signedOffBy.emp_pass_code AS signedOffBy_pass_code,
+               signedOffBy.emp_active AS signedOffBy_active,
+               signedOffBy.emp_cynergi_system_admin AS signedOffBy_cynergi_system_admin,
+               signedOffBy.dept_id AS signedOffBy_dept_id,
+               signedOffBy.dept_code AS signedOffBy_dept_code,
+               signedOffBy.dept_description AS signedOffBy_dept_description,
+               signedOffBy.dept_security_profile AS signedOffBy_dept_security_profile,
+               signedOffBy.dept_default_menu AS signedOffBy_dept_default_menu,
+               signedOffBy.store_id AS signedOffBy_store_id,
+               signedOffBy.store_number AS signedOffBy_store_number,
+               signedOffBy.store_name AS signedOffBy_store_name,
+               count(*) OVER () AS total_elements
+            FROM audit_exception auditException
+               JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+               JOIN audit a ON auditException.audit_id = a.id
+               JOIN company comp ON a.company_id = comp.id
+               JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+               LEFT OUTER JOIN employees signedOffBy ON auditException.signed_off_by = signedOffBy.emp_number AND comp.id = signedOffBy.comp_id
+            WHERE auditException.audit_id = :audit_id AND comp.id = :comp_id
+            ORDER BY auditException_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          )
-         SELECT p.*,
-                (SELECT count(*) FROM audit_exception WHERE audit_id = :audit_id) AS total_elements
+         SELECT
+            p.*,
+            auditExceptionNote.id AS auditExceptionNote_id,
+            auditExceptionNote.uu_row_id AS auditExceptionNote_uu_row_id,
+            auditExceptionNote.time_created AS auditExceptionNote_time_created,
+            auditExceptionNote.time_updated AS auditExceptionNote_time_updated,
+            auditExceptionNote.note AS auditExceptionNote_note,
+            auditExceptionNoteEmployee.emp_id AS auditExceptionNoteEmployee_id,
+            auditExceptionNoteEmployee.emp_type AS auditExceptionNoteEmployee_type,
+            auditExceptionNoteEmployee.emp_number AS auditExceptionNoteEmployee_number,
+            auditExceptionNoteEmployee.emp_last_name AS auditExceptionNoteEmployee_last_name,
+            auditExceptionNoteEmployee.emp_first_name_mi AS auditExceptionNoteEmployee_first_name_mi,
+            auditExceptionNoteEmployee.emp_pass_code AS auditExceptionNoteEmployee_pass_code,
+            auditExceptionNoteEmployee.emp_active AS auditExceptionNoteEmployee_active,
+            auditExceptionNoteEmployee.emp_cynergi_system_admin AS auditExceptionNoteEmployee_cynergi_system_admin,
+            auditExceptionNoteEmployee.dept_id AS auditExceptionNoteEmployee_dept_id,
+            auditExceptionNoteEmployee.dept_code AS auditExceptionNoteEmployee_dept_code,
+            auditExceptionNoteEmployee.dept_description AS auditExceptionNoteEmployee_dept_description,
+            auditExceptionNoteEmployee.dept_security_profile AS auditExceptionNoteEmployee_dept_security_profile,
+            auditExceptionNoteEmployee.dept_default_menu AS auditExceptionNoteEmployee_dept_default_menu,
+            auditExceptionNoteEmployee.store_id AS auditExceptionNoteEmployee_store_id,
+            auditExceptionNoteEmployee.store_number AS auditExceptionNoteEmployee_store_number,
+            auditExceptionNoteEmployee.store_name AS auditExceptionNoteEmployee_store_name
          FROM paged AS p
+            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON p.auditException_id = auditExceptionNote.audit_exception_id
+            LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
+         ORDER BY auditException_${page.snakeSortBy()}, auditExceptionNote.id ${page.sortDirection()}
       """
 
       logger.debug("find all audit exceptions {}/{}", sql, params)

@@ -7,6 +7,8 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -16,8 +18,12 @@ import javax.inject.Singleton
 class AuditExceptionNoteRepository(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
-   fun insert(note: AuditExceptionNote): AuditExceptionNote =
-      jdbc.insertReturning("""
+   private val logger: Logger = LoggerFactory.getLogger(AuditExceptionNoteRepository::class.java)
+
+   fun insert(note: AuditExceptionNote): AuditExceptionNote {
+      logger.debug("Inserting AuditExceptionNote {}", note)
+
+      return jdbc.insertReturning("""
          INSERT INTO audit_exception_note (note, entered_by, audit_exception_id)
          VALUES (:note, :entered_by, :audit_exception_id)
          RETURNING
@@ -40,6 +46,7 @@ class AuditExceptionNoteRepository(
             )
          }
       )
+   }
 
    fun upsert(note: AuditExceptionNote): AuditExceptionNote =
       if (note.id == null) {
