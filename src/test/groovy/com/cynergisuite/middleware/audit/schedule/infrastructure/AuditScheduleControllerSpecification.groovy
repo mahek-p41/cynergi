@@ -208,7 +208,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create disabled audit schedule" () {
       given:
-      final company = companyFactoryService.random()
+      final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
 
       when:
@@ -350,7 +350,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule without id" () {
       given:
-      final company = companyFactoryService.random()
+      final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
 
       when:
