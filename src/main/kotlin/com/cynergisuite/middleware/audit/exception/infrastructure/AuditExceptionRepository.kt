@@ -169,6 +169,14 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
+   fun isSignedOff(auditExceptionId: Long): Boolean {
+      val signedOff = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id AND signed_off = TRUE)", mapOf("id" to auditExceptionId), Boolean::class.java)!!
+
+      logger.trace("Checking if AuditException: {} has been signed off resulted in {}", auditExceptionId, signedOff)
+
+      return signedOff
+   }
+
    fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       val comp_id = company.myId()
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to comp_id, "limit" to page.size(), "offset" to page.offset())

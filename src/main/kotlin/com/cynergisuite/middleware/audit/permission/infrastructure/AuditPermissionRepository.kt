@@ -120,7 +120,8 @@ class AuditPermissionRepository @Inject constructor(
             dept.security_profile   AS dept_security_profile,
             dept.default_menu       AS dept_default_menu,
             dept.time_created       AS dept_time_created,
-            dept.time_updated       AS dept_time_updated
+            dept.time_updated       AS dept_time_updated,
+            count(*) OVER() as total_elements
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id

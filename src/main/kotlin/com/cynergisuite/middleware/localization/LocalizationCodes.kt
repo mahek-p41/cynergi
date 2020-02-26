@@ -51,6 +51,7 @@ class AuditOpenAtStore(storeNumber: Int): Cynergi("cynergi.audit.open.at.store",
 class AuditExceptionMustHaveInventoryOrBarcode(): Cynergi("cynergi.audit.exception.inventory.or.barcode", emptyArray())
 class AuditHasBeenSignedOffNoNewNotesAllowed(auditId: Long): Cynergi("cynergi.audit.has.been.signed.off.no.new.notes.allowed", arrayOf(auditId))
 class AuditUpdateRequiresSignedOffOrNote(): Cynergi("cynergi.audit.update.requires.sigenedoff.or.note", emptyArray())
+class AuditExceptionHasNotBeenSignedOff(auditExceptionId: Long): Cynergi("cynergi.audit.exception.has.been.signed.off.no.new.notes.allowed", arrayOf(auditExceptionId))
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable)) {

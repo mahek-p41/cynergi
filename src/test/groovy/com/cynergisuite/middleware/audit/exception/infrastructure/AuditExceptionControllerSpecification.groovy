@@ -54,7 +54,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final auditException = auditExceptionFactoryService.single(audit, employee)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       def result = get("/audit/exception/${auditException.id}")
@@ -86,7 +86,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final auditException = auditExceptionFactoryService.single(audit, employee)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
       final auditNote = auditExceptionNoteFactoryService.single(auditException, employee)
 
       when:
@@ -110,7 +110,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final auditException = auditExceptionFactoryService.single(audit, employee)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
       final auditNotes = auditExceptionNoteFactoryService.stream(2, auditException, employee).map { new AuditExceptionNoteValueObject(it) }.sorted{ o1, o2 -> o1.id <=> o2.id  }.toList()
       final auditExceptionId = auditException.myId()
 
@@ -601,7 +601,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store)
-      final savedAuditException = auditExceptionFactoryService.single(audit, employee)
+      final savedAuditException = auditExceptionFactoryService.single(audit, employee, false)
       final noteText = "Test Note"
 
       when:
@@ -629,6 +629,27 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.audit.id == savedAuditException.audit.myId()
    }
 
+   void "update signed-off audit exception with a new note" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store)
+      final savedAuditException = auditExceptionFactoryService.single(audit, employee, true)
+      final noteText = "Test Note"
+
+      when:
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "Audit Exception ${String.format('%,d', savedAuditException.id)} has already been Signed Off. No new notes allowed"
+   }
+
    void "update audit exception to signed-off" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -636,7 +657,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditException = auditExceptionFactoryService.single(audit, employee)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: true]))
@@ -654,7 +675,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditException = auditExceptionFactoryService.single(audit, employee)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: null, note: null]))
@@ -674,7 +695,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
-      final auditException = auditExceptionFactoryService.single(audit, employee)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))

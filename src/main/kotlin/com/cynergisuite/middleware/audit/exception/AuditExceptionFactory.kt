@@ -86,8 +86,8 @@ class AuditExceptionFactoryService @Inject constructor(
          .map { auditExceptionRepository.insert(it) }
    }
 
-   fun single(audit: AuditEntity, scannedBy: EmployeeEntity): AuditExceptionEntity {
-      return AuditExceptionFactory.stream(audit = audit, scannedByIn = scannedBy)
+   fun single(audit: AuditEntity, scannedBy: EmployeeEntity, signedOff: Boolean = false): AuditExceptionEntity {
+      return AuditExceptionFactory.stream(audit = audit, scannedByIn = scannedBy, signedOffIn = signedOff)
          .map { auditExceptionRepository.insert(it) }
          .findFirst().orElseThrow { Exception("Unable to create AuditExceptionEntity") }
    }

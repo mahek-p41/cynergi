@@ -22,6 +22,7 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactor
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
+import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -54,6 +55,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditRepository auditRepository
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
+   @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject NamedParameterJdbcTemplate jdbc
    @Inject LocalizationService localizationService
@@ -157,7 +159,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final scanningEmployee = employeeFactoryService.single(store)
       final savedAudit = auditFactoryService.single(store)
       final exceptionsWithoutNotes = auditExceptionFactoryService.stream(19, savedAudit).toList()
-      final exceptionWithNotes = auditExceptionFactoryService.single(savedAudit, scanningEmployee)
+      final exceptionWithNotes = auditExceptionFactoryService.single(savedAudit, scanningEmployee, false)
       final exceptionNotes = auditExceptionNoteFactoryService.stream(2, exceptionWithNotes, scanningEmployee).toList()
 
       when:
@@ -353,7 +355,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final scannedBy = employeeFactoryService.single(storeOne)
       final singleAudit = auditFactoryService.single(storeOne, scannedBy)
-      final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, scannedBy)
+      final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, scannedBy, false)
       final singleNote = auditExceptionNoteFactoryService.single(singleAuditExceptionWithNote, scannedBy)
       final fiveAuditsStoreOne = auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
 
@@ -1009,8 +1011,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final department = departmentFactoryService.random(company)
-      final employee = employeeFactoryService.single(store, department)
       final store = storeFactoryService.store(1, company)
+      final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 

@@ -16,6 +16,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
+import com.cynergisuite.middleware.localization.AuditExceptionHasNotBeenSignedOff
 import com.cynergisuite.middleware.localization.AuditExceptionMustHaveInventoryOrBarcode
 import com.cynergisuite.middleware.localization.AuditHasBeenSignedOffNoNewNotesAllowed
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
@@ -135,6 +136,12 @@ class AuditExceptionValidator @Inject constructor (
          if (employeeRepository.doesNotExist(enteredBy)) {
             errors.add(
                ValidationError("scannedBy", NotFound(enteredBy))
+            )
+         }
+
+         if (auditExceptionRepository.isSignedOff(auditExceptionId)) {
+            errors.add(
+               ValidationError(null, AuditExceptionHasNotBeenSignedOff(auditExceptionId))
             )
          }
       }

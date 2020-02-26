@@ -72,7 +72,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
-      final emp = employeeFactoryService.single(store)
+      final emp = employeeFactoryService.singleUser(store)
       final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, FRIDAY, [store], emp, company).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -147,7 +147,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
-      final emp = employeeFactoryService.single(storeOne)
+      final emp = employeeFactoryService.singleUser(storeOne)
       final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, TUESDAY, [storeOne, storeThree], emp, company).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
@@ -188,7 +188,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule"() {
       given:
-      final company = companyFactoryService.random()
+      final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
 
       when:
