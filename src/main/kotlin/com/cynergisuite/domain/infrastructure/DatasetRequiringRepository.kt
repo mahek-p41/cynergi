@@ -2,6 +2,6 @@ package com.cynergisuite.domain.infrastructure
 
 import com.cynergisuite.middleware.company.Company
 
-interface DatasetRepository {
+interface DatasetRequiringRepository {
    fun exists(id: Long, company: Company): Boolean
 }

@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.domain.infrastructure.DatasetRepository
+import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.core.type.MutableArgumentValue
 import io.micronaut.http.annotation.QueryValue
 
 abstract class DatasetLimitingAccessControlProvider(
-   private val datasetRepository: DatasetRepository
+   private val datasetRequiringRepository: DatasetRequiringRepository
 ): AccessControlProvider {
 
    final override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
@@ -35,6 +35,6 @@ abstract class DatasetLimitingAccessControlProvider(
          .map { it.value.value as Long }
          .first()
 
-      return datasetRepository.exists(id, user.myCompany())
+      return datasetRequiringRepository.exists(id, user.myCompany())
    }
 }

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.infrastructure.DatasetRepository
+import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.company.Company
@@ -10,7 +10,6 @@ import io.micronaut.cache.annotation.Cacheable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -19,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class DepartmentRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : DatasetRepository {
+) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(DepartmentRepository::class.java)
 
    fun findOne(id: Long, company: Company): DepartmentEntity? {

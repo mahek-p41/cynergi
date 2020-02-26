@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.infrastructure.DatasetRepository
+import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.company.Company
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class StoreRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
-) : DatasetRepository {
+) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
 
    @Language("PostgreSQL")

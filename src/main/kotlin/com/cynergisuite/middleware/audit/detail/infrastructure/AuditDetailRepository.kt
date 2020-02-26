@@ -35,7 +35,6 @@ class AuditDetailRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
 
    private fun selectBaseQuery(params: MutableMap<String, Any?>, company: Company): String {
-   //private fun selectBaseQuery(): String {
       return """
          WITH ad_employees AS (
             ${employeeRepository.employeeBaseQuery()}
@@ -83,10 +82,8 @@ class AuditDetailRepository @Inject constructor(
             asatd.description AS asatd_description,
             asatd.localization_code AS asatd_localization_code
          FROM audit_detail ad
-              JOIN ad_employees e
-                ON ad.scanned_by = e.emp_number
-              JOIN audit_scan_area_type_domain asatd
-                ON ad.scan_area_id = asatd.id
+              JOIN ad_employees e ON ad.scanned_by = e.emp_number
+              JOIN audit_scan_area_type_domain asatd ON ad.scan_area_id = asatd.id
       """
    }
 

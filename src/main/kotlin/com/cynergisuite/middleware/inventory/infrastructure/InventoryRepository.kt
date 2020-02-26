@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
-import com.cynergisuite.domain.infrastructure.DatasetRepository
+import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
@@ -22,7 +22,7 @@ class InventoryRepository(
    private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate,
    private val storeRepository: StoreRepository
-) : DatasetRepository {
+) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
 
    private val selectBase = """
