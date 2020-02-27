@@ -14,7 +14,6 @@ import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
 import com.cynergisuite.middleware.schedule.DailySchedule
 import com.cynergisuite.middleware.schedule.ScheduleEntity
-import com.cynergisuite.middleware.schedule.ScheduleName
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
@@ -26,11 +25,12 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import javax.validation.Valid
 
 @Singleton
-@ScheduleName("AuditSchedule")
+@Named("AuditSchedule")
 class AuditScheduleService @Inject constructor(
    private val auditService: AuditService,
    private val auditScheduleValidator: AuditScheduleValidator,

@@ -15,6 +15,7 @@ data class EmployeeUser(
    val location: Location,
    val passCode: String
 ) : User {
+
    constructor(employeeEntity: EmployeeEntity, location: StoreEntity):
       this(
          id = employeeEntity.id!!,
@@ -25,6 +26,7 @@ data class EmployeeUser(
          location = location,
          passCode = employeeEntity.passCode!!
       )
+
    override fun myId(): Long? = id
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
