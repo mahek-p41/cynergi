@@ -114,24 +114,23 @@ BEGIN
       || unionAll || '
          SELECT
             employee.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
             employee.created_at AT TIME ZONE ''UTC'' AS time_created,
-            employee.updated_at AT TIME ZONE ''UTC'' AS time_updated
+            employee.updated_at AT TIME ZONE ''UTC'' AS time_updated,
             emp_nbr                                  AS number,
             emp_last_name                            AS last_name,
             NULLIF(TRIM(emp_first_name_mi), '''')    AS first_name_mi,
-            department.loc_dept_code AS department,
             TRIM(BOTH FROM
                CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
             )                                        AS pass_code,
-            true                                     AS active,
             emp_store_nbr                            AS store_number,
             emp_termination_date IS NULL             AS active,
-            emp_dept                                 AS department,
+            dept.loc_dept_code                       AS department,
             FALSE                                    AS cynergi_system_admin,
-            ''' || r.schema_name || '''::text        AS dataset,
             emp_alt_store_indr                       AS alternative_store_indicator,
             emp_alt_area                             AS alternative_area
-         FROM ' || r.schema_name || '.level1_loc_emps
+         FROM ' || r.schema_name || '.level2_employees employee
+              JOIN ' || r.schema_name || '.level2_departments dept ON employee.department_id = dept.id
          WHERE emp_nbr IS NOT NULL
                AND TRIM(BOTH FROM
                   CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)
@@ -205,13 +204,13 @@ BEGIN
             store.loc_tran_loc AS primary_location,
             store.loc_transfer_desc AS store_name,
             locationType.location_type_code AS location_type
-        FROM ' || r.schema_name || '.level2_inventories inventory
-             JOIN ' || r.schema_name || '.level2_inventory_statuses inventoryStatus ON inventory.inventory_status_id = inventoryStatus.id
-             JOIN ' || r.schema_name || '.level2_models model ON inventory.model_id = model.id
-             JOIN ' || r.schema_name || '.level2_manufacturers manufacturer ON model.manufacturer_id = manufacturer.id
-             JOIN ' || r.schema_name || '.level2_locations location ON inventory.location_id = location.id
-             JOIN ' || r.schema_name || '.level2_location_types locationType ON location.location_type_id = locationType.id
-             JOIN ' || r.schema_name || '.level2_stores store ON location.store_id = store.id
+         FROM ' || r.schema_name || '.level2_inventories inventory
+              JOIN ' || r.schema_name || '.level2_inventory_statuses inventoryStatus ON inventory.inventory_status_id = inventoryStatus.id
+              JOIN ' || r.schema_name || '.level2_models model ON inventory.model_id = model.id
+              JOIN ' || r.schema_name || '.level2_manufacturers manufacturer ON model.manufacturer_id = manufacturer.id
+              JOIN ' || r.schema_name || '.level2_locations location ON inventory.location_id = location.id
+              JOIN ' || r.schema_name || '.level2_location_types locationType ON location.location_type_id = locationType.id
+              JOIN ' || r.schema_name || '.level2_stores store ON location.store_id = store.id
       ';
 
       unionAll := ' UNION ALL ';

@@ -190,19 +190,53 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       ex.status == NO_CONTENT
    }
 
+   void "fetch all permissions of a certain type" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final accountManager = departmentFactoryService.department('AM', company)
+      final accountRep = departmentFactoryService.department('AR', company)
+      final auditFetchOne = AuditPermissionTypeFactory.findByValue('audit-fetchOne')
+      final auditFetchOneAccountManager = auditPermissionFactoryService.single(accountManager, auditFetchOne, company)
+      final auditFetchAllAccountManager = auditPermissionFactoryService.single(accountManager, AuditPermissionTypeFactory.findByValue('audit-fetchAll'), company)
+      final auditFetchAllStatusCountsAccountManager = auditPermissionFactoryService.single(accountManager, AuditPermissionTypeFactory.findByValue('audit-fetchAllStatusCounts'), company)
+      final auditDetailFetchOneAccountRep = auditPermissionFactoryService.single(accountRep, auditFetchOne, company)
+      final firstPageRequest = new StandardPageRequest(1, 3, "id", "ASC")
+
+      when:
+      def allFirstPage = get("/audit/permission/type/${auditFetchOne.id}/${firstPageRequest}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      allFirstPage.totalElements == 2
+      allFirstPage.totalPages == 1
+      allFirstPage.first == true
+      allFirstPage.last == true
+      allFirstPage.elements.size() == 2
+      allFirstPage.elements[0].id == auditFetchOneAccountManager.id
+      allFirstPage.elements[0].type.id == auditFetchOneAccountManager.type.id
+      allFirstPage.elements[0].type.value == auditFetchOneAccountManager.type.value
+      allFirstPage.elements[0].department.id == auditFetchOneAccountManager.department.id
+      allFirstPage.elements[0].department.code == auditFetchOneAccountManager.department.code
+      allFirstPage.elements[1].id == auditDetailFetchOneAccountRep.id
+      allFirstPage.elements[1].type.id == auditDetailFetchOneAccountRep.type.id
+      allFirstPage.elements[1].type.value == auditDetailFetchOneAccountRep.type.value
+      allFirstPage.elements[1].department.id == auditDetailFetchOneAccountRep.department.id
+      allFirstPage.elements[1].department.code == auditDetailFetchOneAccountRep.department.code
+   }
+
    void "check association of audit-fetchOne with Sales Associate" () {
       given:
-      def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
-      def salesAssociateLogin = loginEmployee(salesAssociate)
-      def deliveryDriverLogin = loginEmployee(deliveryDriver)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
-      def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
-      def audit = auditFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode("tstds1")
+      final store = storeFactoryService.random(company)
+      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
+      final salesAssociateLogin = loginEmployee(salesAssociate)
+      final deliveryDriverLogin = loginEmployee(deliveryDriver)
+      final permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      final permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
+      final audit = auditFactoryService.single(store)
 
       when:
       def salesAssociateAudit = get("/audit/${audit.id}", salesAssociateLogin)
@@ -221,16 +255,16 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "associate audit-fetchOne with Sales Associate" () {
       given:
-      def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
-      def salesAssociateLogin = loginEmployee(salesAssociate)
-      def deliveryDriverLogin = loginEmployee(deliveryDriver)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
-      def audit = auditFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode("tstds1")
+      final store = storeFactoryService.random(company)
+      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
+      final salesAssociateLogin = loginEmployee(salesAssociate)
+      final deliveryDriverLogin = loginEmployee(deliveryDriver)
+      final permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      final audit = auditFactoryService.single(store)
 
       when:
       def permission = post("/audit/permission", new AuditPermissionCreateUpdateDataTransferObject(permissionType, salesAssociateDepartment))
@@ -260,17 +294,17 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "audit-fetchOne from Sales Associate to Delivery Driver" () {
       given:
-      def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
-      def salesAssociateLogin = loginEmployee(salesAssociate)
-      def deliveryDriverLogin = loginEmployee(deliveryDriver)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
-      def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
-      def audit = auditFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode("tstds1")
+      final store = storeFactoryService.random(company)
+      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
+      final salesAssociateLogin = loginEmployee(salesAssociate)
+      final deliveryDriverLogin = loginEmployee(deliveryDriver)
+      final permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      final permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
+      final audit = auditFactoryService.single(store)
 
       when:
       def permissionUpdated = put("/audit/permission", new AuditPermissionCreateUpdateDataTransferObject(permission.id, permissionType, deliveryDriverDepartment))
@@ -300,17 +334,17 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "delete association of audit-fetchOne with Sales Associate" () {
       given:
-      def company = companyFactoryService.forDatasetCode("tstds1")
-      def store = storeFactoryService.random(company)
-      def salesAssociateDepartment = departmentFactoryService.department("SA", company)
-      def deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      def salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
-      def deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
-      def salesAssociateLogin = loginEmployee(salesAssociate)
-      def deliveryDriverLogin = loginEmployee(deliveryDriver)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
-      def permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
-      def audit = auditFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode("tstds1")
+      final store = storeFactoryService.random(company)
+      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
+      final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
+      final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
+      final salesAssociateLogin = loginEmployee(salesAssociate)
+      final deliveryDriverLogin = loginEmployee(deliveryDriver)
+      final permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      final permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
+      final audit = auditFactoryService.single(store)
 
       when:
       def salesAssociateAudit = get("/audit/${audit.id}", salesAssociateLogin)
@@ -347,10 +381,10 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "delete one by ID that doesn't exist" () {
       given:
-      def company = companyFactoryService.forDatasetCode("tstds1")
-      def department = departmentFactoryService.random(company)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
-      def permission = auditPermissionFactoryService.single(department, permissionType, company)
+      final company = companyFactoryService.forDatasetCode("tstds1")
+      final department = departmentFactoryService.random(company)
+      final permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      final permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:
       delete("/audit/permission/${permission.id + 1}")

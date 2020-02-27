@@ -97,6 +97,35 @@ class AuditPermissionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/type/{typeId:[0-9]+}{?pageRequest*}", processes = [APPLICATION_JSON])
+   @AccessControl("auditPermission-fetchAllByType", accessControlProvider = AuditAccessControlProvider::class)
+   @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions of a certain Type", description = "Fetch a listing of Audit Permissions of a certain Type", operationId = "auditPermission-fetchAllByType")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAllByType(
+      @Parameter(description = "Type Id to filter the audits", `in` = PATH) @QueryValue("typeId") typeId: Long,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ): Page<AuditPermissionValueObject> {
+      logger.debug("User {} requested Audit Permissions {} of TypeId {}", authentication, pageRequest, typeId)
+
+      val user = userService.findUser(authentication)
+      val locale = httpRequest.findLocaleWithDefault()
+      val page = auditPermissionService.fetchAllByType(typeId, pageRequest, user, locale)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
+   }
+
+   @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/type{?pageRequest*}", processes = [APPLICATION_JSON])
    @AccessControl("auditPermissionType-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions Types", description = "Fetch a listing of Audit Permissions", operationId = "auditPermissionType-fetchAll")

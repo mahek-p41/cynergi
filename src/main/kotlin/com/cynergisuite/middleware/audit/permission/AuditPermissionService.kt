@@ -30,6 +30,12 @@ class AuditPermissionService @Inject constructor(
       return found.toPage { AuditPermissionValueObject(it, locale, localizationService) }
    }
 
+   fun fetchAllByType(typeId: Long, pageRequest: StandardPageRequest, user: User, locale: Locale): Page<AuditPermissionValueObject> {
+      val found = auditPermissionRepository.findAllByType(pageRequest, user.myCompany(), typeId)
+
+      return found.toPage { AuditPermissionValueObject(it, locale, localizationService) }
+   }
+
    fun fetchAllPermissionTypes(pageRequest: StandardPageRequest, locale: Locale): Page<AuditPermissionTypeValueObject> {
       return auditPermissionRepository.findAllPermissionTypes(pageRequest).toPage {
          AuditPermissionTypeValueObject(

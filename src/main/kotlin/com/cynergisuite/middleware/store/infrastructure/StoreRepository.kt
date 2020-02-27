@@ -46,7 +46,7 @@ class StoreRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} AND store.id = :id AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE store.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
@@ -56,7 +56,7 @@ class StoreRepository @Inject constructor(
 
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} AND store.number = :number AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)

@@ -19,6 +19,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,19 +70,7 @@ class AuditPermissionRepository @Inject constructor(
                AND comp.id = :comp_id""",
          mapOf("ap_id" to id, "comp_id" to company.myId()),
          RowMapper<AuditPermissionEntity> { rs, _ ->
-            AuditPermissionEntity(
-               id = rs.getLong("ap_id"),
-               uuRowId = rs.getUuid("ap_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("ap_time_created"),
-               timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
-               type = AuditPermissionType(
-                  id = rs.getLong("aptd_id"),
-                  value = rs.getString("aptd_value"),
-                  description = rs.getString("aptd_description"),
-                  localizationCode = rs.getString("aptd_localization_code")
-               ),
-               department = departmentRepository.mapRow(rs, company, "dept_")
-            )
+            processFindRow(rs, company)
          }
       )
 
@@ -136,24 +125,67 @@ class AuditPermissionRepository @Inject constructor(
          ),
          pageRequest
       ) { rs, elements ->
-         do {
-            val auditPermission = AuditPermissionEntity(
-               id = rs.getLong("ap_id"),
-               uuRowId = rs.getUuid("ap_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("ap_time_created"),
-               timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
-               type = AuditPermissionType(
-                  id = rs.getLong("aptd_id"),
-                  value = rs.getString("aptd_value"),
-                  description = rs.getString("aptd_description"),
-                  localizationCode = rs.getString("aptd_localization_code")
-               ),
-               department = departmentRepository.mapRow(rs, company, "dept_")
-            )
-
-            elements.add(auditPermission)
-         } while(rs.next())
+         processFindAllRows(elements, rs, company)
       }
+   }
+
+   fun findAllByType(pageRequest: PageRequest, company: Company, typeId: Long): RepositoryPage<AuditPermissionEntity, PageRequest> {
+      logger.debug("Finding all Audit Permissions of a typeId {} using {} and company: {}", typeId, pageRequest, company)
+
+      return jdbc.queryPaged("""
+         SELECT
+            ap.id                   AS ap_id,
+            ap.uu_row_id            AS ap_uu_row_id,
+            ap.time_created         AS ap_time_created,
+            ap.time_updated         AS ap_time_updated,
+            aptd.id                 AS aptd_id,
+            aptd.value              AS aptd_value,
+            aptd.description        AS aptd_description,
+            aptd.localization_code  AS aptd_localization_code,
+            comp.id                 AS comp_id,
+            comp.uu_row_id          AS comp_uu_row_id,
+            comp.time_created       AS comp_time_created,
+            comp.time_updated       AS comp_time_updated,
+            comp.name               AS comp_name,
+            comp.doing_business_as  AS comp_doing_business_as,
+            comp.client_code        AS comp_client_code,
+            comp.client_id          AS comp_client_id,
+            comp.dataset_code       AS comp_dataset_code,
+            comp.federal_id_number  AS comp_federal_id_number,
+            dept.id                 AS dept_id,
+            dept.code               AS dept_code,
+            dept.description        AS dept_description,
+            dept.dataset            AS dept_dataset,
+            dept.security_profile   AS dept_security_profile,
+            dept.default_menu       AS dept_default_menu,
+            dept.time_created       AS dept_time_created,
+            dept.time_updated       AS dept_time_updated,
+            count(*) OVER() as total_elements
+         FROM audit_permission ap
+            JOIN company comp ON ap.company_id = comp.id
+            JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
+            JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
+         WHERE comp.id = :comp_id AND ap.type_id = :typeId
+         ORDER BY ap_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT :limit OFFSET :offset""",
+         mapOf(
+            "comp_id" to company.myId(),
+            "typeId" to typeId,
+            "limit" to pageRequest.size(),
+            "offset" to pageRequest.offset()
+         ),
+         pageRequest
+      ) { rs, elements ->
+         processFindAllRows(elements, rs, company)
+      }
+   }
+
+   private fun processFindAllRows(elements: MutableList<AuditPermissionEntity>, rs: ResultSet, company: Company) {
+      do {
+         elements.add(
+            processFindRow(rs, company)
+         )
+      } while (rs.next())
    }
 
    fun exists(id: Long): Boolean {
@@ -205,25 +237,29 @@ class AuditPermissionRepository @Inject constructor(
                AND comp.id = :comp_id""",
          mapOf("asset" to asset, "comp_id" to company.myId()),
          RowMapper<AuditPermissionEntity> { rs, _ ->
-            AuditPermissionEntity(
-               id = rs.getLong("ap_id"),
-               uuRowId = rs.getUuid("ap_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("ap_time_created"),
-               timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
-               type = AuditPermissionType(
-                  id = rs.getLong("aptd_id"),
-                  value = rs.getString("aptd_value"),
-                  description = rs.getString("aptd_description"),
-                  localizationCode = rs.getString("aptd_localization_code")
-               ),
-               department = departmentRepository.mapRow(rs, company, "dept_")
-            )
+            processFindRow(rs, company)
          }
       )
 
       logger.trace("Searching for AuditPermission with asset {} resulted in {}", asset, found)
 
       return found
+   }
+
+   private fun processFindRow(rs: ResultSet, company: Company): AuditPermissionEntity {
+      return AuditPermissionEntity(
+         id = rs.getLong("ap_id"),
+         uuRowId = rs.getUuid("ap_uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("ap_time_created"),
+         timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
+         type = AuditPermissionType(
+            id = rs.getLong("aptd_id"),
+            value = rs.getString("aptd_value"),
+            description = rs.getString("aptd_description"),
+            localizationCode = rs.getString("aptd_localization_code")
+         ),
+         department = departmentRepository.mapRow(rs, company, "dept_")
+      )
    }
 
    fun findAllPermissionTypes(pageRequest: PageRequest): RepositoryPage<AuditPermissionType, PageRequest> {
