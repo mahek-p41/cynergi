@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -33,57 +34,69 @@ class AuditDetailRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
 
-   private fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String): String {
+   private fun selectBaseQuery(): String {
       return """
-         WITH ad_employees AS (
-            ${employeeRepository.selectBaseQuery(params, dataset)}
+         WITH employees AS (
+            ${employeeRepository.employeeBaseQuery()}
          )
          SELECT
-            ad.id AS ad_id,
-            ad.uu_row_id AS ad_uu_row_id,
-            ad.time_created AS ad_time_created,
-            ad.time_updated AS ad_time_updated,
-            ad.barcode AS ad_barcode,
-            ad.product_code AS ad_product_code,
-            ad.alt_id AS ad_alt_id,
-            ad.serial_number AS ad_serial_number,
-            ad.inventory_brand AS ad_inventory_brand,
-            ad.inventory_model AS ad_inventory_model,
-            ad.audit_id AS ad_audit_id,
-            e.e_id AS e_id,
-            e.e_number AS e_number,
-            e.e_dataset AS e_dataset,
-            e.e_last_name AS e_last_name,
-            e.e_first_name_mi AS e_first_name_mi,
-            e.e_pass_code AS  e_pass_code,
-            e.e_department AS e_department,
-            e.e_active AS e_active,
-            e.e_employee_type AS e_employee_type,
-            e.e_allow_auto_store_assign AS e_allow_auto_store_assign,
-            e.s_id AS s_id,
-            e.s_number AS s_number,
-            e.s_name AS s_name,
-            e.s_dataset AS s_dataset,
-            asatd.id AS asatd_id,
-            asatd.value AS asatd_value,
-            asatd.description AS asatd_description,
-            asatd.localization_code AS asatd_localization_code
-         FROM audit_detail ad
-              JOIN ad_employees e
-                ON ad.scanned_by = e.e_number
-              JOIN audit_scan_area_type_domain asatd
-                ON ad.scan_area_id = asatd.id
+            auditDetail.id AS auditDetail_id,
+            auditDetail.uu_row_id              AS auditDetail_uu_row_id,
+            auditDetail.time_created           AS auditDetail_time_created,
+            auditDetail.time_updated           AS auditDetail_time_updated,
+            auditDetail.barcode                AS auditDetail_barcode,
+            auditDetail.product_code           AS auditDetail_product_code,
+            auditDetail.alt_id                 AS auditDetail_alt_id,
+            auditDetail.serial_number          AS auditDetail_serial_number,
+            auditDetail.inventory_brand        AS auditDetail_inventory_brand,
+            auditDetail.inventory_model        AS auditDetail_inventory_model,
+            auditDetail.audit_id               AS auditDetail_audit_id,
+            scannedBy.emp_id                   AS scannedBy_id,
+            scannedBy.emp_number               AS scannedBy_number,
+            scannedBy.emp_last_name            AS scannedBy_last_name,
+            scannedBy.emp_first_name_mi        AS scannedBy_first_name_mi,
+            scannedBy.emp_type                 AS scannedBy_type,
+            scannedBy.emp_pass_code            AS scannedBy_pass_code,
+            scannedBy.emp_active               AS scannedBy_active,
+            scannedBy.emp_cynergi_system_admin AS scannedBy_cynergi_system_admin,
+            scannedBy.store_id                 AS store_id,
+            scannedBy.store_number             AS store_number,
+            scannedBy.store_name               AS store_name,
+            scannedBy.comp_id                  AS comp_id,
+            scannedBy.comp_uu_row_id           AS comp_uu_row_id,
+            scannedBy.comp_time_created        AS comp_time_created,
+            scannedBy.comp_time_updated        AS comp_time_updated,
+            scannedBy.comp_name                AS comp_name,
+            scannedBy.comp_doing_business_as   AS comp_doing_business_as,
+            scannedBy.comp_client_code         AS comp_client_code,
+            scannedBy.comp_client_id           AS comp_client_id,
+            scannedBy.comp_dataset_code        AS comp_dataset_code,
+            scannedBy.comp_federal_id_number   AS comp_federal_id_number,
+            scannedBy.dept_id                  AS dept_id,
+            scannedBy.dept_code                AS dept_code,
+            scannedBy.dept_description         AS dept_description,
+            scannedBy.dept_security_profile    AS dept_security_profile,
+            scannedBy.dept_default_menu        AS dept_default_menu,
+            asatd.id                           AS asatd_id,
+            asatd.value                        AS asatd_value,
+            asatd.description                  AS asatd_description,
+            asatd.localization_code            AS asatd_localization_code
+         FROM audit_detail auditDetail
+              JOIN audit a ON auditDetail.audit_id = a.id
+              JOIN company comp ON a.company_id = comp.id
+              JOIN employees scannedBy ON auditDetail.scanned_by = scannedBy.emp_number AND scannedBy.comp_id = comp.id
+              JOIN audit_scan_area_type_domain asatd ON auditDetail.scan_area_id = asatd.id
       """
    }
 
-   fun findOne(id: Long, dataset: String): AuditDetailEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery(params, dataset)} WHERE ad.id = :id"
+   fun findOne(id: Long, company: Company): AuditDetailEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+      val query = "${selectBaseQuery()} WHERE auditDetail.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "e_")
+            val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
             val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
-            mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_")
+            mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_")
          }
       )
 
@@ -92,28 +105,29 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(audit: AuditEntity, dataset: String, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("audit_id" to audit.id)
+   fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to company.myId())
       val query = """
          WITH paged AS (
-            ${selectBaseQuery(params, dataset)}
+            ${selectBaseQuery()}
+            WHERE comp.id = :comp_id
          )
          SELECT
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         WHERE p.ad_audit_id = :audit_id
-         ORDER by ad_${page.snakeSortBy()} ${page.sortDirection()}
+         WHERE p.auditDetail_audit_id = :audit_id
+         ORDER by auditDetail_${page.snakeSortBy()} ${page.sortDirection()}
          LIMIT ${page.size()} OFFSET ${page.offset()}
       """
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
       jdbc.query(query, params) { rs ->
-         val scannedBy = employeeRepository.mapRow(rs, "e_")
+         val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
          val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
-         resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("ad_audit_id")), "ad_"))
+         resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_"))
 
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")

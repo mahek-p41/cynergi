@@ -28,7 +28,10 @@ import javax.validation.constraints.Positive
    allOf = [PageRequestBase::class]
 )
 class AuditPageRequest(
-   page: Int?, size: Int?, sortBy: String?, sortDirection: String?,
+   page: Int? = null,
+   size: Int? = null,
+   sortBy: String? = null,
+   sortDirection: String? = null,
 
    @field:Schema(name = "from", description = "Bottom end of the range which will be used to filter audits.  If from is found thru is required.  If both from and thru are empty then the result will include all audits")
    var from: OffsetDateTime? = null,

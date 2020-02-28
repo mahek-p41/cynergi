@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.inventory.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AccessException
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.infrastructure.AlwaysAllowAccessControlProvider
 import com.cynergisuite.middleware.error.NotFoundException
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/inventory")
 class InventoryController(
-   private val authenticationService: AuthenticationService,
+   private val userService: UserService,
    private val inventoryService: InventoryService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InventoryController::class.java)
@@ -54,12 +54,12 @@ class InventoryController(
    ): Page<InventoryValueObject> {
       logger.info("Fetch all inventory for store")
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
 
       logger.info("Requesting inventory available to user {} for page {}", user, pageRequest)
 
-      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myStoreNumber()!!)
-      val page = inventoryService.fetchAll(pageToRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
+      val pageToRequest = if (pageRequest.storeNumber != null) pageRequest else InventoryPageRequest(pageRequest, user.myLocation().myNumber()!!)
+      val page = inventoryService.fetchAll(pageToRequest, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
@@ -85,8 +85,8 @@ class InventoryController(
    ): InventoryValueObject {
       logger.info("Fetching Inventory by barcode {}", lookupKey)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
 
-      return inventoryService.fetchByLookupKey(lookupKey, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
+      return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }
 }

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import javax.inject.Singleton
 
 /**

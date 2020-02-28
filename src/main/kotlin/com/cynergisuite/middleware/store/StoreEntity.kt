@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.store
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.location.Location
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
@@ -9,15 +10,15 @@ data class StoreEntity(
    val id: Long,
    val number: Int,
    val name: String,
-   val dataset: String
+   val company: Company
 ) : Location, Comparable<StoreEntity> {
 
-   constructor(store: StoreValueObject) :
+   constructor(store: StoreValueObject, company: Company) :
       this(
          id = store.id,
          number = store.number!!,
          name = store.name!!,
-         dataset = store.dataset!!
+         company = company
       )
 
    constructor(location: Location) :
@@ -25,20 +26,20 @@ data class StoreEntity(
          id = location.myId()!!,
          number = location.myNumber(),
          name = location.myName(),
-         dataset = location.myDataset()
+         company = location.myCompany()
       )
 
    override fun myId(): Long? = id
    override fun myNumber(): Int = number
    override fun myName(): String = name
-   override fun myDataset(): String = dataset
+   override fun myCompany(): Company = company
 
    override fun hashCode(): Int =
       HashCodeBuilder()
          .append(this.id)
          .append(this.number)
          .append(this.name)
-         .append(this.dataset)
+         .append(this.company)
          .toHashCode()
 
    override fun equals(other: Any?): Boolean =
@@ -47,7 +48,7 @@ data class StoreEntity(
             .append(this.id, other.id)
             .append(this.number, other.number)
             .append(this.name, other.name)
-            .append(this.dataset, other.dataset)
+            .append(this.company, other.company)
             .isEquals
       } else {
          false
@@ -58,7 +59,7 @@ data class StoreEntity(
          .append(this.id, other.id)
          .append(this.number, other.number)
          .append(this.name, other.name)
-         .append(this.dataset, other.dataset)
+         .append(this.company, other.company)
          .toComparison()
 
    companion object {

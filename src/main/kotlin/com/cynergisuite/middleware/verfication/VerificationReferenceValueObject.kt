@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -43,7 +43,7 @@ data class VerificationReferenceValueObject (
    @field:JsonProperty("ref_verify_phone")
    val verifyPhone: Boolean?
 
-) : ValueObjectBase<VerificationReferenceValueObject>() {
+) : Identifiable {
 
    constructor(entity: VerificationReference) :
       this(
@@ -58,8 +58,6 @@ data class VerificationReferenceValueObject (
          timeFrame = entity.timeFrame,
          verifyPhone = entity.verifyPhone
       )
-
-   override fun copyMe(): VerificationReferenceValueObject = copy()
 
    override fun myId(): Long? = id
 }

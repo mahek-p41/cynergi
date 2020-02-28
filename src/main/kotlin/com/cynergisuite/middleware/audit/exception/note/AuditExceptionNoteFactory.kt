@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.exception.note
 
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
-import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.company.CompanyFactory
@@ -18,12 +17,15 @@ import javax.inject.Singleton
 object AuditExceptionNoteFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
+   fun stream(numberIn: Int = 1, auditException: AuditExceptionEntity, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
-      val auditException = auditExceptionIn ?: AuditExceptionFactory.single()
-      val enteredBy = enteredByIn ?: EmployeeFactory.single()
+      val enteredBy = enteredByIn ?: EmployeeFactory.single(auditException.scannedBy.company)
       val lorem = faker.lorem()
+
+      if (auditException.scannedBy.company != enteredBy.company) {
+         throw Exception("AuditException Company does not equal enteredBy Company")
+      }
 
       return IntStream.range(0, number).mapToObj {
          AuditExceptionNote(
@@ -34,9 +36,7 @@ object AuditExceptionNoteFactory {
       }
    }
 
-   fun single(): AuditExceptionNote {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
-   }
+
 }
 
 @Singleton
@@ -46,17 +46,13 @@ class AuditExceptionNoteFactoryService @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val employeeFactoryService: EmployeeFactoryService
 ) {
-   fun stream(numberIn: Int = 1, auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): Stream<AuditExceptionNote> {
-      val dataset = enteredByIn?.dataset ?: CompanyFactory.random().datasetCode
-      val auditException = auditExceptionIn ?: auditExceptionFactoryService.single(dataset)
-      val enteredBy = enteredByIn ?: employeeFactoryService.single()
 
-      return AuditExceptionNoteFactory.stream(numberIn, auditException, enteredBy)
-         .map {
-            auditExceptionNoteRepository.insert(it)
-         }
+   fun stream(numberIn: Int = 1, auditException: AuditExceptionEntity, enteredByIn: EmployeeEntity): Stream<AuditExceptionNote> {
+      return AuditExceptionNoteFactory.stream(numberIn = numberIn, auditException = auditException, enteredByIn = enteredByIn)
+         .map { auditExceptionNoteRepository.insert(it) }
    }
 
-   fun single(auditExceptionIn: AuditExceptionEntity? = null, enteredByIn: EmployeeEntity? = null): AuditExceptionNote =
-      stream(1, auditExceptionIn, enteredByIn).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
+   fun single(auditException: AuditExceptionEntity, enteredBy: EmployeeEntity): AuditExceptionNote {
+      return stream(auditException = auditException, enteredByIn = enteredBy).findFirst().orElseThrow { Exception("Unable to create AuditExceptionNote") }
+   }
 }

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -52,7 +52,7 @@ data class VerificationValueObject(
    @field:JsonProperty("checklist_references")
    var references: MutableList<VerificationReferenceValueObject> = mutableListOf()
 
-) : ValueObjectBase<VerificationValueObject>() {
+): Identifiable {
    constructor(entity: Verification) :
       this(
          id = entity.id,
@@ -66,9 +66,9 @@ data class VerificationValueObject(
          references = entity.references.asSequence().map { VerificationReferenceValueObject(it) }.sortedBy { it.id }.toMutableList()
       )
 
-   override fun copyMe(): VerificationValueObject = this.copy()
-
    override fun myId(): Long? = id
+
+   fun copyMe(): VerificationValueObject = this.copy()
 }
 
 private fun copyAutoEntityToValueObject(entity: Verification): VerificationAutoValueObject? {

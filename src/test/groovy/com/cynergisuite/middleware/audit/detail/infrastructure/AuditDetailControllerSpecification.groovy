@@ -1,18 +1,19 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
@@ -21,9 +22,9 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import javax.inject.Inject
 import org.apache.commons.lang3.RandomUtils
 
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -37,15 +38,19 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditService auditService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
+   @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
    @Inject StoreFactoryService storeFactoryService
 
+   //Passes
    void "fetch one audit detail by id" () {
       given:
-      final store = storeFactoryService.random()
-      final employee = employeeFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
       final savedAuditDetail = auditDetailFactoryService.single(audit, employee)
 
       when:
@@ -63,11 +68,15 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.scannedBy.number == savedAuditDetail.scannedBy.number
    }
 
+   //Passes
    void "fetch all audit details related to an audit" () {
       given:
-      final store = storeFactoryService.random()
-      final employee = employeeFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+
       final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, employee, null).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -108,10 +117,14 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
+   //Passes
    void "fetch all audit details related to an audit where there are 2 audits both have details" () {
       given:
-      final store = storeFactoryService.store(1)
-      final employee = employeeFactoryService.single(store)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+
       final List<AuditEntity> audits = auditFactoryService.stream(2, store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).toList()
       final audit = audits[0]
       final secondAudit = audits[1]
@@ -130,15 +143,18 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
    }
 
+   //Passes
    void "fetch all audit details related to an audit where there are 2 different scan areas" () {
       given:
       final pageOne = new StandardPageRequest(1, 10, "ID", "ASC")
-      final employee = employeeFactoryService.single()
-      final store = storeFactoryService.store(1)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(1, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
       final warehouse = auditScanAreaFactoryService.warehouse()
       final showroom = auditScanAreaFactoryService.showroom()
       final storeroom = auditScanAreaFactoryService.storeroom()
-      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created()] as Set)
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created()] as Set)
       final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, employee, warehouse).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
       final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, employee, showroom).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
       final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, employee, storeroom).map { new AuditDetailValueObject(it, new AuditScanAreaValueObject(it.scanArea, it.scanArea.description)) }.toList()
@@ -155,6 +171,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
    }
 
+   //Passes
    void "fetch one audit detail by id not found" () {
       when:
       get("$path/0")
@@ -167,16 +184,21 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       response.message == "0 was unable to be found"
    }
 
+   //Fails line 202. Cannot get property 'id' on null object.
    void "create audit detail" () {
       given:
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -191,13 +213,18 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.audit.id == audit.id
    }
 
+   //Passes
    void "create invalid audit detail" () {
       given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
       final scanArea = AuditScanAreaFactory.random()
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final detail = new AuditDetailCreateValueObject(null, null)
-      final secondDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: null]), new AuditScanAreaValueObject([value: null]))
-      final thirdDetail = new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject([id: 800000]), new AuditScanAreaValueObject(scanArea))
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final detail = new AuditDetailCreateDataTransferObject(null, null)
+      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: null]), new AuditScanAreaValueObject([value: null]))
+      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: 800000]), new AuditScanAreaValueObject(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -207,7 +234,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Is required", "inventory"),
          new ErrorDataTransferObject("Is required", "scanArea"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -220,7 +247,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       secondException.status == BAD_REQUEST
       final secondResponse = secondException.response.bodyAsJson()
       secondResponse.size() == 2
-      secondResponse.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      secondResponse.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Is required", "inventory.id"),
          new ErrorDataTransferObject("Is required", "scanArea.value"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -232,7 +259,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final auditNotFoundException = thrown(HttpClientResponseException)
       auditNotFoundException.status == NOT_FOUND
       final auditNotFoundResponse = auditNotFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(auditNotFoundResponse) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
+      new ErrorDataTransferObject(auditNotFoundResponse.message, auditNotFoundResponse.path) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
 
       when: // an unknown Inventory item
       post("/audit/${audit.id}/detail", thirdDetail)
@@ -242,26 +269,31 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == BAD_REQUEST
       final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
       inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
+      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
    }
 
+   //Fails: No such property: store for class: com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee 279
    void "create audit detail when audit is in state OPENED (CREATED?)" () {
       given:
-      final def audit = auditFactoryService.single(authenticatedEmployee.store, authenticatedEmployee, [AuditStatusFactory.created()] as Set)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final def audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created()] as Set)
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final scanArea = AuditScanAreaFactory.random()
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateValueObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its details", "audit.status")
       ]
    }

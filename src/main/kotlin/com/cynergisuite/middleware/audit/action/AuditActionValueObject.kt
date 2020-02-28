@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.action
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -35,7 +35,7 @@ data class AuditActionValueObject (
    @field:Schema(name = "changedBy", description = "The Employee number to be associated with this action", required = false)
    var changedBy: EmployeeValueObject? = null
 
-) : ValueObjectBase<AuditActionValueObject>() {
+) : Identifiable {
 
    constructor(entity: AuditActionEntity, auditStatus: AuditStatusValueObject) :
       this(
@@ -47,5 +47,4 @@ data class AuditActionValueObject (
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditActionValueObject = copy()
 }

@@ -1,8 +1,5 @@
 package com.cynergisuite.middleware.schedule.argument
 
-import com.cynergisuite.domain.ValueObject
-
-@ValueObject
 data class ScheduleArgumentValueObject(
    val id: Long? = null,
    val value: String,

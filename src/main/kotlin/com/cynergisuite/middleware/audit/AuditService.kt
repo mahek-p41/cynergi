@@ -12,21 +12,16 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.IdentifiableUser
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreValueObject
-import com.lowagie.text.Document
-import com.lowagie.text.Element
-import com.lowagie.text.Font
-import com.lowagie.text.FontFactory
-import com.lowagie.text.PageSize
-import com.lowagie.text.Phrase
-import com.lowagie.text.Rectangle
+import com.lowagie.text.*
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
@@ -36,7 +31,7 @@ import java.awt.Color
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -47,17 +42,18 @@ class AuditService @Inject constructor(
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditValidator: AuditValidator,
    private val companyRepository: CompanyRepository,
+   private val employeeRepository: EmployeeRepository,
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
 ) {
 
-   fun fetchById(id: Long, dataset: String, locale: Locale): AuditValueObject? =
-      auditRepository.findOne(id, dataset)?.let { AuditValueObject(it, locale, localizationService) }
+   fun fetchById(id: Long, user: User, locale: Locale): AuditValueObject? =
+      auditRepository.findOne(id, user.myCompany())?.let { AuditValueObject(it, locale, localizationService) }
 
    @Validated
-   fun fetchAll(@Valid pageRequest: AuditPageRequest, dataset: String, locale: Locale): Page<AuditValueObject> {
-      val validaPageRequest = auditValidator.validationFetchAll(pageRequest, dataset)
-      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, dataset)
+   fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
+      val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
+      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany())
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
@@ -67,11 +63,11 @@ class AuditService @Inject constructor(
    fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, dataset: String, locale: Locale): List<AuditStatusCountDataTransferObject> {
-      val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, dataset)
+   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDataTransferObject> {
+      val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest, dataset)
+         .findAuditStatusCounts(validPageRequest, user.myCompany())
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }
@@ -85,13 +81,13 @@ class AuditService @Inject constructor(
       return AuditValueObject(audit, locale, localizationService)
    }
 
-   fun findOrCreate(store: StoreEntity, employee: EmployeeEntity, locale: Locale): AuditValueObject {
+   fun findOrCreate(store: StoreEntity, user: User, locale: Locale): AuditValueObject {
       val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
 
       return if (createdOrInProgressAudit != null) {
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
-         create(AuditCreateValueObject(StoreValueObject(store)), employee, locale)
+         create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
       }
    }
 
@@ -108,9 +104,9 @@ class AuditService @Inject constructor(
 
    @Validated
    fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
-      val existing = auditValidator.validateSignOff(audit, user.myDataset(), user, locale)
-      val changedBy = fromUser(user)
+      val existing = auditValidator.validateSignOff(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
+      val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
 
       actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = changedBy))
 
@@ -135,7 +131,7 @@ class AuditService @Inject constructor(
 
    @Validated
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
-      val toSignOff = auditValidator.validateSignOffAll(audit, user.myDataset())
+      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany())
 
       return AuditSignOffAllExceptionsDataTransferObject(
          auditExceptionRepository.signOffAllExceptions(toSignOff, user)
@@ -155,12 +151,10 @@ class AuditService @Inject constructor(
       val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
-      val beginAction =  audit.actions.asSequence()
-         .first { it.status == IN_PROGRESS}
+      val beginAction =  audit.actions.asSequence().first { it.status == IN_PROGRESS}
       val beginDate = dateFormatter.format(beginAction.timeCreated)
 
-      val endAction =  audit.actions.asSequence()
-         .first { it.status == COMPLETED}
+      val endAction =  audit.actions.asSequence().first { it.status == COMPLETED}
       val endDate = dateFormatter.format(endAction.timeCreated)
       val endEmployee = endAction.changedBy.getEmpName()
 

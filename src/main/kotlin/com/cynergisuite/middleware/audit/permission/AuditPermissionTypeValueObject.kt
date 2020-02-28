@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.permission
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.ValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -11,7 +10,6 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-@ValueObject
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditStatusPermissionType", title = "Definition of an allowed Audit Permission ", description = "Definition of an allowed Audit Permission to be associated with a Department for access to assets pertaining to Audits")
 data class AuditPermissionTypeValueObject(

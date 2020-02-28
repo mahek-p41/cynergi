@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.schedule.command
 
-import com.cynergisuite.domain.ValueObject
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.localization.LocalizationService
 import java.util.Locale
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
-@ValueObject
 data class ScheduleCommandTypeValueObject(
    @field:Positive
    var id: Long? = null,
@@ -18,7 +16,7 @@ data class ScheduleCommandTypeValueObject(
    @field:NotNull
    var description: String? = null
 
-) : ValueObjectBase<ScheduleCommandTypeValueObject>() {
+) : Identifiable {
 
    constructor(type: ScheduleCommandType, locale: Locale, localizationService: LocalizationService) :
       this (
@@ -28,5 +26,4 @@ data class ScheduleCommandTypeValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): ScheduleCommandTypeValueObject = copy()
 }
