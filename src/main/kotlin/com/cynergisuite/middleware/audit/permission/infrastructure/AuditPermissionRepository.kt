@@ -59,9 +59,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.description        AS dept_description,
             dept.dataset            AS dept_dataset,
             dept.security_profile   AS dept_security_profile,
-            dept.default_menu       AS dept_default_menu,
-            dept.time_created       AS dept_time_created,
-            dept.time_updated       AS dept_time_updated
+            dept.default_menu       AS dept_default_menu
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
@@ -108,8 +106,6 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset            AS dept_dataset,
             dept.security_profile   AS dept_security_profile,
             dept.default_menu       AS dept_default_menu,
-            dept.time_created       AS dept_time_created,
-            dept.time_updated       AS dept_time_updated,
             count(*) OVER() as total_elements
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
@@ -158,8 +154,6 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset            AS dept_dataset,
             dept.security_profile   AS dept_security_profile,
             dept.default_menu       AS dept_default_menu,
-            dept.time_created       AS dept_time_created,
-            dept.time_updated       AS dept_time_updated,
             count(*) OVER() as total_elements
          FROM audit_permission ap
             JOIN company comp ON ap.company_id = comp.id
@@ -226,9 +220,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.description        AS dept_description,
             dept.dataset            AS dept_dataset,
             dept.security_profile   AS dept_security_profile,
-            dept.default_menu       AS dept_default_menu,
-            dept.time_created       AS dept_time_created,
-            dept.time_updated       AS dept_time_updated
+            dept.default_menu       AS dept_default_menu
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
