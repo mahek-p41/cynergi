@@ -14,22 +14,23 @@ CREATE USER MAPPING FOR cynergiuser
 
 CREATE FOREIGN TABLE fastinfo_prod_import.store_vw (
     id BIGINT,
+    dataset VARCHAR,
     number INTEGER,
-    name VARCHAR,
-    dataset VARCHAR
+    name VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'store_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
     id BIGINT,
+    dataset VARCHAR,
     code VARCHAR,
     description VARCHAR,
-    dataset VARCHAR,
     security_profile INTEGER,
     default_menu VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
     id BIGINT,
+    dataset VARCHAR,
     time_created TIMESTAMPTZ,
     time_updated TIMESTAMPTZ,
     number INTEGER,
@@ -40,7 +41,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
     active BOOLEAN,
     department VARCHAR,
     cynergi_system_admin BOOLEAN,
-    dataset VARCHAR,
     alternative_store_indicator VARCHAR,
     alternative_area INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'employee_vw', SCHEMA_NAME 'public');
