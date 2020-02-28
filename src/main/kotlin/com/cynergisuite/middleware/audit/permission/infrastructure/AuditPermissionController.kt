@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateD
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -41,7 +41,7 @@ import javax.inject.Inject
 @Controller("/api/audit/permission")
 class AuditPermissionController @Inject constructor(
    private val auditPermissionService: AuditPermissionService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionController::class.java)
 
@@ -62,10 +62,10 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission by ID {}", authentication, id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
-      return auditPermissionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
+      return auditPermissionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -85,9 +85,38 @@ class AuditPermissionController @Inject constructor(
    ): Page<AuditPermissionValueObject> {
       logger.debug("User {} requested Audit Permissions {}", authentication, pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val page = auditPermissionService.fetchAll(pageRequest, user, locale)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/type/{typeId:[0-9]+}{?pageRequest*}", processes = [APPLICATION_JSON])
+   @AccessControl("auditPermission-fetchAllByType", accessControlProvider = AuditAccessControlProvider::class)
+   @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions of a certain Type", description = "Fetch a listing of Audit Permissions of a certain Type", operationId = "auditPermission-fetchAllByType")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAllByType(
+      @Parameter(description = "Type Id to filter the audits", `in` = PATH) @QueryValue("typeId") typeId: Long,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ): Page<AuditPermissionValueObject> {
+      logger.debug("User {} requested Audit Permissions {} of TypeId {}", authentication, pageRequest, typeId)
+
+      val user = userService.findUser(authentication)
+      val locale = httpRequest.findLocaleWithDefault()
+      val page = auditPermissionService.fetchAllByType(typeId, pageRequest, user, locale)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -139,7 +168,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.info("User {} requested creation of audit permission {}", authentication, permission)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.create(permission, user, locale)
@@ -162,7 +191,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.info("User {} requested update of audit permission {}", authentication, permission)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val result = auditPermissionService.update(permission, user, locale)
 
@@ -187,8 +216,8 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission Deletion by ID {}", authentication, id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
 
-      return auditPermissionService.deleteById(id, user.myDataset(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      return auditPermissionService.deleteById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
    }
 }

@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.audit.AuditSignOffAllExceptionsDataTransferOb
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -43,7 +43,7 @@ import javax.validation.Valid
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditController::class.java)
 
@@ -64,8 +64,8 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = auditService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = auditService.fetchById(id = id, user = user, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit by {} resulted in {}", id, response)
 
@@ -89,8 +89,8 @@ class AuditController @Inject constructor(
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page =  auditService.fetchAll(pageRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
+      val user = userService.findUser(authentication)
+      val page =  auditService.fetchAll(pageRequest, user, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -115,10 +115,10 @@ class AuditController @Inject constructor(
    ): List<AuditStatusCountDataTransferObject> {
       logger.debug("Fetching Audit status counts {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
-      return auditService.findAuditStatusCounts(pageRequest, user.myDataset(), locale)
+      return auditService.findAuditStatusCounts(pageRequest, user, locale)
    }
 
    @Post(processes = [APPLICATION_JSON])
@@ -139,7 +139,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Create Audit {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val defaultStore = user.myLocation() ?: throw NotFoundException("store")
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
 
@@ -168,7 +168,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Audit status change or note  {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditService.completeOrCancel(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
@@ -194,7 +194,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested sign-off of audit {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditService.signOff(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested sign-off of audit {} resulted in {}", audit, response)
@@ -219,7 +219,7 @@ class AuditController @Inject constructor(
    ): AuditSignOffAllExceptionsDataTransferObject {
       logger.info("Requested sign of on all audit exceptions associated with audit {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
 
       return auditService.signOffAllExceptions(audit, user)
    }

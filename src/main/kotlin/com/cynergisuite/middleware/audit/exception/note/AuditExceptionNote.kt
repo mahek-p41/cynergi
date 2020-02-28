@@ -3,9 +3,8 @@ package com.cynergisuite.middleware.audit.exception.note
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -19,15 +18,15 @@ data class AuditExceptionNote(
    val auditException: Identifiable
 ) : Entity<AuditExceptionNote> {
 
-   constructor(vo: AuditExceptionNoteValueObject, enteredBy: User, auditId: Long) :
+   constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeEntity, auditId: Long) :
       this(
          id = vo.id,
          note = vo.note!!,
-         enteredBy = fromUser(enteredBy),
+         enteredBy = enteredBy,
          auditException = SimpleIdentifiableEntity(auditId)
       )
 
-   constructor(vo: AuditExceptionNoteValueObject, enteredBy: User, auditException: Identifiable) :
+   constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeEntity, auditException: Identifiable) :
       this(
          vo = vo,
          enteredBy = enteredBy,

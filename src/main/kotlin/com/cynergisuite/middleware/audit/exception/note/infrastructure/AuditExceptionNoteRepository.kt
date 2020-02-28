@@ -7,6 +7,8 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -16,8 +18,12 @@ import javax.inject.Singleton
 class AuditExceptionNoteRepository(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
-   fun insert(note: AuditExceptionNote): AuditExceptionNote =
-      jdbc.insertReturning("""
+   private val logger: Logger = LoggerFactory.getLogger(AuditExceptionNoteRepository::class.java)
+
+   fun insert(note: AuditExceptionNote): AuditExceptionNote {
+      logger.debug("Inserting AuditExceptionNote {}", note)
+
+      return jdbc.insertReturning("""
          INSERT INTO audit_exception_note (note, entered_by, audit_exception_id)
          VALUES (:note, :entered_by, :audit_exception_id)
          RETURNING
@@ -28,8 +34,19 @@ class AuditExceptionNoteRepository(
             "entered_by" to note.enteredBy.number,
             "audit_exception_id" to note.auditException.myId()
          ),
-         RowMapper { rs, _ -> mapRow(rs, note.enteredBy)!! }
+         RowMapper { rs, _ ->
+            AuditExceptionNote(
+               id = rs.getLong("id"),
+               uuRowId = rs.getUuid("uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               note = rs.getString("note"),
+               enteredBy = note.enteredBy,
+               auditException = SimpleIdentifiableEntity(rs.getLong("audit_exception_id"))
+            )
+         }
       )
+   }
 
    fun upsert(note: AuditExceptionNote): AuditExceptionNote =
       if (note.id == null) {

@@ -13,10 +13,7 @@ abstract class ServiceSpecificationBase extends Specification {
    List<CompanyEntity> companies
 
    void setup() {
-      this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
-   }
-
-   void cleanup() {
       truncateDatabaseService.truncate()
+      this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
    }
 }

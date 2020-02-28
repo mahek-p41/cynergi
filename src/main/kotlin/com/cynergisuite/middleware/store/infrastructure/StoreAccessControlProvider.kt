@@ -6,5 +6,5 @@ import javax.inject.Singleton
 
 @Singleton
 class StoreAccessControlProvider @Inject constructor(
-   private val storeRepository: StoreRepository
+   storeRepository: StoreRepository
 ) : DatasetLimitingAccessControlProvider(storeRepository)

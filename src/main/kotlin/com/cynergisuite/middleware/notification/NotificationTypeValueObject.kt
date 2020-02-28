@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -17,7 +17,7 @@ data class NotificationTypeValueObject (
 
    val description: String
 
-) : ValueObjectBase<NotificationTypeValueObject>() {
+) : Identifiable {
 
    constructor(entity: NotificationType) :
       this(
@@ -27,6 +27,4 @@ data class NotificationTypeValueObject (
       )
 
    override fun myId(): Long? = id
-
-   override fun copyMe(): NotificationTypeValueObject = copy()
 }

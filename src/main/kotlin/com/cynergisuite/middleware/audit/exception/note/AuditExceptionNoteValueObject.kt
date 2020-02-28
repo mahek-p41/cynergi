@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception.note
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -38,7 +38,7 @@ data class AuditExceptionNoteValueObject(
    @field:Schema(name = "enteredBy", description = "The Employee who entered the note.  Will be filled out by the system and as such does not need to be passed as part of the payload when creating a note")
    var enteredBy: EmployeeValueObject? = null
 
-) : ValueObjectBase<AuditExceptionNoteValueObject>() {
+) : Identifiable {
 
    constructor(entity: AuditExceptionNote) :
       this(
@@ -50,5 +50,4 @@ data class AuditExceptionNoteValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditExceptionNoteValueObject = copy()
 }

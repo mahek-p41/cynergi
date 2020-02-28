@@ -5,10 +5,11 @@ cd ../development
 
 if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergitestdb)` ]; then
   docker-compose build cynergitestdb && docker-compose up -d cynergitestdb
-  docker-compose run --rm cynergidbready
+  docker-compose build cynergitestdbready && docker-compose run --rm cynergitestdbready
   exit $?
 else
-  echo "cynergitestdb is already running"
+  echo "cynergitestdb is already running checking if it is accepting connections"
+  docker-compose build cynergitestdbready && docker-compose run --rm cynergitestdbready
   echo "can be accessed at $(docker-compose port cynergitestdb 5432)"
   exit 1
 fi
