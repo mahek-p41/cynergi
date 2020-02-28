@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.shipvia
 
 import com.cynergisuite.domain.Entity
+import com.cynergisuite.middleware.company.Company
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -10,21 +11,21 @@ data class ShipViaEntity(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val description: String,
-   val dataset: String
+   val company: Company
 ) : Entity<ShipViaEntity> {
 
-   constructor(description: String, dataset: String):
+   constructor(description: String, company: Company):
       this(
          id = null,
          description = description,
-         dataset = dataset
+         company = company
       )
 
-   constructor(vo: ShipViaValueObject, dataset: String) :
+   constructor(vo: ShipViaValueObject, company: Company) :
       this(
          id = vo.id,
          description = vo.description!!,
-         dataset = dataset
+         company = company
       )
 
    override fun myId(): Long? = id

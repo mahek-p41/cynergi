@@ -4,9 +4,9 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.infrastructure.AlwaysAllowAccessControlProvider
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -36,8 +36,7 @@ import javax.validation.Valid
 @Controller("/api/shipvia")
 class ShipViaController @Inject constructor(
    private val shipViaService: ShipViaService,
-   //private val shipViaValidator: ShipViaValidator
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaController::class.java)
 
@@ -57,8 +56,8 @@ class ShipViaController @Inject constructor(
    ): ShipViaValueObject {
       logger.info("Fetching ShipVia by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = shipViaService.fetchById(id = id, dataset = user.myDataset()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = shipViaService.fetchById(id = id) ?: throw NotFoundException(id)
 
       logger.debug("Fetch ShipVia by {} resulted {}", id, response)
 
@@ -79,8 +78,8 @@ class ShipViaController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<ShipViaValueObject> {
-      val user = authenticationService.findUser(authentication)
-      val page =  shipViaService.fetchAll(pageRequest, user.myDataset())
+      val user = userService.findUser(authentication)
+      val page =  shipViaService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -106,7 +105,7 @@ class ShipViaController @Inject constructor(
    ): ShipViaValueObject {
       logger.info("Requested Save ShipVia {}", vo)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = shipViaService.create(vo = vo, employee = user)
 
       logger.debug("Requested Save ShipVia {} resulted in {}", vo, response)
@@ -129,7 +128,8 @@ class ShipViaController @Inject constructor(
       authentication: Authentication
    ): ShipViaValueObject {
       logger.info("Requested Update ShipVia {}", vo)
-      val employee = authenticationService.findUser(authentication)
+
+      val employee = userService.findUser(authentication)
       val response = shipViaService.update(vo, employee)
 
       logger.debug("Requested Update ShipVia {} resulted in {}", vo, response)

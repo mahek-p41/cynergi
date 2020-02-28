@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.shipvia.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -19,23 +21,59 @@ class ShipViaRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
-   private val simpleShipViaRowMapper = ShipViaRowMapper()
+   private fun baseSelectQuery() = """
+      SELECT
+         shipVia.id             AS id,
+         shipVia.uu_row_id      AS uu_row_id,
+         shipVia.time_created   AS time_created,
+         shipVia.time_updated   AS time_updated,
+         shipVia.description    AS description,
+         comp.id                AS comp_id,
+         comp.uu_row_id         AS comp_uu_row_id,
+         comp.name              AS comp_name,
+         comp.doing_business_as AS comp_doing_business_as,
+         comp.client_code       AS comp_client_code,
+         comp.client_id         AS comp_client_id,
+         comp.dataset_code      AS comp_dataset_code,
+         comp.federal_id_number AS comp_federal_id_number,
+         count(*) OVER()        AS total_elements
+      FROM ship_via shipVia
+           JOIN company comp ON shipVia.company_id = comp.id
+   """
 
    fun findOne(id: Long): ShipViaEntity? {
       logger.debug("Searching for ShipVia by id {}", id)
-      val found = jdbc.findFirstOrNull("""SELECT sv.id, sv.uu_row_id, sv.time_created, sv.time_updated, sv.description, c.dataset_code as dataset 
-         FROM ship_via sv
-         JOIN company c on sv.company_id = c.id 
-         WHERE sv.id = :id""", mapOf("id" to id), simpleShipViaRowMapper)
+
+      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id", mapOf("id" to id), this::mapRow)
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
       return found
    }
 
+   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<ShipViaEntity, PageRequest> {
+      return jdbc.queryPaged("""
+         ${baseSelectQuery()}
+         WHERE comp.id = :comp_id
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.myId(),
+            "limit" to pageRequest.size(),
+            "offset" to pageRequest.offset()
+         ),
+         pageRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs))
+         } while(rs.next())
+      }
+   }
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
       logger.trace("Checking if ShipVia: {} exists resulted in {}", id, exists)
+
       return exists
    }
 
@@ -48,18 +86,14 @@ class ShipViaRepository @Inject constructor(
          INSERT INTO ship_via(description, company_id)
          VALUES (
             :description,
-            (
-               SELECT id
-               FROM company c
-               WHERE c.dataset_code = :dataset
-            )
+            :comp_id
          )
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "description" to entity.description,
-            "dataset" to entity.dataset
+            "comp_id" to entity.company.myId()
          ),
          RowMapper { rs, _ ->
             ShipViaEntity(
@@ -68,7 +102,7 @@ class ShipViaRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                description = rs.getString("description"),
-               dataset = entity.dataset
+               company = entity.company
             )
          }
       )
@@ -97,63 +131,30 @@ class ShipViaRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                description = rs.getString("description"),
-               dataset = entity.dataset
+               company = entity.company
             )
          }
       )
    }
 
-   fun findAll(pageRequest: PageRequest, dataset: String): RepositoryPage<ShipViaEntity, PageRequest> {
-      var totalElements: Long? = null
-      val shipVia = mutableListOf<ShipViaEntity>()
-
-      jdbc.query("""
-         SELECT
-            sv.id,
-            sv.uu_row_id,
-            sv.time_created,
-            sv.time_updated,
-            sv.description,
-            c.dataset_code as dataset,
-            count(*) OVER() as total_elements
-         FROM ship_via AS sv
-         JOIN company c
-         ON sv.company_id = c.id
-         WHERE c.dataset_code = :dataset
-         ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
-         LIMIT ${pageRequest.size()}
-         OFFSET ${pageRequest.offset()}
-         """.trimIndent(),
-         mapOf(
-            "dataset" to dataset
+   private fun mapRow(rs: ResultSet): ShipViaEntity {
+      return ShipViaEntity(
+         id = rs.getLong("id"),
+         uuRowId = rs.getUuid("uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("time_created"),
+         timeUpdated = rs.getOffsetDateTime("time_updated"),
+         description = rs.getString("description"),
+         company = CompanyEntity(
+            id = rs.getLong("comp_id"),
+            uuRowId = rs.getUuid("comp_uu_row_id"),
+            name = rs.getString("comp_name"),
+            doingBusinessAs = rs.getString("comp_doing_business_as"),
+            clientCode = rs.getString("comp_client_code"),
+            clientId = rs.getInt("comp_client_id"),
+            datasetCode = rs.getString("comp_dataset_code"),
+            federalIdNumber = rs.getString("comp_federal_id_number")
          )
-      ) { rs ->
-         if (totalElements == null) {
-            totalElements = rs.getLong("total_elements")
-         }
-
-         shipVia.add(simpleShipViaRowMapper.mapRow(rs,0))
-      }
-
-      return RepositoryPage(
-         requested = pageRequest,
-         elements = shipVia,
-         totalElements = totalElements ?: 0
       )
-
    }
 }
 
-private class ShipViaRowMapper(
-   private val columnPrefix: String = EMPTY
-) : RowMapper<ShipViaEntity> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ShipViaEntity =
-      ShipViaEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         description = rs.getString("${columnPrefix}description"),
-         dataset = rs.getString("${columnPrefix}dataset")
-      )
-}

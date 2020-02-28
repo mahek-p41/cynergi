@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.shipvia
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
@@ -21,12 +22,12 @@ class ShipViaService @Inject constructor(
    private val reportalService: ReportalService
 ) {
 
-   fun fetchById(id: Long, dataset: String): ShipViaValueObject? =
+   fun fetchById(id: Long): ShipViaValueObject? =
       shipViaRepository.findOne(id)?.let{ShipViaValueObject(entity = it)}
 
    @Validated
-   fun fetchAll(@Valid pageRequest: PageRequest, dataset: String): Page<ShipViaValueObject> {
-      val found = shipViaRepository.findAll(pageRequest, dataset)
+   fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<ShipViaValueObject> {
+      val found = shipViaRepository.findAll(pageRequest, company)
 
       return found.toPage { shipVia: ShipViaEntity ->
          ShipViaValueObject(shipVia)
@@ -41,7 +42,7 @@ class ShipViaService @Inject constructor(
       shipViaValidator.validateCreate(vo)
 
       return ShipViaValueObject(
-         entity = shipViaRepository.insert(entity = ShipViaEntity(vo, employee.myDataset()))
+         entity = shipViaRepository.insert(entity = ShipViaEntity(vo, employee.myCompany()))
       )
    }
 
@@ -50,7 +51,7 @@ class ShipViaService @Inject constructor(
       shipViaValidator.validateUpdate(vo)
 
       return ShipViaValueObject(
-         entity = shipViaRepository.update(entity = ShipViaEntity(vo, employee.myDataset()))
+         entity = shipViaRepository.update(entity = ShipViaEntity(vo, employee.myCompany()))
       )
    }
 }
