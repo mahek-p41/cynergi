@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.shipvia
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
