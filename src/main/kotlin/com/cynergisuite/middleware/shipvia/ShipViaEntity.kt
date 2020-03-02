@@ -11,15 +11,9 @@ data class ShipViaEntity(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val description: String,
+   val number: Int,
    val company: Company
 ) : Entity<ShipViaEntity> {
-
-   constructor(description: String, company: Company):
-      this(
-         id = null,
-         description = description,
-         company = company
-      )
 
    constructor(vo: ShipViaValueObject, company: Company) :
       this(
