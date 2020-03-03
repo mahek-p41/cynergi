@@ -68,7 +68,7 @@ class AuditFactoryService @Inject constructor(
    }
 
    fun stream(numberIn: Int = 1, store: StoreEntity, changedByIn: EmployeeEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
-      val changedBy = changedByIn ?: employeeFactoryService.single(store)
+      val changedBy = changedByIn
 
       return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy, statusesIn = statusesIn)
          .map { auditRepository.insert(it) }

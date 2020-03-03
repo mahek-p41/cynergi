@@ -21,7 +21,7 @@ class AuditPermissionValidator(
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class)
-   fun validateCreate(permission: AuditPermissionCreateUpdateDataTransferObject, user: User): AuditPermissionEntity {
+   fun validateCreate(permission: AuditPermissionCreateDataTransferObject, user: User): AuditPermissionEntity {
       doValidation { errors ->
          val permissionTypeId = permission.permissionType!!.myId()!!
          val departmentId = permission.department!!.myId()!!
@@ -40,37 +40,6 @@ class AuditPermissionValidator(
       val department = departmentRepository.findOne(permission.department!!.myId()!!, company)!!
 
       return AuditPermissionEntity(
-         type = permissionType,
-         department = department
-      )
-   }
-
-   fun validateUpdate(permission: AuditPermissionCreateUpdateDataTransferObject, user: User): AuditPermissionEntity {
-      doValidation { errors ->
-         val id = permission.id
-         val permissionTypeId = permission.permissionType!!.myId()!!
-         val departmentId = permission.department!!.myId()!!
-
-         if (id == null) {
-            errors.add(ValidationError("id", NotNull("id")))
-         } else if (auditPermissionRepository.doesNotExist(id)) {
-            errors.add(ValidationError("id", NotFound(id)))
-         }
-
-         if (auditPermissionTypeRepository.doesNotExist(permissionTypeId)) {
-            errors.add(ValidationError("permission.id", NotFound(permissionTypeId)))
-         }
-
-         if (departmentRepository.doesNotExist(departmentId, user.myCompany())) {
-            errors.add(ValidationError("department.id", NotFound(departmentId)))
-         }
-      }
-
-      val existingPermission = auditPermissionRepository.findById(permission.id!!, user.myCompany())!!
-      val permissionType = auditPermissionTypeRepository.findOne(permission.permissionType!!.myId()!!)!!
-      val department = departmentRepository.findOne(permission.department!!.myId()!!, user.myCompany())!!
-
-      return existingPermission.copy(
          type = permissionType,
          department = department
       )
