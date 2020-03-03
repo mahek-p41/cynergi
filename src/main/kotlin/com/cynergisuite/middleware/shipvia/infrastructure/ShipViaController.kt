@@ -89,7 +89,7 @@ class ShipViaController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("audit-create", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
+   @AccessControl("shipvia-create", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-create")
    @ApiResponses(value = [
@@ -114,7 +114,7 @@ class ShipViaController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("audit-update", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
+   @AccessControl("shipvia-update", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-update")
    @ApiResponses(value = [

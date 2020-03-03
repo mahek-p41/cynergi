@@ -19,6 +19,7 @@ data class ShipViaEntity(
       this(
          id = vo.id,
          description = vo.description!!,
+         number = vo.number!!,
          company = company
       )
 
