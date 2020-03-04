@@ -10,11 +10,8 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AuditPermissionCreateUpdate", description = "Payload for creating or updating an audit permission")
-data class AuditPermissionCreateUpdateDataTransferObject(
-
-   @field:Positive
-   val id: Long? = null,
+@Schema(name = "AuditPermissionCreate", description = "Payload for creating an audit permission")
+data class AuditPermissionCreateDataTransferObject(
 
    @field:Valid
    @field:NotNull
@@ -24,12 +21,6 @@ data class AuditPermissionCreateUpdateDataTransferObject(
    @field:NotNull
    val department: SimpleIdentifiableDataTransferObject? = null
 ) {
-   constructor(id: Long, permission: AuditPermissionType, department: DepartmentEntity) :
-      this(
-         id = id,
-         permissionType = SimpleIdentifiableDataTransferObject(permission),
-         department = SimpleIdentifiableDataTransferObject(department)
-      )
 
    constructor(permission: AuditPermissionType, department: DepartmentEntity) :
       this(
