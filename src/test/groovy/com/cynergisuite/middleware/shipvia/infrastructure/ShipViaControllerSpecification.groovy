@@ -139,7 +139,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "post valid shipVia"() {
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it) }
+      //final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it) }
+      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it.id, "post valid shipVia", 7) }
 
       when:
       def response = post("$path/", shipVia)
@@ -148,11 +149,12 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id != null
       response.id > 0
       response.description == shipVia.description
+      response.number == 7
    }
 
    void "post null values to shipVia()"() {
       given:
-      final def shipVia = new ShipViaValueObject(null as String)
+      final def shipVia = new ShipViaValueObject(null as String, 5)
 
       when:
       post("$path/", shipVia)
@@ -170,7 +172,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid shipVia"() {
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, "test description")}
+      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, "test description", 5)}
 
       when:
       def response = put("$path/", shipVia)
@@ -179,11 +181,12 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id != null
       response.id > 0
       response.description == "test description"
+      response.number == 5
    }
 
    void "put invalid shipVia"(){
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, null)}
+      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, null, 5)}
 
       when:
       put("$path/", shipVia)
@@ -201,7 +204,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid shipVia missing Id"(){
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(null, "Gary was here")}
+      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(null, "Gary was here", 5)}
 
       when:
       put("$path/", shipVia)

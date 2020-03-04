@@ -18,19 +18,26 @@ data class ShipViaValueObject(
    @field:NotNull
    @field:Size(min = 3, max = 30)
    @field:Schema(name = "description", minimum = "1", maximum = "30", description = "Describes the Ship Via")
-   var description: String? = null
+   var description: String? = null,
+
+   @field:NotNull
+   @field:Positive
+   @field:Schema(name = "number", minimum = "1", required = false, description = "Ship Via Number")
+   var number: Int? = null
 
 ) : Identifiable {
-   constructor(description: String?) :
+   constructor(description: String?, number: Int?) :
       this(
          id = null,
-         description = description
+         description = description,
+         number = number
       )
 
    constructor(entity: ShipViaEntity) :
       this(
          id = entity.id,
-         description = entity.description
+         description = entity.description,
+         number = entity.number
       )
 
    override fun myId(): Long? = id

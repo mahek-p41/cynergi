@@ -19,10 +19,12 @@ object ShipViaFactory {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
+      val random = faker.random()
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
             description = lorem.characters(3, 30),
+            number = random.nextInt(1, 1000),
             company = company
          )
       }
