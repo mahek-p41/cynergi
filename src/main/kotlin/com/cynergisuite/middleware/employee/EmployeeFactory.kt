@@ -25,7 +25,6 @@ object EmployeeFactory {
    fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
-      val random = faker.random()
       val name = faker.name()
       val lorem = faker.lorem()
       val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.company ?: CompanyFactory.random()
@@ -100,7 +99,7 @@ class EmployeeFactoryService @Inject constructor(
    }
 
    private fun streamAuthenticated(numberIn: Int = 1, company: Company, store: StoreEntity, department: Department? = null, lastNameIn: String? = null, firstNameMiIn: String? = null): Stream<AuthenticatedEmployee> {
-      return stream(storeIn = store, companyIn = company, departmentIn = department, lastNameIn = lastNameIn, firstNameMiIn = firstNameMiIn)
+      return stream(numberIn = numberIn, storeIn = store, companyIn = company, departmentIn = department, lastNameIn = lastNameIn, firstNameMiIn = firstNameMiIn)
          .map { employee ->
             AuthenticatedEmployee(
                id = employee.id!!,

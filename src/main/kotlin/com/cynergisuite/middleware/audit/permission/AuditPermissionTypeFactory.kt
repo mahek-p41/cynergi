@@ -27,8 +27,7 @@ object AuditPermissionTypeFactory {
       AuditPermissionType(21, "auditPermission-fetchAll", "Allow user to fetch a a listing of audit permissions", "audit.permission.fetch.all"),
       AuditPermissionType(22, "auditPermissionType-fetchAll", "Allow user to fetch a a listing of audit permission types", "audit.permission.type.fetch.all"),
       AuditPermissionType(23, "auditPermission-create", "Allow user to create an audit permission", "audit.permission.create"),
-      AuditPermissionType(24, "auditPermission-update", "Allow user to update an audit permission", "audit.permission.update"),
-      AuditPermissionType(25, "auditPermission-delete", "Allow user to delete an audit permission", "audit.permission.delete")
+      AuditPermissionType(24, "auditPermission-delete", "Allow user to delete an audit permission", "audit.permission.delete")
    )
 
    @JvmStatic

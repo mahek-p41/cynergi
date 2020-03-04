@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.permission.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateDataTransferObject
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTransferObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
-
 
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -39,11 +38,11 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.requested.size == 100
       result.requested.sortBy == "id"
       result.requested.sortDirection == "ASC"
-      result.totalElements == 25
+      result.totalElements == 24
       result.totalPages == 1
       result.first == true
       result.last == true
-      result.elements.size() == 25
+      result.elements.size() == 24
       result.elements[0].id == 1
       result.elements[0].value == "audit-fetchOne"
       result.elements[0].description == "Find audit by ID"
@@ -114,11 +113,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements[22].value == "auditPermission-create"
       result.elements[22].description == "Allow user to create an audit permission"
       result.elements[23].id == 24
-      result.elements[23].value == "auditPermission-update"
-      result.elements[23].description == "Allow user to update an audit permission"
-      result.elements[24].id == 25
-      result.elements[24].value == "auditPermission-delete"
-      result.elements[24].description == "Allow user to delete an audit permission"
+      result.elements[23].value == "auditPermission-delete"
+      result.elements[23].description == "Allow user to delete an audit permission"
    }
 
    void "fetch one by ID" () {
@@ -267,7 +263,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final audit = auditFactoryService.single(store)
 
       when:
-      def permission = post("/audit/permission", new AuditPermissionCreateUpdateDataTransferObject(permissionType, salesAssociateDepartment))
+      def permission = post("/audit/permission", new AuditPermissionCreateDataTransferObject(permissionType, salesAssociateDepartment))
 
       then:
       notThrown(Exception)
@@ -286,46 +282,6 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
       when:
       get("/audit/${audit.id}", deliveryDriverLogin)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
-   }
-
-   void "audit-fetchOne from Sales Associate to Delivery Driver" () {
-      given:
-      final company = companyFactoryService.forDatasetCode("tstds1")
-      final store = storeFactoryService.random(company)
-      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
-      final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
-      final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
-      final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
-      final salesAssociateLogin = loginEmployee(salesAssociate)
-      final deliveryDriverLogin = loginEmployee(deliveryDriver)
-      final permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
-      final permission = auditPermissionFactoryService.single(salesAssociateDepartment, permissionType, company)
-      final audit = auditFactoryService.single(store)
-
-      when:
-      def permissionUpdated = put("/audit/permission", new AuditPermissionCreateUpdateDataTransferObject(permission.id, permissionType, deliveryDriverDepartment))
-
-      then:
-      notThrown(Exception)
-      permissionUpdated.id == permission.id
-      permissionUpdated.type.id == permissionType.id
-      permissionUpdated.type.value == permissionType.value
-      permissionUpdated.department.id == deliveryDriverDepartment.id
-      permissionUpdated.department.code == deliveryDriverDepartment.code
-
-      when:
-      def deliveryDriverAudit = get("/audit/${audit.id}", deliveryDriverLogin)
-
-      then:
-      notThrown(Exception)
-      deliveryDriverAudit.id == audit.id
-
-      when:
-      get("/audit/${audit.id}", salesAssociateLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)

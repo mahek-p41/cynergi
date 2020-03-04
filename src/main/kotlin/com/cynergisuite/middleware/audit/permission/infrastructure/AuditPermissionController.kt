@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateUpdateDataTransferObject
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTransferObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
@@ -162,7 +162,7 @@ class AuditPermissionController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body permission: AuditPermissionCreateUpdateDataTransferObject,
+      @Body permission: AuditPermissionCreateDataTransferObject,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
@@ -172,32 +172,6 @@ class AuditPermissionController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.create(permission, user, locale)
-   }
-
-   @Put(processes = [APPLICATION_JSON])
-   @Throws(ValidationException::class, NotFoundException::class)
-   @AccessControl("auditPermission-update", accessControlProvider = AuditAccessControlProvider::class)
-   @Operation(tags = ["AuditPermissionEndpoints"], summary = "Update a single audit permission", description = "Update a single audit permission associations with a department or permission type.", operationId = "auditPermission-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
-   fun update(
-      @Body permission: AuditPermissionCreateUpdateDataTransferObject,
-      httpRequest: HttpRequest<*>,
-      authentication: Authentication
-   ): AuditPermissionValueObject {
-      logger.info("User {} requested update of audit permission {}", authentication, permission)
-
-      val user = userService.findUser(authentication)
-      val locale = httpRequest.findLocaleWithDefault()
-      val result = auditPermissionService.update(permission, user, locale)
-
-      logger.debug("Requested update of audit permission {} resulted in {}", permission, result)
-
-      return result
    }
 
    @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])

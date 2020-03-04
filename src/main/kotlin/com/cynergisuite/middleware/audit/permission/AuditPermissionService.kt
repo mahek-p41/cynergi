@@ -46,21 +46,11 @@ class AuditPermissionService @Inject constructor(
 
    @Validated
    @Throws(ValidationException::class)
-   fun create(@Valid permission: AuditPermissionCreateUpdateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
+   fun create(@Valid permission: AuditPermissionCreateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
       val auditPermission = auditPermissionValidator.validateCreate(permission, user)
 
       return AuditPermissionValueObject(
          entity = auditPermissionRepository.insert(auditPermission),
-         locale = locale,
-         localizationService = localizationService
-      )
-   }
-
-   fun update(@Valid permission: AuditPermissionCreateUpdateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
-      val auditPermission = auditPermissionValidator.validateUpdate(permission, user)
-
-      return AuditPermissionValueObject(
-         entity = auditPermissionRepository.update(auditPermission, user.myCompany()),
          locale = locale,
          localizationService = localizationService
       )
