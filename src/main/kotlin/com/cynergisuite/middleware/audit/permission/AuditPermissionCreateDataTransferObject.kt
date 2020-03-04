@@ -21,6 +21,7 @@ data class AuditPermissionCreateDataTransferObject(
    @field:NotNull
    val department: SimpleIdentifiableDataTransferObject? = null
 ) {
+
    constructor(permission: AuditPermissionType, department: DepartmentEntity) :
       this(
          permissionType = SimpleIdentifiableDataTransferObject(permission),

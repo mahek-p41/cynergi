@@ -67,9 +67,7 @@ class AuditFactoryService @Inject constructor(
          .map { auditRepository.insert(it) }
    }
 
-   fun stream(numberIn: Int = 1, store: StoreEntity, changedByIn: EmployeeEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
-      val changedBy = changedByIn
-
+   fun stream(numberIn: Int = 1, store: StoreEntity, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
       return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy, statusesIn = statusesIn)
          .map { auditRepository.insert(it) }
    }
@@ -78,11 +76,11 @@ class AuditFactoryService @Inject constructor(
       val company = changedBy.company
       val store = changedBy.store ?: storeFactoryService.random(company)
 
-      return stream(store = store, changedByIn = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+      return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
    fun single(store: StoreEntity, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
-      return stream(store = store, changedByIn = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+      return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
    fun single(store: StoreEntity): AuditEntity {
@@ -90,17 +88,17 @@ class AuditFactoryService @Inject constructor(
    }
 
    fun single(store: StoreEntity, changedBy: EmployeeEntity): AuditEntity {
-      return stream(store = store, changedByIn = changedBy).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+      return stream(store = store, changedBy = changedBy).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
    fun generate(numberIn: Int, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
       val company = changedBy.company
       val store = changedBy.store ?: storeFactoryService.random(company)
 
-      stream(numberIn = numberIn, store= store, changedByIn = changedBy, statusesIn = statuses).forEach {  }
+      stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
    }
 
    fun generate(numberIn: Int, store: StoreEntity, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
-      stream(numberIn = numberIn, store= store, changedByIn = changedBy, statusesIn = statuses).forEach {  }
+      stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
    }
 }
