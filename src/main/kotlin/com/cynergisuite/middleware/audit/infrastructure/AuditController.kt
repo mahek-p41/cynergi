@@ -15,7 +15,10 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -23,6 +26,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -36,12 +40,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
+   private val executor: CynergiExecutor,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditController::class.java)
@@ -199,6 +206,27 @@ class AuditController @Inject constructor(
       logger.debug("Requested sign-off of audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   @Get(uri = "/exception/report/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
+   @Throws(NotFoundException::class)
+   fun fetchAuditExceptionReport(
+      @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
+   ): HttpResponse<*> {
+      val os = PipedOutputStream()
+      val input = PipedInputStream(os)
+      val user = userService.findUser(authentication)
+
+      executor.execute {
+         auditService.fetchAuditExceptionReport(id, user.myCompany(), os)
+
+         os.flush()
+         os.close()
+      }
+
+      return HttpResponse.ok(StreamedFile(input, MediaType.of("application/pdf")))
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])

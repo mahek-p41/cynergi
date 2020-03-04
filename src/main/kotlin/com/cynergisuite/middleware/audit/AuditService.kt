@@ -12,8 +12,8 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
-import com.cynergisuite.middleware.authentication.user.IdentifiableUser
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
@@ -28,6 +28,7 @@ import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
 import org.apache.commons.lang3.StringUtils.EMPTY
 import java.awt.Color
+import java.io.OutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -58,6 +59,12 @@ class AuditService @Inject constructor(
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
       }
+   }
+
+   fun fetchAuditExceptionReport(id: Long, company: Company, os: OutputStream) {
+      val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
+
+      generateAuditExceptionReport(os, audit)
    }
 
    fun exists(id: Long): Boolean =
@@ -116,17 +123,23 @@ class AuditService @Inject constructor(
          auditExceptionRepository.signOffAllExceptions(updated, user)
 
          reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf") { reportalOutputStream ->
-            Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
-               val writer = PdfWriter.getInstance(document, reportalOutputStream)
-
-               writer.pageEvent = object : PdfPageEventHelper() { override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(updated, writer, document) }
-               document.open()
-               document.add(buildExceptionReport(updated, document.pageSize.width))
-            }
+            generateAuditExceptionReport(reportalOutputStream, updated)
          }
       }
 
       return AuditValueObject(updated, locale, localizationService)
+   }
+
+   private fun generateAuditExceptionReport(outputStream: OutputStream, audit: AuditEntity) {
+      Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
+         val writer = PdfWriter.getInstance(document, outputStream)
+
+         writer.pageEvent = object : PdfPageEventHelper() {
+            override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(audit, writer, document)
+         }
+         document.open()
+         document.add(buildExceptionReport(audit, document.pageSize.width))
+      }
    }
 
    @Validated

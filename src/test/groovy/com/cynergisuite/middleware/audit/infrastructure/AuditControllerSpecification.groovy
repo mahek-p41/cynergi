@@ -38,6 +38,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
+import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -1064,7 +1065,13 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['signedOff'] = true }
-      }
+
+      when:
+      def pdf = client.exchange(GET("/${path}/exception/report/${audit.id}").header("Authorization", "Bearer $cynergiAccessToken"))
+
+      then:
+      notThrown(HttpClientResponseException)
+   }
 
    void "Confirm exceptions signed-off when audit is signed-off" () {
       given:
