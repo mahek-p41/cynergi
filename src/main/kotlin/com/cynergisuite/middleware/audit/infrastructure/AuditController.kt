@@ -40,8 +40,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
@@ -222,20 +220,15 @@ class AuditController @Inject constructor(
       @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id") id: Long,
       authentication: Authentication
    ): HttpResponse<*> {
-      val os = PipedOutputStream()
-      val input = PipedInputStream(os)
       val user = userService.findUser(authentication)
 
-      executor.execute {
-         auditService.fetchAuditExceptionReport(id, user.myCompany(), os)
+      logger.info("Audit Exception Report requested by user: {}", user)
 
-         os.flush()
-         os.close()
+      val stream = executor.pipeBlockingOutputToStreamedFile("application/pdf") { os ->
+         auditService.fetchAuditExceptionReport(id, user.myCompany(), os)
       }
 
-      return HttpResponse.ok(
-         StreamedFile(input, MediaType.of("application/pdf"))
-      )
+      return HttpResponse.ok(stream)
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
