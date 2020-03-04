@@ -28,6 +28,7 @@ class ShipViaRepository @Inject constructor(
          shipVia.time_created   AS time_created,
          shipVia.time_updated   AS time_updated,
          shipVia.description    AS description,
+         shipVia.number         AS number,
          comp.id                AS comp_id,
          comp.uu_row_id         AS comp_uu_row_id,
          comp.name              AS comp_name,
@@ -83,9 +84,10 @@ class ShipViaRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO ship_via(description, company_id)
+         INSERT INTO ship_via(description, number, company_id)
          VALUES (
             :description,
+            :number,
             :comp_id
          )
          RETURNING
@@ -93,6 +95,7 @@ class ShipViaRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "description" to entity.description,
+            "number" to entity.number,
             "comp_id" to entity.company.myId()
          ),
          RowMapper { rs, _ ->
@@ -102,6 +105,7 @@ class ShipViaRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                description = rs.getString("description"),
+               number = rs.getInt("number"),
                company = entity.company
             )
          }
@@ -115,14 +119,16 @@ class ShipViaRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE ship_via
          SET
-            description = :description
+            description = :description,
+            number = :number
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "description" to entity.description
+            "description" to entity.description,
+            "number" to entity.number
          ),
          RowMapper { rs, _ ->
             ShipViaEntity(
@@ -131,6 +137,7 @@ class ShipViaRepository @Inject constructor(
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                description = rs.getString("description"),
+               number = rs.getInt("number"),
                company = entity.company
             )
          }
@@ -144,6 +151,7 @@ class ShipViaRepository @Inject constructor(
          timeCreated = rs.getOffsetDateTime("time_created"),
          timeUpdated = rs.getOffsetDateTime("time_updated"),
          description = rs.getString("description"),
+         number = rs.getInt("number"),
          company = CompanyEntity(
             id = rs.getLong("comp_id"),
             uuRowId = rs.getUuid("comp_uu_row_id"),
