@@ -206,12 +206,12 @@ class AuditController @Inject constructor(
       return response
    }
 
-   @Get(uri = "/{id:[0-9]+}/exception/report/", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9]+}/exception/report/", produces = ["application/pdf"])
    @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(NotFoundException::class)
-   @Operation(tags = ["AuditEndpoints"], summary = "Sign off on an audit", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on as well as signing off the audit.", operationId = "audit-fetchAuditExceptionReport")
+   @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to generate Audit Exception Report", content = [Content(mediaType = "application/pdf")]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
