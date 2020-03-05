@@ -15,7 +15,10 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -23,6 +26,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -42,6 +46,7 @@ import javax.inject.Inject
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
+   private val executor: CynergiExecutor,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditController::class.java)
@@ -199,6 +204,31 @@ class AuditController @Inject constructor(
       logger.debug("Requested sign-off of audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   @Get(uri = "/{id:[0-9]+}/exception/report/", produces = ["application/pdf"])
+   @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to generate Audit Exception Report", content = [Content(mediaType = "application/pdf")]),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAuditExceptionReport(
+      @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
+   ): HttpResponse<*> {
+      val user = userService.findUser(authentication)
+
+      logger.info("Audit Exception Report requested by user: {}", user)
+
+      val stream = executor.pipeBlockingOutputToStreamedFile("application/pdf") { os ->
+         auditService.fetchAuditExceptionReport(id, user.myCompany(), os)
+      }
+
+      return HttpResponse.ok(stream)
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])

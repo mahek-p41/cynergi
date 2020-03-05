@@ -38,11 +38,11 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.requested.size == 100
       result.requested.sortBy == "id"
       result.requested.sortDirection == "ASC"
-      result.totalElements == 24
+      result.totalElements == 25
       result.totalPages == 1
       result.first == true
       result.last == true
-      result.elements.size() == 24
+      result.elements.size() == 25
       result.elements[0].id == 1
       result.elements[0].value == "audit-fetchOne"
       result.elements[0].description == "Find audit by ID"
@@ -115,6 +115,9 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements[23].id == 24
       result.elements[23].value == "auditPermission-delete"
       result.elements[23].description == "Allow user to delete an audit permission"
+      result.elements[24].id == 25
+      result.elements[24].value == "audit-fetchAuditExceptionReport"
+      result.elements[24].description == "Allow user to generate Audit Exception Report"
    }
 
    void "fetch one by ID" () {
