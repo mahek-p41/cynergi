@@ -52,7 +52,7 @@ class AuditStatusEntity(
 /*
  * these objects define the known to the business logic instances stored in the audit_status_type_domain table
  */
-object Created : AuditStatus(1, "CREATED", "Created", "audit.status.opened", "A572A7")
+object Created : AuditStatus(1, "CREATED", "Created", "audit.status.created", "A572A7")
 object InProgress : AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress", "DB843D")
 object Completed: AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed", "12A2DC")
 object Canceled: AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled", "AA4643")
