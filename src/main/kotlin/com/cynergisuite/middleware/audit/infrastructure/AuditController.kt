@@ -207,7 +207,7 @@ class AuditController @Inject constructor(
       return response
    }
 
-   @Get(uri = "/{id:[0-9]+}/exception/report/", produces = ["application/pdf"])
+   @Get(uri = "/{id:[0-9]+}/report/exception", produces = ["application/pdf"])
    @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")

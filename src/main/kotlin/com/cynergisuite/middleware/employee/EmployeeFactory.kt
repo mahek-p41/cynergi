@@ -43,7 +43,7 @@ object EmployeeFactory {
             number = employeeNumberIn ?: employeeNumberCounter.incrementAndGet(),
             lastName = lastNameIn ?: name.lastName(),
             firstNameMi = firstNameMiIn ?: name.firstName(),
-            passCode = passCode ?: lorem.characters(1, 6),
+            passCode = passCode ?: lorem.characters(3, 6),
             active = activeIn,
             cynergiSystemAdmin = cynergiSystemAdminIn,
             company = company,

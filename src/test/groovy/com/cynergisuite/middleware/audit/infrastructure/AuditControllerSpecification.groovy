@@ -1068,7 +1068,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['signedOff'] = true }
 
       when:
-      def pdf = client.exchange(GET("/${path}/${audit.id}/exception/report/").header("Authorization", "Bearer $cynergiAccessToken"), Argument.of(byte[]))
+      def pdf = client.exchange(GET("/${path}/${audit.id}/report/exception").header("Authorization", "Bearer $cynergiAccessToken"), Argument.of(byte[]))
 
       then:
       notThrown(HttpClientResponseException)

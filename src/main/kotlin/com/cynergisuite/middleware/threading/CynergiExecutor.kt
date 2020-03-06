@@ -37,10 +37,12 @@ class CynergiExecutor @Inject constructor(
       val input = PipedInputStream(os)
 
       execute {
-         pipeTo(CloseShieldOutputStream(os))
-
-         os.flush()
-         os.close()
+         try {
+            pipeTo(CloseShieldOutputStream(os))
+         } finally {
+            os.flush()
+            os.close()
+         }
       }
 
       return StreamedFile(input, MediaType.of(mediaType))

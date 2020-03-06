@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.authentication.user.EmployeeUser
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -13,6 +14,9 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.DayOfWeek
+import java.time.DayOfWeek.THURSDAY
+import java.time.DayOfWeek.TUESDAY
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,14 +63,14 @@ class DevelopDataLoader @Inject constructor(
       auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
-      //auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
+      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
 
       // setup store three open audit
       val openStoreThreeAudit = auditFactoryService.single(storeThreeEmployee.store!!)
       auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
-      //auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
+      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
 
       // setup store one canceled audit
       auditFactoryService.single(storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
@@ -89,8 +93,8 @@ class DevelopDataLoader @Inject constructor(
       // setup store three signed off audits
       auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
-      //auditScheduleScheduleFactoryService.single(DayOfWeek.TUESDAY, listOf(storeOne))
-      //auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree))
+      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOne), EmployeeUser(storeOneEmployee, storeOne), companyTstds1)
+      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThree), EmployeeUser(storeThreeEmployee, storeThree), companyTstds1)
 
       logger.info("Finished loading develop data")
       logger.info("Store one employee {}", storeOneEmployee)
