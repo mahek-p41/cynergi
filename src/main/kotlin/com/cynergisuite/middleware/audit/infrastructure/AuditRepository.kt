@@ -20,7 +20,6 @@ import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -161,15 +160,15 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
-      val storeNumber = pageRequest.storeNumber
+      val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder("WHERE a.company_id = :comp_id ")
       val from = pageRequest.from
       val thru = pageRequest.thru
 
-      if (storeNumber != null) {
-         params["store_number"] = storeNumber
-         whereBuilder.append(" AND store_number = :store_number ")
+      if (storeNumbers != null && storeNumbers.isNotEmpty()) {
+         params["store_numbers"] = storeNumbers
+         whereBuilder.append(" AND store_number IN (:store_numbers) ")
       }
 
       if (from != null && thru != null) {
