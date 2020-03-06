@@ -296,7 +296,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    @Unroll
-   void "fetch all audits by store #storeNumberValuesIn" () {
+   void "fetch all audits by store with storeNumber #storeNumberValuesIn" () {
       given:
       final def company = companyFactoryService.forDatasetCode('tstds1')
       final def storeOne = storeFactoryService.store(1, company)
@@ -579,6 +579,43 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
          new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
       ]
+   }
+
+   @Unroll
+   void "fetch audit status counts using specified from and statuses #statusValuesIn and store numbers #storeNumberValuesIn" () {
+      given:
+      final def from = OffsetDateTime.now().minusDays(1)
+      final def company = companyFactoryService.forDatasetCode('tstds1')
+      final def storeOne = storeFactoryService.store(1, company)
+      final def storeThree = storeFactoryService.store(3, company)
+      final def employee = employeeFactoryService.single(company)
+      auditFactoryService.generate(1, storeOne, employee, [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, storeOne, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      auditFactoryService.generate(3, storeOne, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(2, storeThree, employee, [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, storeThree, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      when:
+      def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
+                              .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
+
+      then:
+      notThrown(HttpClientResponseException)
+      countsResult.stream().filter({ it -> it.getStatus().getValue() == 'CREATED' })
+            .findFirst().map({ it -> it.count }).orElse(null) == createdCount
+
+      countsResult.stream().filter({ it -> it.getStatus().getValue() == 'IN-PROGRESS' })
+            .findFirst().map({ it -> it.count }).orElse(null) == inProgressCount
+
+      countsResult.stream().filter({ it -> it.getStatus().getValue() == 'COMPLETED' })
+         .findFirst().map({ it -> it.count }).orElse(null) == completedCount
+
+      where:
+      storeNumberValuesIn  | statusValuesIn              | createdCount | inProgressCount | completedCount
+      [1]                  | ['CREATED', 'IN-PROGRESS']  | 1            | 2               | null
+      [3]                  | ['CREATED', 'IN-PROGRESS']  | 2            | null            | null
+      [1, 3]               | ['CREATED', 'IN-PROGRESS']  | 3            | 2               | null
+      [1, 3]               | ['COMPLETED']               | null         | null            | 5
    }
 
    void "create new audit" () {
