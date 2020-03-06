@@ -18,8 +18,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import javax.validation.constraints.Min
-import javax.validation.constraints.Positive
 
 @Schema(
    name = "AuditPageRequest",
@@ -39,10 +37,8 @@ class AuditPageRequest(
    @field:Schema(name = "thru", description = "Top end of the range which will be used to filter audits.  If from is found thru is required.  If both from and thru are empty then the result will include all audits")
    var thru: OffsetDateTime? = null,
 
-   @field:Positive
-   @field:Min(1)
-   @field:Schema(minimum = "1", description = "The Store Number to filter results with")
-   var storeNumber: Int? = null,
+   @field:Schema(name = "storeNumber", description = "The collection of Store Numbers to filter results with")
+   var storeNumber: Set<Int>? = emptySet(),
 
    @field:Schema(name = "status", description = "Collection of statues that an audit must be in")
    var status: Set<String>? = emptySet()

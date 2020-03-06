@@ -31,6 +31,7 @@ import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import spock.lang.Unroll
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -243,11 +244,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(1, company)
+      final storeNumbers = [store.id]
       final statuses = AuditStatusFactory.values().collect { it.value }
       final twentyAudits = auditFactoryService.stream(20, store).collect { new AuditValueObject(it, locale, localizationService) }
-      final pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  store.number, status: statuses])
-      final pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
-      final pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: store.number, status: statuses])
+      final pageOne = new AuditPageRequest([page: 1, size:  5, sortBy:  "id", sortDirection: "ASC", storeNumber:  storeNumbers, status: statuses])
+      final pageTwo = new AuditPageRequest([page:  2, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: storeNumbers, status: statuses])
+      final pageFive = new AuditPageRequest([page:  5, size:  5, sortBy:  "id", sortDirection:  "ASC", storeNumber: storeNumbers, status: statuses])
       final firstFiveAudits = twentyAudits[0..4]
       final secondFiveAudits = twentyAudits[5..9]
 
@@ -256,7 +258,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == store.number
+      pageOneResult.requested.storeNumber == storeNumbers
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements[0].id == firstFiveAudits[0].id
@@ -273,13 +275,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == store.number
+      pageOneResult.requested.storeNumber == storeNumbers
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
+      pageTwoResult.elements[0].id == secondFiveAudits[0].id
+      pageTwoResult.elements[0].inventoryCount > 0
+      pageTwoResult.elements[0].inventoryCount == secondFiveAudits[0].inventoryCount
+      pageTwoResult.elements[0].store.id == store.id
       pageTwoResult.elements[0].actions.size() == 1
       pageTwoResult.elements[0].actions[0].status.value == Created.INSTANCE.value
       pageTwoResult.elements[0].actions[0].status.color == Created.INSTANCE.color
-      pageTwoResult.elements[0].id == secondFiveAudits[0].id
+      pageTwoResult.elements[0].actions[0].id == secondFiveAudits[0].actions[0].id
 
       when:
       get("${path}${pageFive}")
@@ -289,72 +295,37 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
-   void "fetch all audits by store" () {
+   @Unroll
+   void "fetch all audits by store #storeNumberValuesIn" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final storeOne = storeFactoryService.store(1, company)
-      final storeThree = storeFactoryService.store(3, company)
-      final fiveAuditsStoreOne = auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
-      final tenAuditsStoreThree = auditFactoryService.stream(10, storeThree).collect { new AuditValueObject(it, locale, localizationService) }
+      final def company = companyFactoryService.forDatasetCode('tstds1')
+      final def storeOne = storeFactoryService.store(1, company)
+      final def storeThree = storeFactoryService.store(3, company)
+      auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
+      auditFactoryService.stream(10, storeThree).collect { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def storeOneFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 1]))
+      def storeFilterResult = get(path + new AuditPageRequest([page: 1, size: pageSizeIn, sortBy: 'id', storeNumber: storeNumberValuesIn]))
 
       then:
-      notThrown(HttpClientResponseException)
-      storeOneFilterResult.requested.storeNumber == storeOne.number
-      storeOneFilterResult.totalElements == 5
-      storeOneFilterResult.totalPages == 1
-      storeOneFilterResult.first == true
-      storeOneFilterResult.last == true
-      storeOneFilterResult.elements != null
-      storeOneFilterResult.elements.size() == 5
-      storeOneFilterResult.elements[0].id > 0
-      storeOneFilterResult.elements[0].store.storeNumber == storeOne.number
-      storeOneFilterResult.elements[0].actions[0].id == fiveAuditsStoreOne[0].actions[0].id
-      storeOneFilterResult.elements[0].actions[0].status.value == fiveAuditsStoreOne[0].actions[0].status.value
-      storeOneFilterResult.elements[0].actions[0].status.description == fiveAuditsStoreOne[0].actions[0].status.description
-      storeOneFilterResult.elements[0].actions[0].changedBy.number == fiveAuditsStoreOne[0].actions[0].changedBy.number
-      storeOneFilterResult.elements[0].actions[0].changedBy.lastName == fiveAuditsStoreOne[0].actions[0].changedBy.lastName
-      storeOneFilterResult.elements[0].actions[0].changedBy.firstNameMi == fiveAuditsStoreOne[0].actions[0].changedBy.firstNameMi
-      storeOneFilterResult.elements[4].actions[0].id == fiveAuditsStoreOne[4].actions[0].id
-      storeOneFilterResult.elements[4].actions[0].status.value == fiveAuditsStoreOne[4].actions[0].status.value
-      storeOneFilterResult.elements[4].actions[0].status.description == fiveAuditsStoreOne[4].actions[0].status.description
-      storeOneFilterResult.elements[4].actions[0].changedBy.number == fiveAuditsStoreOne[4].actions[0].changedBy.number
-      storeOneFilterResult.elements[4].actions[0].changedBy.lastName == fiveAuditsStoreOne[4].actions[0].changedBy.lastName
-      storeOneFilterResult.elements[4].actions[0].changedBy.firstNameMi == fiveAuditsStoreOne[4].actions[0].changedBy.firstNameMi
+      storeFilterResult.totalElements == totalElementCount
+      storeFilterResult.elements.size() == pageElementCount
+      storeFilterResult.requested.storeNumber == requestedStoreNumbers
+      storeFilterResult.elements.stream().map{ el -> el.store.storeNumber }.toSet() == storeNumberInElements as Set
 
-      when:
-      def storeThreeFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3]))
-
-      then:
-      notThrown(HttpClientResponseException)
-      storeThreeFilterResult.elements != null
-      storeThreeFilterResult.elements.size() == 5
-      storeThreeFilterResult.requested.storeNumber == 3
-      storeThreeFilterResult.totalElements == 10
-      storeThreeFilterResult.totalPages == 2
-      storeThreeFilterResult.first == true
-      storeThreeFilterResult.last == false
-      storeThreeFilterResult.elements[0].store.storeNumber == storeThree.number
-      storeThreeFilterResult.elements[0].actions[0].id == tenAuditsStoreThree[0].actions[0].id
-      storeThreeFilterResult.elements[0].actions[0].status.value == tenAuditsStoreThree[0].actions[0].status.value
-      storeThreeFilterResult.elements[0].actions[0].status.description == tenAuditsStoreThree[0].actions[0].status.description
-      storeThreeFilterResult.elements[0].actions[0].changedBy.number == tenAuditsStoreThree[0].actions[0].changedBy.number
-      storeThreeFilterResult.elements[0].actions[0].changedBy.lastName == tenAuditsStoreThree[0].actions[0].changedBy.lastName
-      storeThreeFilterResult.elements[0].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[0].actions[0].changedBy.firstNameMi
-      storeThreeFilterResult.elements[4].actions[0].id == tenAuditsStoreThree[4].actions[0].id
-      storeThreeFilterResult.elements[4].actions[0].status.value == tenAuditsStoreThree[4].actions[0].status.value
-      storeThreeFilterResult.elements[4].actions[0].status.description == tenAuditsStoreThree[4].actions[0].status.description
-      storeThreeFilterResult.elements[4].actions[0].changedBy.number == tenAuditsStoreThree[4].actions[0].changedBy.number
-      storeThreeFilterResult.elements[4].actions[0].changedBy.lastName == tenAuditsStoreThree[4].actions[0].changedBy.lastName
-      storeThreeFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[4].actions[0].changedBy.firstNameMi
+      where:
+      storeNumberValuesIn | pageSizeIn | pageElementCount | totalElementCount | requestedStoreNumbers | storeNumberInElements
+      [1]                 | 5          | 5                | 5                 | [1]                   | [1]
+      [3]                 | 5          | 5                | 10                | [3]                   | [3]
+      [1, 3]              | 10         | 10               | 15                | [1, 3]                | [1, 3]
+      [1, 3, 10]          | 15         | 15               | 15                | [1, 3, 10]            | [1, 3]
    }
 
    void "fetch all audits store 1 with one audit that has exceptions and notes" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
+      final storeNumbers = [storeOne.id]
       final scannedBy = employeeFactoryService.single(storeOne)
       final singleAudit = auditFactoryService.single(storeOne, scannedBy)
       final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, scannedBy, false)
@@ -362,11 +333,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final fiveAuditsStoreOne = auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def storeOneFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 1]))
+      def storeOneFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: [1]]))
 
       then:
       notThrown(HttpClientResponseException)
-      storeOneFilterResult.requested.storeNumber == storeOne.number
+      storeOneFilterResult.requested.storeNumber == storeNumbers
       storeOneFilterResult.totalElements == 6
       storeOneFilterResult.totalPages == 2
       storeOneFilterResult.first == true
@@ -411,7 +382,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id, storeThreeOpenAuditOne.id]
 
       when:
-      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: 3, status: ['IN-PROGRESS'] as Set]))
+      def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['IN-PROGRESS'] as Set]))
 
       then:
       notThrown(HttpClientResponseException)
