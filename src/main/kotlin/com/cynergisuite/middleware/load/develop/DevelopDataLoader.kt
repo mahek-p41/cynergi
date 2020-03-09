@@ -9,12 +9,13 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.division.DivisionFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.region.RegionFactoryService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.DayOfWeek
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import javax.inject.Inject
@@ -30,6 +31,8 @@ class DevelopDataLoader @Inject constructor(
    private val auditScheduleScheduleFactoryService: AuditScheduleFactoryService,
    private val companyRepository: CompanyRepository,
    private val employeeFactoryService: EmployeeFactoryService,
+   private val divisionFactoryService: DivisionFactoryService,
+   private val regionFactoryService: RegionFactoryService,
    private val storeFactoryService: StoreFactoryService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
@@ -48,10 +51,32 @@ class DevelopDataLoader @Inject constructor(
          .map { companyRepository.insert(it) }
          .toList()
       val companyTstds1 = companies.first { it.datasetCode == "corrto" }
-      val storeOne = storeFactoryService.store(1, companyTstds1)
-      val storeThree = storeFactoryService.store(3, companyTstds1)
-      val storeOneEmployee = employeeFactoryService.single(storeIn = storeOne)
-      val storeThreeEmployee = employeeFactoryService.single(storeIn = storeThree)
+      val companyTstds2 = companies.first { it.datasetCode == "corptp" }
+
+      val divisionOne = divisionFactoryService.single(companyTstds1)
+      val divisionTwo = divisionFactoryService.single(companyTstds1)
+
+      val regionOne = regionFactoryService.single(divisionOne)
+      val regionTwo = regionFactoryService.single(divisionOne)
+      val regionThree = regionFactoryService.single(divisionTwo)
+      val regionFour = regionFactoryService.single(divisionTwo)
+
+      val storeOneCompanyOne = storeFactoryService.store(1, companyTstds1)
+      val storeThreeCompanyOne = storeFactoryService.store(3, companyTstds1)
+
+      val storeTwoCompanyTwo = storeFactoryService.store(2, companyTstds2)
+      val storeFourCompanyTwo = storeFactoryService.store(4, companyTstds2)
+      val storeFiveCompanyTwo = storeFactoryService.store(5, companyTstds2)
+
+      storeFactoryService.createRegionToStore(storeOneCompanyOne, regionOne)
+      storeFactoryService.createRegionToStore(storeThreeCompanyOne, regionTwo)
+
+      storeFactoryService.createRegionToStore(storeTwoCompanyTwo, regionThree)
+      storeFactoryService.createRegionToStore(storeFourCompanyTwo, regionFour)
+      storeFactoryService.createRegionToStore(storeFiveCompanyTwo, regionFour)
+
+      val storeOneEmployee = employeeFactoryService.single(storeIn = storeOneCompanyOne)
+      val storeThreeEmployee = employeeFactoryService.single(storeIn = storeOneCompanyOne)
 
       // audit store holding areas
       val warehouse = auditScanAreaFactoryService.warehouse()
@@ -93,8 +118,8 @@ class DevelopDataLoader @Inject constructor(
       // setup store three signed off audits
       auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
-      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOne), AuthenticatedEmployee(storeOneEmployee.id!!, storeOneEmployee, storeOne), companyTstds1)
-      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThree), AuthenticatedEmployee(storeThreeEmployee.id!!, storeThreeEmployee, storeThree), companyTstds1)
+      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOneCompanyOne), AuthenticatedEmployee(storeOneEmployee.id!!, storeOneEmployee, storeOneCompanyOne), companyTstds1)
+      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThreeCompanyOne), AuthenticatedEmployee(storeThreeEmployee.id!!, storeThreeEmployee, storeThreeCompanyOne), companyTstds1)
 
       logger.info("Finished loading develop data")
       logger.info("Store one employee {}", storeOneEmployee)

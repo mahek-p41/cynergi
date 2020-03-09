@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.company
 
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.store.StoreFactory
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream

@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.store
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.region.RegionEntity
+import com.cynergisuite.middleware.store.infrastructure.RegionToStoreRepository
+import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
 import java.util.stream.Stream
@@ -74,8 +76,12 @@ object StoreFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class StoreFactoryService(
-   private val storeRepository: StoreRepository
+   private val storeRepository: StoreRepository,
+   private val regionToStoreRepository: RegionToStoreRepository
 ) {
+
+   fun createRegionToStore(store: StoreEntity, region: RegionEntity): Int =
+      regionToStoreRepository.insert(RegionToStoreEntity(store = store, region = region)) ?: throw Exception("Unable to insert RegionToStore")
 
    fun store(storeNumber: Int, company: Company): StoreEntity =
       storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find StoreEntity")

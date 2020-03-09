@@ -6,6 +6,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -23,7 +24,8 @@ import javax.inject.Singleton
 
 @Singleton
 class StoreRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val companyRepository: CompanyRepository
 ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
 
@@ -127,6 +129,14 @@ class StoreRepository @Inject constructor(
    }
 
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
+      StoreEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         company = companyRepository.mapRow(rs)
+      )
 
    @Transactional
    fun assignToRegion(store: StoreEntity, region: RegionEntity): Pair<RegionEntity, StoreEntity> {

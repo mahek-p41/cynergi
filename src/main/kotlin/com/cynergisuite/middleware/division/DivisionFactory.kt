@@ -1,32 +1,35 @@
 package com.cynergisuite.middleware.division
 
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import java.util.stream.Stream
+import javax.inject.Inject
 import javax.inject.Singleton
 
 object DivisionFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, company: Company, divisionalManager: EmployeeEntity? = null): Stream<DivisionEntity> {
-      val number = if (numberIn > 0) numberIn else 1
-      val faker = Faker()
-      val lorem = faker.lorem()
-      val random = faker.random()
+   private val divisionNumberCounter = AtomicInteger(1)
 
-      return IntStream.range(0, number).mapToObj {
+   @JvmStatic
+   fun stream(numberIn: Int = 1, companyIn: CompanyEntity?, divisionalManager: EmployeeEntity? = null): Stream<DivisionEntity> {
+      val faker = Faker()
+      val name = faker.lorem().characters(5, 8).toUpperCase()
+      val description = "$name Division"
+
+      return IntStream.range(0, numberIn).mapToObj {
          DivisionEntity(
-            company = company,
-            number = random.nextInt(1, 100_000),
-            name = lorem.characters(5, 8).toUpperCase(),
+            name = name,
+            number = divisionNumberCounter.getAndIncrement(),
             manager = divisionalManager,
-            description = lorem.characters(3, 15).toUpperCase()
+            description = description,
+            company = companyIn
          )
       }
    }
@@ -34,14 +37,17 @@ object DivisionFactory {
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class DivisionFactoryService(
+class DivisionFactoryService @Inject constructor(
    private val divisionRepository: DivisionRepository
 ) {
-
-   fun stream(numberIn: Int = 1, company: Company): Stream<DivisionEntity> =
+   fun stream(numberIn: Int = 1, company: CompanyEntity): Stream<DivisionEntity> =
       DivisionFactory.stream(numberIn, company)
          .map { divisionRepository.insert(it, company) }
 
-   fun single(company: Company): DivisionEntity =
-      stream(company = company).findFirst().orElseThrow { Exception("Unable to create DivisionEntity") }
+   fun single(companyIn: CompanyEntity? = null): DivisionEntity =
+      DivisionFactory.stream(companyIn = companyIn)
+         .map { divisionRepository.insert(it) }
+         .findFirst()
+         .orElseThrow { Exception("Unable to create DivisionEntity") }
+
 }
