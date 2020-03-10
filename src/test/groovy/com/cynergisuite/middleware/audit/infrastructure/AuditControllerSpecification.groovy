@@ -295,6 +295,68 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
+   void "fetch all audits by store" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final fiveAuditsStoreOne = auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
+      final tenAuditsStoreThree = auditFactoryService.stream(10, storeThree).collect { new AuditValueObject(it, locale, localizationService) }
+
+      when:
+      def storeOneFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: [1]]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      storeOneFilterResult.requested.storeNumber == [storeOne.number]
+      storeOneFilterResult.totalElements == 5
+      storeOneFilterResult.totalPages == 1
+      storeOneFilterResult.first == true
+      storeOneFilterResult.last == true
+      storeOneFilterResult.elements != null
+      storeOneFilterResult.elements.size() == 5
+      storeOneFilterResult.elements[0].id > 0
+      storeOneFilterResult.elements[0].store.storeNumber == storeOne.number
+      storeOneFilterResult.elements[0].actions[0].id == fiveAuditsStoreOne[0].actions[0].id
+      storeOneFilterResult.elements[0].actions[0].status.value == fiveAuditsStoreOne[0].actions[0].status.value
+      storeOneFilterResult.elements[0].actions[0].status.description == fiveAuditsStoreOne[0].actions[0].status.description
+      storeOneFilterResult.elements[0].actions[0].changedBy.number == fiveAuditsStoreOne[0].actions[0].changedBy.number
+      storeOneFilterResult.elements[0].actions[0].changedBy.lastName == fiveAuditsStoreOne[0].actions[0].changedBy.lastName
+      storeOneFilterResult.elements[0].actions[0].changedBy.firstNameMi == fiveAuditsStoreOne[0].actions[0].changedBy.firstNameMi
+      storeOneFilterResult.elements[4].actions[0].id == fiveAuditsStoreOne[4].actions[0].id
+      storeOneFilterResult.elements[4].actions[0].status.value == fiveAuditsStoreOne[4].actions[0].status.value
+      storeOneFilterResult.elements[4].actions[0].status.description == fiveAuditsStoreOne[4].actions[0].status.description
+      storeOneFilterResult.elements[4].actions[0].changedBy.number == fiveAuditsStoreOne[4].actions[0].changedBy.number
+      storeOneFilterResult.elements[4].actions[0].changedBy.lastName == fiveAuditsStoreOne[4].actions[0].changedBy.lastName
+      storeOneFilterResult.elements[4].actions[0].changedBy.firstNameMi == fiveAuditsStoreOne[4].actions[0].changedBy.firstNameMi
+
+      when:
+      def storeThreeFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: [3]]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      storeThreeFilterResult.elements != null
+      storeThreeFilterResult.elements.size() == 5
+      storeThreeFilterResult.requested.storeNumber == [storeThree.number]
+      storeThreeFilterResult.totalElements == 10
+      storeThreeFilterResult.totalPages == 2
+      storeThreeFilterResult.first == true
+      storeThreeFilterResult.last == false
+      storeThreeFilterResult.elements[0].store.storeNumber == storeThree.number
+      storeThreeFilterResult.elements[0].actions[0].id == tenAuditsStoreThree[0].actions[0].id
+      storeThreeFilterResult.elements[0].actions[0].status.value == tenAuditsStoreThree[0].actions[0].status.value
+      storeThreeFilterResult.elements[0].actions[0].status.description == tenAuditsStoreThree[0].actions[0].status.description
+      storeThreeFilterResult.elements[0].actions[0].changedBy.number == tenAuditsStoreThree[0].actions[0].changedBy.number
+      storeThreeFilterResult.elements[0].actions[0].changedBy.lastName == tenAuditsStoreThree[0].actions[0].changedBy.lastName
+      storeThreeFilterResult.elements[0].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[0].actions[0].changedBy.firstNameMi
+      storeThreeFilterResult.elements[4].actions[0].id == tenAuditsStoreThree[4].actions[0].id
+      storeThreeFilterResult.elements[4].actions[0].status.value == tenAuditsStoreThree[4].actions[0].status.value
+      storeThreeFilterResult.elements[4].actions[0].status.description == tenAuditsStoreThree[4].actions[0].status.description
+      storeThreeFilterResult.elements[4].actions[0].changedBy.number == tenAuditsStoreThree[4].actions[0].changedBy.number
+      storeThreeFilterResult.elements[4].actions[0].changedBy.lastName == tenAuditsStoreThree[4].actions[0].changedBy.lastName
+      storeThreeFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[4].actions[0].changedBy.firstNameMi
+   }
+
    @Unroll
    void "fetch all audits by store with storeNumber #storeNumberValuesIn" () {
       given:
