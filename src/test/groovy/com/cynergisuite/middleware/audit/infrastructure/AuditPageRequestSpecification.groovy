@@ -7,12 +7,12 @@ import spock.lang.Specification
 class AuditPageRequestSpecification extends Specification {
    void "audit page request handles null page, from and thru property yields separation correctly" () {
       expect:
-      new AuditPageRequest([size: 1, sortBy: 'id', sortDirection: 'ASC', storeNumber: 1]).toString() == "?size=1&sortBy=id&sortDirection=ASC&storeNumber=1"
+      new AuditPageRequest([size: 1, sortBy: 'id', sortDirection: 'ASC', storeNumber: [1]]).toString() == "?size=1&sortBy=id&sortDirection=ASC&storeNumber=1"
    }
 
    void "audit page request handles only storeNumber property yields separation correctly" () {
       expect:
-      new AuditPageRequest([storeNumber: 1]).toString() == "?storeNumber=1"
+      new AuditPageRequest([storeNumber: [1]]).toString() == "?storeNumber=1"
    }
 
    void "audit page request handles from and thru properties yielding separation and format correctly" () {
