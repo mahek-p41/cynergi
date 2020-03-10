@@ -20,7 +20,6 @@ import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -161,15 +160,15 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
-      val storeNumber = pageRequest.storeNumber
+      val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder("WHERE a.company_id = :comp_id ")
       val from = pageRequest.from
       val thru = pageRequest.thru
 
-      if (storeNumber != null) {
-         params["store_number"] = storeNumber
-         whereBuilder.append(" AND store_number = :store_number ")
+      if (!storeNumbers.isNullOrEmpty()) {
+         params["store_numbers"] = storeNumbers
+         whereBuilder.append(" AND store_number IN (:store_numbers) ")
       }
 
       if (from != null && thru != null) {
@@ -178,7 +177,7 @@ class AuditRepository @Inject constructor(
          whereBuilder.append(" AND a.time_created BETWEEN :from AND :thru ")
       }
 
-      if (status != null && status.isNotEmpty()) {
+      if (!status.isNullOrEmpty()) {
          params["current_status"] = status
          whereBuilder.append(" AND current_status IN (:current_status) ")
       }
@@ -333,7 +332,9 @@ class AuditRepository @Inject constructor(
    fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company): List<AuditStatusCount> {
       val status = pageRequest.status
       val params = mutableMapOf<String, Any>("comp_id" to company.myId()!!)
-      val whereBuilder = StringBuilder()
+      val storeNumbers = pageRequest.storeNumber
+      val whereBuilderForStatusAndTimeCreated = StringBuilder()
+      val whereBuilderForCompanyAndStore = StringBuilder("WHERE a.company_id = :comp_id ")
       val from = pageRequest.from
       val thru = pageRequest.thru
       var where = " WHERE "
@@ -342,14 +343,19 @@ class AuditRepository @Inject constructor(
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         whereBuilder.append(where).append(" csaa.time_created BETWEEN :from AND :thru ")
+         whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csaa.time_created BETWEEN :from AND :thru ")
          where = EMPTY
          and = " AND "
       }
 
       if ( !status.isNullOrEmpty() ) {
          params["statuses"] = status.asSequence().toList()
-         whereBuilder.append(where).append(and).append(" csastd.value IN (:statuses) ")
+         whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csastd.value IN (:statuses) ")
+      }
+
+      if (!storeNumbers.isNullOrEmpty()) {
+         params["store_numbers"] = storeNumbers
+         whereBuilderForCompanyAndStore.append(" AND store_number IN (:store_numbers) ")
       }
 
       return jdbc.query("""
@@ -365,7 +371,7 @@ class AuditRepository @Inject constructor(
             FROM audit_action csaa
                JOIN audit_status_type_domain csastd
                  ON csaa.status_id = csastd.id
-            $whereBuilder
+            $whereBuilderForStatusAndTimeCreated
             ),
             maxStatus AS (
                SELECT MAX(id) AS current_status_id, audit_id
@@ -384,7 +390,7 @@ class AuditRepository @Inject constructor(
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-         WHERE comp.id = :comp_id
+         $whereBuilderForCompanyAndStore
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,
