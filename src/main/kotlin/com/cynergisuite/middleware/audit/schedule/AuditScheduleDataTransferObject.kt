@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule
 
-import com.cynergisuite.domain.DataTransferObject
-import com.cynergisuite.domain.ValueObjectBase
-import com.cynergisuite.middleware.department.DepartmentValueObject
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
@@ -12,7 +10,6 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-@DataTransferObject
 @Schema(name = "AuditSchedule", title = "An audit schedule", description = "An audit schedule, the department that is supposed to do the audit at the desired stores")
 data class AuditScheduleDataTransferObject(
 
@@ -43,7 +40,6 @@ data class AuditScheduleDataTransferObject(
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")
    var enabled: Boolean? = true
 
-) : ValueObjectBase<AuditScheduleDataTransferObject>() {
+) : Identifiable {
    override fun myId(): Long? = id
-   override fun copyMe(): AuditScheduleDataTransferObject = copy()
 }

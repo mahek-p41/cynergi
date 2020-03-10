@@ -301,7 +301,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final json = exception.response.bodyAsJson()
       json.size() == 6
-      json.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      json.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Is required", "notification.company"),
          new ErrorDataTransferObject("Is required", "notification.expirationDate"),
          new ErrorDataTransferObject("Is required", "notification.message"),
@@ -405,7 +405,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final errors = exception.response.bodyAsJson()
       errors.size() == 6
 
-      errors.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      errors.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Is required", "notification.company"),
          new ErrorDataTransferObject("Is required", "notification.expirationDate"),
          new ErrorDataTransferObject("Is required", "notification.message"),

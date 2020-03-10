@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.department.DepartmentService
 import com.cynergisuite.middleware.department.DepartmentValueObject
@@ -29,7 +29,7 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/department")
 class DepartmentController @Inject constructor(
-   private val authenticationService: AuthenticationService,
+   private val userService: UserService,
    private val departmentService: DepartmentService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
@@ -49,8 +49,8 @@ class DepartmentController @Inject constructor(
    ): DepartmentValueObject {
       logger.info("Fetching department by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = departmentService.fetchOne(id, user.myDataset()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = departmentService.fetchOne(id, user) ?: throw NotFoundException(id)
 
       logger.debug("Fetching department by {} resulted in {}", id, response)
 
@@ -72,8 +72,8 @@ class DepartmentController @Inject constructor(
    ): Page<DepartmentValueObject> {
       logger.info("Fetching all departments {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page = departmentService.fetchAll(pageRequest, user.myDataset())
+      val user = userService.findUser(authentication)
+      val page = departmentService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

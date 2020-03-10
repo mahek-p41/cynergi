@@ -6,17 +6,19 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.company.CompanyFactoryService
+import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.company.CompanyFactory
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
+import java.time.DayOfWeek.THURSDAY
+import java.time.DayOfWeek.TUESDAY
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.streams.toList
 
 @Singleton
 @Requires(env = ["develop"])
@@ -26,8 +28,7 @@ class DevelopDataLoader @Inject constructor(
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val auditScheduleScheduleFactoryService: AuditScheduleFactoryService,
-   private val companyFactoryService: CompanyFactoryService,
-   private val employeeRepository: EmployeeRepository,
+   private val companyRepository: CompanyRepository,
    private val employeeFactoryService: EmployeeFactoryService,
    private val storeFactoryService: StoreFactoryService
 ) {
@@ -36,18 +37,21 @@ class DevelopDataLoader @Inject constructor(
    fun loadDemoData() {
       logger.info("Loading develop data")
 
-      val companies = companyFactoryService.streamPredefined { company ->
-         when(company.datasetCode) {
-            "tstds1" -> company.copy(datasetCode = "corrto")
-            "tstds2" -> company.copy(datasetCode = "corptp")
-            else -> company
+      val companies = CompanyFactory.predefined().asSequence()
+         .map { company ->
+            when(company.datasetCode) {
+               "tstds1" -> company.copy(datasetCode = "corrto")
+               "tstds2" -> company.copy(datasetCode = "corptp")
+               else -> company
+            }
          }
-      }.toList()
+         .map { companyRepository.insert(it) }
+         .toList()
       val companyTstds1 = companies.first { it.datasetCode == "corrto" }
-      val storeOne = storeFactoryService.store(1, companyTstds1.datasetCode)
-      val storeThree = storeFactoryService.store(3, companyTstds1.datasetCode)
-      val storeOneEmployee = employeeFactoryService.single(store = storeOne)
-      val storeThreeEmployee = employeeFactoryService.single(store = storeThree)
+      val storeOne = storeFactoryService.store(1, companyTstds1)
+      val storeThree = storeFactoryService.store(3, companyTstds1)
+      val storeOneEmployee = employeeFactoryService.single(storeIn = storeOne)
+      val storeThreeEmployee = employeeFactoryService.single(storeIn = storeThree)
 
       // audit store holding areas
       val warehouse = auditScanAreaFactoryService.warehouse()
@@ -55,42 +59,42 @@ class DevelopDataLoader @Inject constructor(
       val storeroom = auditScanAreaFactoryService.storeroom()
 
       // setup store one open audit
-      val openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      val openStoreOneAudit = auditFactoryService.single(storeOneEmployee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
       auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
       auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
 
       // setup store three open audit
-      val openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
+      val openStoreThreeAudit = auditFactoryService.single(storeThreeEmployee.store!!)
       auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
       auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
 
       // setup store one canceled audit
-      auditFactoryService.single(storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
+      auditFactoryService.single(storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
 
       // setup store three canceled audit
-      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
+      auditFactoryService.single(storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
 
       // setup store three in-progress audit
-      auditFactoryService.single(storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress()))
+      auditFactoryService.single(storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress()))
 
       // setup store one completed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      auditFactoryService.generate(3, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
       // setup store three completed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
       // setup store one signed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      auditFactoryService.generate(3, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
       // setup store three signed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
-      auditScheduleScheduleFactoryService.single(DayOfWeek.TUESDAY, listOf(storeOne))
-      auditScheduleScheduleFactoryService.single(DayOfWeek.THURSDAY, listOf(storeThree))
+      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOne), EmployeeUser(storeOneEmployee, storeOne), companyTstds1)
+      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThree), EmployeeUser(storeThreeEmployee, storeThree), companyTstds1)
 
       logger.info("Finished loading develop data")
       logger.info("Store one employee {}", storeOneEmployee)

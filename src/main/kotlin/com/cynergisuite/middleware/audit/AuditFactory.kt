@@ -10,7 +10,9 @@ import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
+import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -19,28 +21,35 @@ import javax.inject.Singleton
 object AuditFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+   fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null, store: StoreEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
       val number = if (numberIn > 0) numberIn else 1
-      val store = storeIn?: StoreFactory.random()
+      val faker = Faker()
+      val random = faker.random()
+      val changedBy = changedByIn ?: EmployeeFactory.single(store.company)
       val statuses: Set<AuditStatus> = statusesIn ?: mutableSetOf(AuditStatusFactory.created())
-      val changedBy = changedByIn ?: EmployeeFactory.testEmployee()
+
+      if (changedBy.company != store.company) {
+         throw Exception("changedBy company does not equal store company")
+      }
 
       return IntStream.range(0, number).mapToObj {
          AuditEntity(
             store = store,
-            actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet()),
-            dataset = store.dataset
+            number = random.nextInt(1, 1000),
+            totalDetails = random.nextInt(1, 1000),
+            totalExceptions = random.nextInt(1, 100),
+            hasExceptionNotes = random.nextBoolean(),
+            lastUpdated = OffsetDateTime.now(),
+            inventoryCount = random.nextInt(0, 1000),
+            actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet())
          )
       }
    }
 
    @JvmStatic
-   fun single(): AuditEntity =
-      single(storeIn = StoreFactory.random())
-
-   @JvmStatic
-   fun single(storeIn: StoreEntity): AuditEntity =
-      stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
+   fun single(store: StoreEntity): AuditEntity {
+      return stream(store = store).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
 }
 
 @Singleton
@@ -51,35 +60,45 @@ class AuditFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<AuditEntity> =
-      stream(numberIn, storeIn, null, null)
+   fun stream(numberIn: Int = 1, store: StoreEntity): Stream<AuditEntity> {
+      val changedBy = employeeFactoryService.single(store)
 
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?): Stream<AuditEntity> {
-      val store = storeIn ?: storeFactoryService.random()
-      val changedBy = changedByIn ?: employeeFactoryService.single(datasetIn = store.dataset)
-
-      return AuditFactory.stream(numberIn, store, changedBy, statusesIn)
-         .map {
-            auditRepository.insert(it)
-         }
+      return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy)
+         .map { auditRepository.insert(it) }
    }
 
-   fun generate(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?) {
-      stream(numberIn, storeIn, changedByIn, statusesIn).forEach {  } // exercise the stream with the terminal forEach
+   fun stream(numberIn: Int = 1, store: StoreEntity, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+      return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy, statusesIn = statusesIn)
+         .map { auditRepository.insert(it) }
    }
 
-   fun single(): AuditEntity =
-      single(storeIn = null)
+   fun single(changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
+      val company = changedBy.company
+      val store = changedBy.store ?: storeFactoryService.random(company)
 
-   fun single(storeIn: StoreEntity? = null): AuditEntity =
-      stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
+      return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
 
-   fun single(storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null): AuditEntity =
-      single(storeIn = storeIn, changedByIn = changedByIn, statusesIn = null)
+   fun single(store: StoreEntity, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
+      return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
 
-   fun single(storeIn: StoreEntity? = null, changedByIn: EmployeeEntity?, statusesIn: Set<AuditStatus>?): AuditEntity =
-      stream(storeIn = storeIn, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
+   fun single(store: StoreEntity): AuditEntity {
+      return stream(store = store).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
 
-   fun single(statusesIn: Set<AuditStatus>?): AuditEntity =
-      stream(1, null, null, statusesIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
+   fun single(store: StoreEntity, changedBy: EmployeeEntity): AuditEntity {
+      return stream(store = store, changedBy = changedBy).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
+
+   fun generate(numberIn: Int, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
+      val company = changedBy.company
+      val store = changedBy.store ?: storeFactoryService.random(company)
+
+      stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
+   }
+
+   fun generate(numberIn: Int, store: StoreEntity, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
+      stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
+   }
 }

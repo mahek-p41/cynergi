@@ -3,11 +3,11 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -37,7 +37,7 @@ import javax.inject.Inject
 @Controller("/api/audit")
 class AuditDetailController @Inject constructor(
    private val auditDetailService: AuditDetailService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailController::class.java)
 
@@ -57,8 +57,8 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Fetching AuditDetail by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = auditDetailService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = auditDetailService.fetchById(id = id, company = user.myCompany(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 
@@ -82,8 +82,8 @@ class AuditDetailController @Inject constructor(
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page =  auditDetailService.fetchAll(auditId, user.myDataset(), pageRequest, httpRequest.findLocaleWithDefault())
+      val user = userService.findUser(authentication)
+      val page =  auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -103,14 +103,14 @@ class AuditDetailController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Body vo: AuditDetailCreateValueObject,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+           @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
+           @Body vo: AuditDetailCreateDataTransferObject,
+           authentication: Authentication,
+           httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditDetailService.create(auditId, vo, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)

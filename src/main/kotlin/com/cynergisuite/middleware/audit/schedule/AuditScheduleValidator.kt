@@ -1,7 +1,8 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
@@ -26,7 +27,7 @@ class AuditScheduleValidator(
 ) : ValidatorBase() {
 
    fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
-      doValidation { errors -> doSharedValidation(dto, errors) }
+      doValidation { errors -> doSharedValidation(dto, user.myCompany(), errors) }
 
       val stores = mutableListOf<StoreEntity>()
       val arguments = mutableSetOf(
@@ -37,7 +38,7 @@ class AuditScheduleValidator(
       )
 
       for (storeIn in dto.stores) {
-         val store = storeRepository.findOne(storeIn.myId()!!, user.myDataset())!!
+         val store = storeRepository.findOne(storeIn.myId()!!, user.myCompany())!!
 
          stores.add(store)
 
@@ -80,7 +81,7 @@ class AuditScheduleValidator(
             errors.add(ValidationError("id", NotFound(scheduleId)))
          }
 
-         doSharedValidation(dto, errors)
+         doSharedValidation(dto, user.myCompany(), errors)
       }
 
       val stores = mutableListOf<StoreEntity>()
@@ -89,11 +90,11 @@ class AuditScheduleValidator(
       val existingLocale = schedule.arguments.firstOrNull { it.description == "locale" }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
-         .map { it to storeRepository.findOne(it.value.toInt(), user.myDataset())!! }
+         .map { it to storeRepository.findOne(it.value.toInt(), user.myCompany())!! }
          .sortedBy { it.second.id }
          .toList()
       val updateStores: List<StoreEntity> = dto.stores.asSequence()
-         .map { storeRepository.findOne(it.id!!, user.myDataset())!! }
+         .map { storeRepository.findOne(it.id!!, user.myCompany())!! }
          .toList()
       val argsToUpdate = mutableSetOf<ScheduleArgumentEntity>()
 
@@ -131,9 +132,9 @@ class AuditScheduleValidator(
       return scheduleToUpdate to stores
    }
 
-   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDataTransferObject, errors: MutableSet<ValidationError>) {
+   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDataTransferObject, company: Company, errors: MutableSet<ValidationError>) {
       for ((i, store) in dto.stores.withIndex()) {
-         if (storeRepository.doesNotExist(store.id!!)) {
+         if (storeRepository.doesNotExist(store.id!!, company)) {
             errors.add(ValidationError("store[$i].id", NotFound(store.id!!)))
          }
       }

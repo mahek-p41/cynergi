@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -32,9 +34,8 @@ data class InventoryEntity(
    val returnedDate: LocalDate?,
    val location: StoreEntity?,
    val status: String,
-   val primaryLocation: StoreEntity,
-   val locationType: InventoryLocationType,
-   val dataset: String
+   val primaryLocation: Location,
+   val locationType: InventoryLocationType
 ) : Identifiable {
    override fun myId(): Long? = id
 }

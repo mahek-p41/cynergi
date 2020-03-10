@@ -1,12 +1,11 @@
 package com.cynergisuite.middleware.authentication
 
-import com.cynergisuite.domain.ValueObject
+import com.cynergisuite.middleware.authentication.user.User
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 
-@ValueObject
 @JsonInclude(NON_NULL)
 @Schema(name = "AuthenticationInformation", title = "Claims associated with a user", description = "Describes some useful info about a user's login status.  The loginStatus property will change to describe the user's state.")
 data class AuthenticatedUserInformation (
@@ -26,11 +25,11 @@ data class AuthenticatedUserInformation (
    val dataset: String? = null
 ) {
 
-   constructor(user: AuthenticatedUser, loginStatus: String) :
+   constructor(user: User, loginStatus: String) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
-         storeNumber = user.myStoreNumber(),
+         storeNumber = user.myLocation().myNumber(),
          loginStatus = loginStatus,
-         dataset = user.myDataset()
+         dataset = user.myCompany().myDataset()
       )
 }

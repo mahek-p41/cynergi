@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -35,7 +35,7 @@ data class VerificationEmploymentValueObject(
    @field:JsonProperty("emp_title")
    var title: String? = null
 
-) : ValueObjectBase<VerificationEmploymentValueObject>() {
+) : Identifiable {
 
    constructor(entity: VerificationEmployment) :
       this(
@@ -47,8 +47,6 @@ data class VerificationEmploymentValueObject(
          reliable = entity.reliable,
          title = entity.title
       )
-
-   override fun copyMe(): VerificationEmploymentValueObject = copy()
 
    override fun myId(): Long? = id
 }

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.schedule
 
-import com.cynergisuite.domain.ValueObject
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentValueObject
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeValueObject
@@ -13,7 +12,6 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-@ValueObject
 @Schema(name = "Schedule", description = "A user managed scheduled job in the system")
 data class ScheduleValueObject(
 
@@ -41,7 +39,7 @@ data class ScheduleValueObject(
    var type: ScheduleTypeValueObject,
 
    var arguments: MutableList<ScheduleArgumentValueObject> = mutableListOf()
-) : ValueObjectBase<ScheduleValueObject>() {
+) : Identifiable {
 
    constructor(entity: ScheduleEntity, locale: Locale, localizationService: LocalizationService) :
       this(
@@ -55,5 +53,4 @@ data class ScheduleValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): ScheduleValueObject = copy()
 }

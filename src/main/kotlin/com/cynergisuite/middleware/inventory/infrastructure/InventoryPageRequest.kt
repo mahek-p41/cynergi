@@ -15,7 +15,10 @@ import javax.validation.constraints.Positive
    allOf = [PageRequestBase::class]
 )
 class InventoryPageRequest(
-   page: Int?, size: Int?, sortBy: String?, sortDirection: String?,
+   page: Int? = null,
+   size: Int? = null,
+   sortBy: String? = null,
+   sortDirection: String? = null,
 
    @field:Positive
    @field:Min(1)

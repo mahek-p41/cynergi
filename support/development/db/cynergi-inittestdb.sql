@@ -6,19 +6,18 @@ CREATE TABLE fastinfo_prod_import.store_vw (
    number       INTEGER,
    name         VARCHAR(27),
    dataset      VARCHAR(6)                                            NOT NULL,
-   company_id   BIGINT                                                NOT NULL,
    time_created TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL,
    time_updated TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL
 );
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (1, 'KANSAS CITY', 'tstds1', 4);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (3, 'INDEPENDENCE', 'tstds1', 4);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (9000, 'HOME OFFICE', 'tstds1', 4);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (1, 'Pelham Trading Post, Inc', 'tstds2', 1);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (2, 'Camilla Trading Post, Inc.', 'tstds2', 1);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (3, 'Arlington Trading Post', 'tstds2', 1);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (4, 'Moultrie Trading Post, Inc', 'tstds2', 1);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (5, 'Bainbridge Trading Post', 'tstds2', 1);
-INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset, company_id) VALUES (9000, 'HOME OFFICE', 'tstds2', 1);
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (1, 'KANSAS CITY', 'tstds1');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (3, 'INDEPENDENCE', 'tstds1');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (9000, 'HOME OFFICE', 'tstds1');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (1, 'Pelham Trading Post, Inc', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (2, 'Camilla Trading Post, Inc.', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (3, 'Arlington Trading Post', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (4, 'Moultrie Trading Post, Inc', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (5, 'Bainbridge Trading Post', 'tstds2');
+INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (9000, 'HOME OFFICE', 'tstds2');
 
 CREATE TABLE fastinfo_prod_import.department_vw (
     id               BIGSERIAL                              NOT NULL PRIMARY KEY,
@@ -50,17 +49,20 @@ INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, secu
 INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('WH', 'WAREHOUSE', 'tstds2', 0, '');
 
 CREATE TABLE fastinfo_prod_import.employee_vw (
-    id            BIGINT                                              NOT NULL,
-    number        INTEGER     CHECK( number > 0 )                     NOT NULL,
-    store_number  INTEGER                                             NOT NULL,
-    dataset       VARCHAR(6)  CHECK( char_length(dataset) = 6 )       NOT NULL,
-    last_name     VARCHAR(15) CHECK( char_length(last_name) > 1 )     NOT NULL,
-    first_name_mi VARCHAR(15),
-    pass_code     VARCHAR(6)  CHECK( char_length(pass_code) > 0 )     NOT NULL,
-    department    VARCHAR(2),
-    active        BOOLEAN     DEFAULT TRUE                            NOT NULL,
-    time_created  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
-    time_updated  TIMESTAMPTZ DEFAULT clock_timestamp()               NOT NULL,
+    id                          BIGINT                                           NOT NULL,
+    number                      INTEGER      CHECK( number > 0 )                 NOT NULL,
+    store_number                INTEGER                                          NOT NULL,
+    dataset                     VARCHAR(6)   CHECK( char_length(dataset) = 6 )   NOT NULL,
+    last_name                   VARCHAR(15)  CHECK( char_length(last_name) > 1 ) NOT NULL,
+    first_name_mi               VARCHAR(15),
+    pass_code                   VARCHAR(6)   CHECK( char_length(pass_code) > 0 ) NOT NULL,
+    department                  VARCHAR(2),
+    active                      BOOLEAN      DEFAULT TRUE                        NOT NULL,
+    cynergi_system_admin        BOOLEAN      DEFAULT FALSE                       NOT NULL,
+    alternative_store_indicator VARCHAR(1)   DEFAULT 'N'                         NOT NULL,
+    alternative_area            INTEGER      DEFAULT 0                           NOT NULL,
+    time_created  TIMESTAMPTZ                DEFAULT clock_timestamp()           NOT NULL,
+    time_updated  TIMESTAMPTZ                DEFAULT clock_timestamp()           NOT NULL,
     UNIQUE(id, dataset)
 );
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (1 , 1, 3, 'tstds1', 'ROUTE 1', null, 'pass', 'AM', true);
@@ -175,9 +177,7 @@ CREATE TABLE fastinfo_prod_import.inventory_vw (
    location         INTEGER                               NOT NULL,
    status           VARCHAR(1)                            NOT NULL,
    primary_location INTEGER                               NOT NULL,
-   location_type    INTEGER                               NOT NULL,
-   time_created     TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
-   time_updated     TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL
+   location_type    INTEGER                               NOT NULL
 );
 
 COPY fastinfo_prod_import.inventory_vw(

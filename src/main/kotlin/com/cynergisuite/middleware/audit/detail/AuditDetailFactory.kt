@@ -20,16 +20,19 @@ import javax.inject.Singleton
 object AuditDetailFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
       val number = if (numberIn > 0) numberIn else 1
-      val audit = auditIn ?: AuditFactory.single()
-      val scannedBy = scannedByIn ?: EmployeeFactory.single()
+      val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.company)
       val faker = Faker()
       val barcode = faker.code()
       val commerce = faker.commerce()
       val company = faker.company()
       val idNumber = faker.idNumber()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
+
+      if (scannedBy.company != audit.store.company) {
+         throw Exception("scannedBy.company did not match audit.store.company")
+      }
 
       return IntStream.range(0, number).mapToObj {
          AuditDetailEntity(
@@ -47,7 +50,7 @@ object AuditDetailFactory {
    }
 
    @JvmStatic
-   fun single(auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null): AuditDetailEntity {
+   fun single(auditIn: AuditEntity, scannedByIn: EmployeeEntity? = null): AuditDetailEntity {
       return stream(1, auditIn, scannedByIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
    }
 }
@@ -60,9 +63,8 @@ class AuditDetailFactoryService @Inject constructor(
    private val employeeFactoryService: EmployeeFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
-      val audit = auditIn ?: auditFactoryService.single()
-      val scannedIn = scannedByIn ?: employeeFactoryService.single()
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
+      val scannedIn = scannedByIn ?: employeeFactoryService.single(audit.store)
 
       return AuditDetailFactory.stream(numberIn, audit, scannedIn, scanAreaIn)
          .map {
@@ -70,18 +72,27 @@ class AuditDetailFactoryService @Inject constructor(
          }
    }
 
-   fun generate(numberIn: Int = 1, auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null) =
-      stream(numberIn, auditIn, scannedByIn, scanAreaIn).forEach {  }
+   fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditDetailEntity> {
+      val scannedIn = employeeFactoryService.single(audit.store)
 
-   fun single(): AuditDetailEntity {
-      return single(null, null)
+      return AuditDetailFactory.stream(numberIn, audit, scannedIn)
+         .map {
+            auditDetailRepository.insert(it)
+         }
    }
 
-   fun single(auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null): AuditDetailEntity {
-      return single(auditIn, scannedByIn, null)
+   fun generate(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, scanArea: AuditScanArea) {
+      AuditDetailFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy, scanAreaIn = scanArea)
+         .forEach { auditDetailRepository.insert(it) }
    }
 
-   fun single(auditIn: AuditEntity? = null, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): AuditDetailEntity {
-      return stream(1, auditIn, scannedByIn, scanAreaIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
+   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): AuditDetailEntity {
+      return stream(1, audit, scannedByIn, scanAreaIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
    }
-}
+
+   fun single(audit: AuditEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
+         return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
+            .map { auditDetailRepository.insert(it) }
+            .findFirst().orElseThrow { Exception("Uanble to create AuditDetailEntity") }
+   }
+   }
