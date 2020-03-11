@@ -9,13 +9,16 @@ import com.cynergisuite.middleware.audit.AuditSignOffAllExceptionsDataTransferOb
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
-import com.cynergisuite.middleware.authentication.AuthenticationService
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -23,6 +26,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -43,7 +47,8 @@ import javax.validation.Valid
 @Controller("/api/audit")
 class AuditController @Inject constructor(
    private val auditService: AuditService,
-   private val authenticationService: AuthenticationService
+   private val executor: CynergiExecutor,
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditController::class.java)
 
@@ -64,8 +69,8 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = auditService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = auditService.fetchById(id = id, user = user, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit by {} resulted in {}", id, response)
 
@@ -89,8 +94,8 @@ class AuditController @Inject constructor(
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page =  auditService.fetchAll(pageRequest, user.myDataset(), httpRequest.findLocaleWithDefault())
+      val user = userService.findUser(authentication)
+      val page =  auditService.fetchAll(pageRequest, user, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -115,10 +120,10 @@ class AuditController @Inject constructor(
    ): List<AuditStatusCountDataTransferObject> {
       logger.debug("Fetching Audit status counts {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
-      return auditService.findAuditStatusCounts(pageRequest, user.myDataset(), locale)
+      return auditService.findAuditStatusCounts(pageRequest, user, locale)
    }
 
    @Post(processes = [APPLICATION_JSON])
@@ -139,8 +144,8 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Create Audit {}", audit)
 
-      val user = authenticationService.findUser(authentication)
-      val defaultStore = user.myLocation() ?: throw NotFoundException("store")
+      val user = userService.findUser(authentication)
+      val defaultStore = user.myLocation()
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
 
       val response = auditService.create(vo = auditToCreate, employee = user, locale = httpRequest.findLocaleWithDefault())
@@ -168,7 +173,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Audit status change or note  {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditService.completeOrCancel(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
@@ -194,12 +199,37 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested sign-off of audit {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditService.signOff(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested sign-off of audit {} resulted in {}", audit, response)
 
       return response
+   }
+
+   @Get(uri = "/{id:[0-9]+}/report/exception", produces = ["application/pdf"])
+   @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to generate Audit Exception Report", content = [Content(mediaType = "application/pdf")]),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAuditExceptionReport(
+      @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id") id: Long,
+      authentication: Authentication
+   ): HttpResponse<*> {
+      val user = userService.findUser(authentication)
+
+      logger.info("Audit Exception Report requested by user: {}", user)
+
+      val stream = executor.pipeBlockingOutputToStreamedFile("application/pdf") { os ->
+         auditService.fetchAuditExceptionReport(id, user.myCompany(), os)
+      }
+
+      return HttpResponse.ok(stream)
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
@@ -219,7 +249,7 @@ class AuditController @Inject constructor(
    ): AuditSignOffAllExceptionsDataTransferObject {
       logger.info("Requested sign of on all audit exceptions associated with audit {}", audit)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
 
       return auditService.signOffAllExceptions(audit, user)
    }

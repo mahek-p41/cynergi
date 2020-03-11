@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.schedule
 
-import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
@@ -8,7 +7,6 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-@DataTransferObject
 @Schema(name = "Schedule", description = "Describes the minimum requirements for creating a scheduled job in the system")
 data class ScheduleCreateDataTransferObject(
 

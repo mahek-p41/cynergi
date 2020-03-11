@@ -15,12 +15,12 @@ class AuditStatusControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit statuses" () {
       when:
-      def response = get "/audit/status"
+      def response = get( "/audit/status")
 
       then:
       notThrown(HttpClientResponseException)
       response.size() == 5
-      response.collect { new AuditStatusValueObject(it) }.sort { o1, o2 -> o1.value <=> o2.value } == [
+      response.collect { new AuditStatusValueObject(it.id, it.value, it.description, it.color) }.sort { o1, o2 -> o1.value <=> o2.value } == [
          new AuditStatusValueObject(Created.INSTANCE),
          new AuditStatusValueObject(InProgress.INSTANCE),
          new AuditStatusValueObject(Completed.INSTANCE),

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.shipvia
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
@@ -14,23 +15,19 @@ import javax.inject.Singleton
 object ShipViaFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, datasetIn: String? = null): Stream<ShipViaEntity> {
+   fun stream(numberIn: Int = 1, company: Company): Stream<ShipViaEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
-      val dataset = datasetIn ?: CompanyFactory.random().datasetCode
+      val random = faker.random()
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
             description = lorem.characters(3, 30),
-            dataset = dataset
+            number = random.nextInt(1, 1000),
+            company = company
          )
       }
-   }
-
-   @JvmStatic
-   fun single(): ShipViaEntity {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create ShipVia") }
    }
 }
 
@@ -40,18 +37,14 @@ class ShipViaFactoryService @Inject constructor(
    private val companyFactoryService: CompanyFactoryService,
    private val shipViaRepository: ShipViaRepository
 ) {
-   fun stream(numberIn: Int = 1, datasetIn: String? = null): Stream<ShipViaEntity> {
-      val dataset = datasetIn ?: companyFactoryService.random().datasetCode
-      return ShipViaFactory.stream(numberIn, dataset).map {
+
+   fun stream(numberIn: Int = 1, company: Company): Stream<ShipViaEntity> {
+      return ShipViaFactory.stream(numberIn, company).map {
          shipViaRepository.insert(it)
       }
    }
 
-   fun single(): ShipViaEntity {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create ShipVia")}
-   }
-
-   fun single(datasetIn: String?): ShipViaEntity {
-      return stream(1, datasetIn).findFirst().orElseThrow { Exception("Unable to create ShipVia")}
+   fun single(company: Company): ShipViaEntity {
+      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create ShipVia")}
    }
 }

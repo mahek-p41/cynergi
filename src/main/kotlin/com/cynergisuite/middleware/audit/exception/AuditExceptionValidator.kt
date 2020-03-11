@@ -9,12 +9,14 @@ import com.cynergisuite.middleware.audit.exception.infrastructure.AuditException
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.SIGNED_OFF
-import com.cynergisuite.middleware.authentication.User
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
+import com.cynergisuite.middleware.localization.AuditExceptionHasNotBeenSignedOff
 import com.cynergisuite.middleware.localization.AuditExceptionMustHaveInventoryOrBarcode
 import com.cynergisuite.middleware.localization.AuditHasBeenSignedOffNoNewNotesAllowed
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
@@ -31,23 +33,24 @@ class AuditExceptionValidator @Inject constructor (
    private val auditRepository: AuditRepository,
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
+   private val employeeRepository: EmployeeRepository,
    private val inventoryRepository: InventoryRepository,
    private val scanAreaRepository: AuditScanAreaRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionValidator::class.java)
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateCreate(auditId: Long, dataset: String, auditException: AuditExceptionCreateValueObject, scannedBy: User): AuditExceptionEntity {
+   fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject, enteredBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 
          val inventoryId = auditException.inventory?.id
          val barcode = auditException.barcode
-         val audit: AuditEntity = auditRepository.findOne(auditId, dataset)!!
+         val audit: AuditEntity = auditRepository.findOne(auditId, enteredBy.myCompany())!!
          val auditStatus = audit.currentStatus()
          val scanArea = auditException.scanArea
 
-         if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId, dataset)) {
+         if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId, enteredBy.myCompany())) {
             errors.add(
                ValidationError("inventory.id", NotFound(inventoryId))
             )
@@ -72,22 +75,30 @@ class AuditExceptionValidator @Inject constructor (
                )
             }
          }
+
+         if (employeeRepository.doesNotExist(enteredBy)) {
+            errors.add(
+               ValidationError("scannedBy", NotFound(enteredBy))
+            )
+         }
       }
 
       val inventoryId = auditException.inventory?.id
       val barcode = auditException.barcode
       val scanArea = auditException.scanArea
 
-      return createAuditException(auditId, scannedBy, auditException.exceptionCode!!, inventoryId, barcode, scanArea)
+      return createAuditException(auditId, enteredBy, auditException.exceptionCode!!, inventoryId, barcode, scanArea)
    }
 
-   private fun createAuditException(auditId: Long, scannedBy: User, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
-      return if (inventoryId != null) {
-         val inventory = inventoryRepository.findOne(inventoryId, scannedBy.myDataset())!!
+   private fun createAuditException(auditId: Long, enteredBy: User, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
+      val employeeUser = employeeRepository.findOne(enteredBy)!!
 
-         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), EmployeeEntity.fromUser(scannedBy), exceptionCode)
+      return if (inventoryId != null) {
+         val inventory = inventoryRepository.findOne(inventoryId, enteredBy.myCompany())!!
+
+         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), employeeUser, exceptionCode)
       } else {
-         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), EmployeeEntity.fromUser(scannedBy), exceptionCode)
+         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), employeeUser, exceptionCode)
       }
    }
 
@@ -95,14 +106,14 @@ class AuditExceptionValidator @Inject constructor (
       scanArea?.let { auditScanAreaRepository.findOne(it.value!!) }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(auditId: Long, dataset: String, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
+   fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 
          val auditExceptionId = auditExceptionUpdate.id!!
          val signedOff = auditExceptionUpdate.signedOff
          val note = auditExceptionUpdate.note
-         val audit: AuditEntity = auditRepository.findOne(auditId, dataset)!!
+         val audit: AuditEntity = auditRepository.findOne(auditId, enteredBy.myCompany())!!
 
          if (auditExceptionRepository.doesNotExist(auditExceptionId)) {
             errors.add(
@@ -121,14 +132,27 @@ class AuditExceptionValidator @Inject constructor (
                ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
             )
          }
+
+         if (employeeRepository.doesNotExist(enteredBy)) {
+            errors.add(
+               ValidationError("scannedBy", NotFound(enteredBy))
+            )
+         }
+
+         if (auditExceptionRepository.isSignedOff(auditExceptionId)) {
+            errors.add(
+               ValidationError(null, AuditExceptionHasNotBeenSignedOff(auditExceptionId))
+            )
+         }
       }
 
-      val auditException = auditExceptionRepository.findOne(auditExceptionUpdate.id!!, dataset)!!
+      val employeeUser = employeeRepository.findOne(enteredBy)!!
+      val auditException = auditExceptionRepository.findOne(auditExceptionUpdate.id!!, enteredBy.myCompany())!!
       val auditExceptionNote = auditExceptionUpdate.note
       val notes = auditException.notes
 
       if (auditExceptionNote != null) {
-         notes.add(AuditExceptionNote(auditExceptionNote, enteredBy, auditException))
+         notes.add(AuditExceptionNote(auditExceptionNote, employeeUser, auditException))
       }
 
       return auditException.copy(

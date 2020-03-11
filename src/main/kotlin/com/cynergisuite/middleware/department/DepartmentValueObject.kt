@@ -1,12 +1,10 @@
 package com.cynergisuite.middleware.department
 
-import com.cynergisuite.domain.ValueObject
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-@ValueObject
 @Schema(name = "Department", title = "A Cynergi Department", description = "A department within a company")
 data class DepartmentValueObject(
 
@@ -30,7 +28,7 @@ data class DepartmentValueObject(
    @field:Schema(name = "defaultMenu", description = "Default menu users associated with this department see")
    var defaultMenu: String
 
-) : ValueObjectBase<DepartmentValueObject>() {
+) : Identifiable {
 
    constructor(entity: DepartmentEntity) :
       this(
@@ -42,5 +40,4 @@ data class DepartmentValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): DepartmentValueObject = copy()
 }

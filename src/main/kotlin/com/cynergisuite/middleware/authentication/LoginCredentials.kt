@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.authentication
 
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import io.micronaut.security.authentication.UsernamePasswordCredentials
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.media.Schema
@@ -25,20 +27,4 @@ class LoginCredentials(
 ): UsernamePasswordCredentials(
    username,
    password
-) {
-   constructor(user: User) :
-      this(
-         username = user.myEmployeeNumber().toString(),
-         password = user.myPassCode(),
-         storeNumber = user.myStoreNumber(),
-         dataset = user.myDataset()
-      )
-
-   constructor(user: User, password: String, storeNumber: Int? = null) :
-      this(
-         username = user.myEmployeeNumber().toString(),
-         password = password,
-         storeNumber = storeNumber,
-         dataset = user.myDataset()
-      )
-}
+)

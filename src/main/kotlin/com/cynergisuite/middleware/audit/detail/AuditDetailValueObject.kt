@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
-import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -18,49 +17,49 @@ import javax.validation.constraints.Size
 data class AuditDetailValueObject (
 
    @field:Positive
-   var id: Long?,
+   var id: Long? = null,
 
    @field:NotNull
    @field:Schema(required = true)
-   var scanArea: AuditScanAreaValueObject?,
+   var scanArea: AuditScanAreaValueObject? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 1, max = 200)
-   var barcode: String?,
+   var barcode: String? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
-   var serialNumber: String?,
+   var serialNumber: String? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
-   var productCode: String?,
+   var productCode: String? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
-   var altId: String?,
+   var altId: String? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
-   var inventoryBrand: String?,
+   var inventoryBrand: String? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
-   var inventoryModel: String?,
+   var inventoryModel: String? = null,
 
    @field:NotNull
-   var scannedBy: EmployeeValueObject?,
+   var scannedBy: EmployeeValueObject? = null,
 
    @field:NotNull
-   var audit: Identifiable?
+   var audit: Identifiable? = null
 
-) : ValueObjectBase<AuditDetailValueObject>() {
+) : Identifiable {
 
    constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
       this(
@@ -84,5 +83,4 @@ data class AuditDetailValueObject (
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditDetailValueObject = copy()
 }

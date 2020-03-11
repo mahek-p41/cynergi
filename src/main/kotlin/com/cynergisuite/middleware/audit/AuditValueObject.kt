@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -51,7 +51,7 @@ data class AuditValueObject (
    @field:Schema(name = "actions", required = true, description = "Listing of actions associated with this Audit")
    var actions: MutableSet<AuditActionValueObject> = mutableSetOf()
 
-) : ValueObjectBase<AuditValueObject>() {
+) : Identifiable {
 
    constructor(entity: AuditEntity, locale: Locale, localizationService: LocalizationService) :
       this (
@@ -70,7 +70,6 @@ data class AuditValueObject (
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditValueObject = copy()
 
    @Schema(name = "currentStatus", description = "The current AuditStatus of the referenced Audit")
    fun getCurrentStatus(): AuditStatusValueObject? =

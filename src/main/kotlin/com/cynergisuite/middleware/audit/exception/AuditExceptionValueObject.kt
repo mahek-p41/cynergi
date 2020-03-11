@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
-import com.cynergisuite.domain.ValueObjectBase
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -89,7 +88,7 @@ data class AuditExceptionValueObject (
 
    @field:Size(min = 2, max = 200)
    @field:Schema(name = "lookupKey", description = "The key that can be used to determine what inventory entry lines up with this exception")
-   var lookupKey: String?,
+   var lookupKey: String? = null,
 
    @field:Schema(name = "notes", description = "Listing of notes associated with an AuditException")
    var notes: MutableList<AuditExceptionNoteValueObject> = mutableListOf(),
@@ -98,7 +97,7 @@ data class AuditExceptionValueObject (
    @field:Schema(name = "audit", description = "The Audit this exception is associated with", implementation = SimpleIdentifiableValueObject::class)
    var audit: Identifiable? = null
 
-) : ValueObjectBase<AuditExceptionValueObject>() {
+) : Identifiable {
    constructor(entity: AuditExceptionEntity, scanArea: AuditScanAreaValueObject?) :
       this(
          id = entity.id,
@@ -121,5 +120,4 @@ data class AuditExceptionValueObject (
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditExceptionValueObject = copy()
 }

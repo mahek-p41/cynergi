@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -53,7 +53,7 @@ data class VerificationLandlordValueObject (
    @field:JsonProperty("land_rent")
    var rent: BigDecimal?
 
-) : ValueObjectBase<VerificationLandlordValueObject>() {
+) : Identifiable {
 
    constructor(entity: VerificationLandlord) :
       this(
@@ -69,8 +69,6 @@ data class VerificationLandlordValueObject (
          reliable = entity.reliable,
          rent = entity.rent
       )
-
-   override fun copyMe(): VerificationLandlordValueObject = copy()
 
    override fun myId(): Long? = id
 }

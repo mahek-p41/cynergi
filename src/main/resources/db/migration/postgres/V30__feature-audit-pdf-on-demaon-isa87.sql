@@ -1,0 +1,1 @@
+INSERT INTO audit_permission_type_domain(id, value, description, localization_code) VALUES(25, 'audit-fetchAuditExceptionReport', 'Allow user to generate Audit Exception Report', 'audit.permission.fetch.audit.exception.report');

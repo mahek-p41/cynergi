@@ -18,13 +18,12 @@ object AuditPermissionFactory {
    @JvmStatic
    fun single(departmentIn: DepartmentEntity? = null, permissionTypeIn: AuditPermissionType? = null, companyIn: CompanyEntity? = null): AuditPermissionEntity {
       val company = companyIn ?: CompanyFactory.random()
-      val department = departmentIn ?: DepartmentFactory.random(company.datasetCode)
+      val department = departmentIn ?: DepartmentFactory.random(company)
       val permissionType = permissionTypeIn ?: AuditPermissionTypeFactory.random()
 
       return AuditPermissionEntity(
          department = department,
-         type = permissionType,
-         company = company
+         type = permissionType
       )
    }
 }
@@ -42,7 +41,7 @@ class AuditPermissionFactoryService @Inject constructor(
 
    fun single(departmentIn: DepartmentEntity? = null, permissionTypeIn: AuditPermissionType? = null, companyIn: CompanyEntity? = null): AuditPermissionEntity {
       val company = companyIn ?: companyFactoryService.random()
-      val department = departmentIn ?: departmentFactoryService.random(company.datasetCode)
+      val department = departmentIn ?: departmentFactoryService.random(company)
 
       return AuditPermissionFactory.single(department, permissionTypeIn, company).let { auditPermissionRepository.insert(it) }
    }
@@ -57,8 +56,7 @@ class AuditPermissionFactoryService @Inject constructor(
 
          AuditPermissionEntity(
             department = department,
-            type = type,
-            company = company
+            type = type
          )
       }.map { auditPermissionRepository.insert(it) }
    }
@@ -73,7 +71,7 @@ class AuditPermissionFactoryService @Inject constructor(
             throw Exception("Unable to create enough unique department and permission type combinations")
          }
 
-         department = departmentFactoryService.random(company.datasetCode)
+         department = departmentFactoryService.random(company)
          auditPermissionType = if (excludePermission != null) AuditPermissionTypeFactory.random(excludePermission) else AuditPermissionTypeFactory.random()
 
          tryCount++
