@@ -5,12 +5,12 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.Created
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
+
 
 import static java.time.DayOfWeek.TUESDAY
 import static java.time.DayOfWeek.WEDNESDAY
@@ -28,7 +28,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new EmployeeUser(employee, storeOne), company)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedEmployee(employee.id, employee, storeOne), company)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
@@ -50,7 +50,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new EmployeeUser(employee, storeOne), company)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedEmployee(employee.id, employee, storeOne), company)
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)

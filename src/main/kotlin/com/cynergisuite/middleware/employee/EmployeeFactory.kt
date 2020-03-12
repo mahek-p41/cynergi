@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
@@ -84,9 +84,21 @@ class EmployeeFactoryService @Inject constructor(
       return stream(employeeNumberIn = employeeNumber, companyIn = company, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = cynergiSystemAdmin).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
-   fun singleUser(store: StoreEntity): EmployeeUser {
+   fun singleUser(store: StoreEntity): AuthenticatedEmployee {
       return stream(companyIn = store.company, storeIn = store)
-         .map { EmployeeUser(it, store) }
+         .map { employee ->
+            AuthenticatedEmployee(
+               id = employee.id!!,
+               type = employee.type,
+               number = employee.number,
+               company = employee.company,
+               department = employee.department,
+               location = employee.store,
+               fallbackLocation = store,
+               passCode = employee.passCode,
+               cynergiSystemAdmin = employee.cynergiSystemAdmin
+            )
+         }
          .findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
@@ -109,7 +121,7 @@ class EmployeeFactoryService @Inject constructor(
                department = employee.department,
                location = employee.store,
                fallbackLocation = store,
-               passCode = employee.passCode!!,
+               passCode = employee.passCode,
                cynergiSystemAdmin = employee.cynergiSystemAdmin
             )
          }

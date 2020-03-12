@@ -2,7 +2,9 @@ package com.cynergisuite.middleware.authentication.user
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.location.Location
+import com.cynergisuite.middleware.store.StoreEntity
 
 data class AuthenticatedEmployee(
    val id: Long,
@@ -14,7 +16,7 @@ data class AuthenticatedEmployee(
    val fallbackLocation: Location,
    val passCode: String,
    val cynergiSystemAdmin: Boolean
-) : IdentifiableUser {
+) : User {
 
    constructor(user: AuthenticatedEmployee, passCodeOverride: String) :
       this(
@@ -29,7 +31,23 @@ data class AuthenticatedEmployee(
          cynergiSystemAdmin = user.cynergiSystemAdmin
       )
 
+   constructor(employeeId: Long, employee: EmployeeEntity, store: StoreEntity) :
+      this(
+         id = employeeId,
+         type = employee.type,
+         number = employee.number,
+         company = employee.company,
+         department = employee.department,
+         location = employee.store,
+         fallbackLocation = store,
+         passCode = employee.passCode,
+         cynergiSystemAdmin = employee.cynergiSystemAdmin
+      )
+
    override fun myId(): Long = id
+   override fun myCompany(): Company = company
+   override fun myDepartment(): Department? = department
+   override fun myLocation(): Location = location ?: fallbackLocation
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
 }

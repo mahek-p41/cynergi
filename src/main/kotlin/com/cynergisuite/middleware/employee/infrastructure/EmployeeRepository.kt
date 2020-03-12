@@ -115,7 +115,7 @@ class EmployeeRepository @Inject constructor(
    """
 
    fun findOne(user: User): EmployeeEntity? =
-      findOne(user.myId()!!, user.myEmployeeType(), user.myCompany())
+      findOne(user.myId(), user.myEmployeeType(), user.myCompany())
 
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
@@ -162,7 +162,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun exists(user: User): Boolean =
-      exists(user.myId()!!, user.myEmployeeType(), user.myCompany())
+      exists(user.myId(), user.myEmployeeType(), user.myCompany())
 
    fun exists(id: Long, employeeType: String, company: Company): Boolean {
       val exists = jdbc.queryForObject("""

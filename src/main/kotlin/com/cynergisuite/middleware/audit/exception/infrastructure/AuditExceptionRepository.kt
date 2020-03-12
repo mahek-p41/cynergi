@@ -359,10 +359,10 @@ class AuditExceptionRepository @Inject constructor(
             "serial_number" to entity.serialNumber,
             "inventory_brand" to entity.inventoryBrand,
             "inventory_model" to entity.inventoryModel,
-            "scanned_by" to entity.scannedBy.myEmployeeNumber(),
+            "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
             "signed_off" to entity.signedOff,
-            "signed_off_by" to entity.signedOffBy?.myEmployeeNumber(),
+            "signed_off_by" to entity.signedOffBy?.number,
             "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
          ),
@@ -404,7 +404,7 @@ class AuditExceptionRepository @Inject constructor(
          """,
          mapOf(
             "signed_off" to entity.signedOff,
-            "employee" to if (entity.signedOff) entity.signedOffBy?.myEmployeeNumber() else null,
+            "employee" to if (entity.signedOff) entity.signedOffBy?.number else null,
             "id" to entity.id
          ),
          RowMapper { rs, _ ->
