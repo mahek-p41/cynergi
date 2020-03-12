@@ -22,7 +22,10 @@ data class AuthenticatedUserInformation (
 
    @field:NotNull
    @field:Schema(name = "dataset", title = "Company dataset currently connected to", description = "Company dataset that data is being loaded from", required = true)
-   val dataset: String? = null
+   val dataset: String? = null,
+
+   @field:Schema(name = "altStoreIndicator", title = "Alternate Store Indicator", description = "Indicates which other stores an employee may access", required = true)
+   val altStoreIndicator: String? = null
 ) {
 
    constructor(user: User, loginStatus: String) :
@@ -30,6 +33,7 @@ data class AuthenticatedUserInformation (
          employeeNumber = user.myEmployeeNumber().toString(),
          storeNumber = user.myLocation().myNumber(),
          loginStatus = loginStatus,
-         dataset = user.myCompany().myDataset()
+         dataset = user.myCompany().myDataset(),
+         altStoreIndicator = user.myAltStoreIndicator()
       )
 }

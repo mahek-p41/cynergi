@@ -53,6 +53,8 @@ class EmployeeRepository @Inject constructor(
                emp.active AS emp_active,
                emp.department AS emp_department,
                false AS emp_cynergi_system_admin,
+               emp.alternative_store_indicator AS emp_alternative_store_indicator,
+               emp.alternative_area AS emp_alternative_area,
                comp.id AS comp_id,
                comp.uu_row_id AS comp_uu_row_id,
                comp.time_created AS comp_time_created,
@@ -87,6 +89,8 @@ class EmployeeRepository @Inject constructor(
                emp.active AS emp_active,
                emp.department AS emp_department,
                emp.cynergi_system_admin AS emp_cynergi_system_admin,
+               emp.alternative_store_indicator AS emp_alternative_store_indicator,
+               emp.alternative_area AS emp_alternative_area,
                comp.id AS comp_id,
                comp.uu_row_id AS comp_uu_row_id,
                comp.time_created AS comp_time_created,
@@ -244,7 +248,8 @@ class EmployeeRepository @Inject constructor(
          store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = departmentRepository.mapRowOrNull(rs, company, departmentColumnPrefix),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin")
+         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+         altStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator")
       )
    }
 
@@ -267,6 +272,7 @@ class EmployeeRepository @Inject constructor(
          cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
          company = company,
          department = department,
-         store = store
+         store = store,
+         altStoreIndicator = rs.getString("alternative_store_indicator")
       )
 }

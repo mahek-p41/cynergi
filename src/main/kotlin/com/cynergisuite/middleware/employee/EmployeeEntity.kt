@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.store.StoreEntity
-import java.util.UUID
 
 data class EmployeeEntity(
    val id: Long? = null,
@@ -18,7 +16,8 @@ data class EmployeeEntity(
    val cynergiSystemAdmin: Boolean = false,
    val company: Company,
    val department: Department?,
-   val store: StoreEntity?
+   val store: StoreEntity?,
+   val altStoreIndicator: String
 ) : Identifiable {
 
    constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
@@ -32,7 +31,8 @@ data class EmployeeEntity(
          active = vo.active!!,
          company = company,
          department = department,
-         store = store
+         store = store,
+         altStoreIndicator = vo.altStoreIndicator!!
       )
 
    fun getEmpName() : String = "$firstNameMi $lastName"

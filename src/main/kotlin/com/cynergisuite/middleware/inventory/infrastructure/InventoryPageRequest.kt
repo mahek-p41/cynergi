@@ -67,7 +67,7 @@ class InventoryPageRequest(
          .append(this.locationType)
          .toHashCode()
 
-   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): InventoryPageRequest =
+   protected override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): InventoryPageRequest =
       InventoryPageRequest(
          page = page,
          size = size,

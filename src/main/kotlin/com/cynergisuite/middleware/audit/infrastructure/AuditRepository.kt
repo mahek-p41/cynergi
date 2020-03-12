@@ -14,12 +14,14 @@ import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -88,11 +90,14 @@ class AuditRepository @Inject constructor(
          auditActionEmployee.emp_active                                AS auditEmployee_active,
          auditActionEmployee.emp_type                                  AS auditEmployee_type,
          auditActionEmployee.emp_cynergi_system_admin                  AS auditEmployee_cynergi_system_admin,
+         auditActionEmployee.emp_alternative_store_indicator           AS auditEmployee_alternative_store_indicator,
+         auditActionEmployee.emp_alternative_area                      AS auditEmployee_alternative_area,
          auditActionEmployee.dept_id                                   AS auditEmployeeDept_id,
          auditActionEmployee.dept_code                                 AS auditEmployeeDept_code,
          auditActionEmployee.dept_description                          AS auditEmployeeDept_description,
          auditActionEmployee.dept_security_profile                     AS auditEmployeeDept_security_profile,
          auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
+         auditActionEmployee.store_number                              AS auditEmployee_store_number,
          auditStore.id                                                 AS auditStore_id,
          auditStore.name                                               AS auditStore_name,
          auditStore.number                                             AS auditStore_number,
@@ -113,13 +118,20 @@ class AuditRepository @Inject constructor(
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
            JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+           JOIN division div ON comp.id = div.company_id
+           JOIN region reg ON div.id = reg.division_id
    """
 
    fun findOne(id: Long, company: Company): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
 
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery()}\nWHERE a.id = :id"
+      val partialQuery = "${selectBaseQuery()}\nWHERE a.id = :id"
+
+      val whereBuilder = StringBuilder(partialQuery)
+
+      val query = whereBuilder.toString()
+
       val found = executeFindSingleQuery(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
@@ -129,7 +141,10 @@ class AuditRepository @Inject constructor(
 
    fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
       val params = mutableMapOf<String, Any?>("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
-      val query = "${selectBaseQuery()}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
+      val partialQuery = "${selectBaseQuery()}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
+
+      val whereBuilder = StringBuilder(partialQuery)
+      val query = whereBuilder.toString()
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
 
@@ -158,11 +173,12 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
+   fun findAll(pageRequest: AuditPageRequest, company: Company, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder("WHERE a.company_id = :comp_id ")
+      val whereBuilder2 = StringBuilder(" WHERE")
       val from = pageRequest.from
       val thru = pageRequest.thru
 
@@ -180,6 +196,12 @@ class AuditRepository @Inject constructor(
       if (!status.isNullOrEmpty()) {
          params["current_status"] = status
          whereBuilder.append(" AND current_status IN (:current_status) ")
+      }
+
+      when (user.myAltStoreIndicator()) {
+         "N" -> whereBuilder.append(" AND auditActionEmployee.store_number = auditStore.number ")
+         "D" -> whereBuilder2.append(" auditEmployee_alternative_area = div.number ")
+         "R" -> whereBuilder2.append(" auditEmployee_alternative_area = reg.number ")
       }
 
       val sql = """
@@ -266,11 +288,14 @@ class AuditRepository @Inject constructor(
             auditActionEmployee.emp_active               AS auditEmployee_active,
             auditActionEmployee.emp_type                 AS auditEmployee_type,
             auditActionEmployee.emp_cynergi_system_admin AS auditEmployee_cynergi_system_admin,
+            auditActionEmployee.emp_alternative_store_indicator AS auditEmployee_alternative_store_indicator,
+            auditActionEmployee.emp_alternative_area     AS auditEmployee_alternative_area,
             auditActionEmployee.dept_id                  AS auditEmployeeDept_id,
             auditActionEmployee.dept_code                AS auditEmployeeDept_code,
             auditActionEmployee.dept_description         AS auditEmployeeDept_description,
             auditActionEmployee.dept_security_profile    AS auditEmployeeDept_security_profile,
             auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
+            auditActionEmployee.store_number             AS auditEmployee_store_number,
             auditStore.id                                AS auditStore_id,
             auditStore.name                              AS auditStore_name,
             auditStore.number                            AS auditStore_number,
@@ -292,6 +317,9 @@ class AuditRepository @Inject constructor(
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
               JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+              JOIN division div ON comp.id = div.company_id
+              JOIN region reg ON div.id = reg.division_id
+              $whereBuilder2
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
@@ -329,12 +357,14 @@ class AuditRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company): List<AuditStatusCount> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company, user: User): List<AuditStatusCount> {
       val status = pageRequest.status
       val params = mutableMapOf<String, Any>("comp_id" to company.myId()!!)
       val storeNumbers = pageRequest.storeNumber
       val whereBuilderForStatusAndTimeCreated = StringBuilder()
       val whereBuilderForCompanyAndStore = StringBuilder("WHERE a.company_id = :comp_id ")
+      val whereBuilder = StringBuilder()
+      val whereBuilder2 = StringBuilder(" ")
       val from = pageRequest.from
       val thru = pageRequest.thru
       var where = " WHERE "
@@ -358,8 +388,17 @@ class AuditRepository @Inject constructor(
          whereBuilderForCompanyAndStore.append(" AND store_number IN (:store_numbers) ")
       }
 
+      when (user.myAltStoreIndicator()) {
+         "N" -> whereBuilder2.append("AND emp.store_number = auditStore.number ")
+         "D" -> whereBuilder2.append("AND emp.emp_alternative_area = div.number ")
+         "R" -> whereBuilder2.append("AND emp.emp_alternative_area = reg.number ")
+      }
+
       return jdbc.query("""
-         WITH status AS (
+         WITH employees AS (
+                  ${employeeRepository.employeeBaseQuery()}
+               ),
+            status AS (
             SELECT
                csastd.id AS current_status_id,
                csastd.value AS current_status,
@@ -387,9 +426,14 @@ class AuditRepository @Inject constructor(
             count(*) AS current_status_count
          FROM audit a
             JOIN company comp ON a.company_id = comp.id
+            JOIN employees emp ON comp.id = emp.comp_id
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+            JOIN division div ON comp.id = div.company_id
+            JOIN region reg ON div.id = reg.division_id
+         WHERE comp.id = :comp_id
+         $whereBuilder2
          $whereBuilderForCompanyAndStore
          GROUP BY status.current_status,
                   status.current_status_description,
@@ -562,7 +606,8 @@ class AuditRepository @Inject constructor(
          store = mapStore(rs),
          active = rs.getBoolean("auditEmployee_active"),
          department = mapAuditActionEmployeeDepartment(rs),
-         cynergiSystemAdmin = rs.getBoolean("auditEmployee_cynergi_system_admin")
+         cynergiSystemAdmin = rs.getBoolean("auditEmployee_cynergi_system_admin"),
+         altStoreIndicator = rs.getString("auditEmployee_alternative_store_indicator")
       )
    }
 

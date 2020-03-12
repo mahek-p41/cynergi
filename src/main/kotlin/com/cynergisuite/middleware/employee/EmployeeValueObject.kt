@@ -49,6 +49,11 @@ data class EmployeeValueObject(
    @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
    var store: StoreValueObject? = null,
 
+   @field:NotNull
+   @field:Size(min = 1, max = 1)
+   @field:Schema(name = "altStoreIndicator", description = "Employee's alternate store indicator", minLength = 1, maxLength = 1, required = true, nullable = false)
+   var altStoreIndicator: String? = null,
+
    @field:JsonIgnore
    @field:NotNull
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
@@ -56,7 +61,7 @@ data class EmployeeValueObject(
 
 ) : Identifiable {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String) :
       this(
          id = null,
          type = type,
@@ -65,7 +70,8 @@ data class EmployeeValueObject(
          firstNameMi = firstNameMi,
          passCode = passCode,
          store = store,
-         active = active
+         active = active,
+         altStoreIndicator = altStoreIndicator
       )
 
    constructor(entity: EmployeeEntity) :
@@ -77,7 +83,8 @@ data class EmployeeValueObject(
          firstNameMi = entity.firstNameMi,
          passCode = entity.passCode,
          store = entity.store?.let { StoreValueObject(it) },
-         active = entity.active
+         active = entity.active,
+         altStoreIndicator = entity.altStoreIndicator
       )
 
    override fun myId(): Long? = id

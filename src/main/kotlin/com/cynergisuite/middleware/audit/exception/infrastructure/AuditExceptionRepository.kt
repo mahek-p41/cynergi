@@ -93,6 +93,8 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy.store_id                                   AS scannedBy_store_id,
          scannedBy.store_number                               AS scannedBy_store_number,
          scannedBy.store_name                                 AS scannedBy_store_name,
+         scannedBy.alternative_store_indicator                AS scannedBy_alternative_store_indicator,
+         scannedBy.alternative_area                           AS scannedBy_alternative_area,
          signedOffBy.emp_id                                   AS signedOffBy_id,
          signedOffBy.emp_type                                 AS signedOffBy_type,
          signedOffBy.emp_number                               AS signedOffBy_number,
@@ -109,6 +111,8 @@ class AuditExceptionRepository @Inject constructor(
          signedOffBy.store_id                                 AS signedOffBy_store_id,
          signedOffBy.store_number                             AS signedOffBy_store_number,
          signedOffBy.store_name                               AS signedOffBy_store_name,
+         signedOffBy.alternative_store_indicator              AS signedOffBy_alternative_store_indicator,
+         signedOffBy.alternative_area                         AS signedOffBy_alternative_area,
          auditExceptionNote.id                                AS auditExceptionNote_id,
          auditExceptionNote.uu_row_id                         AS auditExceptionNote_uu_row_id,
          auditExceptionNote.time_created                      AS auditExceptionNote_time_created,
@@ -468,7 +472,8 @@ class AuditExceptionRepository @Inject constructor(
          store = mapScannedByStore(rs, columnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = mapScannedByDepartment(rs, columnPrefix),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin")
+         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+         altStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator")
       )
    }
 

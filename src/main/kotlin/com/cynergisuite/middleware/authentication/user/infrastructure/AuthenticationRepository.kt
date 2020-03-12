@@ -48,6 +48,8 @@ class AuthenticationRepository @Inject constructor(
                   emp.active             AS emp_active,
                   false                  AS emp_cynergi_system_admin,
                   emp.pass_code          AS emp_pass_code,
+                  emp.alternative_store_indicator AS emp_alternative_store_indicator,
+                  emp.alternative_area   AS emp_alternative_area,
                   comp.id                AS comp_id,
                   comp.uu_row_id         AS comp_uu_row_id,
                   comp.time_created      AS comp_time_created,
@@ -83,6 +85,8 @@ class AuthenticationRepository @Inject constructor(
                   emp.active                  AS emp_active,
                   emp.cynergi_system_admin    AS emp_cynergi_system_admin,
                   emp.pass_code               AS emp_pass_code,
+                  emp.alternative_store_indicator AS emp_alternative_store_indicator,
+                  emp.alternative_area        AS emp_alternative_area,
                   comp.id                     AS comp_id,
                   comp.uu_row_id              AS comp_uu_row_id,
                   comp.time_created           AS comp_time_created,
@@ -145,7 +149,8 @@ class AuthenticationRepository @Inject constructor(
                location = employeeLocation,
                fallbackLocation = fallbackLocation,
                passCode = row.getString("emp_pass_code"),
-               cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin")
+               cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin"),
+               altStoreIndicator = row.getString("emp_alternative_store_indicator")
             )
          }
          .filter { employee ->

@@ -26,7 +26,8 @@ private enum class JWTDetailKeys(
    EMPLOYEE_TYPE("tp"),
    STORE_NUMBER("sn"),
    COMPANY_ID("ci"),
-   DEPARTMENT("dp");
+   DEPARTMENT("dp"),
+   ALT_STORE_INDR("asi");
 }
 
 @Singleton
@@ -53,6 +54,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
             ?.claim(COMPANY_ID.key, userDetails.myCompany().myId())
             ?.claim(DEPARTMENT.key, userDetails.myDepartment()?.myCode())
             ?.claim(STORE_NUMBER.key, userDetails.myLocation().myNumber())
+            ?.claim(ALT_STORE_INDR.key, userDetails.myAltStoreIndicator())
       }
 
       logger.debug("Finished populating JWT with {}", userDetails)
@@ -67,6 +69,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
       val companyId = authentication.attributes[COMPANY_ID.key]?.let { Objects.toString(it).toLong() } ?: throw Exception("Unable to find company ID")
       val departmentCode = authentication.attributes[DEPARTMENT.key]?.let { Objects.toString(it) }
       val storeNumber = authentication.attributes[STORE_NUMBER.key]?.let { Objects.toString(it).toInt() } ?: throw Exception("Unable to find store number")
+      val altStoreIndicator = authentication.attributes[ALT_STORE_INDR.key]?.let { Objects.toString(it) } ?: throw Exception("Unable to find employee alternate store indicator")
 
       val (company, department, location) = authenticationRepository.findCredentialComponents(companyId, departmentCode, storeNumber)
 
@@ -76,7 +79,8 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
          number = employeeNumber,
          company = company,
          department = department,
-         location = location
+         location = location,
+         altStoreIndicator = altStoreIndicator
       )
    }
 }

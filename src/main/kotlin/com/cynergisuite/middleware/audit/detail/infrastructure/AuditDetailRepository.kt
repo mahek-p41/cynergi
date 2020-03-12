@@ -59,6 +59,8 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.emp_pass_code            AS scannedBy_pass_code,
             scannedBy.emp_active               AS scannedBy_active,
             scannedBy.emp_cynergi_system_admin AS scannedBy_cynergi_system_admin,
+            scannedBy.emp_alternative_store_indicator AS scannedBy_alternative_store_indicator,
+            scannedBy.emp_alternative_area     AS scannedBy_alternative_area,
             scannedBy.store_id                 AS store_id,
             scannedBy.store_number             AS store_number,
             scannedBy.store_name               AS store_name,

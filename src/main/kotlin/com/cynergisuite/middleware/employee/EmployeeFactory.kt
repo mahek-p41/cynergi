@@ -22,7 +22,7 @@ object EmployeeFactory {
    private val employeeNumberCounter = AtomicInteger(100_000)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null): Stream<EmployeeEntity> {
+   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, altStoreIndicator: String? = null): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val name = faker.name()
@@ -48,7 +48,8 @@ object EmployeeFactory {
             cynergiSystemAdmin = cynergiSystemAdminIn,
             company = company,
             department = departmentIn,
-            store = storeIn
+            store = storeIn,
+            altStoreIndicator = altStoreIndicator ?: "A"
          )
       }
    }
@@ -96,7 +97,8 @@ class EmployeeFactoryService @Inject constructor(
                location = employee.store,
                fallbackLocation = store,
                passCode = employee.passCode,
-               cynergiSystemAdmin = employee.cynergiSystemAdmin
+               cynergiSystemAdmin = employee.cynergiSystemAdmin,
+               altStoreIndicator = employee.altStoreIndicator
             )
          }
          .findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
@@ -122,7 +124,8 @@ class EmployeeFactoryService @Inject constructor(
                location = employee.store,
                fallbackLocation = store,
                passCode = employee.passCode,
-               cynergiSystemAdmin = employee.cynergiSystemAdmin
+               cynergiSystemAdmin = employee.cynergiSystemAdmin,
+               altStoreIndicator = employee.altStoreIndicator
             )
          }
    }

@@ -5,12 +5,11 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.Created
-import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
-
 
 import static java.time.DayOfWeek.TUESDAY
 import static java.time.DayOfWeek.WEDNESDAY
@@ -28,12 +27,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedEmployee(employee.id, employee, storeOne), company)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedUser(employee, storeOne), company)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
+      //TODO Does the above in given create an AuthenticatedUser I can use here?
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), company, user)
 
       then:
       notThrown(Exception)
@@ -50,12 +50,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedEmployee(employee.id, employee, storeOne), company)
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedUser(employee, storeOne), company)
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)
-      def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
+      //TODO Does the above in given create an AuthenticatedUser I can use here?
+      def audit = auditRepository.findOneCreatedOrInProgress(storeOne, user)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), company, user)
 
       then:
       notThrown(Exception)

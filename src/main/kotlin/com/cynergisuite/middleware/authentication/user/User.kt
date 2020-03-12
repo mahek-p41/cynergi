@@ -11,4 +11,5 @@ interface User {
    fun myLocation(): Location
    fun myEmployeeType(): String
    fun myEmployeeNumber(): Int
+   fun myAltStoreIndicator(): String
 }

@@ -55,13 +55,13 @@ class AuditService @Inject constructor(
    private val reportalService: ReportalService
 ) {
 
-   fun fetchById(id: Long, user: User, locale: Locale): AuditValueObject? =
-      auditRepository.findOne(id, user.myCompany())?.let { AuditValueObject(it, locale, localizationService) }
+   fun fetchById(id: Long, company: Company, locale: Locale): AuditValueObject? =
+      auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
 
    @Validated
    fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
-      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany())
+      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany(), user)
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
@@ -81,13 +81,14 @@ class AuditService @Inject constructor(
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest, user.myCompany())
+         .findAuditStatusCounts(validPageRequest, user.myCompany(), user)
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }
    }
 
    @Validated
+   //TODO Do we already check user store limits when creating an audit to make sure it is an allowed store?
    fun create(@Valid vo: AuditCreateValueObject, employee: User, locale: Locale): AuditValueObject {
       val validAudit = auditValidator.validateCreate(vo, employee)
       val audit = auditRepository.insert(validAudit)
@@ -151,7 +152,7 @@ class AuditService @Inject constructor(
 
    @Validated
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
-      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany())
+      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany(), user)
 
       return AuditSignOffAllExceptionsDataTransferObject(
          auditExceptionRepository.signOffAllExceptions(toSignOff, user)

@@ -47,8 +47,9 @@ class AuditDetailService @Inject constructor(
       return transformEntity(auditDetailRepository.insert(auditDetail), locale)
    }
 
+   //TODO No usages of this update found
    @Validated
-   fun update(@Valid vo: AuditDetailValueObject, company: Company, locale: Locale): AuditDetailValueObject {
+   fun update(@Valid vo: AuditDetailValueObject, company: Company, locale: Locale, user: User): AuditDetailValueObject {
       val auditDetail = auditDetailValidator.validateUpdate(vo, company)
       val auditDetailUpdated = auditDetailRepository.update(auditDetail)
 
