@@ -40,14 +40,13 @@ class DivisionRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet): DivisionEntity? {
-      return if (rs.isBeforeFirst) {
-         mapRow(rs)
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): DivisionEntity? {
+      return if (!rs.getString("${columnPrefix}name").isNullOrEmpty()) {
+         mapRow(rs, columnPrefix)
       } else {
          null
       }
    }
-
 
    fun mapRow(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
@@ -60,5 +59,4 @@ class DivisionRepository @Inject constructor(
          manager = entity.manager,
          description = rs.getString("${columnPrefix}description")
       )
-
 }

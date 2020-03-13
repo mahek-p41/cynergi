@@ -48,7 +48,7 @@ class StoreController @Inject constructor(
       @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long,
       authentication: Authentication
    ): StoreValueObject {
-      logger.info("Fetching Store by {}", id)
+      logger.info("Fetching Store by id {}", id)
 
       val user = userService.findUser(authentication)
       val response = storeService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)

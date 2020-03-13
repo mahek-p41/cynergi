@@ -7,6 +7,7 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -25,7 +26,8 @@ import javax.inject.Singleton
 @Singleton
 class StoreRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val companyRepository: CompanyRepository
+   private val companyRepository: CompanyRepository,
+   private val regionRepository: RegionRepository
 ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
 
@@ -45,22 +47,44 @@ class StoreRepository @Inject constructor(
             comp.client_code AS comp_client_code,
             comp.client_id AS comp_client_id,
             comp.dataset_code AS comp_dataset_code,
-            comp.federal_id_number
+            comp.federal_id_number,
+            region.id AS reg_id,
+            region.uu_row_id AS reg_uu_row_id,
+            region.time_created AS reg_time_created,
+            region.time_updated AS reg_time_updated,
+            region.division_id AS reg_division_id,
+            region."number" AS reg_number,
+            region.name AS reg_name,
+            region.employee_number AS reg_employee_number,
+            region.description AS reg_description,
+            division.id AS div_id,
+            division.uu_row_id AS div_uu_row_id,
+            division.time_created AS div_time_created,
+            division.time_updated AS div_time_updated,
+            division."number" AS div_number,
+            division.name AS div_name,
+            division.employee_number AS div_employee_number,
+            division.description AS div_description
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
+              LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+				  LEFT JOIN region on region.id = r2s.region_id
+				  LEFT JOIN division on region.division_id = division.id
       """
    }
+
 
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE store.id = :id AND comp.id = :comp_id"
-      val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
+      val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company, "reg_") }
 
       logger.trace("Searching for Store: {} resulted in {}", id, found)
 
       return found
    }
 
+   // TODO fix this when fixing tests
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id"
@@ -70,6 +94,7 @@ class StoreRepository @Inject constructor(
 
       return found
    }
+   // TODO end fixing
 
    fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<StoreEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
@@ -92,7 +117,7 @@ class StoreRepository @Inject constructor(
             totalElements = rs.getLong("total_elements")
          }
 
-         elements.add(mapRow(rs, company))
+         elements.add(mapRowWithRegion(rs, company, "reg_"))
       }
 
       return RepositoryPage(
@@ -135,7 +160,8 @@ class StoreRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         company = companyRepository.mapRow(rs)
+         company = companyRepository.mapRow(rs),
+         region = regionRepository.mapRow(rs)
       )
 
    @Transactional
@@ -157,11 +183,21 @@ class StoreRepository @Inject constructor(
 
    fun mapRow(resultSet: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(
-         id = resultSet.getLong("${columnPrefix}id"),
-         number = resultSet.getInt("${columnPrefix}number"),
-         name = resultSet.getString("${columnPrefix}name"),
+         id = rs.getLong("${columnPrefix}id"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
          company = company
       )
+
+   fun mapRowWithRegion(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
+         StoreEntity(
+            id = rs.getLong("${columnPrefix}id"),
+            number = rs.getInt("${columnPrefix}number"),
+            name = rs.getString("${columnPrefix}name"),
+            company = company,
+            region = regionRepository.mapRow(rs, "reg_")
+         )
+
 
    fun maybeMapRow(rs: ResultSet, company: Company, columnPrefix: String): StoreEntity? =
       if (rs.getString("${columnPrefix}id") != null) {

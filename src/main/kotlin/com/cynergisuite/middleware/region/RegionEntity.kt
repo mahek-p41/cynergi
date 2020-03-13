@@ -16,7 +16,7 @@ data class RegionEntity (
    val timeUpdated: OffsetDateTime = timeCreated,
    val number: Int,
    val name: String,
-   val employeeNumber: Int,
+   val managerNumber: Int,
    val description: String,
    val manager: Employee? = null,
    val division: DivisionEntity? = null
@@ -26,7 +26,7 @@ data class RegionEntity (
       CompareToBuilder()
          .append(this.name, other.name)
          .append(this.number, other.number)
-         .append(this.employeeNumber, other.employeeNumber)
+         .append(this.managerNumber, other.managerNumber)
          .append(this.description, other.description)
          .append(this.division, other.division)
          .toComparison()
@@ -44,7 +44,7 @@ data class RegionEntity (
                 .append(this.id, other.id)
                 .append(this.number, other.number)
                 .append(this.name, other.name)
-                .append(this.employeeNumber, other.employeeNumber)
+                .append(this.managerNumber, other.managerNumber)
                 .append(this.description, other.description)
                 .append(this.division, other.division)
                 .isEquals
@@ -59,10 +59,21 @@ data class RegionEntity (
          .append(this.id)
          .append(this.number)
          .append(this.name)
-         .append(this.employeeNumber)
+         .append(this.managerNumber)
          .append(this.description)
          .append(this.division)
          .toHashCode()
+
+   fun toValueObject(): RegionValueObject {
+      return RegionValueObject(
+         id = this.id,
+         number = this.number,
+         name = this.name,
+         managerNumber = this.managerNumber,
+         description = this.description,
+         division = this.division?.toValueObject()
+      )
+   }
 
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId

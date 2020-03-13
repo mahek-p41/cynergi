@@ -38,7 +38,7 @@ class RegionRepository @Inject constructor(
             "manager_number" to entity.manager?.myNumber(),
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapRow(rs) }
+         RowMapper { rs, _ -> mapRowSimple(rs) }
       )
    }
 
@@ -51,11 +51,24 @@ class RegionRepository @Inject constructor(
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         division = divisionRepository.mapRowOrNull(rs, "div_"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         managerNumber = rs.getInt("${columnPrefix}employee_number"),
+         description = rs.getString("${columnPrefix}description")
+      )
+
+   fun mapRowSimple(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
+      RegionEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          division = divisionRepository.mapRowOrNull(rs),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
-         manager = region.manager,
+         manager = entity.manager
       )
 
 }

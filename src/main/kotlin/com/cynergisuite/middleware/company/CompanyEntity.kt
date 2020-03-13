@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.company
 
+import com.cynergisuite.middleware.region.RegionValueObject
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -66,6 +67,18 @@ data class CompanyEntity(
       } else {
          compareToBuilder.toComparison()
       }
+   }
+
+   fun toValueObject(): CompanyValueObject {
+      return CompanyValueObject(
+         id = this.id,
+         name = this.name,
+         doingBusinessAs = this.doingBusinessAs,
+         clientCode = this.clientCode,
+         clientId = this.clientId,
+         datasetCode = this.datasetCode,
+         federalTaxNumber = this.federalIdNumber
+      )
    }
 }
 

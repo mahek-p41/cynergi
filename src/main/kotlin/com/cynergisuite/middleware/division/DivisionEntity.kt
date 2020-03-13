@@ -63,4 +63,14 @@ data class DivisionEntity (
          .append(this.company)
          .toHashCode()
 
+   fun toValueObject(): DivisionValueObject {
+      return DivisionValueObject(
+         id = this.id,
+         number = this.number,
+         name = this.name,
+         managerNumber = this.manager,
+         description = this.description,
+         company = this.company?.toValueObject()
+      )
+   }
 }
