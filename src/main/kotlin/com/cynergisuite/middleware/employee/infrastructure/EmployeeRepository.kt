@@ -212,8 +212,8 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id, alternative_store_indicator, alternative_area)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id, :alternative_store_indicator, :alternative_area)
          RETURNING
             *
          """.trimIndent(),
@@ -226,7 +226,9 @@ class EmployeeRepository @Inject constructor(
             "cynergi_system_admin" to entity.cynergiSystemAdmin,
             "company_id" to entity.company.myId(),
             "department" to entity.department?.myCode(),
-            "store_number" to entity.store?.number
+            "store_number" to entity.store?.number,
+            "alternative_store_indicator" to entity.alternativeStoreIndicator,
+            "alternative_area" to entity.alternativeArea
          ),
          RowMapper { rs, _ ->
             mapDDLRow(rs, entity.company, entity.department, entity.store)

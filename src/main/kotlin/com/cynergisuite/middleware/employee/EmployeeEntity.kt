@@ -19,7 +19,7 @@ data class EmployeeEntity(
    val store: StoreEntity?,
    val alternativeStoreIndicator: String,
    val alternativeArea: Int
-) : Identifiable {
+) : Employee {
 
    constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
       this(
@@ -41,4 +41,6 @@ data class EmployeeEntity(
    fun displayName(): String = "$number - $lastName"
 
    override fun myId(): Long? = id
+   override fun myNumber(): Int = number
+   override fun copyMe(): EmployeeEntity = copy()
 }

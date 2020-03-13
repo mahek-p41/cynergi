@@ -357,6 +357,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeThreeFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[4].actions[0].changedBy.firstNameMi
    }
 
+   void "fetch all audits based on login" () {
+      expect:
+      1 == 2 // TODO make sure to add in checks for the possible values of alternative_store_indicator A N R D, A is already tested using the 998 user created
+   }
+
    @Unroll
    void "fetch all audits by store with storeNumber #storeNumberValuesIn" () {
       given:
@@ -659,15 +664,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       when:
       def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
-                              .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
+         .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
 
       then:
       notThrown(HttpClientResponseException)
       countsResult.stream().filter({ it -> it.getStatus().getValue() == 'CREATED' })
-            .findFirst().map({ it -> it.count }).orElse(null) == createdCount
+         .findFirst().map({ it -> it.count }).orElse(null) == createdCount
 
       countsResult.stream().filter({ it -> it.getStatus().getValue() == 'IN-PROGRESS' })
-            .findFirst().map({ it -> it.count }).orElse(null) == inProgressCount
+         .findFirst().map({ it -> it.count }).orElse(null) == inProgressCount
 
       countsResult.stream().filter({ it -> it.getStatus().getValue() == 'COMPLETED' })
          .findFirst().map({ it -> it.count }).orElse(null) == completedCount
@@ -688,7 +693,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -722,7 +727,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -743,7 +748,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -1073,7 +1078,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > audit.id
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"

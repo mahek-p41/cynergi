@@ -25,7 +25,7 @@ object DivisionFactory {
             company = company,
             number = random.nextInt(1, 100_000),
             name = lorem.characters(5, 8).toUpperCase(),
-            employeeNumber = divisionalManager?.number,
+            manager = divisionalManager,
             description = lorem.characters(3, 15).toUpperCase()
          )
       }
@@ -41,4 +41,7 @@ class DivisionFactoryService(
    fun stream(numberIn: Int = 1, company: Company): Stream<DivisionEntity> =
       DivisionFactory.stream(numberIn, company)
          .map { divisionRepository.insert(it, company) }
+
+   fun single(company: Company): DivisionEntity =
+      stream(company = company).findFirst().orElseThrow { Exception("Unable to create DivisionEntity") }
 }

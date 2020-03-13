@@ -16,7 +16,8 @@ data class AuthenticatedEmployee(
    val fallbackLocation: Location,
    val passCode: String,
    val cynergiSystemAdmin: Boolean,
-   val altStoreIndicator: String
+   val alternativeStoreIndicator: String,
+   val alternativeArea: Int
 ) : User {
 
    constructor(user: AuthenticatedEmployee, passCodeOverride: String) :
@@ -30,7 +31,8 @@ data class AuthenticatedEmployee(
          fallbackLocation = user.fallbackLocation,
          passCode = passCodeOverride,
          cynergiSystemAdmin = user.cynergiSystemAdmin,
-         altStoreIndicator = user.altStoreIndicator
+         alternativeStoreIndicator = user.alternativeStoreIndicator,
+         alternativeArea = user.alternativeArea
       )
 
    constructor(employeeId: Long, employee: EmployeeEntity, store: StoreEntity) :
@@ -44,7 +46,8 @@ data class AuthenticatedEmployee(
          fallbackLocation = store,
          passCode = employee.passCode,
          cynergiSystemAdmin = employee.cynergiSystemAdmin,
-         altStoreIndicator = employee.alternativeStoreIndicator
+         alternativeStoreIndicator = employee.alternativeStoreIndicator,
+         alternativeArea = employee.alternativeArea
       )
 
    override fun myId(): Long = id
@@ -53,5 +56,6 @@ data class AuthenticatedEmployee(
    override fun myLocation(): Location = location ?: fallbackLocation
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
-   override fun myAltStoreIndicator(): String = altStoreIndicator
+   override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
+   override fun myAlternativeArea(): Int = alternativeArea
 }

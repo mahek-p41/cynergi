@@ -27,13 +27,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedUser(employee, storeOne), company)
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0) // make ourselves a user who can see all audits
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
-      //TODO Does the above in given create an AuthenticatedUser I can use here?
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), user)
 
       then:
       notThrown(Exception)
@@ -50,13 +50,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new AuthenticatedUser(employee, storeOne), company)
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0) // make ourselves a user who can see all audits
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)
-      //TODO Does the above in given create an AuthenticatedUser I can use here?
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), user)
 
       then:
       notThrown(Exception)

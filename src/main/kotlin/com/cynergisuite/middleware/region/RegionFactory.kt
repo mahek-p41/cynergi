@@ -23,7 +23,7 @@ object RegionFactory {
             division = division,
             number = random.nextInt(1, 100_000),
             name = lorem.characters(5, 8).toUpperCase(),
-            employeeNumber = regionalManager?.number,
+            manager = regionalManager,
             description = lorem.characters(3, 15).toUpperCase()
          )
       }
@@ -38,5 +38,8 @@ class RegionFactoryService(
 
    fun stream(numberIn: Int = 1, division: DivisionEntity): Stream<RegionEntity> =
       RegionFactory.stream(numberIn, division)
-         .map { regionRepository.insert(it, division) }
+         .map { regionRepository.insert(it) }
+
+   fun single(division: DivisionEntity): RegionEntity =
+      stream(division = division).findFirst().orElseThrow { Exception("Unable to create RegionEntity") }
 }

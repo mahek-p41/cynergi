@@ -34,6 +34,6 @@ data class AuthenticatedUserInformation (
          storeNumber = user.myLocation().myNumber(),
          loginStatus = loginStatus,
          dataset = user.myCompany().myDataset(),
-         altStoreIndicator = user.myAltStoreIndicator()
+         altStoreIndicator = user.myAlternativeStoreIndicator()
       )
 }

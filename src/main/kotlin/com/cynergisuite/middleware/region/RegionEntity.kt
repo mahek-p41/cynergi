@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.region
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.DivisionEntity
-import com.cynergisuite.middleware.division.DivisionValueObject
+import com.cynergisuite.middleware.employee.Employee
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class RegionEntity (
    val id: Long? = null,
@@ -15,20 +14,9 @@ data class RegionEntity (
    val division: DivisionEntity,
    val number: Int,
    val name: String,
-   val employeeNumber: Int?,
-   val description: String?
+   val manager: Employee? = null,
+   val description: String? = null
 ) : Entity<RegionEntity> {
-
-   constructor(vo: RegionValueObject, division: DivisionEntity) :
-      this(
-         id = vo.id,
-         division = division,
-         number = vo.number!!,
-         name = vo.name!!,
-         employeeNumber = vo.employeeNumber!!,
-         description = vo.description
-      )
-
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
    override fun copyMe(): RegionEntity = copy()

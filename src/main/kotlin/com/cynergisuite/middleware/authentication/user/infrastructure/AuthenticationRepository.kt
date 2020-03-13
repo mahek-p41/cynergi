@@ -153,7 +153,8 @@ class AuthenticationRepository @Inject constructor(
                fallbackLocation = fallbackLocation,
                passCode = row.getString("emp_pass_code"),
                cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin"),
-               altStoreIndicator = row.getString("emp_alternative_store_indicator")
+               alternativeStoreIndicator = row.getString("emp_alternative_store_indicator"),
+               alternativeArea = row.getInteger("emp_alternative_area")
             )
          }
          .filter { employee ->
@@ -183,7 +184,8 @@ class AuthenticationRepository @Inject constructor(
          company = company,
          department = department,
          location = location,
-         altStoreIndicator = employee.alternativeStoreIndicator
+         alternativeStoreIndicator = employee.alternativeStoreIndicator,
+         alternativeArea = employee.alternativeArea
       )
    }
 
