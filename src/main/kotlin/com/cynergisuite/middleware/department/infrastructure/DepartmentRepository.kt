@@ -6,7 +6,6 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.DepartmentEntity
-import io.micronaut.cache.annotation.Cacheable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -46,7 +45,6 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   @Cacheable("department-cache")
    fun findOneByCodeAndDataset(code: String, company: Company): DepartmentEntity? {
       logger.debug("Searching for department by code {}", code)
 

@@ -21,7 +21,7 @@ object EmployeeFactory {
    private val employeeNumberCounter = AtomicInteger(100_000)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<EmployeeEntity> {
+   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdmin: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicator: String = "A", alternativeArea: Int = 0): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val name = faker.name()
@@ -44,12 +44,12 @@ object EmployeeFactory {
             firstNameMi = firstNameMiIn ?: name.firstName(),
             passCode = passCode ?: lorem.characters(3, 6),
             active = activeIn,
-            cynergiSystemAdmin = cynergiSystemAdminIn,
+            cynergiSystemAdmin = cynergiSystemAdmin,
             company = company,
             department = departmentIn,
             store = storeIn,
-            alternativeStoreIndicator = alternativeStoreIndicatorIn ?: "A",
-            alternativeArea = alternativeAreaIn ?: 0
+            alternativeStoreIndicator = alternativeStoreIndicator,
+            alternativeArea = alternativeArea
          )
       }
    }
