@@ -52,7 +52,12 @@ data class EmployeeValueObject(
    @field:NotNull
    @field:Size(min = 1, max = 1)
    @field:Schema(name = "altStoreIndicator", description = "Employee's alternate store indicator", minLength = 1, maxLength = 1, required = true, nullable = false)
-   var altStoreIndicator: String? = null,
+   var alternativeStoreIndicator: String? = null,
+
+   @field:NotNull
+   @field:Min(value = 1)
+   @field:Schema(name = "alternativeArea", description = "Employee's alternate area")
+   var alternativeArea: Int? = null,
 
    @field:JsonIgnore
    @field:NotNull
@@ -61,7 +66,7 @@ data class EmployeeValueObject(
 
 ) : Identifiable {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String, alternativeArea: Int) :
       this(
          id = null,
          type = type,
@@ -71,7 +76,8 @@ data class EmployeeValueObject(
          passCode = passCode,
          store = store,
          active = active,
-         altStoreIndicator = altStoreIndicator
+         alternativeStoreIndicator = altStoreIndicator,
+         alternativeArea = alternativeArea
       )
 
    constructor(entity: EmployeeEntity) :
@@ -84,7 +90,8 @@ data class EmployeeValueObject(
          passCode = entity.passCode,
          store = entity.store?.let { StoreValueObject(it) },
          active = entity.active,
-         altStoreIndicator = entity.altStoreIndicator
+         alternativeStoreIndicator = entity.alternativeStoreIndicator,
+         alternativeArea = entity.alternativeArea
       )
 
    override fun myId(): Long? = id

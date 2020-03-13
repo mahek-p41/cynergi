@@ -139,7 +139,7 @@ class AuditScheduleService @Inject constructor(
                company = employee.company,
                department = employee.department,
                location = store,
-               altStoreIndicator = employee.altStoreIndicator
+               altStoreIndicator = employee.alternativeStoreIndicator
             )
             val oneNote = NotificationValueObject(
                startDate = LocalDate.now(),

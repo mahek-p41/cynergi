@@ -1064,7 +1064,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       //TODO Need some sort of user for the below
-      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.company, user) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.company) == 0
 
       when:
       def result = post(path, new AuditCreateValueObject())

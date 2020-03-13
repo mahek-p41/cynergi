@@ -14,14 +14,12 @@ import com.cynergisuite.middleware.audit.status.AuditStatusCount
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -82,22 +80,21 @@ class AuditRepository @Inject constructor(
          astd.description                                              AS astd_description,
          astd.color                                                    AS astd_color,
          astd.localization_code                                        AS astd_localization_code,
-         auditActionEmployee.emp_id                                    AS auditEmployee_id,
-         auditActionEmployee.emp_number                                AS auditEmployee_number,
-         auditActionEmployee.emp_last_name                             AS auditEmployee_last_name,
-         auditActionEmployee.emp_first_name_mi                         AS auditEmployee_first_name_mi,
-         auditActionEmployee.emp_pass_code                             AS auditEmployee_pass_code,
-         auditActionEmployee.emp_active                                AS auditEmployee_active,
-         auditActionEmployee.emp_type                                  AS auditEmployee_type,
-         auditActionEmployee.emp_cynergi_system_admin                  AS auditEmployee_cynergi_system_admin,
-         auditActionEmployee.emp_alternative_store_indicator           AS auditEmployee_alternative_store_indicator,
-         auditActionEmployee.emp_alternative_area                      AS auditEmployee_alternative_area,
-         auditActionEmployee.dept_id                                   AS auditEmployeeDept_id,
-         auditActionEmployee.dept_code                                 AS auditEmployeeDept_code,
-         auditActionEmployee.dept_description                          AS auditEmployeeDept_description,
-         auditActionEmployee.dept_security_profile                     AS auditEmployeeDept_security_profile,
-         auditActionEmployee.dept_default_menu                         AS auditEmployeeDept_default_menu,
-         auditActionEmployee.store_number                              AS auditEmployee_store_number,
+         auditActionEmployee.emp_id                                    AS auditActionEmployee_id,
+         auditActionEmployee.emp_number                                AS auditActionEmployee_number,
+         auditActionEmployee.emp_last_name                             AS auditActionEmployee_last_name,
+         auditActionEmployee.emp_first_name_mi                         AS auditActionEmployee_first_name_mi,
+         auditActionEmployee.emp_pass_code                             AS auditActionEmployee_pass_code,
+         auditActionEmployee.emp_active                                AS auditActionEmployee_active,
+         auditActionEmployee.emp_type                                  AS auditActionEmployee_type,
+         auditActionEmployee.emp_cynergi_system_admin                  AS auditActionEmployee_cynergi_system_admin,
+         auditActionEmployee.dept_id                                   AS auditActionEmployeeDept_id,
+         auditActionEmployee.dept_code                                 AS auditActionEmployeeDept_code,
+         auditActionEmployee.dept_description                          AS auditActionEmployeeDept_description,
+         auditActionEmployee.dept_security_profile                     AS auditActionEmployeeDept_security_profile,
+         auditActionEmployee.dept_default_menu                         AS auditActionEmployeeDept_default_menu,
+         auditActionEmployee.emp_alternative_store_indicator           AS auditActionEmployee_alternative_store_indicator,
+         auditActionEmployee.emp_alternative_area                      AS auditActionEmployee_alternative_area,
          auditStore.id                                                 AS auditStore_id,
          auditStore.name                                               AS auditStore_name,
          auditStore.number                                             AS auditStore_number,
@@ -118,20 +115,13 @@ class AuditRepository @Inject constructor(
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
            JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-           JOIN division div ON comp.id = div.company_id
-           JOIN region reg ON div.id = reg.division_id
    """
 
    fun findOne(id: Long, company: Company): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
 
       val params = mutableMapOf<String, Any?>("id" to id)
-      val partialQuery = "${selectBaseQuery()}\nWHERE a.id = :id"
-
-      val whereBuilder = StringBuilder(partialQuery)
-
-      val query = whereBuilder.toString()
-
+      val query = "${selectBaseQuery()}\nWHERE a.id = :id"
       val found = executeFindSingleQuery(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
@@ -141,10 +131,7 @@ class AuditRepository @Inject constructor(
 
    fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
       val params = mutableMapOf<String, Any?>("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
-      val partialQuery = "${selectBaseQuery()}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
-
-      val whereBuilder = StringBuilder(partialQuery)
-      val query = whereBuilder.toString()
+      val query = "${selectBaseQuery()}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)
 
@@ -173,12 +160,11 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: AuditPageRequest, company: Company, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
+   fun findAll(pageRequest: AuditPageRequest, company: Company): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
       val whereBuilder = StringBuilder("WHERE a.company_id = :comp_id ")
-      val whereBuilder2 = StringBuilder(" WHERE")
       val from = pageRequest.from
       val thru = pageRequest.thru
 
@@ -196,12 +182,6 @@ class AuditRepository @Inject constructor(
       if (!status.isNullOrEmpty()) {
          params["current_status"] = status
          whereBuilder.append(" AND current_status IN (:current_status) ")
-      }
-
-      when (user.myAltStoreIndicator()) {
-         "N" -> whereBuilder.append(" AND auditActionEmployee.store_number = auditStore.number ")
-         "D" -> whereBuilder2.append(" auditEmployee_alternative_area = div.number ")
-         "R" -> whereBuilder2.append(" auditEmployee_alternative_area = reg.number ")
       }
 
       val sql = """
@@ -259,67 +239,63 @@ class AuditRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          )
          SELECT
-            a.id                                         AS a_id,
-            a.uu_row_id                                  AS a_uu_row_id,
-            a.time_created                               AS a_time_created,
-            a.time_updated                               AS a_time_updated,
-            a.store_number                               AS store_number,
-            a.number                                     AS a_number,
-            a.total_details                              AS a_total_details,
-            a.total_exceptions                           AS a_total_exceptions,
-            a.current_status                             AS current_status,
-            a.last_updated                               AS a_last_updated,
-            a.inventory_count                            AS a_inventory_count,
-            a.exception_has_notes                        AS a_exception_has_notes,
-            auditAction.id                               AS auditAction_id,
-            auditAction.uu_row_id                        AS auditAction_uu_row_id,
-            auditAction.time_created                     AS auditAction_time_created,
-            auditAction.time_updated                     AS auditAction_time_updated,
-            astd.id                                      AS astd_id,
-            astd.value                                   AS astd_value,
-            astd.description                             AS astd_description,
-            astd.color                                   AS astd_color,
-            astd.localization_code                       AS astd_localization_code,
-            auditActionEmployee.emp_id                   AS auditEmployee_id,
-            auditActionEmployee.emp_number               AS auditEmployee_number,
-            auditActionEmployee.emp_last_name            AS auditEmployee_last_name,
-            auditActionEmployee.emp_first_name_mi        AS auditEmployee_first_name_mi,
-            auditActionEmployee.emp_pass_code            AS auditEmployee_pass_code,
-            auditActionEmployee.emp_active               AS auditEmployee_active,
-            auditActionEmployee.emp_type                 AS auditEmployee_type,
-            auditActionEmployee.emp_cynergi_system_admin AS auditEmployee_cynergi_system_admin,
-            auditActionEmployee.emp_alternative_store_indicator AS auditEmployee_alternative_store_indicator,
-            auditActionEmployee.emp_alternative_area     AS auditEmployee_alternative_area,
-            auditActionEmployee.dept_id                  AS auditEmployeeDept_id,
-            auditActionEmployee.dept_code                AS auditEmployeeDept_code,
-            auditActionEmployee.dept_description         AS auditEmployeeDept_description,
-            auditActionEmployee.dept_security_profile    AS auditEmployeeDept_security_profile,
-            auditActionEmployee.dept_default_menu        AS auditEmployeeDept_default_menu,
-            auditActionEmployee.store_number             AS auditEmployee_store_number,
-            auditStore.id                                AS auditStore_id,
-            auditStore.name                              AS auditStore_name,
-            auditStore.number                            AS auditStore_number,
-            auditStore.dataset                           AS auditStore_dataset,
-            comp.id                                      AS comp_id,
-            comp.uu_row_id                               AS comp_uu_row_id,
-            comp.time_created                            AS comp_time_created,
-            comp.time_updated                            AS comp_time_updated,
-            comp.name                                    AS comp_name,
-            comp.doing_business_as                       AS comp_doing_business_as,
-            comp.client_code                             AS comp_client_code,
-            comp.client_id                               AS comp_client_id,
-            comp.dataset_code                            AS comp_dataset_code,
-            comp.federal_id_number                       AS comp_federal_id_number,
-            total_elements                               AS total_elements
+            a.id                                                AS a_id,
+            a.uu_row_id                                         AS a_uu_row_id,
+            a.time_created                                      AS a_time_created,
+            a.time_updated                                      AS a_time_updated,
+            a.store_number                                      AS store_number,
+            a.number                                            AS a_number,
+            a.total_details                                     AS a_total_details,
+            a.total_exceptions                                  AS a_total_exceptions,
+            a.current_status                                    AS current_status,
+            a.last_updated                                      AS a_last_updated,
+            a.inventory_count                                   AS a_inventory_count,
+            a.exception_has_notes                               AS a_exception_has_notes,
+            auditAction.id                                      AS auditAction_id,
+            auditAction.uu_row_id                               AS auditAction_uu_row_id,
+            auditAction.time_created                            AS auditAction_time_created,
+            auditAction.time_updated                            AS auditAction_time_updated,
+            astd.id                                             AS astd_id,
+            astd.value                                          AS astd_value,
+            astd.description                                    AS astd_description,
+            astd.color                                          AS astd_color,
+            astd.localization_code                              AS astd_localization_code,
+            auditActionEmployee.emp_id                          AS auditActionEmployee_id,
+            auditActionEmployee.emp_number                      AS auditActionEmployee_number,
+            auditActionEmployee.emp_last_name                   AS auditActionEmployee_last_name,
+            auditActionEmployee.emp_first_name_mi               AS auditActionEmployee_first_name_mi,
+            auditActionEmployee.emp_pass_code                   AS auditActionEmployee_pass_code,
+            auditActionEmployee.emp_active                      AS auditActionEmployee_active,
+            auditActionEmployee.emp_type                        AS auditActionEmployee_type,
+            auditActionEmployee.emp_cynergi_system_admin        AS auditActionEmployee_cynergi_system_admin,
+            auditActionEmployee.emp_alternative_store_indicator AS auditActionEmployee_alternative_store_indicator,
+            auditActionEmployee.emp_alternative_area            AS auditActionEmployee_alternative_area,
+            auditActionEmployee.dept_id                         AS auditActionEmployeeDept_id,
+            auditActionEmployee.dept_code                       AS auditActionEmployeeDept_code,
+            auditActionEmployee.dept_description                AS auditActionEmployeeDept_description,
+            auditActionEmployee.dept_security_profile           AS auditActionEmployeeDept_security_profile,
+            auditActionEmployee.dept_default_menu               AS auditActionEmployeeDept_default_menu,
+            auditStore.id                                       AS auditStore_id,
+            auditStore.name                                     AS auditStore_name,
+            auditStore.number                                   AS auditStore_number,
+            auditStore.dataset                                  AS auditStore_dataset,
+            comp.id                                             AS comp_id,
+            comp.uu_row_id                                      AS comp_uu_row_id,
+            comp.time_created                                   AS comp_time_created,
+            comp.time_updated                                   AS comp_time_updated,
+            comp.name                                           AS comp_name,
+            comp.doing_business_as                              AS comp_doing_business_as,
+            comp.client_code                                    AS comp_client_code,
+            comp.client_id                                      AS comp_client_id,
+            comp.dataset_code                                   AS comp_dataset_code,
+            comp.federal_id_number                              AS comp_federal_id_number,
+            total_elements                                      AS total_elements
          FROM audits a
               JOIN company comp ON a.company_id = comp.id
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
               JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              $whereBuilder2
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
@@ -357,14 +333,12 @@ class AuditRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company, user: User): List<AuditStatusCount> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company): List<AuditStatusCount> {
       val status = pageRequest.status
       val params = mutableMapOf<String, Any>("comp_id" to company.myId()!!)
       val storeNumbers = pageRequest.storeNumber
       val whereBuilderForStatusAndTimeCreated = StringBuilder()
       val whereBuilderForCompanyAndStore = StringBuilder("WHERE a.company_id = :comp_id ")
-      val whereBuilder = StringBuilder()
-      val whereBuilder2 = StringBuilder(" ")
       val from = pageRequest.from
       val thru = pageRequest.thru
       var where = " WHERE "
@@ -383,22 +357,13 @@ class AuditRepository @Inject constructor(
          whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csastd.value IN (:statuses) ")
       }
 
-      if (!storeNumbers.isNullOrEmpty()) {
+      if ( !storeNumbers.isNullOrEmpty() ) {
          params["store_numbers"] = storeNumbers
          whereBuilderForCompanyAndStore.append(" AND store_number IN (:store_numbers) ")
       }
 
-      when (user.myAltStoreIndicator()) {
-         "N" -> whereBuilder2.append("AND emp.store_number = auditStore.number ")
-         "D" -> whereBuilder2.append("AND emp.emp_alternative_area = div.number ")
-         "R" -> whereBuilder2.append("AND emp.emp_alternative_area = reg.number ")
-      }
-
       return jdbc.query("""
-         WITH employees AS (
-                  ${employeeRepository.employeeBaseQuery()}
-               ),
-            status AS (
+         WITH status AS (
             SELECT
                csastd.id AS current_status_id,
                csastd.value AS current_status,
@@ -426,14 +391,9 @@ class AuditRepository @Inject constructor(
             count(*) AS current_status_count
          FROM audit a
             JOIN company comp ON a.company_id = comp.id
-            JOIN employees emp ON comp.id = emp.comp_id
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-            JOIN division div ON comp.id = div.company_id
-            JOIN region reg ON div.id = reg.division_id
-         WHERE comp.id = :comp_id
-         $whereBuilder2
          $whereBuilderForCompanyAndStore
          GROUP BY status.current_status,
                   status.current_status_description,
@@ -596,29 +556,30 @@ class AuditRepository @Inject constructor(
 
    private fun mapAuditActionEmployee(rs: ResultSet): EmployeeEntity {
       return EmployeeEntity(
-         id = rs.getLong("auditEmployee_id"),
-         type = rs.getString("auditEmployee_type"),
-         number = rs.getInt("auditEmployee_number"),
+         id = rs.getLong("auditActionEmployee_id"),
+         type = rs.getString("auditActionEmployee_type"),
+         number = rs.getInt("auditActionEmployee_number"),
          company = mapCompany(rs),
-         lastName = rs.getString("auditEmployee_last_name"),
-         firstNameMi = rs.getString("auditEmployee_first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
-         passCode = rs.getString("auditEmployee_pass_code"),
+         lastName = rs.getString("auditActionEmployee_last_name"),
+         firstNameMi = rs.getString("auditActionEmployee_first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
+         passCode = rs.getString("auditActionEmployee_pass_code"),
          store = mapStore(rs),
-         active = rs.getBoolean("auditEmployee_active"),
+         active = rs.getBoolean("auditActionEmployee_active"),
          department = mapAuditActionEmployeeDepartment(rs),
-         cynergiSystemAdmin = rs.getBoolean("auditEmployee_cynergi_system_admin"),
-         altStoreIndicator = rs.getString("auditEmployee_alternative_store_indicator")
+         cynergiSystemAdmin = rs.getBoolean("auditActionEmployee_cynergi_system_admin"),
+         alternativeStoreIndicator = rs.getString("auditActionEmployee_alternative_store_indicator"),
+         alternativeArea = rs.getInt("auditActionEmployee_alternative_area")
       )
    }
 
    private fun mapAuditActionEmployeeDepartment(rs: ResultSet): DepartmentEntity? {
-      return if (rs.getString("auditEmployeeDept_id") != null) {
+      return if (rs.getString("auditActionEmployeeDept_id") != null) {
          DepartmentEntity(
-            id = rs.getLong("auditEmployeeDept_id"),
-            code = rs.getString("auditEmployeeDept_code"),
-            description = rs.getString("auditEmployeeDept_description"),
-            securityProfile = rs.getInt("auditEmployeeDept_security_profile"),
-            defaultMenu = rs.getString("auditEmployeeDept_default_menu"),
+            id = rs.getLong("auditActionEmployeeDept_id"),
+            code = rs.getString("auditActionEmployeeDept_code"),
+            description = rs.getString("auditActionEmployeeDept_description"),
+            securityProfile = rs.getInt("auditActionEmployeeDept_security_profile"),
+            defaultMenu = rs.getString("auditActionEmployeeDept_default_menu"),
             company = mapCompany(rs)
          )
       } else {

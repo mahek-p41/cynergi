@@ -61,7 +61,7 @@ class AuditService @Inject constructor(
    @Validated
    fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
-      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany(), user)
+      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany())
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
@@ -81,7 +81,7 @@ class AuditService @Inject constructor(
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest, user.myCompany(), user)
+         .findAuditStatusCounts(validPageRequest, user.myCompany())
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }

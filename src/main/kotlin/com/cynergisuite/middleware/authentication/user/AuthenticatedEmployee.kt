@@ -44,7 +44,7 @@ data class AuthenticatedEmployee(
          fallbackLocation = store,
          passCode = employee.passCode,
          cynergiSystemAdmin = employee.cynergiSystemAdmin,
-         altStoreIndicator = employee.altStoreIndicator
+         altStoreIndicator = employee.alternativeStoreIndicator
       )
 
    override fun myId(): Long = id

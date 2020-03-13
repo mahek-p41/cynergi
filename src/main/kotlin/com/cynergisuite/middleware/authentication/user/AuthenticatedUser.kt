@@ -46,7 +46,7 @@ data class AuthenticatedUser(
          company = employee.company,
          department = employee.department,
          location = overrideStore,
-         altStoreIndicator = employee.altStoreIndicator
+         altStoreIndicator = employee.alternativeStoreIndicator
       )
 
    override fun myId(): Long = id

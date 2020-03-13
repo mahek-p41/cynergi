@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
@@ -22,7 +21,7 @@ object EmployeeFactory {
    private val employeeNumberCounter = AtomicInteger(100_000)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, altStoreIndicator: String? = null): Stream<EmployeeEntity> {
+   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val name = faker.name()
@@ -49,7 +48,8 @@ object EmployeeFactory {
             company = company,
             department = departmentIn,
             store = storeIn,
-            altStoreIndicator = altStoreIndicator ?: "A"
+            alternativeStoreIndicator = alternativeStoreIndicatorIn ?: "A",
+            alternativeArea = alternativeAreaIn ?: 0
          )
       }
    }
@@ -98,7 +98,7 @@ class EmployeeFactoryService @Inject constructor(
                fallbackLocation = store,
                passCode = employee.passCode,
                cynergiSystemAdmin = employee.cynergiSystemAdmin,
-               altStoreIndicator = employee.altStoreIndicator
+               altStoreIndicator = employee.alternativeStoreIndicator
             )
          }
          .findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
@@ -125,7 +125,7 @@ class EmployeeFactoryService @Inject constructor(
                fallbackLocation = store,
                passCode = employee.passCode,
                cynergiSystemAdmin = employee.cynergiSystemAdmin,
-               altStoreIndicator = employee.altStoreIndicator
+               altStoreIndicator = employee.alternativeStoreIndicator
             )
          }
    }

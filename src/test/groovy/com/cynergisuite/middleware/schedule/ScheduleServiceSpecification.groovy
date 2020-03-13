@@ -33,7 +33,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       def result = scheduleService.runDaily(TUESDAY)
       //TODO Does the above in given create an AuthenticatedUser I can use here?
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company, user)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
 
       then:
       notThrown(Exception)
@@ -55,8 +55,8 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       when:
       def result = scheduleService.runDaily(WEDNESDAY)
       //TODO Does the above in given create an AuthenticatedUser I can use here?
-      def audit = auditRepository.findOneCreatedOrInProgress(storeOne, user)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company, user)
+      def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
 
       then:
       notThrown(Exception)

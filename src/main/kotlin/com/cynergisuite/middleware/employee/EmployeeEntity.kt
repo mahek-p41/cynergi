@@ -17,7 +17,8 @@ data class EmployeeEntity(
    val company: Company,
    val department: Department?,
    val store: StoreEntity?,
-   val altStoreIndicator: String
+   val alternativeStoreIndicator: String,
+   val alternativeArea: Int
 ) : Identifiable {
 
    constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
@@ -32,7 +33,8 @@ data class EmployeeEntity(
          company = company,
          department = department,
          store = store,
-         altStoreIndicator = vo.altStoreIndicator!!
+         alternativeStoreIndicator = vo.alternativeStoreIndicator!!,
+         alternativeArea = vo.alternativeArea!!
       )
 
    fun getEmpName() : String = "$firstNameMi $lastName"
