@@ -171,8 +171,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject, company: Company, user: User): AuditEntity {
-      //TODO Need to send user to this function
+   fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject, company: Company): AuditEntity {
       return auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
    }
 }

@@ -35,8 +35,6 @@ object AuditExceptionNoteFactory {
          )
       }
    }
-
-
 }
 
 @Singleton

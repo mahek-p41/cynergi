@@ -27,6 +27,7 @@ data class AuthenticatedUserInformation (
 
    @field:Schema(name = "alternativeArea", title = "alternative area to use for user access", description = "Number of the division or region an employee may access depending on alternativeStoreIndicator")
    val alternativeArea: Int? = null
+
 ) {
 
    constructor(user: User, loginStatus: String) :
@@ -35,6 +36,7 @@ data class AuthenticatedUserInformation (
          storeNumber = user.myLocation().myNumber(),
          loginStatus = loginStatus,
          dataset = user.myCompany().myDataset(),
-         alternativeStoreIndicator = user.myAlternativeStoreIndicator()
+         alternativeStoreIndicator = user.myAlternativeStoreIndicator(),
+         alternativeArea = user.myAlternativeArea()
       )
 }

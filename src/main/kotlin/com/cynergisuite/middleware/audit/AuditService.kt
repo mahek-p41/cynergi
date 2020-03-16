@@ -88,7 +88,6 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   //TODO Do we already check user store limits when creating an audit to make sure it is an allowed store?
    fun create(@Valid vo: AuditCreateValueObject, employee: User, locale: Locale): AuditValueObject {
       val validAudit = auditValidator.validateCreate(vo, employee)
       val audit = auditRepository.insert(validAudit)
@@ -152,7 +151,7 @@ class AuditService @Inject constructor(
 
    @Validated
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
-      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany(), user)
+      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany())
 
       return AuditSignOffAllExceptionsDataTransferObject(
          auditExceptionRepository.signOffAllExceptions(toSignOff, user)
