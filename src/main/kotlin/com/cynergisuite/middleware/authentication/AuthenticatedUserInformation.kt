@@ -13,19 +13,20 @@ data class AuthenticatedUserInformation (
    @field:Schema(name = "employeeNumber", title = "Employee Number", description = "System assigned number for an employee", required = true)
    val employeeNumber: String? = null,
 
-   @field:NotNull
    @field:Schema(name = "loginStatus", title = "Login status of user", description = "Describes if the state of the user", required = true)
    val loginStatus: String,
 
    @field:Schema(name = "storeNumber", title = "Session's store number", description = "User's store number that their session is associated with", required = true)
    val storeNumber: Int? = null,
 
-   @field:NotNull
    @field:Schema(name = "dataset", title = "Company dataset currently connected to", description = "Company dataset that data is being loaded from", required = true)
    val dataset: String? = null,
 
-   @field:Schema(name = "altStoreIndicator", title = "Alternate Store Indicator", description = "Indicates which other stores an employee may access", required = true)
-   val altStoreIndicator: String? = null
+   @field:Schema(name = "alternativeStoreIndicator", title = "Alternate Store Indicator", description = "Indicates which other stores an employee may access", required = true, allowableValues = ["A N R D"])
+   val alternativeStoreIndicator: String? = null,
+
+   @field:Schema(name = "alternativeArea", title = "alternative area to use for user access", description = "Number of the division or region an employee may access depending on alternativeStoreIndicator")
+   val alternativeArea: Int? = null
 ) {
 
    constructor(user: User, loginStatus: String) :
@@ -34,6 +35,6 @@ data class AuthenticatedUserInformation (
          storeNumber = user.myLocation().myNumber(),
          loginStatus = loginStatus,
          dataset = user.myCompany().myDataset(),
-         altStoreIndicator = user.myAlternativeStoreIndicator()
+         alternativeStoreIndicator = user.myAlternativeStoreIndicator()
       )
 }

@@ -163,8 +163,7 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
-      val auditWhereBuilder = StringBuilder(" WHERE a.company_id = :comp_id ")
-      val overallWhereBuilder = StringBuilder()
+      val whereBuilder = StringBuilder(" WHERE a.company_id = :comp_id ")
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
       val from = pageRequest.from
@@ -172,33 +171,33 @@ class AuditRepository @Inject constructor(
 
       when(user.myAlternativeStoreIndicator()) {
          "N" -> {
-            auditWhereBuilder.append(" WHERE a.store_number = :store_number ")
-            params["store_number"] = user.myAlternativeArea()
+            whereBuilder.append(" AND a.store_number = :store_number ")
+            params["store_number"] = user.myLocation().myNumber()
          }
          "R" -> {
-            auditWhereBuilder.append(" WHERE div.number = :division_number ")
-            params["division_number"] = user.myAlternativeArea()
+            whereBuilder.append(" AND reg.number = :region_number ")
+            params["region_number"] = user.myAlternativeArea()
          }
          "D" -> {
-            auditWhereBuilder.append(" WHERE reg.number = :region_number ")
-            params["region_number"] = user.myAlternativeArea()
+            whereBuilder.append(" AND div.number = :division_number ")
+            params["division_number"] = user.myAlternativeArea()
          }
       }
 
       if (!storeNumbers.isNullOrEmpty()) {
          params["store_numbers"] = storeNumbers
-         auditWhereBuilder.append(" AND a.store_number IN (:store_numbers) ")
+         whereBuilder.append(" AND a.store_number IN (:store_numbers) ")
       }
 
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         auditWhereBuilder.append(" AND a.time_created BETWEEN :from AND :thru ")
+         whereBuilder.append(" AND a.time_created BETWEEN :from AND :thru ")
       }
 
       if (!status.isNullOrEmpty()) {
          params["current_status"] = status
-         auditWhereBuilder.append(" AND current_status IN (:current_status) ")
+         whereBuilder.append(" AND current_status IN (:current_status) ")
       }
 
       val sql = """
@@ -243,11 +242,17 @@ class AuditRepository @Inject constructor(
                 FROM audit a
                     JOIN status s ON s.audit_id = a.id
                     JOIN maxStatus ms ON s.id = ms.current_status_id
-                $auditWhereBuilder) AS total_elements
+                    JOIN company comp ON a.company_id = comp.id
+                    JOIN division div ON comp.id = div.company_id
+                    JOIN region reg ON div.id = reg.division_id
+                $whereBuilder) AS total_elements
             FROM audit a
                  JOIN status s ON s.audit_id = a.id
                  JOIN maxStatus ms ON s.id = ms.current_status_id
-            $auditWhereBuilder
+                 JOIN company comp ON a.company_id = comp.id
+                 JOIN division div ON comp.id = div.company_id
+                 JOIN region reg ON div.id = reg.division_id
+            $whereBuilder
             ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          )
@@ -309,7 +314,6 @@ class AuditRepository @Inject constructor(
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
               JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-         $overallWhereBuilder
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 

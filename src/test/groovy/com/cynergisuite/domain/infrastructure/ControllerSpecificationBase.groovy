@@ -34,7 +34,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    void setup() {
       this.client = httpClient.toBlocking()
       this.tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      this.nineNineEightEmployee = userSetupEmployeeFactoryService.single(998, tstds1, 'man', 'super', 'pass', true, "A", 0)
+      this.nineNineEightEmployee = userSetupEmployeeFactoryService.single(998, tstds1, 'man', 'super', 'pass', true, 'A', 0)
       this.authenticatedEmployee = userService.fetchUserByAuthentication(nineNineEightEmployee.number, nineNineEightEmployee.passCode, tstds1.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       this.cynergiAccessToken = loginEmployee(authenticatedEmployee)
    }

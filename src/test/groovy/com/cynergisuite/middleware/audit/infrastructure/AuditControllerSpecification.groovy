@@ -357,9 +357,98 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeThreeFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[4].actions[0].changedBy.firstNameMi
    }
 
-   void "fetch all audits based on login" () {
-      expect:
-      1 == 2 // TODO make sure to add in checks for the possible values of alternative_store_indicator A N R D, A is already tested using the 998 user created
+   void "fetch all audits based on login with alt store indicator of 'N'" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final salesAssociate = departmentFactoryService.department('SA', company)
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final employeeStoreOneAltStoreN = employeeFactoryService.singleAuthenticated(company, storeOne, salesAssociate, false, 'N', 0) //should only be able to access audits for the store they are assigned
+      final employeeStoreThreeAltStoreN = employeeFactoryService.singleAuthenticated(company, storeThree, salesAssociate, false, 'N', 0) //should only be able to access audits for the store they are assigned
+      final employeeStoreOneAltStoreNAuth = loginEmployee(employeeStoreOneAltStoreN)
+      final employeeStoreThreeAltStoreNAuth = loginEmployee(employeeStoreThreeAltStoreN)
+      final storeOneAudit = auditFactoryService.single(storeOne)
+      final storeThreeAudit = auditFactoryService.single(storeThree)
+
+      when:
+      def audits = get(path, employeeStoreOneAltStoreNAuth)
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 1
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+
+      when:
+      audits = get(path, employeeStoreThreeAltStoreNAuth)
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 1
+      audits.elements[0].store.storeNumber == storeThree.number
+      audits.elements[0].id == storeThreeAudit.id
+
+      when:
+      audits = get(path) // use 998 which should see both audits
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 2
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+      audits.elements[1].store.storeNumber == storeThree.number
+      audits.elements[1].id == storeThreeAudit.id
+   }
+
+   void "fetch all audits based on login with alt store indicator of 'R'" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final regionalManager = departmentFactoryService.department('RM', company)
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final regionalManagerEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, regionalManager, false, 'R', regions[0].number) //should only be able to access audits for the store they are assigned
+      final regionalManagerEmployeeAuth = loginEmployee(regionalManagerEmployee)
+      final storeOneAudit = auditFactoryService.single(storeOne)
+      final storeThreeAudit = auditFactoryService.single(storeThree)
+
+      when:
+      def audits = get(path, regionalManagerEmployeeAuth) // use 998 which should see both audits
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 2
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+      audits.elements[1].store.storeNumber == storeThree.number
+      audits.elements[1].id == storeThreeAudit.id
+   }
+
+   void "fetch all audits based on login with alt store indicator of 'D'" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final executive = departmentFactoryService.department('EX', company)
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final executiveEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, executive, false, 'D', divisions[0].number) //should only be able to access audits for the store they are assigned
+      final executiveEmployeeAuth = loginEmployee(executiveEmployee)
+      final storeOneAudit = auditFactoryService.single(storeOne)
+      final storeThreeAudit = auditFactoryService.single(storeThree)
+
+      when:
+      def audits = get(path, executiveEmployeeAuth) // use 998 which should see both audits
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 2
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+      audits.elements[1].store.storeNumber == storeThree.number
+      audits.elements[1].id == storeThreeAudit.id
    }
 
    @Unroll
@@ -368,8 +457,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final def company = companyFactoryService.forDatasetCode('tstds1')
       final def storeOne = storeFactoryService.store(1, company)
       final def storeThree = storeFactoryService.store(3, company)
-      auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
-      auditFactoryService.stream(10, storeThree).collect { new AuditValueObject(it, locale, localizationService) }
+      auditFactoryService.stream(5, storeOne).forEach { }
+      auditFactoryService.stream(10, storeThree).forEach { }
 
       when:
       def storeFilterResult = get(path + new AuditPageRequest([page: 1, size: pageSizeIn, sortBy: 'id', storeNumber: storeNumberValuesIn]))
