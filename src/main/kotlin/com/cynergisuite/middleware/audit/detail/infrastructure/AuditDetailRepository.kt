@@ -143,16 +143,6 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_detail WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
-
-      logger.trace("Checking if AuditDetail: {} exists resulted in {}", id, exists)
-
-      return exists
-   }
-
-   fun doesNotExist(id: Long): Boolean = !exists(id)
-
    @Transactional
    fun insert(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Inserting audit_detail {}", entity)
