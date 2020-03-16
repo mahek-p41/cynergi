@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.audit.permission
 
 import com.cynergisuite.domain.Entity
-import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class AuditPermissionEntity(
    val id: Long? = null,

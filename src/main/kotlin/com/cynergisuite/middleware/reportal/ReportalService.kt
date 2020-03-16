@@ -10,15 +10,7 @@ import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
-import java.nio.file.attribute.PosixFilePermission
-import java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE
-import java.nio.file.attribute.PosixFilePermission.GROUP_READ
-import java.nio.file.attribute.PosixFilePermission.GROUP_WRITE
-import java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE
-import java.nio.file.attribute.PosixFilePermission.OTHERS_READ
-import java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE
-import java.nio.file.attribute.PosixFilePermission.OWNER_READ
-import java.nio.file.attribute.PosixFilePermission.OWNER_WRITE
+import java.nio.file.attribute.PosixFilePermission.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject

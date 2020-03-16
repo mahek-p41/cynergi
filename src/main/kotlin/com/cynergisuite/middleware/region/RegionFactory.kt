@@ -46,9 +46,6 @@ class RegionFactoryService @Inject constructor(
          .map { regionRepository.insert(it) }
 
    fun single(divisionIn: DivisionEntity): RegionEntity =
-      RegionFactory.stream(divisionIn = divisionIn)
-         .map { regionRepository.insert(it) }
-         .findFirst()
-         .orElseThrow { Exception("Unable to create RegionEntity") }
+      stream(division = divisionIn).findFirst().orElseThrow { Exception("Unable to create RegionEntity") }
 
 }

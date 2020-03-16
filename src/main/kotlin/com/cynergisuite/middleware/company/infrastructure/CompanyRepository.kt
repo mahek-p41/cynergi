@@ -9,8 +9,8 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
-import org.apache.commons.lang3.StringUtils.EMPTY
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper

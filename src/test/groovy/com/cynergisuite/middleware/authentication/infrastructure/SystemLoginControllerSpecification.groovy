@@ -4,8 +4,6 @@ import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
-import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -23,8 +21,6 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
    @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
-   @Inject StoreService storeService
-   @Inject StoreFactoryService storeFactoryService
 
    void "login successful with user who doesn't have department" () {
       given:

@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.verfication
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
-import com.cynergisuite.middleware.localization.NotUpdatable
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
+import com.cynergisuite.middleware.localization.NotUpdatable
 import javax.inject.Singleton
 
 @Singleton

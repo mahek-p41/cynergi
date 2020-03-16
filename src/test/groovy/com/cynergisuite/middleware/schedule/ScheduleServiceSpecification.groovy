@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
+
 import javax.inject.Inject
 
 import static java.time.DayOfWeek.TUESDAY
@@ -20,7 +20,6 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject ScheduleService scheduleService
-   @Inject StoreFactoryService storeFactoryService
 
    void "execute daily Tuesday audit job on Tuesday" () {
       given:

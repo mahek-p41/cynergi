@@ -2,11 +2,8 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
-
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -15,17 +12,19 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class StoreControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/store"
 
-   @Inject StoreFactoryService storeFactoryService
-
    void "fetch one store by id" () {
+      given:
+      final def company = companyFactoryService.forDatasetCode('tstds1')
+      final def store = storeFactoryService.store(3, company)
+
       when:
-      def result = get("$path/1")
+      def result = get("$path/$store.id")
 
       then:
       notThrown(HttpClientResponseException)
-      result.id == 1
-      result.storeNumber == 1
-      result.name == "KANSAS CITY"
+      result.id == store.id
+      result.storeNumber == store.number
+      result.name == store.name
    }
 
    void "fetch one store by id not found" () {

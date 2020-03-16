@@ -16,7 +16,6 @@ data class RegionEntity (
    val timeUpdated: OffsetDateTime = timeCreated,
    val number: Int,
    val name: String,
-   val managerNumber: Int,
    val description: String,
    val manager: Employee? = null,
    val division: DivisionEntity? = null
@@ -26,7 +25,7 @@ data class RegionEntity (
       CompareToBuilder()
          .append(this.name, other.name)
          .append(this.number, other.number)
-         .append(this.managerNumber, other.managerNumber)
+         .append(this.manager, other.manager)
          .append(this.description, other.description)
          .append(this.division, other.division)
          .toComparison()
@@ -44,7 +43,7 @@ data class RegionEntity (
                 .append(this.id, other.id)
                 .append(this.number, other.number)
                 .append(this.name, other.name)
-                .append(this.managerNumber, other.managerNumber)
+                .append(this.manager, other.manager)
                 .append(this.description, other.description)
                 .append(this.division, other.division)
                 .isEquals
@@ -59,7 +58,7 @@ data class RegionEntity (
          .append(this.id)
          .append(this.number)
          .append(this.name)
-         .append(this.managerNumber)
+         .append(this.manager)
          .append(this.description)
          .append(this.division)
          .toHashCode()
@@ -69,7 +68,7 @@ data class RegionEntity (
          id = this.id,
          number = this.number,
          name = this.name,
-         managerNumber = this.managerNumber,
+         manager = this.manager,
          description = this.description,
          division = this.division?.toValueObject()
       )

@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT

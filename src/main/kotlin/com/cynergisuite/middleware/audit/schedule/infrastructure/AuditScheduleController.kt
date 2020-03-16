@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException

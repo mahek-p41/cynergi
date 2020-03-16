@@ -5,7 +5,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
@@ -18,12 +17,12 @@ import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 import org.apache.commons.lang3.RandomUtils
+
+import javax.inject.Inject
 
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -36,12 +35,10 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    @Inject AuditDetailFactoryService auditDetailFactoryService
    @Inject AuditFactoryService auditFactoryService
-   @Inject AuditService auditService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
-   @Inject StoreFactoryService storeFactoryService
 
    //Passes
    void "fetch one audit detail by id" () {

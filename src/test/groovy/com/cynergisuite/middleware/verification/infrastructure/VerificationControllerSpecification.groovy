@@ -1,17 +1,11 @@
 package com.cynergisuite.middleware.verification.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.verfication.Verification
-import com.cynergisuite.middleware.verfication.VerificationValueObject
-import com.cynergisuite.middleware.verfication.VerificationReference
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.verfication.*
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationReferenceRepository
-import com.cynergisuite.middleware.verfication.VerificationDataLoaderService
-import com.cynergisuite.middleware.verfication.VerificationReferenceDataLoaderService
-import com.cynergisuite.middleware.verfication.VerificationReferenceTestDataLoader
-import com.cynergisuite.middleware.verfication.VerificationTestDataLoader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.javafaker.Faker
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException

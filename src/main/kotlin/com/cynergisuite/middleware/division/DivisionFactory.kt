@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.division
 
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
@@ -42,12 +41,9 @@ class DivisionFactoryService @Inject constructor(
 ) {
    fun stream(numberIn: Int = 1, company: CompanyEntity): Stream<DivisionEntity> =
       DivisionFactory.stream(numberIn, company)
-         .map { divisionRepository.insert(it, company) }
-
-   fun single(companyIn: CompanyEntity? = null): DivisionEntity =
-      DivisionFactory.stream(companyIn = companyIn)
          .map { divisionRepository.insert(it) }
-         .findFirst()
-         .orElseThrow { Exception("Unable to create DivisionEntity") }
+
+   fun single(companyIn: CompanyEntity): DivisionEntity =
+      stream(company = companyIn).findFirst().orElseThrow { Exception("Unable to create DivisionEntity") }
 
 }

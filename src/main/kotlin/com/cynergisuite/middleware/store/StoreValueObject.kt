@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.store
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.location.Location
-import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.RegionValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL

@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.division
 
 import com.cynergisuite.middleware.company.CompanyValueObject
+import com.cynergisuite.middleware.employee.Employee
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.Positive
 
@@ -18,8 +19,8 @@ data class DivisionValueObject(
    @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a division")
    var name: String? = null,
 
-   @field:Schema(name = "managerNumber", minimum = "1", required = true, nullable = false, description = "Manager number")
-   var managerNumber: Int? = null,
+   @field:Schema(name = "manager", required = false, nullable = true, description = "Division Manager")
+   var manager: Employee? = null,
 
    @field:Schema(name = "description", required = false, nullable = true, description = "Division description")
    var description: String? = null,

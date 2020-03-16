@@ -2,19 +2,14 @@ package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.company.CompanyValueObject
-import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
-import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
-import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter

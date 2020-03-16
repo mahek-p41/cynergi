@@ -4,8 +4,6 @@ import io.micronaut.context.Qualifier
 import io.micronaut.inject.BeanType
 import java.util.stream.Stream
 import javax.inject.Named
-import kotlin.streams.asSequence
-import kotlin.streams.asStream
 
 class DailyScheduleNameBeanQualifier(
    private val name: String

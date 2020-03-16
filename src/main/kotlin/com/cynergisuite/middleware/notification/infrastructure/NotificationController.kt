@@ -25,9 +25,7 @@ import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER
-import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
-import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
+import io.swagger.v3.oas.annotations.enums.ParameterIn.*
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse

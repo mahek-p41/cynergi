@@ -36,27 +36,28 @@ class DivisionRepository @Inject constructor(
             "manager_number" to entity.manager?.myNumber(),
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapRow(rs) }
+         RowMapper { rs, _ -> mapRow(rs, entity) }
       )
    }
 
    fun mapRowOrNull(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): DivisionEntity? {
       return if (!rs.getString("${columnPrefix}name").isNullOrEmpty()) {
-         mapRow(rs, columnPrefix)
+         mapRow(rs, null, columnPrefix)
       } else {
          null
       }
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
+   fun mapRow(rs: ResultSet, entity: DivisionEntity? = null, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         company = entity?.company,
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         manager = entity.manager,
+         manager = entity?.manager,
          description = rs.getString("${columnPrefix}description")
       )
 }

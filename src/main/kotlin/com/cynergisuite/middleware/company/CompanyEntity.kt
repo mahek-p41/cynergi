@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.middleware.region.RegionValueObject
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class CompanyEntity(
    val id: Long? = null,

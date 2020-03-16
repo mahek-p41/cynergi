@@ -68,9 +68,13 @@ data class DivisionEntity (
          id = this.id,
          number = this.number,
          name = this.name,
-         managerNumber = this.manager,
+         manager = this.manager,
          description = this.description,
          company = this.company?.toValueObject()
       )
    }
+
+   override fun myId(): Long? = id
+   override fun rowId(): UUID = uuRowId
+   override fun copyMe(): DivisionEntity = copy()
 }

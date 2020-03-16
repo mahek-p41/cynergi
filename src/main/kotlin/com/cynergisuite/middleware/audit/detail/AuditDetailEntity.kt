@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class AuditDetailEntity(
    val id: Long? = null,

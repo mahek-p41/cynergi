@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -22,7 +21,6 @@ import static java.time.DayOfWeek.*
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject ScheduleRepository scheduleRepository
-   @Inject StoreFactoryService storeFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch one"() {

@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTra
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -20,7 +20,6 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication

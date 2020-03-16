@@ -2,11 +2,10 @@ package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
-
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 data class VerificationAuto(
    val id: Long? = null,

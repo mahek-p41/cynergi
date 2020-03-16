@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObj
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
