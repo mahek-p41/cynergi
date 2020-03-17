@@ -43,68 +43,72 @@ class EmployeeRepository @Inject constructor(
       SELECT * FROM (
          SELECT * FROM (
             SELECT
-               1 AS from_priority,
-               emp.id AS emp_id,
-               'sysz' AS emp_type,
-               emp.number AS emp_number,
-               emp.last_name AS emp_last_name,
-               emp.first_name_mi AS emp_first_name_mi,
-               emp.pass_code AS emp_pass_code,
-               emp.active AS emp_active,
-               emp.department AS emp_department,
-               false AS emp_cynergi_system_admin,
-               comp.id AS comp_id,
-               comp.uu_row_id AS comp_uu_row_id,
-               comp.time_created AS comp_time_created,
-               comp.time_updated AS comp_time_updated,
-               comp.name AS comp_name,
-               comp.doing_business_as AS comp_doing_business_as,
-               comp.client_code AS comp_client_code,
-               comp.client_id AS comp_client_id,
-               comp.dataset_code AS comp_dataset_code,
-               comp.federal_id_number AS comp_federal_id_number,
-               dept.id AS dept_id,
-               dept.code AS dept_code,
-               dept.description AS dept_description,
-               dept.security_profile AS dept_security_profile,
-               dept.default_menu AS dept_default_menu,
-               store.id AS store_id,
-               store.number AS store_number,
-               store.name AS store_name
+               1                               AS from_priority,
+               emp.id                          AS emp_id,
+               'sysz'                          AS emp_type,
+               emp.number                      AS emp_number,
+               emp.last_name                   AS emp_last_name,
+               emp.first_name_mi               AS emp_first_name_mi,
+               emp.pass_code                   AS emp_pass_code,
+               emp.active                      AS emp_active,
+               emp.department                  AS emp_department,
+               false                           AS emp_cynergi_system_admin,
+               emp.alternative_store_indicator AS emp_alternative_store_indicator,
+               emp.alternative_area            AS emp_alternative_area,
+               comp.id                         AS comp_id,
+               comp.uu_row_id                  AS comp_uu_row_id,
+               comp.time_created               AS comp_time_created,
+               comp.time_updated               AS comp_time_updated,
+               comp.name                       AS comp_name,
+               comp.doing_business_as          AS comp_doing_business_as,
+               comp.client_code                AS comp_client_code,
+               comp.client_id                  AS comp_client_id,
+               comp.dataset_code               AS comp_dataset_code,
+               comp.federal_id_number          AS comp_federal_id_number,
+               dept.id                         AS dept_id,
+               dept.code                       AS dept_code,
+               dept.description                AS dept_description,
+               dept.security_profile           AS dept_security_profile,
+               dept.default_menu               AS dept_default_menu,
+               store.id                        AS store_id,
+               store.number                    AS store_number,
+               store.name                      AS store_name
             FROM fastinfo_prod_import.employee_vw emp
                JOIN company comp ON emp.dataset = comp.dataset_code
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
             UNION
             SELECT
-               2 AS from_priority,
-               emp.id AS emp_id,
-               'eli' AS emp_type,
-               emp.number AS emp_number,
-               emp.last_name AS emp_last_name,
-               emp.first_name_mi AS emp_first_name_mi,
-               emp.pass_code AS emp_pass_code,
-               emp.active AS emp_active,
-               emp.department AS emp_department,
-               emp.cynergi_system_admin AS emp_cynergi_system_admin,
-               comp.id AS comp_id,
-               comp.uu_row_id AS comp_uu_row_id,
-               comp.time_created AS comp_time_created,
-               comp.time_updated AS comp_time_updated,
-               comp.name AS comp_name,
-               comp.doing_business_as AS comp_doing_business_as,
-               comp.client_code AS comp_client_code,
-               comp.client_id AS comp_client_id,
-               comp.dataset_code AS comp_dataset_code,
-               comp.federal_id_number AS comp_federal_id_number,
-               dept.id AS dept_id,
-               dept.code AS dept_code,
-               dept.description AS dept_description,
-               dept.security_profile AS dept_security_profile,
-               dept.default_menu AS dept_default_menu,
-               store.id AS store_id,
-               store.number AS store_number,
-               store.name AS store_name
+               2                               AS from_priority,
+               emp.id                          AS emp_id,
+               'eli'                           AS emp_type,
+               emp.number                      AS emp_number,
+               emp.last_name                   AS emp_last_name,
+               emp.first_name_mi               AS emp_first_name_mi,
+               emp.pass_code                   AS emp_pass_code,
+               emp.active                      AS emp_active,
+               emp.department                  AS emp_department,
+               emp.cynergi_system_admin        AS emp_cynergi_system_admin,
+               emp.alternative_store_indicator AS emp_alternative_store_indicator,
+               emp.alternative_area            AS emp_alternative_area,
+               comp.id                         AS comp_id,
+               comp.uu_row_id                  AS comp_uu_row_id,
+               comp.time_created               AS comp_time_created,
+               comp.time_updated               AS comp_time_updated,
+               comp.name                       AS comp_name,
+               comp.doing_business_as          AS comp_doing_business_as,
+               comp.client_code                AS comp_client_code,
+               comp.client_id                  AS comp_client_id,
+               comp.dataset_code               AS comp_dataset_code,
+               comp.federal_id_number          AS comp_federal_id_number,
+               dept.id                         AS dept_id,
+               dept.code                       AS dept_code,
+               dept.description                AS dept_description,
+               dept.security_profile           AS dept_security_profile,
+               dept.default_menu               AS dept_default_menu,
+               store.id                        AS store_id,
+               store.number                    AS store_number,
+               store.name                      AS store_name
             FROM employee emp
                JOIN company comp ON emp.company_id = comp.id
                LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
@@ -115,7 +119,7 @@ class EmployeeRepository @Inject constructor(
    """
 
    fun findOne(user: User): EmployeeEntity? =
-      findOne(user.myId()!!, user.myEmployeeType(), user.myCompany())
+      findOne(user.myId(), user.myEmployeeType(), user.myCompany())
 
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
@@ -162,7 +166,7 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun exists(user: User): Boolean =
-      exists(user.myId()!!, user.myEmployeeType(), user.myCompany())
+      exists(user.myId(), user.myEmployeeType(), user.myCompany())
 
    fun exists(id: Long, employeeType: String, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
@@ -208,8 +212,8 @@ class EmployeeRepository @Inject constructor(
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id, alternative_store_indicator, alternative_area)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id, :alternative_store_indicator, :alternative_area)
          RETURNING
             *
          """.trimIndent(),
@@ -222,7 +226,9 @@ class EmployeeRepository @Inject constructor(
             "cynergi_system_admin" to entity.cynergiSystemAdmin,
             "company_id" to entity.company.myId(),
             "department" to entity.department?.myCode(),
-            "store_number" to entity.store?.number
+            "store_number" to entity.store?.number,
+            "alternative_store_indicator" to entity.alternativeStoreIndicator,
+            "alternative_area" to entity.alternativeArea
          ),
          RowMapper { rs, _ ->
             mapDDLRow(rs, entity.company, entity.department, entity.store)
@@ -244,7 +250,9 @@ class EmployeeRepository @Inject constructor(
          store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = departmentRepository.mapRowOrNull(rs, company, departmentColumnPrefix),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin")
+         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+         alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
+         alternativeArea = rs.getInt("${columnPrefix}alternative_area")
       )
    }
 
@@ -267,6 +275,8 @@ class EmployeeRepository @Inject constructor(
          cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
          company = company,
          department = department,
-         store = store
+         store = store,
+         alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
+         alternativeArea = rs.getInt("alternative_area")
       )
 }

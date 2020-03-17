@@ -25,8 +25,7 @@ private enum class JWTDetailKeys(
    EMPLOYEE_ID("id"),
    EMPLOYEE_TYPE("tp"),
    STORE_NUMBER("sn"),
-   COMPANY_ID("ci"),
-   DEPARTMENT("dp");
+   COMPANY_ID("ci");
 }
 
 @Singleton
@@ -51,7 +50,6 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
             ?.claim(EMPLOYEE_ID.key, userDetails.myId())
             ?.claim(EMPLOYEE_TYPE.key, userDetails.myEmployeeType())
             ?.claim(COMPANY_ID.key, userDetails.myCompany().myId())
-            ?.claim(DEPARTMENT.key, userDetails.myDepartment()?.myCode())
             ?.claim(STORE_NUMBER.key, userDetails.myLocation().myNumber())
       }
 
@@ -59,24 +57,12 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
    }
 
    fun reversePopulateWithUserDetails(authentication: Authentication): User {
-      logger.debug("Deserializing {} into an User {}", authentication)
-
       val employeeId = authentication.attributes[EMPLOYEE_ID.key]?.let { Objects.toString(it).toLong() } ?: throw Exception("Unable to find employee ID")
       val employeeType = authentication.attributes[EMPLOYEE_TYPE.key]?.let { Objects.toString(it) } ?: throw Exception("Unable to find employee type")
-      val employeeNumber = authentication.attributes["sub"].let { Objects.toString(it).toInt() } // sub is a subject which is encoded by the framework
+      val employeeNumber = authentication.attributes["sub"]?.let { Objects.toString(it).toInt() } ?: throw Exception("Uanble to find employee number")
       val companyId = authentication.attributes[COMPANY_ID.key]?.let { Objects.toString(it).toLong() } ?: throw Exception("Unable to find company ID")
-      val departmentCode = authentication.attributes[DEPARTMENT.key]?.let { Objects.toString(it) }
       val storeNumber = authentication.attributes[STORE_NUMBER.key]?.let { Objects.toString(it).toInt() } ?: throw Exception("Unable to find store number")
 
-      val (company, department, location) = authenticationRepository.findCredentialComponents(companyId, departmentCode, storeNumber)
-
-      return AuthenticatedUser(
-         id = employeeId,
-         type = employeeType,
-         number = employeeNumber,
-         company = company,
-         department = department,
-         location = location
-      )
+      return authenticationRepository.findUser(employeeId, employeeType, employeeNumber, companyId, storeNumber) // this should be cached so the lookup should only be required once per user login
    }
 }

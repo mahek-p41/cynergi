@@ -3,14 +3,13 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
+
 
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY
@@ -27,7 +26,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final employee = employeeFactoryService.single(store).with { new EmployeeUser(it, store) }
+      final employee = employeeFactoryService.single(store).with { new AuthenticatedEmployee(it.id, it, store) }
       final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
 
       when:
@@ -52,7 +51,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
-      final employee = employeeFactoryService.single(store1).with { new EmployeeUser(it, store1) }
+      final employee = employeeFactoryService.single(store1).with { new AuthenticatedEmployee(it.id, it, store1) }
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
 
       when:
@@ -85,7 +84,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new EmployeeUser(employee, store1), company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
 
       when:
       def result = auditScheduleService.processDaily(schedule)

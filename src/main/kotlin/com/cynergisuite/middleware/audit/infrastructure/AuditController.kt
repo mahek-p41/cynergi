@@ -70,7 +70,7 @@ class AuditController @Inject constructor(
       logger.info("Fetching Audit by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = auditService.fetchById(id = id, user = user, locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val response = auditService.fetchById(id = id, company = user.myCompany(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit by {} resulted in {}", id, response)
 

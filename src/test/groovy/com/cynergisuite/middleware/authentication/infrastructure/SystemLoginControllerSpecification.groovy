@@ -65,8 +65,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == employee.myEmployeeNumber().toString()
-      response.loginStatus == "${employee.myEmployeeNumber()} is now logged in"
+      response.employeeNumber == employee.number.toString()
+      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
@@ -111,8 +111,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == "${employee.myEmployeeNumber()}"
-      response.loginStatus == "${employee.myEmployeeNumber()} is now logged in"
+      response.employeeNumber == "${employee.number}"
+      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
@@ -270,8 +270,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == "${employee.myEmployeeNumber()}"
-      response.loginStatus == "${employee.myEmployeeNumber()} is now logged in"
+      response.employeeNumber == "${employee.number}"
+      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
