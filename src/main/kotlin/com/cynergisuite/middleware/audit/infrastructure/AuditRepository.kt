@@ -370,12 +370,12 @@ class AuditRepository @Inject constructor(
          and = " AND "
       }
 
-      if ( !status.isNullOrEmpty() ) {
-         params["statuses"] = status.asSequence().toList()
+      if (!status.isNullOrEmpty()) {
+         params["statuses"] = status
          whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csastd.value IN (:statuses) ")
       }
 
-      if ( !storeNumbers.isNullOrEmpty() ) {
+      if (!storeNumbers.isNullOrEmpty()) {
          params["store_numbers"] = storeNumbers
          whereBuilderForCompanyAndStore.append(" AND store_number IN (:store_numbers) ")
       }
