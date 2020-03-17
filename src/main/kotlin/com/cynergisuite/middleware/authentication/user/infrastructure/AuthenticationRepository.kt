@@ -32,6 +32,7 @@ class AuthenticationRepository @Inject constructor(
    private val postgresClient: PgPool
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticationRepository::class.java)
+
    /**
     * This method returns a PG Reactive Single Employee that is really meant to be used only for authentication as it
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
