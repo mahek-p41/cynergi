@@ -41,46 +41,48 @@ class AuditDetailRepository @Inject constructor(
          )
          SELECT
             auditDetail.id AS auditDetail_id,
-            auditDetail.uu_row_id              AS auditDetail_uu_row_id,
-            auditDetail.time_created           AS auditDetail_time_created,
-            auditDetail.time_updated           AS auditDetail_time_updated,
-            auditDetail.barcode                AS auditDetail_barcode,
-            auditDetail.product_code           AS auditDetail_product_code,
-            auditDetail.alt_id                 AS auditDetail_alt_id,
-            auditDetail.serial_number          AS auditDetail_serial_number,
-            auditDetail.inventory_brand        AS auditDetail_inventory_brand,
-            auditDetail.inventory_model        AS auditDetail_inventory_model,
-            auditDetail.audit_id               AS auditDetail_audit_id,
-            scannedBy.emp_id                   AS scannedBy_id,
-            scannedBy.emp_number               AS scannedBy_number,
-            scannedBy.emp_last_name            AS scannedBy_last_name,
-            scannedBy.emp_first_name_mi        AS scannedBy_first_name_mi,
-            scannedBy.emp_type                 AS scannedBy_type,
-            scannedBy.emp_pass_code            AS scannedBy_pass_code,
-            scannedBy.emp_active               AS scannedBy_active,
-            scannedBy.emp_cynergi_system_admin AS scannedBy_cynergi_system_admin,
-            scannedBy.store_id                 AS store_id,
-            scannedBy.store_number             AS store_number,
-            scannedBy.store_name               AS store_name,
-            scannedBy.comp_id                  AS comp_id,
-            scannedBy.comp_uu_row_id           AS comp_uu_row_id,
-            scannedBy.comp_time_created        AS comp_time_created,
-            scannedBy.comp_time_updated        AS comp_time_updated,
-            scannedBy.comp_name                AS comp_name,
-            scannedBy.comp_doing_business_as   AS comp_doing_business_as,
-            scannedBy.comp_client_code         AS comp_client_code,
-            scannedBy.comp_client_id           AS comp_client_id,
-            scannedBy.comp_dataset_code        AS comp_dataset_code,
-            scannedBy.comp_federal_id_number   AS comp_federal_id_number,
-            scannedBy.dept_id                  AS dept_id,
-            scannedBy.dept_code                AS dept_code,
-            scannedBy.dept_description         AS dept_description,
-            scannedBy.dept_security_profile    AS dept_security_profile,
-            scannedBy.dept_default_menu        AS dept_default_menu,
-            asatd.id                           AS asatd_id,
-            asatd.value                        AS asatd_value,
-            asatd.description                  AS asatd_description,
-            asatd.localization_code            AS asatd_localization_code
+            auditDetail.uu_row_id                     AS auditDetail_uu_row_id,
+            auditDetail.time_created                  AS auditDetail_time_created,
+            auditDetail.time_updated                  AS auditDetail_time_updated,
+            auditDetail.barcode                       AS auditDetail_barcode,
+            auditDetail.product_code                  AS auditDetail_product_code,
+            auditDetail.alt_id                        AS auditDetail_alt_id,
+            auditDetail.serial_number                 AS auditDetail_serial_number,
+            auditDetail.inventory_brand               AS auditDetail_inventory_brand,
+            auditDetail.inventory_model               AS auditDetail_inventory_model,
+            auditDetail.audit_id                      AS auditDetail_audit_id,
+            scannedBy.emp_id                          AS scannedBy_id,
+            scannedBy.emp_number                      AS scannedBy_number,
+            scannedBy.emp_last_name                   AS scannedBy_last_name,
+            scannedBy.emp_first_name_mi               AS scannedBy_first_name_mi,
+            scannedBy.emp_type                        AS scannedBy_type,
+            scannedBy.emp_pass_code                   AS scannedBy_pass_code,
+            scannedBy.emp_active                      AS scannedBy_active,
+            scannedBy.emp_cynergi_system_admin        AS scannedBy_cynergi_system_admin,
+            scannedBy.emp_alternative_store_indicator AS scannedBy_alternative_store_indicator,
+            scannedBy.emp_alternative_area            AS scannedBy_alternative_area,
+            scannedBy.store_id                        AS store_id,
+            scannedBy.store_number                    AS store_number,
+            scannedBy.store_name                      AS store_name,
+            scannedBy.comp_id                         AS comp_id,
+            scannedBy.comp_uu_row_id                  AS comp_uu_row_id,
+            scannedBy.comp_time_created               AS comp_time_created,
+            scannedBy.comp_time_updated               AS comp_time_updated,
+            scannedBy.comp_name                       AS comp_name,
+            scannedBy.comp_doing_business_as          AS comp_doing_business_as,
+            scannedBy.comp_client_code                AS comp_client_code,
+            scannedBy.comp_client_id                  AS comp_client_id,
+            scannedBy.comp_dataset_code               AS comp_dataset_code,
+            scannedBy.comp_federal_id_number          AS comp_federal_id_number,
+            scannedBy.dept_id                         AS dept_id,
+            scannedBy.dept_code                       AS dept_code,
+            scannedBy.dept_description                AS dept_description,
+            scannedBy.dept_security_profile           AS dept_security_profile,
+            scannedBy.dept_default_menu               AS dept_default_menu,
+            asatd.id                                  AS asatd_id,
+            asatd.value                               AS asatd_value,
+            asatd.description                         AS asatd_description,
+            asatd.localization_code                   AS asatd_localization_code
          FROM audit_detail auditDetail
               JOIN audit a ON auditDetail.audit_id = a.id
               JOIN company comp ON a.company_id = comp.id
@@ -140,16 +142,6 @@ class AuditDetailRepository @Inject constructor(
          totalElements = totalElements ?: 0
       )
    }
-
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_detail WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
-
-      logger.trace("Checking if AuditDetail: {} exists resulted in {}", id, exists)
-
-      return exists
-   }
-
-   fun doesNotExist(id: Long): Boolean = !exists(id)
 
    @Transactional
    fun insert(entity: AuditDetailEntity): AuditDetailEntity {

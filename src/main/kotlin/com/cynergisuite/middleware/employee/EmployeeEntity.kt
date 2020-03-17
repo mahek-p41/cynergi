@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.middleware.authentication.user.IdentifiableUser
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.store.StoreEntity
@@ -11,13 +11,15 @@ data class EmployeeEntity(
    val number: Int,
    val lastName: String,
    val firstNameMi: String?,
-   val passCode: String? = null,
+   val passCode: String,
    val active: Boolean,
    val cynergiSystemAdmin: Boolean = false,
    val company: Company,
    val department: Department?,
-   val store: StoreEntity?
-) : IdentifiableUser {
+   val store: StoreEntity?,
+   val alternativeStoreIndicator: String,
+   val alternativeArea: Int
+) : Employee {
 
    constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
       this(
@@ -26,17 +28,19 @@ data class EmployeeEntity(
          number = vo.number!!,
          lastName = vo.lastName!!,
          firstNameMi = vo.firstNameMi,
-         passCode = vo.passCode,
+         passCode = vo.passCode!!,
          active = vo.active!!,
          company = company,
          department = department,
-         store = store
+         store = store,
+         alternativeStoreIndicator = vo.alternativeStoreIndicator!!,
+         alternativeArea = vo.alternativeArea!!
       )
 
    fun getEmpName() : String = "$firstNameMi $lastName"
    fun displayName(): String = "$number - $lastName"
 
    override fun myId(): Long? = id
-   override fun myEmployeeType(): String = type
-   override fun myEmployeeNumber(): Int = number
+   override fun myNumber(): Int = number
+   override fun copyMe(): EmployeeEntity = copy()
 }

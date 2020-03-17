@@ -81,7 +81,7 @@ class AuditPageRequest(
          .append(this.status)
          .toHashCode()
 
-   protected override fun myNextPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
+   protected override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): AuditPageRequest =
       AuditPageRequest(
          page = page,
          size = size,
