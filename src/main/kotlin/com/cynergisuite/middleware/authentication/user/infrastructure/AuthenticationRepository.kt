@@ -2,12 +2,14 @@ package com.cynergisuite.middleware.authentication.user.infrastructure
 
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
@@ -24,11 +26,13 @@ import javax.inject.Singleton
 class AuthenticationRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository,
+   private val employeeRepository: EmployeeRepository,
    private val storeRepository: StoreRepository,
    private val passwordEncoderService: PasswordEncoderService,
    private val postgresClient: PgPool
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticationRepository::class.java)
+
    /**
     * This method returns a PG Reactive Single Employee that is really meant to be used only for authentication as it
     * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
@@ -48,6 +52,8 @@ class AuthenticationRepository @Inject constructor(
                   emp.active             AS emp_active,
                   false                  AS emp_cynergi_system_admin,
                   emp.pass_code          AS emp_pass_code,
+                  emp.alternative_store_indicator AS emp_alternative_store_indicator,
+                  emp.alternative_area   AS emp_alternative_area,
                   comp.id                AS comp_id,
                   comp.uu_row_id         AS comp_uu_row_id,
                   comp.time_created      AS comp_time_created,
@@ -83,6 +89,8 @@ class AuthenticationRepository @Inject constructor(
                   emp.active                  AS emp_active,
                   emp.cynergi_system_admin    AS emp_cynergi_system_admin,
                   emp.pass_code               AS emp_pass_code,
+                  emp.alternative_store_indicator AS emp_alternative_store_indicator,
+                  emp.alternative_area        AS emp_alternative_area,
                   comp.id                     AS comp_id,
                   comp.uu_row_id              AS comp_uu_row_id,
                   comp.time_created           AS comp_time_created,
@@ -145,7 +153,9 @@ class AuthenticationRepository @Inject constructor(
                location = employeeLocation,
                fallbackLocation = fallbackLocation,
                passCode = row.getString("emp_pass_code"),
-               cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin")
+               cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin"),
+               alternativeStoreIndicator = row.getString("emp_alternative_store_indicator"),
+               alternativeArea = row.getInteger("emp_alternative_area")
             )
          }
          .filter { employee ->
@@ -161,14 +171,23 @@ class AuthenticationRepository @Inject constructor(
          }
    }
 
-   @Throws(Exception::class)
    @Cacheable("creds-cache")
-   fun findCredentialComponents(companyId: Long, departmentCode: String?, storeNumber: Int): Triple<CompanyEntity, DepartmentEntity?, StoreEntity> {
-      val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company from authentication")
-      val department = if (departmentCode != null) departmentRepository.findOneByCodeAndDataset(departmentCode, company) else null
+   fun findUser(employeeId: Long, employeeType: String, employeeNumber: Int, companyId: Long, storeNumber: Int): AuthenticatedUser {
+      val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
+      val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
       val location = storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
+      val department = employee.department
 
-      return Triple(company, department, location)
+      return AuthenticatedUser(
+         id = employeeId,
+         type = employeeType,
+         number = employeeNumber,
+         company = company,
+         department = department,
+         location = location,
+         alternativeStoreIndicator = employee.alternativeStoreIndicator,
+         alternativeArea = employee.alternativeArea
+      )
    }
 
    private fun mapCompany(row: Row): Company {

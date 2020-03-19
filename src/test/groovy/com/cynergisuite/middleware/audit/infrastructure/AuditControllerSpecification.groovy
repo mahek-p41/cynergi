@@ -357,14 +357,108 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeThreeFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[4].actions[0].changedBy.firstNameMi
    }
 
+   void "fetch all audits based on login with alt store indicator of 'N'" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final salesAssociate = departmentFactoryService.department('SA', company)
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final employeeStoreOneAltStoreN = employeeFactoryService.singleAuthenticated(company, storeOne, salesAssociate, false, 'N', 0) //should only be able to access audits for the store they are assigned
+      final employeeStoreThreeAltStoreN = employeeFactoryService.singleAuthenticated(company, storeThree, salesAssociate, false, 'N', 0) //should only be able to access audits for the store they are assigned
+      final employeeStoreOneAltStoreNAuth = loginEmployee(employeeStoreOneAltStoreN)
+      final employeeStoreThreeAltStoreNAuth = loginEmployee(employeeStoreThreeAltStoreN)
+      final storeOneAudit = auditFactoryService.single(storeOne)
+      final storeThreeAudit = auditFactoryService.single(storeThree)
+
+      when:
+      def audits = get(path, employeeStoreOneAltStoreNAuth)
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 1
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+
+      when:
+      audits = get(path, employeeStoreThreeAltStoreNAuth)
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 1
+      audits.elements[0].store.storeNumber == storeThree.number
+      audits.elements[0].id == storeThreeAudit.id
+
+      when:
+      audits = get(path) // use 998 which should see both audits
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 2
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+      audits.elements[1].store.storeNumber == storeThree.number
+      audits.elements[1].id == storeThreeAudit.id
+   }
+
+   void "fetch all audits based on login with alt store indicator of 'R'" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final regionalManager = departmentFactoryService.department('RM', company)
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final regionalManagerEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, regionalManager, false, 'R', regions[0].number) //should only be able to access audits for the store they are assigned
+      final regionalManagerEmployeeAuth = loginEmployee(regionalManagerEmployee)
+      final storeOneAudit = auditFactoryService.single(storeOne)
+      final storeThreeAudit = auditFactoryService.single(storeThree)
+
+      when:
+      def audits = get(path, regionalManagerEmployeeAuth) // use 998 which should see both audits
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 2
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+      audits.elements[1].store.storeNumber == storeThree.number
+      audits.elements[1].id == storeThreeAudit.id
+   }
+
+   void "fetch all audits based on login with alt store indicator of 'D'" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final executive = departmentFactoryService.department('EX', company)
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final executiveEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, executive, false, 'D', divisions[0].number) //should only be able to access audits for the store they are assigned
+      final executiveEmployeeAuth = loginEmployee(executiveEmployee)
+      final storeOneAudit = auditFactoryService.single(storeOne)
+      final storeThreeAudit = auditFactoryService.single(storeThree)
+
+      when:
+      def audits = get(path, executiveEmployeeAuth) // use 998 which should see both audits
+
+      then:
+      notThrown(Exception)
+      audits.elements != null
+      audits.elements.size() == 2
+      audits.elements[0].store.storeNumber == storeOne.number
+      audits.elements[0].id == storeOneAudit.id
+      audits.elements[1].store.storeNumber == storeThree.number
+      audits.elements[1].id == storeThreeAudit.id
+   }
+
    @Unroll
    void "fetch all audits by store with storeNumber #storeNumberValuesIn" () {
       given:
       final def company = companyFactoryService.forDatasetCode('tstds1')
       final def storeOne = storeFactoryService.store(1, company)
       final def storeThree = storeFactoryService.store(3, company)
-      auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
-      auditFactoryService.stream(10, storeThree).collect { new AuditValueObject(it, locale, localizationService) }
+      auditFactoryService.stream(5, storeOne).forEach { }
+      auditFactoryService.stream(10, storeThree).forEach { }
 
       when:
       def storeFilterResult = get(path + new AuditPageRequest([page: 1, size: pageSizeIn, sortBy: 'id', storeNumber: storeNumberValuesIn]))
@@ -659,15 +753,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       when:
       def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
-                              .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
+         .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
 
       then:
       notThrown(HttpClientResponseException)
       countsResult.stream().filter({ it -> it.getStatus().getValue() == 'CREATED' })
-            .findFirst().map({ it -> it.count }).orElse(null) == createdCount
+         .findFirst().map({ it -> it.count }).orElse(null) == createdCount
 
       countsResult.stream().filter({ it -> it.getStatus().getValue() == 'IN-PROGRESS' })
-            .findFirst().map({ it -> it.count }).orElse(null) == inProgressCount
+         .findFirst().map({ it -> it.count }).orElse(null) == inProgressCount
 
       countsResult.stream().filter({ it -> it.getStatus().getValue() == 'COMPLETED' })
          .findFirst().map({ it -> it.count }).orElse(null) == completedCount
@@ -688,7 +782,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -722,7 +816,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -743,7 +837,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
@@ -1063,6 +1157,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+      //TODO Need some sort of user for the below
       auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.company) == 0
 
       when:
@@ -1072,7 +1167,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > audit.id
-      result.store.storeNumber == authenticatedEmployee.location.myNumber()
+      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"

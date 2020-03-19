@@ -65,33 +65,6 @@ class AuditDetailValidator @Inject constructor (
       )
    }
 
-   @Throws(ValidationException::class)
-   fun validateUpdate(vo: AuditDetailValueObject, company: Company): AuditDetailEntity {
-      logger.debug("Validating Update AuditDetail {}", vo)
-
-      doValidation { errors ->
-         val auditId = vo.audit!!.myId()!!
-         val id = vo.id
-
-         validateAudit(auditId, company, errors)
-         validateScanArea(vo.scanArea!!.value!!, errors)
-
-         if (id == null) {
-            errors.add(element = ValidationError("id", NotNull("id")))
-         } else if ( auditDetailRepository.doesNotExist(id)) {
-            errors.add(ValidationError("id", NotFound(id)))
-         }
-      }
-
-      val auditDetail = auditDetailRepository.findOne(vo.id!!, company) ?: throw NotFoundException(vo.id!!)
-
-      return auditDetailRepository.update(
-         auditDetail.copy(
-            scanArea = auditScanAreaRepository.findOne(vo.scanArea!!.value!!)!!
-         )
-      )
-   }
-
    private fun validateScanArea(scanAreaValue: String, errors: MutableSet<ValidationError>) {
       if ( !auditScanAreaRepository.exists(scanAreaValue) ) {
          errors.add(

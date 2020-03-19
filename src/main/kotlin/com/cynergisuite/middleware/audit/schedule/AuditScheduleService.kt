@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -132,14 +132,15 @@ class AuditScheduleService @Inject constructor(
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOne(arg.value.toInt(), company)!!
-            val employeeUser = EmployeeUser(
+            val employeeUser = AuthenticatedUser(
                id = employee.id!!,
                type = employee.type,
                number = employee.number,
                company = employee.company,
                department = employee.department,
                location = store,
-               passCode = employee.passCode!!
+               alternativeStoreIndicator = employee.alternativeStoreIndicator,
+               alternativeArea = employee.alternativeArea
             )
             val oneNote = NotificationValueObject(
                startDate = LocalDate.now(),

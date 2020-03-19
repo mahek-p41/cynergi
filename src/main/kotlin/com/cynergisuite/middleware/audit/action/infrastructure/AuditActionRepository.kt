@@ -35,7 +35,7 @@ class AuditActionRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "changed_by" to entity.changedBy.myEmployeeNumber(),
+            "changed_by" to entity.changedBy.number,
             "status_id" to entity.status.id,
             "audit_id" to parent.id
          ),

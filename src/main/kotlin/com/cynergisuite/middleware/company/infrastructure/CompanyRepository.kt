@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
+import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -142,6 +143,7 @@ class CompanyRepository @Inject constructor(
       }
    }
 
+   @Transactional
    fun insert(company: CompanyEntity): CompanyEntity {
       logger.debug("Inserting company {}", company)
 
