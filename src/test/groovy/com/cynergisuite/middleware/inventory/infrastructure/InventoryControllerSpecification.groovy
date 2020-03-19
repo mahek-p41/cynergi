@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
-
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
@@ -15,14 +13,17 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page without locationType" () {
       given:
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
+
       when:
-      def pageOneResult = get("${path}${pageOne}&extraParamter=one&exParamTwo=2")
+      def pageOneResult = get("${path}${pageOne}&extraParamter=one&exParamTwo=2", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)
       pageOneResult.locationType == null
-      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
+      pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
@@ -61,13 +62,16 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page with locationType" () {
       given:
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
+
       when:
-      def pageOneResult = get("${path}${pageOne}")
+      def pageOneResult = get("${path}${pageOne}", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
+      pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
       pageOneResult.requested.locationType == "STORE"
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
@@ -107,13 +111,16 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory with status of N" () {
       given:
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), inventoryStatus: ["N"]])
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N"]])
+
       when:
-      def pageOneResult = get("${path}${pageOne}")
+      def pageOneResult = get("${path}${pageOne}", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
+      pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
       pageOneResult.requested.inventoryStatus.size() == 1
       pageOneResult.requested.inventoryStatus == ["N"]
       pageOneResult.elements != null
@@ -153,14 +160,16 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by location type store"() {
       given:
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.location.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
 
       when:
-      def pageOneResult = get("${path}${pageOne}")
+      def pageOneResult = get("${path}${pageOne}", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)
-      pageOneResult.requested.storeNumber == authenticatedEmployee.location.myNumber()
+      pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
       pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
@@ -199,7 +208,9 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by existing barcode" () {
       when:
-      def inventory = get("${path}/1104000198")
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      def inventory = get("${path}/1104000198", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)

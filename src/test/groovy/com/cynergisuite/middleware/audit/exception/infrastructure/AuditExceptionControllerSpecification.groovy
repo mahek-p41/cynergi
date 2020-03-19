@@ -566,9 +566,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryModel == null
       result.scanArea.value == scanArea.value
       result.scanArea.description == scanArea.description
-      result.scannedBy.number == 111
-      result.scannedBy.lastName == 'MARTINEZ'
-      result.scannedBy.firstNameMi == 'DANIEL'
+      result.scannedBy.number == 998
+      result.scannedBy.lastName == 'man'
+      result.scannedBy.firstNameMi == 'super'
       result.audit.id == audit.myId()
    }
 

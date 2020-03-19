@@ -55,13 +55,13 @@ class AuditService @Inject constructor(
    private val reportalService: ReportalService
 ) {
 
-   fun fetchById(id: Long, user: User, locale: Locale): AuditValueObject? =
-      auditRepository.findOne(id, user.myCompany())?.let { AuditValueObject(it, locale, localizationService) }
+   fun fetchById(id: Long, company: Company, locale: Locale): AuditValueObject? =
+      auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
 
    @Validated
    fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
-      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user.myCompany())
+      val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user)
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)

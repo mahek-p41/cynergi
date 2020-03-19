@@ -4,13 +4,18 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.StoreEntity
+import io.micronaut.spring.tx.annotation.Transactional
 import io.reactiverse.reactivex.pgclient.Row
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.bouncycastle.util.Store
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -122,6 +127,23 @@ class StoreRepository @Inject constructor(
    }
 
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
+
+   @Transactional
+   fun assignToRegion(store: StoreEntity, region: RegionEntity): Pair<RegionEntity, StoreEntity> {
+      logger.trace("Assigning Store {} to Region {}", store, region)
+
+      jdbc.update("""
+         INSERT INTO region_to_store (region_id, store_number)
+         VALUES (:region_id, :store_number)
+         """.trimIndent(),
+         mapOf(
+            "region_id" to region.id,
+            "store_number" to store.number
+         )
+      )
+
+      return region to store
+   }
 
    fun mapRow(resultSet: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(

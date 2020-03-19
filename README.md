@@ -12,9 +12,38 @@ system that is intended to handle the 80% of a standard java development and dep
 Notepad or VIM to do your development as Gradle handles all the building outside of the development environment.
 
 ## Setup
-1. For Windows install follow instructions at [Java Dev Setup](http://gitlab.hightouchinc.com/garym/java-dev-setup)
-   1. This should have installed __adoptopenjdk8openj9__, if for some reason it did not open an admin
-      Powershell window and run `choco install adoptopenjdk8openj9`
+Depending on your OS/Hardware combo either Windows or MacOS you will need to setup some tools to be able to develop
+against the cynergi-middleware codebase.
+
+### Basic Windows setup
+1. Install [Chocolatey](https://chocolatey.org/) using their instructions
+2. Install Java from an admin prompt using `choco install adoptopenjdk8openj9`
+3. Install [Docker for Windows](https://www.docker.com/products/docker-desktop)
+4. Install [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) by following their
+   provided instructions.  Just use Ubuntu as it is the most supported by Microsoft at the moment.
+5. Install [Sdkman](https://sdkman.io/) inside of your WSL environment once you have finished step 3.
+6. Install [direnv](https://direnv.net/) inside of your WSL environment once you have finished step 3.
+   1. `sudo apt install direnv`
+   2. Make sure to add direnv to your shell's profile.
+      1. If you are using bash put `eval "$(direnv hook bash)"` at the end of __$HOME/.profile__ file
+      2. If you are using zsh put `eval "$(direnv hook zsh)"` at the end of your __$HOMe/.zshrc__ file
+   3. direnv is used in the cynergi-middleware project to make a collection of tools available to your terminal.
+7. Install Java using Sdkman inside your WSL environment
+   1. `sdk install java 8.0.242.j9-adpt`
+
+### Mac setup
+1. Install [Docker for Mac](https://www.docker.com/products/docker-desktop)
+2. Install [Homebrew](https://brew.sh/)
+3. Install Install [Sdkman](https://sdkman.io/)
+4. Install [direnv](https://direnv.net/) after installing Homebrew in step 2.
+   1. `brew install direnv`
+   2. Make sure to add direnv to your shell's profile.
+      1. If you are using bash put `eval "$(direnv hook bash)"` at the end of __$HOME/.profile__ file
+      2. If you are using zsh put `eval "$(direnv hook zsh)"` at the end of your __$HOMe/.zshrc__ file
+   3. direnv is used in the cynergi-middleware project to make a collection of tools available to your terminal.
+5. Install Java using Sdkman
+   1. `sdk install java 8.0.242.j9-adpt`
+### Intellij Setup
 2. Configure a default JDK that Intellij will use
    1. Assuming you have never used Intellij before it will come up with the "Welcome to Intellij IDEA" screen
    2. From the "Welcome" screen down in the lower right hand corner there is a "Configure" drop-down
@@ -24,9 +53,10 @@ Notepad or VIM to do your development as Gradle handles all the building outside
       config screen
    5. Under the "Project SDK" section the JDK needs to be configured.  (There may already be one configured or it might say "<NO SDK>")
    6. Click the "New... > +JDK" button next to the JDK selection drop-down
-   7. Navigate to where the JDK was installed from earlier and choose the directory that is where you pointed your JAVA_HOME
-      environment variable from Bash earlier.  On Windows it will be something like **C:\Program Files\AdoptOpenJDK\jdk-someversion-openj9**
-	  1. When choosing this make sure you choose the root of the directory as the way the tooling works the JDK is laid out in a
+   7. Navigate to where the JDK was installed.
+      1. On Windows it will be something like **C:\Program Files\AdoptOpenJDK\jdk-someversion-openj9**
+      2. On MacOS it will be something like __$HOME/.sdkman/candidates/java/8.0.*j9-adpt__
+	  3. When choosing this make sure you choose the root of the directory as the way the tooling works the JDK is laid out in a
 	     specific way.  Don't worry as Intellij checks to make sure it is valid before it makes that JDK available by
 	     verbally abusing you with a message like "No a valid JDK installation"
 7. Click "OK" to save those configurations
@@ -41,14 +71,37 @@ Notepad or VIM to do your development as Gradle handles all the building outside
     1. File > Settings > Build, Execution, Deployment > Gradle > Runner
     2. Check the "Delegate IDE build/run actions to gradle"
 
-## Run the database via Docker
+
+## Development environment
+[Direnv](https://direnv.net/) is used by cynerig-middleware to put a `cyn` command on your path whenever you change
+directory into __cynergi-middleware__ via your terminal.  `cyn` is simply a bash script located in the __support/.cyn/__
+directory and does pattern matching to to sub-scripts to provide functionality.  The `cyn` command searches under the
+__cynergi-middleware/support/cyn/commands__ directory for sub-commands to execute.  Each directory nesting is itself
+another sub-command.  Pattern matching is used, which means that as long as the collection of characters leading up and
+including a sub-command are unique the `cyn` command will know what script to execute.
+
+1. `cyn` with no arguments will give a listing of possible sub-commands tha can be called.
+   1. The above should give you something along the lines of
+      ```shell script
+      $ cyn
+      Script: cleanup.sh
+      Script: stop.sh
+      Dir: db
+      Dir: middleware
+      ```
+   2. If it says `Script: ` then all you need to do is provide that after the `cyn` command
+      1. For example `cyn stop` will execute the __cynergi-middleware/support/cyn/commands/stop.sh__ shell script
+
+## Run the database via cyn command hosted by Docker
 
 ### Local Database
+To start the local database `cyn db start dev`
+
 The Local database runs Postgres 9.3 via docker with 2 databases.  One is the **cynergidb** which is intended to survive
 restarts of the cynergi-middleware application.  The other is the **cynergidevelopdb** and is intended to be refreshed by the
-cynergi-middleware everytime it restarts.
+cynergi-middleware everytime it restarts.  This is as close to running production as can be achieved.  The databases
+require fastinfo dumps from a CST or production machine to operate.
 
-To run the local databases change directory to the */support* directory and execute the `./cynergi-dev-db.sh` script.
 
 #### cynergidb
 Local semi-persistent PostgreSQL database hosted by docker.  States of the database can be
@@ -59,12 +112,8 @@ captured via the pg_dump command.
    3. database: cynergidb
    4. user: postgres
    5. password: password
-2. Capturing snapshots
-   1. Within the */support* directory run the `./cynergi-dev-db-snapshot.sh` script
-   2. Snapshots are placed in the */support/docker/db/DatabaseDumps* directory
-3. Connecting to the database via psql
-   1. Within the */support* directory run the `./cynergi-dev-db-psql.sh` script
-   2. This script by default will connect you to the cynergidb database as the postgres user.
+2. Connecting to the database via psql
+   1. `cyn db psql dev cynergidb`
 
 #### cynergidevelopdb
 1. Connection Information
@@ -73,15 +122,12 @@ captured via the pg_dump command.
    3. database: cynergidevelopdb
    4. user: postgres
    5. password: password
+2. Connecting to the database via psql
+   1. `cyn db psql dev cynergidevelopdb`
 
-#### Managing Database state
-The scripts that manage the docker database manage states through restarts by reading for dump files housed in the
-*/support/docker/db/DatabaseDumps* directory.
-
-##### Dumps
+#### Dumps
 1. cynergidb.dump
-   1. This dump will be read when the db is started up.  It captures the previous state from when the
-      `./cynergi-dev-db-snapshot.sh` script was ran.
+   1. This dump will be read when the db is started up if it is available.
    2. If this file doesn't exist the cynergidb database will be empty after each successive restart of the docker
       container
 2. fastinfo.dump
@@ -89,15 +135,14 @@ The scripts that manage the docker database manage states through restarts by re
       The external source is most likely a CST machine (probably CST 137).  If this dump does not exist the database
       initialization scripts make a best effort to create tables that will stand-in for the tables required by the
       *cynergi-middleware*.
-   2. If this file doesn't exist the fastinfo_production database will be put into a basic state that full fills the
-      requirements of the cynergi-middleware SQL code.
+   2. If this file doesn't exist the fastinfo_production database will most likely not start up.
 
 ### Test Database
 A separate test database is used for integration testing via the Micronaut testing harness.  It runs in memory to
 do quicker loading and unloading of test data during a test run.  This database does not provide the ability to
 read snapshots of any kind as it is intended to be completely ephemeral.
 
-To run the local databases change directory to the */support* directory and execute the `./cynergi-test-db.sh` script.
+To start the local database `cyn db start test`
 
 1. Connection information
    1. port: 7432
@@ -106,11 +151,10 @@ To run the local databases change directory to the */support* directory and exec
    4. user: postgres
    5. password: password
 2. Connecting to the database via psql
-   1. Within the */support* directory run the `./cynergi-test-db-psql.sh ` script
-   2. This script by default will connect you to the cynergitestdb database as the postgres user.
+   1. `cyn db psql test`
 
-## To run from Intellij
-1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*
+## To run the application from Intellij
+1. Make sure the database is running via `cyn db start dev`
 2. Open up the `com.hightouchinc.cynergi.middleware.Application` class.
    1. Expand the src/main/kotlin source folder then navigate through the packages until you get to the `Application`
       class.
@@ -127,7 +171,7 @@ To run the local databases change directory to the */support* directory and exec
 ## To run from Command Line
 Note: This option is useful if you just want to run the application but aren't interested in doing any coding.
 
-1. Make sure the database is running via *cynergi-dev-environment/cynergi-dev-middleware.sh*
+1. Make sure the database is running via `cyn db start dev`
    1. Just leave this running in a separate terminal window
 2. Change directory to the root of the *cynergi-middleware* project using a bash prompt (IE Git Bash on Windows)
    1. Will want to do this in a new terminal window separate from where the *cynergi-dev-middleware.sh* script is being run
@@ -151,7 +195,7 @@ Code that will be deployed with the final application is all housed in the `src/
 in this directory will be compiled to Java bytecode via the Kotlin compiler that is configured in the gradle build
 script.  The primary language used for writing the business logic is [Kotlin](https://kotlinlang.org/).
 
-##### Coding Conventions TODO
+##### Coding Conventions
 
 ##### Resources
 Resources as defined in the scope of this application are plain text files that are not compiled, but loaded by the
@@ -179,25 +223,13 @@ to determining if a feature can be shipped as they will define the contract the 
 API is actually fulfilling that contract.
 
 ## Helpers
-* `./gradlew clean assemble openApiGenerate`
-
-## Support Scripts (deprecated)
-This project provides several scripts to make it easier to interact with the different Docker hosted databases.
-
-### Convention used for naming scripts
-There is a convention for these scripts that is hierarchical in nature starting with a root.
-1. `cynergi` - Intended as the "root" of a command structure
-1. `cleanup` - provides a cleanup functionality
-1. `db` - Will interact with one of the provided databases
-   1. `database`- Will interact with a defined database environment
-      1. `subcommand` - Execute a type of subcommand against that database environment
-         * If there is no environment specified in the script name before the `subcommand` to execute is provided it will be executed against the default database
-
-### Scripts
-1. `cynergi-db.sh` - Starts a Postgres Docker container that will host cynergidb, cynergidevelopdb, and fastinfo_production
-1. `cynergi-db-psql.sh` - Starts a Docker container with a psql prompt connected to the cynergidb database
-1. `cynergi-db-snapshot.sh` - Runs a Docker container that will execute a pg_dump against the cynergidb database and store the result in /support/development/db/DatabaseDumps/cynergidb.dump
-1. `cynergi-db-develop-psql.sh` - Starts a Docker container with a psql prompt connected to the cynergidevelopdb database
-1. `cynergi-db-fastinfo-snapshot.sh` - Runs a Docker container that will execute a pg_dump against the fastinfo_production database and store the result in /support/develoopment/db/DatabaseDumps/fastinfo.dump
-1. `cynergi-db-test.sh` - Starts a Postgres Docker container that will host the cynergitestdb and fastinfo_production databases in memory
-1. `cynergi-db.-test-psql.sh` - Starts a Docker container with the psql prompt connected to the cynergidtestdb database
+1. Generate API doc locally
+   * `./gradlew buildApiDocs`
+   * This will put a file in [./build/reports/openapi/index.html](./build/reports/openapi/index.html) that you can
+     open with a browser.
+2. Run migrations against the cynergidb database
+   * `./gradlew flywayMigrateCynergiDb`
+3. Run migrations against the cynergidevelopdb database
+   * `./gradlew flywayMigrateCynergiDevelopDb`
+2. Run migrations against the cynergitestdb database
+   * `./gradlew flywayMigrateCynergiTestDb`

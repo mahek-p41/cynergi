@@ -5,9 +5,8 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.Created
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
@@ -28,12 +27,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new EmployeeUser(employee, storeOne), company)
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0) // make ourselves a user who can see all audits
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), user)
 
       then:
       notThrown(Exception)
@@ -50,12 +50,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], new EmployeeUser(employee, storeOne), company)
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0) // make ourselves a user who can see all audits
+      final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
-      def audits = auditRepository.findAll(new AuditPageRequest(null), company)
+      def audits = auditRepository.findAll(new AuditPageRequest(null), user)
 
       then:
       notThrown(Exception)

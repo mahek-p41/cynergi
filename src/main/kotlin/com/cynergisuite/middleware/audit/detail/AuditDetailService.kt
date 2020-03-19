@@ -37,22 +37,11 @@ class AuditDetailService @Inject constructor(
       return found.toPage { transformEntity(it, locale) }
    }
 
-   fun exists(id: Long): Boolean =
-      auditDetailRepository.exists(id = id)
-
    @Validated
    fun create(auditId: Long, @Valid vo: AuditDetailCreateDataTransferObject, scannedBy: User, locale: Locale): AuditDetailValueObject {
       val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, vo)
 
       return transformEntity(auditDetailRepository.insert(auditDetail), locale)
-   }
-
-   @Validated
-   fun update(@Valid vo: AuditDetailValueObject, company: Company, locale: Locale): AuditDetailValueObject {
-      val auditDetail = auditDetailValidator.validateUpdate(vo, company)
-      val auditDetailUpdated = auditDetailRepository.update(auditDetail)
-
-      return transformEntity(auditDetailUpdated, locale)
    }
 
    private fun transformEntity(auditDetail: AuditDetailEntity, locale: Locale): AuditDetailValueObject {

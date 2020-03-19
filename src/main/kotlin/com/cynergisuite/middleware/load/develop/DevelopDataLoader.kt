@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.authentication.user.EmployeeUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -93,8 +93,8 @@ class DevelopDataLoader @Inject constructor(
       // setup store three signed off audits
       auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
 
-      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOne), EmployeeUser(storeOneEmployee, storeOne), companyTstds1)
-      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThree), EmployeeUser(storeThreeEmployee, storeThree), companyTstds1)
+      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOne), AuthenticatedEmployee(storeOneEmployee.id!!, storeOneEmployee, storeOne), companyTstds1)
+      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThree), AuthenticatedEmployee(storeThreeEmployee.id!!, storeThreeEmployee, storeThree), companyTstds1)
 
       logger.info("Finished loading develop data")
       logger.info("Store one employee {}", storeOneEmployee)
