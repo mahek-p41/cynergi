@@ -3,8 +3,8 @@ package com.cynergisuite.domain.infrastructure
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.division.DivisionEntity
-import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.division.DivisionFactoryService
+import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.RegionFactoryService
 import com.cynergisuite.middleware.store.StoreFactoryService
 import spock.lang.Specification

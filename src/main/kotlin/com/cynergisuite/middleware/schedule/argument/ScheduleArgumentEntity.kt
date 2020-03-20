@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.schedule.argument
 
 import com.cynergisuite.domain.Entity
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class ScheduleArgumentEntity(
    val id: Long? = null,

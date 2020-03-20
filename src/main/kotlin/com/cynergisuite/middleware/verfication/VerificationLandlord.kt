@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class VerificationLandlord (
    val id: Long? = null,

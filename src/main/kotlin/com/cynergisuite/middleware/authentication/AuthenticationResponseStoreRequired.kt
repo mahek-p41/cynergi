@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.authentication
 
 import io.micronaut.security.authentication.AuthenticationFailed
-import java.util.*
+import java.util.Optional
 
 class AuthenticationResponseStoreRequired(
    private val employeeNumber: Int

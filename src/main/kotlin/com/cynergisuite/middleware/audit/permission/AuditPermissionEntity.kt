@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.permission
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class AuditPermissionEntity(
    val id: Long? = null,

@@ -6,7 +6,7 @@ import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.*
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream

@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class AuditActionEntity (
    val id: Long? = null,

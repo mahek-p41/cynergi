@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class ScheduleEntity(
    val id: Long? = null,

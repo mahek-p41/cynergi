@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.region.infrastructure
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -23,41 +24,38 @@ class RegionRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(RegionRepository::class.java)
 
    @Transactional
-   fun insert(entity: RegionEntity): RegionEntity {
-      logger.debug("Inserting region {}", entity)
+   fun insert(region: RegionEntity): RegionEntity {
+      logger.debug("Inserting region {}", region)
       return jdbc.insertReturning(
          """
-               INSERT INTO public.region(division_id, number, name, manager_number, description)
+               INSERT INTO region(division_id, number, name, manager_number, description)
                VALUES (:division_id, :number, :name, :manager_number, :description)
                RETURNING *
             """.trimIndent(),
          mapOf(
-            "division_id" to entity.division?.id,
-            "number" to entity.number,
-            "name" to entity.name,
-            "manager_number" to entity.manager?.myNumber(),
-            "description" to entity.description
+            "division_id" to region.division.id,
+            "number" to region.number,
+            "name" to region.name,
+            "manager_number" to region.manager?.myNumber(),
+            "description" to region.description
          ),
-         RowMapper { rs, _ -> mapRowSimple(rs, StringUtils.EMPTY, entity) }
+         RowMapper { rs, _ -> mapRowSimple(rs, region) }
       )
    }
 
-   fun mapRow(rs: ResultSet): RegionEntity =
-      mapRow(rs, StringUtils.EMPTY)
-
-   fun mapRow(rs: ResultSet, columnPrefix: String): RegionEntity =
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         division = divisionRepository.mapRowOrNull(rs, "div_"),
+         division = divisionRepository.mapRow(rs, company, "div_"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )
 
-   fun mapRowSimple(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY, region: RegionEntity): RegionEntity =
+   fun mapRowSimple(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),

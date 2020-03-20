@@ -5,8 +5,7 @@ import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
-import java.util.*
-import kotlin.collections.LinkedHashSet
+import java.util.UUID
 
 data class AuditEntity(
    val id: Long? = null,

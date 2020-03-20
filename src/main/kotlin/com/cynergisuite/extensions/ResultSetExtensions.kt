@@ -3,7 +3,7 @@ package com.cynergisuite.extensions
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 fun ResultSet.getOffsetDateTime(columnLabel: String) : OffsetDateTime =
   this.getObject(columnLabel, OffsetDateTime::class.java)

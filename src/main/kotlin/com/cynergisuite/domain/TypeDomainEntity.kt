@@ -3,7 +3,7 @@ package com.cynergisuite.domain
 import com.cynergisuite.middleware.localization.LocalizationService
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.util.*
+import java.util.Locale
 
 interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Identifiable {
 

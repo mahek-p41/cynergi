@@ -15,7 +15,9 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static java.time.DayOfWeek.*
+import static java.time.DayOfWeek.FRIDAY
+import static java.time.DayOfWeek.MONDAY
+import static java.time.DayOfWeek.TUESDAY
 
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {

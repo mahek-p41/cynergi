@@ -18,13 +18,14 @@ object RegionFactory {
    private val regionNumberCounter = AtomicInteger(1)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, divisionIn: DivisionEntity?, regionalManager: EmployeeEntity? = null): Stream<RegionEntity> {
+   fun stream(numberIn: Int = 1, divisionIn: DivisionEntity, regionalManager: EmployeeEntity? = null): Stream<RegionEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
-      val name = faker.lorem().characters(5, 8).toUpperCase()
-      val description = "$name Region"
+      val lorem = faker.lorem()
 
       return IntStream.range(0, number).mapToObj {
+         val name = lorem.word().capitalize() + " Region"
+         val description = "$name Description"
          RegionEntity(
             name = name,
             number = regionNumberCounter.getAndIncrement(),

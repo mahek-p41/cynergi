@@ -1,6 +1,6 @@
 package com.cynergisuite.domain
 
-import java.util.*
+import java.util.UUID
 
 /**
  * Defines a simple contract for all Entity implementations where the database id can be retrieved in a generic manner.

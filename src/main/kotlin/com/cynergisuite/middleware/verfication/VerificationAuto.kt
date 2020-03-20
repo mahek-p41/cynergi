@@ -5,7 +5,7 @@ import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class VerificationAuto(
    val id: Long? = null,

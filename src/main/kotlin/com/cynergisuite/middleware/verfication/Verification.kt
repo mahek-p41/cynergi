@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.verfication
 import com.cynergisuite.domain.Entity
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.util.*
+import java.util.UUID
 
 data class Verification(
    val id: Long? = null,

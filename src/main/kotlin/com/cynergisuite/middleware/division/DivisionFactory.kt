@@ -17,12 +17,13 @@ object DivisionFactory {
    private val divisionNumberCounter = AtomicInteger(1)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, companyIn: CompanyEntity?, divisionalManager: EmployeeEntity? = null): Stream<DivisionEntity> {
+   fun stream(numberIn: Int = 1, companyIn: CompanyEntity, divisionalManager: EmployeeEntity? = null): Stream<DivisionEntity> {
       val faker = Faker()
-      val name = faker.lorem().characters(5, 8).toUpperCase()
-      val description = "$name Division"
+      val lorem = faker.lorem()
 
       return IntStream.range(0, numberIn).mapToObj {
+         val name = lorem.word().capitalize() + " Division"
+         val description = "$name Description"
          DivisionEntity(
             name = name,
             number = divisionNumberCounter.getAndIncrement(),

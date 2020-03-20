@@ -5,7 +5,6 @@ import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.store.StoreEntity
@@ -23,7 +22,6 @@ import javax.inject.Singleton
 @Singleton
 class StoreRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val companyRepository: CompanyRepository,
    private val regionRepository: RegionRepository
 ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
@@ -196,15 +194,6 @@ class StoreRepository @Inject constructor(
 
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): StoreEntity =
-      StoreEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         number = rs.getInt("${columnPrefix}number"),
-         name = rs.getString("${columnPrefix}name"),
-         company = companyRepository.mapRow(rs),
-         region = regionRepository.mapRow(rs)
-      )
-
    @Transactional
    fun assignToRegion(store: StoreEntity, region: RegionEntity): Pair<RegionEntity, StoreEntity> {
       logger.trace("Assigning Store {} to Region {}", store, region)
@@ -236,7 +225,7 @@ class StoreRepository @Inject constructor(
             number = rs.getInt("${columnPrefix}number"),
             name = rs.getString("${columnPrefix}name"),
             company = company,
-            region = regionRepository.mapRow(rs, "reg_")
+            region = regionRepository.mapRow(rs, company, "reg_")
          )
 
 

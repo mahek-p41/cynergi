@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.notification
 import com.cynergisuite.domain.Entity
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class Notification (
    val id: Long? = null,

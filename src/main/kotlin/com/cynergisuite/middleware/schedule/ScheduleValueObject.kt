@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentValueObject
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeValueObject
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject
 import io.swagger.v3.oas.annotations.media.Schema
-import java.util.*
+import java.util.Locale
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive

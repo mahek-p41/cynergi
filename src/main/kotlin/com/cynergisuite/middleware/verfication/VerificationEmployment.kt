@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class VerificationEmployment(
    val id: Long? = null,

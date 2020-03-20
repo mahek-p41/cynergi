@@ -49,7 +49,7 @@ class DevelopDataLoader @Inject constructor(
 
       val divisions = companies.map { company ->  divisionFactoryService.single(company) }.toList()
       val regions = divisions.map { division -> regionFactoryService.single(division) }.toList()
-      regions.map { region -> storeFactoryService.companyStoresToRegionWithDevData(region.division?.company as Company, region).toList() }
+      regions.map { region -> storeFactoryService.companyStoresToRegionWithDevData(region.division.company as Company, region).toList() }
 
       val store1Corrto = storeFactoryService.store(1, companyCorrto)
       val store3Corrto = storeFactoryService.store(3, companyCorrto)

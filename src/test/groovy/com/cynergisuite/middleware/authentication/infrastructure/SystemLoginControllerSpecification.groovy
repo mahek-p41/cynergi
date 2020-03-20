@@ -12,7 +12,9 @@ import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpRequest.*
+import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.HEAD
+import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 

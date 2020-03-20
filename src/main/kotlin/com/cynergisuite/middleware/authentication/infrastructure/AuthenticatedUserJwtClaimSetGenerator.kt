@@ -1,6 +1,9 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.*
+import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.COMPANY_ID
+import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.EMPLOYEE_ID
+import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.EMPLOYEE_TYPE
+import com.cynergisuite.middleware.authentication.infrastructure.JWTDetailKeys.STORE_NUMBER
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.user.infrastructure.AuthenticationRepository
 import com.nimbusds.jwt.JWTClaimsSet.Builder
@@ -14,7 +17,7 @@ import io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator
 import io.micronaut.security.token.jwt.generator.claims.JwtIdGenerator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.Objects
 import javax.inject.Inject
 import javax.inject.Singleton
 

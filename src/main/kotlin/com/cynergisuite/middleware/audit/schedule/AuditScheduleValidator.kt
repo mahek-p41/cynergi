@@ -15,7 +15,7 @@ import com.cynergisuite.middleware.schedule.type.WEEKLY
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import java.util.*
+import java.util.Locale
 import javax.inject.Singleton
 
 @Singleton

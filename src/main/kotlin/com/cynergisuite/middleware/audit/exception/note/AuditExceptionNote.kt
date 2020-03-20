@@ -5,7 +5,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 data class AuditExceptionNote(
    val id: Long? = null,

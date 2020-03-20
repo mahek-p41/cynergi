@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.division.infrastructure
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
@@ -25,12 +27,12 @@ class DivisionRepository @Inject constructor(
       logger.debug("Inserting division {}", entity)
       return jdbc.insertReturning(
          """
-               INSERT INTO public.division(company_id, number, name, manager_number, description)
+               INSERT INTO division(company_id, number, name, manager_number, description)
                VALUES (:company_id, :number, :name, :manager_number, :description)
                RETURNING *
             """.trimIndent(),
          mapOf(
-            "company_id" to entity.company?.id,
+            "company_id" to entity.company.id,
             "number" to entity.number,
             "name" to entity.name,
             "manager_number" to entity.manager?.myNumber(),
@@ -40,24 +42,28 @@ class DivisionRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): DivisionEntity? {
-      return if (!rs.getString("${columnPrefix}name").isNullOrEmpty()) {
-         mapRow(rs, null, columnPrefix)
-      } else {
-         null
-      }
-   }
-
-   fun mapRow(rs: ResultSet, entity: DivisionEntity? = null, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         company = entity?.company,
+         company = company as CompanyEntity,
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         manager = entity?.manager,
+         description = rs.getString("${columnPrefix}description")
+      )
+
+   fun mapRow(rs: ResultSet, division: DivisionEntity, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
+      DivisionEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         company = division.company,
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         manager = division.manager,
          description = rs.getString("${columnPrefix}description")
       )
 }
