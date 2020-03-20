@@ -53,6 +53,18 @@ object StoreFactory {
          number = 5,
          name = "Bainbridge Trading Post",
          company = CompanyFactory.tstds2()
+      ),
+      StoreEntity(
+         id = 9,
+         number = 9000,
+         name = "HOME OFFICE",
+         company = CompanyFactory.tstds1()
+      ),
+      StoreEntity(
+         id = 10,
+         number = 9000,
+         name = "HOME OFFICE",
+         company = CompanyFactory.tstds2()
       )
    )
 

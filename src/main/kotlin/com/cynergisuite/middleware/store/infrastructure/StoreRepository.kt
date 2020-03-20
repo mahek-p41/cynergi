@@ -63,51 +63,9 @@ class StoreRepository @Inject constructor(
             division.company_id AS div_company_id
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
-              LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
-				  LEFT JOIN region on region.id = r2s.region_id
+              JOIN region_to_store r2s ON r2s.store_number = store.number
+				  JOIN region on region.id = r2s.region_id
 				  JOIN division on (region.division_id = division.id AND division.company_id = comp.id)
-      """
-   }
-
-   private fun selectQueryForCompany9000(): String {
-      return """
-         SELECT
-            store.id AS id,
-            store.number AS number,
-            store.name AS name,
-            comp.id AS comp_id,
-            comp.uu_row_id AS comp_uu_row_id,
-            comp.time_created AS comp_time_created,
-            comp.time_updated AS comp_time_updated,
-            comp.name AS comp_name,
-            comp.doing_business_as AS comp_doing_business_as,
-            comp.client_code AS comp_client_code,
-            comp.client_id AS comp_client_id,
-            comp.dataset_code AS comp_dataset_code,
-            comp.federal_id_number,
-            region.id AS reg_id,
-            region.uu_row_id AS reg_uu_row_id,
-            region.time_created AS reg_time_created,
-            region.time_updated AS reg_time_updated,
-            region.division_id AS reg_division_id,
-            region."number" AS reg_number,
-            region.name AS reg_name,
-            region.manager_number AS reg_manager_number,
-            region.description AS reg_description,
-            division.id AS div_id,
-            division.uu_row_id AS div_uu_row_id,
-            division.time_created AS div_time_created,
-            division.time_updated AS div_time_updated,
-            division."number" AS div_number,
-            division.name AS div_name,
-            division.manager_number AS div_manager_number,
-            division.description AS div_description,
-            division.company_id AS div_company_id
-         FROM fastinfo_prod_import.store_vw store
-              JOIN company comp ON comp.dataset_code = store.dataset
-              LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
-				  LEFT JOIN region on region.id = r2s.region_id
-				  LEFT JOIN division on region.division_id = division.id
       """
    }
 
@@ -123,11 +81,7 @@ class StoreRepository @Inject constructor(
 
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
-      val query = if (number == 9000) {
-         "${selectQueryForCompany9000()} WHERE store.number = :number AND comp.id = :comp_id"
-      } else {
-         "${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id"
-      }
+      val query = "${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
