@@ -24,10 +24,14 @@ object ShipViaFactory {
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
             description = lorem.characters(3, 30),
-            number = random.nextInt(1, 1000),
             company = company
          )
       }
+   }
+
+   @JvmStatic
+   fun single(company: Company): ShipViaEntity {
+      return stream(company = company).findFirst().orElseThrow { Exception("Unable to create ShipViaEntity") }
    }
 }
 

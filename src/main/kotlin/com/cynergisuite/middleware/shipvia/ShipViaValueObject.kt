@@ -20,7 +20,6 @@ data class ShipViaValueObject(
    @field:Schema(name = "description", minimum = "1", maximum = "30", description = "Describes the Ship Via")
    var description: String? = null,
 
-   @field:NotNull
    @field:Positive
    @field:Schema(name = "number", minimum = "1", required = false, description = "Ship Via Number")
    var number: Int? = null

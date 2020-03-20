@@ -56,6 +56,7 @@ class ShipViaRepository @Inject constructor(
       return jdbc.queryPaged("""
          ${baseSelectQuery()}
          WHERE comp.id = :comp_id
+         ORDER BY shipVia.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
@@ -84,10 +85,9 @@ class ShipViaRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO ship_via(description, number, company_id)
+         INSERT INTO ship_via(description, company_id)
          VALUES (
             :description,
-            :number,
             :comp_id
          )
          RETURNING
@@ -95,7 +95,6 @@ class ShipViaRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "description" to entity.description,
-            "number" to entity.number,
             "comp_id" to entity.company.myId()
          ),
          RowMapper { rs, _ ->
@@ -119,8 +118,7 @@ class ShipViaRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE ship_via
          SET
-            description = :description,
-            number = :number
+            description = :description
          WHERE id = :id
          RETURNING
             *
