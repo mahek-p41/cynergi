@@ -141,7 +141,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
    void "post valid shipVia"() {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = ShipViaFactory.single(company)
+      final shipVia = ShipViaFactory.single(company).with { new ShipViaValueObject(it) }
 
       when:
       def response = post("$path/", shipVia)
@@ -174,7 +174,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid shipVia"() {
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, "test description", it.id.toInteger())}
+      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it.id, "test description", null) }
 
       when:
       def response = put("$path/", shipVia)
@@ -183,7 +183,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id != null
       response.id > 0
       response.description == "test description"
-      response.number == shipVia.number
+      response.number == shipVia.id
    }
 
    void "put invalid shipVia"(){
