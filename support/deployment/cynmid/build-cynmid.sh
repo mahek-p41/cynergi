@@ -11,10 +11,10 @@ export POSTGRES_REACTIVE_CLIENT_HOST=cynergitestdeploydb
 cd /home/jenkins/cynergi-middleware
 ./gradlew --no-daemon --stacktrace clean test jacocoTestReport buildApiDocs shadowJar
 
-if [[ $(git rev-parse --abbrev-ref HEAD) -eq "develop" ]]; then
-  echo "I am on develop"
+if [ $(git rev-parse --abbrev-ref HEAD) = "develop" ]; then
+  export MICRONAUT_ENV="cstdevelop"
 else
-  echo "I'm not on develop"
+  export MICRONAUT_ENV="prod"
 fi
 
 mkdir -p /opt/cyn/v01/cynmid/data/
@@ -22,6 +22,7 @@ cp /home/jenkins/cynergi-middleware/support/deployment/cyndsets-parse.sh /opt/cy
 chmod u+x /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
 cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.httpd.conf /opt/cyn/v01/cynmid/cynergi-middleware.httpd.conf
 sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g" /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.conf > /opt/cyn/v01/cynmid/cynergi-middleware.conf
+sed "s/@@MICRONAUT_ENV@@/${MICRONAUT_ENV}/g" /opt/cyn/v01/cynmid/cynergi-middleware.conf > /opt/cyn/v01/cynmid/cynergi-middleware.conf
 cp /home/jenkins/cynergi-middleware/support/deployment/postgres-started.service /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/support/deployment/setup-database.sql /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware*-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
