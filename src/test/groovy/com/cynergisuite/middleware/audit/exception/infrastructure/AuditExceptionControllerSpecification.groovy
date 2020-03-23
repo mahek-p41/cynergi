@@ -375,7 +375,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryBrand == inventoryItem.brand
       result.inventoryModel == inventoryItem.modelNumber
       result.exceptionCode == exceptionCode
-      result.signedOff == false
+      result.approved == false
       result.notes.size() == 0
       result.audit.id == audit.id
    }
@@ -414,7 +414,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryBrand == inventoryItem.brand
       result.inventoryModel == inventoryItem.modelNumber
       result.exceptionCode == exceptionCode
-      result.signedOff == false
+      result.approved == false
       result.notes.size() == 0
       result.audit.id == audit.id
    }
@@ -449,7 +449,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryBrand == inventoryItem.brand
       result.inventoryModel == inventoryItem.modelNumber
       result.exceptionCode == exceptionCode
-      result.signedOff == false
+      result.approved == false
       result.notes.size() == 0
       result.audit.id == audit.id
    }
@@ -621,7 +621,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryModel == savedAuditException.inventoryModel
       result.exceptionCode == savedAuditException.exceptionCode
       new EmployeeValueObject(result.scannedBy) == new EmployeeValueObject(savedAuditException.scannedBy)
-      result.signedOff == savedAuditException.signedOff
+      result.approved == savedAuditException.approved
       result.notes.size() == 1
       result.notes[0].id != null
       result.notes[0].id > 0
@@ -629,7 +629,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.audit.id == savedAuditException.audit.myId()
    }
 
-   void "update signed-off audit exception with a new note" () {
+   void "update approved audit exception with a new note" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
@@ -647,10 +647,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].message == "Audit Exception ${String.format('%,d', savedAuditException.id)} has already been Signed Off. No new notes allowed"
+      response[0].message == "Audit Exception ${String.format('%,d', savedAuditException.id)} has already been Approved. No new notes allowed"
    }
 
-   void "update audit exception to signed-off" () {
+   void "update audit exception to approved" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
@@ -660,15 +660,15 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
-      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: true]))
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, approved: true]))
 
       then:
       notThrown(HttpClientResponseException)
       result.id == auditException.id
-      result.signedOff == true
+      result.approved == true
    }
 
-   void "update audit without note or signedOff" () {
+   void "update audit without note or approved" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
@@ -678,23 +678,23 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
-      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: null, note: null]))
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, approved: null, note: null]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].message == "Audit update requires either signed off or a note"
+      response[0].message == "Audit update requires either approved or a note"
    }
 
-   void "update audit exception that has been signed-off" () {
+   void "update audit exception that has been approved" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.approved()] as Set)
       final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
@@ -706,7 +706,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final response = e.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} has already been Signed Off. No new notes allowed", null)
+         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} has already been Approved. No new notes allowed", null)
       ]
    }
 }

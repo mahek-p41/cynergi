@@ -8,20 +8,19 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.status.SIGNED_OFF
+import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
-import com.cynergisuite.middleware.localization.AuditExceptionHasNotBeenSignedOff
+import com.cynergisuite.middleware.localization.AuditExceptionHasNotBeenApproved
 import com.cynergisuite.middleware.localization.AuditExceptionMustHaveInventoryOrBarcode
-import com.cynergisuite.middleware.localization.AuditHasBeenSignedOffNoNewNotesAllowed
+import com.cynergisuite.middleware.localization.AuditHasBeenApprovedNoNewNotesAllowed
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
 import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
-import com.cynergisuite.middleware.localization.AuditUpdateRequiresSignedOffOrNote
+import com.cynergisuite.middleware.localization.AuditUpdateRequiresApprovedOrNote
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -111,7 +110,7 @@ class AuditExceptionValidator @Inject constructor (
          doSharedValidation(auditId)
 
          val auditExceptionId = auditExceptionUpdate.id!!
-         val signedOff = auditExceptionUpdate.signedOff
+         val approved = auditExceptionUpdate.approved
          val note = auditExceptionUpdate.note
          val audit: AuditEntity = auditRepository.findOne(auditId, enteredBy.myCompany())!!
 
@@ -121,15 +120,15 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (signedOff == null && note == null) {
+         if (approved == null && note == null) {
             errors.add(
-               ValidationError(null, AuditUpdateRequiresSignedOffOrNote())
+               ValidationError(null, AuditUpdateRequiresApprovedOrNote())
             )
          }
 
-         if (audit.currentStatus() == SIGNED_OFF) {
+         if (audit.currentStatus() == APPROVED) {
             errors.add(
-               ValidationError(null, AuditHasBeenSignedOffNoNewNotesAllowed(auditId))
+               ValidationError(null, AuditHasBeenApprovedNoNewNotesAllowed(auditId))
             )
          }
 
@@ -139,9 +138,9 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (auditExceptionRepository.isSignedOff(auditExceptionId)) {
+         if (auditExceptionRepository.isApproved(auditExceptionId)) {
             errors.add(
-               ValidationError(null, AuditExceptionHasNotBeenSignedOff(auditExceptionId))
+               ValidationError(null, AuditExceptionHasNotBeenApproved(auditExceptionId))
             )
          }
       }
@@ -156,7 +155,7 @@ class AuditExceptionValidator @Inject constructor (
       }
 
       return auditException.copy(
-         signedOff = auditExceptionUpdate.signedOff ?: false,
+         approved = auditExceptionUpdate.approved ?: false,
          notes = notes
       )
    }

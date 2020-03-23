@@ -60,8 +60,8 @@ class AuditExceptionRepository @Inject constructor(
          auditException.inventory_model                             AS auditException_inventory_model,
          auditException.exception_code                              AS auditException_exception_code,
          auditException.audit_id                                    AS auditException_audit_id,
-         auditException.signed_off                                  AS auditException_signed_off,
-         auditException.signed_off_by                               AS auditException_signed_off_by,
+         auditException.approved                                  AS auditException_approved,
+         auditException.approved_by                               AS auditException_approved_by,
          auditException.lookup_key                                  AS auditException_lookup_key,
          auditScanArea.id                                           AS auditScanArea_id,
          auditScanArea.value                                        AS auditScanArea_value,
@@ -95,24 +95,24 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy.store_id                                         AS scannedBy_store_id,
          scannedBy.store_number                                     AS scannedBy_store_number,
          scannedBy.store_name                                       AS scannedBy_store_name,
-         signedOffBy.emp_id                                         AS signedOffBy_id,
-         signedOffBy.emp_type                                       AS signedOffBy_type,
-         signedOffBy.emp_number                                     AS signedOffBy_number,
-         signedOffBy.emp_last_name                                  AS signedOffBy_last_name,
-         signedOffBy.emp_first_name_mi                              AS signedOffBy_first_name_mi,
-         signedOffBy.emp_pass_code                                  AS signedOffBy_pass_code,
-         signedOffBy.emp_active                                     AS signedOffBy_active,
-         signedOffBy.emp_cynergi_system_admin                       AS signedOffBy_cynergi_system_admin,
-         signedOffBy.emp_alternative_store_indicator                AS signedOffBy_alternative_store_indicator,
-         signedOffBy.emp_alternative_area                           AS signedOffBy_alternative_area,
-         signedOffBy.dept_id                                        AS signedOffBy_dept_id,
-         signedOffBy.dept_code                                      AS signedOffBy_dept_code,
-         signedOffBy.dept_description                               AS signedOffBy_dept_description,
-         signedOffBy.dept_security_profile                          AS signedOffBy_dept_security_profile,
-         signedOffBy.dept_default_menu                              AS signedOffBy_dept_default_menu,
-         signedOffBy.store_id                                       AS signedOffBy_store_id,
-         signedOffBy.store_number                                   AS signedOffBy_store_number,
-         signedOffBy.store_name                                     AS signedOffBy_store_name,
+         approvedBy.emp_id                                          AS approvedBy_id,
+         approvedBy.emp_type                                        AS approvedBy_type,
+         approvedBy.emp_number                                      AS approvedBy_number,
+         approvedBy.emp_last_name                                   AS approvedBy_last_name,
+         approvedBy.emp_first_name_mi                               AS approvedBy_first_name_mi,
+         approvedBy.emp_pass_code                                   AS approvedBy_pass_code,
+         approvedBy.emp_active                                      AS approvedBy_active,
+         approvedBy.emp_cynergi_system_admin                        AS approvedBy_cynergi_system_admin,
+         approvedBy.emp_alternative_store_indicator                 AS approvedBy_alternative_store_indicator,
+         approvedBy.emp_alternative_area                            AS approvedBy_alternative_area,
+         approvedBy.dept_id                                         AS approvedBy_dept_id,
+         approvedBy.dept_code                                       AS approvedBy_dept_code,
+         approvedBy.dept_description                                AS approvedBy_dept_description,
+         approvedBy.dept_security_profile                           AS approvedBy_dept_security_profile,
+         approvedBy.dept_default_menu                               AS approvedBy_dept_default_menu,
+         approvedBy.store_id                                        AS approvedBy_store_id,
+         approvedBy.store_number                                    AS approvedBy_store_number,
+         approvedBy.store_name                                      AS approvedBy_store_name,
          auditExceptionNote.id                                      AS auditExceptionNote_id,
          auditExceptionNote.uu_row_id                               AS auditExceptionNote_uu_row_id,
          auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
@@ -141,7 +141,7 @@ class AuditExceptionRepository @Inject constructor(
            JOIN audit a ON auditException.audit_id = a.id
            JOIN company comp ON a.company_id = comp.id
            JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
-           LEFT OUTER JOIN employees signedOffBy ON auditException.signed_off_by = signedOffBy.emp_number AND comp.id = signedOffBy.comp_id
+           LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
            LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
       """.trimIndent()
@@ -155,9 +155,9 @@ class AuditExceptionRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
          val scannedBy = mapEmployeeNotNull(rs, "scannedBy_")
-         val signedOffBy = mapEmployee(rs, "signedOffBy_")
+         val approvedBy = mapEmployee(rs, "approvedBy_")
          val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "auditScanArea_")
-         val exception = mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
+         val exception = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
 
          do {
             val enteredBy = mapEmployee(rs, "auditExceptionNoteEmployee_")
@@ -175,12 +175,12 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun isSignedOff(auditExceptionId: Long): Boolean {
-      val signedOff = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id AND signed_off = TRUE)", mapOf("id" to auditExceptionId), Boolean::class.java)!!
+   fun isApproved(auditExceptionId: Long): Boolean {
+      val approved = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id AND approved = TRUE)", mapOf("id" to auditExceptionId), Boolean::class.java)!!
 
-      logger.trace("Checking if AuditException: {} has been signed off resulted in {}", auditExceptionId, signedOff)
+      logger.trace("Checking if AuditException: {} has been approved resulted in {}", auditExceptionId, approved)
 
-      return signedOff
+      return approved
    }
 
    fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
@@ -203,8 +203,8 @@ class AuditExceptionRepository @Inject constructor(
                auditException.inventory_model              AS auditException_inventory_model,
                auditException.exception_code               AS auditException_exception_code,
                auditException.audit_id                     AS auditException_audit_id,
-               auditException.signed_off                   AS auditException_signed_off,
-               auditException.signed_off_by                AS auditException_signed_off_by,
+               auditException.approved                   AS auditException_approved,
+               auditException.approved_by                AS auditException_approved_by,
                auditException.lookup_key                   AS auditException_lookup_key,
                auditScanArea.id                            AS auditScanArea_id,
                auditScanArea.value                         AS auditScanArea_value,
@@ -238,31 +238,31 @@ class AuditExceptionRepository @Inject constructor(
                scannedBy.store_id                          AS scannedBy_store_id,
                scannedBy.store_number                      AS scannedBy_store_number,
                scannedBy.store_name                        AS scannedBy_store_name,
-               signedOffBy.emp_id                          AS signedOffBy_id,
-               signedOffBy.emp_type                        AS signedOffBy_type,
-               signedOffBy.emp_number                      AS signedOffBy_number,
-               signedOffBy.emp_last_name                   AS signedOffBy_last_name,
-               signedOffBy.emp_first_name_mi               AS signedOffBy_first_name_mi,
-               signedOffBy.emp_pass_code                   AS signedOffBy_pass_code,
-               signedOffBy.emp_active                      AS signedOffBy_active,
-               signedOffBy.emp_cynergi_system_admin        AS signedOffBy_cynergi_system_admin,
-               signedOffBy.emp_alternative_store_indicator AS signedOffBy_alternative_store_indicator,
-               signedOffBy.emp_alternative_area            AS signedOffBy_alternative_area,
-               signedOffBy.dept_id                         AS signedOffBy_dept_id,
-               signedOffBy.dept_code                       AS signedOffBy_dept_code,
-               signedOffBy.dept_description                AS signedOffBy_dept_description,
-               signedOffBy.dept_security_profile           AS signedOffBy_dept_security_profile,
-               signedOffBy.dept_default_menu               AS signedOffBy_dept_default_menu,
-               signedOffBy.store_id                        AS signedOffBy_store_id,
-               signedOffBy.store_number                    AS signedOffBy_store_number,
-               signedOffBy.store_name                      AS signedOffBy_store_name,
+               approvedBy.emp_id                          AS approvedBy_id,
+               approvedBy.emp_type                        AS approvedBy_type,
+               approvedBy.emp_number                      AS approvedBy_number,
+               approvedBy.emp_last_name                   AS approvedBy_last_name,
+               approvedBy.emp_first_name_mi               AS approvedBy_first_name_mi,
+               approvedBy.emp_pass_code                   AS approvedBy_pass_code,
+               approvedBy.emp_active                      AS approvedBy_active,
+               approvedBy.emp_cynergi_system_admin        AS approvedBy_cynergi_system_admin,
+               approvedBy.emp_alternative_store_indicator AS approvedBy_alternative_store_indicator,
+               approvedBy.emp_alternative_area            AS approvedBy_alternative_area,
+               approvedBy.dept_id                         AS approvedBy_dept_id,
+               approvedBy.dept_code                       AS approvedBy_dept_code,
+               approvedBy.dept_description                AS approvedBy_dept_description,
+               approvedBy.dept_security_profile           AS approvedBy_dept_security_profile,
+               approvedBy.dept_default_menu               AS approvedBy_dept_default_menu,
+               approvedBy.store_id                        AS approvedBy_store_id,
+               approvedBy.store_number                    AS approvedBy_store_number,
+               approvedBy.store_name                      AS approvedBy_store_name,
                count(*) OVER () AS total_elements
             FROM audit_exception auditException
                JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
                JOIN audit a ON auditException.audit_id = a.id
                JOIN company comp ON a.company_id = comp.id
                JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
-               LEFT OUTER JOIN employees signedOffBy ON auditException.signed_off_by = signedOffBy.emp_number AND comp.id = signedOffBy.comp_id
+               LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
             WHERE auditException.audit_id = :audit_id AND comp.id = :comp_id
             ORDER BY auditException_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
@@ -308,11 +308,11 @@ class AuditExceptionRepository @Inject constructor(
             val tempId = rs.getLong("auditException_id")
             val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
                val scannedBy = mapEmployeeNotNull(rs, "scannedBy_")
-               val signedOffBy = mapEmployee(rs, "signedOffBy_")
+               val approvedBy = mapEmployee(rs, "approvedBy_")
                val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "auditScanArea_")
 
                currentId = tempId
-               currentParentEntity = mapRow(rs, scanArea, scannedBy, signedOffBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
+               currentParentEntity = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
                elements.add(currentParentEntity)
                currentParentEntity
             } else {
@@ -358,8 +358,8 @@ class AuditExceptionRepository @Inject constructor(
       logger.debug("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, signed_off, signed_off_by, lookup_key, audit_id)
-         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :signed_off, :signed_off_by, :lookup_key, :audit_id)
+         INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, approved, approved_by, lookup_key, audit_id)
+         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :approved, :approved_by, :lookup_key, :audit_id)
          RETURNING
             *
          """.trimIndent(),
@@ -373,27 +373,27 @@ class AuditExceptionRepository @Inject constructor(
             "inventory_model" to entity.inventoryModel,
             "scanned_by" to entity.scannedBy.number,
             "exception_code" to entity.exceptionCode,
-            "signed_off" to entity.signedOff,
-            "signed_off_by" to entity.signedOffBy?.number,
+            "approved" to entity.approved,
+            "approved_by" to entity.approvedBy?.number,
             "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
          ),
          RowMapper { rs, _ ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.signedOffBy, entity.audit, EMPTY)
+            mapRow(rs, entity.scanArea, entity.scannedBy, entity.approvedBy, entity.audit, EMPTY)
          }
       )
    }
 
    @Transactional
-   fun signOffAllExceptions(audit: AuditEntity, employee: User): Int {
+   fun approveAllExceptions(audit: AuditEntity, employee: User): Int {
       logger.debug("Updating audit_exception {}", audit)
 
       return jdbc.update("""
          UPDATE audit_exception
-         SET signed_off = true,
-             signed_off_by = :employee
+         SET approved = true,
+             approved_by = :employee
          WHERE audit_id = :audit_id
-         AND signed_off = false
+         AND approved = false
          """,
          mapOf(
             "audit_id" to audit.myId(),
@@ -408,19 +408,19 @@ class AuditExceptionRepository @Inject constructor(
 
       jdbc.updateReturning("""
          UPDATE audit_exception
-         SET signed_off = :signed_off,
-             signed_off_by = :employee
+         SET approved = :approved,
+             approved_by = :employee
          WHERE id = :id
          RETURNING
             *
          """,
          mapOf(
-            "signed_off" to entity.signedOff,
-            "employee" to if (entity.signedOff) entity.signedOffBy?.number else null,
+            "approved" to entity.approved,
+            "employee" to if (entity.approved) entity.approvedBy?.number else null,
             "id" to entity.id
          ),
          RowMapper { rs, _ ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.signedOffBy, entity.audit, EMPTY)
+            mapRow(rs, entity.scanArea, entity.scannedBy, entity.approvedBy, entity.audit, EMPTY)
          }
       )
 
@@ -432,7 +432,7 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, signedOffBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String): AuditExceptionEntity =
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, approvedBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
@@ -447,8 +447,8 @@ class AuditExceptionRepository @Inject constructor(
          inventoryModel = rs.getString("${columnPrefix}inventory_model"),
          scannedBy = scannedBy,
          exceptionCode = rs.getString("${columnPrefix}exception_code"),
-         signedOff = rs.getBoolean("${columnPrefix}signed_off"),
-         signedOffBy = signedOffBy,
+         approved = rs.getBoolean("${columnPrefix}approved"),
+         approvedBy = approvedBy,
          lookupKey = rs.getString("${columnPrefix}lookup_key"),
          audit = audit
       )

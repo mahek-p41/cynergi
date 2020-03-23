@@ -14,7 +14,6 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.DayOfWeek
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import javax.inject.Inject
@@ -87,11 +86,11 @@ class DevelopDataLoader @Inject constructor(
       // setup store three completed off audits
       auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
-      // setup store one signed off audits
-      auditFactoryService.generate(3, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      // setup store one approved audits
+      auditFactoryService.generate(3, storeOneEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()))
 
-      // setup store three signed off audits
-      auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      // setup store three approved audits
+      auditFactoryService.generate(4, storeThreeEmployee, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()))
 
       auditScheduleScheduleFactoryService.single(TUESDAY, listOf(storeOne), AuthenticatedEmployee(storeOneEmployee.id!!, storeOneEmployee, storeOne), companyTstds1)
       auditScheduleScheduleFactoryService.single(THURSDAY, listOf(storeThree), AuthenticatedEmployee(storeThreeEmployee.id!!, storeThreeEmployee, storeThree), companyTstds1)

@@ -622,11 +622,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       // setup store three completed off audits
       auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
-      // setup store one signed off audits
-      auditFactoryService.generate(3, storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+      // setup store one approved audits
+      auditFactoryService.generate(3, storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
-      // setup store three signed off audits
-      auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+      // setup store three approved audits
+      auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
       def twoCreatedAudits = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', from: beginningOfWeek(OffsetDateTime.now()), thru: endOfWeek(OffsetDateTime.now()), status: [AuditStatusFactory.created().value] as Set]))
@@ -671,7 +671,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(2, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       auditFactoryService.generate(3, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
       auditFactoryService.generate(4, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+      auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
       def counts = get("${path}/counts").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
@@ -684,7 +684,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
          new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
          new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
-         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.signedOff()))
+         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.approved()))
       ]
    }
 
@@ -697,7 +697,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(2, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       auditFactoryService.generate(3, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
       auditFactoryService.generate(4, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+      auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
       def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
@@ -710,7 +710,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
          new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
          new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
-         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.signedOff()))
+         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.approved()))
       ]
    }
 
@@ -723,7 +723,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(2, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       auditFactoryService.generate(3, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
       auditFactoryService.generate(4, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()] as Set)
+      auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
       def counts = get("${path}/counts?from=${from}&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
@@ -823,12 +823,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].changedBy.number == authenticatedEmployee.number
    }
 
-   void "create new audit when previous audit was signed-off" () {
+   void "create new audit when previous audit was approved" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
       final store = storeFactoryService.random(company)
-      auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.signedOff()] as Set)
+      auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.approved()] as Set)
 
       when:
       def result = post(path, new AuditCreateValueObject())
@@ -1174,7 +1174,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].changedBy.number == authenticatedEmployee.number
    }
 
-   void "update completed audit to signed-off and sign-off on exceptions" () {
+   void "update completed audit to approved and approve exceptions" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final department = departmentFactoryService.random(company)
@@ -1184,7 +1184,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
-      def result = put("$path/sign-off", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'SIGNED-OFF'])]))
+      def result = put("$path/approved", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'APPROVED'])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1216,8 +1216,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       resultActions[3].id != null
       resultActions[3].id > 0
       resultActions[3].id > resultActions[0].id
-      resultActions[3].status.value == "SIGNED-OFF"
-      resultActions[3].status.description == "Signed Off"
+      resultActions[3].status.value == "APPROVED"
+      resultActions[3].status.description == "Approved"
       resultActions[3].changedBy.number == authenticatedEmployee.number
 
       when:
@@ -1230,7 +1230,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
-         .each { it['signedOff'] = true }
+         .each { it['approved'] = true }
 
       when:
       def pdf = client.exchange(GET("/${path}/${audit.id}/report/exception").header("Authorization", "Bearer $cynergiAccessToken"), Argument.of(byte[]))
@@ -1242,7 +1242,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       new String(pdf.getBody(byte[]).get()).startsWith("%PDF-1.5")
    }
 
-   void "Confirm exceptions signed-off when audit is signed-off" () {
+   void "Confirm exceptions approved when audit is approved" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
@@ -1251,7 +1251,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
-      put("$path/sign-off", new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "SIGNED-OFF"])]))
+      put("$path/approved", new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "APPROVED"])]))
       def pageOneResult = get("/audit/${auditOne.id}/exception")
 
       then:
@@ -1262,10 +1262,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
-         .each { it['signedOff'] = true }
+         .each { it['approved'] = true }
    }
 
-   void "sign off on all audit exceptions" () {
+   void "approve all audit exceptions" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(1, company)
@@ -1274,15 +1274,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, false).toList()
 
       when:
-      def result = put("$path/sign-off/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
+      def result = put("$path/approved/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
 
       then:
       notThrown(HttpClientResponseException)
       result != null
-      result.signedOff == 9
+      result.approved == 9
    }
 
-   void "sign off when all audit exceptions are already signed off" () {
+   void "approve when all audit exceptions are already approved" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(1, company)
@@ -1291,11 +1291,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, true).toList()
 
       when:
-      def result = put("$path/sign-off/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
+      def result = put("$path/approved/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
 
       then:
       notThrown(HttpClientResponseException)
       result != null
-      result.signedOff == 0
+      result.approved == 0
    }
 }

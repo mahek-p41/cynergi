@@ -59,10 +59,10 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements[4].value == "audit-completeOrCancel"
       result.elements[4].description == "Complete or Cancel an audit"
       result.elements[5].id == 6
-      result.elements[5].value == "audit-updateSignOff"
+      result.elements[5].value == "audit-updateApproved"
       result.elements[5].description == "Update an audit's status"
       result.elements[6].id == 7
-      result.elements[6].value == "audit-updateSignOffAllExceptions"
+      result.elements[6].value == "audit-updateApprovedAllExceptions"
       result.elements[6].description == "Update an audit's status"
       result.elements[7].id == 8
       result.elements[7].value == "auditDetail-fetchOne"
@@ -86,8 +86,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements[13].value == "auditException-update"
       result.elements[13].description == "Update an audit exception note or status"
       result.elements[14].id == 15
-      result.elements[14].value == "auditException-signOff"
-      result.elements[14].description == "Allow user to sign-off on an audit"
+      result.elements[14].value == "auditException-approved"
+      result.elements[14].description == "Allow user to approve an audit"
       result.elements[15].id == 16
       result.elements[15].value == "auditSchedule-fetchOne"
       result.elements[15].description == "Allow user to fetch a single audit schedule"
