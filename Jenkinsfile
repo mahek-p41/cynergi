@@ -33,7 +33,7 @@ pipeline {
       }
 
       stage('Deploy DEVELOP Artifacts') {
-         when {branch 'develop'}
+         when { branch 'develop'}
 
          steps {
             script {

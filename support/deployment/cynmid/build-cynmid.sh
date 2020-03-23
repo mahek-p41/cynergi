@@ -11,6 +11,12 @@ export POSTGRES_REACTIVE_CLIENT_HOST=cynergitestdeploydb
 cd /home/jenkins/cynergi-middleware
 ./gradlew --no-daemon --stacktrace clean test jacocoTestReport buildApiDocs shadowJar
 
+if [[ $(git rev-parse --abbrev-ref HEAD) -eq "develop" ]]; then
+  echo "I am on develop"
+else
+  echo "I'm not on develop"
+fi
+
 mkdir -p /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/support/deployment/cyndsets-parse.sh /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
 chmod u+x /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
