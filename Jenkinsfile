@@ -10,6 +10,7 @@ pipeline {
    environment {
       NEXUS_JENKINS_CREDENTIALS = credentials('NEXUS_JENKINS_CREDENTIALS')
       CYNERGI_DEPLOY_JENKINS = credentials('CYNERGI_DEPLOY_JENKINS_USER')
+      CST_DEPLOY_LOGIN = credentials('CST_DEPLOY_LOGIN')
    }
 
    stages {
