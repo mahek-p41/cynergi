@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.error.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
-import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
@@ -18,16 +17,13 @@ import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotImplemented
-import com.cynergisuite.middleware.localization.PageOutOfBounds
 import com.cynergisuite.middleware.localization.RouteError
 import com.cynergisuite.middleware.localization.UnableToParseJson
-import com.cynergisuite.middleware.localization.Unknown
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.micronaut.core.convert.exceptions.ConversionErrorException
-import io.micronaut.core.util.StringUtils
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponse.badRequest
@@ -42,7 +38,6 @@ import io.micronaut.http.annotation.Error
 import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException

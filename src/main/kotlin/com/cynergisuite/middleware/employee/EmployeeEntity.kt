@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.store.StoreEntity

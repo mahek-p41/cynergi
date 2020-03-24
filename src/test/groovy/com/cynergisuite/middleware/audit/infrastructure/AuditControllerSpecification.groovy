@@ -26,16 +26,15 @@ import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import spock.lang.Unroll
-import java.time.OffsetDateTime
-import javax.inject.Inject
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import spock.lang.Unroll
 
+import javax.inject.Inject
+import java.time.OffsetDateTime
 
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
 import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
@@ -62,7 +61,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject NamedParameterJdbcTemplate jdbc
    @Inject LocalizationService localizationService
-   @Inject StoreFactoryService storeFactoryService
 
    void "fetch one audit by id" () {
       given:

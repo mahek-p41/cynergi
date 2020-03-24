@@ -6,10 +6,9 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY
@@ -20,7 +19,6 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject AuditScheduleService auditScheduleService
    @Inject EmployeeFactoryService employeeFactoryService
-   @Inject StoreFactoryService storeFactoryService
 
    void "one store test"() {
       given:

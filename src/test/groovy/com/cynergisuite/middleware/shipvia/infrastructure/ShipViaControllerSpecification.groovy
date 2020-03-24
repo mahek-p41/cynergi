@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.shipvia.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.shipvia.ShipViaFactory
 import com.cynergisuite.middleware.shipvia.ShipViaFactoryService
 import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -139,8 +140,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "post valid shipVia"() {
       given:
-      //final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it) }
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it.id, "post valid shipVia", 7) }
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = ShipViaFactory.single(company).with { new ShipViaValueObject(it) }
 
       when:
       def response = post("$path/", shipVia)
@@ -149,7 +150,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id != null
       response.id > 0
       response.description == shipVia.description
-      response.number == 7
+      response.number != null
+      response.number == response.id
    }
 
    void "post null values to shipVia()"() {
@@ -172,7 +174,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid shipVia"() {
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, "test description", 5)}
+      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it.id, "test description", null) }
 
       when:
       def response = put("$path/", shipVia)
@@ -181,7 +183,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.id != null
       response.id > 0
       response.description == "test description"
-      response.number == 5
+      response.number == shipVia.id
    }
 
    void "put invalid shipVia"(){

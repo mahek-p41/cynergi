@@ -1,17 +1,13 @@
 package com.cynergisuite.middleware.region.infrastructure
 
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
-import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.division.DivisionEntity
+import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -22,20 +18,20 @@ import javax.inject.Singleton
 
 @Singleton
 class RegionRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val divisionRepository: DivisionRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(RegionRepository::class.java)
 
    @Transactional
    fun insert(region: RegionEntity): RegionEntity {
       logger.debug("Inserting region {}", region)
-
-      return jdbc.insertReturning("""
-         INSERT INTO region(division_id, number, name, manager_number, description)
-         VALUES (:division_id, :number, :name, :manager_number, :description)
-         RETURNING
-            *
-         """,
+      return jdbc.insertReturning(
+         """
+               INSERT INTO region(division_id, number, name, manager_number, description)
+               VALUES (:division_id, :number, :name, :manager_number, :description)
+               RETURNING *
+            """.trimIndent(),
          mapOf(
             "division_id" to region.division.id,
             "number" to region.number,
@@ -43,19 +39,32 @@ class RegionRepository @Inject constructor(
             "manager_number" to region.manager?.myNumber(),
             "description" to region.description
          ),
-         RowMapper { rs, _ ->
-            RegionEntity(
-               id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               division = region.division,
-               number = rs.getInt("number"),
-               name = rs.getString("name"),
-               manager = region.manager,
-               description = rs.getString("description")
-            )
-         }
+         RowMapper { rs, _ -> mapRowSimple(rs, region) }
       )
    }
+
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
+      RegionEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         division = divisionRepository.mapRow(rs, company, "div_"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         description = rs.getString("${columnPrefix}description")
+      )
+
+   fun mapRowSimple(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
+      RegionEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         division = region.division,
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         description = rs.getString("${columnPrefix}description")
+      )
+
 }
