@@ -53,6 +53,18 @@ object StoreFactory {
          number = 5,
          name = "Bainbridge Trading Post",
          company = CompanyFactory.tstds2()
+      ),
+      StoreEntity(
+         id = 9,
+         number = 9000,
+         name = "HOME OFFICE",
+         company = CompanyFactory.tstds1()
+      ),
+      StoreEntity(
+         id = 10,
+         number = 9000,
+         name = "HOME OFFICE",
+         company = CompanyFactory.tstds2()
       )
    )
 
@@ -69,6 +81,19 @@ object StoreFactory {
    fun stores(company: Company): List<StoreEntity> {
       return stores.filter { it.company.myDataset() == company.myDataset() }
    }
+
+   fun storesDevelop(company: Company): List<StoreEntity> {
+      return stores
+         .map { store ->
+            when(store.company.myDataset()) {
+               CompanyFactory.tstds1().datasetCode -> store.copy(company = CompanyFactory.corrto())
+               CompanyFactory.tstds2().datasetCode -> store.copy(company = CompanyFactory.corptp())
+               else -> store
+            }
+         }
+         .filter { it.company.myDataset() == company.myDataset() }
+         .toList()
+   }
 }
 
 @Singleton
@@ -82,6 +107,12 @@ class StoreFactoryService(
 
    fun companyStoresToRegion(company: Company, region: RegionEntity): Stream<Pair<RegionEntity, StoreEntity>> {
       return StoreFactory.stores(company).stream()
+         .map { storeRepository.assignToRegion(it, region) }
+   }
+
+   fun companyStoresToRegionWithDevData(company: Company, region: RegionEntity): Stream<Pair<RegionEntity, StoreEntity>> {
+      return StoreFactory.storesDevelop(company)
+         .stream()
          .map { storeRepository.assignToRegion(it, region) }
    }
 

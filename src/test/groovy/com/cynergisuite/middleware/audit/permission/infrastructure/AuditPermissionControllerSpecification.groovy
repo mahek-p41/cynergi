@@ -8,9 +8,9 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryServic
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -23,7 +23,6 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    @Inject AuditPermissionFactoryService auditPermissionFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
-   @Inject StoreFactoryService storeFactoryService
 
    void "fetch all permission types" () {
       given:

@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWEAlgorithm
-import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import io.micronaut.core.io.ResourceResolver
 import io.micronaut.security.token.jwt.encryption.rsa.RSAEncryptionConfiguration

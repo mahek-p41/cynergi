@@ -2,9 +2,7 @@ package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
-import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.annotation.Requires
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

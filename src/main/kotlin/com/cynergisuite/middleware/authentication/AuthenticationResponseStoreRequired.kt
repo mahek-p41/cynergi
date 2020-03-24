@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.authentication
 
 import io.micronaut.security.authentication.AuthenticationFailed
-import io.micronaut.security.authentication.AuthenticationResponse
 import java.util.Optional
 
 class AuthenticationResponseStoreRequired(

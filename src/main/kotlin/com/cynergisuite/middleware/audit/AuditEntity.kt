@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.AuditStatus
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 import java.util.UUID

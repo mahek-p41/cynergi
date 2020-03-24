@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AccessException
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext

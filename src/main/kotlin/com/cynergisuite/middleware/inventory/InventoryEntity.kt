@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 data class InventoryEntity(
    val id: Long,
