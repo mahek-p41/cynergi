@@ -274,7 +274,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == true
 
       loadedSchedule.arguments.size() == 4
-      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == authenticatedEmployee.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == nineNineEightAuthenticatedEmployee.number.toString() } != null
       loadedSchedule.arguments.find { it.description == "locale" } != null
       loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
       loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeThree.number.toString() } != null
@@ -288,7 +288,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(storeOne)] as Set, enabled: false]))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(storeOne.id)] as Set, enabled: false]))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
@@ -302,7 +302,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == false
 
       loadedSchedule.arguments.size() == 3
-      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == authenticatedEmployee.number.toString() } != null
+      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == nineNineEightAuthenticatedEmployee.number.toString() } != null
       loadedSchedule.arguments.find { it.description == "locale" } != null
       loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
    }

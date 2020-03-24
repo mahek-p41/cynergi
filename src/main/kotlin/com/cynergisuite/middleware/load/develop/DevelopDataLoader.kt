@@ -32,8 +32,8 @@ class DevelopDataLoader @Inject constructor(
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val auditScheduleScheduleFactoryService: AuditScheduleFactoryService,
    private val companyRepository: CompanyRepository,
-   private val employeeFactoryService: EmployeeFactoryService,
    private val divisionFactoryService: DivisionFactoryService,
+   private val employeeFactoryService: EmployeeFactoryService,
    private val regionFactoryService: RegionFactoryService,
    private val storeFactoryService: StoreFactoryService
 ) {
@@ -42,18 +42,16 @@ class DevelopDataLoader @Inject constructor(
    fun loadDemoData() {
       logger.info("Loading develop data")
 
-      val companies = CompanyFactory.predefinedDevData().asSequence()
-         .map { companyRepository.insert(it) }
-         .toList()
+      val companies = CompanyFactory.predefinedDevData().map { companyRepository.insert(it) }.toList()
       val companyCorrto = companies.first { it.datasetCode == "corrto" }
-
-      val divisions = companies.map { company ->  divisionFactoryService.single(company) }.toList()
-      val regions = divisions.map { division -> regionFactoryService.single(division) }.toList()
-      regions.map { region -> storeFactoryService.companyStoresToRegionWithDevData(region.division.company as Company, region).toList() }
+      val division = divisionFactoryService.single(companyCorrto)
+      val region = regionFactoryService.single(division)
 
       val store1Corrto = storeFactoryService.store(1, companyCorrto)
       val store3Corrto = storeFactoryService.store(3, companyCorrto)
 
+      var regionalStores = storeFactoryService.companyStoresToRegion(companyCorrto, region, store1Corrto, store3Corrto).toList()
+      var nineNineEightEmployeeTstEmployee = employeeFactoryService.single(998, companyCorrto, "user", "super", "pass", true, "A", 0)
       val store1Employee = employeeFactoryService.single(storeIn = store1Corrto)
       val store3Employee = employeeFactoryService.single(storeIn = store3Corrto)
 
@@ -103,5 +101,6 @@ class DevelopDataLoader @Inject constructor(
       logger.info("Finished loading develop data")
       logger.info("Store one employee {}", store1Employee)
       logger.info("Store three employee {}", store3Employee)
+      logger.info("998 User {}", nineNineEightEmployeeTstEmployee)
    }
 }

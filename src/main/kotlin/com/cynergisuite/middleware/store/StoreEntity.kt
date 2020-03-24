@@ -33,15 +33,7 @@ data class StoreEntity(
          region = region
       )
 
-   constructor(location: Location) :
-      this(
-         id = location.myId()!!,
-         number = location.myNumber(),
-         name = location.myName(),
-         company = location.myCompany()
-      )
-
-   override fun myId(): Long? = id
+   override fun myId(): Long = id
    override fun myNumber(): Int = number
    override fun myName(): String = name
    override fun myCompany(): Company = company
@@ -73,15 +65,4 @@ data class StoreEntity(
          .append(this.name, other.name)
          .append(this.company, other.company)
          .toComparison()
-
-   companion object {
-
-      @JvmStatic
-      fun fromLocation(location: Location?): StoreEntity? =
-         when {
-            location is StoreEntity -> location
-            location != null -> StoreEntity(location)
-            else -> null
-         }
-   }
 }

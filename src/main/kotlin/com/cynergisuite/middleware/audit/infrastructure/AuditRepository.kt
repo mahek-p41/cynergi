@@ -163,41 +163,28 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
-      val whereBuilder = StringBuilder(" WHERE a.company_id = :comp_id ")
+      val whereClause = StringBuilder(" WHERE a.company_id = :comp_id ")
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
       val from = pageRequest.from
       val thru = pageRequest.thru
 
-      when(user.myAlternativeStoreIndicator()) {
-         "N" -> {
-            whereBuilder.append(" AND a.store_number = :store_number ")
-            params["store_number"] = user.myLocation().myNumber()
-         }
-         "R" -> {
-            whereBuilder.append(" AND reg.number = :region_number ")
-            params["region_number"] = user.myAlternativeArea()
-         }
-         "D" -> {
-            whereBuilder.append(" AND div.number = :division_number ")
-            params["division_number"] = user.myAlternativeArea()
-         }
-      }
+      processAlternativeStoreIndicator(whereClause, params, user)
 
-      if (!storeNumbers.isNullOrEmpty()) {
+      if (!storeNumbers.isNullOrEmpty() && user.myAlternativeStoreIndicator() != "N") {
          params["store_numbers"] = storeNumbers
-         whereBuilder.append(" AND a.store_number IN (:store_numbers) ")
+         whereClause.append(" AND a.store_number IN (:store_numbers) ")
       }
 
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         whereBuilder.append(" AND a.time_created BETWEEN :from AND :thru ")
+         whereClause.append(" AND a.time_created BETWEEN :from AND :thru ")
       }
 
       if (!status.isNullOrEmpty()) {
          params["current_status"] = status
-         whereBuilder.append(" AND current_status IN (:current_status) ")
+         whereClause.append(" AND current_status IN (:current_status) ")
       }
 
       val sql = """
@@ -245,14 +232,14 @@ class AuditRepository @Inject constructor(
                     JOIN company comp ON a.company_id = comp.id
                     JOIN division div ON comp.id = div.company_id
                     JOIN region reg ON div.id = reg.division_id
-                $whereBuilder) AS total_elements
+                $whereClause) AS total_elements
             FROM audit a
                  JOIN status s ON s.audit_id = a.id
                  JOIN maxStatus ms ON s.id = ms.current_status_id
                  JOIN company comp ON a.company_id = comp.id
                  JOIN division div ON comp.id = div.company_id
                  JOIN region reg ON div.id = reg.division_id
-            $whereBuilder
+            $whereClause
             ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          )
@@ -310,10 +297,13 @@ class AuditRepository @Inject constructor(
             total_elements                                      AS total_elements
          FROM audits a
               JOIN company comp ON a.company_id = comp.id
+              JOIN division div ON comp.id = div.company_id
+              JOIN region reg ON div.id = reg.division_id
+              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
+              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
-              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
       """.trimIndent()
 
@@ -351,9 +341,9 @@ class AuditRepository @Inject constructor(
 
    fun doesNotExist(id: Long): Boolean = !exists(id)
 
-   fun findAuditStatusCounts(pageRequest: AuditPageRequest, company: Company): List<AuditStatusCount> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, user: User): List<AuditStatusCount> {
       val status = pageRequest.status
-      val params = mutableMapOf<String, Any>("comp_id" to company.myId()!!)
+      val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId())
       val storeNumbers = pageRequest.storeNumber
       val whereBuilderForStatusAndTimeCreated = StringBuilder()
       val whereBuilderForCompanyAndStore = StringBuilder("WHERE a.company_id = :comp_id ")
@@ -361,6 +351,8 @@ class AuditRepository @Inject constructor(
       val thru = pageRequest.thru
       var where = " WHERE "
       var and = EMPTY
+
+      processAlternativeStoreIndicator(whereBuilderForCompanyAndStore, params, user)
 
       if (from != null && thru != null) {
          params["from"] = from
@@ -377,10 +369,10 @@ class AuditRepository @Inject constructor(
 
       if (!storeNumbers.isNullOrEmpty()) {
          params["store_numbers"] = storeNumbers
-         whereBuilderForCompanyAndStore.append(" AND store_number IN (:store_numbers) ")
+         whereBuilderForCompanyAndStore.append(" AND a.store_number IN (:store_numbers) ")
       }
 
-      return jdbc.query("""
+      val sql = """
          WITH status AS (
             SELECT
                csastd.id AS current_status_id,
@@ -409,18 +401,23 @@ class AuditRepository @Inject constructor(
             count(*) AS current_status_count
          FROM audit a
             JOIN company comp ON a.company_id = comp.id
+            JOIN division div ON comp.id = div.company_id
+            JOIN region reg ON div.id = reg.division_id
+            JOIN region_to_store regionStores ON reg.id = regionStores.region_id
+            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
          $whereBuilderForCompanyAndStore
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,
                   status.current_status_color,
                   status.current_status_id
-         """.trimIndent(),
-         params
-      ) { rs, _ ->
+         """.trimIndent()
+
+      logger.debug("Loading stats using {}/{}", sql, params)
+
+      return jdbc.query(sql, params) { rs, _ ->
          AuditStatusCount(
             id = rs.getLong("current_status_id"),
             value = rs.getString("current_status"),
@@ -519,6 +516,23 @@ class AuditRepository @Inject constructor(
          .toMutableSet()
 
       return entity.copy(actions = actions)
+   }
+
+   private fun processAlternativeStoreIndicator(whereClause: StringBuilder, params: MutableMap<String, Any?>, user: User) {
+      when(user.myAlternativeStoreIndicator()) {
+         "N" -> {
+            whereClause.append(" AND a.store_number = :store_number ")
+            params["store_number"] = user.myLocation().myNumber()
+         }
+         "R" -> {
+            whereClause.append(" AND reg.number = :region_number ")
+            params["region_number"] = user.myAlternativeArea()
+         }
+         "D" -> {
+            whereClause.append(" AND div.number = :division_number ")
+            params["division_number"] = user.myAlternativeArea()
+         }
+      }
    }
 
    private fun mapRow(rs: ResultSet): AuditEntity {

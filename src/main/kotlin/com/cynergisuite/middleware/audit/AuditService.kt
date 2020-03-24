@@ -87,15 +87,15 @@ class AuditService @Inject constructor(
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest, user.myCompany())
+         .findAuditStatusCounts(validPageRequest, user)
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }
    }
 
    @Validated
-   fun create(@Valid vo: AuditCreateValueObject, employee: User, locale: Locale): AuditValueObject {
-      val validAudit = auditValidator.validateCreate(vo, employee)
+   fun create(@Valid vo: AuditCreateValueObject, user: User, locale: Locale): AuditValueObject {
+      val validAudit = auditValidator.validateCreate(vo, user)
       val audit = auditRepository.insert(validAudit)
 
       return AuditValueObject(audit, locale, localizationService)
@@ -167,7 +167,7 @@ class AuditService @Inject constructor(
    private fun buildHeader(audit: AuditEntity, onDemand: Boolean, writer: PdfWriter, document: Document) {
       val headerFont = FontFactory.getFont(COURIER, 10F, BOLD)
       val padding = 0f
-      val leading = headerFont.getSize() * 1.2F
+      val leading = headerFont.size * 1.2F
       val ascender = true
       val descender = true
       val currentDate = LocalDate.now()
@@ -199,9 +199,9 @@ class AuditService @Inject constructor(
       header.isLockedWidth = true
       header.headerRows = 0
       header.defaultCell.border = 0
-      header.setWidthPercentage(100f)
+      header.widthPercentage = 100f
 
-      header.makeCell("DATE: ${currentDate}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("DATE: $currentDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(companyName, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
@@ -211,11 +211,11 @@ class AuditService @Inject constructor(
 
       header.makeCell("Location: ${audit.printLocation()}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("(By Product)", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("${if (onDemand) "(On-Demand)" else "(Final-Reprint)"}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(if (onDemand) "(On-Demand)" else "(Final-Reprint)", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       val beginDateHeader = if (beginAction.status == CREATED) "Created " else "Started "
 
-      header.makeCell("${beginDateHeader}: ${beginDate}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("${beginDateHeader}: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
@@ -223,7 +223,7 @@ class AuditService @Inject constructor(
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      header.makeCell("Employee: ${endEmployee}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("Employee: $endEmployee", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
@@ -242,7 +242,7 @@ class AuditService @Inject constructor(
       val evenColor = Color(204, 204, 204)
       val oddColor = WHITE
       val padding = 0f
-      val leading = headerFont.getSize() * 1.2F
+      val leading = headerFont.size * 1.2F
       val ascender = true
       val descender = true
 
@@ -260,7 +260,7 @@ class AuditService @Inject constructor(
       table.isLockedWidth = true
       table.headerRows = 1
       table.defaultCell.border = 0
-      table.setWidthPercentage(100f)
+      table.widthPercentage = 100f
 
       val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 

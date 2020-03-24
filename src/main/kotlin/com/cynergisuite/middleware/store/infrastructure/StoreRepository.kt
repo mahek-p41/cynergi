@@ -64,8 +64,8 @@ class StoreRepository @Inject constructor(
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
               JOIN region_to_store r2s ON r2s.store_number = store.number
-				  JOIN region on region.id = r2s.region_id
-				  JOIN division on (region.division_id = division.id AND division.company_id = comp.id)
+				  JOIN region ON region.id = r2s.region_id
+				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
       """
    }
 
@@ -82,6 +82,9 @@ class StoreRepository @Inject constructor(
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id"
+
+      logger.debug("Searching for Store by number {}/{}", query, params)
+
       val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
@@ -123,8 +126,11 @@ class StoreRepository @Inject constructor(
    override fun exists(id: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(store.id) > 0
-         FROM company comp
-              JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset
+         FROM fastinfo_prod_import.store_vw store
+              JOIN company comp ON comp.dataset_code = store.dataset
+              JOIN region_to_store r2s ON r2s.store_number = store.number
+				  JOIN region ON region.id = r2s.region_id
+				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
          WHERE store.id = :store_id AND comp.id = :comp_id
       """.trimIndent(), mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
 
@@ -136,8 +142,11 @@ class StoreRepository @Inject constructor(
    fun exists(number: Int, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(store.id) > 0
-         FROM company comp
-              JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset
+         FROM fastinfo_prod_import.store_vw store
+              JOIN company comp ON comp.dataset_code = store.dataset
+              JOIN region_to_store r2s ON r2s.store_number = store.number
+				  JOIN region ON region.id = r2s.region_id
+				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
          WHERE store.number = :store_number AND comp.id = :comp_id
       """.trimIndent(), mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java)!!
 
