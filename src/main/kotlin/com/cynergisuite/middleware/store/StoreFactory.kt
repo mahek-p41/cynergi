@@ -53,18 +53,6 @@ object StoreFactory {
          number = 5,
          name = "Bainbridge Trading Post",
          company = CompanyFactory.tstds2()
-      ),
-      StoreEntity(
-         id = 9,
-         number = 9000,
-         name = "HOME OFFICE",
-         company = CompanyFactory.tstds1()
-      ),
-      StoreEntity(
-         id = 10,
-         number = 9000,
-         name = "HOME OFFICE",
-         company = CompanyFactory.tstds2()
       )
    )
 
@@ -113,6 +101,11 @@ class StoreFactoryService(
    fun companyStoresToRegionWithDevData(company: Company, region: RegionEntity): Stream<Pair<RegionEntity, StoreEntity>> {
       return StoreFactory.storesDevelop(company)
          .stream()
+         .map { storeRepository.assignToRegion(it, region) }
+   }
+
+   fun companyStoresToRegion(company: Company, region: RegionEntity, vararg stores: StoreEntity): Sequence<Pair<RegionEntity, StoreEntity>> {
+      return stores.asSequence()
          .map { storeRepository.assignToRegion(it, region) }
    }
 

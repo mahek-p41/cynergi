@@ -205,7 +205,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.serialNumber == inventoryItem.serialNumber
       result.inventoryBrand == inventoryItem.brand
       result.inventoryModel == inventoryItem.modelNumber
-      result.scannedBy.number == authenticatedEmployee.number
+      result.scannedBy.number == nineNineEightAuthenticatedEmployee.number
       result.audit.id == audit.id
    }
 
