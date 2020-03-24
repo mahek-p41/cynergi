@@ -140,7 +140,10 @@ class EmployeeFactoryService @Inject constructor(
          }
    }
 
-   private fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCodeIn: String? = null, activeIn: Boolean = true, cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
+   private fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null,
+                      firstNameMiIn: String? = null, passCodeIn: String? = null, activeIn: Boolean = true,
+                      cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null,
+                      departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
       val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.company ?: companyFactoryService.random()
 
       return EmployeeFactory.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)

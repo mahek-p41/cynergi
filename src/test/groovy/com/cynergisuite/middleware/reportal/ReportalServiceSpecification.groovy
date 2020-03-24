@@ -3,12 +3,13 @@ package com.cynergisuite.middleware.reportal
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.threading.CynergiExecutor
-import java.util.concurrent.CountDownLatch
 import kotlin.Unit
 import kotlin.jvm.functions.Function0
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+
+import java.util.concurrent.CountDownLatch
 
 class ReportalServiceSpecification extends Specification {
    @Rule TemporaryFolder temporaryFolder

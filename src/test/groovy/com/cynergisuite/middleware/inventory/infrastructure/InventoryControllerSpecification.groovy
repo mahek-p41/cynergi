@@ -3,13 +3,10 @@ package com.cynergisuite.middleware.inventory.infrastructure
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 class InventoryControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/inventory"
-
-   @Inject InventoryRepository inventoryRepository
 
    void "fetch first page without locationType" () {
       given:

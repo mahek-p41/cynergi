@@ -2,7 +2,6 @@ package com.cynergisuite.domain.infrastructure
 
 import groovy.json.JsonSlurper
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 

@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.authentication.user
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.location.Location
 import io.micronaut.security.authentication.UserDetails
 

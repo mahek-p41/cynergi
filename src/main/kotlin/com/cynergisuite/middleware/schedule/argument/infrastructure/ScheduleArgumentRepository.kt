@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.schedule.argument.infrastructure
 
-import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning

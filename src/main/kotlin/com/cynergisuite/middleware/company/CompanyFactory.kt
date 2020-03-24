@@ -28,6 +28,17 @@ object CompanyFactory {
    )
 
    @JvmStatic
+   private val companiesDevData = companies
+      .map {
+         company -> when (company.datasetCode) {
+         "tstds1" -> company.copy(datasetCode = "corrto")
+         "tstds2" -> company.copy(datasetCode = "corptp")
+         else -> company
+         }
+      }
+      .toList()
+
+   @JvmStatic
    fun stream(numberIn: Int = 1): Stream<CompanyEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
@@ -53,6 +64,9 @@ object CompanyFactory {
    fun predefined(): List<CompanyEntity> = companies
 
    @JvmStatic
+   fun predefinedDevData(): List<CompanyEntity> = companiesDevData
+
+   @JvmStatic
    fun random() = companies.random()
 
    @JvmStatic
@@ -60,6 +74,12 @@ object CompanyFactory {
 
    @JvmStatic
    fun tstds2() = companies.first { it.datasetCode == "tstds2" }
+
+   @JvmStatic
+   fun corrto() = companiesDevData.first { it.datasetCode == "corrto" }
+
+   @JvmStatic
+   fun corptp() = companiesDevData.first { it.datasetCode == "corptp" }
 }
 
 @Singleton
