@@ -44,7 +44,7 @@ class AuditScheduleController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditSchedule-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a single Audit Schedule", description = "Fetch a single Audit Schedule by it's system generated primary key", operationId = "auditSchedule-fetchOne")
    @ApiResponses(value = [
@@ -68,7 +68,7 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditSchedule-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audit Schedules", operationId = "auditSchedule-fetchAll")
    @ApiResponses(value = [
@@ -94,7 +94,7 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("auditSchedule-create", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "auditSchedule-create")
    @ApiResponses(value = [
@@ -120,7 +120,7 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("auditSchedule-update", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
    @ApiResponses(value = [
