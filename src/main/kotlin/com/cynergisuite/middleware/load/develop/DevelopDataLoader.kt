@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
+import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
@@ -21,6 +22,7 @@ import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 import kotlin.streams.toList
 
 @Singleton
@@ -28,6 +30,7 @@ import kotlin.streams.toList
 class DevelopDataLoader @Inject constructor(
    private val auditDetailFactoryService: AuditDetailFactoryService,
    private val auditExceptionFactoryService: AuditExceptionFactoryService,
+   private val auditExceptionNoteFactoryService: AuditExceptionNoteFactoryService,
    private val auditFactoryService: AuditFactoryService,
    private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
    private val auditScheduleScheduleFactoryService: AuditScheduleFactoryService,
@@ -62,19 +65,28 @@ class DevelopDataLoader @Inject constructor(
       val showroom = auditScanAreaFactoryService.showroom()
       val storeroom = auditScanAreaFactoryService.storeroom()
 
-      // setup store one open audit
-      val openStore1Audit = auditFactoryService.single(store1Employee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
-      auditDetailFactoryService.generate(11, openStore1Audit, store1Employee, warehouse)
-      auditDetailFactoryService.generate(5, openStore1Audit, store1Employee, showroom)
-      auditDetailFactoryService.generate(5, openStore1Audit, store1Employee, storeroom)
-      auditExceptionFactoryService.generate(25, openStore1Audit, store1Employee)
+      // setup store one completed audit
+      val completedStore1Audit = auditFactoryService.single(store1Employee, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
+      // Audit detail count 21
+      auditDetailFactoryService.generate(11, completedStore1Audit, store1Employee, warehouse)
+      auditDetailFactoryService.generate(5, completedStore1Audit, store1Employee, showroom)
+      auditDetailFactoryService.generate(5, completedStore1Audit, store1Employee, storeroom)
+      // create random [0..2] notes for each audit exception
+      auditExceptionFactoryService.generate(25, completedStore1Audit, store1Employee).forEach {
+         auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, store1Employee).forEach { }
+      }
 
       // setup store three open audit
       val openStore3Audit = auditFactoryService.single(store3Employee.store!!)
       auditDetailFactoryService.generate(9, openStore3Audit, store3Employee, warehouse)
       auditDetailFactoryService.generate(5, openStore3Audit, store3Employee, showroom)
       auditDetailFactoryService.generate(5, openStore3Audit, store3Employee, storeroom)
-      auditExceptionFactoryService.generate(26, openStore3Audit, store3Employee)
+      // create random [0..2] notes for each audit exception
+      auditExceptionFactoryService.generate(26, openStore3Audit, store3Employee).forEach {
+         auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, store3Employee).forEach {}
+      }
+      val auditException =  auditExceptionFactoryService.single(openStore3Audit, store3Employee, true)
+      auditExceptionNoteFactoryService.stream(Random.nextInt(2), auditException, store3Employee).forEach { }
 
       // setup store one canceled audit
       auditFactoryService.single(store1Employee, setOf(AuditStatusFactory.created(), AuditStatusFactory.canceled()))
