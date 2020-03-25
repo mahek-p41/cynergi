@@ -223,6 +223,34 @@ class AuditController @Inject constructor(
       return HttpResponse.ok(stream)
    }
 
+   @Get(uri = "/{id:[0-9]+}/report/unscanned", produces = ["application/pdf"])
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["AuditEndpoints"],
+      summary = "Request Unscanned Idle Inventory Report",
+      description = "This operation will generate a PDF representation of the Audit's items that haven't been scanned.",
+      operationId = "audit-fetchUnscannedIdleInventoryReport")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to generate Unscanned Idle Inventory Report", content = [Content(mediaType = "application/pdf")]),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchUnscannedIdleInventoryReport(
+      @Parameter(description = "Primary Key to lookup the Audit with that the Unscanned Idle Inventory Report will be generated from", `in` = PATH)
+      @QueryValue("id") id: Long,
+      authentication: Authentication
+   ): HttpResponse<*> {
+      val user = userService.findUser(authentication)
+
+      logger.info("Unscanned Idle Inventory Report requested by user: {}", user)
+
+      val stream = executor.pipeBlockingOutputToStreamedFile("application/pdf") { os ->
+         auditService.fetchUnscannedIdleInventoryReport(id, user.myCompany(), os)
+      }
+
+      return HttpResponse.ok(stream)
+   }
+
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
