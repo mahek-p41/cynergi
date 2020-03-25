@@ -66,5 +66,4 @@ class RegionRepository @Inject constructor(
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )
-
 }
