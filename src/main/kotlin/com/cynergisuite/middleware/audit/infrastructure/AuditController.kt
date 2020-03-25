@@ -51,7 +51,6 @@ class AuditController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @AccessControl("audit-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
@@ -75,7 +74,6 @@ class AuditController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("audit-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
    @ApiResponses(value = [
@@ -102,7 +100,6 @@ class AuditController @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   @AccessControl("audit-fetchAllStatusCounts", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/counts{?pageRequest*}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
    @ApiResponses(value = [
@@ -124,7 +121,6 @@ class AuditController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("audit-create", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in the CREATED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [
@@ -153,7 +149,6 @@ class AuditController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("audit-completeOrCancel", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-completeOrCancel")
    @ApiResponses(value = [
@@ -179,7 +174,7 @@ class AuditController @Inject constructor(
    }
 
    @Put("/sign-off", processes = [APPLICATION_JSON])
-   @AccessControl("audit-updateSignOff", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Sign off on an audit", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on as well as signing off the audit.", operationId = "audit-updateSignOff")
    @ApiResponses(value = [
@@ -205,7 +200,6 @@ class AuditController @Inject constructor(
    }
 
    @Get(uri = "/{id:[0-9]+}/report/exception", produces = ["application/pdf"])
-   @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
    @ApiResponses(value = [
@@ -230,7 +224,7 @@ class AuditController @Inject constructor(
    }
 
    @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
-   @AccessControl("audit-updateSignOffAllExceptions", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Sign off on all audit exceptions", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on", operationId = "audit-updateSignOffAllExceptions")
    @ApiResponses(value = [

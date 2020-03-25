@@ -186,7 +186,8 @@ class AuthenticationRepository @Inject constructor(
          department = department,
          location = location,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
-         alternativeArea = employee.alternativeArea
+         alternativeArea = employee.alternativeArea,
+         cynergiSystemAdmin = employee.cynergiSystemAdmin
       )
    }
 

@@ -29,7 +29,7 @@ object DepartmentFactory {
       DepartmentEntity(id = 15, code = "OF", description = "OFFICE", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
       DepartmentEntity(id = 16, code = "SA", description = "SALES ASSOCI", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
       DepartmentEntity(id = 17, code = "SM", description = "STORE MANAGE", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 18, code = "WH", description = "WAREHOUS", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2())
+      DepartmentEntity(id = 18, code = "WH", description = "WAREHOUSE", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2())
    )
 
    @JvmStatic

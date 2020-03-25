@@ -61,7 +61,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
 
    Object put(String path, Object body, String accessToken = cynergiAccessToken) throws HttpClientResponseException {
       return client.exchange(
-         PUT("/${path}", body).header("Authorization", "Bearer $cynergiAccessToken"),
+         PUT("/${path}", body).header("Authorization", "Bearer $accessToken"),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()
