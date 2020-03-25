@@ -37,10 +37,15 @@ import spock.lang.Unroll
 import javax.inject.Inject
 import java.time.OffsetDateTime
 
-import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.*
-import static io.micronaut.http.HttpRequest.*
-import static io.micronaut.http.HttpStatus.*
-import static java.util.Locale.*
+import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
+import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
+import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.PUT
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
+import static java.util.Locale.US
 
 @MicronautTest(transactional = false)
 class AuditControllerSpecification extends ControllerSpecificationBase {
