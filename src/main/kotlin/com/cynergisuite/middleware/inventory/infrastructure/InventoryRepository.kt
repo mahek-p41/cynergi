@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
+import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,6 +22,7 @@ import javax.inject.Singleton
 class InventoryRepository(
    private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate,
+   private val locationRepository: LocationRepository,
    private val storeRepository: StoreRepository
 ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
@@ -215,7 +217,7 @@ class InventoryRepository(
          idleDays = rs.getInt("idle_days"),
          condition = rs.getString("condition"),
          returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = storeRepository.maybeMapRow(rs, company, "current_store_"), // TODO change to using location and location repository to map this
+         location = locationRepository.maybeMapRow(rs, company, "current_store_"),
          status = rs.getString("status"),
          primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
          locationType = InventoryLocationType(

@@ -5,15 +5,19 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.location.LocationEntity
+import org.apache.commons.lang3.StringUtils
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LocationRepository @Inject constructor(
+   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
 
@@ -42,25 +46,23 @@ class LocationRepository @Inject constructor(
             "location_number" to locationNumber,
             "comp_id" to company.myId()
          ),
-         rowMapper = RowMapper { rs, _ ->
-            LocationEntity(
-               id = rs.getLong("id"),
-               number = rs.getInt("number"),
-               name = rs.getString("name"),
-               company = CompanyEntity(
-                  id = rs.getLong("comp_id"),
-                  uuRowId = rs.getUuid("comp_uu_row_id"),
-                  timeCreated = rs.getOffsetDateTime("comp_time_created"),
-                  timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
-                  name = rs.getString("comp_name"),
-                  doingBusinessAs = rs.getString("comp_doing_business_as"),
-                  clientCode = rs.getString("comp_client_code"),
-                  clientId = rs.getInt("comp_client_id"),
-                  datasetCode = rs.getString("comp_dataset_code"),
-                  federalIdNumber = rs.getString("comp_federal_id_number")
-               )
-            )
-         }
+         rowMapper = RowMapper { rs, _ ->  mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
       )
    }
+
+   fun maybeMapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = StringUtils.EMPTY) =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, company, columnPrefix)
+      } else {
+         null
+      }
+
+   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY) =
+      LocationEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         company = company
+      )
+
 }
