@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.schedule.type
 
-import com.cynergisuite.domain.ValueObject
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
-@ValueObject
 data class ScheduleTypeValueObject(
 
    @field:Positive
@@ -17,7 +15,7 @@ data class ScheduleTypeValueObject(
    @field:NotNull
    var description: String? = null
 
-) : ValueObjectBase<ScheduleTypeValueObject>() {
+) : Identifiable {
 
    constructor(entity: ScheduleType, localizedDescription: String) :
       this(
@@ -26,6 +24,5 @@ data class ScheduleTypeValueObject(
          description = localizedDescription
       )
 
-   override fun copyMe(): ScheduleTypeValueObject = copy()
    override fun myId(): Long? = id
 }

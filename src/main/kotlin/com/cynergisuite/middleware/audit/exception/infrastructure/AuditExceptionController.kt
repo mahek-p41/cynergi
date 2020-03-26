@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -40,12 +40,11 @@ import javax.inject.Inject
 @Controller("/api/audit")
 class AuditExceptionController @Inject constructor(
    private val auditExceptionService: AuditExceptionService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditException-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Get(value = "/exception/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a single AuditException", description = "Fetch a single AuditException by it's system generated primary key", operationId = "auditException-fetchOne")
    @ApiResponses(value = [
@@ -61,9 +60,9 @@ class AuditExceptionController @Inject constructor(
    ): AuditExceptionValueObject {
       logger.info("Fetching AuditException by {}", id)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val response = auditExceptionService.fetchById(id, user.myDataset(), locale) ?: throw NotFoundException(id)
+      val response = auditExceptionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditException by {} resulted in", id, response)
 
@@ -71,7 +70,6 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditException-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{auditId}/exception{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a listing of AuditExceptions", description = "Fetch a paginated listing of AuditExceptions based on a parent Audit", operationId = "auditException-fetchAll")
    @ApiResponses(value = [
@@ -88,9 +86,9 @@ class AuditExceptionController @Inject constructor(
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val page =  auditExceptionService.fetchAll(auditId, user.myDataset(), pageRequest, locale)
+      val page =  auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest, locale)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -100,7 +98,6 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Post(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
-   @AccessControl("auditException-create", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Create a single AuditException", description = "Create a single AuditException. The logged in Employee is used for the scannedBy property", operationId = "auditException-create")
    @ApiResponses(value = [
@@ -119,7 +116,7 @@ class AuditExceptionController @Inject constructor(
       logger.info("Requested Create AuditException {}", vo)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditExceptionService.create(auditId, vo, user, locale)
 
       logger.debug("Requested Create AuditException {} resulted in {}", vo, response)
@@ -128,7 +125,6 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Put(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
-   @AccessControl("auditException-update", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Update a single AuditException", description = "Update a single AuditException where the update is the addition of a note", operationId = "auditException-update")
    @ApiResponses(value = [
@@ -147,7 +143,7 @@ class AuditExceptionController @Inject constructor(
       logger.info("Requested Update AuditException {}", vo)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditExceptionService.update(auditId, vo, user, locale)
 
       logger.debug("Requested Update AuditException {} resulted in {}", vo, response)

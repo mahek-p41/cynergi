@@ -2,9 +2,7 @@ package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
-import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.annotation.Requires
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,8 +31,8 @@ class ScheduleService @Inject constructor(
       scheduleRepository.forEach(WEEKLY) { schedule ->
          val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
 
-         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) {
-            val dailyTask = applicationContext.getBean(DailySchedule::class.java, DailyScheduleNameBeanQualifier(schedule.command.value))
+         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
+            val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
 
             logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
 

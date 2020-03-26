@@ -12,7 +12,7 @@ data class AuditActionEntity (
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val status: AuditStatus,
-   val changedBy: EmployeeEntity
+   val changedBy: EmployeeEntity // FIXME use Employee
 ) : Entity<AuditActionEntity> {
 
    override fun myId(): Long? = id

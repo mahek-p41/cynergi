@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.audit.permission
 
-import com.cynergisuite.domain.ValueObject
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -31,7 +29,7 @@ data class AuditPermissionValueObject(
    @field:Schema(name = "department", description = "Department assigned to this audit permission")
    var department: DepartmentValueObject
 
-) : ValueObjectBase<AuditPermissionValueObject>() {
+) : Identifiable {
 
    constructor(entity: AuditPermissionEntity, locale: Locale, localizationService: LocalizationService) :
       this(
@@ -41,5 +39,4 @@ data class AuditPermissionValueObject(
       )
 
    override fun myId(): Long? = id
-   override fun copyMe(): AuditPermissionValueObject = copy()
 }

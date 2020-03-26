@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.AuditStatus
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -12,14 +13,13 @@ data class AuditEntity(
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val store: StoreEntity,
-   val number: Int = 0,
-   val totalDetails: Int = 0,
-   val totalExceptions: Int = 0,
-   val hasExceptionNotes: Boolean = false,
+   val store: Store,
+   val number: Int,
+   val totalDetails: Int,
+   val totalExceptions: Int,
+   val hasExceptionNotes: Boolean,
    val lastUpdated: OffsetDateTime? = null,
-   val inventoryCount: Int = 0,
-   val dataset: String,
+   val inventoryCount: Int,
    val actions: MutableSet<AuditActionEntity> = LinkedHashSet()
 ) : Entity<AuditEntity> {
 
@@ -33,8 +33,7 @@ data class AuditEntity(
          totalExceptions = audit.totalExceptions,
          hasExceptionNotes = audit.hasExceptionNotes,
          inventoryCount = audit.inventoryCount,
-         lastUpdated = audit.lastUpdated,
-         dataset = audit.dataset
+         lastUpdated = audit.lastUpdated
       )
 
    override fun myId(): Long? = id
@@ -47,5 +46,5 @@ data class AuditEntity(
          .map { it.status }
          .last()
 
-   fun printLocation() : String = "${store.number}  ${store.name}"
+   fun printLocation() : String = "${store.myNumber()}  ${store.myName()}"
 }

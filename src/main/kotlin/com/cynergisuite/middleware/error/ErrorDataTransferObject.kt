@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.error
 
-import com.cynergisuite.domain.DataTransferObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import org.apache.commons.lang3.builder.CompareToBuilder
 
-@DataTransferObject
 @JsonInclude(NON_NULL)
 data class ErrorDataTransferObject(
    var message: String,

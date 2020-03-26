@@ -3,17 +3,17 @@ package com.cynergisuite.middleware.employee.infrastructure
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
-import com.cynergisuite.middleware.authentication.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.department.Department
+import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.spring.tx.annotation.Transactional
-import io.reactiverse.pgclient.impl.ArrayTuple
-import io.reactiverse.reactivex.pgclient.PgPool
-import io.reactiverse.reactivex.pgclient.Tuple
-import io.reactivex.Maybe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -29,251 +29,189 @@ import javax.inject.Singleton
  */
 @Singleton
 class EmployeeRepository @Inject constructor(
+   private val companyRepository: CompanyRepository,
+   private val departmentRepository: DepartmentRepository,
    private val jdbc: NamedParameterJdbcTemplate,
-   private val passwordEncoderService: PasswordEncoderService,
    private val storeRepository: StoreRepository,
-   private val postgresClient: PgPool
+   private val passwordEncoderService: PasswordEncoderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
-   fun selectBaseQuery(params: MutableMap<String, Any?>, dataset: String, datasetParamKey: String = ":dataset"): String {
-      return "${selectBaseWithoutEmployeeStoreJoinQuery(params, dataset, datasetParamKey)} ON e.store_number = s.number"
-   }
+   fun employeeBaseQuery() = """
+      SELECT * FROM (
+         SELECT * FROM (
+            SELECT
+               1                               AS from_priority,
+               emp.id                          AS emp_id,
+               'sysz'                          AS emp_type,
+               emp.number                      AS emp_number,
+               emp.last_name                   AS emp_last_name,
+               emp.first_name_mi               AS emp_first_name_mi,
+               emp.pass_code                   AS emp_pass_code,
+               emp.active                      AS emp_active,
+               emp.department                  AS emp_department,
+               false                           AS emp_cynergi_system_admin,
+               emp.alternative_store_indicator AS emp_alternative_store_indicator,
+               emp.alternative_area            AS emp_alternative_area,
+               comp.id                         AS comp_id,
+               comp.uu_row_id                  AS comp_uu_row_id,
+               comp.time_created               AS comp_time_created,
+               comp.time_updated               AS comp_time_updated,
+               comp.name                       AS comp_name,
+               comp.doing_business_as          AS comp_doing_business_as,
+               comp.client_code                AS comp_client_code,
+               comp.client_id                  AS comp_client_id,
+               comp.dataset_code               AS comp_dataset_code,
+               comp.federal_id_number          AS comp_federal_id_number,
+               dept.id                         AS dept_id,
+               dept.code                       AS dept_code,
+               dept.description                AS dept_description,
+               dept.security_profile           AS dept_security_profile,
+               dept.default_menu               AS dept_default_menu,
+               store.id                        AS store_id,
+               store.number                    AS store_number,
+               store.name                      AS store_name
+            FROM fastinfo_prod_import.employee_vw emp
+               JOIN company comp ON emp.dataset = comp.dataset_code
+               LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+            UNION
+            SELECT
+               2                               AS from_priority,
+               emp.id                          AS emp_id,
+               'eli'                           AS emp_type,
+               emp.number                      AS emp_number,
+               emp.last_name                   AS emp_last_name,
+               emp.first_name_mi               AS emp_first_name_mi,
+               emp.pass_code                   AS emp_pass_code,
+               emp.active                      AS emp_active,
+               emp.department                  AS emp_department,
+               emp.cynergi_system_admin        AS emp_cynergi_system_admin,
+               emp.alternative_store_indicator AS emp_alternative_store_indicator,
+               emp.alternative_area            AS emp_alternative_area,
+               comp.id                         AS comp_id,
+               comp.uu_row_id                  AS comp_uu_row_id,
+               comp.time_created               AS comp_time_created,
+               comp.time_updated               AS comp_time_updated,
+               comp.name                       AS comp_name,
+               comp.doing_business_as          AS comp_doing_business_as,
+               comp.client_code                AS comp_client_code,
+               comp.client_id                  AS comp_client_id,
+               comp.dataset_code               AS comp_dataset_code,
+               comp.federal_id_number          AS comp_federal_id_number,
+               dept.id                         AS dept_id,
+               dept.code                       AS dept_code,
+               dept.description                AS dept_description,
+               dept.security_profile           AS dept_security_profile,
+               dept.default_menu               AS dept_default_menu,
+               store.id                        AS store_id,
+               store.number                    AS store_number,
+               store.name                      AS store_name
+            FROM employee emp
+               JOIN company comp ON emp.company_id = comp.id
+               LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+               LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+         ) AS inner_employees
+         ORDER BY from_priority
+      ) AS employees
+   """
 
-   private fun selectBaseWithoutEmployeeStoreJoinQuery(params: MutableMap<String, Any?>, dataset: String, datasetParamKey: String = ":dataset"): String {
-      return """
-         WITH employees AS (
-            SELECT from_priority, id, number, dataset, last_name, first_name_mi, pass_code, store_number, active, department, employee_type, allow_auto_store_assign
-            FROM (
-               SELECT
-                  1 AS from_priority,
-                  fpie.id AS id,
-                  fpie.number AS number,
-                  fpie.last_name AS last_name,
-                  fpie.first_name_mi AS first_name_mi,
-                  fpie.pass_code AS pass_code,
-                  fpie.store_number AS store_number,
-                  fpie.active AS active,
-                  fpie.department AS department,
-                  FALSE AS allow_auto_store_assign,
-                  'sysz' AS employee_type,
-                  fpie.dataset AS dataset
-               FROM fastinfo_prod_import.employee_vw fpie
-               WHERE coalesce(trim(fpie.pass_code), '') <> ''
-               AND fpie.dataset = $datasetParamKey
-               UNION
-               SELECT
-                  2 AS from_priority,
-                  e.id AS id,
-                  e.number AS number,
-                  e.last_name AS last_name,
-                  e.first_name_mi AS first_name_mi,
-                  e.pass_code AS pass_code,
-                  e.store_number AS store_number,
-                  e.active AS active,
-                  e.department AS department,
-                  e.allow_auto_store_assign AS allow_auto_store_assign,
-                  'eli' AS employee_type,
-                  e.dataset AS dataset
-               FROM employee e
-               WHERE coalesce(trim(e.pass_code), '') <> ''
-               AND e.dataset = $datasetParamKey
-            ) AS inner_emp
-            ORDER BY from_priority
-         ), stores AS (
-            ${storeRepository.selectBaseQuery(params, dataset, datasetParamKey)}
-         )
-         SELECT
-            e.from_priority AS e_priority,
-            e.id AS e_id,
-            e.number AS e_number,
-            e.dataset AS e_dataset,
-            e.last_name AS e_last_name,
-            NULLIF(TRIM(e.first_name_mi), '') AS e_first_name_mi,
-            e.pass_code AS e_pass_code,
-            e.active AS e_active,
-            e.department AS e_department,
-            e.employee_type AS e_employee_type,
-            e.allow_auto_store_assign AS e_allow_auto_store_assign,
-            s.id AS s_id,
-            s.number AS s_number,
-            s.name AS s_name,
-            s.dataset AS s_dataset,
-            ds.id AS ds_id,
-            ds.number AS ds_number,
-            ds.name AS ds_name,
-            ds.dataset AS ds_dataset
-         FROM employees e
-              JOIN stores ds ON ds.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
-              LEFT OUTER JOIN stores s
-      """.trimIndent()
-   }
+   fun findOne(user: User): EmployeeEntity? =
+      findOne(user.myId(), user.myEmployeeType(), user.myCompany())
 
-   fun findOne(id: Long, employeeType: String, dataset: String): EmployeeEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "employee_type" to employeeType)
-      val query = "${selectBaseQuery(params, dataset)} WHERE e.id = :id AND e.employee_type = :employee_type"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+   fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
+      val found = jdbc.findFirstOrNull(
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
-      logger.trace("Searching for Employee: {} {} {} resulted in {}", id, employeeType, dataset, found)
+      logger.trace("Searching for Employee: {} {} {} resulted in {}", id, employeeType, company, found)
 
       return found
    }
 
-   fun findOne(number: Int, employeeType: String? = null, dataset: String): EmployeeEntity? {
-      val params = mutableMapOf<String, Any?>("number" to number)
-      val query = StringBuilder(selectBaseQuery(params, dataset)).append("\nWHERE e.number = :number")
+   fun findOne(number: Int, employeeType: String, company: Company): EmployeeEntity? {
+      logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
-      if (employeeType != null) {
-         params["employee_type"] = employeeType
-         query.append("\nAND employee_type = :employee_type")
-      }
-
-      query.append("\nORDER BY e.from_priority\n LIMIT 1")
-
-      logger.debug("Searching for employee {}, {} with {}", number, employeeType, query)
-
-      val found = jdbc.findFirstOrNull(query.toString(), params, RowMapper { rs, _ -> mapRow(rs) })
+      val found = jdbc.findFirstOrNull(
+         "${employeeBaseQuery()} WHERE emp_number = :emp_number AND emp_type = :emp_type AND comp_id = :comp_id",
+         mapOf("emp_number" to number, "emp_type" to employeeType, "comp_id" to company.myId()),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for Employee: {} {} resulted in {}", number, employeeType, found)
 
       return found
    }
 
-   @Cacheable("user-cache")
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
-      val params = mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "store_number" to user.myStoreNumber())
-      val query = """
-         ${selectBaseWithoutEmployeeStoreJoinQuery(params, user.myDataset())}
-            ON s.number = :store_number
-         WHERE e.id = :id
-               AND e.employee_type = :employee_type
-               AND e.dataset = :dataset
-         """.trimIndent()
+      logger.debug("Searching for Employee using {}", user)
 
-      logger.debug("Searching for Employee: {} with {} using {}", user, params, query)
-
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) } )
+      val found = jdbc.findFirstOrNull("""
+         ${employeeBaseQuery()}
+         WHERE emp_id = :id
+               AND emp_type = :employee_type
+               AND comp_id = :comp_id
+         """,
+         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "comp_id" to user.myCompany().myId()),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for Employee: {} resulted in {}", user, found)
 
       return found
    }
 
-   fun exists(id: Long, employeeType: String = "sysz", dataset: String): Boolean {
-      val query = """
-      SELECT count(id) = 1
-      FROM (
-         SELECT id, 'sysz' AS employee_type, dataset AS dataset FROM fastinfo_prod_import.employee_vw fpie WHERE coalesce(trim(fpie.pass_code), '') <> ''
-         UNION
-         SELECT id, 'eli' AS employee_type, dataset AS dataset FROM employee e
-      ) AS e
-      WHERE e.id = :id
-            AND employee_type = :employee_type
-            AND dataset = :dataset
-      """
-      val exists = jdbc.queryForObject(query, mapOf("id" to id, "employee_type" to employeeType, "dataset" to dataset), Boolean::class.java)!!
+   fun exists(user: User): Boolean =
+      exists(user.myId(), user.myEmployeeType(), user.myCompany())
 
-      logger.trace("Checking if Employee: {} exists resulted in {}", id, exists)
+   fun exists(id: Long, employeeType: String, company: Company): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT count(emp_id) = 1 FROM (
+            SELECT emp_id, emp_type, comp_id FROM (
+               SELECT
+                  1 AS from_priority,
+                  emp.id AS emp_id,
+                  'sysz' AS emp_type,
+                  comp.id AS comp_id
+               FROM fastinfo_prod_import.employee_vw emp
+                  JOIN company comp ON emp.dataset = comp.dataset_code
+                  LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+               UNION
+               SELECT
+                  2 AS from_priority,
+                  emp.id AS emp_id,
+                  'eli' AS emp_type,
+                  comp.id AS comp_id
+               FROM employee emp
+                  JOIN company comp ON emp.company_id = comp.id
+                  LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+            ) AS inner_employees
+            ORDER BY from_priority
+         ) AS employees
+         WHERE emp_id = :emp_id AND emp_type = :emp_type AND comp_id = :comp_id""",
+         mapOf("emp_id" to id, "emp_type" to employeeType, "comp_id" to company.myId()),
+         Boolean::class.java
+      )!!
+
+      logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, employeeType, company, exists)
 
       return exists
    }
 
-   /**
-    * This method returns a PG Reactive Single Employee that is really meant to be used only for authentication as it
-    * unions together the cynergidb.employee table as well as the view referenced by the Foreign Data Wrapper that is
-    * pointed at FastInfo to pull in Zortec data about an Employee
-    */
-   fun findUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int?): Maybe<EmployeeEntity> {
-      logger.trace("Checking authentication for {} {} {}", number, dataset, storeNumber)
-
-      val params = LinkedHashMap<String, Any?>()
-      val query = if (storeNumber != null) {
-         params.put("storeNumber", storeNumber)
-         params.put("number", number)
-
-         """
-         ${selectBaseWithoutEmployeeStoreJoinQuery(params, dataset, "$3")}
-            ON s.number = $1
-         WHERE e.number = $2
-            AND e.active = TRUE
-            AND e.dataset = $3
-         ORDER BY e.from_priority
-         """.trimIndent()
-      } else {
-         params.put("number", number)
-
-         """
-         ${selectBaseQuery(params, dataset, "$2")}
-         WHERE e.number = $1
-            AND e.active = TRUE
-            AND e.dataset = $2
-         ORDER BY e.from_priority
-         """.trimIndent()
-      }
-
-      logger.trace("Checking authentication for {} {} {} using {}", number, dataset, storeNumber, query)
-
-      return postgresClient.rxPreparedQuery(query, Tuple(ArrayTuple(params.values)))
-         .filter { rs -> rs.size() > 0 }
-         .map { rs ->
-            val iterator = rs.iterator()
-            val row = iterator.next()
-
-            val defaultStore = storeRepository.mapRow(row, "ds_")
-            val employee = EmployeeEntity(
-               id = row.getLong("e_id"),
-               type = row.getString("e_employee_type"),
-               number = row.getInteger("e_number"),
-               dataset = row.getString("e_dataset"),
-               lastName = row.getString("e_last_name"),
-               firstNameMi = row.getString("e_first_name_mi"),
-               passCode = row.getString("e_pass_code"),
-               department = row.getString("e_department"),
-               store = storeRepository.mapRow(row, "s_"),
-               active = row.getBoolean("e_active"),
-               allowAutoStoreAssign = row.getBoolean("e_allow_auto_store_assign")
-            )
-
-            logger.trace("Processing results for employee {} with default store {}", employee, defaultStore)
-
-            employee to defaultStore
-         }
-         .filter { (employee, _) ->
-            if (employee.type == "eli") {
-               logger.trace("Checking eli employee with hash password {}", employee)
-
-               passwordEncoderService.matches(passCode, employee.passCode)
-            } else {
-               logger.trace("Checking sysz employee with plain text password {}", employee)
-
-               employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
-            }
-         }
-         .filter { (employee, _) ->
-            logger.trace("checking if employee store is null [Store {}] and if that employee is allowed to be auto assigned [allowAutoStoreAssign {}]", employee.store, employee.allowAutoStoreAssign)
-            // FIXME this will probably need to be changed to doing some kind map that indicates to the caller that the user couldn't be logged int because they don't have a default store and aren't allow auto store assign
-            employee.store != null || employee.allowAutoStoreAssign
-         }
-         .map { (employee, defaultStore) ->
-            if (employee.store == null && employee.allowAutoStoreAssign) {
-               logger.debug("Employee {} is allowed to auto store assign using {}", number, defaultStore)
-
-               employee.copy(store = defaultStore)
-            } else {
-               logger.debug("Employee {} is not allowed to auto store assign", number)
-
-               employee
-            }
-         }
-   }
+   fun doesNotExist(user: User) =
+      !exists(user)
 
    @Transactional
    fun insert(entity: EmployeeEntity): EmployeeEntity {
       logger.debug("Inserting employee {}", entity)
 
       return jdbc.insertReturning("""
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, allow_auto_store_assign, dataset)
-         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :allow_auto_store_assign, :dataset)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id, alternative_store_indicator, alternative_area)
+         VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id, :alternative_store_indicator, :alternative_area)
          RETURNING
             *
          """.trimIndent(),
@@ -282,51 +220,61 @@ class EmployeeRepository @Inject constructor(
             "last_name" to entity.lastName,
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to passwordEncoderService.encode(entity.passCode),
-            "store_number" to entity.store?.number,
             "active" to entity.active,
-            "department" to entity.department,
-            "allow_auto_store_assign" to entity.allowAutoStoreAssign,
-            "dataset" to entity.dataset
+            "cynergi_system_admin" to entity.cynergiSystemAdmin,
+            "company_id" to entity.company.myId(),
+            "department" to entity.department?.myCode(),
+            "store_number" to entity.store?.myNumber(),
+            "alternative_store_indicator" to entity.alternativeStoreIndicator,
+            "alternative_area" to entity.alternativeArea
          ),
          RowMapper { rs, _ ->
-            mapDDLRow(rs, entity.store)
+            mapDDLRow(rs, entity.company, entity.department, entity.store)
          }
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity  =
-      EmployeeEntity(
+   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity {
+      val company = companyRepository.mapRow(rs, companyColumnPrefix)
+
+      return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
-         type = rs.getString("${columnPrefix}employee_type"),
+         type = rs.getString("${columnPrefix}type"),
          number = rs.getInt("${columnPrefix}number"),
-         dataset = rs.getString("${columnPrefix}dataset"),
+         company = company,
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
-         store = storeRepository.mapRowOrNull(rs, storeColumnPrefix),
+         store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
-         department = rs.getString("${columnPrefix}department"),
-         allowAutoStoreAssign = rs.getBoolean("${columnPrefix}allow_auto_store_assign")
+         department = departmentRepository.mapRowOrNull(rs, company, departmentColumnPrefix),
+         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+         alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
+         alternativeArea = rs.getInt("${columnPrefix}alternative_area")
       )
+   }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "e_", storeColumnPrefix: String = "s_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity?  =
       if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, columnPrefix)
+         mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {
          null
       }
 
-   private fun mapDDLRow(rs: ResultSet, store: StoreEntity?) : EmployeeEntity =
+   private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: Store?) : EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
          type = "eli",
          number = rs.getInt("number"),
-         dataset = rs.getString("dataset"),
          lastName = rs.getString("last_name"),
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),
-         store = store,
          active = rs.getBoolean("active"),
-         department = rs.getString("department")
+         cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
+         company = company,
+         department = department,
+         store = store,
+         alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
+         alternativeArea = rs.getInt("alternative_area")
       )
 }

@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.store.StoreService
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @Controller("/api/store")
 class StoreController @Inject constructor(
    private val storeService: StoreService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(StoreController::class.java)
 
@@ -48,10 +48,10 @@ class StoreController @Inject constructor(
       @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long,
       authentication: Authentication
    ): StoreValueObject {
-      logger.info("Fetching Store by {}", id)
+      logger.info("Fetching Store by id {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = storeService.fetchById(id = id, dataset = user.myDataset()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = storeService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
 
@@ -73,8 +73,8 @@ class StoreController @Inject constructor(
    ): Page<StoreValueObject> {
       logger.info("Fetching all stores {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page = storeService.fetchAll(pageRequest, user.myDataset())
+      val user = userService.findUser(authentication)
+      val page = storeService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

@@ -6,7 +6,6 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -23,7 +22,7 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: EmployeeEntity,
+   val scannedBy: EmployeeEntity, // FIXME convert to Employee
    val exceptionCode: String,
    val signedOff: Boolean = false,
    val signedOffBy: EmployeeEntity? = null,
@@ -41,7 +40,7 @@ data class AuditExceptionEntity(
          serialNumber = inventory.serialNumber,
          inventoryBrand = inventory.brand,
          inventoryModel = inventory.modelNumber,
-         scannedBy = fromUser(scannedBy),
+         scannedBy = scannedBy,
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
          audit = SimpleIdentifiableEntity(audit)

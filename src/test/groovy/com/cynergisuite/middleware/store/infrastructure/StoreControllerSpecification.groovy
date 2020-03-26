@@ -2,13 +2,9 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
-
-import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -16,18 +12,23 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class StoreControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/store"
 
-   @Inject StoreFactoryService storeFactoryService
-
    void "fetch one store by id" () {
+      given:
+      final def company = companyFactoryService.forDatasetCode('tstds1')
+      final def store = storeFactoryService.store(3, company)
+
       when:
-      def result = get("$path/1")
+      def result = get("$path/$store.id")
 
       then:
       notThrown(HttpClientResponseException)
-      result.id == 1
-      result.storeNumber == 1
-      result.name == "KANSAS CITY"
-      result.dataset == "tstds1"
+      result.id == store.id
+      result.storeNumber == store.number
+      result.name == store.name
+      result.region.regionNumber == regions[0].number
+      result.region.name == regions[0].name
+      result.region.division.divisionNumber == divisions[0].number
+      result.region.division.name == divisions[0].name
    }
 
    void "fetch one store by id not found" () {
@@ -44,16 +45,17 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one store from different dataset than one associated with authenticated user" () {
       given:
-      def store = storeFactoryService.randomNotMatchingDataset(authenticatedEmployee.myDataset())
+      def company = companyFactoryService.forDatasetCode('tstds2')
+      def store = storeFactoryService.store(3, company)
 
       when:
       get("$path/${store.myId()}")
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.response.status == FORBIDDEN
+      exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.message == "Access denied"
+      response.message == "${store.myId()} was unable to be found"
    }
 
    void "fetch all stores" () {
@@ -72,11 +74,17 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].dataset == "tstds1"
+      pageOneResult.elements[0].region.regionNumber == regions[0].number
+      pageOneResult.elements[0].region.name == regions[0].name
+      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
+      pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].dataset == "tstds1"
+      pageOneResult.elements[1].region.regionNumber == regions[0].number
+      pageOneResult.elements[1].region.name == regions[0].name
+      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
+      pageOneResult.elements[1].region.division.name == divisions[0].name
 
       when:
       get("${path}${pageTwo}")

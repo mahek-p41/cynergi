@@ -7,8 +7,8 @@ import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -40,14 +40,14 @@ class CompanyControllerSpecification extends ServiceSpecificationBase {
       pageOneResult.elements[0].clientCode == companies[0].clientCode
       pageOneResult.elements[0].clientId == companies[0].clientId
       pageOneResult.elements[0].datasetCode == companies[0].datasetCode
-      pageOneResult.elements[0].federalTaxNumber == companies[0].federalTaxNumber
+      pageOneResult.elements[0].federalTaxNumber == companies[0].federalIdNumber
       pageOneResult.elements[1].id == companies[1].id
       pageOneResult.elements[1].name == companies[1].name
       pageOneResult.elements[1].doingBusinessAs == companies[1].doingBusinessAs
       pageOneResult.elements[1].clientCode == companies[1].clientCode
       pageOneResult.elements[1].clientId == companies[1].clientId
       pageOneResult.elements[1].datasetCode == companies[1].datasetCode
-      pageOneResult.elements[1].federalTaxNumber == companies[1].federalTaxNumber
+      pageOneResult.elements[1].federalTaxNumber == companies[1].federalIdNumber
 
       when:
       httpClient.toBlocking().exchange(GET(pageTwo.toString()), // login without authorization

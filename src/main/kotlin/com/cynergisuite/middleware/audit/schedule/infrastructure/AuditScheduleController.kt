@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
-import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -39,12 +39,12 @@ import javax.inject.Inject
 @Controller("/api/audit/schedule")
 class AuditScheduleController @Inject constructor(
    private val auditScheduleService: AuditScheduleService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditSchedule-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a single Audit Schedule", description = "Fetch a single Audit Schedule by it's system generated primary key", operationId = "auditSchedule-fetchOne")
    @ApiResponses(value = [
@@ -59,8 +59,8 @@ class AuditScheduleController @Inject constructor(
    ): AuditScheduleDataTransferObject {
       logger.info("Fetching Audit Schedule by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = auditScheduleService.fetchById(id, user.myDataset()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = auditScheduleService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit Schedule by {} resulted in {}", id, response)
 
@@ -68,7 +68,7 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditSchedule-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audit Schedules", operationId = "auditSchedule-fetchAll")
    @ApiResponses(value = [
@@ -83,8 +83,8 @@ class AuditScheduleController @Inject constructor(
    ): Page<AuditScheduleDataTransferObject> {
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page = auditScheduleService.fetchAll(pageRequest, user.myDataset())
+      val user = userService.findUser(authentication)
+      val page = auditScheduleService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -94,7 +94,7 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("auditSchedule-create", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "auditSchedule-create")
    @ApiResponses(value = [
@@ -111,7 +111,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Requested Create Audit Schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditScheduleService.create(auditSchedule, user, locale)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
@@ -120,7 +120,7 @@ class AuditScheduleController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("auditSchedule-update", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
    @ApiResponses(value = [
@@ -138,7 +138,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Requested update audit schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditScheduleService.update(auditSchedule, user, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)

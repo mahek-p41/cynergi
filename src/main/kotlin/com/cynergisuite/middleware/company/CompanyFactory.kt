@@ -12,22 +12,31 @@ object CompanyFactory {
    @JvmStatic
    private val companies: List<CompanyEntity> = listOf(
       CompanyEntity(
-         id = 4,
          name = "RENTAL CITY",
          doingBusinessAs = null,
          clientCode = "RCT",
          clientId = 1234,
          datasetCode = "tstds1",
-         federalTaxNumber = "A1000B200"),
+         federalIdNumber = "A1000B200"),
       CompanyEntity(
-         id = 1,
          name = "Pelham Trading Post, Inc.",
          doingBusinessAs = "RentACenter",
          clientCode = "PTP",
          clientId = 4321,
          datasetCode = "tstds2",
-         federalTaxNumber = "BX101010")
+         federalIdNumber = "BX101010")
    )
+
+   @JvmStatic
+   private val companiesDevData = companies
+      .map {
+         company -> when (company.datasetCode) {
+         "tstds1" -> company.copy(datasetCode = "corrto")
+         "tstds2" -> company.copy(datasetCode = "corptp")
+         else -> company
+         }
+      }
+      .toList()
 
    @JvmStatic
    fun stream(numberIn: Int = 1): Stream<CompanyEntity> {
@@ -46,13 +55,16 @@ object CompanyFactory {
             clientCode = lorem.characters(3, 3).toUpperCase(),
             clientId = random.nextInt(1000, 10000),
             datasetCode = lorem.characters(6, 6, false),
-            federalTaxNumber = numbers.valid()
+            federalIdNumber = numbers.valid()
          )
       }
    }
 
    @JvmStatic
    fun predefined(): List<CompanyEntity> = companies
+
+   @JvmStatic
+   fun predefinedDevData(): List<CompanyEntity> = companiesDevData
 
    @JvmStatic
    fun random() = companies.random()
@@ -64,9 +76,10 @@ object CompanyFactory {
    fun tstds2() = companies.first { it.datasetCode == "tstds2" }
 
    @JvmStatic
-   fun forDatasetCode(datasetCode: String): CompanyEntity =
-      companies.first { it.datasetCode == datasetCode }
+   fun corrto() = companiesDevData.first { it.datasetCode == "corrto" }
 
+   @JvmStatic
+   fun corptp() = companiesDevData.first { it.datasetCode == "corptp" }
 }
 
 @Singleton
@@ -76,11 +89,7 @@ class CompanyFactoryService(
 ) {
 
    fun streamPredefined(): Stream<CompanyEntity> =
-      streamPredefined { it }
-
-   fun streamPredefined(preInsertMapper: (company: CompanyEntity) -> CompanyEntity): Stream<CompanyEntity> =
       CompanyFactory.predefined().stream()
-         .map(preInsertMapper)
          .map { companyRepository.insert(it) }
 
    fun stream(numberIn: Int = 1): Stream<CompanyEntity> =
@@ -88,15 +97,7 @@ class CompanyFactoryService(
          .map { companyRepository.insert(it) }
 
    fun forDatasetCode(datasetCode: String): CompanyEntity {
-      val found = companyRepository.findByDataset(datasetCode)
-
-      return if (found != null) {
-         found
-      } else {
-         val predefined = forDatasetCode(datasetCode)
-
-         companyRepository.insert(predefined)
-      }
+      return companyRepository.findByDataset(datasetCode) ?: throw Exception("Unable to find CompanyEntity")
    }
 
    fun random(): CompanyEntity =

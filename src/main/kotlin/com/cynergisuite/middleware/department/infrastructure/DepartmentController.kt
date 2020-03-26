@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.department.DepartmentService
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import com.cynergisuite.middleware.error.NotFoundException
@@ -29,13 +29,12 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/department")
 class DepartmentController @Inject constructor(
-   private val authenticationService: AuthenticationService,
+   private val userService: UserService,
    private val departmentService: DepartmentService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("department-fetchOne", accessControlProvider = DepartmentAccessControlProvider::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
@@ -49,8 +48,8 @@ class DepartmentController @Inject constructor(
    ): DepartmentValueObject {
       logger.info("Fetching department by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = departmentService.fetchOne(id, user.myDataset()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = departmentService.fetchOne(id, user) ?: throw NotFoundException(id)
 
       logger.debug("Fetching department by {} resulted in {}", id, response)
 
@@ -58,7 +57,6 @@ class DepartmentController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("department-fetchAll", accessControlProvider = DepartmentAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a listing of departments", description = "Fetch a paginated listing of departments", operationId = "department-fetchAll")
    @ApiResponses(value = [
@@ -72,8 +70,8 @@ class DepartmentController @Inject constructor(
    ): Page<DepartmentValueObject> {
       logger.info("Fetching all departments {}", pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page = departmentService.fetchAll(pageRequest, user.myDataset())
+      val user = userService.findUser(authentication)
+      val page = departmentService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
