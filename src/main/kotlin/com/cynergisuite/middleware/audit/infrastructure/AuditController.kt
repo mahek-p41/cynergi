@@ -192,7 +192,7 @@ class AuditController @Inject constructor(
       logger.info("Requested approval of audit {}", audit)
 
       val user = userService.findUser(authentication)
-      val response = auditService.Approve(audit, user, httpRequest.findLocaleWithDefault())
+      val response = auditService.approve(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested approval of audit {} resulted in {}", audit, response)
 

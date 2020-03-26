@@ -123,7 +123,7 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun Approve(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
+   fun approve(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateApproved(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
       val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)

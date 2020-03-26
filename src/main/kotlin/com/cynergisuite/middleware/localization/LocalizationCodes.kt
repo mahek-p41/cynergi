@@ -50,7 +50,7 @@ class AuditScanAreaNotFound(scanArea: String?): Cynergi("cynergi.audit.scan.area
 class AuditOpenAtStore(storeNumber: Int): Cynergi("cynergi.audit.open.at.store", arrayOf(storeNumber))
 class AuditExceptionMustHaveInventoryOrBarcode(): Cynergi("cynergi.audit.exception.inventory.or.barcode", emptyArray())
 class AuditHasBeenApprovedNoNewNotesAllowed(auditId: Long): Cynergi("cynergi.audit.has.been.approved.no.new.notes.allowed", arrayOf(auditId))
-class AuditUpdateRequiresApprovedOrNote(): Cynergi("cynergi.audit.update.requires.sigenedoff.or.note", emptyArray())
+class AuditUpdateRequiresApprovedOrNote(): Cynergi("cynergi.audit.update.requires.approval.or.note", emptyArray())
 class AuditExceptionHasNotBeenApproved(auditExceptionId: Long): Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)

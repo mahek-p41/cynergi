@@ -391,13 +391,13 @@ class AuditExceptionRepository @Inject constructor(
       return jdbc.update("""
          UPDATE audit_exception
          SET approved = true,
-             approved_by = :employee
+             approved_by = :approved_by
          WHERE audit_id = :audit_id
          AND approved = false
          """,
          mapOf(
             "audit_id" to audit.myId(),
-            "employee" to employee.myEmployeeNumber()
+            "approved_by" to employee.myEmployeeNumber()
          )
       )
    }
@@ -409,14 +409,14 @@ class AuditExceptionRepository @Inject constructor(
       jdbc.updateReturning("""
          UPDATE audit_exception
          SET approved = :approved,
-             approved_by = :employee
+             approved_by = :approved_by
          WHERE id = :id
          RETURNING
             *
          """,
          mapOf(
             "approved" to entity.approved,
-            "employee" to if (entity.approved) entity.approvedBy?.number else null,
+            "approved_by" to if (entity.approved) entity.approvedBy?.number else null,
             "id" to entity.id
          ),
          RowMapper { rs, _ ->
