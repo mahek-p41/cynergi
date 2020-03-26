@@ -10,7 +10,6 @@ import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.github.javafaker.Faker
@@ -91,11 +90,11 @@ class AuditFactoryService @Inject constructor(
       return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
-   fun single(store: StoreEntity, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
+   fun single(store: Store, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
       return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
-   fun single(store: StoreEntity, changedByIn: AuthenticatedEmployee, statusesIn: Set<AuditStatus>): AuditEntity {
+   fun single(store: Store, changedByIn: AuthenticatedEmployee, statusesIn: Set<AuditStatus>): AuditEntity {
       val changedBy = employeeRepository.findOne(changedByIn) ?: throw Exception("Unable to create AuditEntity due to invalid changedBy")
 
       return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
@@ -105,7 +104,7 @@ class AuditFactoryService @Inject constructor(
       return stream(store = store).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
-   fun single(store: StoreEntity, changedBy: EmployeeEntity): AuditEntity {
+   fun single(store: Store, changedBy: EmployeeEntity): AuditEntity {
       return stream(store = store, changedBy = changedBy).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
@@ -116,7 +115,7 @@ class AuditFactoryService @Inject constructor(
       stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
    }
 
-   fun generate(numberIn: Int, store: StoreEntity, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
+   fun generate(numberIn: Int, store: Store, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
       stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
    }
 }

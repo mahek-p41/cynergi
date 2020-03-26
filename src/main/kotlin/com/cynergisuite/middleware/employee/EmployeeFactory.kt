@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.concurrent.atomic.AtomicInteger
@@ -90,7 +89,7 @@ class EmployeeFactoryService @Inject constructor(
       return stream(employeeNumberIn = employeeNumber, companyIn = company, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = cynergiSystemAdmin, alternativeStoreIndicator = alternativeStoreIndicator, alternativeArea = alternativeArea).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
-   fun singleUser(store: StoreEntity): AuthenticatedEmployee {
+   fun singleUser(store: Store): AuthenticatedEmployee {
       return stream(companyIn = store.myCompany(), storeIn = store)
          .map { employee ->
             AuthenticatedEmployee(
@@ -110,19 +109,19 @@ class EmployeeFactoryService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   fun singleAuthenticated(company: Company, store: StoreEntity, department: Department): AuthenticatedEmployee {
+   fun singleAuthenticated(company: Company, store: Store, department: Department): AuthenticatedEmployee {
       return streamAuthenticated(company = company, store = store, department = department).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   fun singleAuthenticated(company: Company, store: StoreEntity, department: Department, lastName: String, firstNameMi: String): AuthenticatedEmployee {
+   fun singleAuthenticated(company: Company, store: Store, department: Department, lastName: String, firstNameMi: String): AuthenticatedEmployee {
       return streamAuthenticated(company = company, store = store, department = department, lastNameIn = lastName, firstNameMiIn = firstNameMi).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   fun singleAuthenticated(company: Company, store: StoreEntity, department: Department, cynergiSystemAdmin: Boolean, alternativeStoreIndicator: String, alternativeArea: Int): AuthenticatedEmployee {
+   fun singleAuthenticated(company: Company, store: Store, department: Department, cynergiSystemAdmin: Boolean, alternativeStoreIndicator: String, alternativeArea: Int): AuthenticatedEmployee {
       return streamAuthenticated(company = company, store = store, department = department, cynergiSystemAdmin = cynergiSystemAdmin, alternativeStoreIndicatorIn = alternativeStoreIndicator, alternativeAreaIn = alternativeArea).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   private fun streamAuthenticated(numberIn: Int = 1, company: Company, store: StoreEntity, department: Department? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, cynergiSystemAdmin: Boolean = false, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<AuthenticatedEmployee> {
+   private fun streamAuthenticated(numberIn: Int = 1, company: Company, store: Store, department: Department? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, cynergiSystemAdmin: Boolean = false, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<AuthenticatedEmployee> {
       return stream(numberIn = numberIn, storeIn = store, companyIn = company, departmentIn = department, lastNameIn = lastNameIn, firstNameMiIn = firstNameMiIn, cynergiSystemAdminIn = cynergiSystemAdmin, alternativeStoreIndicator = alternativeStoreIndicatorIn, alternativeArea = alternativeAreaIn)
          .map { employee ->
             AuthenticatedEmployee(
