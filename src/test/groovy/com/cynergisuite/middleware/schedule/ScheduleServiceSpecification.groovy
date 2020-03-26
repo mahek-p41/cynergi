@@ -38,7 +38,8 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result == 1
       audit != null
-      audit.store == storeOne
+      audit.store.myNumber() == storeOne.myNumber()
+      audit.store.myCompany() == storeOne.myCompany()
       audit.actions.size() == 1
       audit.actions[0].status.value == Created.INSTANCE.value
       audits.elements.size() == 1

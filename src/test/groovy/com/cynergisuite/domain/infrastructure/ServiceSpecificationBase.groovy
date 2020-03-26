@@ -27,6 +27,8 @@ abstract class ServiceSpecificationBase extends Specification {
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
       this.divisions = companies.collect { company ->  divisionFactoryService.single(company) }.toList()
       this.regions = divisions.collect { division -> regionFactoryService.single(division) }.toList()
-      this.regions.collect { region -> storeFactoryService.companyStoresToRegion(region.division.company, region).toList() }
+      this.regions.collect { region ->
+         storeFactoryService.companyStoresToRegion(region).toList()
+      }
    }
 }

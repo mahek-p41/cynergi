@@ -20,6 +20,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.store.SimpleStore
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -478,8 +480,8 @@ class AuditRepository @Inject constructor(
             *
          """.trimMargin(),
          mapOf(
-            "store_number" to entity.store.number,
-            "company_id" to entity.store.company.myId()
+            "store_number" to entity.store.myNumber(),
+            "company_id" to entity.store.myCompany().myId()
          ),
          RowMapper { rs, _ ->
             AuditEntity(
@@ -551,8 +553,8 @@ class AuditRepository @Inject constructor(
       )
    }
 
-   private fun mapStore(rs: ResultSet): StoreEntity {
-      return StoreEntity(
+   private fun mapStore(rs: ResultSet): Store {
+      return SimpleStore(
          id = rs.getLong("auditStore_id"),
          number = rs.getInt("auditStore_number"),
          name = rs.getString("auditStore_name"),

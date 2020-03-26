@@ -1,7 +1,5 @@
 package com.cynergisuite.middleware.region.infrastructure
 
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
@@ -26,17 +24,15 @@ class RegionRepository @Inject constructor(
    @Transactional
    fun insert(region: RegionEntity): RegionEntity {
       logger.debug("Inserting region {}", region)
-      return jdbc.insertReturning(
-         """
-               INSERT INTO region(division_id, number, name, manager_number, description)
-               VALUES (:division_id, :number, :name, :manager_number, :description)
-               RETURNING *
-            """.trimIndent(),
+      return jdbc.insertReturning("""
+            INSERT INTO region(division_id, number, name, description)
+            VALUES (:division_id, :number, :name, :description)
+            RETURNING *
+         """.trimIndent(),
          mapOf(
             "division_id" to region.division.id,
             "number" to region.number,
             "name" to region.name,
-            "manager_number" to region.manager?.myNumber(),
             "description" to region.description
          ),
          RowMapper { rs, _ -> mapRowSimple(rs, region) }
@@ -46,9 +42,6 @@ class RegionRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          division = divisionRepository.mapRow(rs, company, "div_"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
@@ -58,9 +51,6 @@ class RegionRepository @Inject constructor(
    fun mapRowSimple(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          division = region.division,
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),

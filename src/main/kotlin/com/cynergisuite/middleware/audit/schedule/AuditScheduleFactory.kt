@@ -30,10 +30,10 @@ object AuditScheduleFactory {
          throw Exception("User Company [${user.myCompany()}] does not match provided Company [$company")
       }
 
-      if (stores.size > 0) {
+      if (stores.isNotEmpty()) {
          for (store in stores) {
-            if (store.company != company) {
-               throw Exception("Store dataset [${store.company.myDataset()}] does not match provided Company [${company.myDataset()}] dataset")
+            if (store.myCompany() != company) {
+               throw Exception("Store dataset [${store.myCompany().myDataset()}] does not match provided Company [${company.myDataset()}] dataset")
             } else {
                arguments.add(
                   ScheduleArgumentEntity(

@@ -30,7 +30,7 @@ data class InventoryEntity(
    val idleDays: Int,
    val condition: String?,
    val returnedDate: LocalDate?,
-   val location: StoreEntity?,
+   val location: Location?,
    val status: String,
    val primaryLocation: Location,
    val locationType: InventoryLocationType

@@ -1160,7 +1160,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       final audit = auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
@@ -1169,7 +1169,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.company) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.myNumber(), audit.store.myCompany()) == 0
 
       when:
       def result = post(path, new AuditCreateValueObject(), store1Tstds1UserAccessToken)

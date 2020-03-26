@@ -73,7 +73,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final employee = employeeFactoryService.single(store, department)
 
       when:
@@ -119,7 +119,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final validEmployee = employeeFactoryService.single(store, department)
 
       when:
@@ -141,7 +141,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final validEmployee = employeeFactoryService.single(store, department)
 
       when:
@@ -232,7 +232,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final employee = employeeFactoryService.single(store, department)
 
       when:

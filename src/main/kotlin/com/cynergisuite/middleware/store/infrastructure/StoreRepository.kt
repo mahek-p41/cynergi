@@ -4,12 +4,18 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.division.DivisionEntity
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
+import com.cynergisuite.middleware.store.SimpleStore
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
-import io.reactiverse.reactivex.pgclient.Row
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
@@ -48,24 +54,21 @@ class StoreRepository @Inject constructor(
             region.time_created AS reg_time_created,
             region.time_updated AS reg_time_updated,
             region.division_id AS reg_division_id,
-            region."number" AS reg_number,
+            region.number AS reg_number,
             region.name AS reg_name,
-            region.manager_number AS reg_manager_number,
             region.description AS reg_description,
             division.id AS div_id,
             division.uu_row_id AS div_uu_row_id,
             division.time_created AS div_time_created,
             division.time_updated AS div_time_updated,
-            division."number" AS div_number,
+            division.number AS div_number,
             division.name AS div_name,
-            division.manager_number AS div_manager_number,
-            division.description AS div_description,
-            division.company_id AS div_company_id
+            division.description AS div_description
          FROM fastinfo_prod_import.store_vw store
-              JOIN company comp ON comp.dataset_code = store.dataset
               JOIN region_to_store r2s ON r2s.store_number = store.number
 				  JOIN region ON region.id = r2s.region_id
-				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
+				  JOIN division ON region.division_id = division.id
+              JOIN company comp ON comp.dataset_code = store.dataset AND division.company_id = comp.id
       """
    }
 
@@ -85,7 +88,7 @@ class StoreRepository @Inject constructor(
 
       logger.debug("Searching for Store by number {}/{}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { mapRow(it, company) }
+      val found = jdbc.findFirstOrNull(query, params) { mapRow(it) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
 
@@ -158,7 +161,7 @@ class StoreRepository @Inject constructor(
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
    @Transactional
-   fun assignToRegion(store: StoreEntity, region: RegionEntity): Pair<RegionEntity, StoreEntity> {
+   fun assignToRegion(store: Location, region: RegionEntity): Pair<RegionEntity, Location> {
       logger.trace("Assigning Store {} to Region {}", store, region)
 
       jdbc.update("""
@@ -167,15 +170,52 @@ class StoreRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "region_id" to region.id,
-            "store_number" to store.number
+            "store_number" to store.myNumber()
          )
       )
 
       return region to store
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
+   private fun mapRow(rs: ResultSet) =
       StoreEntity(
+         id = rs.getLong("id"),
+         number = rs.getInt("number"),
+         name = rs.getString("name"),
+         region = RegionEntity(
+            id = rs.getLong("reg_id"),
+            uuRowId = rs.getUuid("reg_uu_row_id"),
+            timeCreated = rs.getOffsetDateTime("reg_time_created"),
+            timeUpdated = rs.getOffsetDateTime("reg_time_updated"),
+            number = rs.getInt("reg_number"),
+            name = rs.getString("reg_name"),
+            description = rs.getString("reg_description"),
+            division = DivisionEntity(
+               id = rs.getLong("div_id"),
+               uuRowId = rs.getUuid("div_uu_row_id"),
+               timeCreated = rs.getOffsetDateTime("div_time_created"),
+               timeUpdated = rs.getOffsetDateTime("div_time_updated"),
+               number = rs.getInt("div_number"),
+               name = rs.getString("div_name"),
+               description = rs.getString("div_description"),
+               company = CompanyEntity(
+                  id = rs.getLong("comp_id"),
+                  uuRowId = rs.getUuid("comp_uu_row_id"),
+                  timeCreated = rs.getOffsetDateTime("comp_time_created"),
+                  timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
+                  name = rs.getString("comp_name"),
+                  doingBusinessAs = rs.getString("comp_doing_business_as"),
+                  clientCode = rs.getString("comp_client_code"),
+                  clientId = rs.getInt("comp_client_id"),
+                  datasetCode = rs.getString("comp_dataset_code"),
+                  federalIdNumber = rs.getString("federal_id_number")
+               )
+            )
+         )
+      )
+
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store =
+      SimpleStore(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
@@ -187,33 +227,20 @@ class StoreRepository @Inject constructor(
             id = rs.getLong("${columnPrefix}id"),
             number = rs.getInt("${columnPrefix}number"),
             name = rs.getString("${columnPrefix}name"),
-            company = company,
             region = regionRepository.mapRow(rs, company, "reg_")
          )
 
 
-   fun maybeMapRow(rs: ResultSet, company: Company, columnPrefix: String): StoreEntity? =
+   fun maybeMapRow(rs: ResultSet, company: Company, columnPrefix: String): Store? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, company, columnPrefix)
       } else {
          null
       }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity? =
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, company, columnPrefix)
-      } else {
-         null
-      }
-
-   fun mapRow(row: Row, company: Company, columnPrefix: String = EMPTY): StoreEntity? =
-      if (row.getLong("${columnPrefix}id") != null) {
-         StoreEntity(
-            id = row.getLong("${columnPrefix}id"),
-            number = row.getInteger("${columnPrefix}number"),
-            name = row.getString("${columnPrefix}name"),
-            company = company
-         )
       } else {
          null
       }

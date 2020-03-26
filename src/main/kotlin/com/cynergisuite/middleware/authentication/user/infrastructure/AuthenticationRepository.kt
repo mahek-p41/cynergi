@@ -10,6 +10,8 @@ import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
+import com.cynergisuite.middleware.store.SimpleStore
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
@@ -220,9 +222,9 @@ class AuthenticationRepository @Inject constructor(
       }
    }
 
-   private fun mapLocation(row: Row, company: Company, columnPrefix: String): StoreEntity? {
+   private fun mapLocation(row: Row, company: Company, columnPrefix: String): Store? {
       return if (row.getLong("${columnPrefix}id") != null) {
-         StoreEntity(
+         SimpleStore(
             id = row.getLong("${columnPrefix}id"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),

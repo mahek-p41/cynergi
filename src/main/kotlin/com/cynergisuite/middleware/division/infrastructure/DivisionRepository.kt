@@ -27,15 +27,14 @@ class DivisionRepository @Inject constructor(
       logger.debug("Inserting division {}", entity)
       return jdbc.insertReturning(
          """
-               INSERT INTO division(company_id, number, name, manager_number, description)
-               VALUES (:company_id, :number, :name, :manager_number, :description)
+               INSERT INTO division(company_id, number, name, description)
+               VALUES (:company_id, :number, :name, :description)
                RETURNING *
             """.trimIndent(),
          mapOf(
             "company_id" to entity.company.id,
             "number" to entity.number,
             "name" to entity.name,
-            "manager_number" to entity.manager?.myNumber(),
             "description" to entity.description
          ),
          RowMapper { rs, _ -> mapRow(rs, entity) }
@@ -45,9 +44,6 @@ class DivisionRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = company as CompanyEntity,
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
@@ -57,13 +53,9 @@ class DivisionRepository @Inject constructor(
    fun mapRow(rs: ResultSet, division: DivisionEntity, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = division.company,
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         manager = division.manager,
          description = rs.getString("${columnPrefix}description")
       )
 }

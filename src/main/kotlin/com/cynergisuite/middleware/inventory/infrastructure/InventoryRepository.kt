@@ -133,7 +133,7 @@ class InventoryRepository(
 
       logger.debug("Search for Inventory by barcode {} produced {}", lookupKey, inventory)
 
-      return inventory;
+      return inventory
    }
 
    fun findAll(pageRequest: InventoryPageRequest, company: Company): RepositoryPage<InventoryEntity, InventoryPageRequest> {
@@ -172,7 +172,7 @@ class InventoryRepository(
          OFFSET :offset
       """.trimIndent()
 
-      logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql);
+      logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql)
 
       jdbc.query(sql, params) { rs ->
          if (totalElements == null) {
@@ -215,7 +215,7 @@ class InventoryRepository(
          idleDays = rs.getInt("idle_days"),
          condition = rs.getString("condition"),
          returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = storeRepository.maybeMapRow(rs, company, "current_store_"),
+         location = storeRepository.maybeMapRow(rs, company, "current_store_"), // TODO change to using location and location repository to map this
          status = rs.getString("status"),
          primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
          locationType = InventoryLocationType(

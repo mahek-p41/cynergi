@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -21,12 +22,12 @@ object EmployeeFactory {
    private val employeeNumberCounter = AtomicInteger(100_000)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdmin: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<EmployeeEntity> {
+   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdmin: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: Store? = null, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val name = faker.name()
       val lorem = faker.lorem()
-      val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.company ?: CompanyFactory.random()
+      val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: CompanyFactory.random()
 
       if (departmentIn != null && departmentIn.myCompany() != company) {
          throw Exception("Department's Company and Company do not match ${departmentIn.myCompany()} / $company")
@@ -73,7 +74,7 @@ class EmployeeFactoryService @Inject constructor(
       return stream(companyIn = company).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
-   fun single(storeIn: StoreEntity): EmployeeEntity {
+   fun single(storeIn: Store): EmployeeEntity {
       return stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
@@ -90,7 +91,7 @@ class EmployeeFactoryService @Inject constructor(
    }
 
    fun singleUser(store: StoreEntity): AuthenticatedEmployee {
-      return stream(companyIn = store.company, storeIn = store)
+      return stream(companyIn = store.myCompany(), storeIn = store)
          .map { employee ->
             AuthenticatedEmployee(
                id = employee.id!!,
@@ -143,8 +144,8 @@ class EmployeeFactoryService @Inject constructor(
    private fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null,
                       firstNameMiIn: String? = null, passCodeIn: String? = null, activeIn: Boolean = true,
                       cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null,
-                      departmentIn: Department? = null, storeIn: StoreEntity? = null, alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
-      val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.company ?: companyFactoryService.random()
+                      departmentIn: Department? = null, storeIn: Store? = null, alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
+      val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: companyFactoryService.random()
 
       return EmployeeFactory.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)
          .map { employeeRepository.insert(it).copy(passCode = it.passCode) }
