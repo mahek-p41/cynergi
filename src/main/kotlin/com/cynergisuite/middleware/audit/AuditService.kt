@@ -296,8 +296,19 @@ class AuditService @Inject constructor(
          table.addCell(Phrase(exception.scannedBy.displayName(), rowFont))
          table.addCell(Phrase(dateTimeFormatter.format(exception.timeCreated), rowFont))
          table.addCell(Phrase(exception.exceptionCode, rowFont))
-      }
 
+         exception.notes.forEach {
+            table.addCell(EMPTY)
+            table.defaultCell.colspan = 4
+            table.addCell(Phrase(it.note, rowFont))
+            table.defaultCell.colspan = 1
+            table.defaultCell.horizontalAlignment = Element.ALIGN_LEFT
+            table.addCell(Phrase(it.enteredBy.displayName(), rowFont))
+            table.defaultCell.colspan = 1
+            table.addCell(Phrase(dateTimeFormatter.format(it.timeUpdated), rowFont))
+            table.addCell(EMPTY)
+         }
+      }
       return table
    }
 }

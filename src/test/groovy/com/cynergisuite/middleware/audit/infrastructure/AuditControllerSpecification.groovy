@@ -600,14 +600,14 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
-      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
+      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee).toList()
 
       // setup store three open audit
       final openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
       auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
       auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
-      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
+      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee).toList()
 
       // setup store one canceled audit
       auditFactoryService.single(storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
