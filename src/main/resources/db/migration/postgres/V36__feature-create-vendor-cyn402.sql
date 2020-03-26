@@ -9,7 +9,7 @@ CREATE TABLE freight_on_board_type_domain
 );
 
 INSERT INTO freight_on_board_type_domain (id, name, code, description, localization_code)
-Values (1, 'DESTINATION', 'D', 'Destination', 'destination'),
+VALUES (1, 'DESTINATION', 'D', 'Destination', 'destination'),
        (2, 'SHIPPING', 'S', 'Shipping', 'shipping');
 
 CREATE TABLE freight_calc_method_type_domain
@@ -23,7 +23,7 @@ CREATE TABLE freight_calc_method_type_domain
 );
 
 INSERT INTO freight_calc_method_type_domain(id, name, code, description, localization_code)
-Values (1, 'ITEM', 'I', 'Item', 'item'),
+VALUES (1, 'ITEM', 'I', 'Item', 'item'),
        (2, 'NONE', 'N', 'None', 'none'),
        (3, 'PERCENT', 'P', 'Percent', 'percent'),
        (4, 'SIZE', 'S', 'Size', 'size'),
@@ -41,11 +41,11 @@ CREATE TABLE vendor_group
     UNIQUE (company_id, code)
 );
 
-CREATE TRIGGER upDATE_vendor_group_trg
+CREATE TRIGGER update_vendor_group_trg
     BEFORE UPDATE
     ON vendor_group
     FOR EACH ROW
-EXECUTE PROCEDURE last_upDATEd_column_fn();
+EXECUTE PROCEDURE last_updated_column_fn();
 
 
 CREATE TABLE vendor
