@@ -25,7 +25,6 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -62,8 +61,8 @@ class AuditExceptionRepository @Inject constructor(
          auditException.inventory_model                             AS auditException_inventory_model,
          auditException.exception_code                              AS auditException_exception_code,
          auditException.audit_id                                    AS auditException_audit_id,
-         auditException.approved                                  AS auditException_approved,
-         auditException.approved_by                               AS auditException_approved_by,
+         auditException.approved                                    AS auditException_approved,
+         auditException.approved_by                                 AS auditException_approved_by,
          auditException.lookup_key                                  AS auditException_lookup_key,
          auditScanArea.id                                           AS auditScanArea_id,
          auditScanArea.value                                        AS auditScanArea_value,
@@ -149,8 +148,7 @@ class AuditExceptionRepository @Inject constructor(
       """.trimIndent()
 
    fun findOne(id: Long, company: Company): AuditExceptionEntity? {
-      val comp_id = company.myId()
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to comp_id)
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${findOneQuery()}\nWHERE auditException.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for AuditExceptions using {} {}", query, params)

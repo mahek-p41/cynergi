@@ -100,7 +100,7 @@ class DevelopDataLoader @Inject constructor(
       auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, showroom)
       auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, storeroom)
       // create random [0..2] notes for each audit exception
-      auditExceptionFactoryService.generate(25, completedStore1Audit, corrtoStore1StoreManager).forEach {
+      auditExceptionFactoryService.stream(25, completedStore1Audit, corrtoStore1StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore1StoreManager).forEach { }
       }
 
@@ -110,7 +110,7 @@ class DevelopDataLoader @Inject constructor(
       auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, showroom)
       auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, storeroom)
       // create random [0..2] notes for each audit exception
-      auditExceptionFactoryService.generate(26, openStore3Audit, corrtoStore3StoreManager).forEach {
+      auditExceptionFactoryService.stream(26, openStore3Audit, corrtoStore3StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore3StoreManager).forEach {}
       }
       val auditException =  auditExceptionFactoryService.single(openStore3Audit, corrtoStore3StoreManager, true)

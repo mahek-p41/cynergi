@@ -2,15 +2,11 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import org.apache.commons.lang3.RandomUtils
@@ -69,11 +65,7 @@ object AuditExceptionFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class AuditExceptionFactoryService @Inject constructor(
-   private val auditFactoryService: AuditFactoryService,
-   private val auditExceptionRepository: AuditExceptionRepository,
-   private val auditScanAreaFactoryService: AuditScanAreaFactoryService,
-   private val employeeFactoryService: EmployeeFactoryService,
-   private val storeFactoryService: StoreFactoryService
+   private val auditExceptionRepository: AuditExceptionRepository
 ) {
 
    fun stream(numberIn: Int = 1, audit: AuditEntity): Stream<AuditExceptionEntity> {
@@ -92,8 +84,12 @@ class AuditExceptionFactoryService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create AuditExceptionEntity") }
    }
 
-   fun generate(numberIn: Int, audit: AuditEntity, scannedBy: EmployeeEntity): Stream<AuditExceptionEntity> {
+   fun stream(numberIn: Int, audit: AuditEntity, scannedBy: EmployeeEntity): Stream<AuditExceptionEntity> {
       return AuditExceptionFactory.stream(numberIn = numberIn, audit = audit, scannedByIn = scannedBy)
          .map { auditExceptionRepository.insert(it) }
+   }
+
+   fun generate(numberIn: Int, audit: AuditEntity, scannedBy: EmployeeEntity) {
+      return stream(numberIn = numberIn, audit = audit, scannedBy = scannedBy).forEach {  }
    }
 }

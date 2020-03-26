@@ -25,7 +25,6 @@ data class AuditExceptionUpdateValueObject(
    @field:Schema(name = "note", description = "Note to be added to the AuditException")
    var note: AuditExceptionNoteValueObject? = null,
 
-   @field:Valid
    @field:Schema(name = "approved", description = "AuditException boolean for approved")
    var approved: Boolean? = null
 
