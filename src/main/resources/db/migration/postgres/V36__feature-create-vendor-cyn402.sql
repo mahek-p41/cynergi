@@ -1,33 +1,31 @@
 CREATE TABLE freight_on_board_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    name              VARCHAR(50) CHECK ( char_length(trim(name)) > 1)               NOT NULL,
-    code              VARCHAR(10) CHECK ( char_length(trim(code)) > 0)               NOT NULL,
+    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)               NOT NULL,
     description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
     localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (name, code)
+    UNIQUE (value)
 );
 
-INSERT INTO freight_on_board_type_domain (id, name, code, description, localization_code)
-VALUES (1, 'DESTINATION', 'D', 'Destination', 'destination'),
-       (2, 'SHIPPING', 'S', 'Shipping', 'shipping');
+INSERT INTO freight_on_board_type_domain (id, value, description, localization_code)
+VALUES (1, 'D', 'Destination', 'destination'),
+       (2, 'S', 'Shipping', 'shipping');
 
 CREATE TABLE freight_calc_method_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    name              VARCHAR(50) CHECK ( char_length(trim(name)) > 1)               NOT NULL,
-    code              VARCHAR(10) CHECK ( char_length(trim(code)) > 0)               NOT NULL,
+    value              VARCHAR(10) CHECK ( char_length(trim(value)) > 0)               NOT NULL,
     description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
     localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (name, code)
+    UNIQUE (value)
 );
 
-INSERT INTO freight_calc_method_type_domain(id, name, code, description, localization_code)
-VALUES (1, 'ITEM', 'I', 'Item', 'item'),
-       (2, 'NONE', 'N', 'None', 'none'),
-       (3, 'PERCENT', 'P', 'Percent', 'percent'),
-       (4, 'SIZE', 'S', 'Size', 'size'),
-       (5, 'WEIGHT', 'W', 'Weight', 'weight');
+INSERT INTO freight_calc_method_type_domain(id, value, description, localization_code)
+VALUES (1, 'I', 'Item', 'item'),
+       (2, 'N', 'None', 'none'),
+       (3, 'P', 'Percent', 'percent'),
+       (4, 'S', 'Size', 'size'),
+       (5, 'W', 'Weight', 'weight');
 
 CREATE TABLE vendor_group
 (
@@ -35,10 +33,10 @@ CREATE TABLE vendor_group
     uu_row_id    UUID        DEFAULT uuid_generate_v1()                 NOT NULL,
     time_created TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     time_upDATEd TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
-    company_id   BIGINT REFERENCES company (id)                         NOT NULL,
-    code         VARCHAR(10) CHECK (char_length(trim(code)) > 1)        NOT NULL,
+    company_id BIGINT REFERENCES company(id)                            NOT NULL,
+    value         VARCHAR(10) CHECK (char_length(trim(value)) > 1)        NOT NULL,
     description  VARCHAR(50) CHECK (char_length(trim(description)) > 1) NOT NULL,
-    UNIQUE (company_id, code)
+    UNIQUE (company_id, value)
 );
 
 CREATE TRIGGER update_vendor_group_trg
@@ -66,7 +64,7 @@ CREATE TABLE vendor
     normal_days                    INTEGER,
     return_policy                  BOOLEAN     DEFAULT FALSE                              NOT NULL,
     ship_via_id                    BIGINT REFERENCES ship_via (id)                        NOT NULL,
-    group_id                       BIGINT REFERENCES vendor_group (id)                    NOT NULL,
+    group_id                       BIGINT REFERENCES vendor_group (id),
     shutdown_from                  DATE,
     shutdown_thru                  DATE,
     minimum_quantity               INTEGER,
