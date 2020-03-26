@@ -15,10 +15,10 @@ Values
 CREATE TABLE freight_calc_method_type_domain (
 	 id integer                                                                  NOT NULL PRIMARY KEY,
     name varchar(50) CHECK ( char_length(trim(name)) > 1)                       NOT NULL,
-	 code varchar(10) CHECK ( char_length(trim(code)) > 0)                       NOT NULL,
+	 value varchar(10) CHECK ( char_length(trim(value)) > 0)                       NOT NULL,
 	 description varchar(100) CHECK ( char_length(trim(description)) > 1)        NOT NULL,
 	 localization_code varchar(100) CHECK( char_length(trim(localization_code)) > 1) NOT NULL,
-	 UNIQUE(name, code)
+	 UNIQUE(name, value)
  );
 
 INSERT INTO freight_calc_method_type_domain(id,name,code,description,localization_code)
