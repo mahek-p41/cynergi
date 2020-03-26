@@ -22,6 +22,7 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactor
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
@@ -479,7 +480,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
-      final storeNumbers = [storeOne.id]
+      final storeNumbers = [storeOne.myId()]
       final scannedBy = employeeFactoryService.single(storeOne)
       final singleAudit = auditFactoryService.single(storeOne, scannedBy)
       final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, scannedBy, false)
@@ -499,7 +500,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeOneFilterResult.elements != null
       storeOneFilterResult.elements.size() == 5
       storeOneFilterResult.elements[0].id > 0
-      storeOneFilterResult.elements[0].store.storeNumber == storeOne.number
+      storeOneFilterResult.elements[0].store.storeNumber == storeOne.myNumber()
       storeOneFilterResult.elements[0].hasExceptionNotes == true
       storeOneFilterResult.elements[0].actions[0].id == singleAudit.actions[0].id
       storeOneFilterResult.elements[0].actions[0].status.value == singleAudit.actions[0].status.value
@@ -773,18 +774,24 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "create new audit" () {
+      given:
+      final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
+      final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
+
       when:
-      def result = post(path, new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject(), store1Tstds1UserAccessToken)
 
       then:
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
+      result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
-      result.actions[0].changedBy.number == authenticatedEmployee.number
+      result.actions[0].changedBy.number == store1Tstds1AuthenticatedEmployee.number
    }
 
    void "create new audits and verify audit numbers are sequential" () {
@@ -802,44 +809,48 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit when previous audit was cancelled" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final store = storeFactoryService.random(company)
-      final employee = employeeFactoryService.single(company)
+      final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
+      final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
+      final store = storeFactoryService.random(tstds1)
+      final employee = employeeFactoryService.single(tstds1)
       auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
 
       when:
-      def result = post(path, new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject(), store1Tstds1UserAccessToken)
 
       then:
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
+      result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
-      result.actions[0].changedBy.number == authenticatedEmployee.number
+      result.actions[0].changedBy.number == store1Tstds1AuthenticatedEmployee.number
    }
 
    void "create new audit when previous audit was signed-off" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final employee = employeeFactoryService.single(company)
-      final store = storeFactoryService.random(company)
-      auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.signedOff()] as Set)
+      final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
+      final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
+      auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.signedOff()] as Set)
 
       when:
-      def result = post(path, new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject(), store1Tstds1UserAccessToken)
 
       then:
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > 0
-      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
+      result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
-      result.actions[0].changedBy.number == authenticatedEmployee.number
+      result.actions[0].changedBy.number == store1Tstds1AuthenticatedEmployee.number
    }
 
    void "create new audit with invalid store" () {
@@ -857,20 +868,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit on store with already open audit" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final store = storeFactoryService.store(1, company)
-      auditFactoryService.single(store)
-      final newAudit = AuditFactory.single(store).with { new AuditCreateValueObject([store: new StoreValueObject(it.store)]) }
+      final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
+      final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
+      auditFactoryService.single(store1Tstds1)
+      final newAudit = AuditFactory.single(store1Tstds1).with { new AuditCreateValueObject([store: new StoreValueObject(it.store)]) }
 
       when:
-      post(path, newAudit)
+      post(path, newAudit, store1Tstds1UserAccessToken)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Store ${store.number} has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Store 1 has an audit already in progress", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {
@@ -885,7 +898,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == audit.id
-      result.store.storeNumber == store.number
+      result.store.storeNumber == store.myNumber()
       result.actions.size() == 2
       final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
@@ -902,7 +915,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       resultActions[1].id > resultActions[0].id
       resultActions[1].status.value == "IN-PROGRESS"
       resultActions[1].status.description == "In Progress"
-      resultActions[1].changedBy.number == authenticatedEmployee.number
+      resultActions[1].changedBy.number == nineNineEightAuthenticatedEmployee.number
    }
 
    void "update opened audit to canceled" () {
@@ -918,7 +931,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id == audit.id
-      result.store.storeNumber == audit.store.number
+      result.store.storeNumber == audit.store.myNumber()
       result.actions.size() == 2
       final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
@@ -935,7 +948,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       resultActions[1].id > resultActions[0].id
       resultActions[1].status.value == "CANCELED"
       resultActions[1].status.description == "Canceled"
-      resultActions[1].changedBy.number == authenticatedEmployee.number
+      resultActions[1].changedBy.number == nineNineEightAuthenticatedEmployee.number
    }
 
    void "update opened to completed" () {
@@ -1003,7 +1016,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       when:
       client.exchange(
-         PUT("/${path}", """{ "id": ${audit.id}, "status": { "value": null } }""").header("Authorization", "Bearer $cynergiAccessToken"),
+         PUT("/${path}", """{ "id": ${audit.id}, "status": { "value": null } }""").header("Authorization", "Bearer $nineNineEightAccessToken"),
          Argument.of(String),
          Argument.of(String)
       )
@@ -1082,7 +1095,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openActions[0].id > 0
       openActions[0].status.value == "CREATED"
       openActions[0].status.description == "Created"
-      openActions[0].changedBy.number == authenticatedEmployee.number
+      openActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
 
       when:
       def inProgressResult = put(path, new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
@@ -1102,13 +1115,13 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressActions[0].id > 0
       inProgressActions[0].status.value == "CREATED"
       inProgressActions[0].status.description == "Created"
-      inProgressActions[0].changedBy.number == authenticatedEmployee.number
+      inProgressActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
       inProgressActions[1].id != null
       inProgressActions[1].id > 0
       inProgressActions[1].id > inProgressActions[0].id
       inProgressActions[1].status.value == "IN-PROGRESS"
       inProgressActions[1].status.description == "In Progress"
-      inProgressActions[1].changedBy.number == authenticatedEmployee.number
+      inProgressActions[1].changedBy.number == nineNineEightAuthenticatedEmployee.number
 
       when:
       def completedResult = put(path, new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
@@ -1128,48 +1141,48 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedActions[0].id > 0
       completedActions[0].status.value == "CREATED"
       completedActions[0].status.description == "Created"
-      completedActions[0].changedBy.number == authenticatedEmployee.number
+      completedActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
       completedActions[1].id != null
       completedActions[1].id > 0
       completedActions[1].id > completedActions[0].id
       completedActions[1].status.value == "IN-PROGRESS"
       completedActions[1].status.description == "In Progress"
-      completedActions[1].changedBy.number == authenticatedEmployee.number
+      completedActions[1].changedBy.number == nineNineEightAuthenticatedEmployee.number
       completedActions[2].id != null
       completedActions[2].id > 0
       completedActions[2].id > completedActions[1].id
       completedActions[2].status.value == "COMPLETED"
       completedActions[2].status.description == "Completed"
-      completedActions[2].changedBy.number == authenticatedEmployee.number
+      completedActions[2].changedBy.number == nineNineEightAuthenticatedEmployee.number
    }
 
    void "create new audit after existing open audit was COMPLETED" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final employee = employeeFactoryService.single(company)
-      final store = storeFactoryService.store(1, company)
-      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
+      final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
+      final audit = auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
       put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       notThrown(HttpClientResponseException)
-      //TODO Need some sort of user for the below
-      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.number, audit.store.company) == 0
+      auditRepository.countAuditsNotCompletedOrCanceled(audit.store.myNumber(), audit.store.myCompany()) == 0
 
       when:
-      def result = post(path, new AuditCreateValueObject())
+      def result = post(path, new AuditCreateValueObject(), store1Tstds1UserAccessToken)
 
       then:
       notThrown(HttpClientResponseException)
       result.id != null
       result.id > audit.id
-      result.store.storeNumber == authenticatedEmployee.myLocation().myNumber()
+      result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
       result.actions[0].status.description == "Created"
-      result.actions[0].changedBy.number == authenticatedEmployee.number
+      result.actions[0].changedBy.number == store1Tstds1AuthenticatedEmployee.number
    }
 
    void "update completed audit to signed-off and sign-off on exceptions" () {
@@ -1216,7 +1229,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       resultActions[3].id > resultActions[0].id
       resultActions[3].status.value == "SIGNED-OFF"
       resultActions[3].status.description == "Signed Off"
-      resultActions[3].changedBy.number == authenticatedEmployee.number
+      resultActions[3].changedBy.number == nineNineEightAuthenticatedEmployee.number
 
       when:
       def pageOneResult = get("/audit/${audit.id}/exception")
@@ -1231,7 +1244,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['signedOff'] = true }
 
       when:
-      def pdf = client.exchange(GET("/${path}/${audit.id}/report/exception").header("Authorization", "Bearer $cynergiAccessToken"), Argument.of(byte[]))
+      def pdf = client.exchange(GET("/${path}/${audit.id}/report/exception").header("Authorization", "Bearer $nineNineEightAccessToken"), Argument.of(byte[]))
 
       then:
       notThrown(HttpClientResponseException)

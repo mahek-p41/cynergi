@@ -2,9 +2,10 @@ import java.text.SimpleDateFormat
 
 buildscript {
    repositories {
-      maven {
+      mavenCentral()
+      /*maven {
          url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
-      }
+      }*/
    }
    dependencies {
       classpath "org.openapitools:openapi-generator-gradle-plugin:4.0.0"
@@ -29,9 +30,10 @@ version "${releaseVersion}"
 group "com.hightouchinc.cynergi"
 
 repositories {
-   maven {
+   mavenCentral()
+   /*maven {
       url "http://172.28.1.6/nexus/repository/RTO-GROUP-MVN-REPO/"
-   }
+   }*/
 }
 
 dependencyManagement {

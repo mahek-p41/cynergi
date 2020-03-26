@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
-import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.Store
 
 data class EmployeeEntity(
    val id: Long? = null,
@@ -15,12 +15,12 @@ data class EmployeeEntity(
    val cynergiSystemAdmin: Boolean = false,
    val company: Company,
    val department: Department?,
-   val store: StoreEntity?,
+   val store: Store?,
    val alternativeStoreIndicator: String,
    val alternativeArea: Int
 ) : Employee {
 
-   constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: StoreEntity?) :
+   constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: Store?) :
       this(
          id = vo.id,
          type = vo.type!!,
