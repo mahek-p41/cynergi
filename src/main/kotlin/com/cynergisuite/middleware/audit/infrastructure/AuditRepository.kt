@@ -132,8 +132,8 @@ class AuditRepository @Inject constructor(
       return found
    }
 
-   fun findOneCreatedOrInProgress(store: StoreEntity): AuditEntity? {
-      val params = mutableMapOf<String, Any?>("store_number" to store.number, "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
+   fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
+      val params = mutableMapOf("store_number" to store.myNumber(), "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
       val query = "${selectBaseQuery()}\nWHERE a.store_number = :store_number AND astd.value IN (:statuses)"
 
       logger.debug("Searching for audit in either CREATED or IN_PROGRESS for store {} using {}", store, query)

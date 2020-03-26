@@ -480,7 +480,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
-      final storeNumbers = [storeOne.id]
+      final storeNumbers = [storeOne.myId()]
       final scannedBy = employeeFactoryService.single(storeOne)
       final singleAudit = auditFactoryService.single(storeOne, scannedBy)
       final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, scannedBy, false)
@@ -500,7 +500,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeOneFilterResult.elements != null
       storeOneFilterResult.elements.size() == 5
       storeOneFilterResult.elements[0].id > 0
-      storeOneFilterResult.elements[0].store.storeNumber == storeOne.number
+      storeOneFilterResult.elements[0].store.storeNumber == storeOne.myNumber()
       storeOneFilterResult.elements[0].hasExceptionNotes == true
       storeOneFilterResult.elements[0].actions[0].id == singleAudit.actions[0].id
       storeOneFilterResult.elements[0].actions[0].status.value == singleAudit.actions[0].status.value
@@ -898,7 +898,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == audit.id
-      result.store.storeNumber == store.number
+      result.store.storeNumber == store.myNumber()
       result.actions.size() == 2
       final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
@@ -931,7 +931,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id != null
       result.id == audit.id
-      result.store.storeNumber == audit.store.number
+      result.store.storeNumber == audit.store.myNumber()
       result.actions.size() == 2
       final resultActions = result.actions
          .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
