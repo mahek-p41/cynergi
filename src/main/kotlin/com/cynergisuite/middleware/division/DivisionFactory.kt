@@ -17,7 +17,7 @@ object DivisionFactory {
    private val divisionNumberCounter = AtomicInteger(1)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, companyIn: CompanyEntity, divisionalManager: EmployeeEntity? = null): Stream<DivisionEntity> {
+   fun stream(numberIn: Int = 1, companyIn: CompanyEntity): Stream<DivisionEntity> {
       val faker = Faker()
       val lorem = faker.lorem()
 
@@ -27,7 +27,6 @@ object DivisionFactory {
          DivisionEntity(
             name = name,
             number = divisionNumberCounter.getAndIncrement(),
-            manager = divisionalManager,
             description = description,
             company = companyIn
          )
