@@ -42,7 +42,6 @@ class AuditDetailController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditDetail-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/detail/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditDetailEndpoints"], summary = "Fetch a single AuditDetail", description = "Fetch a single AuditDetail by it's system generated primary key", operationId = "auditDetail-fetchOne")
    @ApiResponses(value = [
@@ -66,7 +65,6 @@ class AuditDetailController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditDetail-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{auditId}/detail{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditDetailEndpoints"], summary = "Fetch a listing of AuditDetails", description = "Fetch a paginated listing of AuditDetails based on a parent Audit", operationId = "auditDetail-fetchAll")
    @ApiResponses(value = [
@@ -93,7 +91,6 @@ class AuditDetailController @Inject constructor(
    }
 
    @Post(uri = "/{auditId}/detail", processes = [APPLICATION_JSON])
-   @AccessControl("auditDetail-save", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditDetailEndpoints"], summary = "Create a single AuditDetail", description = "Create a single AuditDetail. The logged in Employee is used for the scannedBy property", operationId = "auditDetail-create")
    @ApiResponses(value = [
@@ -103,10 +100,10 @@ class AuditDetailController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-           @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-           @Body vo: AuditDetailCreateDataTransferObject,
-           authentication: Authentication,
-           httpRequest: HttpRequest<*>
+      @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
+      @Body vo: AuditDetailCreateDataTransferObject,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 

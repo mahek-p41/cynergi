@@ -35,7 +35,6 @@ class DepartmentController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("department-fetchOne", accessControlProvider = DepartmentAccessControlProvider::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
@@ -58,7 +57,6 @@ class DepartmentController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("department-fetchAll", accessControlProvider = DepartmentAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a listing of departments", description = "Fetch a paginated listing of departments", operationId = "department-fetchAll")
    @ApiResponses(value = [
