@@ -18,7 +18,7 @@ object RegionFactory {
    private val regionNumberCounter = AtomicInteger(1)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, divisionIn: DivisionEntity, regionalManager: EmployeeEntity? = null): Stream<RegionEntity> {
+   fun stream(numberIn: Int = 1, divisionIn: DivisionEntity): Stream<RegionEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -29,7 +29,6 @@ object RegionFactory {
          RegionEntity(
             name = name,
             number = regionNumberCounter.getAndIncrement(),
-            manager = regionalManager,
             description = description,
             division = divisionIn
          )

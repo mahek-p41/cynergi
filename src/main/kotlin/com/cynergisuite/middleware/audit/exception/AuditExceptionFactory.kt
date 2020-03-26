@@ -41,7 +41,7 @@ object AuditExceptionFactory {
       val faker = Faker()
       val random = faker.random()
       val lorem = faker.lorem()
-      val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.company)
+      val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.myCompany())
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
       val signedOff = signedOffIn ?: random.nextBoolean()
       val signedOffBy = if (signedOff) scannedByIn else null

@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.location.Location
-import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.Store
 
 data class AuthenticatedEmployee(
    val id: Long,
@@ -35,7 +35,7 @@ data class AuthenticatedEmployee(
          alternativeArea = user.alternativeArea
       )
 
-   constructor(employeeId: Long, employee: EmployeeEntity, store: StoreEntity) :
+   constructor(employeeId: Long, employee: EmployeeEntity, store: Store) :
       this(
          id = employeeId,
          type = employee.type,

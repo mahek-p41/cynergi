@@ -20,7 +20,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department id" () {
       given:
-      def department = departmentFactoryService.random(authenticatedEmployee.company)
+      def department = departmentFactoryService.random(nineNineEightAuthenticatedEmployee.company)
 
       when:
       def result = get("/department/${department.id}")

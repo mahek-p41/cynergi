@@ -8,8 +8,10 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.DepartmentEntity
-import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.location.infrastructure.LocationRepository
+import com.cynergisuite.middleware.store.SimpleStore
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
@@ -25,9 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthenticationRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
-   private val departmentRepository: DepartmentRepository,
    private val employeeRepository: EmployeeRepository,
-   private val storeRepository: StoreRepository,
+   private val locationRepository: LocationRepository,
    private val passwordEncoderService: PasswordEncoderService,
    private val postgresClient: PgPool
 ) {
@@ -175,7 +176,7 @@ class AuthenticationRepository @Inject constructor(
    fun findUser(employeeId: Long, employeeType: String, employeeNumber: Int, companyId: Long, storeNumber: Int): AuthenticatedUser {
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
-      val location = storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
+      val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
       val department = employee.department
 
       return AuthenticatedUser(
@@ -221,9 +222,9 @@ class AuthenticationRepository @Inject constructor(
       }
    }
 
-   private fun mapLocation(row: Row, company: Company, columnPrefix: String): StoreEntity? {
+   private fun mapLocation(row: Row, company: Company, columnPrefix: String): Store? {
       return if (row.getLong("${columnPrefix}id") != null) {
-         StoreEntity(
+         SimpleStore(
             id = row.getLong("${columnPrefix}id"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),
