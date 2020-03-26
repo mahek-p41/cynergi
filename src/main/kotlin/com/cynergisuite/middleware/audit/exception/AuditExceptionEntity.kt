@@ -22,7 +22,7 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: EmployeeEntity,
+   val scannedBy: EmployeeEntity, // FIXME convert to Employee
    val exceptionCode: String,
    val approved: Boolean = false,
    val approvedBy: EmployeeEntity? = null,

@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.test.annotation.MicronautTest
+
 import javax.inject.Inject
 
 import static java.time.DayOfWeek.TUESDAY
@@ -20,14 +20,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject ScheduleService scheduleService
-   @Inject StoreFactoryService storeFactoryService
 
    void "execute daily Tuesday audit job on Tuesday" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0) // make ourselves a user who can see all audits
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
       final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
       when:
@@ -39,7 +38,8 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result == 1
       audit != null
-      audit.store == storeOne
+      audit.store.myNumber() == storeOne.myNumber()
+      audit.store.myCompany() == storeOne.myCompany()
       audit.actions.size() == 1
       audit.actions[0].status.value == Created.INSTANCE.value
       audits.elements.size() == 1
@@ -50,7 +50,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0) // make ourselves a user who can see all audits
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
       final tuesdaySchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
       when:

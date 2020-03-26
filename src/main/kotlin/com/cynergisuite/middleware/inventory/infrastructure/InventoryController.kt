@@ -5,7 +5,6 @@ import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.authentication.infrastructure.AlwaysAllowAccessControlProvider
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.inventory.InventoryService
@@ -38,7 +37,6 @@ class InventoryController(
    private val logger: Logger = LoggerFactory.getLogger(InventoryController::class.java)
 
    @Throws(AccessException::class)
-   @AccessControl("inventory-fetchAll", accessControlProvider = AlwaysAllowAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
    @ApiResponses(value = [
@@ -69,7 +67,6 @@ class InventoryController(
    }
 
    @Throws(AccessException::class, NotFoundException::class)
-   @AccessControl("inventory-fetchByLookupKey", accessControlProvider = AlwaysAllowAccessControlProvider::class)
    @Get(uri = "/{lookupKey}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookupKey", description = "Fetch an Inventory item by lookupKey", operationId = "inventory-fetchByLookupKey")
    @ApiResponses(value = [

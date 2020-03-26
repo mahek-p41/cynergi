@@ -8,9 +8,10 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import org.apache.commons.lang3.StringUtils.EMPTY
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -41,8 +42,8 @@ class CompanyRepository @Inject constructor(
       FROM company comp
    """
 
-   fun findCompanyByStore(store: StoreEntity): CompanyEntity? {
-      logger.debug("Search for company using store id {}", store.id)
+   fun findCompanyByStore(store: Store): CompanyEntity? {
+      logger.debug("Search for company using store id {}", store.myId())
 
       val found = jdbc.findFirstOrNull("""
          SELECT
@@ -63,13 +64,13 @@ class CompanyRepository @Inject constructor(
                AND s.dataset = :dataset
          """,
          mapOf(
-            "store_id" to store.id,
+            "store_id" to store.myId(),
             "dataset" to store.myCompany().myDataset()
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.debug("Searching for company by store id {} resulted in {}", store.id, found)
+      logger.debug("Searching for company by store id {} resulted in {}", store.myId(), found)
 
       return found
    }

@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.authentication.user
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.infrastructure.AuthenticatedUserJwtClaimSetGenerator
 import com.cynergisuite.middleware.authentication.user.infrastructure.AuthenticationRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.security.authentication.Authentication
 import io.reactivex.Maybe

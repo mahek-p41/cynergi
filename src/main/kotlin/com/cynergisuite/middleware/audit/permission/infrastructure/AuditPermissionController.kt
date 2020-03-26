@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTra
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -20,7 +20,6 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
@@ -47,7 +46,7 @@ class AuditPermissionController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @AccessControl("auditPermission-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a single Audit Permission by it's system generated primary key", operationId = "auditPermission-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
@@ -70,7 +69,7 @@ class AuditPermissionController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Get("{?pageRequest*}", processes = [APPLICATION_JSON])
-   @AccessControl("auditPermission-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a listing of Audit Permissions", operationId = "auditPermission-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -98,7 +97,7 @@ class AuditPermissionController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/type/{typeId:[0-9]+}{?pageRequest*}", processes = [APPLICATION_JSON])
-   @AccessControl("auditPermission-fetchAllByType", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions of a certain Type", description = "Fetch a listing of Audit Permissions of a certain Type", operationId = "auditPermission-fetchAllByType")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -127,7 +126,7 @@ class AuditPermissionController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/type{?pageRequest*}", processes = [APPLICATION_JSON])
-   @AccessControl("auditPermissionType-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions Types", description = "Fetch a listing of Audit Permissions", operationId = "auditPermissionType-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -153,7 +152,7 @@ class AuditPermissionController @Inject constructor(
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class)
-   @AccessControl("auditPermission-create", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Create a single audit permission", description = "Create a single audit permission associated with a department and permission type.", operationId = "auditPermission-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
@@ -175,7 +174,7 @@ class AuditPermissionController @Inject constructor(
    }
 
    @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @AccessControl("auditPermission-delete", accessControlProvider = AuditAccessControlProvider::class)
+   @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Delete a single Audit Permission", description = "Delete a single Audit Permission by it's system generated primary key", operationId = "auditPermission-delete")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),

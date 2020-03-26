@@ -4,8 +4,6 @@ import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
-import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -14,7 +12,9 @@ import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpRequest.*
+import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.HEAD
+import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
@@ -23,8 +23,6 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
    @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
-   @Inject StoreService storeService
-   @Inject StoreFactoryService storeFactoryService
 
    void "login successful with user who doesn't have department" () {
       given:
@@ -75,7 +73,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final employee = employeeFactoryService.single(store, department)
 
       when:
@@ -121,7 +119,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final validEmployee = employeeFactoryService.single(store, department)
 
       when:
@@ -143,7 +141,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final validEmployee = employeeFactoryService.single(store, department)
 
       when:
@@ -188,8 +186,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final htUberUserTstds1 = employeeFactoryService.single(998, tstds1, 'admin', null, 'word', true)
-      final htUberUserTstds2 = employeeFactoryService.single(998, tstds2, 'admin', null, 'word', true)
+      final htUberUserTstds1 = employeeFactoryService.single(998, tstds1, 'admin', null, 'word', true, 'A', 0)
+      final htUberUserTstds2 = employeeFactoryService.single(998, tstds2, 'admin', null, 'word', true, 'A', 0)
 
       when:
       def authResponse = httpClient.toBlocking()
@@ -234,7 +232,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.company)
+      final department = departmentFactoryService.random(store.myCompany())
       final employee = employeeFactoryService.single(store, department)
 
       when:

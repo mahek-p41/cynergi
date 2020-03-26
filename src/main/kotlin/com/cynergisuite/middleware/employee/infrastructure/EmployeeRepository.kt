@@ -11,10 +11,9 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.store.StoreEntity
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
-import io.reactiverse.reactivex.pgclient.PgPool
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -34,12 +33,11 @@ class EmployeeRepository @Inject constructor(
    private val departmentRepository: DepartmentRepository,
    private val jdbc: NamedParameterJdbcTemplate,
    private val storeRepository: StoreRepository,
-   private val passwordEncoderService: PasswordEncoderService,
-   private val postgresClient: PgPool
+   private val passwordEncoderService: PasswordEncoderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
-   public fun employeeBaseQuery() = """
+   fun employeeBaseQuery() = """
       SELECT * FROM (
          SELECT * FROM (
             SELECT
@@ -226,7 +224,7 @@ class EmployeeRepository @Inject constructor(
             "cynergi_system_admin" to entity.cynergiSystemAdmin,
             "company_id" to entity.company.myId(),
             "department" to entity.department?.myCode(),
-            "store_number" to entity.store?.number,
+            "store_number" to entity.store?.myNumber(),
             "alternative_store_indicator" to entity.alternativeStoreIndicator,
             "alternative_area" to entity.alternativeArea
          ),
@@ -263,7 +261,7 @@ class EmployeeRepository @Inject constructor(
          null
       }
 
-   private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: StoreEntity?) : EmployeeEntity =
+   private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: Store?) : EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
          type = "eli",

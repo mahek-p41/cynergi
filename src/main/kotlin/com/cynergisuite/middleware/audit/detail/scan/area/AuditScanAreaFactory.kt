@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.detail.scan.area
 
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
-import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import io.micronaut.context.annotation.Requires
 import org.apache.commons.lang3.RandomUtils
 import java.util.stream.Stream

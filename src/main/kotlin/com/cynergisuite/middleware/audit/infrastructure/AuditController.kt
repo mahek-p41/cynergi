@@ -9,8 +9,8 @@ import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferOb
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -51,7 +51,6 @@ class AuditController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @AccessControl("audit-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
@@ -75,7 +74,6 @@ class AuditController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("audit-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
    @ApiResponses(value = [
@@ -102,7 +100,6 @@ class AuditController @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   @AccessControl("audit-fetchAllStatusCounts", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/counts{?pageRequest*}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
    @ApiResponses(value = [
@@ -124,7 +121,6 @@ class AuditController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("audit-create", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in the CREATED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
    @ApiResponses(value = [
@@ -145,7 +141,7 @@ class AuditController @Inject constructor(
       val defaultStore = user.myLocation()
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
 
-      val response = auditService.create(vo = auditToCreate, employee = user, locale = httpRequest.findLocaleWithDefault())
+      val response = auditService.create(vo = auditToCreate, user = user, locale = httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create Audit {} resulted in {}", audit, response)
 
@@ -153,7 +149,6 @@ class AuditController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("audit-completeOrCancel", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-completeOrCancel")
    @ApiResponses(value = [
@@ -178,8 +173,8 @@ class AuditController @Inject constructor(
       return response
    }
 
-   @Put("/approved", processes = [APPLICATION_JSON])
-   @AccessControl("audit-updateApproved", accessControlProvider = AuditAccessControlProvider::class)
+   @Put("/approve", processes = [APPLICATION_JSON])
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Approve an audit", description = "This operation will approve all audit exceptions associated with the provided audit that haven't already been approved as well as approving the audit.", operationId = "audit-updateApproved")
    @ApiResponses(value = [
@@ -205,7 +200,6 @@ class AuditController @Inject constructor(
    }
 
    @Get(uri = "/{id:[0-9]+}/report/exception", produces = ["application/pdf"])
-   @AccessControl("audit-fetchAuditExceptionReport", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
    @ApiResponses(value = [
@@ -229,8 +223,8 @@ class AuditController @Inject constructor(
       return HttpResponse.ok(stream)
    }
 
-   @Put("/approved/exceptions", processes = [APPLICATION_JSON])
-   @AccessControl("audit-updateApprovedAllExceptions", accessControlProvider = AuditAccessControlProvider::class)
+   @Put("/approve/exceptions", processes = [APPLICATION_JSON])
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Approve all audit exceptions", description = "This operation will approve all audit exceptions associated with the provided audit that haven't already been approved", operationId = "audit-updateApprovedAllExceptions")
    @ApiResponses(value = [

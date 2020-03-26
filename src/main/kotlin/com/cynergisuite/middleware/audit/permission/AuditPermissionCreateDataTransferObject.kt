@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditPermissionCreate", description = "Payload for creating an audit permission")
