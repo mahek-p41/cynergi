@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.store
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.location.Location
+import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
@@ -88,11 +89,21 @@ object StoreFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class StoreFactoryService(
+   private val locationRepository: LocationRepository,
    private val storeRepository: StoreRepository
 ) {
 
-   fun store(storeNumber: Int, company: Company): StoreEntity =
-      storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find StoreEntity")
+   fun store(storeNumber: Int, company: Company): Store =
+      locationRepository.findOne(storeNumber, company)
+         ?.let {
+            SimpleStore(
+               id = it.myId(),
+               name = it.myName(),
+               number = it.myNumber(),
+               company = it.myCompany()
+            )
+         }
+         ?: throw Exception("Unable to find Store")
 
    fun companyStoresToRegion(region: RegionEntity): Stream<Pair<RegionEntity, Location>> {
       return StoreFactory.stores(region.division.company).stream()
@@ -104,9 +115,8 @@ class StoreFactoryService(
          .map { storeRepository.assignToRegion(it, region) }
    }
 
-   fun companyStoresToRegion(company: Company, region: RegionEntity, vararg stores: StoreEntity): List<Pair<RegionEntity, Location>> {
-      return stores
-         .map { storeRepository.assignToRegion(it, region) }
+   fun companyStoresToRegion(region: RegionEntity, vararg stores: Store): List<Pair<RegionEntity, Location>> {
+      return stores.map { storeRepository.assignToRegion(it, region) }
    }
 
    fun random(company: Company): StoreEntity {

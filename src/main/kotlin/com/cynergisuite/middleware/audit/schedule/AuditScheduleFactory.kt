@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -18,7 +19,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 object AuditScheduleFactory {
-   fun single(dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): ScheduleEntity {
+   fun single(dayOfWeek: DayOfWeek, stores: List<Store>, user: User, company: Company): ScheduleEntity {
       val faker = Faker()
       val bool = faker.bool()
       val chuckNorris = faker.chuckNorris()
@@ -35,7 +36,7 @@ object AuditScheduleFactory {
             } else {
                arguments.add(
                   ScheduleArgumentEntity(
-                     value = store.number.toString(),
+                     value = store.myNumber().toString(),
                      description = "storeNumber"
                   )
                )
@@ -91,7 +92,7 @@ class AuditScheduleFactoryService @Inject constructor(
       }
    }
 
-   fun single(dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): ScheduleEntity {
+   fun single(dayOfWeek: DayOfWeek, stores: List<Store>, user: User, company: Company): ScheduleEntity {
       return AuditScheduleFactory.single(dayOfWeek, stores, user, company)
          .let { scheduleRepository.insert(it) }
    }

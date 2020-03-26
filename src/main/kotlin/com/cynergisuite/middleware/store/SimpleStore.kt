@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.store
 
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.location.Location
 
 data class SimpleStore(
    val id: Long,
