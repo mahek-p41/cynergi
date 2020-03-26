@@ -50,7 +50,7 @@ object AuditFactory {
    }
 
    @JvmStatic
-   fun single(store: StoreEntity): AuditEntity {
+   fun single(store: Store): AuditEntity {
       return stream(store = store).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 }

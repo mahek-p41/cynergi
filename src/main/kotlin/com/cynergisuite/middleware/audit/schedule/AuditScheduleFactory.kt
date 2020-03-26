@@ -3,14 +3,12 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.time.DayOfWeek
@@ -82,9 +80,7 @@ object AuditScheduleFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class AuditScheduleFactoryService @Inject constructor(
-   private val employeeFactoryService: EmployeeFactoryService,
-   private val scheduleRepository: ScheduleRepository,
-   private val storeFactoryService: StoreFactoryService
+   private val scheduleRepository: ScheduleRepository
 ) {
 
    fun stream(numberIn: Int = 1, dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): Stream<ScheduleEntity> {

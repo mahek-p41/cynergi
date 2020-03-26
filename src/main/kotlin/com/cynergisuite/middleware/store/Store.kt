@@ -7,4 +7,4 @@ import com.cynergisuite.middleware.location.Location
  *
  * FIXME someday hopefully Location will go away
  */
-interface Store : Location {}
+interface Store : Location

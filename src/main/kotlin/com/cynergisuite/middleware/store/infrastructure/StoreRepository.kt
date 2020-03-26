@@ -231,13 +231,6 @@ class StoreRepository @Inject constructor(
          )
 
 
-   fun maybeMapRow(rs: ResultSet, company: Company, columnPrefix: String): Store? =
-      if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, company, columnPrefix)
-      } else {
-         null
-      }
-
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, company, columnPrefix)

@@ -4,12 +4,10 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
-import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.validation.Validated
 import java.util.Locale
@@ -22,8 +20,6 @@ class AuditDetailService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditDetailRepository: AuditDetailRepository,
    private val auditDetailValidator: AuditDetailValidator,
-   private val auditScanAreaRepository: AuditScanAreaRepository,
-   private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
    fun fetchById(id: Long, company: Company, locale: Locale): AuditDetailValueObject? =
