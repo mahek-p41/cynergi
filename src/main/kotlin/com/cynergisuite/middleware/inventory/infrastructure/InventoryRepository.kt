@@ -1,10 +1,13 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
@@ -30,7 +33,6 @@ class InventoryRepository(
    private val selectBase = """
       SELECT
          i.id AS id,
-         i.product_code AS product_code,
          i.serial_number AS serial_number,
          i.lookup_key AS lookup_key,
          i.lookup_key_type AS lookup_key_type,
@@ -181,6 +183,63 @@ class InventoryRepository(
             totalElements = rs.getLong("total_elements")
          }
 
+         elements.add(mapRow(rs))
+      }
+
+      return RepositoryPage(
+         requested = pageRequest,
+         elements = elements,
+         totalElements = totalElements ?: 0
+      )
+   }
+
+   fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
+      var pageResult = findUnscannedIdleInventory(audit, StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC"))
+      var inventories: MutableList<InventoryEntity> = mutableListOf()
+      while(pageResult.elements.isNotEmpty()) {
+         inventories.addAll(pageResult.elements)
+         pageResult = findUnscannedIdleInventory(audit, pageResult.requested.nextPage())
+      }
+      return inventories
+   }
+
+   fun findUnscannedIdleInventory(audit: AuditEntity, pageRequest: PageRequest): RepositoryPage<InventoryEntity, PageRequest> {
+      var totalElements: Long? = null
+      var company = audit.store.myCompany()
+      val elements = mutableListOf<InventoryEntity>()
+      val params = mutableMapOf<String, Any?>(
+         "audit_id" to audit.id,
+         "comp_id" to company.myId(),
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset())
+
+      val sql = """
+      WITH paged AS (
+         $selectBase
+            JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)
+         WHERE
+            comp.id = :comp_id
+            AND a.id = :audit_id
+            AND i.status in ('N', 'R')
+            AND i.serial_number NOT IN (SELECT serial_number
+                                        FROM audit_detail
+                                        WHERE audit_id = :audit_id)
+      )
+      SELECT
+         p.*,
+         count(*) OVER() as total_elements
+      FROM paged AS p
+      ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
+      LIMIT :limit
+         OFFSET :offset
+      """.trimIndent()
+
+      logger.debug("find unscanned idle inventory {}/{}", sql, params)
+
+      jdbc.query(sql, params) { rs ->
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
          elements.add(mapRow(rs))
       }
 

@@ -1243,14 +1243,24 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['signedOff'] = true }
 
-      when:
-      def pdf = client.exchange(GET("/${path}/${audit.id}/report/exception").header("Authorization", "Bearer $nineNineEightAccessToken"), Argument.of(byte[]))
+      when: 'Test Audit Exception Report'
+      def auditExceptionPdf = client.exchange(GET("/${path}/${audit.id}/report/exception").header("Authorization", "Bearer $nineNineEightAccessToken"), Argument.of(byte[]))
 
       then:
       notThrown(HttpClientResponseException)
-      pdf != null
-      pdf.status == OK
-      new String(pdf.getBody(byte[]).get()).startsWith("%PDF-1.5")
+      auditExceptionPdf != null
+      auditExceptionPdf.status == OK
+      new String(auditExceptionPdf.getBody(byte[]).get()).startsWith("%PDF-1.5")
+
+      when: 'Test Unscanned Idle Inventory Report'
+      def unscannedIdleInventoryPdf = client.exchange(GET("/${path}/${audit.id}/report/unscanned")
+                                     .header("Authorization", "Bearer $nineNineEightAccessToken"), Argument.of(byte[]))
+
+      then:
+      notThrown(HttpClientResponseException)
+      unscannedIdleInventoryPdf != null
+      unscannedIdleInventoryPdf.status == OK
+      new String(unscannedIdleInventoryPdf.getBody(byte[]).get()).startsWith("%PDF-1.5")
    }
 
    void "Confirm exceptions signed-off when audit is signed-off" () {
