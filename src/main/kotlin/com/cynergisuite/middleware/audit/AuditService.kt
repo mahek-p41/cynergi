@@ -18,15 +18,22 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreValueObject
-import com.lowagie.text.*
+import com.lowagie.text.Document
+import com.lowagie.text.Element
 import com.lowagie.text.Element.ALIGN_LEFT
 import com.lowagie.text.Element.ALIGN_TOP
+import com.lowagie.text.Font
 import com.lowagie.text.Font.BOLD
+import com.lowagie.text.FontFactory
 import com.lowagie.text.FontFactory.COURIER
+import com.lowagie.text.PageSize
+import com.lowagie.text.Phrase
+import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
@@ -39,7 +46,7 @@ import java.io.OutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -48,6 +55,7 @@ import javax.validation.Valid
 class AuditService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditExceptionRepository: AuditExceptionRepository,
+   private val inventoryRepository: InventoryRepository,
    private val auditValidator: AuditValidator,
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
@@ -74,6 +82,12 @@ class AuditService @Inject constructor(
       generateAuditExceptionReport(os, audit, true)
    }
 
+   fun fetchUnscannedIdleInventoryReport(id: Long, company: Company, os: OutputStream) {
+      val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
+
+      generateUnscannedIdleInventoryReport(os, audit, true)
+   }
+
    fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
@@ -81,15 +95,15 @@ class AuditService @Inject constructor(
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
-         .findAuditStatusCounts(validPageRequest, user.myCompany())
+         .findAuditStatusCounts(validPageRequest, user)
          .map { auditStatusCount ->
             AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
          }
    }
 
    @Validated
-   fun create(@Valid vo: AuditCreateValueObject, employee: User, locale: Locale): AuditValueObject {
-      val validAudit = auditValidator.validateCreate(vo, employee)
+   fun create(@Valid vo: AuditCreateValueObject, user: User, locale: Locale): AuditValueObject {
+      val validAudit = auditValidator.validateCreate(vo, user)
       val audit = auditRepository.insert(validAudit)
 
       return AuditValueObject(audit, locale, localizationService)
@@ -129,7 +143,7 @@ class AuditService @Inject constructor(
       if (updated.currentStatus() == SIGNED_OFF) {
          auditExceptionRepository.signOffAllExceptions(updated, user)
 
-         reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}","pdf") { reportalOutputStream ->
+         reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}", "pdf") { reportalOutputStream ->
             generateAuditExceptionReport(reportalOutputStream, updated, false)
          }
       }
@@ -142,12 +156,25 @@ class AuditService @Inject constructor(
          val writer = PdfWriter.getInstance(document, outputStream)
 
          writer.pageEvent = object : PdfPageEventHelper() {
-            override fun onStartPage(writer: PdfWriter, document: Document) = buildHeader(audit, onDemand, writer, document)
+            override fun onStartPage(writer: PdfWriter, document: Document) = buildExceptionReportHeader(audit, onDemand, writer, document)
          }
          document.open()
          document.add(buildExceptionReport(audit, document.pageSize.width))
       }
    }
+
+   private fun generateUnscannedIdleInventoryReport(outputStream: OutputStream, audit: AuditEntity, onDemand: Boolean) {
+      Document(PageSize.LEGAL.rotate(), 0.25F, 0.25F, 100F, 0.25F).use { document ->
+         val writer = PdfWriter.getInstance(document, outputStream)
+
+         writer.pageEvent = object : PdfPageEventHelper() {
+            override fun onStartPage(writer: PdfWriter, document: Document) = buildUnscannedIdleInventoryReportHeader(audit, onDemand, writer, document)
+         }
+         document.open()
+         document.add(buildUnscannedIdleInventoryReport(audit, document.pageSize.width))
+      }
+   }
+
 
    @Validated
    fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
@@ -158,7 +185,77 @@ class AuditService @Inject constructor(
       )
    }
 
-   private fun buildHeader(audit: AuditEntity, onDemand: Boolean, writer: PdfWriter, document: Document) {
+   private fun buildExceptionReportHeader(audit: AuditEntity, onDemand: Boolean, writer: PdfWriter, document: Document) {
+      val headerFont = FontFactory.getFont(COURIER, 10F, BOLD)
+      val padding = 0f
+      val leading = headerFont.size * 1.2F
+      val ascender = true
+      val descender = true
+      val currentDate = LocalDate.now()
+
+      val companyName = companyRepository.findCompanyByStore(audit.store)!!.name
+
+      val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+      val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+      val beginAction = audit.actions.asSequence().sortedByDescending { it.id }.first { it.status == IN_PROGRESS || it.status == CREATED }
+      val beginDate = dateFormatter.format(beginAction.timeCreated)
+
+      val endAction = audit.actions.asSequence().firstOrNull { it.status == COMPLETED }
+      val endDate = endAction?.let { dateFormatter.format(it.timeCreated) }
+      val endEmployee = endAction?.changedBy?.getEmpName() ?: beginAction.changedBy.getEmpName()
+
+      val headerBorder = Rectangle(0f, 0f)
+      headerBorder.borderWidthLeft = 0f
+      headerBorder.borderWidthBottom = 0f
+      headerBorder.borderWidthRight = 0f
+      headerBorder.borderWidthTop = 0f
+      headerBorder.borderColorLeft = BLACK
+      headerBorder.borderColorBottom = BLACK
+      headerBorder.borderColorRight = BLACK
+      headerBorder.borderColorTop = BLACK
+
+      val header = PdfPTable(3)
+      header.totalWidth = document.pageSize.width - 10
+      header.isLockedWidth = true
+      header.headerRows = 0
+      header.defaultCell.border = 0
+      header.widthPercentage = 100f
+
+      header.makeCell("DATE: $currentDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(companyName, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Location: ${audit.printLocation()}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("(By Product)", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(if (onDemand) "(On-Demand)" else "(Final-Reprint)", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      val beginDateHeader = if (beginAction.status == CREATED) "Created " else "Started "
+
+      header.makeCell("${beginDateHeader}: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Completed: ${endDate ?: "N/A"}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Employee: $endEmployee", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+
+      header.makeCell("Audit #: ${audit.number}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.addCell(Phrase(EMPTY, headerFont))
+      header.addCell(Phrase(EMPTY, headerFont))
+
+      header.writeSelectedRows(0, -1, 5f, document.pageSize.height - 5, writer.directContent)
+   }
+
+   private fun buildUnscannedIdleInventoryReportHeader(audit: AuditEntity, onDemand: Boolean, writer: PdfWriter, document: Document) {
       val headerFont = FontFactory.getFont(COURIER, 10F, BOLD)
       val padding = 0f
       val leading = headerFont.getSize() * 1.2F
@@ -171,10 +268,10 @@ class AuditService @Inject constructor(
       val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
-      val beginAction =  audit.actions.asSequence().sortedByDescending { it.id }.first{ it.status == IN_PROGRESS || it.status == CREATED}
+      val beginAction = audit.actions.asSequence().sortedByDescending { it.id }.first { it.status == IN_PROGRESS || it.status == CREATED }
       val beginDate = dateFormatter.format(beginAction.timeCreated)
 
-      val endAction =  audit.actions.asSequence().firstOrNull { it.status == COMPLETED}
+      val endAction = audit.actions.asSequence().firstOrNull { it.status == COMPLETED }
       val endDate = endAction?.let { dateFormatter.format(it.timeCreated) }
       val endEmployee = endAction?.changedBy?.getEmpName() ?: beginAction.changedBy.getEmpName()
 
@@ -200,7 +297,7 @@ class AuditService @Inject constructor(
       header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("UNSCANNED IDLE INVENTORY REPORT", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Location: ${audit.printLocation()}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
@@ -221,11 +318,11 @@ class AuditService @Inject constructor(
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      header.addCell(Phrase(EMPTY, headerFont))
+      header.makeCell("Audit #: ${audit.number}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.addCell(Phrase(EMPTY, headerFont))
       header.addCell(Phrase(EMPTY, headerFont))
 
-      header.writeSelectedRows(0,-1,5f,document.pageSize.height-5,writer.directContent)
+      header.writeSelectedRows(0, -1, 5f, document.pageSize.height - 5, writer.directContent)
    }
 
    private fun buildExceptionReport(audit: AuditEntity, pageWidth: Float): PdfPTable {
@@ -236,7 +333,7 @@ class AuditService @Inject constructor(
       val evenColor = Color(204, 204, 204)
       val oddColor = WHITE
       val padding = 0f
-      val leading = headerFont.getSize() * 1.2F
+      val leading = headerFont.size * 1.2F
       val ascender = true
       val descender = true
 
@@ -254,7 +351,7 @@ class AuditService @Inject constructor(
       table.isLockedWidth = true
       table.headerRows = 1
       table.defaultCell.border = 0
-      table.setWidthPercentage(100f)
+      table.widthPercentage = 100f
 
       val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -290,6 +387,92 @@ class AuditService @Inject constructor(
          table.addCell(Phrase(exception.scannedBy.displayName(), rowFont))
          table.addCell(Phrase(dateTimeFormatter.format(exception.timeCreated), rowFont))
          table.addCell(Phrase(exception.exceptionCode, rowFont))
+
+         exception.notes.forEach {
+            table.addCell(EMPTY)
+            table.defaultCell.colspan = 4
+            table.addCell(Phrase(it.note, rowFont))
+            table.defaultCell.colspan = 1
+            table.defaultCell.horizontalAlignment = Element.ALIGN_LEFT
+            table.addCell(Phrase(it.enteredBy.displayName(), rowFont))
+            table.defaultCell.colspan = 1
+            table.addCell(Phrase(dateTimeFormatter.format(it.timeUpdated), rowFont))
+            table.addCell(EMPTY)
+         }
+      }
+      return table
+   }
+
+   private fun buildUnscannedIdleInventoryReport(audit: AuditEntity, pageWidth: Float): PdfPTable {
+      val headerFont = FontFactory.getFont(COURIER, 10F, BOLD)
+      val rowFont = FontFactory.getFont(COURIER, 10F, Font.NORMAL)
+      val columnCount = 10
+      val table = PdfPTable(columnCount)
+      val evenColor = Color(223, 223, 223)
+      val oddColor = WHITE
+      val padding = 0f
+      val leading = headerFont.getSize() * 1.2F
+      val ascender = true
+      val descender = true
+
+      val border = Rectangle(0f, 0f)
+      border.borderWidthLeft = 0f
+      border.borderWidthBottom = 2f
+      border.borderWidthRight = 0f
+      border.borderWidthTop = 0f
+      border.borderColorLeft = BLACK
+      border.borderColorBottom = BLACK
+      border.borderColorRight = BLACK
+      border.borderColorTop = BLACK
+
+      table.totalWidth = pageWidth - 10
+      table.isLockedWidth = true
+      table.headerRows = 1
+      table.defaultCell.border = 0
+      table.setWidthPercentage(100f)
+
+      val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+      val widthPercentage: Float = table.totalWidth / columnCount
+      val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
+      widths[0] = 60f
+      widths[1] = 60f
+      widths[2] = 100f
+      widths[3] = 40f
+      widths[4] = 175f
+      widths[5] = 175f
+      widths[6] = 75f
+      widths[7] = 50f
+      widths[8] = 50f
+      widths[9] = 30f
+
+      table.setWidths(widths)
+
+      table.makeCell("Serial #", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Barcode", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Brand", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Model #", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Product Code", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Description", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Received Date", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Idle Days", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Condition", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Status", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+
+      var unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
+
+      unscannedIdleInventory.forEachIndexed { index, it ->
+         table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor
+         table.addCell(Phrase(it.serialNumber, rowFont))
+         table.addCell(Phrase(it.barcode, rowFont))
+         table.addCell(Phrase(it.brand, rowFont))
+         table.addCell(Phrase(it.modelNumber, rowFont))
+         table.addCell(Phrase(it.productCode, rowFont))
+         table.addCell(Phrase(it.description, rowFont))
+         table.addCell(Phrase(dateTimeFormatter.format(it.receivedDate), rowFont))
+         table.addCell(Phrase(it.idleDays.toString(), rowFont))
+         table.addCell(Phrase(it.condition, rowFont))
+         table.addCell(Phrase(it.status, rowFont))
       }
 
       return table

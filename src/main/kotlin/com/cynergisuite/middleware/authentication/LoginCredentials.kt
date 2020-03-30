@@ -1,7 +1,5 @@
 package com.cynergisuite.middleware.authentication
 
-import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import io.micronaut.security.authentication.UsernamePasswordCredentials
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.media.Schema

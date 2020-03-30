@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.department
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
-import java.time.OffsetDateTime
 
 data class DepartmentEntity(
    val id: Long,

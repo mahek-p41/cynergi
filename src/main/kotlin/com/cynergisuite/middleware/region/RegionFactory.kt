@@ -5,26 +5,32 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import java.util.stream.Stream
+
+import javax.inject.Inject
 import javax.inject.Singleton
 
 object RegionFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, division: DivisionEntity, regionalManager: EmployeeEntity? = null): Stream<RegionEntity> {
+   private val regionNumberCounter = AtomicInteger(1)
+
+   @JvmStatic
+   fun stream(numberIn: Int = 1, divisionIn: DivisionEntity): Stream<RegionEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
-      val random = faker.random()
 
       return IntStream.range(0, number).mapToObj {
+         val name = lorem.word().capitalize() + " Region"
+         val description = "$name Description"
          RegionEntity(
-            division = division,
-            number = random.nextInt(1, 100_000),
-            name = lorem.characters(5, 8).toUpperCase(),
-            manager = regionalManager,
-            description = lorem.characters(3, 15).toUpperCase()
+            name = name,
+            number = regionNumberCounter.getAndIncrement(),
+            description = description,
+            division = divisionIn
          )
       }
    }
@@ -32,14 +38,14 @@ object RegionFactory {
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class RegionFactoryService(
+class RegionFactoryService @Inject constructor(
    private val regionRepository: RegionRepository
 ) {
-
    fun stream(numberIn: Int = 1, division: DivisionEntity): Stream<RegionEntity> =
       RegionFactory.stream(numberIn, division)
          .map { regionRepository.insert(it) }
 
-   fun single(division: DivisionEntity): RegionEntity =
-      stream(division = division).findFirst().orElseThrow { Exception("Unable to create RegionEntity") }
+   fun single(divisionIn: DivisionEntity): RegionEntity =
+      stream(division = divisionIn).findFirst().orElseThrow { Exception("Unable to create RegionEntity") }
+
 }

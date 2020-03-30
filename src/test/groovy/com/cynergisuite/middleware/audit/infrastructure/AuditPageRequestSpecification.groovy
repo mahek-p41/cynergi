@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
+import spock.lang.Specification
 
 import java.time.OffsetDateTime
-import spock.lang.Specification
 
 class AuditPageRequestSpecification extends Specification {
    void "audit page request handles null page, from and thru property yields separation correctly" () {

@@ -4,6 +4,7 @@
 cd ../development
 
 if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergitestdb)` ]; then
+  docker rm cynergitestdb
   docker-compose build cynergitestdb && docker-compose up -d cynergitestdb
   docker-compose build cynergitestdbready && docker-compose run --rm cynergitestdbready
   exit $?

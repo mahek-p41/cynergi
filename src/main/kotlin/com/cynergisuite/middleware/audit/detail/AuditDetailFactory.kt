@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
@@ -22,7 +21,7 @@ object AuditDetailFactory {
    @JvmStatic
    fun stream(numberIn: Int = 1, audit: AuditEntity, scannedByIn: EmployeeEntity? = null, scanAreaIn: AuditScanArea? = null): Stream<AuditDetailEntity> {
       val number = if (numberIn > 0) numberIn else 1
-      val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.company)
+      val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.myCompany())
       val faker = Faker()
       val barcode = faker.code()
       val commerce = faker.commerce()
@@ -30,7 +29,7 @@ object AuditDetailFactory {
       val idNumber = faker.idNumber()
       val scanArea = scanAreaIn ?: AuditScanAreaFactory.random()
 
-      if (scannedBy.company != audit.store.company) {
+      if (scannedBy.company != audit.store.myCompany()) {
          throw Exception("scannedBy.company did not match audit.store.company")
       }
 
