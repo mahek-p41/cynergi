@@ -2,8 +2,8 @@ micronaut:
    application:
       name: cynergi-middleware
    caches:
-      user-cache:
-         maximum-size: 50
+      creds-cache:
+         maximum-size: 300
          expire-after-write: 3600s
    security:
       enabled: true

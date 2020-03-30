@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.schedule
 
-import com.cynergisuite.domain.DataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.middleware.location.Location
 import io.swagger.v3.oas.annotations.media.Schema
@@ -11,7 +10,6 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-@DataTransferObject
 @Schema(name = "AuditScheduleCreateUpdate", title = "Requirements for creating an audit schedule", description = "Payload for creating a schedule for an audit associated with what stores and which department is supposed to do the audit")
 data class AuditScheduleCreateUpdateDataTransferObject(
 

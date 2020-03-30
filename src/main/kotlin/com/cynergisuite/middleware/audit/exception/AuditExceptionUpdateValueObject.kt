@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception
 
-import com.cynergisuite.domain.ValueObjectBase
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
@@ -29,7 +29,6 @@ data class AuditExceptionUpdateValueObject(
    @field:Schema(name = "signed-off", description = "AuditException boolean for signed-off")
    var signedOff: Boolean? = null
 
-)  : ValueObjectBase<AuditExceptionUpdateValueObject>() {
+)  : Identifiable {
    override fun myId(): Long? = id
-   override fun copyMe(): AuditExceptionUpdateValueObject = copy()
 }

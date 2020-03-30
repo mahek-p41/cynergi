@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
@@ -13,11 +13,10 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObje
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
-import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.department.DepartmentFactoryService
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -38,15 +37,20 @@ import static org.apache.commons.lang3.StringUtils.EMPTY
 class AuditExceptionControllerSpecification extends ControllerSpecificationBase {
 
    @Inject AuditExceptionFactoryService auditExceptionFactoryService
-   @Inject AuditExceptionNoteRepository auditExceptionNoteRepository
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
-   @Inject EmployeeRepository employeeRepository
+   @Inject DepartmentFactoryService departmentFactoryService
+   @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
 
    void "fetch one audit exception by id with no attached notes" () {
       given:
-      final auditException = auditExceptionFactoryService.single()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       def result = get("/audit/exception/${auditException.id}")
@@ -73,7 +77,13 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception with a single attached note" () {
       given:
-      final auditNote = auditExceptionNoteFactoryService.single(null, authenticatedEmployee)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
+      final auditNote = auditExceptionNoteFactoryService.single(auditException, employee)
 
       when:
       def result = get("/audit/exception/${auditNote.auditException.myId()}")
@@ -91,8 +101,13 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception with a two attached notes" () {
       given:
-      final auditException = auditExceptionFactoryService.single()
-      final auditNotes = auditExceptionNoteFactoryService.stream(2, auditException, authenticatedEmployee).map { new AuditExceptionNoteValueObject(it) }.sorted{ o1, o2 -> o1.id <=> o2.id  }.toList()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
+      final auditNotes = auditExceptionNoteFactoryService.stream(2, auditException, employee).map { new AuditExceptionNoteValueObject(it) }.sorted{ o1, o2 -> o1.id <=> o2.id  }.toList()
       final auditExceptionId = auditException.myId()
 
       when:
@@ -111,8 +126,12 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch all exceptions for a single audit with default paging" () {
       given:
-      final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
       final firstTenDiscrepancies = twentyAuditDiscrepancies[0..9]
 
       when:
@@ -135,8 +154,12 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch all exceptions for a single audit" () {
       given:
-      final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -195,9 +218,13 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "fetch all audit exceptions for a single audit where each exception has 2 notes attached" () {
       given:
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      final audit = auditFactoryService.single()
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, authenticatedEmployee, false)
-         .peek{ it.notes.addAll(auditExceptionNoteFactoryService.stream(2, it, authenticatedEmployee).toList()) } // create some notes and save them
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, employee, false)
+         .peek{ it.notes.addAll(auditExceptionNoteFactoryService.stream(2, it, employee).toList()) } // create some notes and save them
          .map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }
          .toList()
       final firstFiveDiscrepancies = twentyAuditDiscrepancies[0..4]
@@ -219,68 +246,71 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneAuditExceptions[0].notes[0].note == firstFiveDiscrepancies[0].notes[0].note
       pageOneAuditExceptions[0].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[0].timeCreated
       pageOneAuditExceptions[0].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[0].timeUpdated
-      pageOneAuditExceptions[0].notes[0].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[0].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[0].notes[1].id == firstFiveDiscrepancies[0].notes[1].id
       pageOneAuditExceptions[0].notes[1].note == firstFiveDiscrepancies[0].notes[1].note
       pageOneAuditExceptions[0].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[1].timeCreated
       pageOneAuditExceptions[0].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[1].timeUpdated
-      pageOneAuditExceptions[0].notes[1].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[0].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[1].notes.size() == 2
       pageOneAuditExceptions[1].notes[0].id == firstFiveDiscrepancies[1].notes[0].id
       pageOneAuditExceptions[1].notes[0].note == firstFiveDiscrepancies[1].notes[0].note
       pageOneAuditExceptions[1].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[0].timeCreated
       pageOneAuditExceptions[1].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[0].timeUpdated
-      pageOneAuditExceptions[1].notes[0].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[1].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[1].notes[1].id == firstFiveDiscrepancies[1].notes[1].id
       pageOneAuditExceptions[1].notes[1].note == firstFiveDiscrepancies[1].notes[1].note
       pageOneAuditExceptions[1].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[1].timeCreated
       pageOneAuditExceptions[1].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[1].timeUpdated
-      pageOneAuditExceptions[1].notes[1].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[1].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[2].notes.size() == 2
       pageOneAuditExceptions[2].notes[0].id == firstFiveDiscrepancies[2].notes[0].id
       pageOneAuditExceptions[2].notes[0].note == firstFiveDiscrepancies[2].notes[0].note
       pageOneAuditExceptions[2].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[0].timeCreated
       pageOneAuditExceptions[2].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[0].timeUpdated
-      pageOneAuditExceptions[2].notes[0].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[2].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[2].notes[1].id == firstFiveDiscrepancies[2].notes[1].id
       pageOneAuditExceptions[2].notes[1].note == firstFiveDiscrepancies[2].notes[1].note
       pageOneAuditExceptions[2].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[1].timeCreated
       pageOneAuditExceptions[2].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[1].timeUpdated
-      pageOneAuditExceptions[2].notes[1].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[2].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[3].notes.size() == 2
       pageOneAuditExceptions[3].notes[0].id == firstFiveDiscrepancies[3].notes[0].id
       pageOneAuditExceptions[3].notes[0].note == firstFiveDiscrepancies[3].notes[0].note
       pageOneAuditExceptions[3].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[0].timeCreated
       pageOneAuditExceptions[3].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[0].timeUpdated
-      pageOneAuditExceptions[3].notes[0].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[3].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[3].notes[1].id == firstFiveDiscrepancies[3].notes[1].id
       pageOneAuditExceptions[3].notes[1].note == firstFiveDiscrepancies[3].notes[1].note
       pageOneAuditExceptions[3].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[1].timeCreated
       pageOneAuditExceptions[3].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[1].timeUpdated
-      pageOneAuditExceptions[3].notes[1].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[3].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[4].notes.size() == 2
       pageOneAuditExceptions[4].notes[0].id == firstFiveDiscrepancies[4].notes[0].id
       pageOneAuditExceptions[4].notes[0].note == firstFiveDiscrepancies[4].notes[0].note
       pageOneAuditExceptions[4].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[0].timeCreated
       pageOneAuditExceptions[4].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[0].timeUpdated
-      pageOneAuditExceptions[4].notes[0].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[4].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[4].notes[1].id == firstFiveDiscrepancies[4].notes[1].id
       pageOneAuditExceptions[4].notes[1].note == firstFiveDiscrepancies[4].notes[1].note
       pageOneAuditExceptions[4].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[1].timeCreated
       pageOneAuditExceptions[4].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[1].timeUpdated
-      pageOneAuditExceptions[4].notes[1].enteredBy.number == authenticatedEmployee.number
+      pageOneAuditExceptions[4].notes[1].enteredBy.number == employee.number
    }
 
    void "fetch all audit exceptions when more than one audit exists" () {
       given:
-      final store = authenticatedEmployee.store
-      final auditOne = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditTwo = auditFactoryService.single(store, authenticatedEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, authenticatedEmployee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final auditOne = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditTwo = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
 
       when:
       def pageOneResult = get("/audit/${auditTwo.id}/exception")
@@ -296,6 +326,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
          .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
    }
 
+   //Passes
    void "fetch one audit exception by id not found" () {
       when:
       get("/audit/exception/0")
@@ -311,9 +342,13 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create audit exception" () {
       given:
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
@@ -343,13 +378,16 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception using employee that doesn't have a first name" () {
       given:
-      final noFirstNameGuy = new EmployeeEntity(null, "eli", 7890, "tstds1", "test", EMPTY, "7890", authenticatedEmployee.store, true, false, null)
-      final savedNoFirstNameGuy = employeeRepository.insert(noFirstNameGuy)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final noFirstNameGuy = employeeFactoryService.singleAuthenticated(company, store, department, 'TEST', EMPTY)
       final authToken = loginEmployee(noFirstNameGuy)
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
@@ -380,9 +418,13 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create audit exception without scan area" () {
       given:
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), exceptionCode: exceptionCode])
 
@@ -410,7 +452,11 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create invalid audit exception" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exception = new AuditExceptionCreateValueObject()
 
       when:
@@ -421,7 +467,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it) }.sort {o1, o2 -> o1 <=> o2 } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Cannot be blank", "exceptionCode"),
          new ErrorDataTransferObject("Is required", "exceptionCode"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -430,7 +476,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create audit exception where audit is not found" () {
       given:
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
 
@@ -441,12 +489,16 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(notFoundResponse) == new ErrorDataTransferObject("-1 was unable to be found", null)
+      new ErrorDataTransferObject(notFoundResponse.message, notFoundResponse.path) == new ErrorDataTransferObject("-1 was unable to be found", null)
    }
 
    void "create audit exception where inventory id is null" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
 
       when:
@@ -457,14 +509,16 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [new ErrorDataTransferObject("Is required", "inventory.id") ]
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Is required", "inventory.id") ]
    }
 
    void "create audit exception when audit is in state OPENED" () {
       given:
-      final audit = auditFactoryService.single()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final audit = auditFactoryService.single(store)
       final locale = Locale.US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: authenticatedEmployee.store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), authenticatedEmployee.dataset, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final scanArea = AuditScanAreaFactory.random().with { new AuditScanAreaValueObject(it) }
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
@@ -477,16 +531,20 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its exceptions", "audit.status")
       ]
    }
 
    void "create audit exception where matching Inventory item wasn't found" () {
       given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final barcode = "12345689521028"
       final scanArea = AuditScanAreaFactory.random().with { new AuditScanAreaValueObject(it) }
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
       def result = post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([scanArea: scanArea, barcode: barcode, exceptionCode: "Not found in inventory"]))
@@ -504,16 +562,20 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.inventoryModel == null
       result.scanArea.value == scanArea.value
       result.scanArea.description == scanArea.description
-      result.scannedBy.number == authenticatedEmployee.number
-      result.scannedBy.lastName == authenticatedEmployee.lastName
-      result.scannedBy.firstNameMi == authenticatedEmployee.firstNameMi
+      result.scannedBy.number == 998
+      result.scannedBy.lastName == 'man'
+      result.scannedBy.firstNameMi == 'super'
       result.audit.id == audit.myId()
    }
 
    void "create audit exception where no inventory.id and no barcode is passed" () {
       given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
       final scanArea = AuditScanAreaFactory.random().with { new AuditScanAreaValueObject(it) }
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
       post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([scanArea: scanArea, exceptionCode: "Not found in inventory"]))
@@ -523,15 +585,19 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Must provide either an Inventory item or a barcode", "barcode")
       ]
    }
 
    void "update audit exception with a new note" () {
       given:
-      final savedAuditException = auditExceptionFactoryService.single()
-      final audit = savedAuditException.getAudit()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store)
+      final savedAuditException = auditExceptionFactoryService.single(audit, employee, false)
       final noteText = "Test Note"
 
       when:
@@ -559,10 +625,35 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.audit.id == savedAuditException.audit.myId()
    }
 
+   void "update signed-off audit exception with a new note" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store)
+      final savedAuditException = auditExceptionFactoryService.single(audit, employee, true)
+      final noteText = "Test Note"
+
+      when:
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "Audit Exception ${String.format('%,d', savedAuditException.id)} has already been Signed Off. No new notes allowed"
+   }
+
    void "update audit exception to signed-off" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditException = auditExceptionFactoryService.single(audit)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: true]))
@@ -575,8 +666,12 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit without note or signedOff" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditException = auditExceptionFactoryService.single(audit)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, signedOff: null, note: null]))
@@ -591,8 +686,12 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit exception that has been signed-off" () {
       given:
-      final audit = auditFactoryService.single([AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
-      final auditException = auditExceptionFactoryService.single(audit)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.signedOff()] as Set)
+      final auditException = auditExceptionFactoryService.single(audit, employee, false)
 
       when:
       put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
@@ -602,7 +701,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it) } == [
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} has already been Signed Off. No new notes allowed", null)
       ]
    }

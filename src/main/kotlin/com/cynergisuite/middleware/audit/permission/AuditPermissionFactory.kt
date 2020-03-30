@@ -8,8 +8,6 @@ import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import io.micronaut.context.annotation.Requires
-import java.util.stream.IntStream
-import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,13 +16,12 @@ object AuditPermissionFactory {
    @JvmStatic
    fun single(departmentIn: DepartmentEntity? = null, permissionTypeIn: AuditPermissionType? = null, companyIn: CompanyEntity? = null): AuditPermissionEntity {
       val company = companyIn ?: CompanyFactory.random()
-      val department = departmentIn ?: DepartmentFactory.random(company.datasetCode)
+      val department = departmentIn ?: DepartmentFactory.random(company)
       val permissionType = permissionTypeIn ?: AuditPermissionTypeFactory.random()
 
       return AuditPermissionEntity(
          department = department,
-         type = permissionType,
-         company = company
+         type = permissionType
       )
    }
 }
@@ -42,45 +39,8 @@ class AuditPermissionFactoryService @Inject constructor(
 
    fun single(departmentIn: DepartmentEntity? = null, permissionTypeIn: AuditPermissionType? = null, companyIn: CompanyEntity? = null): AuditPermissionEntity {
       val company = companyIn ?: companyFactoryService.random()
-      val department = departmentIn ?: departmentFactoryService.random(company.datasetCode)
+      val department = departmentIn ?: departmentFactoryService.random(company)
 
       return AuditPermissionFactory.single(department, permissionTypeIn, company).let { auditPermissionRepository.insert(it) }
-   }
-
-   fun stream(numberIn: Int = 1, companyIn: CompanyEntity? = null, excludePermission: AuditPermissionType? = null): Stream<AuditPermissionEntity> {
-      val number = if (numberIn > 0) numberIn else 1
-      val company = companyIn ?: companyFactoryService.random()
-      val departmentPermissionCombos = mutableSetOf<Pair<DepartmentEntity, AuditPermissionType>>()
-
-      return IntStream.range(0, number).mapToObj {
-         val (department, type) = findDepartmentPermission(departmentPermissionCombos, company, excludePermission)
-
-         AuditPermissionEntity(
-            department = department,
-            type = type,
-            company = company
-         )
-      }.map { auditPermissionRepository.insert(it) }
-   }
-
-   private fun findDepartmentPermission(departmentPermissionCombos: MutableSet<Pair<DepartmentEntity, AuditPermissionType>>, company: CompanyEntity, excludePermission: AuditPermissionType?): Pair<DepartmentEntity, AuditPermissionType> {
-      var department: DepartmentEntity?
-      var auditPermissionType: AuditPermissionType?
-      var tryCount = 0
-
-      do {
-         if (tryCount > 100) {
-            throw Exception("Unable to create enough unique department and permission type combinations")
-         }
-
-         department = departmentFactoryService.random(company.datasetCode)
-         auditPermissionType = if (excludePermission != null) AuditPermissionTypeFactory.random(excludePermission) else AuditPermissionTypeFactory.random()
-
-         tryCount++
-      } while(departmentPermissionCombos.contains(department to auditPermissionType))
-
-      departmentPermissionCombos.add(department!! to auditPermissionType!!)
-
-      return department to auditPermissionType
    }
 }

@@ -33,7 +33,6 @@ services:
      networks:
         - cynerginet
      command: ["java", "-Dmicronaut.environments=integration", "-Dpostgres.reactive.client.port=5432", "-Dpostgres.reactive.client.host=cynergitestdb", "-Dmicronaut.server.port=8080", "-Dmicronaut.server.host=cynmid", "-jar", "/tmp/cynergi-middleware-r2-all.jar"]
-     #command: ["/bin/bash"]
   cynergidbready:
      container_name: cynergidbready
      build:
@@ -41,6 +40,10 @@ services:
         dockerfile: cynergidbsnapshot.dockerfile
      networks:
        - cynerginet
+     depends_on:
+       - cynergidb
+     stdin_open: true
+     tty: true
      command: [ "/tmp/cynergi-db-ready.sh" ]
   cynergidbsnapshot:
     container_name: cynergidbsnapshot
@@ -98,7 +101,7 @@ services:
       dockerfile: cynergidbsnapshot.dockerfile
     container_name: cynergitestdbpsql
     depends_on:
-      - cynergidb
+      - cynergitestdb
     stdin_open: true
     tty: true
     networks:
@@ -111,6 +114,10 @@ services:
         dockerfile: cynergitestdb.dockerfile
      networks:
         - cynerginet
+     depends_on:
+        - cynergitestdb
+     stdin_open: true
+     tty: true
      command: [ "/tmp/cynergi-test-db-ready.sh" ]
   fastinfosnapshot:
      container_name: fastinfosnapshot

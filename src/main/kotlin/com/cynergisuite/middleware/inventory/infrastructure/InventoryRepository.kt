@@ -1,35 +1,38 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
-import com.cynergisuite.domain.infrastructure.DatasetRepository
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.middleware.audit.AuditEntity
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
+import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
 
 @Singleton
 class InventoryRepository(
+   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate,
+   private val locationRepository: LocationRepository,
    private val storeRepository: StoreRepository
-) : DatasetRepository {
+) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
 
-   @Language("PostgreSQL")
    private val selectBase = """
       SELECT
          i.id AS id,
-         i.product_code AS product_code,
          i.serial_number AS serial_number,
          i.lookup_key AS lookup_key,
          i.lookup_key_type AS lookup_key_type,
@@ -53,15 +56,21 @@ class InventoryRepository(
          i.returned_date AS returned_date,
          i.status AS status,
          i.dataset AS dataset,
+         comp.id AS comp_id,
+         comp.uu_row_id AS comp_uu_row_id,
+         comp.time_created AS comp_time_created,
+         comp.time_updated AS comp_time_updated,
+         comp.name AS comp_name,
+         comp.doing_business_as AS comp_doing_business_as,
+         comp.client_code AS comp_client_code,
+         comp.client_id AS comp_client_id,
+         comp.dataset_code AS comp_dataset_code,
+         comp.federal_id_number AS comp_federal_id_number,
          primaryStore.id AS primary_store_id,
-         primaryStore.time_created AS primary_store_time_created,
-         primaryStore.time_updated AS primary_store_time_updated,
          primaryStore.number AS primary_store_number,
          primaryStore.name AS primary_store_name,
          primaryStore.dataset AS primary_store_dataset,
          currentStore.id AS current_store_id,
-         currentStore.time_created AS current_store_time_created,
-         currentStore.time_updated AS current_store_time_updated,
          currentStore.number AS current_store_number,
          currentStore.name AS current_store_name,
          currentStore.dataset AS current_store_dataset,
@@ -69,66 +78,78 @@ class InventoryRepository(
          iltd.value AS location_type_value,
          iltd.description AS location_type_description,
          iltd.localization_code AS location_type_localization_code
-      FROM fastinfo_prod_import.inventory_vw i
-           JOIN fastinfo_prod_import.store_vw primaryStore ON i.primary_location = primaryStore.number
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON i.location = currentStore.number
+      FROM company comp
+           JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+           JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
+           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
    """.trimIndent()
 
-   fun findOne(id: Long, dataset: String): InventoryEntity? {
+   fun findOne(id: Long, company: Company): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
-      val inventory = jdbc.findFirstOrNull("$selectBase WHERE i.id = :id AND i.dataset = :dataset", mapOf("id" to id, "dataset" to dataset), RowMapper { rs, _ -> mapRow(rs)})
+      val inventory = jdbc.findFirstOrNull("""
+         $selectBase
+         WHERE comp.id = :comp_id
+               AND i.id = :id
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.myId(),
+            "id" to id
+         ),
+         RowMapper { rs, _ -> mapRow(rs)}
+      )
 
       logger.debug("Search for Inventory by ID {} produced {}", id, inventory)
 
       return inventory
    }
 
-   override fun findDataset(id: Long): String? {
-      logger.debug("Search for dataset of inventory item by id {}", id)
-
-      val found = jdbc.findFirstOrNull("SELECT dataset FROM fastinfo_prod_import.inventory_vw WHERE id = :id", mapOf("id" to id), SingleColumnRowMapper(String::class.java))
-
-      logger.trace("Search for dataset of inventory item by id {} resulted in {}", id, found)
-
-      return found
-   }
-
-   fun exists(id: Long, dataset: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM fastinfo_prod_import.inventory_vw WHERE id = :id AND dataset = :dataset)", mapOf("id" to id, "dataset" to dataset), Boolean::class.java)!!
+   override fun exists(id: Long, company: Company): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT count(i.id) > 0
+         FROM company comp
+              JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+         WHERE i.id = :i_id AND comp.id = :comp_id
+      """.trimIndent(), mapOf("i_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long, dataset: String): Boolean =
-      !exists(id, dataset)
+   fun doesNotExist(id: Long, company: Company): Boolean =
+      !exists(id, company)
 
-   fun findByLookupKey(lookupKey: String, dataset: String): InventoryEntity? {
+   fun findByLookupKey(lookupKey: String, company: Company): InventoryEntity? {
       logger.debug("Finding Inventory by barcode with {}", lookupKey)
 
       val inventory = jdbc.findFirstOrNull("""
          $selectBase
          WHERE i.lookup_key = :lookup_key
-               AND primaryStore.dataset = :dataset""".trimIndent(),
-         mapOf("lookup_key" to lookupKey, "dataset" to dataset),
+               AND comp.id = :comp_id""".trimIndent(),
+         mapOf(
+            "lookup_key" to lookupKey,
+            "comp_id" to company.myId()
+         ),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
       logger.debug("Search for Inventory by barcode {} produced {}", lookupKey, inventory)
 
-      return inventory;
+      return inventory
    }
 
-   fun findAll(pageRequest: InventoryPageRequest, dataset: String): RepositoryPage<InventoryEntity, InventoryPageRequest> {
+   fun findAll(pageRequest: InventoryPageRequest, company: Company): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
-      val params = mutableMapOf<String, Any>("location" to pageRequest.storeNumber!!, "dataset" to dataset)
-
-      logger.debug("Finding all Inventory with {} and {}", pageRequest, params)
+      val params = mutableMapOf<String, Any>(
+         "location" to pageRequest.storeNumber!!,
+         "comp_id" to company.myId()!!,
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset()
+      )
 
       if (statuses.isNotEmpty()) {
          params["statuses"] = statuses
@@ -142,9 +163,7 @@ class InventoryRepository(
          $selectBase
          WHERE i.primary_location = :location
                AND i.location = :location
-               AND i.dataset = :dataset
-               AND primaryStore.dataset = :dataset
-               AND currentStore.dataset = :dataset
+               AND comp.id = :comp_id
                ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
@@ -153,11 +172,11 @@ class InventoryRepository(
          count(*) OVER() as total_elements
       FROM paged AS p
       ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
-      LIMIT ${pageRequest.size}
-         OFFSET ${pageRequest.offset()}
+      LIMIT :limit
+         OFFSET :offset
       """.trimIndent()
 
-      logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql);
+      logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql)
 
       jdbc.query(sql, params) { rs ->
          if (totalElements == null) {
@@ -174,8 +193,67 @@ class InventoryRepository(
       )
    }
 
-   fun mapRow(rs: ResultSet): InventoryEntity =
-      InventoryEntity(
+   fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
+      var pageResult = findUnscannedIdleInventory(audit, StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC"))
+      var inventories: MutableList<InventoryEntity> = mutableListOf()
+      while(pageResult.elements.isNotEmpty()) {
+         inventories.addAll(pageResult.elements)
+         pageResult = findUnscannedIdleInventory(audit, pageResult.requested.nextPage())
+      }
+      return inventories
+   }
+
+   fun findUnscannedIdleInventory(audit: AuditEntity, pageRequest: PageRequest): RepositoryPage<InventoryEntity, PageRequest> {
+      var totalElements: Long? = null
+      var company = audit.store.myCompany()
+      val elements = mutableListOf<InventoryEntity>()
+      val params = mutableMapOf<String, Any?>(
+         "audit_id" to audit.id,
+         "comp_id" to company.myId(),
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset())
+
+      val sql = """
+      WITH paged AS (
+         $selectBase
+            JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)
+         WHERE
+            comp.id = :comp_id
+            AND a.id = :audit_id
+            AND i.status in ('N', 'R')
+            AND i.serial_number NOT IN (SELECT serial_number
+                                        FROM audit_detail
+                                        WHERE audit_id = :audit_id)
+      )
+      SELECT
+         p.*,
+         count(*) OVER() as total_elements
+      FROM paged AS p
+      ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
+      LIMIT :limit
+         OFFSET :offset
+      """.trimIndent()
+
+      logger.debug("find unscanned idle inventory {}/{}", sql, params)
+
+      jdbc.query(sql, params) { rs ->
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+         elements.add(mapRow(rs))
+      }
+
+      return RepositoryPage(
+         requested = pageRequest,
+         elements = elements,
+         totalElements = totalElements ?: 0
+      )
+   }
+
+   fun mapRow(rs: ResultSet): InventoryEntity {
+      val company = companyRepository.mapRow(rs, "comp_")
+
+      return InventoryEntity(
          id = rs.getLong("id"),
          serialNumber = rs.getString("serial_number"),
          lookupKey = rs.getString("lookup_key"),
@@ -198,15 +276,15 @@ class InventoryRepository(
          idleDays = rs.getInt("idle_days"),
          condition = rs.getString("condition"),
          returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = storeRepository.maybeMapRow(rs, "current_store_"),
+         location = locationRepository.maybeMapRow(rs, company, "current_store_"),
          status = rs.getString("status"),
-         primaryLocation = storeRepository.mapRow(rs, "primary_store_"),
+         primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
          locationType = InventoryLocationType(
             id = rs.getLong("location_type_id"),
             value = rs.getString("location_type_value"),
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")
-         ),
-         dataset = rs.getString("dataset")
+         )
       )
+   }
 }

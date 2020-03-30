@@ -33,7 +33,6 @@ interface PageRequest {
    fun copyFillInDefaults(): PageRequest
 }
 
-@DataTransferObject
 @Schema(
    name = "PageRequestBase",
    title = "Basic implementation of a page request"
@@ -140,7 +139,10 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
    allOf = [PageRequestBase::class]
 )
 class StandardPageRequest(
-   page: Int, size: Int, sortBy: String, sortDirection: String
+   page: Int? = null,
+   size: Int? = null,
+   sortBy: String? = null,
+   sortDirection: String? = null
 ) : PageRequestBase<StandardPageRequest>(page, size, sortBy, sortDirection) {
 
    constructor(pageRequestIn: PageRequest? = null) :

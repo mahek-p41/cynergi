@@ -3,12 +3,12 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateValueObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.authentication.AuthenticationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -37,12 +37,11 @@ import javax.inject.Inject
 @Controller("/api/audit")
 class AuditDetailController @Inject constructor(
    private val auditDetailService: AuditDetailService,
-   private val authenticationService: AuthenticationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("auditDetail-fetchOne", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/detail/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditDetailEndpoints"], summary = "Fetch a single AuditDetail", description = "Fetch a single AuditDetail by it's system generated primary key", operationId = "auditDetail-fetchOne")
    @ApiResponses(value = [
@@ -57,8 +56,8 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Fetching AuditDetail by {}", id)
 
-      val user = authenticationService.findUser(authentication)
-      val response = auditDetailService.fetchById(id = id, dataset = user.myDataset(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = auditDetailService.fetchById(id = id, company = user.myCompany(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 
@@ -66,7 +65,6 @@ class AuditDetailController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("auditDetail-fetchAll", accessControlProvider = AuditAccessControlProvider::class)
    @Get(uri = "/{auditId}/detail{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditDetailEndpoints"], summary = "Fetch a listing of AuditDetails", description = "Fetch a paginated listing of AuditDetails based on a parent Audit", operationId = "auditDetail-fetchAll")
    @ApiResponses(value = [
@@ -82,8 +80,8 @@ class AuditDetailController @Inject constructor(
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = authenticationService.findUser(authentication)
-      val page =  auditDetailService.fetchAll(auditId, user.myDataset(), pageRequest, httpRequest.findLocaleWithDefault())
+      val user = userService.findUser(authentication)
+      val page =  auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -93,7 +91,6 @@ class AuditDetailController @Inject constructor(
    }
 
    @Post(uri = "/{auditId}/detail", processes = [APPLICATION_JSON])
-   @AccessControl("auditDetail-save", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditDetailEndpoints"], summary = "Create a single AuditDetail", description = "Create a single AuditDetail. The logged in Employee is used for the scannedBy property", operationId = "auditDetail-create")
    @ApiResponses(value = [
@@ -104,13 +101,13 @@ class AuditDetailController @Inject constructor(
    ])
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId") auditId: Long,
-      @Body vo: AuditDetailCreateValueObject,
+      @Body vo: AuditDetailCreateDataTransferObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val user = authenticationService.findUser(authentication)
+      val user = userService.findUser(authentication)
       val response = auditDetailService.create(auditId, vo, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)

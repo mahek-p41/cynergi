@@ -3,8 +3,7 @@ package com.cynergisuite.middleware.schedule
 import io.micronaut.context.Qualifier
 import io.micronaut.inject.BeanType
 import java.util.stream.Stream
-import kotlin.streams.asSequence
-import kotlin.streams.asStream
+import javax.inject.Named
 
 class DailyScheduleNameBeanQualifier(
    private val name: String
@@ -15,8 +14,8 @@ class DailyScheduleNameBeanQualifier(
          candidates
             .filter { candidate -> candidate != null }
             .filter { candidate -> beanType.isAssignableFrom(candidate!!.getBeanType()) }
-            .filter { candidate -> candidate!!.isAnnotationPresent(ScheduleName::class.java) }
-            .filter { candidate -> candidate!!.findAnnotation(ScheduleName::class.java).get().get("value", String::class.java).filter { it == name }.isPresent }
+            .filter { candidate -> candidate!!.isAnnotationPresent(Named::class.java) }
+            .filter { candidate -> candidate!!.findAnnotation(Named::class.java).get().get("value", String::class.java).filter { it == name }.isPresent }
             .limit(1)
       } else {
          Stream.empty<BT>()

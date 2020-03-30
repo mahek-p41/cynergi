@@ -4,10 +4,6 @@ import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.employee.EmployeeService
-import com.cynergisuite.middleware.store.StoreFactory
-import com.cynergisuite.middleware.store.StoreFactoryService
-import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -16,7 +12,9 @@ import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpRequest.*
+import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.HEAD
+import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
@@ -24,21 +22,18 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
    @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeService employeeService
    @Inject EmployeeFactoryService employeeFactoryService
-   @Inject StoreService storeService
-   @Inject StoreFactoryService storeFactoryService
 
-   void "login successful" () {
+   void "login successful with user who doesn't have department" () {
       given:
-      final department = departmentFactoryService.random('tstds1')
-      final store = storeFactoryService.storeThreeTstds1()
-      final employee = employeeFactoryService.single(123, 'tstds1', null, null, null, store, false, department)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(employee)),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -68,22 +63,69 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == '123'
-      response.loginStatus == '123 is now logged in'
+      response.employeeNumber == employee.number.toString()
+      response.loginStatus == "${employee.number} is now logged in"
+      response.storeNumber == 3
+      response.dataset == 'tstds1'
+   }
+
+   void "login with user who has department assigned" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(store.myCompany())
+      final employee = employeeFactoryService.single(store, department)
+
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def response = httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response.employeeNumber == "${employee.number}"
+      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
 
    void "login failure due to invalid store" () {
       given:
-      final department = departmentFactoryService.random('tstds1')
-      final store = storeFactoryService.storeThreeTstds1()
-      final validEmployee = employeeFactoryService.single(123, 'tstds1', null, null, null, store, false, department)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(store.myCompany())
+      final validEmployee = employeeFactoryService.single(store, department)
 
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(validEmployee.number.toString(), 'word', 75, validEmployee.dataset)),
+            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, validEmployee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          )
@@ -97,9 +139,10 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login failure due to missing dataset" () {
       given:
-      final department = departmentFactoryService.random('tstds1')
-      final store = storeFactoryService.storeThreeTstds1()
-      final validEmployee = employeeFactoryService.single(123, 'tstds1', null, null, null, store, false, department)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(store.myCompany())
+      final validEmployee = employeeFactoryService.single(store, department)
 
       when:
       httpClient.toBlocking()
@@ -120,7 +163,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user who isn't authorized for tstds2" () {
       given:
-      final storeOneTstds1 = StoreFactory.storeOneTstds1()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final storeOneTstds1 = storeFactoryService.store(3, company)
       final user = employeeFactoryService.single(storeOneTstds1)
 
       when:
@@ -140,13 +184,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login as high touch uber user with dataset tstds1" () {
       given:
-      final htUberUserTstds1 = employeeFactoryService.single(998, 'tstds1', 'admin', null, 'word', null, true, null)
-      final htUberUserTstds2 = employeeFactoryService.single(998, 'tstds2', 'admin', null, 'word', null, true, null)
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final htUberUserTstds1 = employeeFactoryService.single(998, tstds1, 'admin', null, 'word', true, 'A', 0)
+      final htUberUserTstds2 = employeeFactoryService.single(998, tstds2, 'admin', null, 'word', true, 'A', 0)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(htUberUserTstds1, 'word', null)),
+            POST("/login",new LoginCredentials('998', 'word', null, 'tstds1')),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -184,14 +230,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with superfluous URL parameters" () {
       given:
-      final department = departmentFactoryService.random('tstds1')
-      final store = storeFactoryService.storeThreeTstds1()
-      final employee = employeeFactoryService.single(123, 'tstds1', null, null, null, store, false, department)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(store.myCompany())
+      final employee = employeeFactoryService.single(store, department)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login?extraOne=1&extraTwo=two",new LoginCredentials(employee)),
+            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -221,8 +268,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == '123'
-      response.loginStatus == '123 is now logged in'
+      response.employeeNumber == "${employee.number}"
+      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
       response.dataset == 'tstds1'
    }
