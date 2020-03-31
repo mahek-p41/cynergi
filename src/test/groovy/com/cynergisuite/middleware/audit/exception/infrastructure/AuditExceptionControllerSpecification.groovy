@@ -13,7 +13,6 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObje
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
-import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -21,14 +20,13 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
-import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import java.time.OffsetDateTime
-import javax.inject.Inject
 import org.apache.commons.lang3.RandomUtils
 
+import javax.inject.Inject
+import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -39,13 +37,11 @@ import static org.apache.commons.lang3.StringUtils.EMPTY
 class AuditExceptionControllerSpecification extends ControllerSpecificationBase {
 
    @Inject AuditExceptionFactoryService auditExceptionFactoryService
-   @Inject AuditExceptionNoteRepository auditExceptionNoteRepository
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
-   @Inject StoreFactoryService storeFactoryService
 
    void "fetch one audit exception by id with no attached notes" () {
       given:

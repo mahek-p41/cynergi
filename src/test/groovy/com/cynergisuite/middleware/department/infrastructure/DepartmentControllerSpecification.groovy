@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.department.DepartmentValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -20,7 +20,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department id" () {
       given:
-      def department = departmentFactoryService.random(authenticatedEmployee.company)
+      def department = departmentFactoryService.random(nineNineEightAuthenticatedEmployee.company)
 
       when:
       def result = get("/department/${department.id}")

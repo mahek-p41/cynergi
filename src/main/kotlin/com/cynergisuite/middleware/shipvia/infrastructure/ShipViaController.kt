@@ -1,24 +1,24 @@
 package com.cynergisuite.middleware.shipvia.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.authentication.infrastructure.AlwaysAllowAccessControlProvider
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.shipvia.*
+import com.cynergisuite.middleware.shipvia.ShipViaService
+import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
-import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
@@ -41,7 +41,6 @@ class ShipViaController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ShipViaController::class.java)
 
    @Throws(NotFoundException::class)
-   @AccessControl("shipvia-fetchOne", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
    @Get("/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a single Ship Via", description = "Fetch a single Ship Via by it's system generated primary key", operationId = "shipvia-fetchOne")
    @ApiResponses(value = [
@@ -56,7 +55,6 @@ class ShipViaController @Inject constructor(
    ): ShipViaValueObject {
       logger.info("Fetching ShipVia by {}", id)
 
-      val user = userService.findUser(authentication)
       val response = shipViaService.fetchById(id = id) ?: throw NotFoundException(id)
 
       logger.debug("Fetch ShipVia by {} resulted {}", id, response)
@@ -65,7 +63,6 @@ class ShipViaController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @AccessControl("shipvia-fetchAll", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
    @Get(value = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a listing of Ship Vias", description = "Fetch a paginated listing of Ship Vias", operationId = "shipvia-fetchAll")
    @ApiResponses(value = [
@@ -89,7 +86,6 @@ class ShipViaController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("shipvia-create", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-create")
    @ApiResponses(value = [
@@ -114,7 +110,6 @@ class ShipViaController @Inject constructor(
    }
 
    @Put(processes = [APPLICATION_JSON])
-   @AccessControl("shipvia-update", accessControlProvider = AlwaysAllowAccessControlProvider::class) // FIXME change this to using the default once the Cynergi permission system is implemented there
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-update")
    @ApiResponses(value = [

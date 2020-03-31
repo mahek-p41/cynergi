@@ -9,7 +9,6 @@ import com.cynergisuite.middleware.department.infrastructure.DepartmentRepositor
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.NotNull
 import javax.inject.Singleton
 
 @Singleton

@@ -23,7 +23,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one shipVia by id" (){
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company)
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
 
       when:
       def result = get("$path/${shipVia.id}")
@@ -47,7 +47,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20, authenticatedEmployee.company).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.id <=> o2.id }.toList()
+      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(4, 5, "id", "ASC")
@@ -102,7 +102,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all without page"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20, authenticatedEmployee.company).map { new ShipViaValueObject(it)}.toList()
+      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.toList()
       def firstPageShipVia = twentyShipVias[0..9]
 
       when:
@@ -121,7 +121,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all with page"() {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20, authenticatedEmployee.company).map { new ShipViaValueObject(it)}.toList()
+      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def firstPageShipVia = twentyShipVias[0..4]
 
@@ -174,7 +174,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid shipVia"() {
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with { new ShipViaValueObject(it.id, "test description", null) }
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaValueObject(it.id, "test description", null) }
 
       when:
       def response = put("$path/", shipVia)
@@ -188,7 +188,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid shipVia"(){
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(it.id, null, 5)}
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaValueObject(it.id, null, 5)}
 
       when:
       put("$path/", shipVia)
@@ -206,7 +206,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid shipVia missing Id"(){
       given:
-      final def shipVia = shipViaFactoryService.single(authenticatedEmployee.company).with {new ShipViaValueObject(null, "Gary was here", 5)}
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaValueObject(null, "Gary was here", 5)}
 
       when:
       put("$path/", shipVia)

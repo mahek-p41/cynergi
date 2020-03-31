@@ -67,5 +67,17 @@ data class CompanyEntity(
          compareToBuilder.toComparison()
       }
    }
+
+   fun toValueObject(): CompanyValueObject {
+      return CompanyValueObject(
+         id = this.id,
+         name = this.name,
+         doingBusinessAs = this.doingBusinessAs,
+         clientCode = this.clientCode,
+         clientId = this.clientId,
+         datasetCode = this.datasetCode,
+         federalTaxNumber = this.federalIdNumber
+      )
+   }
 }
 

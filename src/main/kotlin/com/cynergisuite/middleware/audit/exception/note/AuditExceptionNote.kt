@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.exception.note
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import java.time.OffsetDateTime
 import java.util.UUID

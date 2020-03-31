@@ -4,7 +4,6 @@ import com.cynergisuite.middleware.notification.infrastructure.NotificationRepos
 import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.lang.Exception
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
