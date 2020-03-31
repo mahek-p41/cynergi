@@ -1,17 +1,3 @@
-CREATE TABLE account_payable_check_status_type_domain (
-	 id integer                                                                  NOT NULL PRIMARY KEY,
-    value varchar(10) CHECK ( char_length(trim(value)) > 0)                     NOT NULL,
-	 description varchar(100) CHECK ( char_length(trim(description)) > 1)        NOT NULL,
-	 localization_code varchar(100) CHECK( char_length(trim(localization_code)) > 1) NOT NULL,
-	 UNIQUE(value)
- );
-
-INSERT INTO account_payable_check_status_type_domain(id,value,description,localization_code)
-Values
-(1,'P', 'Paid', 'paid'),
-(2,'V', 'Voided', 'voided');
-
-
 CREATE TABLE account_type_domain (
 	 id integer                                                                  NOT NULL PRIMARY KEY,
     name varchar(50) CHECK ( char_length(trim(name)) > 1)                       NOT NULL,
@@ -55,6 +41,20 @@ Values
 (1,'A', 'Active', 'active') ,
 (2,'I', 'inactive', 'inactive');
 
+CREATE TABLE bank_currency_code_type_domain (
+	 id integer                                                                  NOT NULL PRIMARY KEY,
+    value varchar(10) CHECK ( char_length(trim(value)) > 0)                     NOT NULL,
+	 description varchar(100) CHECK ( char_length(trim(description)) > 1)        NOT NULL,
+	 localization_code varchar(100) CHECK( char_length(trim(localization_code)) > 1) NOT NULL,
+	 UNIQUE(value)
+ );
+
+INSERT INTO bank_currency_code_type_domain(id,value,description,localization_code)
+Values
+(1,'USA', 'United States', 'united.states') ,
+(2,'CAN', 'Canada', 'Canada');
+
+
 CREATE TABLE bank (
     id                 BIGSERIAL                                                NOT NULL PRIMARY KEY,
     uu_row_id          UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE bank (
     general_ledger_profit_center_sfk INTEGER CHECK( general_ledger_profit_center_sfk > 0 ) NOT NULL, --profit center is store
     account_balance numeric(13,2), --Input the bank account balance for check reconciliation
     account_number INTEGER CHECK( account_number > 0 )                          NOT NULL, --Input the bank account number
-    currency_code varchar(30),
+    currency_code_id BIGINT REFERENCES bank_currency_code_type_domain(id) NOT NULL,
     UNIQUE (company_id, number )
 );
 
@@ -78,47 +78,11 @@ CREATE TABLE bank (
 EXECUTE PROCEDURE last_updated_column_fn();
 
 
-CREATE INDEX idx_company_id
+CREATE INDEX idx_bank_company_id
     ON bank (company_id);
 
-CREATE INDEX idx_address_id
-    ON back (address_id);
-
-
-CREATE TABLE account_payable_check_header (
-    id                 BIGSERIAL                                                NOT NULL PRIMARY KEY,
-    uu_row_id          UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
-    time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
-    time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
-    company_id BIGINT REFERENCES company(id)                                    NOT NULL,
-    bank_id BIGINT REFERENCES bank(id)                                          NOT NULL,
-    vendor_id BIGINT REFERENCES vendor(id)                                      NOT NULL, --renamed from apc_payto
-    check_number integer CHECK( check_number > 0 )                              NOT NULL,
-    date date DEFAULT CURRENT_DATE                                              NOT NULL,
-    amount numeric(12,2)  CHECK( amount> 0.00 )                                 NOT NULL,
-    status_id BIGINT REFERENCES account_payable_check_status_type_domain(id)    NOT NULL,
-    date_cleared date,
-    date_voided date,
-    UNIQUE (company_id, bank_id, check_number)
-);
-
- CREATE TRIGGER update_account_payable_check_header_trg
-   BEFORE UPDATE
-   ON account_payable_check_header
-   FOR EACH ROW
-EXECUTE PROCEDURE last_updated_column_fn();
-
-CREATE INDEX idx_company_id
-    ON account_payable_check_header (company_id);
-
-CREATE INDEX idx_bank_id
-    ON account_payable_check_header (bank_id);
-
-CREATE INDEX idx_vendor_id
-    ON account_payable_check_header (vendor_id);
-
-CREATE INDEX idx_status_id
-    ON account_payable_check_header (status_id);
+CREATE INDEX idx_bank_address_id
+    ON bank (address_id);
 
 
 CREATE TABLE account (
@@ -147,22 +111,22 @@ CREATE TRIGGER update_account_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 
-CREATE INDEX idx_company_id
+CREATE INDEX idx_account_company_id
     ON account (company_id);
 
-CREATE INDEX idx_tupe_id
+CREATE INDEX idx_account_type_id
     ON account (type_id);
 
-CREATE INDEX idx_status_type_id
+CREATE INDEX idx_account_status_type_id
     ON account (status_type_id);
 
- CREATE INDEX idx_bank_number_id
+ CREATE INDEX idx_account_bank_number_id
     ON account (bank_number_id);
 
 
 ALTER TABLE bank
 ADD column gl_account_id BIGINT REFERENCES account(id)                                    NOT NULL;
 
-CREATE INDEX idx_gl_account_id
+CREATE INDEX idx_bank_gl_account_id
     ON bank (gl_account_id);
 
