@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.store
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import javax.inject.Inject
@@ -17,8 +18,8 @@ class StoreService @Inject constructor(
    fun fetchByNumber(number: Int, company: Company): StoreValueObject? =
       storeRepository.findOne(number, company)?.let { StoreValueObject(entity = it) }
 
-   fun fetchAll(pageRequest: PageRequest, company: Company): Page<StoreValueObject> {
-      val stores = storeRepository.findAll(pageRequest, company)
+   fun fetchAll(pageRequest: PageRequest, user: User): Page<StoreValueObject> {
+      val stores = storeRepository.findAll(pageRequest, user)
 
       return stores.toPage { store ->
          StoreValueObject(store)
