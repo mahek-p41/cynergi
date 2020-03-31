@@ -1,8 +1,8 @@
-package com.cynergisuite.middleware.vendor.payment.terms
+package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyFactoryService
-import com.cynergisuite.middleware.vendor.payment.terms.infrastructure.VendorPaymentTermsRepository
+import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -10,18 +10,19 @@ import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
-object VendorPaymentTermsDataLoader {
+object VendorPaymentTermDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, company: Company): Stream<VendorPaymentTermsEntity> {
+   fun stream(numberIn: Int = 1, company: Company): Stream<VendorPaymentTermEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
       val random = faker.random()
 
       return IntStream.range(0, number).mapToObj {
-         VendorPaymentTermsEntity(
+         VendorPaymentTermEntity(
             company = company,
+            description = lorem.characters(3, 30),
             number = random.nextInt(1, 1000),
             numberOfPayments = random.nextInt(1, 100),
             dueMonth1 = random.nextInt(1, 12),
@@ -50,25 +51,25 @@ object VendorPaymentTermsDataLoader {
    }
 
    @JvmStatic
-   fun single(company: Company): VendorPaymentTermsEntity {
-      return stream(company = company).findFirst().orElseThrow { Exception("Unable to create VendorPaymentTermsEntity") }
+   fun single(company: Company): VendorPaymentTermEntity {
+      return stream(company = company).findFirst().orElseThrow { Exception("Unable to create VendorPaymentTermEntity") }
    }
 }
 
 @Singleton
 @Requires(env = ["demo", "test"])
-class VendorPaymentTermsDataLoaderService @Inject constructor(
+class VendorPaymentTermDataLoaderService @Inject constructor(
    private val companyFactoryService: CompanyFactoryService,
-   private val vendorPaymentTermsRepository: VendorPaymentTermsRepository
+   private val vendorPaymentTermRepository: VendorPaymentTermRepository
 ) {
 
-   fun stream(numberIn: Int = 1, company: Company): Stream<VendorPaymentTermsEntity> {
-      return VendorPaymentTermsDataLoader.stream(numberIn, company).map {
-         vendorPaymentTermsRepository.insert(it)
+   fun stream(numberIn: Int = 1, company: Company): Stream<VendorPaymentTermEntity> {
+      return VendorPaymentTermDataLoader.stream(numberIn, company).map {
+         vendorPaymentTermRepository.insert(it)
       }
    }
 
-   fun single(company: Company): VendorPaymentTermsEntity {
-      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create VendorPaymentTerms")}
+   fun single(company: Company): VendorPaymentTermEntity {
+      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create VendorPaymentTerm")}
    }
 }

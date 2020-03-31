@@ -1,35 +1,34 @@
-package com.cynergisuite.middleware.vendor.payment.terms
+package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
-import static io.micronaut.http.HttpStatus.BAD_REQUEST
+
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
-class VendorPaymentTermsControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/vendor/payment/terms"
+class VendorPaymentTermControllerSpecification extends ControllerSpecificationBase {
+   private static final String path = "/vendor/payment/term"
 
    @Inject
-   VendorPaymentTermsDataLoaderService vendorPaymentTermsDataLoaderService
+   VendorPaymentTermDataLoaderService vendorPaymentTermDataLoaderService
 
-   void "fetch one vendor payment terms by id"() {
+   void "fetch one vendor payment term by id"() {
       given:
-      final def vendorPaymentTerms = vendorPaymentTermsDataLoaderService.single(authenticatedEmployee.company)
+      final def vendorPaymentTerm = vendorPaymentTermDataLoaderService.single(authenticatedEmployee.company)
 
       when:
-      def result = get("$path/${vendorPaymentTerms.id}")
+      def result = get("$path/${vendorPaymentTerm.id}")
 
       then:
       notThrown(HttpClientResponseException)
-      result.id == vendorPaymentTerms.id
+      result.id == vendorPaymentTerm.id
    }
 
-   void "fetch one vendor payment terms by id not found"() {
+   void "fetch one vendor payment term by id not found"() {
       when:
       get("$path/0")
 
@@ -43,16 +42,16 @@ class VendorPaymentTermsControllerSpecification extends ControllerSpecificationB
 
    void "fetch all"() {
       given:
-      def twentyVendorPaymentTerms = vendorPaymentTermsDataLoaderService.stream(20, authenticatedEmployee.company).map {
-         new VendorPaymentTermsValueObject(it)
+      def twentyVendorPaymentTerm = vendorPaymentTermDataLoaderService.stream(20, authenticatedEmployee.company).map {
+         new VendorPaymentTermValueObject(it)
       }.sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(4, 5, "id", "ASC")
       def pageFive = new StandardPageRequest(5, 5, "id", "ASC")
-      def firstPageVendorPaymentTerms = twentyVendorPaymentTerms[0..4]
-      def secondPageVendorPaymentTerms = twentyVendorPaymentTerms[5..9]
-      def lastPageVendorPaymentTerms = twentyVendorPaymentTerms[15..19]
+      def firstPageVendorPaymentTerm = twentyVendorPaymentTerm[0..4]
+      def secondPageVendorPaymentTerm = twentyVendorPaymentTerm[5..9]
+      def lastPageVendorPaymentTerm = twentyVendorPaymentTerm[15..19]
 
       when:
       def pageOneResult = get("$path${pageOne}")
@@ -64,7 +63,7 @@ class VendorPaymentTermsControllerSpecification extends ControllerSpecificationB
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.collect { new VendorPaymentTermsValueObject(it) } == firstPageVendorPaymentTerms
+      pageOneResult.elements.collect { new VendorPaymentTermValueObject(it) } == firstPageVendorPaymentTerm
 
       when:
       def pageTwoResult = get("$path${pageTwo}")
@@ -76,7 +75,7 @@ class VendorPaymentTermsControllerSpecification extends ControllerSpecificationB
       pageTwoResult.first == false
       pageTwoResult.last == false
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.collect { new VendorPaymentTermsValueObject(it) } == secondPageVendorPaymentTerms
+      pageTwoResult.elements.collect { new VendorPaymentTermValueObject(it) } == secondPageVendorPaymentTerm
 
       when:
       def pageLastResult = get("$path${pageLast}")
@@ -88,7 +87,7 @@ class VendorPaymentTermsControllerSpecification extends ControllerSpecificationB
       pageLastResult.first == false
       pageLastResult.last == true
       pageLastResult.elements.size() == 5
-      pageLastResult.elements.collect { new VendorPaymentTermsValueObject(it) } == lastPageVendorPaymentTerms
+      pageLastResult.elements.collect { new VendorPaymentTermValueObject(it) } == lastPageVendorPaymentTerm
 
       when:
       get("$path/${pageFive}")

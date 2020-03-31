@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.vendor.payment.terms
+package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.company.Company
@@ -6,12 +6,13 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class VendorPaymentTermsEntity(
+data class VendorPaymentTermEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val company: Company,
+   val description: String,
    val number: Int,
    val numberOfPayments: Int,
    val dueMonth1: Int?,
@@ -36,12 +37,13 @@ data class VendorPaymentTermsEntity(
    val discountDays: Int?,
    val discountPercent: BigDecimal?
 
-   ) : Entity<VendorPaymentTermsEntity> {
+   ) : Entity<VendorPaymentTermEntity> {
 
-   constructor(vo: VendorPaymentTermsValueObject, company: Company) :
+   constructor(vo: VendorPaymentTermValueObject, company: Company) :
       this(
          id = vo.id,
          company = company,
+         description = vo.description!!,
          number = vo.number!!,
          numberOfPayments = vo.numberOfPayments!!,
          dueMonth1 = vo.dueMonth1,
@@ -69,5 +71,5 @@ data class VendorPaymentTermsEntity(
 
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId
-   override fun copyMe(): VendorPaymentTermsEntity = copy()
+   override fun copyMe(): VendorPaymentTermEntity = copy()
 }
