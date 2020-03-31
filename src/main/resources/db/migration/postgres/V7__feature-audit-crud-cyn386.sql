@@ -27,9 +27,9 @@ INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES
 INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (1, 4); -- OPENED -> CANCELED
 INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (2, 3); -- IN-PROGRESS -> COMPLETED
 INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (2, 4); -- IN-PROGRESS -> CANCELED
-INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (3, 5); -- COMPLETED -> SIGNED-OFF
-INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (4, 5); -- CANCELED -> SIGNED-OFF
-INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (5, 6); -- SIGNED-OFF -> CLOSED
+INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (3, 5); -- COMPLETED -> APPROVED
+INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (4, 5); -- CANCELED -> APPROVED
+INSERT INTO audit_status_transitions_type_domain (status_from, status_to) VALUES (5, 6); -- APPROVED -> CLOSED
 --- end audit status domain table
 
 --- begin audit table
