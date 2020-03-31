@@ -9,7 +9,7 @@ object AuditStatusFactory {
       IN_PROGRESS,
       COMPLETED,
       CANCELED,
-      SIGNED_OFF
+      APPROVED
    )
 
    @JvmStatic
@@ -25,7 +25,7 @@ object AuditStatusFactory {
    fun completed(): AuditStatus = statuses.first { it == COMPLETED }
 
    @JvmStatic
-   fun signedOff(): AuditStatus = statuses.first { it == SIGNED_OFF }
+   fun approved(): AuditStatus = statuses.first { it == APPROVED }
 
    @JvmStatic
    fun values(): List<AuditStatus> = statuses

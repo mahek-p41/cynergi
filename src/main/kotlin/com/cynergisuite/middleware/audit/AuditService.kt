@@ -12,7 +12,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.SIGNED_OFF
+import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -131,17 +131,17 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun signOff(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
-      val existing = auditValidator.validateSignOff(audit, user.myCompany(), user, locale)
+   fun approve(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
+      val existing = auditValidator.validateApproved(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
       val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
 
-      actions.add(AuditActionEntity(status = SIGNED_OFF, changedBy = changedBy))
+      actions.add(AuditActionEntity(status = APPROVED, changedBy = changedBy))
 
       val updated = auditRepository.update(existing.copy(actions = actions))
 
-      if (updated.currentStatus() == SIGNED_OFF) {
-         auditExceptionRepository.signOffAllExceptions(updated, user)
+      if (updated.currentStatus() == APPROVED) {
+         auditExceptionRepository.approveAllExceptions(updated, user)
 
          reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}", "pdf") { reportalOutputStream ->
             generateAuditExceptionReport(reportalOutputStream, updated, false)
@@ -177,11 +177,11 @@ class AuditService @Inject constructor(
 
 
    @Validated
-   fun signOffAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditSignOffAllExceptionsDataTransferObject {
-      val toSignOff = auditValidator.validateSignOffAll(audit, user.myCompany())
+   fun approveAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditApproveAllExceptionsDataTransferObject {
+      val toApprove = auditValidator.validateApproveAll(audit, user.myCompany())
 
-      return AuditSignOffAllExceptionsDataTransferObject(
-         auditExceptionRepository.signOffAllExceptions(toSignOff, user)
+      return AuditApproveAllExceptionsDataTransferObject(
+         auditExceptionRepository.approveAllExceptions(toApprove, user)
       )
    }
 

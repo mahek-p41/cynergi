@@ -20,7 +20,7 @@ import javax.validation.constraints.Size
    name = "AuditException",
    title = "A single exception encountered during an audit",
    description = "A single item associated with an Exception encountered during an Audit.  It describes the problem as best can be determined by the data at hand.",
-   requiredProperties = ["barcode", "exceptionCode", "audit", "signedOff"]
+   requiredProperties = ["barcode", "exceptionCode", "audit", "approved"]
 )
 data class AuditExceptionValueObject (
 
@@ -79,12 +79,12 @@ data class AuditExceptionValueObject (
    var scannedBy: EmployeeValueObject? = null,  // this will be filled out by the system based on how they are logged in
 
    @field:NotNull
-   @field:Schema(name = "signedOff", description = "Whether this exception has been signed off by the designated employee", example = "true", defaultValue = "false")
-   var signedOff: Boolean = false,
+   @field:Schema(name = "approved", description = "Whether this exception has been approved by the designated employee", example = "true", defaultValue = "false")
+   var approved: Boolean = false,
 
    @field:Valid
-   @field:Schema(name = "signedOffBy", description = "The Employee who signed-off on the exception.  This is filled in by the system based on login credentials")
-   var signedOffBy: EmployeeValueObject? = null,  // this will be filled out by the system based on how they are logged in
+   @field:Schema(name = "approvedBy", description = "The Employee who approved the exception.  This is filled in by the system based on login credentials")
+   var approvedBy: EmployeeValueObject? = null,  // this will be filled out by the system based on how they are logged in
 
    @field:Size(min = 2, max = 200)
    @field:Schema(name = "lookupKey", description = "The key that can be used to determine what inventory entry lines up with this exception")
@@ -112,8 +112,8 @@ data class AuditExceptionValueObject (
          inventoryModel = entity.inventoryModel,
          scannedBy = EmployeeValueObject(entity.scannedBy),
          exceptionCode = entity.exceptionCode,
-         signedOff = entity.signedOff,
-         signedOffBy = entity.signedOffBy?.let { EmployeeValueObject(it) },
+         approved = entity.approved,
+         approvedBy = entity.approvedBy?.let { EmployeeValueObject(it) },
          lookupKey = entity.lookupKey,
          notes = entity.notes.asSequence().map { AuditExceptionNoteValueObject(it) }.toMutableList(),
          audit = SimpleIdentifiableValueObject(entity.audit)

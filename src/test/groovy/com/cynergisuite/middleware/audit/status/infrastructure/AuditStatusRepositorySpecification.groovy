@@ -31,7 +31,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[0].localizationCode == "audit.status.completed"
       result.nextStates[0].nextStates[0].nextStates.size() == 1
       result.nextStates[0].nextStates[0].nextStates[0].id == 5
-      result.nextStates[0].nextStates[0].nextStates[0].value == "SIGNED-OFF"
+      result.nextStates[0].nextStates[0].nextStates[0].value == "APPROVED"
       result.nextStates[0].nextStates[0].nextStates[0].nextStates.empty
       result.nextStates[0].nextStates[1].id == 4
       result.nextStates[0].nextStates[1].value == "CANCELED"
@@ -39,7 +39,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[1].localizationCode == "audit.status.canceled"
       result.nextStates[0].nextStates[1].nextStates.size() == 1
       result.nextStates[0].nextStates[1].nextStates[0].id == 5
-      result.nextStates[0].nextStates[1].nextStates[0].value == "SIGNED-OFF"
+      result.nextStates[0].nextStates[1].nextStates[0].value == "APPROVED"
       result.nextStates[0].nextStates[1].nextStates[0].nextStates.empty
       result.nextStates[1].id == 4
       result.nextStates[1].value == "CANCELED"
@@ -47,9 +47,9 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[1].localizationCode == "audit.status.canceled"
       result.nextStates[1].nextStates.size() == 1
       result.nextStates[1].nextStates[0].id == 5
-      result.nextStates[1].nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[1].nextStates[0].description == "Signed Off"
-      result.nextStates[1].nextStates[0].localizationCode == "audit.status.signed-off"
+      result.nextStates[1].nextStates[0].value == "APPROVED"
+      result.nextStates[1].nextStates[0].description == "Approved"
+      result.nextStates[1].nextStates[0].localizationCode == "audit.status.approved"
       result.nextStates[1].nextStates[0].nextStates.empty
 
       when:
@@ -73,7 +73,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[0].localizationCode == "audit.status.completed"
       result.nextStates[0].nextStates[0].nextStates.size() == 1
       result.nextStates[0].nextStates[0].nextStates[0].id == 5
-      result.nextStates[0].nextStates[0].nextStates[0].value == "SIGNED-OFF"
+      result.nextStates[0].nextStates[0].nextStates[0].value == "APPROVED"
       result.nextStates[0].nextStates[0].nextStates[0].nextStates.empty
       result.nextStates[0].nextStates[1].id == 4
       result.nextStates[0].nextStates[1].value == "CANCELED"
@@ -81,7 +81,7 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[1].localizationCode == "audit.status.canceled"
       result.nextStates[0].nextStates[1].nextStates.size() == 1
       result.nextStates[0].nextStates[1].nextStates[0].id == 5
-      result.nextStates[0].nextStates[1].nextStates[0].value == "SIGNED-OFF"
+      result.nextStates[0].nextStates[1].nextStates[0].value == "APPROVED"
       result.nextStates[0].nextStates[1].nextStates[0].nextStates.empty
       result.nextStates[1].id == 4
       result.nextStates[1].value == "CANCELED"
@@ -89,9 +89,9 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[1].localizationCode == "audit.status.canceled"
       result.nextStates[1].nextStates.size() == 1
       result.nextStates[1].nextStates[0].id == 5
-      result.nextStates[1].nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[1].nextStates[0].description == "Signed Off"
-      result.nextStates[1].nextStates[0].localizationCode == "audit.status.signed-off"
+      result.nextStates[1].nextStates[0].value == "APPROVED"
+      result.nextStates[1].nextStates[0].description == "Approved"
+      result.nextStates[1].nextStates[0].localizationCode == "audit.status.approved"
       result.nextStates[1].nextStates[0].nextStates.empty
    }
 
@@ -127,9 +127,9 @@ class AuditStatusRepositorySpecification extends Specification {
       result.localizationCode == "audit.status.completed"
       result.nextStates.size() == 1
       result.nextStates[0].id == 5
-      result.nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[0].description == "Signed Off"
-      result.nextStates[0].localizationCode == "audit.status.signed-off"
+      result.nextStates[0].value == "APPROVED"
+      result.nextStates[0].description == "Approved"
+      result.nextStates[0].localizationCode == "audit.status.approved"
       result.nextStates[0].nextStates.empty
    }
 
@@ -145,9 +145,9 @@ class AuditStatusRepositorySpecification extends Specification {
       result.localizationCode == "audit.status.canceled"
       result.nextStates.size() == 1
       result.nextStates[0].id == 5
-      result.nextStates[0].value == "SIGNED-OFF"
-      result.nextStates[0].description == "Signed Off"
-      result.nextStates[0].localizationCode == "audit.status.signed-off"
+      result.nextStates[0].value == "APPROVED"
+      result.nextStates[0].description == "Approved"
+      result.nextStates[0].localizationCode == "audit.status.approved"
       result.nextStates[0].nextStates.empty
    }
 }
