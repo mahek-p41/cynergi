@@ -49,7 +49,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements[0].description == "Approve audits"
       result.elements[1].id == 2
       result.elements[1].value == "audit-permission-manager"
-      result.elements[1].description == "Audit permission manager"
+      result.elements[1].description == "Edit permissions"
    }
 
    void "fetch one by ID" () {
@@ -174,7 +174,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final auditTwo = auditFactoryService.single(store, assistantManagerEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      def auditOneApproval = put("/audit/sign-off", new SimpleIdentifiableDataTransferObject(auditOne), assistantManagerLogin)
+      def auditOneApproval = put("/audit/approve", new SimpleIdentifiableDataTransferObject(auditOne), assistantManagerLogin)
 
       then:
       notThrown(Exception)
@@ -214,7 +214,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       permission.department.code == salesAssociateDepartment.code
 
       when:
-      def auditOneApproval = put("/audit/sign-off", new SimpleIdentifiableDataTransferObject(auditOne), salesAssociateLogin)
+      def auditOneApproval = put("/audit/approve", new SimpleIdentifiableDataTransferObject(auditOne), salesAssociateLogin)
 
       then:
       notThrown(Exception)
@@ -241,7 +241,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final audit = auditFactoryService.single(store, salesAssociate, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      put("/audit/sign-off", new SimpleIdentifiableDataTransferObject(audit), salesAssociateLogin)
+      put("/audit/approve", new SimpleIdentifiableDataTransferObject(audit), salesAssociateLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -259,7 +259,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       deletedAuditSignOffPermission.department.code == deliveryDriverDepartment.code
 
       when:
-      def salesAssociateSignOffAudit = put("/audit/sign-off", new SimpleIdentifiableDataTransferObject(audit), salesAssociateLogin)
+      def salesAssociateSignOffAudit = put("/audit/approve", new SimpleIdentifiableDataTransferObject(audit), salesAssociateLogin)
 
       then:
       notThrown(Exception)

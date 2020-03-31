@@ -5,7 +5,7 @@ import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.AuditSignOffAllExceptionsDataTransferObject
+import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
@@ -173,10 +173,10 @@ class AuditController @Inject constructor(
       return response
    }
 
-   @Put("/sign-off", processes = [APPLICATION_JSON])
+   @Put("/approve", processes = [APPLICATION_JSON])
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AuditEndpoints"], summary = "Sign off on an audit", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on as well as signing off the audit.", operationId = "audit-updateSignOff")
+   @Operation(tags = ["AuditEndpoints"], summary = "Approve an audit", description = "This operation will approve all audit exceptions associated with the provided audit that haven't already been approved as well as approving the audit.", operationId = "audit-updateApproved")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
@@ -184,17 +184,17 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun signOff(
+   fun approve(
       @Body audit: SimpleIdentifiableDataTransferObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
-      logger.info("Requested sign-off of audit {}", audit)
+      logger.info("Requested approval of audit {}", audit)
 
       val user = userService.findUser(authentication)
-      val response = auditService.signOff(audit, user, httpRequest.findLocaleWithDefault())
+      val response = auditService.approve(audit, user, httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested sign-off of audit {} resulted in {}", audit, response)
+      logger.debug("Requested approval of audit {} resulted in {}", audit, response)
 
       return response
    }
@@ -251,10 +251,10 @@ class AuditController @Inject constructor(
       return HttpResponse.ok(stream)
    }
 
-   @Put("/sign-off/exceptions", processes = [APPLICATION_JSON])
+   @Put("/approve/exceptions", processes = [APPLICATION_JSON])
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AuditEndpoints"], summary = "Sign off on all audit exceptions", description = "This operation will sign off all on audit exceptions associated with the provided audit that haven't already been signed off on", operationId = "audit-updateSignOffAllExceptions")
+   @Operation(tags = ["AuditEndpoints"], summary = "Approve all audit exceptions", description = "This operation will approve all audit exceptions associated with the provided audit that haven't already been approved", operationId = "audit-updateApprovedAllExceptions")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
@@ -262,14 +262,14 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
-   fun signOffAllExceptions(
+   fun approveAllExceptions(
       @Body audit: SimpleIdentifiableDataTransferObject,
       authentication: Authentication
-   ): AuditSignOffAllExceptionsDataTransferObject {
-      logger.info("Requested sign of on all audit exceptions associated with audit {}", audit)
+   ): AuditApproveAllExceptionsDataTransferObject {
+      logger.info("Requested approval on all audit exceptions associated with audit {}", audit)
 
       val user = userService.findUser(authentication)
 
-      return auditService.signOffAllExceptions(audit, user)
+      return auditService.approveAllExceptions(audit, user)
    }
 }
