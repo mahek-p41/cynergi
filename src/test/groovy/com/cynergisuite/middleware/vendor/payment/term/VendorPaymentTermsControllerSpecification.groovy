@@ -18,7 +18,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "fetch one vendor payment term by id"() {
       given:
-      final def vendorPaymentTerm = vendorPaymentTermDataLoaderService.single(authenticatedEmployee.company)
+      final def vendorPaymentTerm = vendorPaymentTermDataLoaderService.single(nineNineEightAuthenticatedEmployee.myCompany())
 
       when:
       def result = get("$path/${vendorPaymentTerm.id}")
@@ -42,7 +42,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "fetch all"() {
       given:
-      def twentyVendorPaymentTerm = vendorPaymentTermDataLoaderService.stream(20, authenticatedEmployee.company).map {
+      def twentyVendorPaymentTerm = vendorPaymentTermDataLoaderService.stream(20, nineNineEightAuthenticatedEmployee.myCompany()).map {
          new VendorPaymentTermValueObject(it)
       }.sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
