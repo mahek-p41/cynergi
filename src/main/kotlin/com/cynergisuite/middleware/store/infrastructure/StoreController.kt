@@ -74,7 +74,7 @@ class StoreController @Inject constructor(
       logger.info("Fetching all stores {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = storeService.fetchAll(pageRequest, user.myCompany())
+      val page = storeService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)

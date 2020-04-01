@@ -43,7 +43,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       this.store1Tstds1 = userStoreRepository.findOne(1, tstds1)
       this.store3Tstds1 = userStoreRepository.findOne(3, tstds1)
 
-      this.nineNineEightEmployee = userSetupEmployeeFactoryService.single(998, tstds1, 'man', 'super', 'pass', true, 'A', 0)
+      this.nineNineEightEmployee = userSetupEmployeeFactoryService.singleSuperUser(998, tstds1, 'man', 'super', 'pass')
       this.nineNineEightAuthenticatedEmployee = userService.fetchUserByAuthentication(nineNineEightEmployee.number, nineNineEightEmployee.passCode, tstds1.myDataset(), null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       this.nineNineEightAccessToken = loginEmployee(nineNineEightAuthenticatedEmployee)
    }

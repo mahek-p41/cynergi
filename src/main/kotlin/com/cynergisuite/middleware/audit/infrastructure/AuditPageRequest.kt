@@ -12,7 +12,7 @@ import com.cynergisuite.middleware.audit.status.CANCELED
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.SIGNED_OFF
+import com.cynergisuite.middleware.audit.status.APPROVED
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -54,7 +54,7 @@ class AuditPageRequest(
       ) {
          val statusesIn = pageRequestIn?.status
 
-         this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf(CREATED.value, IN_PROGRESS.value, COMPLETED.value, CANCELED.value, SIGNED_OFF.value)
+         this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf(CREATED.value, IN_PROGRESS.value, COMPLETED.value, CANCELED.value, APPROVED.value)
          this.from = buildFrom(this.status!!, pageRequestIn)
          this.thru = buildThru(from, this.status!!, pageRequestIn)
          this.storeNumber = pageRequestIn?.storeNumber
