@@ -38,7 +38,7 @@ CREATE TABLE vendor_payment_term (
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     company_id BIGINT REFERENCES company(id)                                    NOT NULL,
     description varchar(30) CHECK ( char_length(trim(description)) > 1)         NOT NULL,
-    number integer CHECK (number > 0)                                           NOT NULL,
+    number integer CHECK (number > 0) DEFAULT currval('vendor_payment_term_id_seq') NOT NULL,
     number_of_payments integer DEFAULT 1                                        NOT NULL,
     due_month_1  integer,
     due_month_2  integer,

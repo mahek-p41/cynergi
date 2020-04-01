@@ -107,11 +107,10 @@ class VendorPaymentTermRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO vendor_payment_term(company_id, description, number, number_of_payments, due_month_1, due_month_2, due_month_3, due_month_4, due_month_5, due_month_6, due_days_1, due_days_2, due_days_3, due_days_4, due_days_5, due_days_6, due_percent_1, due_percent_2, due_percent_3, due_percent_4, due_percent_5, due_percent_6, discount_month, discount_days, discount_percent)
+         INSERT INTO vendor_payment_term(company_id, description, number_of_payments, due_month_1, due_month_2, due_month_3, due_month_4, due_month_5, due_month_6, due_days_1, due_days_2, due_days_3, due_days_4, due_days_5, due_days_6, due_percent_1, due_percent_2, due_percent_3, due_percent_4, due_percent_5, due_percent_6, discount_month, discount_days, discount_percent)
          VALUES (
             :company_id,
             :description,
-            :number,
             :number_of_payments,
             :due_month_1,
             :due_month_2,
@@ -141,7 +140,6 @@ class VendorPaymentTermRepository @Inject constructor(
          mapOf(
             "company_id" to entity.company.myId(),
             "description" to entity.description,
-            "number" to entity.number,
             "number_of_payments" to entity.numberOfPayments,
             "due_month_1" to entity.dueMonth1,
             "due_month_2" to entity.dueMonth2,
@@ -210,7 +208,6 @@ class VendorPaymentTermRepository @Inject constructor(
          SET
             company_id = :companyId,
             description = :description,
-            number = :number,
             number_of_payments = :numberOfPayments,
             due_month_1 = :dueMonth1,
             due_month_2 = :dueMonth2,
@@ -241,7 +238,6 @@ class VendorPaymentTermRepository @Inject constructor(
             "id" to entity.id,
             "companyId" to entity.company.myId(),
             "description" to entity.description,
-            "number" to entity.number,
             "numberOfPayments" to entity.numberOfPayments,
             "dueMonth1" to entity.dueMonth1,
             "dueMonth2" to entity.dueMonth2,
