@@ -8,10 +8,10 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.DepartmentEntity
-import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import com.cynergisuite.middleware.location.infrastructure.LocationRepository
+import com.cynergisuite.middleware.store.SimpleStore
+import com.cynergisuite.middleware.store.Store
 import io.micronaut.cache.annotation.Cacheable
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Row
@@ -19,17 +19,18 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthenticationRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
-   private val departmentRepository: DepartmentRepository,
    private val employeeRepository: EmployeeRepository,
-   private val storeRepository: StoreRepository,
+   private val locationRepository: LocationRepository,
    private val passwordEncoderService: PasswordEncoderService,
-   private val postgresClient: PgPool
+   private val postgresClient: PgPool,
+   private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticationRepository::class.java)
 
@@ -175,7 +176,7 @@ class AuthenticationRepository @Inject constructor(
    fun findUser(employeeId: Long, employeeType: String, employeeNumber: Int, companyId: Long, storeNumber: Int): AuthenticatedUser {
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
-      val location = storeRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
+      val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
       val department = employee.department
 
       return AuthenticatedUser(
@@ -206,6 +207,29 @@ class AuthenticationRepository @Inject constructor(
       )
    }
 
+   fun findPermissions(department: Department): Set<String> {
+      val params = mutableMapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
+      val sql = """
+                  SELECT
+                     aptd.value              AS value
+                  FROM  audit_permission_type_domain aptd
+                        JOIN audit_permission ap ON ap.type_id = aptd.id
+                  WHERE ap.department = :dept_code AND ap.company_id = :comp_id
+                  UNION
+                  SELECT
+                     aptd.value              AS value
+                  FROM  audit_permission_type_domain aptd
+                  WHERE  aptd.id NOT IN (SELECT DISTINCT type_id
+                                          FROM  audit_permission)
+                  """.trimIndent()
+      logger.debug("Get permission by department {}\n{}", params, sql)
+      val resultSet = mutableSetOf<String>()
+      jdbc.query(sql, params) {
+         rs -> resultSet.add(rs.getString("value"))
+      }
+      return resultSet
+   }
+
    private fun mapDepartment(row: Row, company: Company): Department? {
       return if (row.getLong("dept_id") != null) {
          DepartmentEntity(
@@ -221,9 +245,9 @@ class AuthenticationRepository @Inject constructor(
       }
    }
 
-   private fun mapLocation(row: Row, company: Company, columnPrefix: String): StoreEntity? {
+   private fun mapLocation(row: Row, company: Company, columnPrefix: String): Store? {
       return if (row.getLong("${columnPrefix}id") != null) {
-         StoreEntity(
+         SimpleStore(
             id = row.getLong("${columnPrefix}id"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),

@@ -15,7 +15,6 @@ data class RegionEntity (
    val number: Int,
    val name: String,
    val description: String,
-   val manager: Employee? = null,
    val division: DivisionEntity
 ) : Entity<RegionEntity>, Comparable<RegionEntity> {
 
@@ -23,7 +22,6 @@ data class RegionEntity (
       CompareToBuilder()
          .append(this.name, other.name)
          .append(this.number, other.number)
-         .append(this.manager, other.manager)
          .append(this.description, other.description)
          .append(this.division, other.division)
          .toComparison()
@@ -33,7 +31,6 @@ data class RegionEntity (
          id = this.id,
          number = this.number,
          name = this.name,
-         manager = this.manager,
          description = this.description,
          division = this.division.toValueObject()
       )

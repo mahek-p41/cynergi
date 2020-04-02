@@ -2,9 +2,10 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
+import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.company.CompanyValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.LoggedIn
 import com.cynergisuite.middleware.localization.NotLoggedIn
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -47,12 +48,13 @@ class AuthenticatedController @Inject constructor(
       logger.debug("Checking authentication {}", authentication)
 
       return if (authentication != null) {
-         val user = userService.findUser(authentication)
-         val message = localizationService.localize(localizationCode = LoggedIn(authentication.name), locale = locale)
+         var user = userService.findUser(authentication) as AuthenticatedUser
+         var companyWithNullFederalIdNumber = CompanyValueObject(entity = user.company, federalTaxNumberOverride = null)
+         val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) }
 
          logger.debug("User is authenticated {}", user)
 
-         HttpResponse.ok(AuthenticatedUserInformation(user, message))
+         HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber))
       } else {
          val message = localizationService.localize(NotLoggedIn(), locale)
 
@@ -60,7 +62,7 @@ class AuthenticatedController @Inject constructor(
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)
-            .body(AuthenticatedUserInformation(loginStatus = message))
+            .body(AuthenticatedUserInformation())
       }
    }
 

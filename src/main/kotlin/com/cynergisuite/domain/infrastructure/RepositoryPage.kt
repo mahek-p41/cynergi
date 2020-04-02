@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 
-data class RepositoryPage<ENTITY: Identifiable, REQUESTED: PageRequest>(
+data class RepositoryPage<ENTITY, REQUESTED: PageRequest>(
    val elements: List<ENTITY>,
    val totalElements: Long,
    val requested: REQUESTED

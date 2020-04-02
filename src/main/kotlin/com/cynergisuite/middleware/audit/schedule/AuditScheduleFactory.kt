@@ -3,14 +3,13 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.time.DayOfWeek
@@ -20,7 +19,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 object AuditScheduleFactory {
-   fun single(dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): ScheduleEntity {
+   fun single(dayOfWeek: DayOfWeek, stores: List<Store>, user: User, company: Company): ScheduleEntity {
       val faker = Faker()
       val bool = faker.bool()
       val chuckNorris = faker.chuckNorris()
@@ -30,14 +29,14 @@ object AuditScheduleFactory {
          throw Exception("User Company [${user.myCompany()}] does not match provided Company [$company")
       }
 
-      if (stores.size > 0) {
+      if (stores.isNotEmpty()) {
          for (store in stores) {
-            if (store.company != company) {
-               throw Exception("Store dataset [${store.company.myDataset()}] does not match provided Company [${company.myDataset()}] dataset")
+            if (store.myCompany() != company) {
+               throw Exception("Store dataset [${store.myCompany().myDataset()}] does not match provided Company [${company.myDataset()}] dataset")
             } else {
                arguments.add(
                   ScheduleArgumentEntity(
-                     value = store.number.toString(),
+                     value = store.myNumber().toString(),
                      description = "storeNumber"
                   )
                )
@@ -82,9 +81,7 @@ object AuditScheduleFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class AuditScheduleFactoryService @Inject constructor(
-   private val employeeFactoryService: EmployeeFactoryService,
-   private val scheduleRepository: ScheduleRepository,
-   private val storeFactoryService: StoreFactoryService
+   private val scheduleRepository: ScheduleRepository
 ) {
 
    fun stream(numberIn: Int = 1, dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): Stream<ScheduleEntity> {
@@ -95,7 +92,7 @@ class AuditScheduleFactoryService @Inject constructor(
       }
    }
 
-   fun single(dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): ScheduleEntity {
+   fun single(dayOfWeek: DayOfWeek, stores: List<Store>, user: User, company: Company): ScheduleEntity {
       return AuditScheduleFactory.single(dayOfWeek, stores, user, company)
          .let { scheduleRepository.insert(it) }
    }

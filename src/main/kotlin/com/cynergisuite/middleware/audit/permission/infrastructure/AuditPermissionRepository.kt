@@ -25,7 +25,6 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditPermissionRepository @Inject constructor(
-   private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -255,6 +254,7 @@ class AuditPermissionRepository @Inject constructor(
             localization_code,
             count(*) OVER() as total_elements
          FROM audit_permission_type_domain
+         ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """,
          mapOf(
