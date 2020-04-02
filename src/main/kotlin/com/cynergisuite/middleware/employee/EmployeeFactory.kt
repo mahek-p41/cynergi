@@ -85,8 +85,12 @@ class EmployeeFactoryService @Inject constructor(
       return stream(employeeNumberIn = employeeNumber, companyIn = company, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = cynergiSystemAdmin).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
-   fun single(employeeNumber: Int, company: Company, lastName: String, firstNameMiIn: String? = null, passCode: String, cynergiSystemAdmin: Boolean, alternativeStoreIndicator: String, alternativeArea: Int): EmployeeEntity {
-      return stream(employeeNumberIn = employeeNumber, companyIn = company, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = cynergiSystemAdmin, alternativeStoreIndicator = alternativeStoreIndicator, alternativeArea = alternativeArea).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
+   fun single(employeeNumber: Int, company: Company, department: Department, store: Store, lastName: String, firstNameMiIn: String? = null, passCode: String, alternativeStoreIndicator: String, alternativeArea: Int): EmployeeEntity {
+      return stream(employeeNumberIn = employeeNumber, companyIn = company, departmentIn = department, storeIn = store, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = false, alternativeStoreIndicator = alternativeStoreIndicator, alternativeArea = alternativeArea).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
+   }
+
+   fun singleSuperUser(employeeNumber: Int, company: Company, lastName: String, firstNameMiIn: String? = null, passCode: String): EmployeeEntity {
+      return stream(employeeNumberIn = employeeNumber, companyIn = company, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = true, alternativeStoreIndicator = "A", alternativeArea = 0).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
    fun singleUser(store: Store): AuthenticatedEmployee {
@@ -117,8 +121,8 @@ class EmployeeFactoryService @Inject constructor(
       return streamAuthenticated(company = company, store = store, department = department, lastNameIn = lastName, firstNameMiIn = firstNameMi).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   fun singleAuthenticated(company: Company, store: Store, department: Department, cynergiSystemAdmin: Boolean, alternativeStoreIndicator: String, alternativeArea: Int): AuthenticatedEmployee {
-      return streamAuthenticated(company = company, store = store, department = department, cynergiSystemAdmin = cynergiSystemAdmin, alternativeStoreIndicatorIn = alternativeStoreIndicator, alternativeAreaIn = alternativeArea).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
+   fun singleAuthenticated(company: Company, store: Store, department: Department, alternativeStoreIndicator: String, alternativeArea: Int): AuthenticatedEmployee {
+      return streamAuthenticated(company = company, store = store, department = department, cynergiSystemAdmin = false, alternativeStoreIndicatorIn = alternativeStoreIndicator, alternativeAreaIn = alternativeArea).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
    private fun streamAuthenticated(numberIn: Int = 1, company: Company, store: Store, department: Department? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, cynergiSystemAdmin: Boolean = false, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<AuthenticatedEmployee> {

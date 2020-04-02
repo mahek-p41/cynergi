@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.SIGNED_OFF
+import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -114,7 +114,7 @@ class AuditValidator @Inject constructor(
          } else if (requestedStatus != null) {
             val currentStatus = existingAudit.currentStatus()
 
-            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) || requestedStatus == SIGNED_OFF) {
+            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) || requestedStatus == APPROVED) {
                errors.add(
                   ValidationError(
                      "status",
@@ -147,20 +147,20 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateSignOff(audit: SimpleIdentifiableDataTransferObject, company: Company, user: User, locale: Locale): AuditEntity {
+   fun validateApproved(audit: SimpleIdentifiableDataTransferObject, company: Company, user: User, locale: Locale): AuditEntity {
       val existingAudit = auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
 
       doValidation { errors ->
          val currentStatus = existingAudit.currentStatus()
 
-         if (!auditStatusService.requestedStatusIsValid(currentStatus, SIGNED_OFF)) {
+         if (!auditStatusService.requestedStatusIsValid(currentStatus, APPROVED)) {
             errors.add(
                ValidationError(
                   "status",
                   AuditUnableToChangeStatusFromTo(
                      existingAudit.id!!,
                      currentStatus.localizeMyDescription(locale, localizationService),
-                     SIGNED_OFF.localizeMyDescription(locale, localizationService)
+                     APPROVED.localizeMyDescription(locale, localizationService)
                   )
                )
             )
@@ -171,7 +171,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   fun validateSignOffAll(audit: SimpleIdentifiableDataTransferObject, company: Company): AuditEntity {
+   fun validateApproveAll(audit: SimpleIdentifiableDataTransferObject, company: Company): AuditEntity {
       return auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
    }
 }

@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
@@ -57,7 +56,6 @@ object AuditDetailFactory {
 @Singleton
 @Requires(env = ["develop", "test"])
 class AuditDetailFactoryService @Inject constructor(
-   private val auditFactoryService: AuditFactoryService,
    private val auditDetailRepository: AuditDetailRepository,
    private val employeeFactoryService: EmployeeFactoryService
 ) {
@@ -92,6 +90,6 @@ class AuditDetailFactoryService @Inject constructor(
    fun single(audit: AuditEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
          return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
             .map { auditDetailRepository.insert(it) }
-            .findFirst().orElseThrow { Exception("Uanble to create AuditDetailEntity") }
+            .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
    }
-   }
+}
