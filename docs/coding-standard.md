@@ -32,7 +32,6 @@ An **Entity** is defined in this project as a `data class` that represents a sin
 9. Kotlin's `.copy()` methods can be used when changes need to be applied to an **Entity**
    * Note that this creates a "shallow" copy
 
-
 #### Optional Entity Components
 These are properties that are available from the database, but may not be necessary when providing data to a requesting client.
 
