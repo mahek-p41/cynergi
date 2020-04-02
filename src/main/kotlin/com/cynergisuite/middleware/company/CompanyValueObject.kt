@@ -53,5 +53,17 @@ data class CompanyValueObject(
          federalTaxNumber = entity.federalIdNumber
       )
 
+   constructor(entity: Company, federalTaxNumberOverride: String?) :
+      this(
+         id = entity.myId(),
+         name = if (entity is CompanyEntity) entity.name else null,
+         doingBusinessAs = if (entity is CompanyEntity) entity.doingBusinessAs else null,
+         clientCode = entity.myClientCode(),
+         clientId = entity.myClientId(),
+         datasetCode = entity.myDataset(),
+         federalTaxNumber = federalTaxNumberOverride
+      )
+
+
    override fun myId(): Long? = id
 }
