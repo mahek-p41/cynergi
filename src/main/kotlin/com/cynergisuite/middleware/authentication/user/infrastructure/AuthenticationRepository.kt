@@ -195,7 +195,6 @@ class AuthenticationRepository @Inject constructor(
    private fun mapCompany(row: Row): Company {
       return CompanyEntity(
          id = row.getLong("comp_id"),
-         uuRowId = row.getUUID("comp_uu_row_id"),
          timeCreated = row.getOffsetDateTime("comp_time_created"),
          timeUpdated = row.getOffsetDateTime("comp_time_updated"),
          name = row.getString("comp_name"),

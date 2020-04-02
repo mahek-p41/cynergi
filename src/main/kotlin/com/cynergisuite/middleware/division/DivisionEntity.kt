@@ -1,21 +1,19 @@
 package com.cynergisuite.middleware.division
 
-import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.CompanyEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class DivisionEntity (
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val number: Int,
    val name: String,
    val description: String,
    var company: CompanyEntity
-) : Entity<DivisionEntity>, Comparable<DivisionEntity> {
+) : Identifiable, Comparable<DivisionEntity> {
 
    override fun compareTo(other: DivisionEntity): Int =
       CompareToBuilder()
@@ -36,6 +34,4 @@ data class DivisionEntity (
    }
 
    override fun myId(): Long? = id
-   override fun rowId(): UUID = uuRowId
-   override fun copyMe(): DivisionEntity = copy()
 }

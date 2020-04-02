@@ -22,7 +22,6 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -486,7 +485,6 @@ class AuditRepository @Inject constructor(
          RowMapper { rs, _ ->
             AuditEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                store = entity.store,
@@ -496,7 +494,7 @@ class AuditRepository @Inject constructor(
                hasExceptionNotes = false,
                inventoryCount = rs.getInt("inventory_count"),
                lastUpdated = null,
-               actions = mutableSetOf<AuditActionEntity>()
+               actions = mutableSetOf()
             )
          }
       )
@@ -540,7 +538,6 @@ class AuditRepository @Inject constructor(
    private fun mapRow(rs: ResultSet): AuditEntity {
       return AuditEntity(
          id = rs.getLong("a_id"),
-         uuRowId = rs.getUuid("a_uu_row_id"),
          timeCreated = rs.getOffsetDateTime("a_time_created"),
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
          store = mapStore(rs),
@@ -565,7 +562,6 @@ class AuditRepository @Inject constructor(
    private fun mapCompany(rs: ResultSet): Company {
       return CompanyEntity(
          id = rs.getLong("comp_id"),
-         uuRowId = rs.getUuid("comp_uu_row_id"),
          timeCreated = rs.getOffsetDateTime("comp_time_created"),
          timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
          name = rs.getString("comp_name"),
@@ -580,7 +576,6 @@ class AuditRepository @Inject constructor(
    private fun mapAuditAction(rs: ResultSet): AuditActionEntity {
       return AuditActionEntity(
          id = rs.getLong("auditAction_id"),
-         uuRowId = rs.getUuid("auditAction_uu_row_id"),
          timeCreated = rs.getOffsetDateTime("auditAction_time_created"),
          timeUpdated = rs.getOffsetDateTime("auditAction_time_updated"),
          status = auditStatusRepository.mapRow(rs, "astd_"),

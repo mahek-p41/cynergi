@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
 import java.util.Objects
@@ -14,7 +13,7 @@ data class NotificationRecipient (
    val description: String? = null,
    val recipient: String,
    val notification: Identifiable
-) : Entity<NotificationRecipient> {
+) : Identifiable {
 
    constructor(dto: NotificationRecipientValueObject, notification: Identifiable) :
       this(
@@ -34,10 +33,6 @@ data class NotificationRecipient (
 
    override fun myId(): Long? = id
 
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): NotificationRecipient = copy()
-
    override fun hashCode(): Int = Objects.hashCode(uuRowId)
 
    override fun equals(other: Any?): Boolean {
@@ -47,6 +42,7 @@ data class NotificationRecipient (
          else -> false
       }
    }
+
   override fun toString(): String {
       return "NotificationRecipient(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, description=$description, recipient='$recipient', notification=${notification.myId()})"
    }

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -32,7 +31,8 @@ data class VerificationAuto(
    val purchaseDate: LocalDate?,
    val related: String?,
    val verification: Identifiable
-) : Entity<VerificationAuto> {
+) : Identifiable {
+
    constructor(dto: VerificationAutoValueObject, verification: Identifiable) :
       this(
          id = dto.id,
@@ -59,10 +59,6 @@ data class VerificationAuto(
       )
 
    override fun myId(): Long? = id
-
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): VerificationAuto = copy()
 
    override fun toString(): String {
       return "VerificationAuto(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, comment=$comment, dealerPhone=$dealerPhone, diffAddress=$diffAddress, diffEmployee=$diffEmployee, diffPhone=$diffPhone, dmvVerify=$dmvVerify, employer=$employer, lastPayment=$lastPayment, name=$name, nextPayment=$nextPayment, note=$note, paymentFrequency=$paymentFrequency, payment=$payment, pendingAction=$pendingAction, phone=$phone, previousLoan=$previousLoan, purchaseDate=$purchaseDate, related=$related, verification=${verification.myId()})"

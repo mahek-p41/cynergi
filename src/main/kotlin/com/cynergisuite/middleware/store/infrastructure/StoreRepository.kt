@@ -209,7 +209,6 @@ class StoreRepository @Inject constructor(
          name = rs.getString("name"),
          region = RegionEntity(
             id = rs.getLong("reg_id"),
-            uuRowId = rs.getUuid("reg_uu_row_id"),
             timeCreated = rs.getOffsetDateTime("reg_time_created"),
             timeUpdated = rs.getOffsetDateTime("reg_time_updated"),
             number = rs.getInt("reg_number"),
@@ -217,7 +216,6 @@ class StoreRepository @Inject constructor(
             description = rs.getString("reg_description"),
             division = DivisionEntity(
                id = rs.getLong("div_id"),
-               uuRowId = rs.getUuid("div_uu_row_id"),
                timeCreated = rs.getOffsetDateTime("div_time_created"),
                timeUpdated = rs.getOffsetDateTime("div_time_updated"),
                number = rs.getInt("div_number"),
@@ -225,7 +223,6 @@ class StoreRepository @Inject constructor(
                description = rs.getString("div_description"),
                company = CompanyEntity(
                   id = rs.getLong("comp_id"),
-                  uuRowId = rs.getUuid("comp_uu_row_id"),
                   timeCreated = rs.getOffsetDateTime("comp_time_created"),
                   timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
                   name = rs.getString("comp_name"),

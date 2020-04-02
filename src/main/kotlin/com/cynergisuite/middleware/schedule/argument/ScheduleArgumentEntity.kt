@@ -1,17 +1,15 @@
 package com.cynergisuite.middleware.schedule.argument
 
-import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class ScheduleArgumentEntity(
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val value: String,
    val description: String
-) : Entity<ScheduleArgumentEntity> {
+) : Identifiable {
 
    constructor(value: String, description: String) :
       this(
@@ -21,6 +19,4 @@ data class ScheduleArgumentEntity(
       )
 
    override fun myId(): Long? = id
-   override fun rowId(): UUID = uuRowId
-   override fun copyMe(): ScheduleArgumentEntity = copy()
 }

@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.schedule.argument.infrastructure
 
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import io.micronaut.spring.tx.annotation.Transactional
-import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -31,7 +29,6 @@ class ScheduleArgumentRepository @Inject constructor(
          RowMapper { rs, _ ->
             ScheduleArgumentEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                value = rs.getString("value"),
@@ -59,7 +56,6 @@ class ScheduleArgumentRepository @Inject constructor(
          RowMapper { rs, _ ->
             ScheduleArgumentEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                value = rs.getString("value"),
@@ -83,20 +79,18 @@ class ScheduleArgumentRepository @Inject constructor(
          mapOf(
             "schedule_id" to schedule.id,
             "ids" to arguments.asSequence().map { it.id }.toList()
-         ),
-         RowCallbackHandler { rs ->
-            result.add(
-               ScheduleArgumentEntity(
-                  id = rs.getLong("id"),
-                  uuRowId = rs.getUuid("uu_row_id"),
-                  timeCreated = rs.getOffsetDateTime("time_created"),
-                  timeUpdated = rs.getOffsetDateTime("time_updated"),
-                  value = rs.getString("value"),
-                  description = rs.getString("description")
-               )
+         )
+      ) { rs ->
+         result.add(
+            ScheduleArgumentEntity(
+               id = rs.getLong("id"),
+               timeCreated = rs.getOffsetDateTime("time_created"),
+               timeUpdated = rs.getOffsetDateTime("time_updated"),
+               value = rs.getString("value"),
+               description = rs.getString("description")
             )
-         }
-      )
+         )
+      }
 
       return result
    }
@@ -114,7 +108,6 @@ class ScheduleArgumentRepository @Inject constructor(
       return if (rs.getString("${columnPrefix}id") != null) {
          ScheduleArgumentEntity(
             id = rs.getLong("${columnPrefix}id"),
-            uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
             timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
             timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
             value = rs.getString("${columnPrefix}value"),

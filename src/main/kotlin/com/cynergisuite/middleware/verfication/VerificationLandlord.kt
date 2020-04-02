@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.OffsetDateTime
@@ -22,7 +21,7 @@ data class VerificationLandlord (
    val reliable: Boolean?,
    val rent: BigDecimal?,
    val verification: Identifiable
-) : Entity<VerificationLandlord> {
+) : Identifiable {
 
    constructor(dto: VerificationLandlordValueObject, verification: Identifiable) :
       this(
@@ -41,10 +40,6 @@ data class VerificationLandlord (
       )
 
    override fun myId(): Long? = id
-
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): VerificationLandlord = copy()
 
    override fun toString(): String {
       return "VerificationLandlord(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, altPhone=$altPhone, leaseType=$leaseType, leaveMessage=$leaveMessage, length=$length, name=$name, paidRent=$paidRent, phone=$phone, reliable=$reliable, rent=$rent, verification=${verification.myId()})"

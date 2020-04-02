@@ -177,7 +177,6 @@ private class CompanyRowMapper : RowMapper<CompanyEntity> {
    fun mapRow(rs: ResultSet, columnPrefix: String): CompanyEntity =
       CompanyEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          name = rs.getString("${columnPrefix}name"),
