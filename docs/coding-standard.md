@@ -6,7 +6,6 @@
 ## POJO's
 Plain Old Java Objects as they have traditionally be defined as simple classes that only hold data.  In Kotlin this refers to a special type of class called a `data class`.
 
-
 ### Entity
 An **Entity** is defined in this project as a `data class` that represents a single relationship in the database.  An **Entity** relates to a **Repository** in that a **Repository** only deals with an instance of an **Entity**.
 
@@ -75,10 +74,23 @@ Type's may not always have a **Repository** all their own as they may only be lo
    3. `description: String`
    4. `localizationCode: String`
 
+Can have additional properties that line up with possible additional columns in the database associated with a **Type**
+
 An example of a simple **Type** is _com.cynergisuite.middleware.audit.permission.AuditPermissionType_.
 
 #### Complex Type's
-A Complex **Type** is one where where business rules act upon
+A Complex **Type** is one where where business rules have behavior defined around different instances of an associated **Type**.
+
+Should have the following
+1. Implement _com.cynergisuite.domain.TypeDomainEntity_ interface
+2. At a minimum should have:
+   1. `id: Long`
+   2. `value: String`
+   3. `description: String`
+   4. `localizationCode: String`
+
+
+An example of a complex **Type** is _com.cynergisuite.middleware.audit.status.AuditStatus.kt_.
 
 ## Business Logic
 
@@ -93,22 +105,27 @@ Validators should provide any business logic around validating when a request to
 A **Repository** class is used to define the interaction with the database.  This is where select/insert/update/delete queries will be written and mapped to an instance or instances of an **Entity**.
 
 ### Controller
-A **Controller** defines the public API.  This is where requests from clients are routed to appropriate business logic.  There won't be a perfect one-to-one between an **Entity** and a **Controller**, but at least a majority (> 50%) of the time  there will be an **Entity** that backs a **Controller**.
+A **Controller** defines the public API.  This is where requests from clients are routed to appropriate business logic.  There won't be a perfect one-to-one between an **Entity** and a **Controller**, but at least a majority (> 50%) of the time  there will be an **Entity** that is ultimately changed by an interaction with a **Controller** endpoint.
 
 #### Requirements
 1. Should be annotated with _io.micronaut.http.annotation.Controller_
    * The path needs to be provided that will denote the "root" that the controller will service.  Most of the time this will be very similar to the part of the domain it will be interacting with.  For example: "/api/audit" defines the root of the Audit domain
+2. Should be annotated with _io.micronaut.security.annotation.Secured_ that has a value of *io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED*
 2. Should never deal directly with an **Entity**
 3. Should always interact with **Service** instances by passing either **DataTransferObject** or **ValueObject** instances between the methods
 4. Web tier data should stay in the **Controller**
-   * For example: If information about a user is required by the business logic
+   * For example: If information about a user is required by the business logic the user should be loaded in the controller, and passed down to the **Service** method that is being called by the controller.
+   * Try and limit as much as possible information that is obtained in a controller, such as user, to only what is needed.  For instance if some business logic requires knowing only the company that a piece of data is being operated on, pull the **Company** of of the **User** via the `.myCompany()` method and pass the user's company down.  This avoids coupling the business logic to tightly to a **User** instance that may not always be available in other environments.
 5. Should only provide paged output when dealing with collections of data.  The only exception being where there is a fixed amount of data that is known at development time.  Think data stored in "_type_domain" tables.  These "_type_domain" tables are used to describe and enforce finite values available to various relationships in the database.
 
 Rules of thumb
 1. Will almost always provide a `fetcOne` method that takes and ID to be looked up.
    * Will most likely need to limit what ID's can be loaded based on the logged in user's ability to access data.  Think a user can only read Audit's for the company they logged into.
-2. Will many times provide a 
+2. Will almost always provide a `fetchAll` method that will return a paged listing of data for the requesting client.
+   * `fetchAll` methods will need to return HTTP Status of 204 if the request produces an empty page.
+   * TODO: Discuss how to handle this.  All the controllers implemented up to this point do a check and throw an exception that causes a 204 to be responded with. I wonder if there isn't a way to build something generic that does this using Micronaut's AOP system.
 
+#### Pagination
 
 ## Utilities
 There should be no Java static "Utility" classes in this project.  Instead use Kotlin Extension methods if you need to add functionality to classes that are provided by 3rd party dependencies.  It is OK to use "Utility" classes provided by 3rd party libraries such as Apache Commons or Google Guava.
