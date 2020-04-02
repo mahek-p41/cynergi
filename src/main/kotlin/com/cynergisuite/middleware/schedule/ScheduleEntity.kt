@@ -5,12 +5,9 @@ import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.type.ScheduleType
-import java.time.OffsetDateTime
 
 data class ScheduleEntity(
    val id: Long? = null,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val title: String,
    val description: String?,
    val schedule: String,

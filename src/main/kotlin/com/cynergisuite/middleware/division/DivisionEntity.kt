@@ -3,12 +3,9 @@ package com.cynergisuite.middleware.division
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.CompanyEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
-import java.time.OffsetDateTime
 
 data class DivisionEntity (
    val id: Long? = null,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val number: Int,
    val name: String,
    val description: String,

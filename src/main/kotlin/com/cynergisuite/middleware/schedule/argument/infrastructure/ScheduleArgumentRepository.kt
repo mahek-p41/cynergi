@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.schedule.argument.infrastructure
 
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -29,8 +28,6 @@ class ScheduleArgumentRepository @Inject constructor(
          RowMapper { rs, _ ->
             ScheduleArgumentEntity(
                id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                value = rs.getString("value"),
                description = rs.getString("description")
             )
@@ -56,8 +53,6 @@ class ScheduleArgumentRepository @Inject constructor(
          RowMapper { rs, _ ->
             ScheduleArgumentEntity(
                id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                value = rs.getString("value"),
                description = rs.getString("description")
             )
@@ -84,8 +79,6 @@ class ScheduleArgumentRepository @Inject constructor(
          result.add(
             ScheduleArgumentEntity(
                id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                value = rs.getString("value"),
                description = rs.getString("description")
             )
@@ -108,8 +101,6 @@ class ScheduleArgumentRepository @Inject constructor(
       return if (rs.getString("${columnPrefix}id") != null) {
          ScheduleArgumentEntity(
             id = rs.getLong("${columnPrefix}id"),
-            timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-            timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
             value = rs.getString("${columnPrefix}value"),
             description = rs.getString("${columnPrefix}description")
          )

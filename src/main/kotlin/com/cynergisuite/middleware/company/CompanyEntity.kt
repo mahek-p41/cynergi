@@ -3,12 +3,9 @@ package com.cynergisuite.middleware.company
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.time.OffsetDateTime
 
 data class CompanyEntity(
    val id: Long? = null,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val name: String,
    val doingBusinessAs: String? = null,
    val clientCode: String,

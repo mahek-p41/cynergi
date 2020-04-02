@@ -275,8 +275,6 @@ class ScheduleRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType): ScheduleEntity =
       ScheduleEntity(
          id = rs.getLong("${scheduleColumnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${scheduleColumnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${scheduleColumnPrefix}time_updated"),
          title = rs.getString("${scheduleColumnPrefix}title"),
          description = rs.getString("${scheduleColumnPrefix}description"),
          schedule = rs.getString("${scheduleColumnPrefix}schedule"),

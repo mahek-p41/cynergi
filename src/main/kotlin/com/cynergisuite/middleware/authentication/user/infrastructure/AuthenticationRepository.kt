@@ -195,8 +195,6 @@ class AuthenticationRepository @Inject constructor(
    private fun mapCompany(row: Row): Company {
       return CompanyEntity(
          id = row.getLong("comp_id"),
-         timeCreated = row.getOffsetDateTime("comp_time_created"),
-         timeUpdated = row.getOffsetDateTime("comp_time_updated"),
          name = row.getString("comp_name"),
          doingBusinessAs = row.getString("comp_doing_business_as"),
          clientCode = row.getString("comp_client_code"),
@@ -209,18 +207,17 @@ class AuthenticationRepository @Inject constructor(
    fun findPermissions(department: Department): Set<String> {
       val params = mutableMapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
       val sql = """
-                  SELECT
-                     aptd.value              AS value
-                  FROM  audit_permission_type_domain aptd
-                        JOIN audit_permission ap ON ap.type_id = aptd.id
-                  WHERE ap.department = :dept_code AND ap.company_id = :comp_id
-                  UNION
-                  SELECT
-                     aptd.value              AS value
-                  FROM  audit_permission_type_domain aptd
-                  WHERE  aptd.id NOT IN (SELECT DISTINCT type_id
-                                          FROM  audit_permission)
-                  """.trimIndent()
+         SELECT
+            aptd.value              AS value
+         FROM  audit_permission_type_domain aptd
+               JOIN audit_permission ap ON ap.type_id = aptd.id
+         WHERE ap.department = :dept_code AND ap.company_id = :comp_id
+         UNION
+         SELECT
+            aptd.value              AS value
+         FROM  audit_permission_type_domain aptd
+         WHERE  aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
+         """.trimIndent()
       logger.debug("Get permission by department {}\n{}", params, sql)
       val resultSet = mutableSetOf<String>()
       jdbc.query(sql, params) {

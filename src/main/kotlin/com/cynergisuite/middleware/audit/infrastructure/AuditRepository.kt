@@ -562,8 +562,6 @@ class AuditRepository @Inject constructor(
    private fun mapCompany(rs: ResultSet): Company {
       return CompanyEntity(
          id = rs.getLong("comp_id"),
-         timeCreated = rs.getOffsetDateTime("comp_time_created"),
-         timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
          name = rs.getString("comp_name"),
          doingBusinessAs = rs.getString("comp_doing_business_as"),
          clientCode = rs.getString("comp_client_code"),
