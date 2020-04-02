@@ -3,11 +3,9 @@ package com.cynergisuite.middleware.verfication
 import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class VerificationLandlord (
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val address: Boolean?,
@@ -42,6 +40,6 @@ data class VerificationLandlord (
    override fun myId(): Long? = id
 
    override fun toString(): String {
-      return "VerificationLandlord(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, altPhone=$altPhone, leaseType=$leaseType, leaveMessage=$leaveMessage, length=$length, name=$name, paidRent=$paidRent, phone=$phone, reliable=$reliable, rent=$rent, verification=${verification.myId()})"
+      return "VerificationLandlord(id=$id, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, altPhone=$altPhone, leaseType=$leaseType, leaveMessage=$leaveMessage, length=$length, name=$name, paidRent=$paidRent, phone=$phone, reliable=$reliable, rent=$rent, verification=${verification.myId()})"
    }
 }

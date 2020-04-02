@@ -3,11 +3,9 @@ package com.cynergisuite.middleware.verfication
 import com.cynergisuite.domain.Identifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class VerificationEmployment(
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val department: String?,
@@ -34,6 +32,6 @@ data class VerificationEmployment(
    override fun myId(): Long? = id
 
    override fun toString(): String {
-      return "VerificationEmployment(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, department=$department, hireDate=$hireDate, leaveMessage=$leaveMessage, name=$name, reliable=$reliable, title=$title, verification=${verification.myId()})"
+      return "VerificationEmployment(id=$id, timeCreated=$timeCreated, timeUpdated=$timeUpdated, department=$department, hireDate=$hireDate, leaveMessage=$leaveMessage, name=$name, reliable=$reliable, title=$title, verification=${verification.myId()})"
    }
 }

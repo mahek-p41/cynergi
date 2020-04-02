@@ -4,11 +4,9 @@ import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class VerificationAuto(
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val address: Boolean?,
@@ -61,6 +59,6 @@ data class VerificationAuto(
    override fun myId(): Long? = id
 
    override fun toString(): String {
-      return "VerificationAuto(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, comment=$comment, dealerPhone=$dealerPhone, diffAddress=$diffAddress, diffEmployee=$diffEmployee, diffPhone=$diffPhone, dmvVerify=$dmvVerify, employer=$employer, lastPayment=$lastPayment, name=$name, nextPayment=$nextPayment, note=$note, paymentFrequency=$paymentFrequency, payment=$payment, pendingAction=$pendingAction, phone=$phone, previousLoan=$previousLoan, purchaseDate=$purchaseDate, related=$related, verification=${verification.myId()})"
+      return "VerificationAuto(id=$id, timeCreated=$timeCreated, timeUpdated=$timeUpdated, address=$address, comment=$comment, dealerPhone=$dealerPhone, diffAddress=$diffAddress, diffEmployee=$diffEmployee, diffPhone=$diffPhone, dmvVerify=$dmvVerify, employer=$employer, lastPayment=$lastPayment, name=$name, nextPayment=$nextPayment, note=$note, paymentFrequency=$paymentFrequency, payment=$payment, pendingAction=$pendingAction, phone=$phone, previousLoan=$previousLoan, purchaseDate=$purchaseDate, related=$related, verification=${verification.myId()})"
    }
 }

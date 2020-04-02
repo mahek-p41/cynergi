@@ -3,11 +3,9 @@ package com.cynergisuite.middleware.verfication
 import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.util.UUID
 
 data class Verification(
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val customerAccount: String, // TODO convert from soft foreign key to customer
