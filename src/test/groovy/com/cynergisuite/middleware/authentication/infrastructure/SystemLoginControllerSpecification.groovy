@@ -64,9 +64,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       response.employeeNumber == employee.number.toString()
-      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
-      response.dataset == 'tstds1'
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
    }
 
    void "login with user who has department assigned" () {
@@ -110,9 +116,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       response.employeeNumber == "${employee.number}"
-      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
-      response.dataset == 'tstds1'
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
    }
 
    void "login failure due to invalid store" () {
@@ -186,8 +198,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final htUberUserTstds1 = employeeFactoryService.single(998, tstds1, 'admin', null, 'word', true, 'A', 0)
-      final htUberUserTstds2 = employeeFactoryService.single(998, tstds2, 'admin', null, 'word', true, 'A', 0)
+      final htUberUserTstds1 = employeeFactoryService.singleSuperUser(998, tstds1, 'admin', null, 'word')
+      final htUberUserTstds2 = employeeFactoryService.singleSuperUser(998, tstds2, 'admin', null, 'word')
 
       when:
       def authResponse = httpClient.toBlocking()
@@ -223,9 +235,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       response.employeeNumber == '998'
-      response.loginStatus == '998 is now logged in'
       response.storeNumber == 9000
-      response.dataset == 'tstds1'
+      response.company.with {
+         clientCode = tstds1.clientCode
+         clientId = tstds1.clientId
+         datasetCode = tstds1.datasetCode
+         id = tstds1.id
+         name = tstds1.name
+         federalTaxNumber = null
+      }
    }
 
    void "login with superfluous URL parameters" () {
@@ -269,9 +287,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       response.employeeNumber == "${employee.number}"
-      response.loginStatus == "${employee.number} is now logged in"
       response.storeNumber == 3
-      response.dataset == 'tstds1'
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
    }
 
    void "check authenticated returns 401 when not logged in via HEAD" () {

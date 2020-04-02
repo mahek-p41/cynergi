@@ -56,7 +56,7 @@ object Created : AuditStatus(1, "CREATED", "Created", "audit.status.created", "A
 object InProgress : AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress", "DB843D")
 object Completed: AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed", "12A2DC")
 object Canceled: AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled", "AA4643")
-object SignedOff: AuditStatus(5, "SIGNED-OFF", "Signed Off", "audit.status.signed-off", "89A54E")
+object Approved: AuditStatus(5, "APPROVED", "Approved", "audit.status.approved", "89A54E")
 
 /*
  * aliases to act as alternatives to using the init-case object definition from above.  Kotlin doesn't recommend having
@@ -66,4 +66,4 @@ typealias CREATED = Created
 typealias IN_PROGRESS = InProgress
 typealias COMPLETED = Completed
 typealias CANCELED = Canceled
-typealias SIGNED_OFF = SignedOff
+typealias APPROVED = Approved

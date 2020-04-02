@@ -50,20 +50,25 @@ class DevelopDataLoader @Inject constructor(
       // begin setting up corrto stores and employees
       val corrto = companies.first { it.datasetCode == "corrto" }
       val corrtoStoreManagerDepartment = departmentFactoryService.department("SM", corrto)
+      val corrtoRegionalManagerDepartment = departmentFactoryService.department("RM", corrto)
       val corrtoDivision1 = divisionFactoryService.single(corrto)
       val corrtoDivison1Region1 = regionFactoryService.single(corrtoDivision1)
       val corrtoStore1 = storeFactoryService.store(1, corrto)
       val corrtoStore3 = storeFactoryService.store(3, corrto)
+      val corrtoStoreHomeOffice = storeFactoryService.store(9000, corrto)
       storeFactoryService.companyStoresToRegion(corrtoDivison1Region1, corrtoStore1, corrtoStore3)
 
-      val nineNineEightEmployeeCorrtoEmployee = employeeFactoryService.single(998, corrto, "user", "super", "pass", true, "A", 0)
+      val nineNineEightEmployeeCorrtoEmployee = employeeFactoryService.singleSuperUser(998, corrto, "user", "super", "pass")
       val corrtoStore1StoreManager = employeeFactoryService.single(storeIn = corrtoStore1, departmentIn = corrtoStoreManagerDepartment)
       val corrtoStore3StoreManager = employeeFactoryService.single(storeIn = corrtoStore3, departmentIn = corrtoStoreManagerDepartment)
+      val corrtoRegion1Manager = employeeFactoryService.single(1000, corrto, corrtoRegionalManagerDepartment, corrtoStoreHomeOffice, "manager", "regional", "12345", "R", corrtoDivison1Region1.number)
       // end setting up corrto stores and employees
 
       // begin setting up corptp stores and employees
       val corptp = companies.first { it.datasetCode == "corptp" }
       val corptpStoreManagerDepartment = departmentFactoryService.department("SM", corptp)
+      val corptpDistrictManagerDepartment = departmentFactoryService.department("DM", corptp)
+      val corptpStoreHomeOffice = storeFactoryService.store(9000, corptp)
       val corptpStore1 = storeFactoryService.store(1, corptp)
       val corptpDivison1 = divisionFactoryService.single(corptp)
       val corptpDivison1Region1 = regionFactoryService.single(corptpDivison1)
@@ -80,7 +85,8 @@ class DevelopDataLoader @Inject constructor(
       val corptpStore5 = storeFactoryService.store(5, corptp)
       storeFactoryService.companyStoresToRegion(corptpDivison2Region1, corptpStore3, corptpStore4, corptpStore5)
 
-      val nineNineEightEmployeeCorptpEmployee = employeeFactoryService.single(998, corptp, "user", "super", "pass", true, "A", 0)
+      val nineNineEightEmployeeCorptpEmployee = employeeFactoryService.singleSuperUser(998, corptp, "user", "super", "pass")
+      val corptpDivision2Manager = employeeFactoryService.single(1000, corptp, corptpDistrictManagerDepartment, corptpStoreHomeOffice, "manager", "divisional", "12345", "D", corptpDivsion2.number)
       val corptpStore1StoreManager = employeeFactoryService.single(corptpStore1, corptpStoreManagerDepartment)
       val corptpStore2StoreManager = employeeFactoryService.single(corptpStore2, corptpStoreManagerDepartment)
       val corptpStore3StoreManager = employeeFactoryService.single(corptpStore3, corptpStoreManagerDepartment)
@@ -100,7 +106,7 @@ class DevelopDataLoader @Inject constructor(
       auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, showroom)
       auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, storeroom)
       // create random [0..2] notes for each audit exception
-      auditExceptionFactoryService.generate(25, completedStore1Audit, corrtoStore1StoreManager).forEach {
+      auditExceptionFactoryService.stream(25, completedStore1Audit, corrtoStore1StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore1StoreManager).forEach { }
       }
 
@@ -110,7 +116,7 @@ class DevelopDataLoader @Inject constructor(
       auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, showroom)
       auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, storeroom)
       // create random [0..2] notes for each audit exception
-      auditExceptionFactoryService.generate(26, openStore3Audit, corrtoStore3StoreManager).forEach {
+      auditExceptionFactoryService.stream(26, openStore3Audit, corrtoStore3StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore3StoreManager).forEach {}
       }
       val auditException =  auditExceptionFactoryService.single(openStore3Audit, corrtoStore3StoreManager, true)
@@ -131,11 +137,11 @@ class DevelopDataLoader @Inject constructor(
       // setup store three completed off audits
       auditFactoryService.generate(4, corrtoStore3StoreManager, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
 
-      // setup store one signed off audits
-      auditFactoryService.generate(3, corrtoStore1StoreManager, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      // setup store one approved audits
+      auditFactoryService.generate(3, corrtoStore1StoreManager, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()))
 
-      // setup store three signed off audits
-      auditFactoryService.generate(4, corrtoStore3StoreManager, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.signedOff()))
+      // setup store three approved audits
+      auditFactoryService.generate(4, corrtoStore3StoreManager, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()))
 
       auditScheduleScheduleFactoryService.single(TUESDAY, listOf(corrtoStore1), AuthenticatedEmployee(corrtoStore1StoreManager.id!!, corrtoStore1StoreManager, corrtoStore1), corrto)
       auditScheduleScheduleFactoryService.single(THURSDAY, listOf(corrtoStore3), AuthenticatedEmployee(corrtoStore3StoreManager.id!!, corrtoStore3StoreManager, corrtoStore3), corrto)
@@ -143,6 +149,7 @@ class DevelopDataLoader @Inject constructor(
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())
       logger.info("Store 3 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore3StoreManager.number, corrtoStore3StoreManager.passCode, corrtoStore3StoreManager.store.myNumber(), corrtoStore3StoreManager.department?.myCode())
+      logger.info("Division {} Region {} regional manager {} / {} -> ", corrtoDivison1Region1.division.number, corrtoDivison1Region1.number, corrtoRegion1Manager.number, corrtoRegion1Manager.passCode)
       logger.info("Corrto 998 User {} / {}", nineNineEightEmployeeCorrtoEmployee.number, nineNineEightEmployeeCorrtoEmployee.passCode)
 
       logger.info("Store 1 corptp employee {} / {} -> Store Number {} -> Department {}", corptpStore1StoreManager.number, corptpStore1StoreManager.passCode, corptpStore1StoreManager.store?.myNumber(), corptpStore1StoreManager.department?.myCode())
@@ -150,6 +157,7 @@ class DevelopDataLoader @Inject constructor(
       logger.info("Store 3 corptp employee {} / {} -> Store Number {} -> Department {}", corptpStore3StoreManager.number, corptpStore3StoreManager.passCode, corptpStore3StoreManager.store?.myNumber(), corptpStore3StoreManager.department?.myCode())
       logger.info("Store 4 corptp employee {} / {} -> Store Number {} -> Department {}", corptpStore4StoreManager.number, corptpStore4StoreManager.passCode, corptpStore4StoreManager.store?.myNumber(), corptpStore4StoreManager.department?.myCode())
       logger.info("Store 5 corptp employee {} / {} -> Store Number {} -> Department {}", corptpStore5StoreManager.number, corptpStore5StoreManager.passCode, corptpStore5StoreManager.store?.myNumber(), corptpStore5StoreManager.department?.myCode())
+      logger.info("Division {} Divisional Manager {} / {}", corptpDivsion2.number, corptpDivision2Manager.number, corptpDivision2Manager.passCode)
       logger.info("Corptp 998 User {} / {}", nineNineEightEmployeeCorptpEmployee.number, nineNineEightEmployeeCorptpEmployee.passCode)
    }
 }
