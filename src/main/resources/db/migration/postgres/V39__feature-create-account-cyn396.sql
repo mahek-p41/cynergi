@@ -65,7 +65,6 @@ CREATE TABLE bank (
     number  INTEGER CHECK( number > 0 )                                         NOT NULL,
     name varchar(50) CHECK ( char_length(trim(name)) > 1)                       NOT NULL,
     general_ledger_profit_center_sfk INTEGER CHECK( general_ledger_profit_center_sfk > 0 ) NOT NULL, --profit center is store
-    account_balance numeric(13,2), --Input the bank account balance for check reconciliation
     account_number INTEGER CHECK( account_number > 0 )                          NOT NULL, --Input the bank account number
     currency_code_id BIGINT REFERENCES bank_currency_code_type_domain(id) NOT NULL,
     UNIQUE (company_id, number )
@@ -96,7 +95,6 @@ CREATE TABLE account (
     type_id BIGINT REFERENCES account_type_domain (id)                             NOT NULL,
     normal_account_balance_type_id BIGINT REFERENCES normal_account_balance_type_domain(id) NOT NULL,
     status_type_id  BIGINT REFERENCES status_type_domain(id)                    NOT NULL,
-    account_balance_forward numeric(14,2),
     form_1099_field  integer, -- field # on the 1099 form for this account
     bank_indicator BOOLEAN DEFAULT FALSE                                    NOT NULL,
     bank_number_id BIGINT REFERENCES bank(id),
@@ -123,10 +121,4 @@ CREATE INDEX idx_account_status_type_id
  CREATE INDEX idx_account_bank_number_id
     ON account (bank_number_id);
 
-
-ALTER TABLE bank
-ADD column gl_account_id BIGINT REFERENCES account(id)                                    NOT NULL;
-
-CREATE INDEX idx_bank_gl_account_id
-    ON bank (gl_account_id);
 
