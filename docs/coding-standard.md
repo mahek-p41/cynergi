@@ -28,6 +28,7 @@ An **Entity** is defined in this project a `data class` that represents a single
 ### Service
 
 ### Validator
+Validators should provide any business logic around validating when a request to create or update operation is being requested against part of the model.
 
 ## Utilities
 There should be no Java static "Utility" classes in this project.  Instead use Kotlin Extension methods if you need to add functionality to classes that are provided by 3rd party dependencies.

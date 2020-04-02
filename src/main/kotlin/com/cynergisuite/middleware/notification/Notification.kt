@@ -3,11 +3,9 @@ package com.cynergisuite.middleware.notification
 import com.cynergisuite.domain.Identifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class Notification (
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val startDate: LocalDate,
