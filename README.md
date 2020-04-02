@@ -43,34 +43,6 @@ against the cynergi-middleware codebase.
    3. direnv is used in the cynergi-middleware project to make a collection of tools available to your terminal.
 5. Install Java using Sdkman
    1. `sdk install java 8.0.242.j9-adpt`
-### Intellij Setup
-2. Configure a default JDK that Intellij will use
-   1. Assuming you have never used Intellij before it will come up with the "Welcome to Intellij IDEA" screen
-   2. From the "Welcome" screen down in the lower right hand corner there is a "Configure" drop-down
-   3. Click "Configure > Project Defaults > Project Structure" which will bring up the "Project Structure for New Projects"
-      window
-   4. On the left hand side select the "Project Settings > Project" selection which will activate the Project SDK and Language
-      config screen
-   5. Under the "Project SDK" section the JDK needs to be configured.  (There may already be one configured or it might say "<NO SDK>")
-   6. Click the "New... > +JDK" button next to the JDK selection drop-down
-   7. Navigate to where the JDK was installed.
-      1. On Windows it will be something like **C:\Program Files\AdoptOpenJDK\jdk-someversion-openj9**
-      2. On MacOS it will be something like __$HOME/.sdkman/candidates/java/8.0.*j9-adpt__
-	  3. When choosing this make sure you choose the root of the directory as the way the tooling works the JDK is laid out in a
-	     specific way.  Don't worry as Intellij checks to make sure it is valid before it makes that JDK available by
-	     verbally abusing you with a message like "No a valid JDK installation"
-7. Click "OK" to save those configurations
-9. Back on the "Welcome to Intellij IDEA" window click on the "Open" button in the middlish of the window
-10. Choose the **cyerngi-middleware** project that you checked out from the terminal earlier.
-11. Just take the defaults by clicking OK.
-12. Finally the default builder for Intellij doesn't yet support some of the Micronaut features that are required by this
-    project.  With that a change has to be made to Intellij to enable Gradle to handle all the building of the source
-    code and the assembly of the resources.  If you don't do this the kotlin compiler won't generate the appropriate
-    stubs that Micronaut uses to weave the application dependencies together.  You may have to uncheck this in other
-    projects depending on how they are managed.
-    1. File > Settings > Build, Execution, Deployment > Gradle > Runner
-    2. Check the "Delegate IDE build/run actions to gradle"
-
 
 ## Development environment
 [Direnv](https://direnv.net/) is used by cynerig-middleware to put a `cyn` command on your path whenever you change
@@ -93,6 +65,7 @@ including a sub-command are unique the `cyn` command will know what script to ex
       1. For example `cyn stop` will execute the __cynergi-middleware/support/cyn/commands/stop.sh__ shell script
 
 ## Run the database via cyn command hosted by Docker
+
 
 ### Local Database
 To start the local database `cyn db start dev`
