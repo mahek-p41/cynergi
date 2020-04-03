@@ -22,7 +22,8 @@ data class VendorPaymentTermValueObject(
    var description: String? = null,
 
    @field:Positive
-   @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor Payment Term Number")
+   @field:NotNull
+   @field:Schema(name = "number", minimum = "1", required = true, description = "Vendor Payment Term Number")
    var number: Int? = null,
 
    @field:Positive
