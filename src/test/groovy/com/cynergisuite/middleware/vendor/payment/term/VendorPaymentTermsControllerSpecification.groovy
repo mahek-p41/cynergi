@@ -13,8 +13,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class VendorPaymentTermControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor/payment/term"
 
-   @Inject
-   VendorPaymentTermDataLoaderService vendorPaymentTermDataLoaderService
+   @Inject VendorPaymentTermDataLoaderService vendorPaymentTermDataLoaderService
 
    void "fetch one vendor payment term by id"() {
       given:
@@ -95,5 +94,21 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       then:
       final def notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
+   }
+
+   void "create VendorPaymentTerm" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final vendorPaymentTerm = VendorPaymentTermDataLoader.single(company)
+
+      when:
+      def created = post(path, vendorPaymentTerm)
+
+      then:
+      notThrown(Exception)
+      created.id > 0
+      created.description == vendorPaymentTerm.description
+      created.number == created.id
+      created.numberOfPayments == vendorPaymentTerm.numberOfPayments
    }
 }

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -23,7 +22,6 @@ object VendorPaymentTermDataLoader {
          VendorPaymentTermEntity(
             company = company,
             description = lorem.characters(3, 30),
-            number = random.nextInt(1, 1000),
             numberOfPayments = random.nextInt(1, 100),
             dueMonth1 = random.nextInt(1, 12),
             dueMonth2 = random.nextInt(1, 12),
@@ -59,7 +57,6 @@ object VendorPaymentTermDataLoader {
 @Singleton
 @Requires(env = ["demo", "test"])
 class VendorPaymentTermDataLoaderService @Inject constructor(
-   private val companyFactoryService: CompanyFactoryService,
    private val vendorPaymentTermRepository: VendorPaymentTermRepository
 ) {
 
