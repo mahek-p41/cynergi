@@ -25,7 +25,6 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditPermissionRepository @Inject constructor(
-   private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
