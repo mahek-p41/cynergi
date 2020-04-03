@@ -2,9 +2,13 @@ package com.cynergisuite.middleware.vendor.payment.term.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
@@ -17,6 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 class VendorPaymentTermRepository @Inject constructor(
+   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermRepository::class.java)
@@ -53,6 +58,8 @@ class VendorPaymentTermRepository @Inject constructor(
          vpt.discount_percent   AS vpt_discount_percent,
          comp.id                AS comp_id,
          comp.uu_row_id         AS comp_uu_row_id,
+         comp.time_created      AS comp_time_created,
+         comp.time_updated      AS comp_time_updated,
          comp.name              AS comp_name,
          comp.doing_business_as AS comp_doing_business_as,
          comp.client_code       AS comp_client_code,
@@ -163,39 +170,7 @@ class VendorPaymentTermRepository @Inject constructor(
             "discount_days" to entity.discountDays,
             "discount_percent" to entity.discountPercent
          ),
-         RowMapper { rs, _ ->
-            VendorPaymentTermEntity(
-               id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               company = entity.company,
-               description = rs.getString("description"),
-               number = rs.getInt("number"),
-               numberOfPayments = rs.getInt("number_of_payments"),
-               dueMonth1 = rs.getInt("due_month_1"),
-               dueMonth2 = rs.getInt("due_month_2"),
-               dueMonth3 = rs.getInt("due_month_3"),
-               dueMonth4 = rs.getInt("due_month_4"),
-               dueMonth5 = rs.getInt("due_month_5"),
-               dueMonth6 = rs.getInt("due_month_6"),
-               dueDays1 = rs.getInt("due_days_1"),
-               dueDays2 = rs.getInt("due_days_2"),
-               dueDays3 = rs.getInt("due_days_3"),
-               dueDays4 = rs.getInt("due_days_4"),
-               dueDays5 = rs.getInt("due_days_5"),
-               dueDays6 = rs.getInt("due_days_6"),
-               duePercent1 = rs.getBigDecimal("due_percent_1"),
-               duePercent2 = rs.getBigDecimal("due_percent_2"),
-               duePercent3 = rs.getBigDecimal("due_percent_3"),
-               duePercent4 = rs.getBigDecimal("due_percent_4"),
-               duePercent5 = rs.getBigDecimal("due_percent_5"),
-               duePercent6 = rs.getBigDecimal("due_percent_6"),
-               discountMonth = rs.getInt("discount_month"),
-               discountDays = rs.getInt("discount_days"),
-               discountPercent = rs.getBigDecimal("discount_percent")
-            )
-         }
+         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
       )
    }
 
@@ -261,39 +236,7 @@ class VendorPaymentTermRepository @Inject constructor(
             "discountDays" to entity.discountDays,
             "discountPercent" to entity.discountPercent
             ),
-         RowMapper { rs, _ ->
-            VendorPaymentTermEntity(
-               id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               company = entity.company,
-               description = rs.getString("description"),
-               number = rs.getInt("number"),
-               numberOfPayments = rs.getInt("number_of_payments"),
-               dueMonth1 = rs.getInt("due_month_1"),
-               dueMonth2 = rs.getInt("due_month_2"),
-               dueMonth3 = rs.getInt("due_month_3"),
-               dueMonth4 = rs.getInt("due_month_4"),
-               dueMonth5 = rs.getInt("due_month_5"),
-               dueMonth6 = rs.getInt("due_month_6"),
-               dueDays1 = rs.getInt("due_days_1"),
-               dueDays2 = rs.getInt("due_days_2"),
-               dueDays3 = rs.getInt("due_days_3"),
-               dueDays4 = rs.getInt("due_days_4"),
-               dueDays5 = rs.getInt("due_days_5"),
-               dueDays6 = rs.getInt("due_days_6"),
-               duePercent1 = rs.getBigDecimal("due_percent_1"),
-               duePercent2 = rs.getBigDecimal("due_percent_2"),
-               duePercent3 = rs.getBigDecimal("due_percent_3"),
-               duePercent4 = rs.getBigDecimal("due_percent_4"),
-               duePercent5 = rs.getBigDecimal("due_percent_5"),
-               duePercent6 = rs.getBigDecimal("due_percent_6"),
-               discountMonth = rs.getInt("discount_month"),
-               discountDays = rs.getInt("discount_days"),
-               discountPercent = rs.getBigDecimal("discount_percent")
-            )
-         }
+         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
       )
    }
 
@@ -301,18 +244,7 @@ class VendorPaymentTermRepository @Inject constructor(
       return VendorPaymentTermEntity(
          id = rs.getLong("vpt_id"),
          uuRowId = rs.getUuid("vpt_uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("vpt_time_created"),
-         timeUpdated = rs.getOffsetDateTime("vpt_time_updated"),
-         company = CompanyEntity(
-            id = rs.getLong("comp_id"),
-            uuRowId = rs.getUuid("comp_uu_row_id"),
-            name = rs.getString("comp_name"),
-            doingBusinessAs = rs.getString("comp_doing_business_as"),
-            clientCode = rs.getString("comp_client_code"),
-            clientId = rs.getInt("comp_client_id"),
-            datasetCode = rs.getString("comp_dataset_code"),
-            federalIdNumber = rs.getString("comp_federal_id_number")
-         ),
+         company = companyRepository.mapRow(rs, "comp_"),
          description = rs.getString("vpt_description"),
          number = rs.getInt("vpt_number"),
          numberOfPayments = rs.getInt("vpt_number_of_payments"),
@@ -337,6 +269,38 @@ class VendorPaymentTermRepository @Inject constructor(
          discountMonth = rs.getInt("vpt_discount_month"),
          discountDays = rs.getInt("vpt_discount_days"),
          discountPercent = rs.getBigDecimal("vpt_discount_percent")
+      )
+   }
+
+   private fun mapDdlRow(rs: ResultSet, company: Company): VendorPaymentTermEntity {
+      return VendorPaymentTermEntity(
+         id = rs.getLong("id"),
+         uuRowId = rs.getUuid("uu_row_id"),
+         company = company,
+         description = rs.getString("description"),
+         number = rs.getInt("number"),
+         numberOfPayments = rs.getInt("number_of_payments"),
+         dueMonth1 = rs.getInt("due_month_1"),
+         dueMonth2 = rs.getInt("due_month_2"),
+         dueMonth3 = rs.getInt("due_month_3"),
+         dueMonth4 = rs.getInt("due_month_4"),
+         dueMonth5 = rs.getInt("due_month_5"),
+         dueMonth6 = rs.getInt("due_month_6"),
+         dueDays1 = rs.getInt("due_days_1"),
+         dueDays2 = rs.getInt("due_days_2"),
+         dueDays3 = rs.getInt("due_days_3"),
+         dueDays4 = rs.getInt("due_days_4"),
+         dueDays5 = rs.getInt("due_days_5"),
+         dueDays6 = rs.getInt("due_days_6"),
+         duePercent1 = rs.getBigDecimal("due_percent_1"),
+         duePercent2 = rs.getBigDecimal("due_percent_2"),
+         duePercent3 = rs.getBigDecimal("due_percent_3"),
+         duePercent4 = rs.getBigDecimal("due_percent_4"),
+         duePercent5 = rs.getBigDecimal("due_percent_5"),
+         duePercent6 = rs.getBigDecimal("due_percent_6"),
+         discountMonth = rs.getInt("discount_month"),
+         discountDays = rs.getInt("discount_days"),
+         discountPercent = rs.getBigDecimal("discount_percent")
       )
    }
 }

@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
@@ -18,22 +20,23 @@ class VendorPaymentTermValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(vo: VendorPaymentTermValueObject){
+   fun validateCreate(vo: VendorPaymentTermValueObject, company: Company): VendorPaymentTermEntity {
       logger.trace("Validating Save VendorPaymentTerm {}", vo)
+
+      return VendorPaymentTermEntity(vo = vo, company = company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(vo: VendorPaymentTermValueObject){
+   fun validateUpdate(id: Long, vo: VendorPaymentTermValueObject): VendorPaymentTermEntity {
       logger.trace("Validating Update VendorPaymentTerm {}", vo)
 
+      val existing = vendorPaymentTermRepository.findOne(id) ?: throw NotFoundException(id)
+
       doValidation { errors ->
-         val id = vo.id
-//See what validation is done in Z
-         if (id == null) {
-            errors.add(element = ValidationError("id", NotNull("id")))
-         } else if ( !vendorPaymentTermRepository.exists(id = id) ) {
-            errors.add(ValidationError("id", NotFound(id)))
-         }
+         //TODO additional validation
+
       }
+
+      return VendorPaymentTermEntity(source = existing, updateWith = vo)
    }
 }

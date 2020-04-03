@@ -4,10 +4,10 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.*
 
 @MicronautTest(transactional = false)
 class VendorPaymentTermControllerSpecification extends ControllerSpecificationBase {
@@ -99,7 +99,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
    void "create VendorPaymentTerm" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final vendorPaymentTerm = VendorPaymentTermDataLoader.single(company)
+      final vendorPaymentTerm = VendorPaymentTermDataLoader.single(company).with { new VendorPaymentTermValueObject(it) }
 
       when:
       def created = post(path, vendorPaymentTerm)
@@ -110,5 +110,64 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       created.description == vendorPaymentTerm.description
       created.number == created.id
       created.numberOfPayments == vendorPaymentTerm.numberOfPayments
+      created.dueMonth1 == vendorPaymentTerm.dueMonth1
+      created.dueMonth2 == vendorPaymentTerm.dueMonth2
+      created.dueMonth3 == vendorPaymentTerm.dueMonth3
+      created.dueMonth4 == vendorPaymentTerm.dueMonth4
+      created.dueMonth5 == vendorPaymentTerm.dueMonth5
+      created.dueMonth6 == vendorPaymentTerm.dueMonth6
+      created.dueDays1 == vendorPaymentTerm.dueDays1
+      created.dueDays2 == vendorPaymentTerm.dueDays2
+      created.dueDays3 == vendorPaymentTerm.dueDays3
+      created.dueDays4 == vendorPaymentTerm.dueDays4
+      created.dueDays5 == vendorPaymentTerm.dueDays5
+      created.dueDays6 == vendorPaymentTerm.dueDays6
+      created.duePercent1 == vendorPaymentTerm.duePercent1
+      created.duePercent2 == vendorPaymentTerm.duePercent2
+      created.duePercent3 == vendorPaymentTerm.duePercent3
+      created.duePercent4 == vendorPaymentTerm.duePercent4
+      created.duePercent5 == vendorPaymentTerm.duePercent5
+      created.duePercent6 == vendorPaymentTerm.duePercent6
+      created.discountMonth == vendorPaymentTerm.discountMonth
+      created.discountDays == vendorPaymentTerm.discountDays
+      created.discountPercent == vendorPaymentTerm.discountPercent
+   }
+
+   void "update VendorPaymentTerm" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final existing = vendorPaymentTermDataLoaderService.single(company).with { new VendorPaymentTermValueObject(it) }
+      final updateTo = VendorPaymentTermDataLoader.single(company).with { new VendorPaymentTermValueObject(it) }
+
+      when:
+      def updated = put("$path/${existing.id}", updateTo)
+
+      then:
+      notThrown(Exception)
+      updated.id == existing.id
+      updated.description == updateTo.description
+      updated.number == updated.id
+      updated.numberOfPayments == updateTo.numberOfPayments
+      updated.dueMonth1 == updateTo.dueMonth1
+      updated.dueMonth2 == updateTo.dueMonth2
+      updated.dueMonth3 == updateTo.dueMonth3
+      updated.dueMonth4 == updateTo.dueMonth4
+      updated.dueMonth5 == updateTo.dueMonth5
+      updated.dueMonth6 == updateTo.dueMonth6
+      updated.dueDays1 == updateTo.dueDays1
+      updated.dueDays2 == updateTo.dueDays2
+      updated.dueDays3 == updateTo.dueDays3
+      updated.dueDays4 == updateTo.dueDays4
+      updated.dueDays5 == updateTo.dueDays5
+      updated.dueDays6 == updateTo.dueDays6
+      updated.duePercent1 == updateTo.duePercent1
+      updated.duePercent2 == updateTo.duePercent2
+      updated.duePercent3 == updateTo.duePercent3
+      updated.duePercent4 == updateTo.duePercent4
+      updated.duePercent5 == updateTo.duePercent5
+      updated.duePercent6 == updateTo.duePercent6
+      updated.discountMonth == updateTo.discountMonth
+      updated.discountDays == updateTo.discountDays
+      updated.discountPercent == updateTo.discountPercent
    }
 }

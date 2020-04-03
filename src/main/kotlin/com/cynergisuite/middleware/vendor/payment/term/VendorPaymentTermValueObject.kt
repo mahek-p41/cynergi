@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -79,24 +80,37 @@ data class VendorPaymentTermValueObject(
 //If we add validation, write tests to prove it worked.
 
    @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "dueDays6", minimum = "1", required = false, description = "Vendor Payment Term Due Month 6")
    var dueDays6: Int? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent1", description = "Vendor Payment Term Due Percent 1")
    var duePercent1: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent2", description = "Vendor Payment Term Due Percent 2")
    var duePercent2: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent3", description = "Vendor Payment Term Due Percent 3")
    var duePercent3: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent4", description = "Vendor Payment Term Due Percent 4")
    var duePercent4: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent5", description = "Vendor Payment Term Due Percent 5")
    var duePercent5: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent6", description = "Vendor Payment Term Due Percent 6")
    var duePercent6: BigDecimal? = null,
 
@@ -108,6 +122,8 @@ data class VendorPaymentTermValueObject(
    @field:Schema(name = "discountDays", minimum = "1", required = false, description = "Vendor Payment Term Discount Days")
    var discountDays: Int? = null,
 
+   @field:Positive
+   @field:Digits(integer = 6, fraction = 2)
    @field:Schema(name = "discountPercent", description = "Vendor Payment Term Discount Percent")
    var discountPercent: BigDecimal? = null
 
