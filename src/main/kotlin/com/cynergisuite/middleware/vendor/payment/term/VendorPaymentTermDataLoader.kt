@@ -24,7 +24,7 @@ object VendorPaymentTermDataLoader {
          VendorPaymentTermEntity(
             company = company,
             description = lorem.characters(3, 30),
-            numberOfPayments = random.nextInt(1, 100),
+            numberOfPayments = random.nextInt(1, 6),
             dueMonth1 = random.nextInt(1, 12),
             dueMonth2 = random.nextInt(1, 12),
             dueMonth3 = random.nextInt(1, 12),

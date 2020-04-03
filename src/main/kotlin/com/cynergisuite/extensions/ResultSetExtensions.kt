@@ -1,5 +1,6 @@
 package com.cynergisuite.extensions
 
+import org.apache.commons.lang3.math.NumberUtils
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -19,3 +20,13 @@ fun ResultSet.getLocalDateOrNull(columnLabel: String) : LocalDate? =
 
 fun ResultSet.getUuid(columnLabel: String) : UUID =
   this.getObject(columnLabel, UUID::class.java)
+
+fun ResultSet.getIntOrNull(columnLabel: String): Int? {
+   val column = this.getString(columnLabel)?.trimToNull()
+
+   return if (!column.isNullOrBlank() && column.isDigits()) {
+      NumberUtils.toInt(column)
+   } else {
+      null
+   }
+}

@@ -7,7 +7,8 @@ import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpStatus.*
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class VendorPaymentTermControllerSpecification extends ControllerSpecificationBase {
@@ -96,7 +97,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       notFoundException.status == NO_CONTENT
    }
 
-   void "create VendorPaymentTerm" () {
+   void "create vendor payment term" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final vendorPaymentTerm = VendorPaymentTermDataLoader.single(company).with { new VendorPaymentTermValueObject(it) }
@@ -133,7 +134,43 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       created.discountPercent == vendorPaymentTerm.discountPercent
    }
 
-   void "update VendorPaymentTerm" () {
+   void "create vendor payment term with 1 payment" () {
+      given: 'A single vendor payment term with a single month for payment'
+      final toCreate = new VendorPaymentTermValueObject([description: 'Test Description', numberOfPayments: 1, dueMonth1: 1, dueDays1: 1])
+
+      when:
+      def created = post(path, toCreate)
+
+      then:
+      notThrown(Exception)
+      created.id > 0
+      created.description == 'Test Description'
+      created.number == created.id
+      created.numberOfPayments == 1
+      created.dueMonth1 == 1
+      created.dueMonth2 == null
+      created.dueMonth3 == null
+      created.dueMonth4 == null
+      created.dueMonth5 == null
+      created.dueMonth6 == null
+      created.dueDays1 == 1
+      created.dueDays2 == null
+      created.dueDays3 == null
+      created.dueDays4 == null
+      created.dueDays5 == null
+      created.dueDays6 == null
+      created.duePercent1 == null
+      created.duePercent2 == null
+      created.duePercent3 == null
+      created.duePercent4 == null
+      created.duePercent5 == null
+      created.duePercent6 == null
+      created.discountMonth == null
+      created.discountDays == null
+      created.discountPercent == null
+   }
+
+   void "update vendor payment term" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final existing = vendorPaymentTermDataLoaderService.single(company).with { new VendorPaymentTermValueObject(it) }
