@@ -11,7 +11,7 @@ export POSTGRES_REACTIVE_CLIENT_HOST=cynergitestdeploydb
 cd /home/jenkins/cynergi-middleware
 ./gradlew --no-daemon --stacktrace clean test jacocoTestReport buildApiDocs shadowJar
 
-if [ $(git rev-parse --abbrev-ref HEAD) = "develop" ]; then
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "develop" ]; then
   export MICRONAUT_ENV="cstdevelop"
 else
   export MICRONAUT_ENV="prod"
