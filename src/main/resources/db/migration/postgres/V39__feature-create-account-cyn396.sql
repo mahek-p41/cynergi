@@ -69,20 +69,13 @@ CREATE TABLE bank (
     currency_code_id BIGINT REFERENCES bank_currency_code_type_domain(id) NOT NULL,
     UNIQUE (company_id, number )
 );
-
- CREATE TRIGGER update_bank_trg
+CREATE TRIGGER update_bank_trg
    BEFORE UPDATE
    ON bank
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-
-
-CREATE INDEX idx_bank_company_id
-    ON bank (company_id);
-
-CREATE INDEX idx_bank_address_id
-    ON bank (address_id);
-
+CREATE INDEX idx_bank_company_id ON bank (company_id);
+CREATE INDEX idx_bank_address_id ON bank (address_id);
 
 CREATE TABLE account (
     id                 BIGSERIAL                                                NOT NULL PRIMARY KEY,
@@ -97,28 +90,16 @@ CREATE TABLE account (
     status_type_id  BIGINT REFERENCES status_type_domain(id)                    NOT NULL,
     form_1099_field  integer, -- field # on the 1099 form for this account
     bank_indicator BOOLEAN DEFAULT FALSE                                    NOT NULL,
-    bank_number_id BIGINT REFERENCES bank(id),
+    bank_id BIGINT REFERENCES bank(id),
     corporate_account_indicator BOOLEAN DEFAULT FALSE                       NOT NULL,
     UNIQUE (company_id, number )
 );
-
 CREATE TRIGGER update_account_trg
    BEFORE UPDATE
    ON account
    FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-
-
-CREATE INDEX idx_account_company_id
-    ON account (company_id);
-
-CREATE INDEX idx_account_type_id
-    ON account (type_id);
-
-CREATE INDEX idx_account_status_type_id
-    ON account (status_type_id);
-
- CREATE INDEX idx_account_bank_number_id
-    ON account (bank_number_id);
-
-
+CREATE INDEX idx_account_company_id ON account (company_id);
+CREATE INDEX idx_account_type_id ON account (type_id);
+CREATE INDEX idx_account_status_type_id ON account (status_type_id);
+CREATE INDEX idx_account_bank_number_id ON account (bank_id);
