@@ -40,9 +40,9 @@ class VendorPaymentTermService @Inject constructor(
    }
 
    @Validated
-   fun update(@Valid vo: VendorPaymentTermValueObject, company: Company): VendorPaymentTermValueObject {
-      vendorPaymentTermValidator.validateUpdate(vo)
-
+   fun update(@Valid vo: VendorPaymentTermValueObject, company: Company, id: Long): VendorPaymentTermValueObject {
+      vendorPaymentTermValidator.validateUpdate(vo, id)
+      //Will the validateUpdate
       return VendorPaymentTermValueObject(
          entity = vendorPaymentTermRepository.update(entity = VendorPaymentTermEntity(vo, company))
       )

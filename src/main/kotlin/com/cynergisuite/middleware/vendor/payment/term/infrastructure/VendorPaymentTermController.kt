@@ -42,7 +42,6 @@ class VendorPaymentTermController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermController::class.java)
 
    @Throws(NotFoundException::class)
-   //@Get(value = "/{id}", produces = [APPLICATION_JSON])
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a single VendorPaymentTerm", description = "Fetch a single VendorPaymentTerm by it's system generated primary key", operationId = "vendorPaymentTerm-fetchOne")
    @ApiResponses(value = [
