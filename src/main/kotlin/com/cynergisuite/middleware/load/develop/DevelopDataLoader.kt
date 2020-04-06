@@ -14,6 +14,8 @@ import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.division.DivisionFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.region.RegionFactoryService
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
+import com.cynergisuite.middleware.schedule.type.WEEKLY
 import com.cynergisuite.middleware.store.StoreFactoryService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
@@ -143,8 +145,8 @@ class DevelopDataLoader @Inject constructor(
       // setup store three approved audits
       auditFactoryService.generate(4, corrtoStore3StoreManager, setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()))
 
-      auditScheduleScheduleFactoryService.single(TUESDAY, listOf(corrtoStore1), AuthenticatedEmployee(corrtoStore1StoreManager.id!!, corrtoStore1StoreManager, corrtoStore1), corrto)
-      auditScheduleScheduleFactoryService.single(THURSDAY, listOf(corrtoStore3), AuthenticatedEmployee(corrtoStore3StoreManager.id!!, corrtoStore3StoreManager, corrtoStore3), corrto)
+      auditScheduleScheduleFactoryService.single(ScheduleCommandTypeFactory.auditSchedule(), WEEKLY, TUESDAY,listOf(corrtoStore1), AuthenticatedEmployee(corrtoStore1StoreManager.id!!, corrtoStore1StoreManager, corrtoStore1), corrto)
+      auditScheduleScheduleFactoryService.single(ScheduleCommandTypeFactory.auditSchedule(), WEEKLY, THURSDAY, listOf(corrtoStore3), AuthenticatedEmployee(corrtoStore3StoreManager.id!!, corrtoStore3StoreManager, corrtoStore3), corrto)
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())

@@ -119,6 +119,12 @@ class AuditService @Inject constructor(
       }
    }
 
+   fun findPastDueAudits(store: StoreEntity, user: User, locale: Locale): List<AuditValueObject> {
+       return auditRepository.findAllPastDue(store).map {
+          AuditValueObject(it, locale, localizationService)
+       }
+   }
+
    @Validated
    fun completeOrCancel(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
       val (validAuditAction, existingAudit) = auditValidator.validateCompleteOrCancel(audit, user, locale)

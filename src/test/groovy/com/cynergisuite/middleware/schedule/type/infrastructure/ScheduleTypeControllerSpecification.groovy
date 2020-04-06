@@ -20,12 +20,15 @@ class ScheduleTypeControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.requested.with { new StandardPageRequest(it) } == pageOne
-      result.totalElements == 1
+      result.totalElements == 2
       result.totalPages == 1
       result.first == true
       result.last == true
       result.elements != null
-      result.elements.size() == 1
-      result.elements[0].with { new ScheduleTypeValueObject(it) } == new ScheduleTypeValueObject(ScheduleTypeFactory.weekly(), ScheduleTypeFactory.weekly().description)
+      result.elements.size() == 2
+      result.elements.stream().map{ new ScheduleTypeValueObject(it)  }.toSet() == [
+         new ScheduleTypeValueObject(ScheduleTypeFactory.daily(), ScheduleTypeFactory.daily().description),
+         new ScheduleTypeValueObject(ScheduleTypeFactory.weekly(), ScheduleTypeFactory.weekly().description)
+      ] as Set
    }
 }

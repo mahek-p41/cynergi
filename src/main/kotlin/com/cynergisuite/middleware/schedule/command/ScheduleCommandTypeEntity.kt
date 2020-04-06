@@ -32,5 +32,7 @@ class ScheduleCommandTypeEntity(
 ) : ScheduleCommandType(id, value, description, localizationCode)
 
 object AuditSchedule: ScheduleCommandType(1, "AuditSchedule", "Scheduling audits for stores", "schedule.command.audit")
+object PastDueAuditReminder: ScheduleCommandType(2, "PastDueAuditReminder", "Reminder for past due audits of stores", "schedule.command.reminder.past.due.audits")
+typealias AUDIT_SCHEDULE = AuditSchedule
+typealias PAST_DUE_AUDIT_REMINDER = PastDueAuditReminder
 
-typealias AUDIT_STATUS = AuditSchedule

@@ -5,9 +5,9 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
+import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
@@ -19,9 +19,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 object AuditScheduleFactory {
-   fun single(dayOfWeek: DayOfWeek, stores: List<Store>, user: User, company: Company): ScheduleEntity {
+   fun single(scheduleCommandType: ScheduleCommandType, scheduleType: ScheduleType, dayOfWeek: DayOfWeek ?= null, stores: List<Store>, user: User, company: Company): ScheduleEntity {
       val faker = Faker()
-      val bool = faker.bool()
       val chuckNorris = faker.chuckNorris()
       val arguments = mutableSetOf<ScheduleArgumentEntity>()
 
@@ -68,11 +67,11 @@ object AuditScheduleFactory {
       )
 
       return ScheduleEntity(
-         title = chuckNorris.fact().truncate(36)!!,
-         description = if (bool.bool()) chuckNorris.fact().truncate(255) else null,
-         schedule = dayOfWeek.name,
-         command = ScheduleCommandTypeFactory.auditSchedule(),
-         type = ScheduleTypeFactory.weekly(),
+         title = "AuditSchedule",
+         description = chuckNorris.fact().truncate(255),
+         schedule = dayOfWeek?.name ?: scheduleType.value,
+         command = scheduleCommandType,
+         type = scheduleType,
          arguments = arguments
       )
    }
@@ -84,16 +83,18 @@ class AuditScheduleFactoryService @Inject constructor(
    private val scheduleRepository: ScheduleRepository
 ) {
 
-   fun stream(numberIn: Int = 1, dayOfWeek: DayOfWeek, stores: List<StoreEntity>, user: User, company: Company): Stream<ScheduleEntity> {
+   @JvmOverloads
+   fun stream(numberIn: Int = 1, scheduleCommandType: ScheduleCommandType, scheduleType: ScheduleType, dayOfWeek: DayOfWeek ?= null, stores: List<StoreEntity>, user: User, company: Company): Stream<ScheduleEntity> {
       val number = if (numberIn > 0) numberIn else 1
 
       return IntStream.range(0, number).mapToObj {
-         single(dayOfWeek, stores, user, company)
+         single(scheduleCommandType, scheduleType, dayOfWeek, stores, user, company)
       }
    }
 
-   fun single(dayOfWeek: DayOfWeek, stores: List<Store>, user: User, company: Company): ScheduleEntity {
-      return AuditScheduleFactory.single(dayOfWeek, stores, user, company)
+   @JvmOverloads
+   fun single(scheduleCommandType: ScheduleCommandType, scheduleType: ScheduleType, dayOfWeek: DayOfWeek ?= null, stores: List<Store>, user: User, company: Company): ScheduleEntity {
+      return AuditScheduleFactory.single(scheduleCommandType, scheduleType, dayOfWeek, stores, user, company)
          .let { scheduleRepository.insert(it) }
    }
 }

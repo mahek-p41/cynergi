@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
+import com.cynergisuite.middleware.schedule.type.DAILY
 import io.micronaut.context.ApplicationContext
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.Logger
@@ -25,13 +26,15 @@ class ScheduleService @Inject constructor(
       logger.info("Submitted {} jobs", jobsRan)
    }
 
+   @JvmOverloads
    fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek): Int { // useful for calling on-demand
       var jobsRan = 0
 
-      scheduleRepository.forEach(WEEKLY) { schedule ->
-         val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
+      scheduleRepository.forEach(DAILY) { schedule ->
+         val beanQualifier = DailyScheduleNameBeanQualifier(schedule.title)
 
-         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
+         if ((schedule.schedule == dayOfWeek.name || schedule.schedule == DAILY.value)
+            && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
             val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
 
             logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
@@ -46,6 +49,22 @@ class ScheduleService @Inject constructor(
          }
       }
 
+      scheduleRepository.forEach(WEEKLY) { schedule ->
+         val beanQualifier = DailyScheduleNameBeanQualifier(schedule.title)
+
+         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
+            val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
+            logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
+
+            val taskResult = dailyTask.processDaily(schedule)
+
+            logger.debug("Task result for schedule {} was {}", schedule, taskResult)
+
+            jobsRan++
+         } else {
+            logger.error("Unable to find daily task for schedule {}", schedule)
+         }
+      }
       return jobsRan
    }
 }

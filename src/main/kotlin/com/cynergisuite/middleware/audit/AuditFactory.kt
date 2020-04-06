@@ -23,7 +23,8 @@ import javax.inject.Singleton
 object AuditFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null, store: Store, statusesIn: Set<AuditStatus>? = null): Stream<AuditEntity> {
+   fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null, store: Store, statusesIn: Set<AuditStatus>? = null,
+               lastUpdated: OffsetDateTime? = OffsetDateTime.now()): Stream<AuditEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val random = faker.random()
@@ -41,7 +42,7 @@ object AuditFactory {
             totalDetails = random.nextInt(1, 1000),
             totalExceptions = random.nextInt(1, 100),
             hasExceptionNotes = random.nextBoolean(),
-            lastUpdated = OffsetDateTime.now(),
+            lastUpdated = lastUpdated,
             inventoryCount = random.nextInt(0, 1000),
             actions = statuses.map { AuditActionEntity(status = it, changedBy = changedBy) }.toCollection(LinkedHashSet())
          )
@@ -63,6 +64,13 @@ class AuditFactoryService @Inject constructor(
    private val storeFactoryService: StoreFactoryService,
    private val storeRepository: StoreRepository
 ) {
+
+   fun stream(numberIn: Int = 1, store: Store, statusesIn: Set<AuditStatus>? = null, lastUpdated: OffsetDateTime? = OffsetDateTime.now()): Stream<AuditEntity> {
+      val changedBy = employeeFactoryService.single(store)
+
+      return AuditFactory.stream(numberIn = numberIn, store = store, changedByIn = changedBy, statusesIn = statusesIn, lastUpdated = lastUpdated)
+         .map { auditRepository.insert(it) }
+   }
 
    fun stream(numberIn: Int = 1, store: Store): Stream<AuditEntity> {
       val changedBy = employeeFactoryService.single(store)
@@ -106,6 +114,10 @@ class AuditFactoryService @Inject constructor(
 
    fun single(store: Store, changedBy: EmployeeEntity): AuditEntity {
       return stream(store = store, changedBy = changedBy).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
+
+   fun single(store: Store, statusesIn: Set<AuditStatus>, lastUpdated: OffsetDateTime): AuditEntity {
+      return stream(store = store, statusesIn = statusesIn, lastUpdated = lastUpdated).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
    fun generate(numberIn: Int, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
