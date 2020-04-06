@@ -46,7 +46,7 @@ These are properties that are available from the database, but may not be necess
    * Auto populated by the database.
 
 ### ValueObject
-A **ValueObject** is defined in this project as a `data class` that represents a detached data holder that can be manipulated directly by business logic without worrying about needing to persist to the database. It is intended to be transient and can be passed between **Service** instances and **Controller** instances.
+A **ValueObject** is defined in this project as a `data class` that represents a detached data holder that can be used in place of an **Entity** without worrying about needing to persist to the database. It is intended to be transient and can be passed between **Service** and **Controller** instances.
 
 Rules of thumb for **ValueObject** 
 1. Should mirror the **Entity** it is representing.
