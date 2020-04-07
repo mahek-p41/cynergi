@@ -3,17 +3,14 @@ package com.cynergisuite.middleware.vendor.payment.term
 import com.cynergisuite.domain.Entity
 import com.cynergisuite.middleware.company.Company
 import java.math.BigDecimal
-import java.time.OffsetDateTime
 import java.util.UUID
 
 data class VendorPaymentTermEntity(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val company: Company,
    val description: String,
-   val number: Int,
+   val number: Int? = null,
    val numberOfPayments: Int,
    val dueMonth1: Int?,
    val dueMonth2: Int?,
@@ -39,12 +36,12 @@ data class VendorPaymentTermEntity(
 
    ) : Entity<VendorPaymentTermEntity> {
 
-   constructor(vo: VendorPaymentTermValueObject, company: Company) :
+   constructor(id: Long? = null, vo: VendorPaymentTermValueObject, company: Company) :
       this(
-         id = vo.id,
+         id = id ?: vo.id,
          company = company,
          description = vo.description!!,
-         number = vo.number!!,
+         number = vo.number,
          numberOfPayments = vo.numberOfPayments!!,
          dueMonth1 = vo.dueMonth1,
          dueMonth2 = vo.dueMonth2,
@@ -68,6 +65,9 @@ data class VendorPaymentTermEntity(
          discountDays = vo.discountDays,
          discountPercent = vo.discountPercent
       )
+
+   constructor(source: VendorPaymentTermEntity, updateWith: VendorPaymentTermValueObject) :
+      this(id = source.id!!, vo = updateWith, company = source.company)
 
    override fun myId(): Long? = id
    override fun rowId(): UUID = uuRowId

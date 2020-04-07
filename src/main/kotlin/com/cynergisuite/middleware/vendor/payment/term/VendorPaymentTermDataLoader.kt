@@ -1,10 +1,11 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.math.RoundingMode
+import java.math.RoundingMode.HALF_EVEN
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -23,8 +24,7 @@ object VendorPaymentTermDataLoader {
          VendorPaymentTermEntity(
             company = company,
             description = lorem.characters(3, 30),
-            number = random.nextInt(1, 1000),
-            numberOfPayments = random.nextInt(1, 100),
+            numberOfPayments = random.nextInt(1, 6),
             dueMonth1 = random.nextInt(1, 12),
             dueMonth2 = random.nextInt(1, 12),
             dueMonth3 = random.nextInt(1, 12),
@@ -37,15 +37,15 @@ object VendorPaymentTermDataLoader {
             dueDays4 = random.nextInt(1, 30),
             dueDays5 = random.nextInt(1, 30),
             dueDays6 = random.nextInt(1, 30),
-            duePercent1 = random.nextDouble().toBigDecimal(),
-            duePercent2 = random.nextDouble().toBigDecimal(),
-            duePercent3 = random.nextDouble().toBigDecimal(),
-            duePercent4 = random.nextDouble().toBigDecimal(),
-            duePercent5 = random.nextDouble().toBigDecimal(),
-            duePercent6 = random.nextDouble().toBigDecimal(),
+            duePercent1 = random.nextDouble().toBigDecimal().setScale(4, HALF_EVEN),
+            duePercent2 = random.nextDouble().toBigDecimal().setScale(4, HALF_EVEN),
+            duePercent3 = random.nextDouble().toBigDecimal().setScale(4, HALF_EVEN),
+            duePercent4 = random.nextDouble().toBigDecimal().setScale(4, HALF_EVEN),
+            duePercent5 = random.nextDouble().toBigDecimal().setScale(4, HALF_EVEN),
+            duePercent6 = random.nextDouble().toBigDecimal().setScale(4, HALF_EVEN),
             discountMonth = random.nextInt(1, 12),
             discountDays = random.nextInt(1, 30),
-            discountPercent = random.nextDouble().toBigDecimal()
+            discountPercent = random.nextDouble().toBigDecimal().setScale(2, HALF_EVEN)
          )
       }
    }
@@ -59,7 +59,6 @@ object VendorPaymentTermDataLoader {
 @Singleton
 @Requires(env = ["demo", "test"])
 class VendorPaymentTermDataLoaderService @Inject constructor(
-   private val companyFactoryService: CompanyFactoryService,
    private val vendorPaymentTermRepository: VendorPaymentTermRepository
 ) {
 

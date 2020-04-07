@@ -3,8 +3,12 @@ package com.cynergisuite.middleware.vendor.payment.term
 import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import javax.validation.constraints.Digits
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -22,10 +26,13 @@ data class VendorPaymentTermValueObject(
    var description: String? = null,
 
    @field:Positive
-   @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor Payment Term Number")
+   @field:Schema(name = "number", minimum = "1", required = true, description = "Vendor Payment Term Number")
    var number: Int? = null,
 
+   @field:NotNull
    @field:Positive
+   @field:Min(value = 1)
+   @field:Max(value = 6)
    @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor Payment Term Number of Payments")
    var numberOfPayments: Int? = null,
 
@@ -78,24 +85,37 @@ data class VendorPaymentTermValueObject(
 //If we add validation, write tests to prove it worked.
 
    @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "dueDays6", minimum = "1", required = false, description = "Vendor Payment Term Due Month 6")
    var dueDays6: Int? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent1", description = "Vendor Payment Term Due Percent 1")
    var duePercent1: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent2", description = "Vendor Payment Term Due Percent 2")
    var duePercent2: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent3", description = "Vendor Payment Term Due Percent 3")
    var duePercent3: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent4", description = "Vendor Payment Term Due Percent 4")
    var duePercent4: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent5", description = "Vendor Payment Term Due Percent 5")
    var duePercent5: BigDecimal? = null,
 
+   @field:Positive
+   @field:Digits(integer = 8, fraction = 4)
    @field:Schema(name = "duePercent6", description = "Vendor Payment Term Due Percent 6")
    var duePercent6: BigDecimal? = null,
 
@@ -107,6 +127,8 @@ data class VendorPaymentTermValueObject(
    @field:Schema(name = "discountDays", minimum = "1", required = false, description = "Vendor Payment Term Discount Days")
    var discountDays: Int? = null,
 
+   @field:Positive
+   @field:Digits(integer = 6, fraction = 2)
    @field:Schema(name = "discountPercent", description = "Vendor Payment Term Discount Percent")
    var discountPercent: BigDecimal? = null
 

@@ -180,7 +180,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       response.message == "0 was unable to be found"
    }
 
-   //Fails line 202. Cannot get property 'id' on null object.
    void "create audit detail" () {
       given:
       final locale = Locale.US
