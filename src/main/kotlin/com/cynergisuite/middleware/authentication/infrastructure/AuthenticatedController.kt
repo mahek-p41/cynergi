@@ -50,7 +50,7 @@ class AuthenticatedController @Inject constructor(
       return if (authentication != null) {
          var user = userService.findUser(authentication) as AuthenticatedUser
          var companyWithNullFederalIdNumber = CompanyValueObject(entity = user.company, federalTaxNumberOverride = null)
-         val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) }
+         val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) } ?: emptySet()
 
          logger.debug("User is authenticated {}", user)
 
