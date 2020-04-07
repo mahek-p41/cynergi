@@ -12,3 +12,5 @@ RUN dos2unix /tmp/cynergi-test-db-ready.sh
 COPY DatabaseDumps/test-inventory.csv /tmp/test-inventory.csv
 RUN dos2unix /tmp/test-inventory.csv
 
+COPY DatabaseDumps/test-itemfile.csv /tmp/test-itemfile.csv
+RUN dos2unix /tmp/test-itemfile.csv

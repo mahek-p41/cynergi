@@ -235,18 +235,18 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            id                                                                                          AS id,
-            ''' || r.schema_name || '''::text                                                           AS dataset,
-            itemfile.created_at AT TIME ZONE ''UTC''                                                    AS time_created,
-            itemfile.updated_at AT TIME ZONE ''UTC''                                                    AS time_updated,
-            itemfile.itemfile_nbr                                                                       AS number,
-            itemfile.itemfile_desc_1                                                                    AS description_1,
-            itemfile.itemfile_desc_2                                                                    AS description_2,
-            itemfile.itemfile_discontinued_indr                                                         AS discontinued_indr,
-            level2_vendors.vend_number                                                                  AS vendor_number
-          FROM ' || r.schema_name || '.level2_models itemfile
-              JOIN ' || r.schema_name || '.level2_vendors ON itemfile.vendor_id = vendor.id
-        ';
+            itemfile.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            itemfile.created_at AT TIME ZONE ''UTC'' AS time_created,
+            itemfile.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            itemfile.itemfile_nbr                    AS number,
+            itemfile.itemfile_desc_1                 AS description_1,
+            itemfile.itemfile_desc_2                 AS description_2,
+            itemfile.itemfile_discontinued_indr      AS discontinued_indicator,
+            vendors.vend_number                      AS vendor_number
+         FROM ' || r.schema_name || '.level2_models itemfile
+              JOIN ' || r.schema_name || '.level2_vendors vendors ON itemfile.vendor_id = vendors.id
+         ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
@@ -254,7 +254,6 @@ BEGIN
 
    EXECUTE sqlToExec;
 END $$;
-
 -- End fastinfo setup
 
 -- Begin cynergidb setup
