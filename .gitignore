@@ -652,3 +652,4 @@ healthchecksdb
 *.dump
 *.dump.*
 .kotlintest
+support/deployment/gradleCache/

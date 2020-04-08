@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.audit.status.Canceled
 import com.cynergisuite.middleware.audit.status.Completed
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
-import com.cynergisuite.middleware.audit.status.SignedOff
+import com.cynergisuite.middleware.audit.status.Approved
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -25,7 +25,7 @@ class AuditStatusControllerSpecification extends ControllerSpecificationBase {
          new AuditStatusValueObject(InProgress.INSTANCE),
          new AuditStatusValueObject(Completed.INSTANCE),
          new AuditStatusValueObject(Canceled.INSTANCE),
-         new AuditStatusValueObject(SignedOff.INSTANCE),
+         new AuditStatusValueObject(Approved.INSTANCE),
       ].sort { o1, o2 -> o1.value <=> o2.value }
    }
 }

@@ -12,8 +12,6 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.cache.annotation.Cacheable
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Row
@@ -21,6 +19,7 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +29,8 @@ class AuthenticationRepository @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val locationRepository: LocationRepository,
    private val passwordEncoderService: PasswordEncoderService,
-   private val postgresClient: PgPool
+   private val postgresClient: PgPool,
+   private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticationRepository::class.java)
 
@@ -195,9 +195,6 @@ class AuthenticationRepository @Inject constructor(
    private fun mapCompany(row: Row): Company {
       return CompanyEntity(
          id = row.getLong("comp_id"),
-         uuRowId = row.getUUID("comp_uu_row_id"),
-         timeCreated = row.getOffsetDateTime("comp_time_created"),
-         timeUpdated = row.getOffsetDateTime("comp_time_updated"),
          name = row.getString("comp_name"),
          doingBusinessAs = row.getString("comp_doing_business_as"),
          clientCode = row.getString("comp_client_code"),
@@ -205,6 +202,28 @@ class AuthenticationRepository @Inject constructor(
          datasetCode = row.getString("comp_dataset_code"),
          federalIdNumber = row.getString("comp_federal_tax_number")
       )
+   }
+
+   fun findPermissions(department: Department): Set<String> {
+      val params = mutableMapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
+      val sql = """
+         SELECT
+            aptd.value              AS value
+         FROM  audit_permission_type_domain aptd
+               JOIN audit_permission ap ON ap.type_id = aptd.id
+         WHERE ap.department = :dept_code AND ap.company_id = :comp_id
+         UNION
+         SELECT
+            aptd.value              AS value
+         FROM  audit_permission_type_domain aptd
+         WHERE  aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
+         """.trimIndent()
+      logger.debug("Get permission by department {}\n{}", params, sql)
+      val resultSet = mutableSetOf<String>()
+      jdbc.query(sql, params) {
+         rs -> resultSet.add(rs.getString("value"))
+      }
+      return resultSet
    }
 
    private fun mapDepartment(row: Row, company: Company): Department? {

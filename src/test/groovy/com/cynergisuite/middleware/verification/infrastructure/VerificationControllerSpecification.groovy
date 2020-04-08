@@ -39,8 +39,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by id where everything is filled out" () {
       given:
-      final def savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def verificationValueObject = new VerificationValueObject(savedVerification)
+      final savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verificationValueObject = new VerificationValueObject(savedVerification)
 
       when:
       def result = client.retrieve(GET("$path/${savedVerification.id}"), VerificationValueObject)
@@ -64,8 +64,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by customer account" () {
       given:
-      final def savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def verificationValueObject = new VerificationValueObject(savedVerification)
+      final savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verificationValueObject = new VerificationValueObject(savedVerification)
 
       when:
       def result = client.retrieve(GET("$path/account/${savedVerification.customerAccount}"), VerificationValueObject)
@@ -88,7 +88,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification successfully" () {
       given:
-      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
@@ -105,7 +105,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification without auto, employment or landlord" () {
       given:
-      final def verification = VerificationTestDataLoader.stream(1, false, false, false, false).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verification = VerificationTestDataLoader.stream(1, false, false, false, false).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
@@ -143,7 +143,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
+      final errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
       errors != null
       errors.size() == 3
 
@@ -155,8 +155,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification with longer than allowed customer comments should result in a failure" () {
       given:
-      final def stringFaker = new Faker().lorem()
-      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final stringFaker = new Faker().lorem()
+      final verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.peek { it.customerComments = stringFaker.fixedString(260) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       client.exchange(POST(path, verification), Argument.of(VerificationValueObject), Argument.of(ErrorDataTransferObject[]))
@@ -165,7 +165,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
+      final errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "Size of provided value ${verification.customerComments} is invalid"
@@ -174,7 +174,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification with no references" () {
       given:
-      final def verification = VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verification = VerificationTestDataLoader.stream(1, true, true, true, false).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
 
       when:
       def savedVerification = client.retrieve(POST(path, verification), VerificationValueObject)
@@ -193,8 +193,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post verification unsuccessfully due to bad date" () {
       given:
-      final def verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def verificationJson = new JsonSlurper().parseText(objectMapper.writeValueAsString(verification))
+      final verification = VerificationTestDataLoader.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verificationJson = new JsonSlurper().parseText(objectMapper.writeValueAsString(verification))
 
       when:
       verificationJson["cust_verified_date"] = "2019-02-30"
@@ -204,7 +204,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
 
-      final def errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
+      final errors = exception.response.getBody(ErrorDataTransferObject[]).orElse(null)
       errors != null
       errors.size() == 1
       errors[0].message == "Failed to convert argument [cust_verified_date] for value [2019-02-30]"
@@ -212,8 +212,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put verification successfully" () {
       given:
-      final def savedVerification = verificationDataLoaderService.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def toUpdateVerification = savedVerification.copyMe()
+      final savedVerification = verificationDataLoaderService.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final toUpdateVerification = savedVerification.copyMe()
 
       when:
       toUpdateVerification.customerComments = "Updated comments"
@@ -228,7 +228,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       given:
       final Verification verification = verificationDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final List<VerificationReference> references = verificationReferenceDataLoaderService.stream(2, verification).collect(Collectors.toList())
-      final def toUpdate = verification.copyMe()
+      final toUpdate = verification.copyMe()
       toUpdate.references.addAll(references)
       toUpdate.references.add(VerificationReferenceTestDataLoader.stream(1, toUpdate).findFirst().orElseThrow { new Exception("Unable to create VerificationReference") })
 
@@ -250,8 +250,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "delete verification reference via update with one missing" () {
       given:
-      final def verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def savedVerification = new VerificationValueObject(verification)
+      final verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final savedVerification = new VerificationValueObject(verification)
       savedVerification.references.remove(5) // remove the last one
 
       when:
@@ -276,8 +276,8 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "delete two previously created verification reference via update with one missing" () {
       given:
-      final def verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
-      final def savedVerification = new VerificationValueObject(verification)
+      final verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final savedVerification = new VerificationValueObject(verification)
       savedVerification.references.remove(1)
       savedVerification.references.remove(1)
 

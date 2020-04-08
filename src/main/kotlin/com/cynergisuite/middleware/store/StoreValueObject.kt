@@ -41,12 +41,12 @@ data class StoreValueObject (
          id = entity.id,
          number = entity.number,
          name = entity.name,
-         region = entity.region?.toValueObject()
+         region = entity.region.toValueObject()
       )
 
    constructor(location: Location) :
       this(
-         id = location.myId()!!,
+         id = location.myId(),
          number = location.myNumber(),
          name = location.myName()
       )

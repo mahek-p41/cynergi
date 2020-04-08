@@ -6,6 +6,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
@@ -21,6 +22,7 @@ import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.lang.StringBuilder
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -95,23 +97,46 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<StoreEntity, PageRequest> {
+   fun findAll(pageRequest: PageRequest, user: User): RepositoryPage<StoreEntity, PageRequest> {
+      val company = user.myCompany()
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
+      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id ")
 
-      jdbc.query("""
+      when(user.myAlternativeStoreIndicator()) {
+         "N" -> {
+            pagedQuery.append(" AND store.number = :store_number ")
+            params["store_number"] = user.myLocation().myNumber()
+         }
+         "R" -> {
+            pagedQuery.append(" AND region.number = :region_number ")
+            params["region_number"] = user.myAlternativeArea()
+         }
+         "D" -> {
+            pagedQuery.append(" AND division.number = :division_number ")
+            params["division_number"] = user.myAlternativeArea()
+         }
+         else -> {
+            pagedQuery.append(" AND store.number <> 9000 ")
+         }
+      }
+
+      val query = """
          WITH paged AS (
-            ${selectBaseQuery()} WHERE comp.id = :comp_id AND store.number <> 9000
+            $pagedQuery
          )
          SELECT
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-         LIMIT :limit OFFSET :offset""",
-         params
-      ) { rs ->
+         LIMIT :limit OFFSET :offset
+      """
+
+      logger.trace("Fetching all stores using {} / {}", query, params)
+
+      jdbc.query(query, params) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -184,25 +209,16 @@ class StoreRepository @Inject constructor(
          name = rs.getString("name"),
          region = RegionEntity(
             id = rs.getLong("reg_id"),
-            uuRowId = rs.getUuid("reg_uu_row_id"),
-            timeCreated = rs.getOffsetDateTime("reg_time_created"),
-            timeUpdated = rs.getOffsetDateTime("reg_time_updated"),
             number = rs.getInt("reg_number"),
             name = rs.getString("reg_name"),
             description = rs.getString("reg_description"),
             division = DivisionEntity(
                id = rs.getLong("div_id"),
-               uuRowId = rs.getUuid("div_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("div_time_created"),
-               timeUpdated = rs.getOffsetDateTime("div_time_updated"),
                number = rs.getInt("div_number"),
                name = rs.getString("div_name"),
                description = rs.getString("div_description"),
                company = CompanyEntity(
                   id = rs.getLong("comp_id"),
-                  uuRowId = rs.getUuid("comp_uu_row_id"),
-                  timeCreated = rs.getOffsetDateTime("comp_time_created"),
-                  timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
                   name = rs.getString("comp_name"),
                   doingBusinessAs = rs.getString("comp_doing_business_as"),
                   clientCode = rs.getString("comp_client_code"),

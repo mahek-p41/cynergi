@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.audit.exception.note
 
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
-import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
