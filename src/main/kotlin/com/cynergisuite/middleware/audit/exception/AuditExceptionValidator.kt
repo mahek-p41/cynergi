@@ -22,8 +22,6 @@ import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
 import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
 import com.cynergisuite.middleware.localization.AuditUpdateRequiresApprovedOrNote
 import com.cynergisuite.middleware.localization.NotFound
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +34,6 @@ class AuditExceptionValidator @Inject constructor (
    private val inventoryRepository: InventoryRepository,
    private val scanAreaRepository: AuditScanAreaRepository
 ) : ValidatorBase() {
-   private val logger: Logger = LoggerFactory.getLogger(AuditExceptionValidator::class.java)
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject, enteredBy: User): AuditExceptionEntity {

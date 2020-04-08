@@ -4,15 +4,12 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
@@ -230,9 +227,6 @@ class AuditPermissionRepository @Inject constructor(
    private fun processFindRow(rs: ResultSet, company: Company): AuditPermissionEntity {
       return AuditPermissionEntity(
          id = rs.getLong("ap_id"),
-         uuRowId = rs.getUuid("ap_uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("ap_time_created"),
-         timeUpdated = rs.getOffsetDateTime("ap_time_updated"),
          type = AuditPermissionType(
             id = rs.getLong("aptd_id"),
             value = rs.getString("aptd_value"),
@@ -293,9 +287,6 @@ class AuditPermissionRepository @Inject constructor(
          RowMapper { rs, _ ->
             AuditPermissionEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                department = auditPermission.department.copy(),
                type = auditPermission.type.copy()
             )
@@ -325,9 +316,6 @@ class AuditPermissionRepository @Inject constructor(
          RowMapper { rs, _ ->
             AuditPermissionEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                department = auditPermission.department.copy(),
                type = auditPermission.type.copy()
             )
@@ -351,9 +339,6 @@ class AuditPermissionRepository @Inject constructor(
             RowMapper { rs, _ ->
                AuditPermissionEntity(
                   id = rs.getLong("id"),
-                  uuRowId = rs.getUuid("uu_row_id"),
-                  timeCreated = rs.getOffsetDateTime("time_created"),
-                  timeUpdated = rs.getOffsetDateTime("time_updated"),
                   department = existingPermission.department,
                   type = existingPermission.type
                )

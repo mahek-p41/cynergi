@@ -116,7 +116,6 @@ private class NotificationRecipientRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): NotificationRecipient =
       NotificationRecipient(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          description = rs.getString("${columnPrefix}description"),

@@ -255,7 +255,6 @@ private class NotificationRowMapper(
    override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
       Notification(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = rs.getString("${columnPrefix}company_id"),

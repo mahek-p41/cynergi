@@ -9,11 +9,15 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Verification", title = "Customer Verification", description = "A single verification for a single customer")
 data class VerificationValueObject(
+
+   @field:Positive
+   @field:Schema(name = "id", description = "ID assigned by the database representing a single defined row in the database")
    var id: Long?,
 
    @field:Size(max = 10)
