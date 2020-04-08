@@ -2,12 +2,14 @@ package com.cynergisuite.middleware.shipvia.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -100,9 +102,6 @@ class ShipViaRepository @Inject constructor(
          RowMapper { rs, _ ->
             ShipViaEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                description = rs.getString("description"),
                number = rs.getInt("number"),
                company = entity.company
@@ -131,9 +130,6 @@ class ShipViaRepository @Inject constructor(
          RowMapper { rs, _ ->
             ShipViaEntity(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
                description = rs.getString("description"),
                number = rs.getInt("number"),
                company = entity.company
@@ -145,14 +141,10 @@ class ShipViaRepository @Inject constructor(
    private fun mapRow(rs: ResultSet): ShipViaEntity {
       return ShipViaEntity(
          id = rs.getLong("id"),
-         uuRowId = rs.getUuid("uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("time_created"),
-         timeUpdated = rs.getOffsetDateTime("time_updated"),
          description = rs.getString("description"),
          number = rs.getInt("number"),
          company = CompanyEntity(
             id = rs.getLong("comp_id"),
-            uuRowId = rs.getUuid("comp_uu_row_id"),
             name = rs.getString("comp_name"),
             doingBusinessAs = rs.getString("comp_doing_business_as"),
             clientCode = rs.getString("comp_client_code"),
