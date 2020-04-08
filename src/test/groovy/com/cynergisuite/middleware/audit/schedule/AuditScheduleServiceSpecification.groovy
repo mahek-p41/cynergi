@@ -2,21 +2,25 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
-import com.cynergisuite.middleware.schedule.type.Weekly
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY
+import static java.time.DayOfWeek.TUESDAY
+import static java.time.DayOfWeek.WEDNESDAY
 
 @MicronautTest(transactional = false)
 class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
+   @Inject AuditService auditService
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject AuditScheduleService auditScheduleService
@@ -27,10 +31,10 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store).with { new AuthenticatedEmployee(it.id, it, store) }
-      final schedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, MONDAY, [store], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
 
       when:
-      def result = auditScheduleService.processDaily(schedule)
+      def result = auditScheduleService.processDaily(schedule, MONDAY)
 
       then:
       notThrown(ValidationException)
@@ -52,10 +56,10 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store1).with { new AuthenticatedEmployee(it.id, it, store1) }
-      final schedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, FRIDAY, [store1, store3], employee, company)
+      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
 
       when:
-      def result = auditScheduleService.processDaily(schedule)
+      def result = auditScheduleService.processDaily(schedule, FRIDAY)
 
       then:
       notThrown(ValidationException)
@@ -84,10 +88,10 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
-      final schedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
 
       when:
-      def result = auditScheduleService.processDaily(schedule)
+      def result = auditScheduleService.processDaily(schedule, MONDAY)
 
       then:
       notThrown(Exception)
@@ -97,6 +101,40 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.notifications[0].message == schedule.description
       result.notifications[0].sendingEmployee == employee.number.toString()
       result.notifications[0].expirationDate != null
+      result.notifications[0].recipients[0].description == "Audit ${createdAudit.number} is due today"
       result.audits[0].id == createdAudit.id
+   }
+
+   void "one store with already CREATED audit that is past due and is then completed" () {
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store1 = storeFactoryService.store(1, company)
+      final employee = employeeFactoryService.single(store1)
+      final user = new AuthenticatedEmployee(employee.id, employee, store1)
+      final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
+      final completedStatus = new AuditStatusValueObject(AuditStatusFactory.completed())
+
+      when: "schedule is processed on Tuesday"
+      def result = auditScheduleService.processDaily(schedule, TUESDAY)
+
+      then: "Past due notification should be created with the associated audit"
+      notThrown(Exception)
+      result.notifications.size() == 1
+      result.audits.size() == 1
+
+      result.notifications[0].message == schedule.description
+      result.notifications[0].sendingEmployee == employee.number.toString()
+      result.notifications[0].expirationDate != null
+      result.notifications[0].recipients[0].description == "Audit ${createdAudit.number} is past due"
+      result.audits[0].id == createdAudit.id
+
+      when: "Audit is finally completed with the process running on Wednesday"
+      auditService.completeOrCancel(new AuditUpdateValueObject(createdAudit.id, completedStatus), user, Locale.getDefault())
+      result = auditScheduleService.processDaily(schedule, WEDNESDAY)
+
+      then: "No notifications or audits should be created"
+      notThrown(Exception)
+      result.notifications.size() == 0
+      result.audits.size() == 0
    }
 }
