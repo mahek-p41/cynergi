@@ -98,6 +98,10 @@ class AuditFactoryService @Inject constructor(
       return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }
 
+   fun single(store: Store, statusesIn: Set<AuditStatus>): AuditEntity {
+      return stream(store = store, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
+   }
+
    fun single(store: Store, changedBy: EmployeeEntity, statusesIn: Set<AuditStatus>): AuditEntity {
       return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }
    }

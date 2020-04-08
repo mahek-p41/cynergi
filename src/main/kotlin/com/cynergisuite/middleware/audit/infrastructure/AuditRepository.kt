@@ -22,7 +22,6 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -42,7 +41,7 @@ class AuditRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
-   private fun selectBaseQuery(): String =
+   private fun selectByIdBaseQuery(): String =
    """
       WITH employees AS (
          ${employeeRepository.employeeBaseQuery()}
@@ -120,35 +119,7 @@ class AuditRepository @Inject constructor(
            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
    """
 
-   fun findOne(id: Long, company: Company): AuditEntity? {
-      logger.debug("Searching for audit by id {} with company {}", id, company)
-
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery()}\nWHERE a.id = :id"
-      val found = executeFindSingleQuery(query, params)
-
-      logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
-
-      return found
-   }
-
-   // TODO should this find only today audit?
-   fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
-      val params = mutableMapOf("store_number" to store.myNumber(), "statuses" to listOf(CREATED.value, IN_PROGRESS.value))
-      val query = "${selectBaseQuery()} WHERE a.store_number = :store_number AND astd.value IN (:statuses)"
-
-      logger.debug("Searching for one audit in either CREATED or IN_PROGRESS for store {} \n Params {} \n Query {}", store, params, query)
-
-      return executeFindSingleQuery(query, params)
-   }
-
-   fun findAllPastDue(store: Store): List<AuditEntity> {
-      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(CREATED.value, IN_PROGRESS.value))
-      val whereClause = StringBuilder(""" WHERE a.store_number = :store_number
-                                                AND current_status IN (:current_status)
-                                                 AND a.time_updated < CURRENT_DATE
-      """.trimIndent())
-      val query = """
+   private fun selectAllBaseQuery(whereClause: String): String ="""
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
          ), audits AS (
@@ -264,34 +235,70 @@ class AuditRepository @Inject constructor(
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
          ORDER BY a.id
+      """
+
+   fun findOne(id: Long, company: Company): AuditEntity? {
+      logger.debug("Searching for audit by id {} with company {}", id, company)
+
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = "${selectByIdBaseQuery()}\nWHERE a.id = :id"
+      val found = executeFindForSingleAudit(query, params)
+
+      logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
+
+      return found
+   }
+
+   fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
+      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(CREATED.value, IN_PROGRESS.value))
+      val whereClause = """ WHERE a.store_number = :store_number
+                                                AND current_status IN (:current_status)
       """.trimIndent()
+      val query = selectAllBaseQuery(whereClause)
+
+      logger.debug("Searching for one audit in either CREATED or IN_PROGRESS for store {} \n Params {} \n Query {}", store, params, query)
+
+      return executeFindForMultipleAudits(query, params).getOrNull(0)
+   }
+
+   fun findAllPastDue(store: Store): List<AuditEntity> {
+      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(CREATED.value, IN_PROGRESS.value))
+      val whereClause = """ WHERE a.store_number = :store_number
+                                                AND current_status IN (:current_status)
+                                                 AND a.time_updated::TIMESTAMP::DATE < CURRENT_DATE
+      """.trimIndent()
+      val query = selectAllBaseQuery(whereClause)
 
       logger.debug("Searching for past due audits in either CREATED or IN_PROGRESS for store {} \n Params {} \n Query {}", store, params, query)
 
+      return executeFindForMultipleAudits(query, params)
+   }
+
+   private fun executeFindForMultipleAudits(query: String, params: MutableMap<String, Any>): List<AuditEntity> {
       val elements = mutableListOf<AuditEntity>()
       jdbc.query(query, params) { rs ->
          var currentId: Long = -1
          var currentParentEntity: AuditEntity? = null
 
          do {
-            val tempId = rs.getLong("a_id")
-            val tempParentEntity: AuditEntity = if (tempId != currentId) {
-               currentId = tempId
-               currentParentEntity = mapRow(rs)
-               elements.add(currentParentEntity)
-               currentParentEntity
-            } else {
-               currentParentEntity!!
-            }
-            tempParentEntity.actions.add(mapAuditAction(rs))
+               val tempId = rs.getLong("a_id")
+               val tempParentEntity: AuditEntity = if (tempId != currentId) {
+                  currentId = tempId
+                  currentParentEntity = mapRow(rs)
+                  elements.add(currentParentEntity)
+                  currentParentEntity
+               } else {
+                  currentParentEntity!!
+               }
+               tempParentEntity.actions.add(mapAuditAction(rs))
 
-         } while(rs.next())
+         } while (rs.next())
 
       }
       return elements
    }
 
-   private fun executeFindSingleQuery(query: String, params: Map<String, Any?>): AuditEntity? {
+   private fun executeFindForSingleAudit(query: String, params: Map<String, Any?>): AuditEntity? {
       val found = jdbc.findFirstOrNull(query, params) { rs ->
          val audit = this.mapRow(rs)
 
