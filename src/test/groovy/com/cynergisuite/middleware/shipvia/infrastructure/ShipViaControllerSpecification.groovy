@@ -45,7 +45,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.message == "0 was unable to be found"
    }
 
-   void "fetch all"() {
+   void "fetch all" () {
       given:
       def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -100,7 +100,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
-   void "fetch all without page"() {
+   void "fetch all without page" () {
       given:
       def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.toList()
       def firstPageShipVia = twentyShipVias[0..9]
@@ -119,7 +119,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
    }
 
-   void "fetch all with page"() {
+   void "fetch all with page" () {
       given:
       def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -138,7 +138,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
    }
 
-   void "post valid shipVia"() {
+   void "post valid shipVia" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = ShipViaFactory.single(company).with { new ShipViaValueObject(it) }
@@ -154,7 +154,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.number == response.id
    }
 
-   void "post null values to shipVia()"() {
+   void "post null values to shipVia" () {
       given:
       final def shipVia = new ShipViaValueObject(null as String, 5)
 
@@ -172,7 +172,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       ]
    }
 
-   void "put valid shipVia"() {
+   void "put valid shipVia" () {
       given:
       final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaValueObject(it.id, "test description", null) }
 
@@ -186,7 +186,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       response.number == shipVia.id
    }
 
-   void "put invalid shipVia"(){
+   void "put invalid shipVia" () {
       given:
       final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaValueObject(it.id, null, 5)}
 
@@ -204,7 +204,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       ]
    }
 
-   void "put invalid shipVia missing Id"(){
+   void "put invalid shipVia missing Id" () {
       given:
       final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaValueObject(null, "Gary was here", 5)}
 
@@ -213,12 +213,9 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
+      exception.response.status == NOT_FOUND
 
       def result = exception.response.bodyAsJson()
-      result.size() == 1
-      result.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("Is required", "id")
-      ]
+      new ErrorDataTransferObject(result.message, result.path) == new ErrorDataTransferObject(" was unable to be found", null)
    }
 }
