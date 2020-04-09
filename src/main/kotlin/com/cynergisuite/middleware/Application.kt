@@ -28,7 +28,7 @@ object Application {
       val systemProps = System.getProperties()
       val mnEnvironment = systemProps["micronaut.environments"]
 
-      if (mnEnvironment == "prod" && !systemProps.containsKey("logback.configurationFile")) {
+      if ((mnEnvironment == "prod" || mnEnvironment == "cstdevelop") && !systemProps.containsKey("logback.configurationFile")) {
          System.setProperty("logback.configurationFile", "logback-prod.xml")
       }
 

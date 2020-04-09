@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.action.infrastructure
 
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
@@ -42,7 +41,6 @@ class AuditActionRepository @Inject constructor(
          RowMapper { rs, _ ->
             AuditActionEntity(
                rs.getLong("id"),
-               rs.getUuid("uu_row_id"),
                rs.getOffsetDateTime("time_created"),
                rs.getOffsetDateTime("time_updated"),
                entity.status,
@@ -66,13 +64,9 @@ class AuditActionRepository @Inject constructor(
       }
    }
 
-   fun mapRowOrNull(rs: ResultSet, rowPrefix: String = "aa_"): AuditActionEntity? =
-      rs.getString("${rowPrefix}id")?.let { mapRow(rs, rowPrefix) }
-
    fun mapRow(rs: ResultSet, rowPrefix: String = "aa_"): AuditActionEntity =
       AuditActionEntity(
          rs.getLong("${rowPrefix}id"),
-         rs.getUuid("${rowPrefix}uu_row_id"),
          rs.getOffsetDateTime("${rowPrefix}time_created"),
          rs.getOffsetDateTime("${rowPrefix}time_updated"),
          auditStatusRepository.mapRow(rs, "astd_"),

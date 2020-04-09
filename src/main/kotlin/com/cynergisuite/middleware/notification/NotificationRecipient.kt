@@ -1,20 +1,20 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
+import org.apache.commons.lang3.builder.EqualsBuilder
+import org.apache.commons.lang3.builder.HashCodeBuilder
+import org.apache.commons.lang3.builder.ToStringBuilder
+import org.apache.commons.lang3.builder.ToStringStyle.SIMPLE_STYLE
 import java.time.OffsetDateTime
-import java.util.Objects
-import java.util.UUID
 
 data class NotificationRecipient (
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val description: String? = null,
    val recipient: String,
    val notification: Identifiable
-) : Entity<NotificationRecipient> {
+) : Identifiable {
 
    constructor(dto: NotificationRecipientValueObject, notification: Identifiable) :
       this(
@@ -34,20 +34,33 @@ data class NotificationRecipient (
 
    override fun myId(): Long? = id
 
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): NotificationRecipient = copy()
-
-   override fun hashCode(): Int = Objects.hashCode(uuRowId)
+   override fun hashCode(): Int =
+      HashCodeBuilder()
+         .append(id)
+         .append(description)
+         .append(recipient)
+         .append(notification.myId())
+         .toHashCode()
 
    override fun equals(other: Any?): Boolean {
-      return when {
+      return when(other) {
          this === other -> true
-         other is NotificationRecipient -> this.uuRowId == other.uuRowId
+         is NotificationRecipient ->
+            EqualsBuilder()
+               .append(this.id, other.id)
+               .append(this.description, other.description)
+               .append(this.recipient, other.recipient)
+               .append(this.notification.myId(), other.notification.myId())
+               .build()
          else -> false
       }
    }
-  override fun toString(): String {
-      return "NotificationRecipient(id=$id, uuRowId=$uuRowId, timeCreated=$timeCreated, timeUpdated=$timeUpdated, description=$description, recipient='$recipient', notification=${notification.myId()})"
-   }
+
+  override fun toString(): String =
+     ToStringBuilder(this, SIMPLE_STYLE)
+        .append(id)
+        .append(description)
+        .append(recipient)
+        .append(notification.myId())
+        .build()
 }

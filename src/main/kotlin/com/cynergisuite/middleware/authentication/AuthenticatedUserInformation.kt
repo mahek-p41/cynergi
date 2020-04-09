@@ -29,7 +29,7 @@ data class AuthenticatedUserInformation(
    val permissions: Set<String>? = null
 
 ) {
-   constructor(user: User, permissions: Set<String>?, companyOverride: CompanyValueObject?) :
+   constructor(user: User, permissions: Set<String>, companyOverride: CompanyValueObject) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
          storeNumber = user.myLocation().myNumber(),

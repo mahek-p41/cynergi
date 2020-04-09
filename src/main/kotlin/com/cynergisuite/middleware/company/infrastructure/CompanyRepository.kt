@@ -3,13 +3,10 @@ package com.cynergisuite.middleware.company.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -177,9 +174,6 @@ private class CompanyRowMapper : RowMapper<CompanyEntity> {
    fun mapRow(rs: ResultSet, columnPrefix: String): CompanyEntity =
       CompanyEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          name = rs.getString("${columnPrefix}name"),
          doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
          clientCode = rs.getString("${columnPrefix}client_code"),

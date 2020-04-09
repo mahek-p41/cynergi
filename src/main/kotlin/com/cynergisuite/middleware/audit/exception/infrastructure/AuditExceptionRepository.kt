@@ -435,7 +435,6 @@ class AuditExceptionRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, approvedBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          scanArea = scanArea,
@@ -456,9 +455,6 @@ class AuditExceptionRepository @Inject constructor(
    private fun mapCompany(rs: ResultSet): CompanyEntity {
       return CompanyEntity(
          id = rs.getLong("comp_id"),
-         uuRowId = rs.getUuid("comp_uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("comp_time_created"),
-         timeUpdated = rs.getOffsetDateTime("comp_time_updated"),
          name = rs.getString("comp_name"),
          doingBusinessAs = rs.getString("comp_doing_business_as"),
          clientCode = rs.getString("comp_client_code"),
@@ -526,7 +522,6 @@ class AuditExceptionRepository @Inject constructor(
       if (rs.getString("auditExceptionNote_id") != null) {
          AuditExceptionNote(
             id = rs.getLong("auditExceptionNote_id"),
-            uuRowId = rs.getUuid("auditExceptionNote_uu_row_id"),
             timeCreated = rs.getOffsetDateTime("auditExceptionNote_time_created"),
             timeUpdated = rs.getOffsetDateTime("auditExceptionNote_time_updated"),
             note = rs.getString("auditExceptionNote_note"),

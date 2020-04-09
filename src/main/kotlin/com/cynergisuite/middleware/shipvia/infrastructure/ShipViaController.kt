@@ -102,7 +102,7 @@ class ShipViaController @Inject constructor(
       logger.info("Requested Save ShipVia {}", vo)
 
       val user = userService.findUser(authentication)
-      val response = shipViaService.create(vo = vo, employee = user)
+      val response = shipViaService.create(vo = vo, company = user.myCompany())
 
       logger.debug("Requested Save ShipVia {} resulted in {}", vo, response)
 
