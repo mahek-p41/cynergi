@@ -14,6 +14,39 @@ data class CompanyEntity(
    val federalIdNumber: String? = null
 ) : Company {
 
+   // Factory object to create CompanyEntity from a Company
+   companion object Factory {
+      fun create(company: Company): CompanyEntity? {
+         return when (company) {
+            is CompanyValueObject -> CompanyEntity(company)
+            is CompanyEntity -> CompanyEntity(company)
+            else -> null
+         }
+      }
+   }
+
+   constructor(companyVO: CompanyEntity) :
+      this (
+         id = companyVO.id,
+         name = companyVO.name!!,
+         doingBusinessAs = companyVO.doingBusinessAs,
+         clientCode = companyVO.clientCode!!,
+         clientId = companyVO.clientId!!,
+         datasetCode = companyVO.datasetCode!!,
+         federalIdNumber = companyVO.federalIdNumber
+      )
+
+   constructor(companyVO: CompanyValueObject) :
+      this (
+         id = companyVO.id,
+         name = companyVO.name!!,
+         doingBusinessAs = companyVO.doingBusinessAs,
+         clientCode = companyVO.clientCode!!,
+         clientId = companyVO.clientId!!,
+         datasetCode = companyVO.datasetCode!!,
+         federalIdNumber = companyVO.federalTaxNumber
+      )
+
    override fun myId(): Long? = id
    override fun myClientCode(): String = clientCode
    override fun myClientId(): Int = clientId

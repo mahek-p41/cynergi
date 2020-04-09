@@ -57,6 +57,8 @@ class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindab
    constructor(user: User) : this(user.myEmployeeNumber())
 }
 class InternalError: SystemCode("system.internal.error", emptyArray())
+class DataAccessError: SystemCode("system.data.access.exception", emptyArray())
+class DataIntegrityViolationError: SystemCode("system.data.integrity.violation", emptyArray())
 class RouteError(routeArgument: String): SystemCode("system.route.error", arrayOf(routeArgument))
 class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())

@@ -13,6 +13,8 @@ import com.cynergisuite.middleware.localization.AccessDenied
 import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
 import com.cynergisuite.middleware.localization.AccessDeniedStore
 import com.cynergisuite.middleware.localization.ConversionError
+import com.cynergisuite.middleware.localization.DataAccessError
+import com.cynergisuite.middleware.localization.DataIntegrityViolationError
 import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
@@ -42,6 +44,8 @@ import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataAccessException
+import org.springframework.dao.DataIntegrityViolationException
 import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
@@ -61,6 +65,28 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return serverError(ErrorDataTransferObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
+   }
+
+   @Error(global = true, exception = DataAccessException::class)
+   fun dataAccessExceptionHandler(httpRequest: HttpRequest<*>, exception: DataAccessException): HttpResponse<ErrorDataTransferObject> {
+      logger.error("Data access exception occur", exception)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return serverError(ErrorDataTransferObject(localizationService.localize(localizationCode = DataAccessError(), locale = locale)))
+   }
+
+   @Error(global = true, exception = DataIntegrityViolationException::class)
+   fun dataIntegrityViolationExceptionHandler(httpRequest: HttpRequest<*>, exception: DataIntegrityViolationException): HttpResponse<ErrorDataTransferObject> {
+      logger.error("Data integrity violation exception occur", exception)
+
+      val locale = httpRequest.findLocaleWithDefault()
+      // Bad request should be returned but maybe the message need to be more general
+      return badRequest(
+         ErrorDataTransferObject(
+            message = localizationService.localize(localizationCode = DataIntegrityViolationError(), locale = locale)
+         )
+      )
    }
 
    @Error(global = true, exception = JsonParseException::class)
