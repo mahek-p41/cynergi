@@ -151,13 +151,13 @@ class AuditScheduleService @Inject constructor(
                cynergiSystemAdmin = employee.cynergiSystemAdmin
             )
 
-            val (audit, existing) = if (schedule.schedule == dayOfWeek.name) { // if today is the day for a store then we either load one that has already been created or create a new one
+            val (audit, existing) = if (schedule.schedule == dayOfWeek.name) {
                auditService.findOrCreate(store, employeeUser, locale) to false
             } else {
-               auditService.findOneCreatedOrInProgress(store, employeeUser, locale) to true // if today is not the day to process then we just look for one that is already open.
+               auditService.findOneCreatedOrInProgress(store, employeeUser, locale) to true
             }
 
-            if (audit != null) { // if an audit found/created then we need to create the notification, and add both to this methods result
+            if (audit != null) {
                val notificationDescription = if (existing) {
                   localizationService.localize(AuditPastDue(audit.auditNumber))
                } else {

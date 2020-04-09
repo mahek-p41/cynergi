@@ -9,10 +9,10 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -122,12 +122,6 @@ class AuditService @Inject constructor(
 
    fun findOneCreatedOrInProgress(store: Store, user: User, locale: Locale): AuditValueObject? {
       return auditRepository.findOneCreatedOrInProgress(store)?.let { AuditValueObject(it, locale, localizationService) }
-   }
-
-   fun findPastDueAudits(store: StoreEntity, user: User, locale: Locale): List<AuditValueObject> {
-       return auditRepository.findAllPastDue(store).map {
-          AuditValueObject(it, locale, localizationService)
-       }
    }
 
    @Validated

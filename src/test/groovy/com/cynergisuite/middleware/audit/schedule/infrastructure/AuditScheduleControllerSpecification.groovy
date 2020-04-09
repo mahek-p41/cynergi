@@ -7,9 +7,7 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataT
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.schedule.type.Weekly
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -32,7 +30,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final employee = employeeFactoryService.singleUser(store)
-      final auditSchedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, FRIDAY, [store], employee, company)
+      final auditSchedule = auditScheduleFactoryService.single(FRIDAY, [store], employee, company)
 
       when:
       def result = get("/audit/schedule/${auditSchedule.id}")
@@ -54,7 +52,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
-      final auditSchedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, TUESDAY, [storeOne, storeThree], employee, company)
+      final auditSchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne, storeThree], employee, company)
 
       when:
       def result = get("/audit/schedule/${auditSchedule.id}")
@@ -75,8 +73,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final emp = employeeFactoryService.singleUser(store)
-      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, FRIDAY, [store], emp, company).toList()
-
+      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, FRIDAY, [store], emp, company).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
@@ -151,7 +148,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final emp = employeeFactoryService.singleUser(storeOne)
-      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, TUESDAY, [storeOne, storeThree], emp, company).toList()
+      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, TUESDAY, [storeOne, storeThree], emp, company).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
 
@@ -261,7 +258,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
-      final schedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, MONDAY, [storeOne], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne, storeThree] as Set))
@@ -288,7 +285,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.singleUser(storeOne)
-      final schedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, MONDAY, [storeOne], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(storeOne.id)] as Set, enabled: false]))
@@ -316,7 +313,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
-      final schedule = auditScheduleFactoryService.single(ScheduleCommandTypeFactory.INSTANCE.auditSchedule(), Weekly.INSTANCE, MONDAY, [storeOne, storeThree], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], employee, company)
 
       when:
       def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set))

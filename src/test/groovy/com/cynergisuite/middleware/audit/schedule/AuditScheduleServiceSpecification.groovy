@@ -106,6 +106,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    }
 
    void "one store with already CREATED audit that is past due and is then completed" () {
+      given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store1 = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store1)
