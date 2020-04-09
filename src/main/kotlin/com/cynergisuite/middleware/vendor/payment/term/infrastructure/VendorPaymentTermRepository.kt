@@ -4,7 +4,6 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -242,66 +241,10 @@ class VendorPaymentTermRepository @Inject constructor(
    }
 
    private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
-      return VendorPaymentTermEntity(
-         id = rs.getLong("vpt_id"),
-         uuRowId = rs.getUuid("vpt_uu_row_id"),
-         company = companyRepository.mapRow(rs, "comp_"),
-         description = rs.getString("vpt_description"),
-         number = rs.getInt("vpt_number"),
-         numberOfPayments = rs.getInt("vpt_number_of_payments"),
-         dueMonth1 = rs.getIntOrNull("vpt_due_month_1"),
-         dueMonth2 = rs.getIntOrNull("vpt_due_month_2"),
-         dueMonth3 = rs.getIntOrNull("vpt_due_month_3"),
-         dueMonth4 = rs.getIntOrNull("vpt_due_month_4"),
-         dueMonth5 = rs.getIntOrNull("vpt_due_month_5"),
-         dueMonth6 = rs.getIntOrNull("vpt_due_month_6"),
-         dueDays1 = rs.getIntOrNull("vpt_due_days_1"),
-         dueDays2 = rs.getIntOrNull("vpt_due_days_2"),
-         dueDays3 = rs.getIntOrNull("vpt_due_days_3"),
-         dueDays4 = rs.getIntOrNull("vpt_due_days_4"),
-         dueDays5 = rs.getIntOrNull("vpt_due_days_5"),
-         dueDays6 = rs.getIntOrNull("vpt_due_days_6"),
-         duePercent1 = rs.getBigDecimal("vpt_due_percent_1"),
-         duePercent2 = rs.getBigDecimal("vpt_due_percent_2"),
-         duePercent3 = rs.getBigDecimal("vpt_due_percent_3"),
-         duePercent4 = rs.getBigDecimal("vpt_due_percent_4"),
-         duePercent5 = rs.getBigDecimal("vpt_due_percent_5"),
-         duePercent6 = rs.getBigDecimal("vpt_due_percent_6"),
-         discountMonth = rs.getIntOrNull("vpt_discount_month"),
-         discountDays = rs.getIntOrNull("vpt_discount_days"),
-         discountPercent = rs.getBigDecimal("vpt_discount_percent")
-      )
+      return VendorPaymentTermEntity(id = rs.getLong("vpt_id"), company = companyRepository.mapRow(rs, "comp_"), description = rs.getString("vpt_description"), number = rs.getInt("vpt_number"), numberOfPayments = rs.getInt("vpt_number_of_payments"), dueMonth1 = rs.getIntOrNull("vpt_due_month_1"), dueMonth2 = rs.getIntOrNull("vpt_due_month_2"), dueMonth3 = rs.getIntOrNull("vpt_due_month_3"), dueMonth4 = rs.getIntOrNull("vpt_due_month_4"), dueMonth5 = rs.getIntOrNull("vpt_due_month_5"), dueMonth6 = rs.getIntOrNull("vpt_due_month_6"), dueDays1 = rs.getIntOrNull("vpt_due_days_1"), dueDays2 = rs.getIntOrNull("vpt_due_days_2"), dueDays3 = rs.getIntOrNull("vpt_due_days_3"), dueDays4 = rs.getIntOrNull("vpt_due_days_4"), dueDays5 = rs.getIntOrNull("vpt_due_days_5"), dueDays6 = rs.getIntOrNull("vpt_due_days_6"), duePercent1 = rs.getBigDecimal("vpt_due_percent_1"), duePercent2 = rs.getBigDecimal("vpt_due_percent_2"), duePercent3 = rs.getBigDecimal("vpt_due_percent_3"), duePercent4 = rs.getBigDecimal("vpt_due_percent_4"), duePercent5 = rs.getBigDecimal("vpt_due_percent_5"), duePercent6 = rs.getBigDecimal("vpt_due_percent_6"), discountMonth = rs.getIntOrNull("vpt_discount_month"), discountDays = rs.getIntOrNull("vpt_discount_days"), discountPercent = rs.getBigDecimal("vpt_discount_percent"))
    }
 
    private fun mapDdlRow(rs: ResultSet, company: Company): VendorPaymentTermEntity {
-      return VendorPaymentTermEntity(
-         id = rs.getLong("id"),
-         uuRowId = rs.getUuid("uu_row_id"),
-         company = company,
-         description = rs.getString("description"),
-         number = rs.getInt("number"),
-         numberOfPayments = rs.getInt("number_of_payments"),
-         dueMonth1 = rs.getIntOrNull("due_month_1"),
-         dueMonth2 = rs.getIntOrNull("due_month_2"),
-         dueMonth3 = rs.getIntOrNull("due_month_3"),
-         dueMonth4 = rs.getIntOrNull("due_month_4"),
-         dueMonth5 = rs.getIntOrNull("due_month_5"),
-         dueMonth6 = rs.getIntOrNull("due_month_6"),
-         dueDays1 = rs.getIntOrNull("due_days_1"),
-         dueDays2 = rs.getIntOrNull("due_days_2"),
-         dueDays3 = rs.getIntOrNull("due_days_3"),
-         dueDays4 = rs.getIntOrNull("due_days_4"),
-         dueDays5 = rs.getIntOrNull("due_days_5"),
-         dueDays6 = rs.getIntOrNull("due_days_6"),
-         duePercent1 = rs.getBigDecimal("due_percent_1"),
-         duePercent2 = rs.getBigDecimal("due_percent_2"),
-         duePercent3 = rs.getBigDecimal("due_percent_3"),
-         duePercent4 = rs.getBigDecimal("due_percent_4"),
-         duePercent5 = rs.getBigDecimal("due_percent_5"),
-         duePercent6 = rs.getBigDecimal("due_percent_6"),
-         discountMonth = rs.getIntOrNull("discount_month"),
-         discountDays = rs.getIntOrNull("discount_days"),
-         discountPercent = rs.getBigDecimal("discount_percent")
-      )
+      return VendorPaymentTermEntity(id = rs.getLong("id"), company = company, description = rs.getString("description"), number = rs.getInt("number"), numberOfPayments = rs.getInt("number_of_payments"), dueMonth1 = rs.getIntOrNull("due_month_1"), dueMonth2 = rs.getIntOrNull("due_month_2"), dueMonth3 = rs.getIntOrNull("due_month_3"), dueMonth4 = rs.getIntOrNull("due_month_4"), dueMonth5 = rs.getIntOrNull("due_month_5"), dueMonth6 = rs.getIntOrNull("due_month_6"), dueDays1 = rs.getIntOrNull("due_days_1"), dueDays2 = rs.getIntOrNull("due_days_2"), dueDays3 = rs.getIntOrNull("due_days_3"), dueDays4 = rs.getIntOrNull("due_days_4"), dueDays5 = rs.getIntOrNull("due_days_5"), dueDays6 = rs.getIntOrNull("due_days_6"), duePercent1 = rs.getBigDecimal("due_percent_1"), duePercent2 = rs.getBigDecimal("due_percent_2"), duePercent3 = rs.getBigDecimal("due_percent_3"), duePercent4 = rs.getBigDecimal("due_percent_4"), duePercent5 = rs.getBigDecimal("due_percent_5"), duePercent6 = rs.getBigDecimal("due_percent_6"), discountMonth = rs.getIntOrNull("discount_month"), discountDays = rs.getIntOrNull("discount_days"), discountPercent = rs.getBigDecimal("discount_percent"))
    }
 }
