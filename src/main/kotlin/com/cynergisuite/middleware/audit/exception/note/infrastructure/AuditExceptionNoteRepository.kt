@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.exception.note.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
@@ -37,7 +36,6 @@ class AuditExceptionNoteRepository(
          RowMapper { rs, _ ->
             AuditExceptionNote(
                id = rs.getLong("id"),
-               uuRowId = rs.getUuid("uu_row_id"),
                timeCreated = rs.getOffsetDateTime("time_created"),
                timeUpdated = rs.getOffsetDateTime("time_updated"),
                note = rs.getString("note"),
@@ -59,7 +57,6 @@ class AuditExceptionNoteRepository(
       if (rs.getString("${columnPrefix}id") != null) {
          AuditExceptionNote(
             id = rs.getLong("${columnPrefix}id"),
-            uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
             timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
             timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
             note = rs.getString("${columnPrefix}note"),

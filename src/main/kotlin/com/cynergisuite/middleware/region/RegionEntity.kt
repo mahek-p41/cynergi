@@ -1,22 +1,16 @@
 package com.cynergisuite.middleware.region
 
-import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.division.DivisionEntity
-import com.cynergisuite.middleware.employee.Employee
 import org.apache.commons.lang3.builder.CompareToBuilder
-import java.time.OffsetDateTime
-import java.util.UUID
 
 data class RegionEntity (
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val number: Int,
    val name: String,
    val description: String,
    val division: DivisionEntity
-) : Entity<RegionEntity>, Comparable<RegionEntity> {
+) : Identifiable, Comparable<RegionEntity> {
 
    override fun compareTo(other: RegionEntity): Int =
       CompareToBuilder()
@@ -37,8 +31,6 @@ data class RegionEntity (
    }
 
    override fun myId(): Long? = id
-   override fun rowId(): UUID = uuRowId
-   override fun copyMe(): RegionEntity = copy()
 }
 
 

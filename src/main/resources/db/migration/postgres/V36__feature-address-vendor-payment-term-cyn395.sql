@@ -5,7 +5,7 @@ CREATE TABLE address
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     company_id BIGINT REFERENCES company(id)                                    NOT NULL,
-    number integer CHECK (number > 0)                                           NOT NULL,
+    number integer CHECK (number > 0) DEFAULT currval('address_id_seq')         NOT NULL,
     name character varying(30) CHECK (char_length(trim(name)) > 1)              NOT NULL,
     address1 character varying(30)CHECK (char_length(trim(address1)) > 1)       NOT NULL ,
     address2 character varying(30),

@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.util.UUID
 
 data class Verification(
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val customerAccount: String, // TODO convert from soft foreign key to customer
@@ -19,7 +17,8 @@ data class Verification(
    var employment: VerificationEmployment? = null,
    var landlord: VerificationLandlord? = null,
    val references: MutableList<VerificationReference> = mutableListOf()
-) : Entity<Verification> {
+) : Identifiable {
+
    constructor(dto: VerificationValueObject, company: String) :
       this(
          id = dto.id,
@@ -39,9 +38,7 @@ data class Verification(
 
    override fun myId(): Long? = id
 
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): Verification = copy()
+   fun copyMe(): Verification = copy()
 }
 
 private fun copyAutoDtoToEntity(dto: VerificationValueObject, parent: Verification): VerificationAuto? {
