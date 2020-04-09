@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Entity
 import com.cynergisuite.domain.Identifiable
 import java.time.OffsetDateTime
 import java.util.Objects
@@ -21,7 +20,8 @@ data class VerificationReference (
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
    val verification: Identifiable
-) : Entity<VerificationReference> {
+) : Identifiable {
+
    constructor(dto: VerificationReferenceValueObject, parent: Identifiable) :
       this(
          id = dto.id,
@@ -38,10 +38,6 @@ data class VerificationReference (
       )
 
    override fun myId(): Long? = id
-
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): VerificationReference = copy()
 
    override fun hashCode(): Int = Objects.hashCode(uuRowId)
 

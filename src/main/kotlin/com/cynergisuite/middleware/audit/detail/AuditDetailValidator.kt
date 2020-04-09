@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.detail
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
@@ -24,7 +23,6 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditDetailValidator @Inject constructor (
-   private val auditDetailRepository: AuditDetailRepository,
    private val auditRepository: AuditRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,

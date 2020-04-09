@@ -4,9 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.reportal.ReportalService
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
 import io.micronaut.validation.Validated
 import javax.inject.Inject
@@ -16,10 +14,7 @@ import javax.validation.Valid
 @Singleton
 class ShipViaService @Inject constructor(
    private val shipViaRepository: ShipViaRepository,
-   private val shipViaValidator: ShipViaValidator,
-   private val companyRepository: CompanyRepository,
-   private val localizationService: LocalizationService,
-   private val reportalService: ReportalService
+   private val shipViaValidator: ShipViaValidator
 ) {
 
    fun fetchById(id: Long): ShipViaValueObject? =
@@ -38,20 +33,21 @@ class ShipViaService @Inject constructor(
       shipViaRepository.exists(id = id)
 
    @Validated
-   fun create(@Valid vo: ShipViaValueObject, employee: User): ShipViaValueObject {
-      shipViaValidator.validateCreate(vo)
+   fun create(@Valid vo: ShipViaValueObject, company: Company): ShipViaValueObject {
+      val toCreate = shipViaValidator.validateCreate(vo, company)
 
       return ShipViaValueObject(
-         entity = shipViaRepository.insert(entity = ShipViaEntity(vo, employee.myCompany()))
+         entity = shipViaRepository.insert(entity = toCreate)
       )
    }
 
    @Validated
    fun update(@Valid vo: ShipViaValueObject, employee: User): ShipViaValueObject {
-      shipViaValidator.validateUpdate(vo)
+      val id = vo.id ?: throw NotFoundException(vo.id?.toString() ?: "") // FIXME need to better handle getting ID.  Should alter the UI to pass id as a path param
+      val toUpdate = shipViaValidator.validateUpdate(id, vo)
 
       return ShipViaValueObject(
-         entity = shipViaRepository.update(entity = ShipViaEntity(vo, employee.myCompany()))
+         entity = shipViaRepository.update(entity = toUpdate)
       )
    }
 }
