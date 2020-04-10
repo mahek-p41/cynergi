@@ -261,19 +261,6 @@ class AuditRepository @Inject constructor(
       return executeFindForMultipleAudits(query, params).getOrNull(0)
    }
 
-   fun findAllPastDue(store: Store): List<AuditEntity> {
-      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(CREATED.value, IN_PROGRESS.value))
-      val whereClause = """ WHERE a.store_number = :store_number
-                                                AND current_status IN (:current_status)
-                                                 AND a.time_updated::TIMESTAMP::DATE < CURRENT_DATE
-      """.trimIndent()
-      val query = selectAllBaseQuery(whereClause)
-
-      logger.debug("Searching for past due audits in either CREATED or IN_PROGRESS for store {} \n Params {} \n Query {}", store, params, query)
-
-      return executeFindForMultipleAudits(query, params)
-   }
-
    private fun executeFindForMultipleAudits(query: String, params: MutableMap<String, Any>): List<AuditEntity> {
       val elements = mutableListOf<AuditEntity>()
       jdbc.query(query, params) { rs ->
