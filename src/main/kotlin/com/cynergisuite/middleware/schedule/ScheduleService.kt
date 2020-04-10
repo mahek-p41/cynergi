@@ -31,16 +31,18 @@ class ScheduleService @Inject constructor(
       scheduleRepository.forEach(WEEKLY) { schedule ->
          val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
 
-         if (schedule.schedule == dayOfWeek.name && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
+         if (applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
             val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
 
-            logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
+            if (dailyTask.shouldProcess(schedule, dayOfWeek)) { // check if this job has anything to do for today
+               logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
 
-            val taskResult = dailyTask.processDaily(schedule)
+               val taskResult = dailyTask.processDaily(schedule, dayOfWeek) // process the job
 
-            logger.debug("Task result for schedule {} was {}", schedule, taskResult)
+               logger.debug("Task result for schedule {} was {}", schedule, taskResult)
 
-            jobsRan++
+               jobsRan++ // increment the result
+            }
          } else {
             logger.error("Unable to find daily task for schedule {}", schedule)
          }
