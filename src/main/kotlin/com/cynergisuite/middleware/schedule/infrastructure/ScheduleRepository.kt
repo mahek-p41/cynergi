@@ -107,7 +107,7 @@ class ScheduleRepository @Inject constructor(
          params["schedType_value"] = type.value
       }
 
-      jdbc.query("""
+      val sql = """
          WITH schedules AS (
             SELECT
                sched.id                                                        AS sched_id,
@@ -145,7 +145,8 @@ class ScheduleRepository @Inject constructor(
             sa.description                                                     AS sa_description
          FROM schedules sched
               LEFT OUTER JOIN schedule_arg sa ON sched_id = sa.schedule_id
-      """.trimIndent(), params) { rs ->
+      """
+      jdbc.query(sql.trimIndent(), params) { rs ->
          val dbScheduleId = rs.getLong("sched_id")
 
          val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {
@@ -169,6 +170,8 @@ class ScheduleRepository @Inject constructor(
             totalElement = rs.getLong("total_elements")
          }
       }
+
+      logger.trace("Query for Schedule with params {} \n{}", params, sql)
 
       return RepositoryPage(
          requested = pageRequest,

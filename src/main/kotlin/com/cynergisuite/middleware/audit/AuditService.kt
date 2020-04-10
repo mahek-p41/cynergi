@@ -9,10 +9,10 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -21,6 +21,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreValueObject
 import com.lowagie.text.Document
@@ -117,6 +118,10 @@ class AuditService @Inject constructor(
       } else {
          create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
       }
+   }
+
+   fun findOneCreatedOrInProgress(store: Store, user: User, locale: Locale): AuditValueObject? {
+      return auditRepository.findOneCreatedOrInProgress(store)?.let { AuditValueObject(it, locale, localizationService) }
    }
 
    @Validated

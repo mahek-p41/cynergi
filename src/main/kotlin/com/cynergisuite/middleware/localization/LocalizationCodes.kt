@@ -52,6 +52,8 @@ class AuditExceptionMustHaveInventoryOrBarcode(): Cynergi("cynergi.audit.excepti
 class AuditHasBeenApprovedNoNewNotesAllowed(auditId: Long): Cynergi("cynergi.audit.has.been.approved.no.new.notes.allowed", arrayOf(auditId))
 class AuditUpdateRequiresApprovedOrNote(): Cynergi("cynergi.audit.update.requires.approval.or.note", emptyArray())
 class AuditExceptionHasNotBeenApproved(auditExceptionId: Long): Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
+class AuditDueToday(auditNumber: Int): Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
+class AuditPastDue(auditNumber: Int): Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable)) {

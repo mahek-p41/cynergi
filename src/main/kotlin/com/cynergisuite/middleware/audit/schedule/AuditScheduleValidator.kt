@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
-import com.cynergisuite.middleware.schedule.command.AUDIT_STATUS
+import com.cynergisuite.middleware.schedule.command.AUDIT_SCHEDULE
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
@@ -62,7 +62,7 @@ class AuditScheduleValidator(
             title = dto.title!!,
             description = dto.description,
             schedule = dto.schedule!!.name,
-            command = AUDIT_STATUS,
+            command = AUDIT_SCHEDULE,
             type = WEEKLY,
             arguments = arguments,
             enabled = dto.enabled!!
