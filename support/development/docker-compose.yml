@@ -93,6 +93,8 @@ services:
       - POSTGRES_PASSWORD=password
     restart: 'no'
     container_name: cynergitestdb
+    volumes:
+       - ./db/DatabaseDumps:/tmp/dumps
     networks:
       - cynerginet
   cynergitestdbpsql:

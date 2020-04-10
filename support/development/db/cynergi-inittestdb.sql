@@ -208,7 +208,7 @@ COPY fastinfo_prod_import.inventory_vw(
    location_type,
    dataset
 )
-FROM '/tmp/test-inventory.csv' DELIMITER ',' CSV HEADER;
+FROM '/tmp/dumps/test-inventory.csv' DELIMITER ',' CSV HEADER;
 
 CREATE TABLE fastinfo_prod_import.itemfile_vw(
    id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
@@ -246,4 +246,24 @@ COPY fastinfo_prod_import.itemfile_vw(
    description_2,
    discontinued_indicator,
    vendor_number
-) FROM '/tmp/test-itemfile.csv' DELIMITER ',' CSV HEADER;
+) FROM '/tmp/dumps/test-itemfile.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.customer_vw(
+   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+   dataset                VARCHAR(6)                            NOT NULL,
+   time_created           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   time_updated           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   number                 INTEGER                               NOT NULL,
+   first_name_mi          VARCHAR(50)                           NOT NULL,
+   last_name              VARCHAR(50)
+);
+
+COPY fastinfo_prod_import.customer_vw(
+   dataset,
+   time_created,
+   time_updated,
+   number,
+   first_name_mi,
+   last_name
+) FROM '/tmp/dumps/test-customer.csv' DELIMITER ',' CSV HEADER;
+
