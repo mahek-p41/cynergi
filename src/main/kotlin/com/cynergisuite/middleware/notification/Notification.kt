@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Entity
+import com.cynergisuite.domain.Identifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class Notification (
    val id: Long? = null,
-   val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val startDate: LocalDate,
@@ -17,7 +15,7 @@ data class Notification (
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val notificationDomainType: NotificationType,
    val recipients: MutableSet<NotificationRecipient> = mutableSetOf()
-) : Entity<Notification> {
+) : Identifiable {
 
    constructor(startDate: LocalDate, expirationDate: LocalDate, message: String, sendingEmployee: String, company: String, notificationDomainType: NotificationType) :
       this (
@@ -47,8 +45,4 @@ data class Notification (
    }
 
    override fun myId(): Long? = id
-
-   override fun rowId(): UUID = uuRowId
-
-   override fun copyMe(): Notification = copy()
 }
