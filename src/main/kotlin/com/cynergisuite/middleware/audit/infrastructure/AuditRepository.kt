@@ -4,7 +4,6 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -602,7 +601,7 @@ class AuditRepository @Inject constructor(
 
       val audit = jdbc.insertReturning(
          """
-        INSERT INTO audit(store_number, inventory_count, company_id, time_created, time_updated)
+        INSERT INTO audit(store_number, inventory_count, company_id)
          VALUES (
             :store_number,
             (
@@ -614,17 +613,14 @@ class AuditRepository @Inject constructor(
                      AND i.status in ('N', 'R')
                      AND comp.id = :company_id
             ),
-            :company_id,
-            :last_updated,
-            :last_updated
+            :company_id
          )
          RETURNING
             *
          """.trimMargin(),
          mapOf(
             "store_number" to entity.store.myNumber(),
-            "company_id" to entity.store.myCompany().myId(),
-            "last_updated" to entity.lastUpdated
+            "company_id" to entity.store.myCompany().myId()
          ),
          RowMapper { rs, _ ->
             AuditEntity(

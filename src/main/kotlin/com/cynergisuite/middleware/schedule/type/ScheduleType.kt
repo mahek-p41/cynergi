@@ -32,7 +32,5 @@ data class ScheduleTypeEntity(
 ) : ScheduleType(id, value, description, localizationCode)
 
 object Weekly: ScheduleType(1, "WEEKLY", "Weekly", "schedule.weekly")
-object Daily: ScheduleType(2, "DAILY", "Daily", "schedule.daily")
 
 typealias WEEKLY = Weekly
-typealias DAILY = Daily
