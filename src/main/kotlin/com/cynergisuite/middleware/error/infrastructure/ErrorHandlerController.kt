@@ -17,6 +17,7 @@ import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotImplemented
+import com.cynergisuite.middleware.localization.NotLoggedIn
 import com.cynergisuite.middleware.localization.RouteError
 import com.cynergisuite.middleware.localization.UnableToParseJson
 import com.fasterxml.jackson.core.JsonParseException
@@ -36,6 +37,7 @@ import io.micronaut.http.HttpStatus.UNAUTHORIZED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.security.authentication.AuthenticationException
+import io.micronaut.security.authentication.AuthorizationException
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -237,6 +239,27 @@ class ErrorHandlerController @Inject constructor(
       }
    }
 
+   @Error(global = true, exception = AuthorizationException::class)
+   fun authorizationExceptionHandler(httpRequest: HttpRequest<*>, authorizationException: AuthorizationException): HttpResponse<ErrorDataTransferObject> {
+      logger.warn("AuthorizationException {}", authorizationException.localizedMessage)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return if (authorizationException.isForbidden) {
+         val message = localizationService.localize(AccessDenied(), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(FORBIDDEN)
+            .body(ErrorDataTransferObject(message))
+      } else {
+         val message = localizationService.localize(NotLoggedIn(), locale)
+
+         HttpResponse
+            .status<ErrorDataTransferObject>(UNAUTHORIZED)
+            .body(ErrorDataTransferObject(message))
+      }
+   }
+
    @Error(global = true, exception = AccessException::class)
    fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorDataTransferObject> {
       logger.warn("Unauthorized exception", accessException)
@@ -247,7 +270,6 @@ class ErrorHandlerController @Inject constructor(
          .status<ErrorDataTransferObject>(FORBIDDEN)
          .body(ErrorDataTransferObject(localizationService.localize(localizationCode = accessException.error, locale = locale)))
    }
-
 
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()
