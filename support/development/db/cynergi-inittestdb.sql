@@ -247,3 +247,36 @@ COPY fastinfo_prod_import.itemfile_vw(
    discontinued_indicator,
    vendor_number
 ) FROM '/tmp/test-itemfile.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.customer_vw(
+   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+   dataset                VARCHAR(6)                            NOT NULL,
+   time_created           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   time_updated           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   number                 INTEGER                               NOT NULL,
+   first_name_mi          VARCHAR(50)                           NOT NULL,
+   last_name              VARCHAR(50)
+);
+/*
+select
+   CASE
+      WHEN dataset = 'corrto' THEN 'tstds1'
+      WHEN dataset = 'corptp' THEN 'tstds2'
+   END AS dataset,
+   time_created,
+   time_updated,
+   number,
+   first_name_mi,
+   last_name
+from customer_vw;
+ */
+
+COPY fastinfo_prod_import.customer_vw(
+   dataset,
+   time_created,
+   time_updated,
+   number,
+   first_name_mi,
+   last_name
+) FROM '/tmp/test-customer.csv' DELIMITER ',' CSV HEADER;
+
