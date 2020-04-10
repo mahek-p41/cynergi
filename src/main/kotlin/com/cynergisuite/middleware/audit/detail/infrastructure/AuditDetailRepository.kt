@@ -209,7 +209,6 @@ class AuditDetailRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
       return AuditDetailEntity(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          scanArea = scanArea,

@@ -1,12 +1,10 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.company.CompanyValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.localization.NotLoggedIn
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -43,21 +41,17 @@ class AuthenticatedController @Inject constructor(
       ApiResponse(responseCode = "401", description = "For any other reason that this endpoint can't be accessed, example the token has expired or is not a valid token", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))])
    ])
    fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
-      val locale = httpRequest.findLocaleWithDefault()
-
       logger.debug("Checking authentication {}", authentication)
 
       return if (authentication != null) {
-         var user = userService.findUser(authentication) as AuthenticatedUser
-         var companyWithNullFederalIdNumber = CompanyValueObject(entity = user.company, federalTaxNumberOverride = null)
-         val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) }
+         val user = userService.findUser(authentication) as AuthenticatedUser
+         val companyWithNullFederalIdNumber = CompanyValueObject(entity = user.company, federalTaxNumberOverride = null)
+         val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) } ?: emptySet()
 
          logger.debug("User is authenticated {}", user)
 
          HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber))
       } else {
-         val message = localizationService.localize(NotLoggedIn(), locale)
-
          logger.debug("User was not authenticated")
 
          HttpResponse

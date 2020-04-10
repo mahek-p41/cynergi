@@ -12,4 +12,5 @@ data class AuditPermissionType(
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
+   override fun hashCode(): Int = super.basicHashCode()
 }
