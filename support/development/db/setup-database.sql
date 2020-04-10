@@ -282,7 +282,9 @@ BEGIN
             customer.cust_acct_nbr                   AS number,
             customer.cust_first_name_mi              AS first_name_mi,
             customer.cust_last_name                  AS last_name
-         FROM ' || r.schema_name || '.level2_customer customer
+         FROM ' || r.schema_name || '.level2_customers customer
+         WHERE cust_first_name_mi IS NOT NULL
+               AND cust_last_name IS NOT NULL
          ';
 
       unionAll := ' UNION ALL ';

@@ -208,7 +208,7 @@ COPY fastinfo_prod_import.inventory_vw(
    location_type,
    dataset
 )
-FROM '/tmp/test-inventory.csv' DELIMITER ',' CSV HEADER;
+FROM '/tmp/dumps/test-inventory.csv' DELIMITER ',' CSV HEADER;
 
 CREATE TABLE fastinfo_prod_import.itemfile_vw(
    id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
@@ -246,7 +246,7 @@ COPY fastinfo_prod_import.itemfile_vw(
    description_2,
    discontinued_indicator,
    vendor_number
-) FROM '/tmp/test-itemfile.csv' DELIMITER ',' CSV HEADER;
+) FROM '/tmp/dumps/test-itemfile.csv' DELIMITER ',' CSV HEADER;
 
 CREATE TABLE fastinfo_prod_import.customer_vw(
    id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
@@ -257,19 +257,6 @@ CREATE TABLE fastinfo_prod_import.customer_vw(
    first_name_mi          VARCHAR(50)                           NOT NULL,
    last_name              VARCHAR(50)
 );
-/*
-select
-   CASE
-      WHEN dataset = 'corrto' THEN 'tstds1'
-      WHEN dataset = 'corptp' THEN 'tstds2'
-   END AS dataset,
-   time_created,
-   time_updated,
-   number,
-   first_name_mi,
-   last_name
-from customer_vw;
- */
 
 COPY fastinfo_prod_import.customer_vw(
    dataset,
@@ -278,5 +265,5 @@ COPY fastinfo_prod_import.customer_vw(
    number,
    first_name_mi,
    last_name
-) FROM '/tmp/test-customer.csv' DELIMITER ',' CSV HEADER;
+) FROM '/tmp/dumps/test-customer.csv' DELIMITER ',' CSV HEADER;
 
