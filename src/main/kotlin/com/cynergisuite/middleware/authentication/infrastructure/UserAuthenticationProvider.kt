@@ -35,24 +35,31 @@ class UserAuthenticationProvider @Inject constructor(
             .fetchUserByAuthentication(identity, secret, dataset, storeNumber)
             .flatMapPublisher { employee ->
                val employeeAssignedStore = employee.location // this can be null which unless user is a cynergi admin you must have a store assigned
+               val chosenStore = employee.chosenLocation // this is what the user chose as their store during login
                val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
-               when {
-                   employeeAssignedStore != null -> { // if doesn't have store, but is cynergi system admin
-                      logger.debug("Employee has store allowing access", employeeAssignedStore)
+               if (employee.cynergiSystemAdmin) {
+                  logger.debug("Employee is system admin")
 
-                      just(AuthenticatedUser(employee))
-                   }
-                   employee.cynergiSystemAdmin -> {
-                      logger.debug("Employee is system admin")
+                  just(AuthenticatedUser(employee, employee.location ?: fallbackStore))
+               } else if ((employeeAssignedStore != null && chosenStore != null)) {
+                  if (employeeAssignedStore == chosenStore) {
+                     logger.debug("Employee chosen store matched assigned store, allowing access", employeeAssignedStore)
 
-                      just(AuthenticatedUser(employee, employee.location ?: fallbackStore))
-                   }
-                   else -> { // otherwise inform the client that a store is required for the provided user
-                      logger.debug("Employee did not have store informing client of store requirement")
+                     just(AuthenticatedUser(employee))
+                  } else {
+                     logger.debug("Employee did not have store informing client of store requirement")
 
-                      just(AuthenticationResponseStoreRequired(identity))
-                   }
+                     just(AuthenticationResponseStoreRequired(identity))
+                  }
+               } else if (employeeAssignedStore != null) {
+                  logger.debug("Employee has assigned store, using assigned store, allowing access", employeeAssignedStore)
+
+                  just(AuthenticatedUser(employee))
+               } else {
+                  logger.debug("Credentials provided did not match any known user/password/company/store combo")
+
+                  just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
                }
             }
             .defaultIfEmpty(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
