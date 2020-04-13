@@ -24,7 +24,7 @@ data class AuthenticatedUser(
          number = employee.number,
          company = employee.company,
          department = employee.department,
-         location = employee.location!!,
+         location = employee.myLocation(),
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
          cynergiSystemAdmin = employee.cynergiSystemAdmin
