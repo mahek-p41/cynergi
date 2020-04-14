@@ -214,24 +214,34 @@ class AuthenticationRepository @Inject constructor(
    }
 
    fun findPermissions(department: Department): Set<String> {
-      val params = mutableMapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
+      val params = mapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
       val sql = """
-         SELECT
-            aptd.value              AS value
-         FROM  audit_permission_type_domain aptd
-               JOIN audit_permission ap ON ap.type_id = aptd.id
+         SELECT aptd.value AS value
+         FROM audit_permission_type_domain aptd
+              JOIN audit_permission ap ON ap.type_id = aptd.id
          WHERE ap.department = :dept_code AND ap.company_id = :comp_id
          UNION
-         SELECT
-            aptd.value              AS value
-         FROM  audit_permission_type_domain aptd
-         WHERE  aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
-         """.trimIndent()
-      logger.debug("Get permission by department {}\n{}", params, sql)
+         SELECT aptd.value AS value
+         FROM audit_permission_type_domain aptd
+         WHERE aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
+      """.trimIndent()
+
+      return processPermissionValues(sql, params)
+   }
+
+   fun findAllPermissions(): Set<String> {
+      return processPermissionValues("SELECT value from audit_permission_type_domain", emptyMap())
+   }
+
+   private fun processPermissionValues(sql: String, params: Map<String, Any?>): Set<String> {
+      logger.debug("Get permission {}\n{}", params, sql)
+
       val resultSet = mutableSetOf<String>()
+
       jdbc.query(sql, params) {
          rs -> resultSet.add(rs.getString("value"))
       }
+
       return resultSet
    }
 
