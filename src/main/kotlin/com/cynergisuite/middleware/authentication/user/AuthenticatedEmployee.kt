@@ -62,5 +62,4 @@ data class AuthenticatedEmployee(
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Int = alternativeArea
    override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
-   fun myAssignedStore(): Location? = location
 }
