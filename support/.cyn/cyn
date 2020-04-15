@@ -25,23 +25,29 @@ cd "${0%/*}" # see: https://stackoverflow.com/questions/6393551/what-is-the-mean
 
 unset POSSBILE
 unset SCRIPT
+unset ARGS
 CMD="./commands"
 while [ "$1" ]
 do
-  POSSIBLE=$(find $CMD/${1}* -maxdepth 0 2>/dev/null)
-  [ $? -ne 0 ] && echo "No possible matches for $1" && POSSIBLE="$CMD"
-  if [ $(echo "$POSSIBLE" | wc -l) -eq 1 ]; then
-     CMD="$POSSIBLE"
-     [ -f "$POSSIBLE" ] && SCRIPT=true
+  if [ "$SCRIPT" ]
+  then
+     ARGS="$ARGS $1"
   else
-     drive "$POSSIBLE"
+     POSSIBLE=$(find $CMD/${1}* -maxdepth 0 2>/dev/null)
+     [ $? -ne 0 ] && echo "No possible matches for $1" && POSSIBLE="$CMD"
+     if [ $(echo "$POSSIBLE" | wc -l) -eq 1 ]; then
+        CMD="$POSSIBLE"
+        [ -f "$POSSIBLE" ] && SCRIPT=true
+     else
+        drive "$POSSIBLE"
+     fi
   fi
   shift
 done
 ##########################################
 if [ "$SCRIPT" ]; then
-  echo "running --> $POSSIBLE"
-  eval $POSSIBLE
+  echo "running --> $POSSIBLE with arguments: $ARGS"
+  eval $POSSIBLE "$ARGS"
 else
   [ ! "$POSSIBLE" ] && POSSIBLE="$CMD"
   LAST=$(find $POSSIBLE -maxdepth 1 | tail -n +2)
