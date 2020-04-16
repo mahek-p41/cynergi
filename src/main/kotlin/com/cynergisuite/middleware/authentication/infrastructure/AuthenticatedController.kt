@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
-import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.company.CompanyValueObject
-import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -26,8 +24,7 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
-   private val userService: UserService,
-   private val localizationService: LocalizationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticatedController::class.java)
 
@@ -40,13 +37,32 @@ class AuthenticatedController @Inject constructor(
    fun authenticated(authentication: Authentication, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
       logger.debug("Checking authentication {}", authentication)
 
-      var user = userService.findUser(authentication) as AuthenticatedUser
-      var companyWithNullFederalIdNumber = CompanyValueObject(entity = user.company, federalTaxNumberOverride = null)
-      val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) } ?: emptySet()
+      var user = userService.findUser(authentication)
+         val company = user.myCompany()
+         val department = user.myDepartment()
+         var companyWithNullFederalIdNumber = CompanyValueObject(company = company)
+         val permissions = when {
+            user.isCynergiAdmin() -> {
+               userService.fetchAllPermissions()
+            }
+            department != null -> {
+               userService.fetchPermissions(department)
+            }
+            else -> {
+               emptySet()
+            }
+         }
 
-      logger.debug("User is authenticated {}", user)
+         logger.debug("User is authenticated {}", user)
 
-      return HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber))
+         HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber))
+      } else {
+         logger.debug("User was not authenticated")
+
+         HttpResponse
+            .status<AuthenticatedUserInformation>(UNAUTHORIZED)
+            .body(AuthenticatedUserInformation())
+      }
    }
 
    @Head("/check")

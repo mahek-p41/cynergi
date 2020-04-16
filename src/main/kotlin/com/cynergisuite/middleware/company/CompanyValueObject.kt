@@ -53,14 +53,14 @@ data class CompanyValueObject(
          federalTaxNumber = entity.federalIdNumber
       )
 
-   constructor(entity: Company, federalTaxNumberOverride: String?) :
+   constructor(company: Company, federalTaxNumberOverride: String? = null) :
       this(
-         id = entity.myId(),
-         name = if (entity is CompanyEntity) entity.name else null,
-         doingBusinessAs = if (entity is CompanyEntity) entity.doingBusinessAs else null,
-         clientCode = entity.myClientCode(),
-         clientId = entity.myClientId(),
-         datasetCode = entity.myDataset(),
+         id = company.myId(),
+         name = if (company is CompanyEntity) company.name else null,
+         doingBusinessAs = if (company is CompanyEntity) company.doingBusinessAs else null,
+         clientCode = company.myClientCode(),
+         clientId = company.myClientId(),
+         datasetCode = company.myDataset(),
          federalTaxNumber = federalTaxNumberOverride
       )
 

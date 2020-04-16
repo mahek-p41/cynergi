@@ -26,4 +26,4 @@ cynergi:
          size: 5
    reportal:
       file:
-         location: "/Z/WebPortal/ZWebRoot/cynrep/reports"
+         location: "/tmp/WebPortal/ZWebRoot/cynrep/reports"
