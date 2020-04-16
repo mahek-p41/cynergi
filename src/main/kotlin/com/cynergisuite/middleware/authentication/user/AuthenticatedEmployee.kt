@@ -13,6 +13,7 @@ data class AuthenticatedEmployee(
    val company: Company,
    val department: Department?,
    val location: Location?,
+   val chosenLocation: Location?,
    val fallbackLocation: Location,
    val passCode: String,
    val cynergiSystemAdmin: Boolean,
@@ -28,6 +29,7 @@ data class AuthenticatedEmployee(
          company = user.company,
          department = user.department,
          location = user.location,
+         chosenLocation = user.chosenLocation,
          fallbackLocation = user.fallbackLocation,
          passCode = passCodeOverride,
          cynergiSystemAdmin = user.cynergiSystemAdmin,
@@ -43,6 +45,7 @@ data class AuthenticatedEmployee(
          company = employee.company,
          department = employee.department,
          location = employee.store,
+         chosenLocation = null, // since we are copying a row from the db for this, we don't have a chosenLocation
          fallbackLocation = store,
          passCode = employee.passCode,
          cynergiSystemAdmin = employee.cynergiSystemAdmin,
@@ -53,7 +56,7 @@ data class AuthenticatedEmployee(
    override fun myId(): Long = id
    override fun myCompany(): Company = company
    override fun myDepartment(): Department? = department
-   override fun myLocation(): Location = location ?: fallbackLocation
+   override fun myLocation(): Location = chosenLocation ?: location ?: fallbackLocation
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator

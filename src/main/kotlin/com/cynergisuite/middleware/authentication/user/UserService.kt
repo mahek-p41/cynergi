@@ -25,4 +25,7 @@ class UserService(
 
    fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<AuthenticatedEmployee> =
       authenticationRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
+
+   fun fetchAllPermissions(): Set<String> =
+      authenticationRepository.findAllPermissions()
 }
