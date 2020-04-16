@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.company.CompanyValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus.UNAUTHORIZED
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -34,13 +35,14 @@ class AuthenticatedController @Inject constructor(
       ApiResponse(responseCode = "200", description = "If the authentication token is valid", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))]),
       ApiResponse(responseCode = "401", description = "For any other reason that this endpoint can't be accessed, example the token has expired or is not a valid token", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))])
    ])
-   fun authenticated(authentication: Authentication, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
+   fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
       logger.debug("Checking authentication {}", authentication)
 
-      var user = userService.findUser(authentication)
+      return if (authentication != null) {
+         val user = userService.findUser(authentication)
          val company = user.myCompany()
          val department = user.myDepartment()
-         var companyWithNullFederalIdNumber = CompanyValueObject(company = company)
+         val companyWithNullFederalIdNumber = CompanyValueObject(company = company)
          val permissions = when {
             user.isCynergiAdmin() -> {
                userService.fetchAllPermissions()
