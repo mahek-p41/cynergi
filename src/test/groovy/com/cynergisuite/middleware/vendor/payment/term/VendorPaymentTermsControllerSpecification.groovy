@@ -3,10 +3,14 @@ package com.cynergisuite.middleware.vendor.payment.term
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
+import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleValueObject
+import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
+import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -19,6 +23,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
    @Inject VendorPaymentTermDataLoaderService vendorPaymentTermDataLoaderService
    @Inject VendorPaymentTermService vendorPaymentTermService
    @Inject VendorPaymentTermRepository vendorPaymentTermRepository
+   @Inject VendorPaymentTermScheduleRepository vendorPaymentTermScheduleRepository
 
    void "fetch one vendor payment term by id"() {
       given:
@@ -31,10 +36,117 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       notThrown(HttpClientResponseException)
    }
 
-   void "Term with 2 payments with dueDays1 and dueMonth1 being null" () {
+    void "Term with 1 payments and one schedule record direct insert" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final newVPT = new VendorPaymentTermValueObject([description: "test1", numberOfPayments:  2, dueMonth2:  6, duePercent1: 50, duePercent2: 50])
+      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 100, 1)]
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, 1, null, null, null, schedules)
+      final inserted = vendorPaymentTermRepository.insert(VPT)
+
+      when:
+      def result = get("$path/${inserted.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+   }
+
+   void "Term with 1 payments and 1 schedule record using post" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 100, 1)]
+      final VPT = new VendorPaymentTermValueObject(null, "test2", null, 1, null, null, null, schedules)
+
+      when:
+      def result = post("$path", VPT)
+
+      then:
+      notThrown(HttpClientResponseException)
+   }
+
+   void "Term with 2 payments and 2 schedule records using post" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 50, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 50, 2)]
+      final VPT = new VendorPaymentTermValueObject(null, "test3", null, 2, null, null, null, schedules)
+
+      when:
+      def result = post("$path", VPT)
+
+      then:
+      notThrown(HttpClientResponseException)
+   }
+
+   void "insert vendor payment term without a schedule" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final existingVPT = new VendorPaymentTermValueObject([description: "test4", numberOfPayments:  1])
+
+      when:
+      final existing = vendorPaymentTermService.create(existingVPT,company)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+   }
+
+   void "update vendor payment term schedule record" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 25, 2)]
+      final VPT = new VendorPaymentTermValueObject(null, "test5", null, 2, null, null, null, schedules)
+      def existing = post("$path", VPT)
+      existing.scheduleRecords[0].dueDays = 45
+
+      when:
+      def updated = put("$path/${existing.id}", existing)
+
+      then:
+      notThrown(Exception)
+      updated.id == existing.id
+      updated.description == existing.description
+      updated.number == updated.id
+      updated.numberOfPayments == existing.numberOfPayments
+      updated.discountMonth == existing.discountMonth
+      updated.discountDays == existing.discountDays
+      updated.discountPercent == existing.discountPercent
+   }
+
+   void "update schedule record percentages to sum to less than 100" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 25, 2)]
+      final VPT = new VendorPaymentTermValueObject(null, "test6", null, 2, null, null, null, schedules)
+      def existing = post("$path", VPT)
+      existing.scheduleRecords[0].duePercent = 70
+      existing.scheduleRecords[1].duePercent = 20
+
+      when:
+      def updated = put("$path/${existing.id}", existing)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+   }
+
+   void "numberOfPayments does not equal the number of scheduleRecords" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 15, 2), new VendorPaymentTermScheduleValueObject(null, null, 90, 10, 3)]
+      final VPT = new VendorPaymentTermValueObject(null, "test7", null, 2, null, null, null, schedules)
+
+      when:
+      def existing = post("$path", VPT)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+   }
+
+   void "Null discount percent" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 100, 1)]
+      final newVPT = new VendorPaymentTermValueObject([description: "test8", numberOfPayments:  1, discountMonth: 3, scheduleRecords: schedules])
 
       when:
       post("$path/", newVPT)
@@ -46,7 +158,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response.size() == 1
    }
 
-   void "Term with 3 payments with dueDays2 and dueMonth2 being null" () {
+   /*
+    void "Term with 3 payments with dueDays2 and dueMonth2 being null" () {
       given:
       final newVPT = new VendorPaymentTermValueObject([description: "test2", numberOfPayments:  3, dueMonth1:  3, dueMonth3:  9, duePercent1: 20, duePercent2: 20, duePercent3: 60])
 
@@ -78,20 +191,6 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
    void "Term with 3 payments where the percentages do not sum to 100" () {
       given:
       final newVPT = new VendorPaymentTermValueObject([description: "test4", numberOfPayments:  3, dueMonth1:  3, dueMonth2:  6, dueMonth3:  9, duePercent1: 40, duePercent2: 30, duePercent3: 25])
-
-      when:
-      post("$path/", newVPT)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-   }
-
-   void "Null discount percent" () {
-      given:
-      final newVPT = new VendorPaymentTermValueObject([description: "test5", numberOfPayments:  1, dueMonth1:  3, duePercent1: 100, discountMonth: 3])
 
       when:
       post("$path/", newVPT)
@@ -244,42 +343,5 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       created.discountPercent == null
    }
 
-   void "update vendor payment term" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final existingVPT = new VendorPaymentTermValueObject([description: "test6", numberOfPayments:  1, dueMonth1:  3, duePercent1: 100])
-      final existing = vendorPaymentTermService.create(existingVPT,company)
-      existing.dueMonth1 = 4
-
-      when:
-      def updated = put("$path/${existing.id}", existing)
-
-      then:
-      notThrown(Exception)
-      updated.id == existing.id
-      updated.description == existing.description
-      updated.number == updated.id
-      updated.numberOfPayments == existing.numberOfPayments
-      updated.dueMonth1 == existing.dueMonth1
-      updated.dueMonth2 == existing.dueMonth2
-      updated.dueMonth3 == existing.dueMonth3
-      updated.dueMonth4 == existing.dueMonth4
-      updated.dueMonth5 == existing.dueMonth5
-      updated.dueMonth6 == existing.dueMonth6
-      updated.dueDays1 == existing.dueDays1
-      updated.dueDays2 == existing.dueDays2
-      updated.dueDays3 == existing.dueDays3
-      updated.dueDays4 == existing.dueDays4
-      updated.dueDays5 == existing.dueDays5
-      updated.dueDays6 == existing.dueDays6
-      updated.duePercent1 == existing.duePercent1
-      updated.duePercent2 == existing.duePercent2
-      updated.duePercent3 == existing.duePercent3
-      updated.duePercent4 == existing.duePercent4
-      updated.duePercent5 == existing.duePercent5
-      updated.duePercent6 == existing.duePercent6
-      updated.discountMonth == existing.discountMonth
-      updated.discountDays == existing.discountDays
-      updated.discountPercent == existing.discountPercent
-   }
+    */
 }

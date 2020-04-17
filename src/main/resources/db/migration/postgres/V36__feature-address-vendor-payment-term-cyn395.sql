@@ -66,11 +66,11 @@ CREATE TABLE vendor_payment_term_schedule (
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     payment_term_id BIGINT REFERENCES vendor_payment_term (id)                  NOT NULL,
-    description varchar(30) CHECK ( char_length(trim(description)) > 1)         NOT NULL,
-    due_month  integer CHECK ( due_month > 0 )                                  NOT NULL,
+    due_month  integer CHECK ( due_month > 0 ),
     due_days  integer CHECK ( due_days > 0 )                                    NOT NULL,
     due_percent numeric(8,4) CHECK ( due_percent > 0 )                          NOT NULL,
-    schedule_order_number integer  CHECK ( schedule_order_number > 0 )          NOT NULL
+    schedule_order_number integer  CHECK ( schedule_order_number > 0 )          NOT NULL,
+    UNIQUE (payment_term_id, schedule_order_number)
  );
 
 CREATE INDEX idx_vendor_payment_schedule_payment_term_id

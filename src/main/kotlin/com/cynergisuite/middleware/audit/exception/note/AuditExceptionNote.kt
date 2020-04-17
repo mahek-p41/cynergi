@@ -22,6 +22,7 @@ data class AuditExceptionNote(
          auditException = SimpleIdentifiableEntity(auditId)
       )
 
+   //TODO What is the below doing with auditId?
    constructor(vo: AuditExceptionNoteValueObject, enteredBy: EmployeeEntity, auditException: Identifiable) :
       this(
          vo = vo,

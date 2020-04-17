@@ -66,32 +66,6 @@ class VendorPaymentTermController @Inject constructor(
       return response
    }
 
-   @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a listing of VendorPaymentTerm", description = "Fetch a paginated listing of VendorPaymentTerm based on a parent Audit", operationId = "vendorPaymentTerm-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested vendor payment term was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
-   fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
-   ): Page<VendorPaymentTermValueObject> {
-      logger.info("Fetching all details associated with vendor payment term {}", pageRequest)
-
-      val user = userService.findUser(authentication)
-      val page =  vendorPaymentTermService.fetchAll(pageRequest, user.myCompany())
-
-      if (page.elements.isEmpty()) {
-         throw PageOutOfBoundsException(pageRequest = pageRequest)
-      }
-
-      return page
-   }
-
    @Post(processes = [APPLICATION_JSON])
    @AccessControl("vendorPaymentTerm-create")
    @Throws(ValidationException::class, NotFoundException::class)
@@ -108,7 +82,7 @@ class VendorPaymentTermController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorPaymentTermValueObject {
-      logger.info("Requested Create VendorPaymentTerm {}", vo)
+      logger.debug("Requested Create VendorPaymentTerm {}", vo)
 
       val user = userService.findUser(authentication)
       val response = vendorPaymentTermService.create(vo, user.myCompany())
@@ -133,14 +107,17 @@ class VendorPaymentTermController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the vendor payment term being updated") @QueryValue("id") id: Long,
       @Body vo: VendorPaymentTermValueObject,
+      authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorPaymentTermValueObject {
       logger.info("Requested Update VendorPaymentTerm {}", vo)
 
-      val response = vendorPaymentTermService.update(id, vo)
+      val user = userService.findUser(authentication)
+      val response = vendorPaymentTermService.update(id, vo, user.myCompany())
 
       logger.debug("Requested Update VendorPaymentTerm {} resulted in {}", vo, response)
 
       return response
    }
+
 }
