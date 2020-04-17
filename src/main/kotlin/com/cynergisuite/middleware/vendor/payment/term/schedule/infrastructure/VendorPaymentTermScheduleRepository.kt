@@ -115,6 +115,36 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
       )
    }
 
+   @Transactional
+   fun deleteNotIn(vpt: VendorPaymentTermEntity, scheduleRecords: List<VendorPaymentTermScheduleEntity>): List<VendorPaymentTermScheduleEntity> {
+      val result = mutableListOf<VendorPaymentTermScheduleEntity>()
+
+      jdbc.query("""
+         DELETE FROM vendor_payment_term_schedule
+         WHERE payment_term_id = :payment_term_id
+               AND id NOT IN(:ids)
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "payment_term_id" to vpt.id,
+            "ids" to scheduleRecords.asSequence().map { it.id }.toList()
+         )
+      ) { rs ->
+         result.add(
+            VendorPaymentTermScheduleEntity(
+               id = rs.getLong("id"),
+               dueMonth = rs.getInt("due_month"),
+               dueDays = rs.getInt("due_days"),
+               duePercent = rs.getBigDecimal("due_percent"),
+               scheduleOrderNumber = rs.getInt("schedule_order_number")
+            )
+         )
+      }
+
+      return result
+   }
+
    private fun mapRow(rs: ResultSet): VendorPaymentTermScheduleEntity {
       return VendorPaymentTermScheduleEntity(id = rs.getLong("vpts_id"), dueMonth = rs.getIntOrNull("vpts_due_month"), dueDays = rs.getIntOrNull("vpts_due_days")!!, duePercent = rs.getBigDecimal("vpts_due_percent"), scheduleOrderNumber = rs.getInt("vpts_schedule_order_number"))
    }

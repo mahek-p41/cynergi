@@ -129,6 +129,24 @@ class VendorPaymentTermRepository @Inject constructor(
    fun update(entity: VendorPaymentTermEntity): VendorPaymentTermEntity {
       logger.debug("Updating VendorPaymentTerm {}", entity)
 
+      /*
+      val existing = jdbc.query("""
+         Select * from vendor_payment_term
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id" to entity.id
+         ),
+         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
+      )
+      */
+
+      val existing = findOne(entity.id!!, entity.company)
+
+      vendorPaymentTermScheduleRepository.deleteNotIn(existing!!, entity.scheduleRecords)
+
       val updated = jdbc.updateReturning("""
          UPDATE vendor_payment_term
          SET

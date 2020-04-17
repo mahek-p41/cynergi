@@ -158,6 +158,30 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response.size() == 1
    }
 
+   void "delete a schedule record" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 25, 2)]
+      final VPT = new VendorPaymentTermValueObject(null, "test6", null, 2, null, null, null, schedules)
+      def existing = post("$path", VPT)
+      existing.scheduleRecords.remove(0)
+      existing.numberOfPayments = 1
+      existing.scheduleRecords[0].duePercent = 100
+      existing.scheduleRecords[0].scheduleOrderNumber = 1
+
+      when:
+      def updated = put("$path/${existing.id}", existing)
+
+      then:
+      notThrown(Exception)
+      updated.id == existing.id
+      updated.description == existing.description
+      updated.number == updated.id
+      updated.numberOfPayments == existing.numberOfPayments
+      updated.discountMonth == existing.discountMonth
+      updated.discountDays == existing.discountDays
+      updated.discountPercent == existing.discountPercent
+   }
+
    /*
     void "Term with 3 payments with dueDays2 and dueMonth2 being null" () {
       given:
