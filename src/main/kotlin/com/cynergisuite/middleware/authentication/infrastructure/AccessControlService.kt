@@ -43,7 +43,7 @@ class AccessControlService @Inject constructor(
       return if (
          securityService.isAuthenticated
          && asset != null
-         && accessControlProvider.canUserAccess(authenticatedUser, asset, parameters)
+         && (authenticatedUser.isCynergiAdmin() || accessControlProvider.canUserAccess(authenticatedUser, asset, parameters))
       ) {
          context.proceed()
       } else {

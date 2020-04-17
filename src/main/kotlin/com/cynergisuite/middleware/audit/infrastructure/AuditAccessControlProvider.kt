@@ -18,7 +18,7 @@ class AuditAccessControlProvider @Inject constructor(
       val auditPermission = auditPermissionRepository.findOneByAsset(asset, user.myCompany())
       val userDepartment = user.myDepartment()
 
-      return if (auditPermission == null || user.isCynergiAdmin()) {
+      return if (auditPermission == null) {
          true
       } else {
          auditPermission.department == userDepartment
