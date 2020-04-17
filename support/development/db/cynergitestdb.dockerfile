@@ -9,6 +9,3 @@ RUN dos2unix /docker-entrypoint-initdb.d/initdb.sql
 COPY cynergi-test-db-ready.sh /tmp/cynergi-test-db-ready.sh
 RUN dos2unix /tmp/cynergi-test-db-ready.sh
 
-COPY DatabaseDumps/test-inventory.csv /tmp/test-inventory.csv
-RUN dos2unix /tmp/test-inventory.csv
-

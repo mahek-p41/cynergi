@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.store.Store
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -29,6 +30,12 @@ data class NotificationRecipientValueObject (
          id = entity.id,
          description = entity.description,
          recipient = entity.recipient
+      )
+
+   constructor(description: String, store: Store) :
+      this(
+         description = description,
+         recipient= store.myNumber().toString().padStart(3, '0')
       )
 
    override fun myId(): Long? = id

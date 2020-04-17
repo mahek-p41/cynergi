@@ -279,7 +279,6 @@ private class VerificationRowMapper(
 
       return Verification(
          id = rs.getLong("${columnPrefix}id"),
-         uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          customerAccount = rs.getString("${columnPrefix}customer_account"),

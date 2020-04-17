@@ -208,4 +208,62 @@ COPY fastinfo_prod_import.inventory_vw(
    location_type,
    dataset
 )
-FROM '/tmp/test-inventory.csv' DELIMITER ',' CSV HEADER;
+FROM '/tmp/dumps/test-inventory.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.itemfile_vw(
+   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+   dataset                VARCHAR(6)                            NOT NULL,
+   time_created           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   time_updated           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   number                 VARCHAR(18)                           NOT NULL,
+   description_1          VARCHAR(28)                           NOT NULL,
+   description_2          VARCHAR(26),
+   discontinued_indicator VARCHAR(1)                            NOT NULL,
+   vendor_number          INTEGER                               NOT NULL
+);
+/*
+select
+   CASE
+      WHEN dataset = 'corrto' THEN 'tstds1'
+      WHEN dataset = 'corptp' THEN 'tstds2'
+   END AS dataset,
+   time_created,
+   time_updated,
+   number,
+   description_1,
+   description_2,
+   discontinued_indicator,
+   vendor_number
+from itemfile_vw;
+ */
+
+COPY fastinfo_prod_import.itemfile_vw(
+   dataset,
+   time_created,
+   time_updated,
+   number,
+   description_1,
+   description_2,
+   discontinued_indicator,
+   vendor_number
+) FROM '/tmp/dumps/test-itemfile.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.customer_vw(
+   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+   dataset                VARCHAR(6)                            NOT NULL,
+   time_created           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   time_updated           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   number                 INTEGER                               NOT NULL,
+   first_name_mi          VARCHAR(50)                           NOT NULL,
+   last_name              VARCHAR(50)
+);
+
+COPY fastinfo_prod_import.customer_vw(
+   dataset,
+   time_created,
+   time_updated,
+   number,
+   first_name_mi,
+   last_name
+) FROM '/tmp/dumps/test-customer.csv' DELIMITER ',' CSV HEADER;
+

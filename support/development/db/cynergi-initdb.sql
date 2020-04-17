@@ -75,6 +75,28 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
 
+CREATE FOREIGN TABLE fastinfo_prod_import.itemfile_vw (
+   id BIGINT,
+   dataset VARCHAR,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
+   number VARCHAR,
+   description_1 VARCHAR,
+   description_2 VARCHAR,
+   discontinued_indr VARCHAR,
+   vendor_number INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'itemfile_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.customer_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    number integer,
+    first_name_mi VARCHAR,
+    last_name VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'customer_vw', SCHEMA_NAME 'public');
+
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
 -- END cynergidevelopdb SETUP

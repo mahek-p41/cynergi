@@ -46,87 +46,94 @@ class AuthenticationRepository @Inject constructor(
          SELECT * FROM (
             SELECT * FROM (
                SELECT
-                  1                      AS from_priority,
-                  emp.id                 AS emp_id,
-                  'sysz'                 AS emp_type,
-                  emp.number             AS emp_number,
-                  emp.active             AS emp_active,
-                  false                  AS emp_cynergi_system_admin,
-                  emp.pass_code          AS emp_pass_code,
+                  1                               AS from_priority,
+                  emp.id                          AS emp_id,
+                  'sysz'                          AS emp_type,
+                  emp.number                      AS emp_number,
+                  emp.active                      AS emp_active,
+                  false                           AS emp_cynergi_system_admin,
+                  emp.pass_code                   AS emp_pass_code,
                   emp.alternative_store_indicator AS emp_alternative_store_indicator,
-                  emp.alternative_area   AS emp_alternative_area,
-                  comp.id                AS comp_id,
-                  comp.uu_row_id         AS comp_uu_row_id,
-                  comp.time_created      AS comp_time_created,
-                  comp.time_updated      AS comp_time_updated,
-                  comp.name              AS comp_name,
-                  comp.doing_business_as AS comp_doing_business_as,
-                  comp.client_code       AS comp_client_code,
-                  comp.client_id         AS comp_client_id,
-                  comp.dataset_code      AS comp_dataset_code,
-                  comp.federal_id_number AS comp_federal_id_number,
-                  dept.id                AS dept_id,
-                  dept.code              AS dept_code,
-                  dept.description       AS dept_description,
-                  dept.security_profile  AS dept_security_profile,
-                  dept.default_menu      AS dept_default_menu,
-                  loc.id                 AS loc_id,
-                  loc.number             AS loc_number,
-                  loc.name               AS loc_name,
-                  fallbackLoc.id         AS fallbackLoc_id,
-                  fallbackLoc.number     AS fallbackLoc_number,
-                  fallbackLoc.name       AS fallbackLoc_name
+                  emp.alternative_area            AS emp_alternative_area,
+                  comp.id                         AS comp_id,
+                  comp.uu_row_id                  AS comp_uu_row_id,
+                  comp.time_created               AS comp_time_created,
+                  comp.time_updated               AS comp_time_updated,
+                  comp.name                       AS comp_name,
+                  comp.doing_business_as          AS comp_doing_business_as,
+                  comp.client_code                AS comp_client_code,
+                  comp.client_id                  AS comp_client_id,
+                  comp.dataset_code               AS comp_dataset_code,
+                  comp.federal_id_number          AS comp_federal_id_number,
+                  dept.id                         AS dept_id,
+                  dept.code                       AS dept_code,
+                  dept.description                AS dept_description,
+                  dept.security_profile           AS dept_security_profile,
+                  dept.default_menu               AS dept_default_menu,
+                  assignedLoc.id                  AS assignedLoc_id,
+                  assignedLoc.number              AS assignedLoc_number,
+                  assignedLoc.name                AS assignedLoc_name,
+                  chosenLoc.id                    AS chosenLoc_id,
+                  chosenLoc.number                AS chosenLoc_number,
+                  chosenLoc.name                  AS chosenLoc_name,
+                  fallbackLoc.id                  AS fallbackLoc_id,
+                  fallbackLoc.number              AS fallbackLoc_number,
+                  fallbackLoc.name                AS fallbackLoc_name
                FROM company comp
                   JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw loc ON comp.dataset_code = loc.dataset AND emp.store_number = loc.number
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if(storeNumber != null) " = $3" else "IS NULL"}
                   JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
                UNION
                SELECT
-                  2                           AS from_priority,
-                  emp.id                      AS emp_id,
-                  'eli'                       AS emp_type,
-                  emp.number                  AS emp_number,
-                  emp.active                  AS emp_active,
-                  emp.cynergi_system_admin    AS emp_cynergi_system_admin,
-                  emp.pass_code               AS emp_pass_code,
+                  2                               AS from_priority,
+                  emp.id                          AS emp_id,
+                  'eli'                           AS emp_type,
+                  emp.number                      AS emp_number,
+                  emp.active                      AS emp_active,
+                  emp.cynergi_system_admin        AS emp_cynergi_system_admin,
+                  emp.pass_code                   AS emp_pass_code,
                   emp.alternative_store_indicator AS emp_alternative_store_indicator,
-                  emp.alternative_area        AS emp_alternative_area,
-                  comp.id                     AS comp_id,
-                  comp.uu_row_id              AS comp_uu_row_id,
-                  comp.time_created           AS comp_time_created,
-                  comp.time_updated           AS comp_time_updated,
-                  comp.name                   AS comp_name,
-                  comp.doing_business_as      AS comp_doing_business_as,
-                  comp.client_code            AS comp_client_code,
-                  comp.client_id              AS comp_client_id,
-                  comp.dataset_code           AS comp_dataset_code,
-                  comp.federal_id_number      AS comp_federal_id_number,
-                  dept.id                     AS dept_id,
-                  dept.code                   AS dept_code,
-                  dept.description            AS dept_description,
-                  dept.security_profile       AS dept_security_profile,
-                  dept.default_menu           AS dept_default_menu,
-                  loc.id                      AS loc_id,
-                  loc.number                  AS loc_number,
-                  loc.name                    AS loc_name,
-                  fallbackLoc.id               AS fallbackLoc_id,
-                  fallbackLoc.number           AS fallbackLoc_number,
-                  fallbackLoc.name             AS fallbackLoc_name
+                  emp.alternative_area            AS emp_alternative_area,
+                  comp.id                         AS comp_id,
+                  comp.uu_row_id                  AS comp_uu_row_id,
+                  comp.time_created               AS comp_time_created,
+                  comp.time_updated               AS comp_time_updated,
+                  comp.name                       AS comp_name,
+                  comp.doing_business_as          AS comp_doing_business_as,
+                  comp.client_code                AS comp_client_code,
+                  comp.client_id                  AS comp_client_id,
+                  comp.dataset_code               AS comp_dataset_code,
+                  comp.federal_id_number          AS comp_federal_id_number,
+                  dept.id                         AS dept_id,
+                  dept.code                       AS dept_code,
+                  dept.description                AS dept_description,
+                  dept.security_profile           AS dept_security_profile,
+                  dept.default_menu               AS dept_default_menu,
+                  assignedLoc.id                  AS assignedLoc_id,
+                  assignedLoc.number              AS assignedLoc_number,
+                  assignedLoc.name                AS assignedLoc_name,
+                  chosenLoc.id                    AS chosenLoc_id,
+                  chosenLoc.number                AS chosenLoc_number,
+                  chosenLoc.name                  AS chosenLoc_name,
+                  fallbackLoc.id                  AS fallbackLoc_id,
+                  fallbackLoc.number              AS fallbackLoc_number,
+                  fallbackLoc.name                AS fallbackLoc_name
                FROM company comp
                   JOIN employee emp ON comp.id = emp.company_id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw loc ON comp.dataset_code = loc.dataset AND emp.store_number = loc.number
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if(storeNumber != null) " = $3" else "IS NULL"}
                   JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
             ) AS inner_users
             WHERE emp_active = true
             ORDER BY from_priority
          ) AS users
-         WHERE comp_dataset_code = $1
-               AND emp_number = $2
-               ${if (storeNumber != null) "AND loc_number = $3" else ""}
+      WHERE comp_dataset_code = $1
+         AND emp_number = $2
       """.trimIndent()
-      val params = if (storeNumber != null) {
+      val params = if(storeNumber != null) {
          Tuple.of(dataset, employeeNumber, storeNumber)
       } else {
          Tuple.of(dataset, employeeNumber)
@@ -142,8 +149,9 @@ class AuthenticationRepository @Inject constructor(
 
             val company = mapCompany(row)
             val department = mapDepartment(row, company)
-            val fallbackLocation = mapLocation(row, company, "fallbackloc_")!!
-            val employeeLocation = mapLocation(row, company, "loc_")
+            val fallbackLocation = mapLocation(row, company, "fallbackloc_")!! // make sure fallbackLoc is all lower case, the reactive pg row isn't as smart as the JDBC driver
+            val employeeLocation = mapLocation(row, company, "assignedloc_")  // make sure assignedloc is all lower case, the reactive pg row isn't as smart as the JDBC driver
+            val chosenLocation = mapLocation(row, company, "chosenloc_")  // make sure chosenloc is all lower case, the reactive pg row isn't as smart as the JDBC driver
 
             AuthenticatedEmployee(
                id = row.getLong("emp_id"),
@@ -152,6 +160,7 @@ class AuthenticationRepository @Inject constructor(
                company = company,
                department = department,
                location = employeeLocation,
+               chosenLocation = chosenLocation,
                fallbackLocation = fallbackLocation,
                passCode = row.getString("emp_pass_code"),
                cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin"),
@@ -195,9 +204,6 @@ class AuthenticationRepository @Inject constructor(
    private fun mapCompany(row: Row): Company {
       return CompanyEntity(
          id = row.getLong("comp_id"),
-         uuRowId = row.getUUID("comp_uu_row_id"),
-         timeCreated = row.getOffsetDateTime("comp_time_created"),
-         timeUpdated = row.getOffsetDateTime("comp_time_updated"),
          name = row.getString("comp_name"),
          doingBusinessAs = row.getString("comp_doing_business_as"),
          clientCode = row.getString("comp_client_code"),
@@ -208,25 +214,34 @@ class AuthenticationRepository @Inject constructor(
    }
 
    fun findPermissions(department: Department): Set<String> {
-      val params = mutableMapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
+      val params = mapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
       val sql = """
-                  SELECT
-                     aptd.value              AS value
-                  FROM  audit_permission_type_domain aptd
-                        JOIN audit_permission ap ON ap.type_id = aptd.id
-                  WHERE ap.department = :dept_code AND ap.company_id = :comp_id
-                  UNION
-                  SELECT
-                     aptd.value              AS value
-                  FROM  audit_permission_type_domain aptd
-                  WHERE  aptd.id NOT IN (SELECT DISTINCT type_id
-                                          FROM  audit_permission)
-                  """.trimIndent()
-      logger.debug("Get permission by department {}\n{}", params, sql)
+         SELECT aptd.value AS value
+         FROM audit_permission_type_domain aptd
+              JOIN audit_permission ap ON ap.type_id = aptd.id
+         WHERE ap.department = :dept_code AND ap.company_id = :comp_id
+         UNION
+         SELECT aptd.value AS value
+         FROM audit_permission_type_domain aptd
+         WHERE aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
+      """.trimIndent()
+
+      return processPermissionValues(sql, params)
+   }
+
+   fun findAllPermissions(): Set<String> {
+      return processPermissionValues("SELECT value from audit_permission_type_domain", emptyMap())
+   }
+
+   private fun processPermissionValues(sql: String, params: Map<String, Any?>): Set<String> {
+      logger.debug("Get permission {}\n{}", params, sql)
+
       val resultSet = mutableSetOf<String>()
+
       jdbc.query(sql, params) {
          rs -> resultSet.add(rs.getString("value"))
       }
+
       return resultSet
    }
 

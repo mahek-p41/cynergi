@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.schedule.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -93,7 +92,7 @@ class ScheduleRepository @Inject constructor(
       var currentSchedule: ScheduleEntity? = null
       var where = "WHERE"
       var and = EMPTY
-      var whereClause = StringBuilder()
+      val whereClause = StringBuilder()
       val params = mutableMapOf<String, Any>()
 
       if (command != null) {
@@ -108,7 +107,7 @@ class ScheduleRepository @Inject constructor(
          params["schedType_value"] = type.value
       }
 
-      jdbc.query("""
+      val sql = """
          WITH schedules AS (
             SELECT
                sched.id                                                        AS sched_id,
@@ -146,7 +145,8 @@ class ScheduleRepository @Inject constructor(
             sa.description                                                     AS sa_description
          FROM schedules sched
               LEFT OUTER JOIN schedule_arg sa ON sched_id = sa.schedule_id
-      """.trimIndent(), params) { rs ->
+      """
+      jdbc.query(sql.trimIndent(), params) { rs ->
          val dbScheduleId = rs.getLong("sched_id")
 
          val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {
@@ -170,6 +170,8 @@ class ScheduleRepository @Inject constructor(
             totalElement = rs.getLong("total_elements")
          }
       }
+
+      logger.trace("Query for Schedule with params {} \n{}", params, sql)
 
       return RepositoryPage(
          requested = pageRequest,
@@ -276,9 +278,6 @@ class ScheduleRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType): ScheduleEntity =
       ScheduleEntity(
          id = rs.getLong("${scheduleColumnPrefix}id"),
-         uuRowId = rs.getUuid("${scheduleColumnPrefix}uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("${scheduleColumnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${scheduleColumnPrefix}time_updated"),
          title = rs.getString("${scheduleColumnPrefix}title"),
          description = rs.getString("${scheduleColumnPrefix}description"),
          schedule = rs.getString("${scheduleColumnPrefix}schedule"),

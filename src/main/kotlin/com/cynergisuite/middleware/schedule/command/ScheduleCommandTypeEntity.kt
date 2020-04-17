@@ -33,4 +33,5 @@ class ScheduleCommandTypeEntity(
 
 object AuditSchedule: ScheduleCommandType(1, "AuditSchedule", "Scheduling audits for stores", "schedule.command.audit")
 
-typealias AUDIT_STATUS = AuditSchedule
+typealias AUDIT_SCHEDULE = AuditSchedule
+

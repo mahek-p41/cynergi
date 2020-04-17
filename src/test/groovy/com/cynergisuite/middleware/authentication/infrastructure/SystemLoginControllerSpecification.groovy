@@ -298,6 +298,80 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       }
    }
 
+   void "login with user that has an assigned store, but doesn't provide one"() {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final department = departmentFactoryService.department('SA', company)
+      final store = storeFactoryService.store(1, company)
+      final employee = employeeFactoryService.single(store, department)
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, null, employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      final error = thrown(HttpClientResponseException)
+      error.status == UNAUTHORIZED
+      final json = error.response.bodyAsJson()
+      json.message == "Store is required for ${employee.number} to access"
+   }
+
+   void "login with user doesn't have a store assigned, but chooses one" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final department = departmentFactoryService.department('RM', company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(department)
+
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def response = httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response.employeeNumber == "${employee.number}"
+      response.storeNumber == 3
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
+   }
+
    void "check authenticated returns 401 when not logged in via HEAD" () {
       when:
       httpClient.toBlocking()
@@ -324,7 +398,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       final e = thrown(HttpClientResponseException)
-      e.response.body() == null
+      e.response.bodyAsJson().message == 'You are not logged in'
       e.status == UNAUTHORIZED
    }
 }

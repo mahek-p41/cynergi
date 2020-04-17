@@ -4,15 +4,15 @@ micronaut:
       port: 10900
       host: localhost
       security.token.jwt.signatures.secret.generator.secret: 9kfdjiefj838fjao8fjo9fj384784ikfjaoijdfo8jfejfkdodkflijoij
-   postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
-      reactive:
-         client:
-            port: 5432
-            host: localhost
-            database: cynergidb
-            user: cynergiuser
-            password: cynergiuser2019
-            maxSize: 10
+postgres: # postgres reactive client is configured for use by reactive parts of the system such as authentication
+   reactive:
+      client:
+         port: 5432
+         host: localhost
+         database: cynergidb
+         user: cynergiuser
+         password: cynergiuser2019
+         maxSize: 10
 datasources:
    default:
       url: "jdbc:postgresql://${postgres.reactive.client.host}:${postgres.reactive.client.port}/${postgres.reactive.client.database}"
@@ -22,8 +22,8 @@ datasources:
 flyway:
    datasources:
       default:
-         clean-disabled: false
          clean-on-validation-error: true
+         clean-disabled: false
 cynergi:
    security:
       jwt:
@@ -34,4 +34,4 @@ cynergi:
          size: 5
    reportal:
       file:
-         location: "/Z/WebPortal/ZWebRoot/cynrep/reports"
+         location: "/tmp/WebPortal/ZWebRoot/cynrep/reports"

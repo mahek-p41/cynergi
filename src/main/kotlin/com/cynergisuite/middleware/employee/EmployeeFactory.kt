@@ -77,6 +77,10 @@ class EmployeeFactoryService @Inject constructor(
       return stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
+   fun single(departmentIn: Department): EmployeeEntity {
+      return stream(departmentIn = departmentIn, companyIn = departmentIn.myCompany()).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
+   }
+
    fun single(storeIn: Store, departmentIn: Department): EmployeeEntity {
       return stream(storeIn = storeIn, departmentIn = departmentIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
@@ -103,6 +107,7 @@ class EmployeeFactoryService @Inject constructor(
                company = employee.company,
                department = employee.department,
                location = employee.store,
+               chosenLocation = employee.store,
                fallbackLocation = store,
                passCode = employee.passCode,
                cynergiSystemAdmin = employee.cynergiSystemAdmin,
@@ -135,6 +140,7 @@ class EmployeeFactoryService @Inject constructor(
                company = employee.company,
                department = employee.department,
                location = employee.store,
+               chosenLocation = employee.store,
                fallbackLocation = store,
                passCode = employee.passCode,
                cynergiSystemAdmin = employee.cynergiSystemAdmin,
@@ -147,7 +153,8 @@ class EmployeeFactoryService @Inject constructor(
    private fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null,
                       firstNameMiIn: String? = null, passCodeIn: String? = null, activeIn: Boolean = true,
                       cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null,
-                      departmentIn: Department? = null, storeIn: Store? = null, alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
+                      departmentIn: Department? = null, storeIn: Store? = null,
+                      alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
       val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: companyFactoryService.random()
 
       return EmployeeFactory.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)

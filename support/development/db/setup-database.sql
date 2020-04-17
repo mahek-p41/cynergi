@@ -214,6 +214,87 @@ BEGIN
 
    EXECUTE sqlToExec;
 END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW itemfile_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'itemfile_vw') THEN
+      DROP VIEW itemfile_vw;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            itemfile.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            itemfile.created_at AT TIME ZONE ''UTC'' AS time_created,
+            itemfile.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            itemfile.itemfile_nbr                    AS number,
+            itemfile.itemfile_desc_1                 AS description_1,
+            itemfile.itemfile_desc_2                 AS description_2,
+            itemfile.itemfile_discontinued_indr      AS discontinued_indicator,
+            vendors.vend_number                      AS vendor_number
+         FROM ' || r.schema_name || '.level2_models itemfile
+              JOIN ' || r.schema_name || '.level2_vendors vendors ON itemfile.vendor_id = vendors.id
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW customer_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'customer_vw') THEN
+      DROP VIEW customer_vw;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            customer.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            customer.created_at AT TIME ZONE ''UTC'' AS time_created,
+            customer.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            customer.cust_acct_nbr                   AS number,
+            customer.cust_first_name_mi              AS first_name_mi,
+            customer.cust_last_name                  AS last_name
+         FROM ' || r.schema_name || '.level2_customers customer
+         WHERE cust_first_name_mi IS NOT NULL
+               AND cust_last_name IS NOT NULL
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
+
+
 -- End fastinfo setup
 
 -- Begin cynergidb setup
@@ -293,6 +374,28 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     primary_location INTEGER,
     location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.itemfile_vw (
+   id BIGINT,
+   dataset VARCHAR,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
+   number VARCHAR,
+   description_1 VARCHAR,
+   description_2 VARCHAR,
+   discontinued_indr VARCHAR,
+   vendor_number INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'itemfile_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.customer_vw (
+   id BIGINT,
+   dataset VARCHAR,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
+   number integer,
+   first_name_mi VARCHAR,
+   last_name VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'customer_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;

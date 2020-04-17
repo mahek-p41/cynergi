@@ -1,9 +1,6 @@
 package com.cynergisuite.middleware.shipvia
 
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.company.CompanyFactory
-import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -19,7 +16,6 @@ object ShipViaFactory {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
-      val random = faker.random()
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
@@ -38,7 +34,6 @@ object ShipViaFactory {
 @Singleton
 @Requires(env = ["demo", "test"])
 class ShipViaFactoryService @Inject constructor(
-   private val companyFactoryService: CompanyFactoryService,
    private val shipViaRepository: ShipViaRepository
 ) {
 
