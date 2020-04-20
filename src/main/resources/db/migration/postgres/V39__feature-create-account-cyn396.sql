@@ -9,7 +9,7 @@ CREATE TABLE status_type_domain (
 INSERT INTO status_type_domain(id,value,description,localization_code)
 Values
 (1,'A', 'Active', 'active') ,
-(2,'I', 'inactive', 'inactive');
+(2,'I', 'Inactive', 'inactive');
 
 -- begin account setup
 CREATE TABLE account_type_domain (
