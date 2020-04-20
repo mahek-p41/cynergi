@@ -39,7 +39,7 @@ UNIQUE(value)
 INSERT INTO normal_account_balance_type_domain(id,value,description,localization_code)
 Values
 (1,'C', 'Credit', 'credit') ,
-(2,'D', 'debit', 'debit');
+(2,'D', 'Debit', 'debit');
 
 CREATE TABLE account (
    id                 BIGSERIAL                                                NOT NULL PRIMARY KEY,
