@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/accounting/bank/currency")
+@Controller("/api/accounting/currency")
 class BankCurrencyTypeController @Inject constructor(
-   private val BankCurrencyTypeService: BankCurrencyTypeService,
+   private val bankCurrencyTypeService: BankCurrencyTypeService,
    private val localizationService: LocalizationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankCurrencyTypeController::class.java)
@@ -37,7 +37,7 @@ class BankCurrencyTypeController @Inject constructor(
    ): List<BankCurrencyTypeValueObject> {
       val locale = httpRequest.findLocaleWithDefault()
 
-      val statuses = BankCurrencyTypeService.fetchAll().map {
+      val statuses = bankCurrencyTypeService.fetchAll().map {
          BankCurrencyTypeValueObject(it, it.localizeMyDescription(locale, localizationService))
       }
 

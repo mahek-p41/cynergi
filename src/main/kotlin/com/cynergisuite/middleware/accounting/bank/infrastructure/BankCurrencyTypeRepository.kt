@@ -45,17 +45,8 @@ class BankCurrencyTypeRepository @Inject constructor(
    }
 
    fun findAll(): List<BankCurrencyType> =
-      jdbc.query("SELECT * FROM bank_currency_code_type_domain ORDER BY value", simpleBankCurrencyCodeTypeRowMapper)
+      jdbc.query("SELECT * FROM bank_currency_code_type_domain ORDER BY id", simpleBankCurrencyCodeTypeRowMapper)
 
-   fun mapPrefixedRow(rs: ResultSet, prefix: String = "ad_"): BankCurrencyType =
-      simpleBankCurrencyCodeTypeRowMapper.mapRow(rs, prefix)
-
-   fun mapPrefixedRowOrNull(rs: ResultSet, prefix: String): BankCurrencyType? =
-      if (rs.getString("${prefix}id") != null) {
-         mapPrefixedRow(rs, prefix)
-      } else {
-         null
-      }
 }
 
 private class BankCurrencyCodeTypeRowMapper(

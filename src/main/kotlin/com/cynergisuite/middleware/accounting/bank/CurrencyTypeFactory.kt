@@ -36,13 +36,19 @@ object CurrencyFactory {
       return currencies[1]
    }
 
+   @JvmStatic
+   fun predefined(): List<BankCurrencyType> {
+      return currencies
+   }
+
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
 class CurrencyFactoryService(
 ) {
-   fun random(): BankCurrencyType = CurrencyFactory.random()
-   fun usd(): BankCurrencyType = CurrencyFactory.usd()
-   fun cad(): BankCurrencyType = CurrencyFactory.cad()
+   fun random() = CurrencyFactory.random()
+   fun usd() = CurrencyFactory.usd()
+   fun cad() = CurrencyFactory.cad()
+   fun predefined() = CurrencyFactory.predefined()
 }

@@ -29,7 +29,7 @@ object BankFactory {
          BankEntity(
             company = company,
             address = AddressEntity(
-               number = Random.nextInt(from = 1, until = 10),
+               number = intCounter.get(),
                name = faker.address().firstName(),
                address1 = faker.address().streetName(),
                address2 = faker.address().secondaryAddress(),
