@@ -2,9 +2,9 @@ package com.cynergisuite.middleware.accounting.bank.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankService
-import com.cynergisuite.middleware.accounting.bank.BankValueObject
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -44,7 +44,7 @@ class BankController @Inject constructor(
    @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["BankEndpoints"], summary = "Fetch a single Bank", description = "Fetch a single Bank by ID", operationId = "bank-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
       ApiResponse(responseCode = "404", description = "The requested Bank was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -52,11 +52,11 @@ class BankController @Inject constructor(
       @QueryValue("id") id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): BankValueObject {
+   ): BankDTO {
       logger.info("Fetching Bank by ID {}", id)
 
       val user = userService.findUser(authentication)
-      val response = bankService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
+      val response = bankService.fetchById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 
@@ -73,9 +73,9 @@ class BankController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<BankValueObject> {
+   ): Page<BankDTO> {
       val user = userService.findUser(authentication)
-      val banks = bankService.fetchAll(user.myCompany(), pageRequest = pageRequest)
+      val banks = bankService.fetchAll(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (banks.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
@@ -98,11 +98,11 @@ class BankController @Inject constructor(
       @Body bankDTO: BankDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): BankValueObject {
+   ): BankDTO {
       logger.info("Requested Save Bank {}", bankDTO)
 
       val user = userService.findUser(authentication)
-      val response = bankService.create(bankDTO, user.myCompany())
+      val response = bankService.create(bankDTO, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Save Bank {} resulted in {}", bankDTO, response)
 
@@ -121,11 +121,13 @@ class BankController @Inject constructor(
    fun update(
       @QueryValue("id") id: Long,
       @Body bankDTO: BankDTO,
-      authentication: Authentication
-   ): BankValueObject {
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): BankDTO {
       logger.info("Requested Update Bank {}", bankDTO)
 
-      val response = bankService.update(id, bankDTO)
+      val user = userService.findUser(authentication)
+      val response = bankService.update(id, bankDTO, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Bank {} resulted in {}", bankDTO, response)
 

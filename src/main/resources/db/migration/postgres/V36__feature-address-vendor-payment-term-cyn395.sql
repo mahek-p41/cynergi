@@ -15,7 +15,6 @@ CREATE TABLE address
     longitude numeric (14,11),
     country varchar(50)CHECK (char_length(trim(city)) > 1)                      NOT NULL,
     county varchar(50),
-    UNIQUE (number)
     phone  varchar(18),
     fax  varchar(18),
     UNIQUE (number)

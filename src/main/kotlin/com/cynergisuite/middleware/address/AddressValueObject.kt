@@ -14,9 +14,8 @@ data class AddressValueObject (
    @field:Positive
    var id: Long? = null,
 
-   @field:NotNull
-   @field:Schema(name = "number", required = true, description = "The bank's number.")
-   var number: Int,
+   @field:Positive
+   var number: Int? = null,
 
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a bank.")

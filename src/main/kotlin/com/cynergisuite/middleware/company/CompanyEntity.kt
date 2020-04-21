@@ -28,11 +28,11 @@ data class CompanyEntity(
    constructor(companyVO: CompanyEntity) :
       this (
          id = companyVO.id,
-         name = companyVO.name!!,
+         name = companyVO.name,
          doingBusinessAs = companyVO.doingBusinessAs,
-         clientCode = companyVO.clientCode!!,
-         clientId = companyVO.clientId!!,
-         datasetCode = companyVO.datasetCode!!,
+         clientCode = companyVO.clientCode,
+         clientId = companyVO.clientId,
+         datasetCode = companyVO.datasetCode,
          federalIdNumber = companyVO.federalIdNumber
       )
 

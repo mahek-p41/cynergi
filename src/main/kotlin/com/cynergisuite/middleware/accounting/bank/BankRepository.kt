@@ -11,7 +11,7 @@ import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.SimpleStore
-import com.cynergisuite.middleware.store.Store
+
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -85,7 +85,6 @@ class BankRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-            val company = mapCompany(rs, "comp_")
             mapRow(rs, company, "bank_")
          }
       )
@@ -126,6 +125,14 @@ class BankRepository @Inject constructor(
       )
    }
 
+   fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM bank WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if Bank: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
+
    @Transactional
    fun insert(bank: BankEntity): BankEntity {
       logger.debug("Inserting bank {}", bank)
@@ -134,15 +141,14 @@ class BankRepository @Inject constructor(
       val bank = bank.copy(address = address)
 
       return jdbc.insertReturning("""
-         INSERT INTO bank(company_id, address_id, number, name, general_ledger_profit_center_sfk, account_number, currency_code_id)
-	      VALUES (:company_id, :address_id, :number, :name, :general_ledger_profit_center_sfk, :account_number, :currency_code_id)
+         INSERT INTO bank(company_id, address_id, name, general_ledger_profit_center_sfk, account_number, currency_code_id)
+	      VALUES (:company_id, :address_id, :name, :general_ledger_profit_center_sfk, :account_number, :currency_code_id)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "company_id" to bank.company.myId(),
             "address_id" to bank.address.id,
-            "number" to bank.number,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "account_number" to bank.accountNumber,
@@ -164,7 +170,6 @@ class BankRepository @Inject constructor(
          SET
             company_id = :company_id,
             address_id = :address_id,
-            number = :number,
             name = :name,
             general_ledger_profit_center_sfk = :general_ledger_profit_center_sfk,
             account_number = :account_number,
@@ -177,7 +182,6 @@ class BankRepository @Inject constructor(
             "id" to bank.id,
             "company_id" to bank.company.myId(),
             "address_id" to bank.address.id,
-            "number" to bank.number,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "account_number" to bank.accountNumber,
@@ -194,7 +198,7 @@ class BankRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         company = company,
+         company = CompanyEntity.create(company)!!,
          address = mapAddress(rs, "address_"),
          name = rs.getString("${columnPrefix}name"),
          number = rs.getInt("${columnPrefix}number"),
@@ -238,7 +242,7 @@ class BankRepository @Inject constructor(
          federalIdNumber = rs.getString("${columnPrefix}federal_id_number")
       )
 
-   private fun mapSimpleStore(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store =
+   private fun mapSimpleStore(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): SimpleStore =
       SimpleStore(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),

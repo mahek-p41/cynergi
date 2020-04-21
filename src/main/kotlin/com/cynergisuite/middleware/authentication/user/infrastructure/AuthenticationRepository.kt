@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.CompanyValueObject
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.DepartmentEntity
@@ -270,7 +271,7 @@ class AuthenticationRepository @Inject constructor(
             id = row.getLong("${columnPrefix}id"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),
-            company = company
+            company = CompanyValueObject.create(company)!!
          )
       } else {
          null

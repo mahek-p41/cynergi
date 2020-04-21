@@ -7,7 +7,7 @@ data class AddressEntity(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val number: Int,
+   val number: Int? = null,
    val name: String,
    val address1: String,
    val address2: String,

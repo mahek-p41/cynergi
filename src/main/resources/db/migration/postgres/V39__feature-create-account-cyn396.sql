@@ -37,7 +37,7 @@ CREATE TABLE bank (
     general_ledger_profit_center_sfk INTEGER CHECK( general_ledger_profit_center_sfk > 0 ) NOT NULL, --profit center is store
     account_number INTEGER CHECK( account_number > 0 )                          NOT NULL, --Input the bank account number
     currency_code_id BIGINT REFERENCES bank_currency_code_type_domain(id) NOT NULL,
-    UNIQUE (company_id, number),
+    UNIQUE (company_id, account_number),
     UNIQUE (name)
 );
 CREATE TRIGGER update_bank_trg

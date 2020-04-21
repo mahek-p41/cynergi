@@ -60,13 +60,12 @@ class AddressRepository @Inject constructor(
       logger.debug("Inserting address {}", address)
 
       return jdbc.insertReturning("""
-         INSERT INTO address(number, name, address1, address2, city, state, postal_code, latitude, longitude, country, county)
-	      VALUES (:number, :name, :address1, :address2, :city, :state, :postal_code, :latitude, :longitude, :country, :county)
+         INSERT INTO address(name, address1, address2, city, state, postal_code, latitude, longitude, country, county)
+	      VALUES (:name, :address1, :address2, :city, :state, :postal_code, :latitude, :longitude, :country, :county)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "number" to address.number,
             "name" to address.name,
             "address1" to address.address1,
             "address2" to address.address2,
@@ -91,7 +90,6 @@ class AddressRepository @Inject constructor(
       return jdbc.updateReturning("""
          UPDATE address
          SET
-            number=:number,
             name=:name,
             address1=:address1,
             address2=:address2,
@@ -108,7 +106,6 @@ class AddressRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to address.id,
-            "number" to address.number,
             "name" to address.name,
             "address1" to address.address1,
             "address2" to address.address2,

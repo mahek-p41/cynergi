@@ -17,7 +17,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class BankControllerSpecification extends ControllerSpecificationBase {
-   private static String path = "/accounting/bank"
+   private static String path = '/accounting/bank'
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject BankFactoryService bankFactoryService
@@ -34,25 +34,18 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
 
-      // TODO find a better way for comparison
       with(result) {
          id == bank.id
-         company.id == bank.company.id
-         number == bank.number
+         number > 0
          name == bank.name
          accountNumber == bank.accountNumber
-         with(generalLedgerProfitCenter) {
-            id == bank.generalLedgerProfitCenter.id
-            number == bank.generalLedgerProfitCenter.number
-            name == bank.generalLedgerProfitCenter.name
-            company.id == bank.generalLedgerProfitCenter.company.id
-         }
+         generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.id
          with(address) {
             id > 0
             name == bank.address.name
             address1 == bank.address.address1
             address2 == bank.address.address2
-            number == bank.address.number
+            number > 0
             city == bank.address.city
             country == bank.address.country
             county == bank.address.county
@@ -63,8 +56,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          }
          with(currency) {
             description == bank.currency.description
-            id == bank.currency.id
-            localizationCode == bank.currency.localizationCode
             value == bank.currency.value
          }
       }
@@ -79,7 +70,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == '0 was unable to be found'
    }
 
    void "fetch all" () {
@@ -108,22 +99,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.eachWithIndex { it, index ->
          with (it) {
             id == firstPageBank[index].id
-            company.id == firstPageBank[index].company.id
-            number == firstPageBank[index].number
+            number > 0
             name == firstPageBank[index].name
             accountNumber == firstPageBank[index].accountNumber
-            with (generalLedgerProfitCenter) {
-               id == firstPageBank[index].generalLedgerProfitCenter.id
-               number == firstPageBank[index].generalLedgerProfitCenter.number
-               name == firstPageBank[index].generalLedgerProfitCenter.name
-               company.id == firstPageBank[index].generalLedgerProfitCenter.company.id
-            }
+            generalLedgerProfitCenter.id == firstPageBank[index].generalLedgerProfitCenter.id
             with (address) {
                id > 0
                name == firstPageBank[index].address.name
                address1 == firstPageBank[index].address.address1
                address2 == firstPageBank[index].address.address2
-               number == firstPageBank[index].address.number
+               number > 0
                city == firstPageBank[index].address.city
                country == firstPageBank[index].address.country
                county == firstPageBank[index].address.county
@@ -134,8 +119,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             }
             with (currency) {
                description == firstPageBank[index].currency.description
-               id == firstPageBank[index].currency.id
-               localizationCode == firstPageBank[index].currency.localizationCode
                value == firstPageBank[index].currency.value
             }
          }
@@ -154,22 +137,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.eachWithIndex { it, index ->
          with(it) {
             id == secondPageBank[index].id
-            company.id == secondPageBank[index].company.id
-            number == secondPageBank[index].number
+            number > 0
             name == secondPageBank[index].name
             accountNumber == secondPageBank[index].accountNumber
-            with(generalLedgerProfitCenter) {
-               id == secondPageBank[index].generalLedgerProfitCenter.id
-               number == secondPageBank[index].generalLedgerProfitCenter.number
-               name == secondPageBank[index].generalLedgerProfitCenter.name
-               company.id == secondPageBank[index].generalLedgerProfitCenter.company.id
-            }
+            generalLedgerProfitCenter.id == secondPageBank[index].generalLedgerProfitCenter.id
             with(address) {
                id > 0
                name == secondPageBank[index].address.name
                address1 == secondPageBank[index].address.address1
                address2 == secondPageBank[index].address.address2
-               number == secondPageBank[index].address.number
+               number > 0
                city == secondPageBank[index].address.city
                country == secondPageBank[index].address.country
                county == secondPageBank[index].address.county
@@ -180,8 +157,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             }
             with(currency) {
                description == secondPageBank[index].currency.description
-               id == secondPageBank[index].currency.id
-               localizationCode == secondPageBank[index].currency.localizationCode
                value == secondPageBank[index].currency.value
             }
          }
@@ -199,22 +174,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.elements.eachWithIndex { it, index ->
          with(it) {
             id == lastPageBank[index].id
-            company.id == lastPageBank[index].company.id
-            number == lastPageBank[index].number
+            number > 0
             name == lastPageBank[index].name
             accountNumber == lastPageBank[index].accountNumber
-            with(generalLedgerProfitCenter) {
-               id == lastPageBank[index].generalLedgerProfitCenter.id
-               number == lastPageBank[index].generalLedgerProfitCenter.number
-               name == lastPageBank[index].generalLedgerProfitCenter.name
-               company.id == lastPageBank[index].generalLedgerProfitCenter.company.id
-            }
+            generalLedgerProfitCenter.id == lastPageBank[index].generalLedgerProfitCenter.id
             with(address) {
                id > 0
                name == lastPageBank[index].address.name
                address1 == lastPageBank[index].address.address1
                address2 == lastPageBank[index].address.address2
-               number == lastPageBank[index].address.number
+               number > 0
                city == lastPageBank[index].address.city
                country == lastPageBank[index].address.country
                county == lastPageBank[index].address.county
@@ -225,8 +194,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             }
             with(currency) {
                description == lastPageBank[index].currency.description
-               id == lastPageBank[index].currency.id
-               localizationCode == lastPageBank[index].currency.localizationCode
                value == lastPageBank[index].currency.value
             }
          }
@@ -243,7 +210,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    void "create a valid bank"() {
       given:
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.singleDTO(store)
       final def jsonBank = jsonOutput.toJson(bankDTO)
 
       when:
@@ -254,22 +221,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id > 0
-         company.id == bankDTO.company.id
-         number == bankDTO.number
+         number > 0
          name == bankDTO.name
          accountNumber == bankDTO.accountNumber
-         with(generalLedgerProfitCenter) {
-            id == bankDTO.generalLedgerProfitCenter.id
-            number == bankDTO.generalLedgerProfitCenter.number
-            name == bankDTO.generalLedgerProfitCenter.name
-            company.id == bankDTO.generalLedgerProfitCenter.company.id
-         }
+         generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
          with(address) {
             id > 0
             name == bankDTO.address.name
             address1 == bankDTO.address.address1
             address2 == bankDTO.address.address2
-            number == bankDTO.address.number
+            number > 0
             city == bankDTO.address.city
             country == bankDTO.address.country
             county == bankDTO.address.county
@@ -280,39 +241,37 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          }
          with(currency) {
             description == bankDTO.currency.description
-            id == bankDTO.currency.id
-            localizationCode == bankDTO.currency.localizationCode
             value == bankDTO.currency.value
          }
       }
    }
 
-   void "create an invalid bank without number"() {
+   void "create an invalid bank without account number"() {
       given: 'get json bank object and make it invalid'
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.singleDTO(store)
       // Make invalid json
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.remove("number")
+      jsonBank.remove('accountNumber')
 
       when:
       def result = post("$path/", jsonBank)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
+      exception.response.status == INTERNAL_SERVER_ERROR
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "Data integrity violation exception"
+      response.message == 'Data access exception'
    }
 
    void "create an invalid bank without address"() {
       given: 'get json bank object and make it invalid'
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.singleDTO(store)
       // Make invalid json
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.remove("address")
+      jsonBank.remove('address')
 
       when:
       def result = post("$path/", jsonBank)
@@ -322,37 +281,43 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 2
-      response.path == "address"
-      response.message == "Failed to convert argument [bankDTO] for value [null]"
+      response.path == 'address'
+      response.message == 'Failed to convert argument [bankDTO] for value [null]'
    }
 
-   void "create an invalid bank with non exist currency id"() {
+   void "create an invalid bank with non exist currency value"() {
       given: 'get json bank object and make it invalid'
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.singleDTO(store)
       // Make invalid json
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.currency.id = 1000
+      jsonBank.currency.value = 'USDT'
 
       when:
-      def result = post("$path/", jsonBank)
+      post("$path/", jsonBank)
 
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "Data integrity violation exception" // Maybe a more general message would be better
+      response[0].path == 'currency.value'
+      response[0].message == 'USDT was unable to be found'
    }
 
    void "update a valid bank"() {
       given: 'Update existingBank in DB with all new data in jsonBank'
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def existingBank = bankFactoryService.single( nineNineEightEmployee.company, store)
-      final def updatedBankDTO = bankFactoryService.singleDTO( nineNineEightEmployee.company, store)
+      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store)
+      final def updatedBankDTO = bankFactoryService.singleDTO(store)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(updatedBankDTO))
-      jsonBank.id = existingBank.id
-      jsonBank.address.id = existingBank.address.id
+      jsonBank.with {
+         id = existingBank.id
+         number = existingBank.number
+         address.id = existingBank.address.id
+         address.number = existingBank.address.number
+      }
+
 
       when:
       def result = put("$path/$existingBank.id", jsonBank)
@@ -362,22 +327,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id > 0
-         company.id == updatedBankDTO.company.id
-         number == updatedBankDTO.number
+         number > 0
          name == updatedBankDTO.name
          accountNumber == updatedBankDTO.accountNumber
-         with(generalLedgerProfitCenter) {
-            id == updatedBankDTO.generalLedgerProfitCenter.id
-            number == updatedBankDTO.generalLedgerProfitCenter.number
-            name == updatedBankDTO.generalLedgerProfitCenter.name
-            company.id == updatedBankDTO.generalLedgerProfitCenter.company.id
-         }
+         generalLedgerProfitCenter.id == updatedBankDTO.generalLedgerProfitCenter.id
          with(address) {
             id > 0
             name == updatedBankDTO.address.name
             address1 == updatedBankDTO.address.address1
             address2 == updatedBankDTO.address.address2
-            number == updatedBankDTO.address.number
+            number > 0
             city == updatedBankDTO.address.city
             country == updatedBankDTO.address.country
             county == updatedBankDTO.address.county
@@ -388,8 +347,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          }
          with(currency) {
             description == updatedBankDTO.currency.description
-            id == updatedBankDTO.currency.id
-            localizationCode == updatedBankDTO.currency.localizationCode
             value == updatedBankDTO.currency.value
          }
       }
@@ -410,14 +367,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 2
-      response.path == "address.name"
-      response.message == "Failed to convert argument [bankDTO] for value [null]" // Maybe a more general message would be better
+
+      response.path == 'address.name'
+      response.message == 'Failed to convert argument [bankDTO] for value [null]'
    }
 
    void "update a invalid bank with non exist address id"() {
       given:
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.address.id = 1000
 
@@ -429,15 +387,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == INTERNAL_SERVER_ERROR
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "Data access exception"
+      response.message == 'Data access exception'
    }
 
    void "update a invalid bank without currency"() {
       given:
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.remove("currency")
+      jsonBank.remove('currency')
 
       when:
       put("$path/$bankDTO.id", jsonBank)
@@ -447,7 +405,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 2
-      response.path == "currency"
-      response.message == "Failed to convert argument [bankDTO] for value [null]" // Maybe a more general message would be better
+      response.path == 'currency'
+      response.message == 'Failed to convert argument [bankDTO] for value [null]'
    }
 }

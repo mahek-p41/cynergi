@@ -41,15 +41,6 @@ data class CompanyValueObject(
    var federalTaxNumber: String? = null
 
 ) : Company {
-//   TODO something work like this would be nice
-//   constructor(company: Company) {
-//      if (company is CompanyValueObject) {
-//         CompanyValueObject(company)
-//      } else if (company is CompanyEntity) {
-//         CompanyValueObject(company)
-//      }
-//   }
-
    // Factory object to create CompanyValueObject from a Company
    companion object Factory {
       fun create(company: Company): CompanyValueObject? {
