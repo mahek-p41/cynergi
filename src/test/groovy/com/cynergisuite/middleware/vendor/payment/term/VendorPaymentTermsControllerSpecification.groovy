@@ -1,7 +1,11 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
+import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
+import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleValueObject
@@ -76,17 +80,16 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "insert vendor payment term without a schedule" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
       final existingVPT = new VendorPaymentTermValueObject([description: "test4", numberOfPayments:  1])
 
       when:
-      final existing = vendorPaymentTermService.create(existingVPT,company)
+      final existing = post("$path", existingVPT)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 1
+      response.size() == 2 //due to validation messages for both duePercent and numberOfPayments
    }
 
    void "update vendor payment term schedule record" () {
@@ -158,7 +161,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response.size() == 1
    }
 
-   void "delete a schedule record" () {
+   void "delete the first of two schedule records" () {
       given:
       final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 25, 2)]
       final VPT = new VendorPaymentTermValueObject(null, "test6", null, 2, null, null, null, schedules)
@@ -180,6 +183,59 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       updated.discountMonth == existing.discountMonth
       updated.discountDays == existing.discountDays
       updated.discountPercent == existing.discountPercent
+   }
+
+   void "delete all schedule records tied to a vendor payment term" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 25, 2)]
+      final VPT = new VendorPaymentTermValueObject(null, "test7", null, 2, null, null, null, schedules)
+      def existing = post("$path", VPT)
+      existing.scheduleRecords.remove(1)
+      existing.scheduleRecords.remove(0)
+      existing.numberOfPayments = 0
+
+      when:
+      def updated = put("$path/${existing.id}", existing)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 2
+      /*
+      notThrown(Exception)
+      updated.id == existing.id
+      updated.description == existing.description
+      updated.number == updated.id
+      updated.numberOfPayments == existing.numberOfPayments
+      updated.discountMonth == existing.discountMonth
+      updated.discountDays == existing.discountDays
+      updated.discountPercent == existing.discountPercent
+      */
+   }
+
+   void "fetch all vendor payment term records when more than vendor payment term exists" () {
+      given:
+      final schedules1 = [new VendorPaymentTermScheduleValueObject(null, null, 30, 50, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 50, 2)]
+      final VPT1 = new VendorPaymentTermValueObject(null, "test8a", null, 2, null, null, null, schedules1)
+      def result1 = post("$path", VPT1)
+      final schedules2 = [new VendorPaymentTermScheduleValueObject(null, null, 60, 75, 1), new VendorPaymentTermScheduleValueObject(null, null, 90, 25, 2)]
+      final VPT2 = new VendorPaymentTermValueObject(null, "test8b", null, 2, null, null, null, schedules2)
+      def result2 = post("$path", VPT2)
+      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      //def firstPageVPT = VPT1[0..4]
+
+      when:
+      def pageOneResult = get("$path${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
+      pageOneResult.totalElements == 2
+      pageOneResult.totalPages == 1
+      //pageOneResult.first == true
+      //pageOneResult.last == false
+      pageOneResult.elements.size() == 2
+      //pageOneResult.elements.collect { new VendorPaymentTermValueObject(it) } == result1
    }
 
    /*

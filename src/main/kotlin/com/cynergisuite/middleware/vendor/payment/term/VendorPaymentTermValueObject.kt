@@ -33,7 +33,7 @@ data class VendorPaymentTermValueObject(
    @field:Positive
    @field:Min(value = 1)
    @field:Max(value = 50)
-   @field:Schema(name = "number of payments", minimum = "1", required = false, description = "Vendor Payment Term Number of Payments")
+   @field:Schema(name = "numberOfPayments", minimum = "1", required = false, description = "Vendor Payment Term Number of Payments")
    var numberOfPayments: Int? = null,
 
    @field:Positive

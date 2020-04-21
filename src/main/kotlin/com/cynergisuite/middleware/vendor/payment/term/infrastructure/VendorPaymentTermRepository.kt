@@ -8,10 +8,14 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.schedule.ScheduleEntity
+import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
+import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -84,6 +88,77 @@ class VendorPaymentTermRepository @Inject constructor(
       logger.trace("Searching for VendorPaymentTerm: {} resulted in {}", id, found)
 
       return found
+   }
+
+   fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorPaymentTermEntity, PageRequest> {
+      val comp_id = company.myId()
+      val params = mutableMapOf<String, Any?>("comp_id" to comp_id, "limit" to page.size(), "offset" to page.offset())
+      val sql = """
+         WITH paged AS (
+            SELECT
+         vpt.id                     AS vpt_id,
+         vpt.uu_row_id              AS vpt_uu_row_id,
+         vpt.time_created           AS vpt_time_created,
+         vpt.time_updated           AS vpt_time_updated,
+         vpt.company_id             AS vpt_company_id,
+         vpt.description            AS vpt_description,
+         vpt.number                 AS vpt_number,
+         vpt.number_of_payments     AS vpt_number_of_payments,
+         vpt.discount_month         AS vpt_discount_month,
+         vpt.discount_days          AS vpt_discount_days,
+         vpt.discount_percent       AS vpt_discount_percent,
+         comp.id                    AS comp_id,
+         comp.uu_row_id             AS comp_uu_row_id,
+         comp.time_created          AS comp_time_created,
+         comp.time_updated          AS comp_time_updated,
+         comp.name                  AS comp_name,
+         comp.doing_business_as     AS comp_doing_business_as,
+         comp.client_code           AS comp_client_code,
+         comp.client_id             AS comp_client_id,
+         comp.dataset_code          AS comp_dataset_code,
+         comp.federal_id_number     AS comp_federal_id_number,
+               count(*) OVER () AS total_elements
+            FROM vendor_payment_term vpt
+               JOIN company comp ON vpt.company_id = comp.id
+            WHERE comp.id = :comp_id
+            ORDER BY vpt_${page.snakeSortBy()} ${page.sortDirection()}
+            LIMIT :limit OFFSET :offset
+         )
+         SELECT
+            p.*,
+            vpts.id                    AS vpts_id,
+            vpts.uu_row_id             AS vpts_uu_row_id,
+            vpts.time_created          AS vpts_time_created,
+            vpts.time_updated          AS vpts_time_updated,
+            vpts.payment_term_id       AS vpts_payment_term_id,
+            vpts.due_month             AS vpts_due_month,
+            vpts.due_days              AS vpts_due_days,
+            vpts.due_percent           AS vpts_due_percent,
+            vpts.schedule_order_number AS vpts_schedule_order_number
+         FROM paged AS p
+            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON p.vpt_id = vpts.payment_term_id
+         ORDER BY vpt_${page.snakeSortBy()}, vpts.id ${page.sortDirection()}
+      """
+
+      logger.debug("find all vendor payment terms {}/{}", sql, params)
+
+      return jdbc.queryPaged(sql, params, page) { rs, elements ->
+         var currentId = -1L
+         var currentParentEntity: VendorPaymentTermEntity? = null
+
+         do {
+            val tempId = rs.getLong("vpt_id")
+            val tempParentEntity: VendorPaymentTermEntity = if (tempId != currentId) {
+               currentId = tempId
+               currentParentEntity = mapRow(rs)
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
+            }
+            mapRowVendorPaymentTermSchedule(rs)?.also { tempParentEntity.scheduleRecords.add(it) }
+         } while (rs.next())
+      }
    }
 
    @Transactional

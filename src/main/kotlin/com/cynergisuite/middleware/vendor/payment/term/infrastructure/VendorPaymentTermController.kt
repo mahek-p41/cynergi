@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.vendor.payment.term.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
@@ -64,6 +66,32 @@ class VendorPaymentTermController @Inject constructor(
       logger.debug("Fetching VendorPaymentTerm by {} resulted in", id, response)
 
       return response
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a listing of VendorPaymentTerms", description = "Fetch a paginated listing of VendorPaymentTerms including associated schedule records", operationId = "vendorPaymentTerm-fetchAll")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "204", description = "The requested Vendor Payment Term was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAll(
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<VendorPaymentTermValueObject> {
+      logger.info("Fetching all vendor payment terms {}", pageRequest)
+
+      val user = userService.findUser(authentication)
+      val page =  vendorPaymentTermService.fetchAll(user.myCompany(), pageRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
    }
 
    @Post(processes = [APPLICATION_JSON])
