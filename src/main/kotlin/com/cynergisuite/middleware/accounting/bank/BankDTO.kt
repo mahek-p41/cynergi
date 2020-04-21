@@ -33,6 +33,10 @@ data class BankDTO (
    @field:Schema(name = "generalLedgerProfitCenter", required = true, description = "Store the bank is associated with.")
    var generalLedgerProfitCenter: SimpleIdentifiableDataTransferObject,
 
+   @field:Valid
+   @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
+   var generalLedgerAccount: SimpleIdentifiableDataTransferObject,
+
    @field:NotNull
    @field:Schema(name = "accountNumber", required = true, description = "The bank's account number.")
    var accountNumber: Int,
@@ -49,6 +53,7 @@ data class BankDTO (
          address = AddressValueObject(bankEntity.address),
          name = bankEntity.name,
          generalLedgerProfitCenter = SimpleIdentifiableDataTransferObject(bankEntity.generalLedgerProfitCenter.myId()),
+         generalLedgerAccount = SimpleIdentifiableDataTransferObject(bankEntity.generalLedgerAccount.myId()),
          accountNumber = bankEntity.accountNumber,
          currency = BankCurrencyTypeValueObject(bankEntity.currency)
       )

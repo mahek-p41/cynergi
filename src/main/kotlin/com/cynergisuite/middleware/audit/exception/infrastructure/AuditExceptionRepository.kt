@@ -19,7 +19,6 @@ import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExce
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.company.CompanyValueObject
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -496,7 +495,7 @@ class AuditExceptionRepository @Inject constructor(
             id = rs.getLong("${columnPrefix}store_id"),
             number = rs.getInt("${columnPrefix}store_number"),
             name = rs.getString("${columnPrefix}store_name"),
-            company = CompanyValueObject.create(mapCompany(rs))!!
+            company = mapCompany(rs)
          )
       } else {
          null

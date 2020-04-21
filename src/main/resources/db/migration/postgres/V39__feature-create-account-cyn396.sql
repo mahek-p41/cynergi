@@ -48,7 +48,7 @@ time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT 
 time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
 company_id BIGINT REFERENCES company(id)                                    NOT NULL,
 number  INTEGER CHECK( number > 0 ) DEFAULT currval('account_id_seq')       NOT NULL,
-description varchar(30) CHECK ( char_length(trim(description)) > 1)         NOT NULL,
+description varchar(100) CHECK ( char_length(trim(description)) > 1)         NOT NULL,
 type_id BIGINT REFERENCES account_type_domain (id)                          NOT NULL,
 normal_account_balance_type_id BIGINT REFERENCES normal_account_balance_type_domain(id) NOT NULL,
 status_type_id  BIGINT REFERENCES status_type_domain(id)                    NOT NULL,

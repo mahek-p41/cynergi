@@ -5,24 +5,19 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountStatusType", title = "Account status type", description = "Currencies that the banks support")
 data class AccountStatusTypeValueObject (
 
-   @field:Positive
-   @field:Schema(name = "id", description = "This is a database driven primary key value defining the id of the status")
-   var id: Long? = null,
-
    @field:NotNull
-   @field:Size(min = 3, max = 15)
+   @field:Size(min = 1, max = 10)
    @field:Schema(description = "Account status")
    var value: String? = null,
 
    @field:Nullable
-   @field:Size(min = 3, max = 50)
+   @field:Size(min = 1, max = 100)
    @field:Schema(description = "A localized description for currency")
    var description: String? = null
 
@@ -30,14 +25,12 @@ data class AccountStatusTypeValueObject (
 
    constructor(currencyType: AccountStatusType) :
       this(
-         id = currencyType.id,
          value = currencyType.value,
          description = currencyType.description
       )
 
    constructor(currencyType: AccountStatusType, localizedDescription: String) :
       this(
-         id = currencyType.id,
          value = currencyType.value,
          description = localizedDescription
       )

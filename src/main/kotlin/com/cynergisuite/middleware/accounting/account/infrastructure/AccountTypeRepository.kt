@@ -19,7 +19,7 @@ class AccountTypeRepository @Inject constructor(
    private val simpleAccountCodeTypeRowMapper = AccountCodeTypeRowMapper()
 
    fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM status_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM account_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
 
       logger.trace("Checking if AccountCode: {} exists resulted in {}", value, exists)
 
@@ -27,7 +27,7 @@ class AccountTypeRepository @Inject constructor(
    }
 
    fun findOne(id: Long): AccountType? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM status_type_domain WHERE id = :id", mapOf("id" to id), simpleAccountCodeTypeRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM account_type_domain WHERE id = :id", mapOf("id" to id), simpleAccountCodeTypeRowMapper)
 
       logger.trace("Searching for AccountCodeTypeTypeDomain: {} resulted in {}", id, found)
 
@@ -35,7 +35,7 @@ class AccountTypeRepository @Inject constructor(
    }
 
    fun findOne(value: String): AccountType? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM status_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), simpleAccountCodeTypeRowMapper)
+      val found = jdbc.findFirstOrNull("SELECT * FROM account_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), simpleAccountCodeTypeRowMapper)
 
       logger.trace("Searching for AccountCodeTypeDomain: {} resulted in {}", value, found)
 
@@ -43,7 +43,7 @@ class AccountTypeRepository @Inject constructor(
    }
 
    fun findAll(): List<AccountType> =
-      jdbc.query("SELECT * FROM status_type_domain ORDER BY id", simpleAccountCodeTypeRowMapper)
+      jdbc.query("SELECT * FROM account_type_domain ORDER BY id", simpleAccountCodeTypeRowMapper)
 
 }
 
