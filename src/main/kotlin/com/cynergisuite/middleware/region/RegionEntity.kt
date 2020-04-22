@@ -8,7 +8,7 @@ data class RegionEntity (
    val id: Long? = null,
    val number: Int,
    val name: String,
-   val description: String,
+   val description: String?,
    val division: DivisionEntity
 ) : Identifiable, Comparable<RegionEntity> {
 
