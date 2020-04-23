@@ -229,8 +229,12 @@ class AuthenticationRepository @Inject constructor(
       return processPermissionValues(sql, params)
    }
 
-   fun findAllPermissions(): Set<String> {
-      return processPermissionValues("SELECT value from audit_permission_type_domain", emptyMap())
+   fun findAllPermissions(): Set<String> { // TODO look into solving cynergi_system_admin privileges some other way
+      return processPermissionValues("""
+         SELECT value from audit_permission_type_domain
+         UNION
+         SELECT 'cynergi-system-admin' AS value
+      """.trimIndent(), emptyMap())
    }
 
    private fun processPermissionValues(sql: String, params: Map<String, Any?>): Set<String> {
