@@ -1,18 +1,16 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.extensions.sum
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
-import com.cynergisuite.middleware.localization.VendorPaymentTermDoesNotMatchDue
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
-import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,14 +50,19 @@ class VendorPaymentTermValidator @Inject constructor(
       }
 
       val entity = VendorPaymentTermEntity(vo = vo, company = company)
+      /*
       var percentageSum: BigDecimal = 0.toBigDecimal()
       var recordCount: Int = 0
       entity.scheduleRecords
          .forEach { percentageSum = percentageSum + it.duePercent;
                     recordCount++
          }
+      */
 
-      if(percentageSum.toInt() != 100) {
+      var percentageSum: BigDecimal = entity.scheduleRecords.asSequence().map { it.duePercent }.sum()
+      var recordCount = entity.scheduleRecords.count()
+
+      if(percentageSum.toInt() != 1) {
          errors.add(ValidationError("duePercent", NotNull("duePercent")))
       }
 

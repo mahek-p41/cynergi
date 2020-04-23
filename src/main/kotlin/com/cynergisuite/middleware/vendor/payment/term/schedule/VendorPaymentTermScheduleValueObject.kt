@@ -31,7 +31,7 @@ data class VendorPaymentTermScheduleValueObject(
    var dueDays: Int? = null,
 
    @field:Positive
-   @field:Digits(integer = 8, fraction = 4)
+   @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "duePercent", description = "Vendor Payment Term Schedule Due Percent")
    var duePercent: BigDecimal? = null,
 

@@ -45,7 +45,7 @@ data class VendorPaymentTermValueObject(
    var discountDays: Int? = null,
 
    @field:Positive
-   @field:Digits(integer = 6, fraction = 2)
+   @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "discountPercent", description = "Vendor Payment Term Discount Percent")
    var discountPercent: BigDecimal? = null,
 

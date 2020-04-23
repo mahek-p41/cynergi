@@ -46,7 +46,7 @@ CREATE TABLE vendor_payment_term (
     number_of_payments integer DEFAULT 1                                        NOT NULL,
     discount_month  integer,
     discount_days  integer,
-    discount_percent numeric(6,2),
+    discount_percent numeric(8,7),
     UNIQUE (company_id, number)
 );
 
@@ -68,7 +68,7 @@ CREATE TABLE vendor_payment_term_schedule (
     payment_term_id BIGINT REFERENCES vendor_payment_term (id)                  NOT NULL,
     due_month  integer CHECK ( due_month > 0 ),
     due_days  integer CHECK ( due_days > 0 )                                    NOT NULL,
-    due_percent numeric(8,4) CHECK ( due_percent > 0 )                          NOT NULL,
+    due_percent numeric(8,7) CHECK ( due_percent > 0 )                          NOT NULL,
     schedule_order_number integer  CHECK ( schedule_order_number > 0 )          NOT NULL,
     UNIQUE (payment_term_id, schedule_order_number)
  );
