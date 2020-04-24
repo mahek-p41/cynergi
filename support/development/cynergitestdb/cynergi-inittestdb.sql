@@ -210,4 +210,4 @@ COPY fastinfo_prod_import.inventory_vw(
    location_type,
    dataset
 )
-FROM '/tmp/test-inventory.csv' DELIMITER ',' CSV HEADER;
+FROM '/tmp/fastinfo/test-inventory.csv' DELIMITER ',' CSV HEADER;

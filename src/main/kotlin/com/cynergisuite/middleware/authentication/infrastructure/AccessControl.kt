@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import io.micronaut.aop.Around
 import io.micronaut.context.annotation.Type
+import org.apache.commons.lang3.StringUtils.EMPTY
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.reflect.KClass
@@ -24,6 +25,6 @@ import kotlin.reflect.KClass
 @Around
 @Type(AccessControlService::class)
 annotation class AccessControl(
-   val value: String,
+   val value: String = EMPTY,
    val accessControlProvider: KClass<out AccessControlProvider> = DefaultAccessControlProvider::class
 )

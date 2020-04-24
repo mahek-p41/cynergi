@@ -12,7 +12,6 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Head
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -30,7 +29,6 @@ class AuthenticatedController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticatedController::class.java)
 
-   @Secured(IS_ANONYMOUS)
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["AuthenticationEndpoints"], summary = "Check authentication credentials and list claims", operationId = "authenticated")
    @ApiResponses(value = [
