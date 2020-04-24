@@ -99,17 +99,15 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       final existingVPT = new VendorPaymentTermValueObject([description: "test4", numberOfPayments:  1])
 
       when:
-      final existing = post("$path", existingVPT)
+      post("$path", existingVPT)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 2 //due to validation messages for both duePercent and numberOfPayments
-      response.message[0] == "Is required"
-      response.path[0] == "duePercent"
-      response.message[1] == "Is required"
-      response.path[1] == "numberOfPayments"
+      response.size() == 1
+      response.message[0] == "Size of provided value [] is invalid"
+      response.path[0] == "scheduleRecords"
    }
 
    void "update vendor payment term schedule record" () {
@@ -223,11 +221,13 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.message[0] == "numberOfPayments must be greater than zero" || "0 is below the allowed minimum"
-      response.path[0] == "numberOfPayments"
-      response.message[1] == "numberOfPayments must be greater than zero" || "0 is below the allowed minimum"
-      response.path[1] == "numberOfPayments"
+      response.size() == 3
+      response.message[0] == "Size of provided value [] is invalid" || "numberOfPayments must be greater than zero" || "0 is below the allowed minimum"
+      response.path[0] == "scheduleRecords" || "numberOfPayments"
+      response.message[1] == "Size of provided value [] is invalid" || "numberOfPayments must be greater than zero" || "0 is below the allowed minimum"
+      response.path[1] == "scheduleRecords" || "numberOfPayments"
+      response.message[2] == "Size of provided value [] is invalid" || "numberOfPayments must be greater than zero" || "0 is below the allowed minimum"
+      response.path[2] == "scheduleRecords" || "numberOfPayments"
    }
 
    void "fetch all vendor payment term records when more than vendor payment term exists" () {
@@ -250,6 +250,40 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       pageOneResult.first == true
       pageOneResult.last == true
       pageOneResult.elements.size() == 2
+   }
+
+   void "post vendor payment term with 51 numberOfPayments" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1, 1)]
+      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test2", null, 51, null, null, null, schedules)
+
+      when:
+      post("$path", vendorPaymentTerm)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "51 exceeds the allowed maximum"
+      response[0].path == "numberOfPayments"
+   }
+
+   void "post vendor payment term discountPercent that has 2 integral and 8 fractional" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1, 1)]
+      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test2", null, 1, null, null, 20.00000008, schedules)
+
+      when:
+      post("$path", vendorPaymentTerm)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "20.00000008 is out of range for discountPercent"
+      response[0].path == "discountPercent"
    }
 
 }

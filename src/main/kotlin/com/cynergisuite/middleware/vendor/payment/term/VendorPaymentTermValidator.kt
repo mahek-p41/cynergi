@@ -50,14 +50,6 @@ class VendorPaymentTermValidator @Inject constructor(
       }
 
       val entity = VendorPaymentTermEntity(vo = vo, company = company)
-      /*
-      var percentageSum: BigDecimal = 0.toBigDecimal()
-      var recordCount: Int = 0
-      entity.scheduleRecords
-         .forEach { percentageSum = percentageSum + it.duePercent;
-                    recordCount++
-         }
-      */
 
       var percentageSum: BigDecimal = entity.scheduleRecords.asSequence().map { it.duePercent }.sum()
       var recordCount = entity.scheduleRecords.count()

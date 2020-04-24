@@ -49,6 +49,7 @@ data class VendorPaymentTermValueObject(
    @field:Schema(name = "discountPercent", description = "Vendor Payment Term Discount Percent")
    var discountPercent: BigDecimal? = null,
 
+   @field:Size(min = 1)
    @field:Schema(name = "scheduleRecords", description = "Listing of schedule records associated with a Vendor Payment Term")
    var scheduleRecords: MutableList<VendorPaymentTermScheduleValueObject> = mutableListOf()
 
