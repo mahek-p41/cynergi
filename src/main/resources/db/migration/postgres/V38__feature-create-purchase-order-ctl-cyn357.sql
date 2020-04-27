@@ -4,15 +4,16 @@ CREATE TABLE purchase_order_status_type_domain
     value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
     description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
     localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
+    possible_default  BOOLEAN DEFAULT FALSE                                          NOT NULL,
     UNIQUE (value)
 );
-INSERT INTO purchase_order_status_type_domain (id, value, description, localization_code)
-VALUES (1, 'B', 'Backorder', 'backorder'),
-       (2, 'C', 'Cancelled', 'cancelled'),
-       (3, 'H', 'Hold', 'hold'),
-       (4, 'O', 'Open', 'open'),
-       (5, 'P', 'Paid', 'paid'),
-       (6, 'R', 'Received', 'received');
+INSERT INTO purchase_order_status_type_domain (id, value, description, localization_code, possible_default)
+VALUES (1, 'B', 'Backorder', 'backorder', false),
+       (2, 'C', 'Cancelled', 'cancelled', false),
+       (3, 'H', 'Hold', 'hold', true),
+       (4, 'O', 'Open', 'open', true),
+       (5, 'P', 'Paid', 'paid', false),
+       (6, 'R', 'Received', 'received', false);
 
 CREATE TABLE purchase_order_type_domain
 (
