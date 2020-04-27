@@ -300,6 +300,8 @@ END $$;
 -- Begin cynergidb setup
 \c cynergidb
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 

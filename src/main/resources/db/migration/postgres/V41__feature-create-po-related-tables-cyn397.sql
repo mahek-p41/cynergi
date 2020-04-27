@@ -1,31 +1,3 @@
-CREATE TABLE purchase_order_type_domain
-(
-    id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
-    description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
-    localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (value)
-);
-INSERT INTO purchase_order_type_domain (id, value, description, localization_code)
-VALUES (1, 'P', 'Purchase Order', 'purchase.order'),
-       (2, 'R', 'Requisition', 'requisition');
-
-CREATE TABLE purchase_order_status_type_domain
-(
-    id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
-    description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
-    localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (value)
-);
-INSERT INTO purchase_order_status_type_domain (id, value, description, localization_code)
-VALUES (1, 'B', 'Backorder', 'backorder'),
-       (2, 'C', 'Cancelled', 'cancelled'),
-       (3, 'H', 'Hold', 'hold'),
-       (4, 'O', 'Open', 'open'),
-       (5, 'P', 'Paid', 'paid'),
-       (6, 'R', 'Received', 'received');
-
 CREATE TABLE freight_term_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
@@ -76,22 +48,6 @@ INSERT INTO purchase_order_requistion_ind_type_domain(id, value, description, lo
 VALUES (1, 'P', 'Purchase Order', 'purchase.order'),
        (2, 'R', 'Requisition', 'requisition'),
        (3, 'D', 'Deleted', 'deleted');
-
-CREATE TABLE purchase_order_status_detail_type_domain
-(
-    id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
-    description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
-    localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (value)
-);
-INSERT INTO purchase_order_status_detail_type_domain (id, value, description, localization_code)
-VALUES (1, 'B', 'Backorder', 'backorder'),
-       (2, 'C', 'Cancelled', 'cancelled'),
-       (3, 'H', 'Hold', 'hold'),
-       (4, 'O', 'Open', 'open'),
-       (5, 'P', 'Paid', 'paid'),
-       (6, 'R', 'Received', 'received');
 
 CREATE TABLE purchase_order_header
 (
@@ -170,7 +126,7 @@ CREATE TABLE purchase_order_detail
     vendor_id                              BIGINT REFERENCES vendor (id)                                            NOT NULL,
     last_received_date                     DATE,
     landed_cost                            NUMERIC(11, 3),
-    status_type_id                         BIGINT REFERENCES purchase_order_status_detail_type_domain (id)          NOT NULL,
+    status_type_id                         BIGINT REFERENCES purchase_order_status_type_domain (id)                 NOT NULL,
     purchase_order_requisition_ind_type_id BIGINT REFERENCES purchase_order_requistion_ind_type_domain (id)         NOT NULL,
     exception_ind_type_id                  BIGINT REFERENCES exception_ind_type_domain (id)                         NOT NULL,
     converted_purchase_order_number        INTEGER     DEFAULT 0                                                    NOT NULL,
