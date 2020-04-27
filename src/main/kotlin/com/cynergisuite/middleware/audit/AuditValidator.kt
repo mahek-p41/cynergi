@@ -51,7 +51,7 @@ class AuditValidator @Inject constructor(
             errors.add(ValidationError("from", ThruDateIsBeforeFrom(from, thru)))
          }
 
-         if (companyRepository.doesNotExist(company)) {
+         if (!companyRepository.exists(company.myId())) {
             errors.add(ValidationError("dataset", InvalidCompany(company)))
          }
       }
