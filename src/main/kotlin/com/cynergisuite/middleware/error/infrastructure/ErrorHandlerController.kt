@@ -206,7 +206,7 @@ class ErrorHandlerController @Inject constructor(
             val field = buildPropertyPath(rootPath = it.propertyPath)
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
 
-            ErrorDataTransferObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value)), path = field)
+            ErrorDataTransferObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value.toString())), path = field)
          }
       )
    }

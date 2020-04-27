@@ -8,6 +8,8 @@ services:
       context: ../development/db
       dockerfile: cynergitestdb.dockerfile
     tmpfs: /var/lib/postgresql/data:rw
+    volumes:
+       - ../development/db/DatabaseDumps:/tmp/dumps
     environment:
       - POSTGRES_DB=cynergitestdb
       - POSTGRES_PASSWORD=password

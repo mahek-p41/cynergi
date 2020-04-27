@@ -8,7 +8,7 @@ data class DivisionEntity (
    val id: Long? = null,
    val number: Int,
    val name: String,
-   val description: String,
+   val description: String?,
    var company: CompanyEntity
 ) : Identifiable, Comparable<DivisionEntity> {
 
