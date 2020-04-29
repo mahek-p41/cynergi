@@ -24,12 +24,13 @@ data class VendorPaymentTermScheduleValueObject(
    @field:Schema(name = "dueMonth", minimum = "1", maximum = "12", required = false, description = "Vendor Payment Term Schedule Due Month")
    var dueMonth: Int? = null,
 
+   @field:NotNull
    @field:Positive
    @field:Min(value = 1)
-   @field:Max(value = 31)
-   @field:Schema(name = "dueDays", minimum = "1", maximum = "31", required = false, description = "Vendor Payment Term Schedule Due Days")
+   @field:Schema(name = "dueDays", minimum = "1", required = false, description = "Vendor Payment Term Schedule Due Days")
    var dueDays: Int? = null,
 
+   @field:NotNull
    @field:Positive
    @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "duePercent", description = "Vendor Payment Term Schedule Due Percent")
