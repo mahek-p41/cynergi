@@ -1,10 +1,10 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
+import org.apache.commons.lang3.builder.CompareToBuilder
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
@@ -40,17 +40,38 @@ data class CompanyValueObject(
    @field:Schema(name = "federalTaxNumber", required = true, nullable = false, description = "Federal taxpayer identification number")
    var federalTaxNumber: String? = null
 
-) : Identifiable {
+) : Company {
+   // Factory object to create CompanyValueObject from a Company
+   companion object Factory {
+      fun create(company: Company): CompanyValueObject? {
+         return when (company) {
+             is CompanyValueObject -> CompanyValueObject(company)
+             is CompanyEntity -> CompanyValueObject(company)
+             else -> null
+         }
+      }
+   }
 
-   constructor(entity: CompanyEntity) :
+   constructor(company: CompanyValueObject) :
       this(
-         id = entity.id,
-         name = entity.name,
-         doingBusinessAs = entity.doingBusinessAs,
-         clientCode = entity.clientCode,
-         clientId = entity.clientId,
-         datasetCode = entity.datasetCode,
-         federalTaxNumber = entity.federalIdNumber
+         id = company.id,
+         name = company.name,
+         doingBusinessAs = company.doingBusinessAs,
+         clientCode = company.clientCode,
+         clientId = company.clientId,
+         datasetCode = company.datasetCode,
+         federalTaxNumber = company.federalTaxNumber
+      )
+
+   constructor(company: CompanyEntity) :
+      this(
+         id = company.id,
+         name = company.name,
+         doingBusinessAs = company.doingBusinessAs,
+         clientCode = company.clientCode,
+         clientId = company.clientId,
+         datasetCode = company.datasetCode,
+         federalTaxNumber = company.federalIdNumber
       )
 
    constructor(company: Company, federalTaxNumberOverride: String? = null) :
@@ -64,6 +85,31 @@ data class CompanyValueObject(
          federalTaxNumber = federalTaxNumberOverride
       )
 
+   override fun myClientCode(): String = clientCode!!
+
+   override fun myClientId(): Int = clientId!!
+
+   override fun myDataset(): String = datasetCode!!
 
    override fun myId(): Long? = id
+
+   override fun compareTo(other: Company): Int {
+      val compareToBuilder = CompareToBuilder()
+         .append(this.id, other.myId())
+         .append(this.clientCode, other.myClientCode())
+         .append(this.clientId, other.myClientId())
+         .append(this.datasetCode, other.myDataset())
+
+      return if (other is CompanyEntity) {
+         compareToBuilder
+            .append(this.name, other.name)
+            .append(this.doingBusinessAs, other.doingBusinessAs)
+            .append(this.federalTaxNumber, other.federalIdNumber)
+            .toComparison()
+      } else {
+         compareToBuilder.toComparison()
+      }
+   }
+
 }
+
