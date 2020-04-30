@@ -55,7 +55,15 @@ data class AddressValueObject (
 
    @field:NotNull
    @field:Schema(name = "county", description = "County of a address.")
-   var county: String
+   var county: String,
+
+   @field:NotNull
+   @field:Schema(name = "phone", description = "Phone of a address.")
+   var phone: String,
+
+   @field:NotNull
+   @field:Schema(name = "county", description = "Fax of a address.")
+   var fax: String
 
    ) : Identifiable {
    constructor(address: AddressEntity) : this(
@@ -70,7 +78,9 @@ data class AddressValueObject (
       latitude = address.latitude,
       longitude = address.longitude,
       country = address.country,
-      county = address.county
+      county = address.county,
+      phone = address.phone,
+      fax = address.fax
    )
 
    override fun myId(): Long? = id

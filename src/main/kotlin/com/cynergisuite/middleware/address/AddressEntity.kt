@@ -17,7 +17,9 @@ data class AddressEntity(
    val latitude: Double,
    val longitude: Double,
    val country: String,
-   val county: String
+   val county: String,
+   val phone: String,
+   val fax: String
 ) : Identifiable {
 
    constructor(address: AddressValueObject) :
@@ -33,7 +35,9 @@ data class AddressEntity(
          latitude = address.latitude,
          longitude = address.longitude,
          country = address.country,
-         county = address.county
+         county = address.county,
+         phone = address.phone,
+         fax = address.fax
       )
 
    override fun myId(): Long? = id

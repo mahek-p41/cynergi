@@ -8,15 +8,15 @@ CREATE TABLE address
     name character varying(30) CHECK (char_length(trim(name)) > 1)              NOT NULL,
     address1 character varying(30)CHECK (char_length(trim(address1)) > 1)       NOT NULL ,
     address2 character varying(30),
-    city character varying(20)CHECK (char_length(trim(city)) > 1)               NOT NULL ,
+    city character varying(30)CHECK (char_length(trim(city)) > 1)               NOT NULL ,
     state character varying(2)CHECK (char_length(trim(state)) = 2)              NOT NULL,
     postal_code character varying(10)                                           NOT NULL,
     latitude numeric (14,11),
     longitude numeric (14,11),
     country varchar(50)CHECK (char_length(trim(city)) > 1)                      NOT NULL,
     county varchar(50),
-    phone  varchar(18),
-    fax  varchar(18),
+    phone  varchar(21),
+    fax  varchar(21),
     UNIQUE (number)
 );
 

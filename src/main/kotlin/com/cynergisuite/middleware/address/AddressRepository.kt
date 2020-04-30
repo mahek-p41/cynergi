@@ -37,7 +37,9 @@ class AddressRepository @Inject constructor(
             address.latitude                          AS address_latitude,
             address.longitude                         AS address_longitude,
             address.country                           AS address_country,
-            address.county                            AS address_county
+            address.county                            AS address_county,
+            address.phone                             AS address_phone,
+            address.fax                               AS address_fax
          FROM  address
       """
    }
@@ -60,8 +62,8 @@ class AddressRepository @Inject constructor(
       logger.debug("Inserting address {}", address)
 
       return jdbc.insertReturning("""
-         INSERT INTO address(name, address1, address2, city, state, postal_code, latitude, longitude, country, county)
-	      VALUES (:name, :address1, :address2, :city, :state, :postal_code, :latitude, :longitude, :country, :county)
+         INSERT INTO address(name, address1, address2, city, state, postal_code, latitude, longitude, country, county, phone, fax)
+	      VALUES (:name, :address1, :address2, :city, :state, :postal_code, :latitude, :longitude, :country, :county, :phone, :fax)
          RETURNING
             *
          """.trimIndent(),
@@ -75,7 +77,9 @@ class AddressRepository @Inject constructor(
             "latitude" to address.latitude,
             "longitude" to address.longitude,
             "country" to address.country,
-            "county" to address.county
+            "county" to address.county,
+            "phone" to address.phone,
+            "fax" to address.fax
          ),
          RowMapper { rs, _ ->
             mapAddress(rs)
@@ -99,7 +103,9 @@ class AddressRepository @Inject constructor(
             latitude=:latitude,
             longitude=:longitude,
             country=:country,
-            county=:county
+            county=:county,
+            phone=:phone,
+            fax=:fax
          WHERE id = :id
          RETURNING
             *
@@ -115,7 +121,9 @@ class AddressRepository @Inject constructor(
             "latitude" to address.latitude,
             "longitude" to address.longitude,
             "country" to address.country,
-            "county" to address.county
+            "county" to address.county,
+            "phone" to address.phone,
+            "fax" to address.fax
          ),
          RowMapper { rs, _ ->
             mapAddress(rs)
@@ -139,7 +147,9 @@ class AddressRepository @Inject constructor(
          latitude = rs.getDouble("${columnPrefix}latitude"),
          longitude = rs.getDouble("${columnPrefix}longitude"),
          country = rs.getString("${columnPrefix}country"),
-         county = rs.getString("${columnPrefix}county")
+         county = rs.getString("${columnPrefix}county"),
+         phone = rs.getString("${columnPrefix}phone"),
+         fax = rs.getString("${columnPrefix}fax")
       )
 
 }

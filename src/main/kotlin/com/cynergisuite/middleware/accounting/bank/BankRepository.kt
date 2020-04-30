@@ -6,12 +6,11 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.SimpleStore
-
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -25,12 +24,16 @@ import javax.inject.Singleton
 @Singleton
 class BankRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val addressRepository: AddressRepository
+   private val addressRepository: AddressRepository,
+   private val accountRepository: AccountRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankRepository::class.java)
 
    private fun selectBaseQuery(): String {
       return """
+         WITH account AS (
+            ${accountRepository.selectBaseQuery()}
+         )
          SELECT
             bank.id                                   AS bank_id,
             bank.uu_row_id                            AS bank_uu_row_id,
@@ -49,6 +52,7 @@ class BankRepository @Inject constructor(
             comp.client_id                            AS comp_client_id,
             comp.dataset_code                         AS comp_dataset_code,
             comp.federal_id_number                    AS comp_federal_id_number,
+            account.*,
             store.id                                  AS store_id,
             store.number                              AS store_number,
             store.name                                AS store_name,
@@ -68,6 +72,8 @@ class BankRepository @Inject constructor(
             address.longitude                         AS address_longitude,
             address.country                           AS address_country,
             address.county                            AS address_county,
+            address.phone                             AS address_phone,
+            address.fax                               AS address_fax,
             currency.id                               AS currency_id,
             currency.value                            AS currency_value,
             currency.description                      AS currency_description,
@@ -76,6 +82,7 @@ class BankRepository @Inject constructor(
                JOIN company comp                               ON bank.company_id = comp.id
                JOIN fastinfo_prod_import.store_vw store        ON store.dataset = comp.dataset_code
                                                                   AND store.number = bank.general_ledger_profit_center_sfk
+               JOIN account                                    ON account.account_id = bank.general_ledger_account_sfk
                JOIN address                                    ON address.id = bank.address_id
                JOIN bank_currency_code_type_domain currency    ON currency.id = bank.currency_code_id
       """
@@ -141,8 +148,8 @@ class BankRepository @Inject constructor(
       val bank = bank.copy(address = address)
 
       return jdbc.insertReturning("""
-         INSERT INTO bank(company_id, address_id, name, general_ledger_profit_center_sfk, account_number, currency_code_id)
-	      VALUES (:company_id, :address_id, :name, :general_ledger_profit_center_sfk, :account_number, :currency_code_id)
+         INSERT INTO bank(company_id, address_id, name, general_ledger_profit_center_sfk, general_ledger_account_sfk, account_number, currency_code_id)
+	      VALUES (:company_id, :address_id, :name, :general_ledger_profit_center_sfk, :general_ledger_account_sfk, :account_number, :currency_code_id)
          RETURNING
             *
          """.trimIndent(),
@@ -151,6 +158,7 @@ class BankRepository @Inject constructor(
             "address_id" to bank.address.id,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
+            "general_ledger_account_sfk" to bank.generalLedgerAccount.id,
             "account_number" to bank.accountNumber,
             "currency_code_id" to bank.currency.id
          ),
@@ -172,6 +180,7 @@ class BankRepository @Inject constructor(
             address_id = :address_id,
             name = :name,
             general_ledger_profit_center_sfk = :general_ledger_profit_center_sfk,
+            general_ledger_account_sfk = :general_ledger_account_sfk,
             account_number = :account_number,
             currency_code_id = :currency_code_id
          WHERE id = :id
@@ -184,6 +193,7 @@ class BankRepository @Inject constructor(
             "address_id" to bank.address.id,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
+            "general_ledger_account_sfk" to bank.generalLedgerAccount.id,
             "account_number" to bank.accountNumber,
             "currency_code_id" to bank.currency.id
          ),
@@ -198,11 +208,12 @@ class BankRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         company = CompanyEntity.create(company)!!,
+         company = company,
          address = mapAddress(rs, "address_"),
          name = rs.getString("${columnPrefix}name"),
          number = rs.getInt("${columnPrefix}number"),
          generalLedgerProfitCenter = mapSimpleStore(rs, company,"store_"),
+         generalLedgerAccount = accountRepository.mapRow(rs, company, "account_"),
          accountNumber = rs.getInt("${columnPrefix}account_number"),
          currency = mapCurrency(rs, "currency_")
       )
@@ -218,6 +229,7 @@ class BankRepository @Inject constructor(
          name = rs.getString("${columnPrefix}name"),
          number = rs.getInt("${columnPrefix}number"),
          generalLedgerProfitCenter = bank.generalLedgerProfitCenter,
+         generalLedgerAccount = bank.generalLedgerAccount,
          accountNumber = rs.getInt("${columnPrefix}account_number"),
          currency = bank.currency
       )
@@ -229,17 +241,6 @@ class BankRepository @Inject constructor(
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
-      )
-
-   private fun mapCompany(rs: ResultSet, columnPrefix: String): CompanyEntity =
-      CompanyEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         name = rs.getString("${columnPrefix}name"),
-         doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
-         clientCode = rs.getString("${columnPrefix}client_code"),
-         clientId = rs.getInt("${columnPrefix}client_id"),
-         datasetCode = rs.getString("${columnPrefix}dataset_code"),
-         federalIdNumber = rs.getString("${columnPrefix}federal_id_number")
       )
 
    private fun mapSimpleStore(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): SimpleStore =
@@ -265,7 +266,9 @@ class BankRepository @Inject constructor(
          latitude = rs.getDouble("${columnPrefix}latitude"),
          longitude = rs.getDouble("${columnPrefix}longitude"),
          country = rs.getString("${columnPrefix}country"),
-         county = rs.getString("${columnPrefix}county")
+         county = rs.getString("${columnPrefix}county"),
+         phone = rs.getString("${columnPrefix}phone"),
+         fax = rs.getString("${columnPrefix}fax")
       )
 
 }

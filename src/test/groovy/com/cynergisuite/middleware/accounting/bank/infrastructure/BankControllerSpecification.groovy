@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountFactoryService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -21,12 +22,14 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject BankFactoryService bankFactoryService
+   @Inject AccountFactoryService accountFactoryService
 
    void "fetch one bank by id" () {
       given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      bankFactoryService.single(nineNineEightEmployee.company, store)
-      final def bank = bankFactoryService.single(nineNineEightEmployee.company, store)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
       when:
       def result = get("$path/${bank.id}")
@@ -40,6 +43,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          name == bank.name
          accountNumber == bank.accountNumber
          generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == bank.generalLedgerAccount.id
          with(address) {
             id > 0
             name == bank.address.name
@@ -53,6 +57,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             longitude == bank.address.longitude
             postalCode == bank.address.postalCode
             state == bank.address.state
+            phone == bank.address.phone
+            fax == bank.address.fax
          }
          with(currency) {
             description == bank.currency.description
@@ -75,9 +81,10 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      bankFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'), store)
-      final def banks = bankFactoryService.stream(12, nineNineEightEmployee.company, store).toList()
+      bankFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'), store, account)
+      final def banks = bankFactoryService.stream(12, nineNineEightEmployee.company, store, account).toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
@@ -103,6 +110,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             name == firstPageBank[index].name
             accountNumber == firstPageBank[index].accountNumber
             generalLedgerProfitCenter.id == firstPageBank[index].generalLedgerProfitCenter.id
+            generalLedgerAccount.id == firstPageBank[index].generalLedgerAccount.id
             with (address) {
                id > 0
                name == firstPageBank[index].address.name
@@ -116,6 +124,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
                longitude == firstPageBank[index].address.longitude
                postalCode == firstPageBank[index].address.postalCode
                state == firstPageBank[index].address.state
+               phone == firstPageBank[index].address.phone
+               fax == firstPageBank[index].address.fax
             }
             with (currency) {
                description == firstPageBank[index].currency.description
@@ -141,6 +151,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             name == secondPageBank[index].name
             accountNumber == secondPageBank[index].accountNumber
             generalLedgerProfitCenter.id == secondPageBank[index].generalLedgerProfitCenter.id
+            generalLedgerAccount.id == secondPageBank[index].generalLedgerAccount.id
             with(address) {
                id > 0
                name == secondPageBank[index].address.name
@@ -154,6 +165,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
                longitude == secondPageBank[index].address.longitude
                postalCode == secondPageBank[index].address.postalCode
                state == secondPageBank[index].address.state
+               phone == secondPageBank[index].address.phone
+               fax == secondPageBank[index].address.fax
             }
             with(currency) {
                description == secondPageBank[index].currency.description
@@ -178,6 +191,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             name == lastPageBank[index].name
             accountNumber == lastPageBank[index].accountNumber
             generalLedgerProfitCenter.id == lastPageBank[index].generalLedgerProfitCenter.id
+            generalLedgerAccount.id == lastPageBank[index].generalLedgerAccount.id
             with(address) {
                id > 0
                name == lastPageBank[index].address.name
@@ -191,6 +205,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
                longitude == lastPageBank[index].address.longitude
                postalCode == lastPageBank[index].address.postalCode
                state == lastPageBank[index].address.state
+               phone == lastPageBank[index].address.phone
+               fax == lastPageBank[index].address.fax
             }
             with(currency) {
                description == lastPageBank[index].currency.description
@@ -209,8 +225,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid bank"() {
       given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store)
+      final def bankDTO = bankFactoryService.singleDTO(store, account)
       final def jsonBank = jsonOutput.toJson(bankDTO)
 
       when:
@@ -225,6 +242,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          name == bankDTO.name
          accountNumber == bankDTO.accountNumber
          generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
          with(address) {
             id > 0
             name == bankDTO.address.name
@@ -238,6 +256,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             longitude == bankDTO.address.longitude
             postalCode == bankDTO.address.postalCode
             state == bankDTO.address.state
+            phone == bankDTO.address.phone
+            fax == bankDTO.address.fax
          }
          with(currency) {
             description == bankDTO.currency.description
@@ -248,8 +268,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid bank without account number"() {
       given: 'get json bank object and make it invalid'
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store)
+      final def bankDTO = bankFactoryService.singleDTO(store, account)
       // Make invalid json
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.remove('accountNumber')
@@ -267,8 +288,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid bank without address"() {
       given: 'get json bank object and make it invalid'
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store)
+      final def bankDTO = bankFactoryService.singleDTO(store, account)
       // Make invalid json
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.remove('address')
@@ -287,8 +309,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid bank with non exist currency value"() {
       given: 'get json bank object and make it invalid'
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store)
+      final def bankDTO = bankFactoryService.singleDTO(store, account)
       // Make invalid json
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.currency.value = 'USDT'
@@ -307,9 +330,10 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid bank"() {
       given: 'Update existingBank in DB with all new data in jsonBank'
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store)
-      final def updatedBankDTO = bankFactoryService.singleDTO(store)
+      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final def updatedBankDTO = bankFactoryService.singleDTO(store, account)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(updatedBankDTO))
       jsonBank.with {
          id = existingBank.id
@@ -331,6 +355,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          name == updatedBankDTO.name
          accountNumber == updatedBankDTO.accountNumber
          generalLedgerProfitCenter.id == updatedBankDTO.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
          with(address) {
             id > 0
             name == updatedBankDTO.address.name
@@ -344,6 +369,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             longitude == updatedBankDTO.address.longitude
             postalCode == updatedBankDTO.address.postalCode
             state == updatedBankDTO.address.state
+            phone == updatedBankDTO.address.phone
+            fax == updatedBankDTO.address.fax
          }
          with(currency) {
             description == updatedBankDTO.currency.description
@@ -354,8 +381,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid bank without bank name"() {
       given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store, account)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.address.name = ''
 
@@ -374,8 +402,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid bank with non exist address id"() {
       given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.address.id = 1000
 
@@ -392,8 +421,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid bank without currency"() {
       given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store)
+      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.remove('currency')
 
