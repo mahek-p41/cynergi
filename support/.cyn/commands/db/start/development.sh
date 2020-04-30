@@ -4,9 +4,11 @@
 cd ../development
 
 if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergidb)` ]; then
-  docker rm cynergidb
-  docker-compose up -d --no-deps --build cynergidb
-  docker-compose build cynergidbready && docker-compose run --rm cynergidbready
+  docker rm -f cynergidb > /dev/null 2>&1
+  docker-compose build --force-rm --quiet cynergipgdb
+  docker-compose build --force-rm --quiet cynergidb
+  docker-compose up -d --no-deps cynergidb
+  docker-compose build --force-rm --quiet cynergidbready && docker-compose run --rm cynergidbready
   exit $?
 else
   echo "cynergidb and cynergidevelopdb are already running checking if it is accepting connections"
