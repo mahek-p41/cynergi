@@ -1,21 +1,18 @@
 package com.cynergisuite.middleware.vendor.payment.term.infrastructure
 
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
-import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.schedule.ScheduleEntity
-import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
-import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -66,7 +63,7 @@ class VendorPaymentTermRepository @Inject constructor(
          count(*) OVER()            AS total_elements
       FROM vendor_payment_term vpt
            JOIN company comp ON vpt.company_id = comp.id
-           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.payment_term_id 
+           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.payment_term_id
    """
 
    fun findOne(id: Long, company: Company): VendorPaymentTermEntity? {
@@ -182,7 +179,7 @@ class VendorPaymentTermRepository @Inject constructor(
          mapOf(
             "company_id" to entity.company.myId(),
             "description" to entity.description,
-            "number_of_payments" to entity.numberOfPayments,
+            "number_of_payments" to entity.scheduleRecords.size,
             "discount_month" to entity.discountMonth,
             "discount_days" to entity.discountDays,
             "discount_percent" to entity.discountPercent
@@ -226,7 +223,7 @@ class VendorPaymentTermRepository @Inject constructor(
             "id" to entity.id,
             "companyId" to entity.company.myId(),
             "description" to entity.description,
-            "numberOfPayments" to entity.numberOfPayments,
+            "numberOfPayments" to entity.scheduleRecords.size,
             "discountMonth" to entity.discountMonth,
             "discountDays" to entity.discountDays,
             "discountPercent" to entity.discountPercent
@@ -246,18 +243,32 @@ class VendorPaymentTermRepository @Inject constructor(
    }
 
    private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
-      return VendorPaymentTermEntity(id = rs.getLong("vpt_id"), company = companyRepository.mapRow(rs, "comp_"), description = rs.getString("vpt_description"), number = rs.getInt("vpt_number"), numberOfPayments = rs.getInt("vpt_number_of_payments"), discountMonth = rs.getIntOrNull("vpt_discount_month"), discountDays = rs.getIntOrNull("vpt_discount_days"), discountPercent = rs.getBigDecimal("vpt_discount_percent"))
+      return VendorPaymentTermEntity(
+         id = rs.getLong("vpt_id"),
+         company = companyRepository.mapRow(rs, "comp_"),
+         description = rs.getString("vpt_description"),
+         discountMonth = rs.getIntOrNull("vpt_discount_month"),
+         discountDays = rs.getIntOrNull("vpt_discount_days"),
+         discountPercent = rs.getBigDecimal("vpt_discount_percent")
+      )
    }
 
    private fun mapDdlRow(rs: ResultSet, company: Company): VendorPaymentTermEntity {
-      return VendorPaymentTermEntity(id = rs.getLong("id"), company = company, description = rs.getString("description"), number = rs.getInt("number"), numberOfPayments = rs.getInt("number_of_payments"), discountMonth = rs.getIntOrNull("discount_month"), discountDays = rs.getIntOrNull("discount_days"), discountPercent = rs.getBigDecimal("discount_percent"))
+      return VendorPaymentTermEntity(
+         id = rs.getLong("id"),
+         company = company,
+         description = rs.getString("description"),
+         discountMonth = rs.getIntOrNull("discount_month"),
+         discountDays = rs.getIntOrNull("discount_days"),
+         discountPercent = rs.getBigDecimal("discount_percent")
+      )
    }
 
    private fun mapRowVendorPaymentTermSchedule(rs: ResultSet): VendorPaymentTermScheduleEntity? =
       if (rs.getString("vpts_id") != null) {
          VendorPaymentTermScheduleEntity(
             id = rs.getLong("vpts_id"),
-            dueMonth = rs.getInt("vpts_due_month"),
+            dueMonth = rs.getIntOrNull("vpts_due_month"),
             dueDays = rs.getInt("vpts_due_days"),
             duePercent = rs.getBigDecimal("vpts_due_percent"),
             scheduleOrderNumber = rs.getInt("vpts_schedule_order_number")

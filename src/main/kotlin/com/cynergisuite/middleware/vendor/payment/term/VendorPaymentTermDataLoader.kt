@@ -20,7 +20,12 @@ object VendorPaymentTermDataLoader {
       val random = faker.random()
 
       return IntStream.range(0, number).mapToObj {
-         VendorPaymentTermEntity(company = company, description = lorem.characters(3, 30), numberOfPayments = random.nextInt(1, 6), discountMonth = random.nextInt(1, 12), discountDays = random.nextInt(1, 30), discountPercent = random.nextDouble().toBigDecimal().setScale(2, HALF_EVEN)
+         VendorPaymentTermEntity(
+            company = company,
+            description = lorem.characters(3, 30),
+            discountMonth = random.nextInt(1, 12),
+            discountDays = random.nextInt(1, 30),
+            discountPercent = random.nextDouble().toBigDecimal().setScale(2, HALF_EVEN)
          )
       }
    }

@@ -1,16 +1,20 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.extensions.equalTo
 import com.cynergisuite.extensions.sum
+import com.cynergisuite.extensions.toFixed
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotNull
+import com.cynergisuite.middleware.localization.VendorPaymentTermDuePercentDoesNotAddUp
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
+import java.math.BigDecimal.ONE
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,22 +48,17 @@ class VendorPaymentTermValidator @Inject constructor(
    }
 
    private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorPaymentTermValueObject, company: Company) {
-
       if((vo.discountDays != null || vo.discountMonth != null) && vo.discountPercent == null) {
          errors.add(ValidationError("discountPercent", NotNull("discountPercent")))
       }
 
       val entity = VendorPaymentTermEntity(vo = vo, company = company)
+      val percentageSum: BigDecimal = entity.scheduleRecords.asSequence().map { it.duePercent }.sum()
 
-      var percentageSum: BigDecimal = entity.scheduleRecords.asSequence().map { it.duePercent }.sum()
-      var recordCount = entity.scheduleRecords.count()
+      if(!percentageSum.equalTo(ONE)) {
+         val responseValue = percentageSum * BigDecimal(100)
 
-      if(percentageSum.toInt() != 1) {
-         errors.add(ValidationError("duePercent", NotNull("duePercent")))
-      }
-
-      if(recordCount != vo.numberOfPayments) {
-         errors.add(ValidationError("numberOfPayments", NotNull("numberOfPayments")))
+         errors.add(ValidationError("scheduleRecords.duePercent[*]", VendorPaymentTermDuePercentDoesNotAddUp(responseValue.toFixed(5, 5))))
       }
    }
 }

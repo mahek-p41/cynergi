@@ -6,9 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import javax.validation.Valid
 import javax.validation.constraints.Digits
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -26,17 +25,6 @@ data class VendorPaymentTermValueObject(
    var description: String? = null,
 
    @field:Positive
-   @field:Schema(name = "number", minimum = "1", required = true, description = "Vendor Payment Term Number")
-   var number: Int? = null,
-
-   @field:NotNull
-   @field:Positive
-   @field:Min(value = 1)
-   @field:Max(value = 50)
-   @field:Schema(name = "numberOfPayments", minimum = "1", required = false, description = "Vendor Payment Term Number of Payments")
-   var numberOfPayments: Int? = null,
-
-   @field:Positive
    @field:Schema(name = "discountMonth", minimum = "1", required = false, description = "Vendor Payment Term Discount Month")
    var discountMonth: Int? = null,
 
@@ -49,6 +37,7 @@ data class VendorPaymentTermValueObject(
    @field:Schema(name = "discountPercent", description = "Vendor Payment Term Discount Percent")
    var discountPercent: BigDecimal? = null,
 
+   @field:Valid
    @field:Size(min = 1)
    @field:Schema(name = "scheduleRecords", description = "Listing of schedule records associated with a Vendor Payment Term")
    var scheduleRecords: MutableList<VendorPaymentTermScheduleValueObject> = mutableListOf()
@@ -59,8 +48,6 @@ data class VendorPaymentTermValueObject(
       this(
          id = entity.id,
          description = entity.description,
-         number = entity.number,
-         numberOfPayments = entity.numberOfPayments,
          discountMonth = entity.discountMonth,
          discountDays = entity.discountDays,
          discountPercent = entity.discountPercent,

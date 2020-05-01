@@ -50,7 +50,7 @@ class AuditExceptionHasNotBeenApproved(auditExceptionId: Long): Cynergi("cynergi
 class AuditDueToday(auditNumber: Int): Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
 class AuditPastDue(auditNumber: Int): Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 
-class VendorPaymentTermDoesNotMatchDue(numberOfPayments: Int): Cynergi("vendor.payment.term.number.of.payments.does.not.match.due", arrayOf(numberOfPayments))
+class VendorPaymentTermDuePercentDoesNotAddUp(percent: String): Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable)) {
