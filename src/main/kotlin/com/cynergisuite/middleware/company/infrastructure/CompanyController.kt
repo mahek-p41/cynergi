@@ -39,9 +39,9 @@ class CompanyController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(CompanyController::class.java)
 
-   @Throws(NotFoundException::class)
-   @AccessControl("fetchOne", accessControlProvider = CompanyAccessControlProvider::class)
    @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
+   @AccessControl("fetchOne", accessControlProvider = CompanyAccessControlProvider::class)
+   @Throws(NotFoundException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Fetch a single company", description = "Fetch a single company by ID", operationId = "company-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
@@ -62,8 +62,8 @@ class CompanyController @Inject constructor(
       return response
    }
 
-   @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Fetch a listing of companies", description = "Fetch a paginated listing of companies", operationId = "company-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -86,8 +86,8 @@ class CompanyController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
+   @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
-   @AccessControl("")
    @Operation(tags = ["CompanyEndpoints"], summary = "Create a single company", description = "Create a single company.", operationId = "company-create")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to save Company", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
@@ -109,8 +109,8 @@ class CompanyController @Inject constructor(
    }
 
    @Put(uri = "/{id}" ,processes = [APPLICATION_JSON])
+   @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
-   @AccessControl("")
    @Operation(tags = ["CompanyEndpoints"], summary = "Create a single company", description = "Create a single company.", operationId = "company-update")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", description = "If successfully able to update Company", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
