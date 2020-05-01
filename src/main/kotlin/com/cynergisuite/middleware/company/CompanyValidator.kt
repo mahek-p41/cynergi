@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -23,11 +24,7 @@ class CompanyValidator @Inject constructor(
       logger.trace("Validating Save Company {}", companyVO)
 
       doValidation { errors ->
-         if (companyRepository.duplicate(clientId = companyVO.clientId))
-            errors.add(ValidationError("clientId", Duplicate(companyVO.clientId.toString())))
-
-         if (companyRepository.duplicate(datasetCode = companyVO.datasetCode))
-            errors.add(ValidationError("datasetCode", Duplicate(companyVO.datasetCode.toString())))
+         doSharedValidation(errors, companyVO)
       }
 
       return CompanyEntity(companyVO)
@@ -40,14 +37,19 @@ class CompanyValidator @Inject constructor(
 
       doValidation { errors ->
          companyEntity ?: errors.add(ValidationError("id", NotFound(id)))
-
-         if (companyRepository.duplicate(id = id, clientId = companyVO.clientId))
-            errors.add(ValidationError("clientId", Duplicate(companyVO.clientId.toString())))
-
-         if (companyRepository.duplicate(id = id, datasetCode = companyVO.datasetCode))
-            errors.add(ValidationError("datasetCode", Duplicate(companyVO.datasetCode.toString())))
+         doSharedValidation(errors, companyVO, id)
       }
 
       return CompanyEntity(companyVO)
+   }
+
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, companyVO: CompanyValueObject, id: Long? = null) {
+      if (companyRepository.duplicate(id = id, clientId = companyVO.clientId)) {
+         errors.add(ValidationError("clientId", Duplicate(companyVO.clientId.toString())))
+      }
+
+      if (companyRepository.duplicate(id = id, datasetCode = companyVO.datasetCode)) {
+         errors.add(ValidationError("datasetCode", Duplicate(companyVO.datasetCode.toString())))
+      }
    }
 }
