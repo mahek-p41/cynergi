@@ -4,7 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
@@ -13,6 +13,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.lang.StringBuilder
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -121,7 +122,9 @@ class CompanyRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: Long? = null): Boolean {
+      if (id == null) return false
+
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Company: {} exists resulted in {}", id, exists)
@@ -129,16 +132,32 @@ class CompanyRepository @Inject constructor(
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun duplicate(id: Long? = null, clientId: Int? = null, datasetCode: String? = null): Boolean {
+      if (clientId == null && datasetCode == null) return false
+      var and = EMPTY
+      val params = mapOf<String, Any?>("id" to id, "clientId" to clientId, "datasetCode" to datasetCode)
+      val query = StringBuilder("SELECT EXISTS(SELECT id FROM company WHERE ")
 
-   fun doesNotExist(company: Company): Boolean {
-      val companyId = company.myId()
-
-      return if (companyId != null) {
-         !exists(companyId)
-      } else {
-         false
+      if (id != null) {
+         query.append(and).append(" id <> :id ")
+         and = " AND "
       }
+
+      if (clientId != null) {
+         query.append(and).append(" client_id = :clientId ")
+      } else if (datasetCode != null) {
+         query.append(and).append(" dataset_code = :datasetCode ")
+      }
+
+      query.append(")")
+
+      logger.trace("Checking if Company clientId or datasetCode duplicate with query:\n{}\nparams:\n{}", query, params)
+
+      val exists = jdbc.queryForObject(query.toString(), params, Boolean::class.java)!!
+
+      logger.trace("Checking if Company clientId or datasetCode duplicate, result: {}", exists)
+
+      return exists
    }
 
    @Transactional
@@ -160,6 +179,38 @@ class CompanyRepository @Inject constructor(
             "federal_id_number" to company.federalIdNumber
          ),
          RowMapper { rs, _ -> mapRow(rs) }
+      )
+   }
+
+   @Transactional
+   fun update(company: CompanyEntity): CompanyEntity {
+      logger.debug("Updating company {}", company)
+
+      return jdbc.updateReturning("""
+         UPDATE company
+         SET
+            name = :name,
+            doing_business_as = :doing_business_as,
+            client_code = :client_code,
+            client_id = :client_id,
+            dataset_code = :dataset_code,
+            federal_id_number = :federal_id_number
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id" to company.id,
+            "name" to company.name,
+            "doing_business_as" to company.doingBusinessAs,
+            "client_code" to company.clientCode,
+            "client_id" to company.clientId,
+            "dataset_code" to company.datasetCode,
+            "federal_id_number" to company.federalIdNumber
+         ),
+         RowMapper { rs, _ ->
+            mapRow(rs)
+         }
       )
    }
 
