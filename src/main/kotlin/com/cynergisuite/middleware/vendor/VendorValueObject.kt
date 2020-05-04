@@ -171,12 +171,12 @@ data class VendorValueObject (
          ourAccountNumber = entity.ourAccountNumber,
          payTo = entity.payTo,
          freightOnboardTypeId = entity.freightOnBoardTypeId,
-         paymentTerms = entity.paymentTermsId,
+         paymentTermsId = entity.paymentTermsId,
          floatDays = entity.floatDays,
          normalDays = entity.normalDays,
          returnPolicy = entity.returnPolicy,
          shipViaId = entity.shipViaId,
-         vendorGroup = entity.vendorGroupId,
+         vendorGroupId = entity.vendorGroupId,
          shutdownFrom = entity.shutdownFrom,
          shutdownThru = entity.shutdownThru,
          minimumQuantity = entity.minimumQuantity,
@@ -197,7 +197,7 @@ data class VendorValueObject (
          chargeInvTax3 = entity.chargeInvTax3,
          chargeInvTax4 = entity.chargeInvTax4,
          federalIdNumberVerification = entity.federalIdNumberVerification,
-         emailAddress = entity.emailAddress
+         emailAddress = entity.emailAddress!!
       )
 
    override fun myId(): Long? = id
