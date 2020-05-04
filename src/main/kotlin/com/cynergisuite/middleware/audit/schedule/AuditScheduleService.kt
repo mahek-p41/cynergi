@@ -9,6 +9,10 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.localization.AuditDueToday
+import com.cynergisuite.middleware.localization.AuditPastDue
+import com.cynergisuite.middleware.localization.LocalizationService
+import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
@@ -36,6 +40,7 @@ class AuditScheduleService @Inject constructor(
    private val auditScheduleValidator: AuditScheduleValidator,
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
+   private val localizationService: LocalizationService,
    private val scheduleRepository: ScheduleRepository,
    private val storeRepository: StoreRepository,
    private val notificationService: NotificationService
@@ -67,7 +72,7 @@ class AuditScheduleService @Inject constructor(
          id = inserted.id,
          title = inserted.title,
          description = inserted.description,
-         schedule = DayOfWeek.valueOf(inserted.schedule),
+         schedule = inserted.schedule.let { DayOfWeek.valueOf(it) },
          stores = stores.map { StoreValueObject(it) },
          enabled = inserted.enabled
       )
@@ -82,7 +87,7 @@ class AuditScheduleService @Inject constructor(
          id = updated.id,
          title = updated.title,
          description = updated.description,
-         schedule = DayOfWeek.valueOf(schedule.schedule),
+         schedule = schedule.schedule.let { DayOfWeek.valueOf(it) },
          stores = stores.map { StoreValueObject(it) },
          enabled = updated.enabled
       )
@@ -103,14 +108,16 @@ class AuditScheduleService @Inject constructor(
          id = schedule.id,
          title = schedule.title,
          description = schedule.description,
-         schedule = DayOfWeek.valueOf(schedule.schedule),
+         schedule = schedule.schedule.let { DayOfWeek.valueOf(it) },
          stores = stores,
          enabled = schedule.enabled
       )
    }
 
+   override fun shouldProcess(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): Boolean = true // always process as we have possible notifications to send out for past due audits
+
    @Throws(ScheduleProcessingException::class)
-   override fun processDaily(schedule: ScheduleEntity) : AuditScheduleResult {
+   override fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek) : AuditScheduleResult {
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
       val company = schedule.arguments.firstOrNull { it.description == "companyId" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
@@ -129,7 +136,7 @@ class AuditScheduleService @Inject constructor(
          .map { employeeRepository.findOne(number = it, employeeType = employeeType, company = company) }
          .firstOrNull() ?: throw ScheduleProcessingException("Unable to find employee who scheduled audit")
 
-      for (arg: ScheduleArgumentEntity in schedule.arguments) {
+      for (arg: ScheduleArgumentEntity in schedule.arguments) { // looking for stores who's audits are today
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOne(arg.value.toInt(), company)!!
             val employeeUser = AuthenticatedUser(
@@ -143,21 +150,36 @@ class AuditScheduleService @Inject constructor(
                alternativeArea = employee.alternativeArea,
                cynergiSystemAdmin = employee.cynergiSystemAdmin
             )
-            val oneNote = NotificationValueObject(
-               startDate = LocalDate.now(),
-               dateCreated = null,
-               expirationDate = LocalDate.now().plusDays(7),
-               company = company.id.toString(),
-               message = schedule.description!!,
-               sendingEmployee = employee.number.toString(),
-               notificationType = STORE.value
-            )
 
-            val audit = auditService.findOrCreate(store, employeeUser, locale)
-            val notification = notificationService.create(oneNote)
+            val (audit, existing) = if (schedule.schedule == dayOfWeek.name) {
+               auditService.findOrCreate(store, employeeUser, locale) to false
+            } else {
+               auditService.findOneCreatedOrInProgress(store, employeeUser, locale) to true
+            }
 
-            audits.add(audit)
-            notifications.add(notification)
+            if (audit != null) {
+               val notificationDescription = if (existing) {
+                  localizationService.localize(AuditPastDue(audit.auditNumber))
+               } else {
+                  localizationService.localize(AuditDueToday(audit.auditNumber))
+               }
+
+               val oneNote = NotificationValueObject(
+                  startDate = LocalDate.now(),
+                  dateCreated = null,
+                  expirationDate = LocalDate.now().plusDays(1),
+                  company = company.id.toString(),
+                  message = schedule.description!!,
+                  sendingEmployee = employee.number.toString(),
+                  notificationType = STORE.value,
+                  recipients = listOf(NotificationRecipientValueObject(description = notificationDescription, store = store))
+               )
+
+               val notification = notificationService.create(oneNote)
+
+               audits.add(audit)
+               notifications.add(notification)
+            }
          }
       }
 

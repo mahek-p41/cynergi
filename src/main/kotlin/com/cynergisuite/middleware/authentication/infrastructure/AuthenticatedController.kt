@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
-import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.company.CompanyValueObject
-import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -14,7 +12,6 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Head
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -28,12 +25,10 @@ import javax.inject.Inject
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/authenticated")
 class AuthenticatedController @Inject constructor(
-   private val userService: UserService,
-   private val localizationService: LocalizationService
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticatedController::class.java)
 
-   @Secured(IS_ANONYMOUS)
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["AuthenticationEndpoints"], summary = "Check authentication credentials and list claims", operationId = "authenticated")
    @ApiResponses(value = [
@@ -44,9 +39,21 @@ class AuthenticatedController @Inject constructor(
       logger.debug("Checking authentication {}", authentication)
 
       return if (authentication != null) {
-         val user = userService.findUser(authentication) as AuthenticatedUser
-         val companyWithNullFederalIdNumber = CompanyValueObject(entity = user.company, federalTaxNumberOverride = null)
-         val permissions = user.myDepartment()?.let { userService.fetchPermissions(user.myDepartment()!!) } ?: emptySet()
+         val user = userService.findUser(authentication)
+         val company = user.myCompany()
+         val department = user.myDepartment()
+         val companyWithNullFederalIdNumber = CompanyValueObject(company = company)
+         val permissions = when {
+            user.isCynergiAdmin() -> {
+               userService.fetchAllPermissions()
+            }
+            department != null -> {
+               userService.fetchPermissions(department)
+            }
+            else -> {
+               emptySet()
+            }
+         }
 
          logger.debug("User is authenticated {}", user)
 

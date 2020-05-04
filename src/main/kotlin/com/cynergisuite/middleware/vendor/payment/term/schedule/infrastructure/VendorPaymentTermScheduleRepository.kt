@@ -27,30 +27,6 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermScheduleRepository::class.java)
-   private fun baseSelectQuery() = """
-      SELECT
-         vpts.id                    AS vpts_id,
-         vpts.uu_row_id             AS vpts_uu_row_id,
-         vpts.time_created          AS vpts_time_created,
-         vpts.time_updated          AS vpts_time_updated,
-         vpts.payment_term_id       AS vpts_payment_term_id,
-         vpts.due_month             AS vpts_due_month,
-         vpts.due_days              AS vpts_due_days,
-         vpts.due_percent           AS vpts_due_percent,
-         vpts.schedule_order_number AS vpts_due_percent,
-         count(*) OVER()            AS total_elements
-      FROM vendor_payment_term_schedule vpts
-   """
-
-   fun findOne(id: Long): VendorPaymentTermScheduleEntity? {
-      logger.debug("Searching for VendorPaymentTermSchedule by id {}", id)
-
-      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE vpts.id = :id", mapOf("id" to id), this::mapRow)
-
-      logger.trace("Searching for VendorPaymentTermSchedule: {} resulted in {}", id, found)
-
-      return found
-   }
 
    fun upsert(vpts: VendorPaymentTermScheduleEntity, vpt: VendorPaymentTermEntity): VendorPaymentTermScheduleEntity =
       if (vpts.id == null) {

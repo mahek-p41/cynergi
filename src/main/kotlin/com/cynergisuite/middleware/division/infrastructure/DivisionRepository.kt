@@ -1,7 +1,5 @@
 package com.cynergisuite.middleware.division.infrastructure
 
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -44,7 +42,7 @@ class DivisionRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         company = company as CompanyEntity,
+         company = CompanyEntity.create(company)!!,   // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")

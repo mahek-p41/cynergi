@@ -652,4 +652,9 @@ healthchecksdb
 *.dump
 *.dump.*
 .kotlintest
-support/deployment/gradleCache/
+support/deployment/gradleCache/*
+support/deployment/gradleWrapper/*
+support/development/gradleCache/*
+Snap.*
+heapdump.*
+javacore.*

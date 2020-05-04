@@ -8,6 +8,7 @@ import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import io.micronaut.context.ApplicationContext
 import io.micronaut.security.utils.SecurityService
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -34,7 +35,7 @@ class AccessControlService @Inject constructor(
       val parameters = context.parameters
       val authenticatedUser: User = securityService.authentication.map { userService.findUser(it) }.orElseThrow { AccessException(AccessDenied(), securityService.username().orElse(null)) }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
-      val asset: String? = accessControl?.stringValue()?.orElse(null)
+      val asset: String = accessControl!!.stringValue()!!.orElse(StringUtils.EMPTY)
       val accessControlProviderClass = accessControl?.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
       val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
 
@@ -42,8 +43,7 @@ class AccessControlService @Inject constructor(
 
       return if (
          securityService.isAuthenticated
-         && asset != null
-         && accessControlProvider.canUserAccess(authenticatedUser, asset, parameters)
+         && (authenticatedUser.isCynergiAdmin() || accessControlProvider.canUserAccess(authenticatedUser, asset, parameters))
       ) {
          context.proceed()
       } else {

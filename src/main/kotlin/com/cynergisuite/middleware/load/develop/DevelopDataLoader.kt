@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.load.develop
 
+import com.cynergisuite.middleware.accounting.account.AccountFactoryService
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
@@ -38,7 +40,9 @@ class DevelopDataLoader @Inject constructor(
    private val divisionFactoryService: DivisionFactoryService,
    private val employeeFactoryService: EmployeeFactoryService,
    private val regionFactoryService: RegionFactoryService,
-   private val storeFactoryService: StoreFactoryService
+   private val storeFactoryService: StoreFactoryService,
+   private val accountFactoryService: AccountFactoryService,
+   private val bankFactoryService: BankFactoryService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -145,6 +149,13 @@ class DevelopDataLoader @Inject constructor(
 
       auditScheduleScheduleFactoryService.single(TUESDAY, listOf(corrtoStore1), AuthenticatedEmployee(corrtoStore1StoreManager.id!!, corrtoStore1StoreManager, corrtoStore1), corrto)
       auditScheduleScheduleFactoryService.single(THURSDAY, listOf(corrtoStore3), AuthenticatedEmployee(corrtoStore3StoreManager.id!!, corrtoStore3StoreManager, corrtoStore3), corrto)
+
+      // setup account & bank
+      val accountCorrto = accountFactoryService.single(corrto)
+      bankFactoryService.single(corrto, corrtoStore1, accountCorrto)
+
+      val accountCorptp = accountFactoryService.single(corptp)
+      bankFactoryService.single(corptp, corptpStore1, accountCorptp)
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())

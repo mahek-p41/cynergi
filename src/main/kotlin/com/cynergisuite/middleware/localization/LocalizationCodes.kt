@@ -47,14 +47,18 @@ class AuditExceptionMustHaveInventoryOrBarcode(): Cynergi("cynergi.audit.excepti
 class AuditHasBeenApprovedNoNewNotesAllowed(auditId: Long): Cynergi("cynergi.audit.has.been.approved.no.new.notes.allowed", arrayOf(auditId))
 class AuditUpdateRequiresApprovedOrNote(): Cynergi("cynergi.audit.update.requires.approval.or.note", emptyArray())
 class AuditExceptionHasNotBeenApproved(auditExceptionId: Long): Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
+class AuditDueToday(auditNumber: Int): Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
+class AuditPastDue(auditNumber: Int): Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 
-class VendorPaymentTermDoesNotMatchDue(numberOfPayments: Int): Cynergi("vendor.payment.term.number.of.payments.does.not.match.due", arrayOf(numberOfPayments))
+class VendorPaymentTermDuePercentDoesNotAddUp(percent: String): Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
 
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable)) {
    constructor(user: User) : this(user.myEmployeeNumber())
 }
 class InternalError: SystemCode("system.internal.error", emptyArray())
+class DataAccessError: SystemCode("system.data.access.exception", emptyArray())
+class DataIntegrityViolationError: SystemCode("system.data.integrity.violation", emptyArray())
 class RouteError(routeArgument: String): SystemCode("system.route.error", arrayOf(routeArgument))
 class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())
