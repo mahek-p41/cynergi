@@ -27,9 +27,7 @@ class VendorRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
-   //TODO I do not believe I need params below
-   private fun selectBaseQuery(params: MutableMap<String, Any?>, company: Long): String {
-      return """
+   private fun findOneQuery() = """
          SELECT
             v.id                             AS v_id,
             v.uu_row_id                      AS v_uu_row_id,
@@ -82,39 +80,28 @@ class VendorRepository @Inject constructor(
          FROM vendor v
          JOIN company comp ON vpt.company_id = comp.id
       """
-   }
-
-   /*
-   private fun executeFindSingleQuery(query: String, params: Map<String, Any?>): VendorEntity? {
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
-         val vendor = this.mapRow(rs)
-
-         do {
-            vendorRepository.mapRowOrNull(rs)?.also { audit.actions.add(it) }
-         } while(rs.next())
-
-         vendor
-      }
-
-      //if (found != null) {
-      //   loadNextStates(found)
-      //}
-
-      return found
-   }
-    */
 
    fun findOne(id: Long, company: Company): VendorEntity? {
-      logger.debug("Searching for vendor by id {} with dataset {}", id, company)
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+      val query = "${findOneQuery()}\nWHERE vpt.id = :id AND comp.id = :comp_id"
 
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery(params, company.myId()!!)}\nWHERE v.id = :id AND v.companyId = :company"
-      val found = executeFindSingleQuery(query, params)
+      logger.debug("Searching for Vendor using {} {}", query, params)
 
-      logger.trace("Searching for Vendor with ID {} resulted in {}", id, found)
+      val found = jdbc.findFirstOrNull(query, params) { rs ->
+         val vendorPaymentTerm = mapRow(rs)
+
+         do {
+            mapRowVendorPaymentTermSchedule(rs)?.also { vendorPaymentTerm.scheduleRecords.add(it) }
+         } while(rs.next())
+
+         vendorPaymentTerm
+      }
+
+      logger.trace("Searching for VendorPaymentTerm: {} resulted in {}", id, found)
 
       return found
    }
+
 
    /*
    fun findAll(pageRequest: StandardPageRequest, company: Long): RepositoryPage<VendorEntity, StandardPageRequest> {

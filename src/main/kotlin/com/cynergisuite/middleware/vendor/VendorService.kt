@@ -39,6 +39,7 @@ class VendorService @Inject constructor(
    fun fetchById(id: Long, company: Company): VendorValueObject? =
       vendorRepository.findOne(id, company)?.let{ VendorValueObject(entity = it) }
 
+   /*
    @Validated
    fun fetchAll(@Valid pageRequest: StandardPageRequest, dataset: String): Page<VendorValueObject> {
       val validaPageRequest = vendorValidator.validationFetchAll(pageRequest, dataset)
@@ -69,5 +70,7 @@ class VendorService @Inject constructor(
          create(VendorCreateValueObject(StoreValueObject(store)))
       }
    }
+
+   */
 
 }
