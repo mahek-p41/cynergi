@@ -5,14 +5,10 @@ import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.makeCell
-import com.cynergisuite.middleware.authentication.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity.Companion.fromUser
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreValueObject
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermValueObject
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
@@ -31,9 +27,7 @@ import javax.validation.Valid
 class VendorService @Inject constructor(
    private val vendorRepository: VendorRepository,
    private val vendorPaymentTermRepository: VendorPaymentTermRepository,
-   private val vendorValidator: VendorValidator,
-   private val companyRepository: CompanyRepository,
-   private val localizationService: LocalizationService
+   private val vendorValidator: VendorValidator
 ) {
 
    fun fetchById(id: Long, company: Company): VendorValueObject? =

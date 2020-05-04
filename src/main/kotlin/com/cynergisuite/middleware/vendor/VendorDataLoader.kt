@@ -15,6 +15,7 @@ import javax.inject.Singleton
 
 object VendorFactory {
 
+   /*
    @JvmStatic
    fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null): Stream<VendorEntity> {
       val number = if (numberIn > 0) numberIn else 1
@@ -116,4 +117,6 @@ class AuditFactoryService @Inject constructor(
 
    fun single(statusesIn: Set<AuditStatus>?): VendorEntity =
       stream(1, null, null, statusesIn).findFirst().orElseThrow { Exception("Unable to create Vendor") }
+
+   */
 }
