@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.vendor.VendorEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -22,8 +23,7 @@ import javax.inject.Singleton
 
 @Singleton
 class VendorRepository @Inject constructor(
-   private val vendorRepository: VendorRepository,
-   private val employeeRepository: EmployeeRepository,
+   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
@@ -36,35 +36,35 @@ class VendorRepository @Inject constructor(
             v.company_id                     AS v_company_id,
             v.number                         AS v_number,
             v.name_key                       AS v_name_key,
-            v.address                        AS v_address,
+            v.address_id                     AS v_address_id,
             v.our_account_number             AS v_our_account_number,
-            v.pay_to                         AS v_pay_to,
-            v.freight_on_board               AS v_freight_on_board,
-            v.payment_terms                  AS v_payment_terms,
+            v.pay_to_id                      AS v_pay_to_id,
+            v.freight_on_board_type_id       AS v_freight_on_board_type_id,
+            v.payment_terms_id               AS v_payment_terms_id,
             v.float_days                     AS v_float_days,
             v.normal_days                    AS v_normal_days,
             v.return_policy                  AS v_return_policy,
-            v.ship_via                       AS v_ship_via,
-            v.vendor_group                   AS v_vendor_group,
-            v.shutdown_from date             AS v_shutdown_from date,
-            v.shutdown_thru date             AS v_shutdown_thru date,
+            v.ship_via_id                    AS v_ship_via_id,
+            v.group_id                       AS v_group_id,
+            v.shutdown_from                  AS v_shutdown_from,
+            v.shutdown_thru                  AS v_shutdown_thru,
             v.minimum_quantity               AS v_minimum_quantity,
             v.minimum_amount                 AS v_minimum_amount,
             v.free_ship_quantity             AS v_free_ship_quantity,
             v.free_ship_amount               AS v_free_ship_amount,
             v.vendor_1099                    AS v_vendor_1099,
             v.federal_id_number              AS v_federal_id_number,
-            v.sales_rep_name                 AS v_sales_rep_name,
-            v.sales_rep_fax                  AS v_sales_rep_fax,
+            v.sales_representative_name      AS v_sales_representative_name,
+            v.sales_representative_fax       AS v_sales_representative_fax,
             v.separate_check                 AS v_separate_check,
             v.bump_percent                   AS v_bump_percent,
-            v.freight_calc_method            AS v_freight_calc_method,
+            v.freight_calc_method_type_id    AS v_freight_calc_method_type_id,
             v.freight_percent                AS v_freight_percent,
             v.freight_amount                 AS v_freight_amount,
-            v.charge_inv_tax_1               AS v_charge_inv_tax_1,
-            v.charge_inv_tax_2               AS v_charge_inv_tax_2,
-            v.charge_inv_tax_3               AS v_charge_inv_tax_3,
-            v.charge_inv_tax_4               AS v_charge_inv_tax_4,
+            v.charge_inventory_tax_1         AS v_charge_inventory_tax_1,
+            v.charge_inventory_tax_2         AS v_charge_inventory_tax_2,
+            v.charge_inventory_tax_3         AS v_charge_inventory_tax_3,
+            v.charge_inventory_tax_4         AS v_charge_inventory_tax_4,
             v.federal_id_number_verification AS v_federal_id_number_verification,
             v.email_address                  AS v_email_address,
             comp.id                          AS comp_id,
@@ -88,13 +88,13 @@ class VendorRepository @Inject constructor(
       logger.debug("Searching for Vendor using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
-         val vendorPaymentTerm = mapRow(rs)
+         val vendor = mapRow(rs, company)
 
-         do {
-            mapRowVendorPaymentTermSchedule(rs)?.also { vendorPaymentTerm.scheduleRecords.add(it) }
-         } while(rs.next())
+         //do {
+         //   mapRowVendorPaymentTermSchedule(rs)?.also { vendorPaymentTerm.scheduleRecords.add(it) }
+         //} while(rs.next())
 
-         vendorPaymentTerm
+         vendor
       }
 
       logger.trace("Searching for VendorPaymentTerm: {} resulted in {}", id, found)
@@ -265,15 +265,15 @@ class VendorRepository @Inject constructor(
         INSERT INTO vendor(company_id,
                            number,
                            name_key,
-                           address,
+                           address_id,
                            our_account_number,
-                           pay_to,
+                           pay_to_id,
                            freight_on_board_type_id,
-                           payment_terms,
+                           payment_terms_id,
                            float_days,
                            normal_days,
                            return_policy,
-                           ship_via,
+                           ship_via_id,
                            group_id,
                            shutdown_from,
                            shutdown_thru,
@@ -283,32 +283,32 @@ class VendorRepository @Inject constructor(
                            free_ship_amount,
                            vendor_1099,
                            federal_id_number,
-                           sales_rep_name,
-                           sales_rep_fax,
+                           sales_representative_name,
+                           sales_representative_fax,
                            separate_check,
                            bump_percent,
-                           freight_calc_method_type,
+                           freight_calc_method_type_id,
                            freight_percent,
                            freight_amount,
-                           charge_inv_tax_1,
-                           charge_inv_tax_2,
-                           charge_inv_tax_3,
-                           charge_inv_tax_4,
+                           charge_inventory_tax_1,
+                           charge_inventory_tax_2,
+                           charge_inventory_tax_3,
+                           charge_inventory_tax_4,
                            federal_id_number_verification,
                            email_address)
          VALUES (
             :company_id,
             :number,
             :name_key,
-            :address,
+            :address_id,
             :our_account_number,
-            :pay_to,
+            :pay_to_id,
             :freight_on_board_type_id,
-            :payment_terms,
+            :payment_terms_id,
             :float_days,
             :normal_days,
             :return_policy,
-            :ship_via,
+            :ship_via_id,
             :group_id,
             :shutdown_from,
             :shutdown_thru,
@@ -318,24 +318,23 @@ class VendorRepository @Inject constructor(
             :free_ship_amount,
             :vendor_1099,
             :federal_id_number,
-            :sales_rep_name,
-            :sales_rep_fax,
+            :sales_representative_name,
+            :sales_representative_fax,
             :separate_check,
             :bump_percent,
-            :freight_calc_method_type,
+            :freight_calc_method_type_id,
             :freight_percent,
             :freight_amount,
-            :charge_inv_tax_1,
-            :charge_inv_tax_2,
-            :charge_inv_tax_3,
-            :charge_inv_tax_4,
+            :charge_inventory_tax_1,
+            :charge_inventory_tax_2,
+            :charge_inventory_tax_3,
+            :charge_inventory_tax_4,
             :federal_id_number_verification,
             :email_address
          )
          RETURNING
             *
-         """.trimMargin(),
-         //mapOf("store_number" to entity.store.number, "dataset" to entity.store.dataset),
+         """.trimIndent(),
          mapOf(
             "company_id" to entity.company.myId(),
             "number" to entity.vendorNumber,
@@ -349,7 +348,7 @@ class VendorRepository @Inject constructor(
             "normal_days" to entity.normalDays,
             "return_policy" to entity.returnPolicy,
             "ship_via_id" to entity.shipViaId,
-            "vend_group_id" to entity.vendorGroupId,
+            "group_id" to entity.vendorGroupId,
             "shutdown_from" to entity.shutdownFrom,
             "shutdown_thru" to entity.shutdownThru,
             "minimum_quantity" to entity.minimumQuantity,
@@ -358,64 +357,21 @@ class VendorRepository @Inject constructor(
             "free_ship_amount" to entity.freeShipAmount,
             "vendor_1099" to entity.vendor1099,
             "federal_id_number" to entity.federalIdNumber,
-            "sales_rep_name" to entity.salesRepName,
-            "sales_rep_fax" to entity.salesRepFax,
+            "sales_representative_name" to entity.salesRepName,
+            "sales_representative_fax" to entity.salesRepFax,
             "separate_check" to entity.separateCheck,
             "bump_percent" to entity.bumpPercent,
-            "freight_calc_method_type" to entity.freightCalcMethodType,
+            "freight_calc_method_type_id" to entity.freightCalcMethodType,
             "freight_percent" to entity.freightPercent,
             "freight_amount" to entity.freightAmount,
-            "charge_inv_tax_1" to entity.chargeInvTax1,
-            "charge_inv_tax_2" to entity.chargeInvTax2,
-            "charge_inv_tax_3" to entity.chargeInvTax3,
-            "charge_inv_tax_4" to entity.chargeInvTax4,
+            "charge_inventory_tax_1" to entity.chargeInvTax1,
+            "charge_inventory_tax_2" to entity.chargeInvTax2,
+            "charge_inventory_tax_3" to entity.chargeInvTax3,
+            "charge_inventory_tax_4" to entity.chargeInvTax4,
             "federal_id_number_verification" to entity.federalIdNumberVerification,
             "email_address" to entity.emailAddress
             ),
-
-         //TODO  I am thinking I should not have the v_ on these.
-         RowMapper { rs, _ ->
-            VendorEntity(
-               id = rs.getLong("v_id"),
-               uuRowId = rs.getUuid("v_uu_row_id"),
-               timeCreated = rs.getOffsetDateTime("v_time_created"),
-               timeUpdated = rs.getOffsetDateTime("v_time_updated"),
-               companyId = rs.getLong("v_company_id"),
-               vendorNumber = rs.getInt("v_number"),
-               nameKey = rs.getString("v_name_key"),
-               addressId = rs.getInt("v_address"),
-               ourAccountNumber = rs.getInt("v_our_account_number"),
-               payTo = rs.getInt("v_pay_to"),
-               freightOnBoard = rs.getString("v_freight_on_board"),
-               paymentTerms = rs.getInt("v_payment_terms"),
-               floatDays = rs.getInt("v_float_days"),
-               normalDays = rs.getInt("v_normal_days"),
-               returnPolicy = rs.getString("v_return_policy"),
-               shipViaId = rs.getInt("v_ship_via"),
-               vendorGroup = rs.getString("v_vendor_group"),
-               shutdownFrom = rs.getOffsetDateTime("v_shutdown_from"),
-               shutdownThru = rs.getOffsetDateTime("v_shutdown_thru"),
-               minimumQuantity = rs.getInt("v_minimum_quantity"),
-               minimumAmount = rs.getBigDecimal("v_minimum_amount"),
-               freeShipQuantity = rs.getInt("v_free_ship_quantity"),
-               freeShipAmount = rs.getBigDecimal("v_free_ship_amount"),
-               vendor1099 = rs.getBoolean("v_vendor_1099"),
-               federalIdNumber = rs.getString("v_federal_id_number"),
-               salesRepName = rs.getString("v_sales_rep_name"),
-               salesRepFax = rs.getString("v_sales_rep_fax"),
-               separateCheck = rs.getBoolean("v_separate_check"),
-               bumpPercent = rs.getBigDecimal("v_bump_percent"),
-               freightCalcMethod = rs.getString("v_freight_calc_method"),
-               freightPercent = rs.getBigDecimal("v_freight_percent"),
-               freightAmount = rs.getBigDecimal("v_freight_amount"),
-               chargeInvTax1 = rs.getString("v_charge_inv_tax_1"),
-               chargeInvTax2 = rs.getString("v_charge_inv_tax_2"),
-               chargeInvTax3 = rs.getString("v_charge_inv_tax_3"),
-               chargeInvTax4 = rs.getString("v_charge_inv_tax_4"),
-               federalIdNumberVerification = rs.getBoolean("v_federal_id_number_verification"),
-               emailAddress = rs.getString("v_email_address")
-            )
-         }
+         RowMapper { rs, _ -> mapRow(rs, entity.company) }
       )
 
       return vendor
@@ -438,26 +394,22 @@ class VendorRepository @Inject constructor(
       rs.getString("v_id")?.let { mapRow(rs) }
     */
 
-   //TODO I removed use of the prefix here, and everywhere else I can think of. Not 100% sure that is right.
-   private fun mapRow(rs: ResultSet): VendorEntity =
+   private fun mapRow(rs: ResultSet, company: Company): VendorEntity =
       VendorEntity(
          id = rs.getLong("v_id"),
-         uuRowId = rs.getUuid("v_uu_row_id"),
-         timeCreated = rs.getOffsetDateTime("v_time_created"),
-         timeUpdated = rs.getOffsetDateTime("v_time_updated"),
-         companyId = rs.getLong("v_company_id"),
+         company = company,
          vendorNumber = rs.getInt("v_number"),
          nameKey = rs.getString("v_name_key"),
-         addressId = rs.getInt("v_address"),
+         addressId = rs.getInt("v_address_id"),
          ourAccountNumber = rs.getInt("v_our_account_number"),
-         payTo = rs.getInt("v_pay_to"),
-         freightOnBoard = rs.getString("v_freight_on_board"),
-         paymentTerms = rs.getInt("v_payment_terms"),
+         payTo = rs.getInt("v_pay_to_id"),
+         freightOnBoardTypeId = rs.getInt("v_freight_on_board"),
+         paymentTermsId = rs.getInt("v_payment_terms_id"),
          floatDays = rs.getInt("v_float_days"),
          normalDays = rs.getInt("v_normal_days"),
-         returnPolicy = rs.getString("v_return_policy"),
-         shipViaId = rs.getInt("v_ship_via"),
-         vendorGroup = rs.getString("v_vendor_group"),
+         returnPolicy = rs.getBoolean("v_return_policy"),
+         shipViaId = rs.getInt("v_ship_via_id"),
+         vendorGroupId = rs.getInt("v_group_id"),
          shutdownFrom = rs.getOffsetDateTime("v_shutdown_from"),
          shutdownThru = rs.getOffsetDateTime("v_shutdown_thru"),
          minimumQuantity = rs.getInt("v_minimum_quantity"),
@@ -466,17 +418,17 @@ class VendorRepository @Inject constructor(
          freeShipAmount = rs.getBigDecimal("v_free_ship_amount"),
          vendor1099 = rs.getBoolean("v_vendor_1099"),
          federalIdNumber = rs.getString("v_federal_id_number"),
-         salesRepName = rs.getString("v_sales_rep_name"),
-         salesRepFax = rs.getString("v_sales_rep_fax"),
+         salesRepName = rs.getString("v_sales_representative_name"),
+         salesRepFax = rs.getString("v_sales_representative_fax"),
          separateCheck = rs.getBoolean("v_separate_check"),
          bumpPercent = rs.getBigDecimal("v_bump_percent"),
-         freightCalcMethod = rs.getString("v_freight_calc_method"),
+         freightCalcMethodType = rs.getInt("v_freight_calc_method_type_id"),
          freightPercent = rs.getBigDecimal("v_freight_percent"),
          freightAmount = rs.getBigDecimal("v_freight_amount"),
-         chargeInvTax1 = rs.getString("v_charge_inv_tax_1"),
-         chargeInvTax2 = rs.getString("v_charge_inv_tax_2"),
-         chargeInvTax3 = rs.getString("v_charge_inv_tax_3"),
-         chargeInvTax4 = rs.getString("v_charge_inv_tax_4"),
+         chargeInvTax1 = rs.getString("v_charge_inventory_tax_1"),
+         chargeInvTax2 = rs.getString("v_charge_inventory_tax_2"),
+         chargeInvTax3 = rs.getString("v_charge_inventory_tax_3"),
+         chargeInvTax4 = rs.getString("v_charge_inventory_tax_4"),
          federalIdNumberVerification = rs.getBoolean("v_federal_id_number_verification"),
          emailAddress = rs.getString("v_email_address")
       )
