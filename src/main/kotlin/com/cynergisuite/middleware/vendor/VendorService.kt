@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.vendor
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.makeCell
 import com.cynergisuite.middleware.company.Company
@@ -32,6 +33,16 @@ class VendorService @Inject constructor(
 
    fun fetchById(id: Long, company: Company): VendorValueObject? =
       vendorRepository.findOne(id, company)?.let{ VendorValueObject(entity = it) }
+
+   @Validated
+   fun create(@Valid vo: VendorValueObject, company: Company): VendorValueObject {
+      logger.debug("Vendor Create Before Validation VendorVO {}", vo)
+      val toCreate = vendorValidator.validateCreate(vo, company)
+      logger.debug("Vendor Create After Validation VendorEntity {}", toCreate)
+      return VendorValueObject(
+         entity = vendorRepository.insert(entity = toCreate)
+      )
+   }
 
    /*
    @Validated

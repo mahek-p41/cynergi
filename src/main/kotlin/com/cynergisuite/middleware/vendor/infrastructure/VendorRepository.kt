@@ -1,18 +1,14 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
-import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.vendor.VendorEntity
+import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeEntity
+import com.cynergisuite.middleware.vendor.freight.onboard.FreightOnboardTypeEntity
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -76,9 +72,19 @@ class VendorRepository @Inject constructor(
             comp.client_code                 AS comp_client_code,
             comp.client_id                   AS comp_client_id,
             comp.dataset_code                AS comp_dataset_code,
-            comp.federal_id_number           AS comp_federal_id_number
+            comp.federal_id_number           AS comp_federal_id_number,
+            onboard.id                       AS onboard_id,
+            onboard.value                    AS onboard_value,
+            onboard.description              AS onboard_description,
+            onboard.localization_code        AS onboard_localization_code,
+            method.id                        AS method_id,
+            method.value                     AS method_value,
+            method.description               AS method_description,
+            method.localization_code         AS method_localization_code 
          FROM vendor v
          JOIN company comp ON vpt.company_id = comp.id
+         JOIN freight_on_board_type_domain onboard ON onboard.id = v.freight_on_board_type_id
+         JOIN freight_calc_method_type_domain method ON method.id = v.freight_calc_method_type_id
       """
 
    fun findOne(id: Long, company: Company): VendorEntity? {
@@ -342,7 +348,7 @@ class VendorRepository @Inject constructor(
             "address_id" to entity.addressId,
             "our_account_number" to entity.ourAccountNumber,
             "pay_to_id" to entity.payTo,
-            "freight_on_board_type_id" to entity.freightOnBoardTypeId,
+            "freight_on_board_type_id" to entity.freightOnboardType.id,
             "payment_terms_id" to entity.paymentTermsId,
             "float_days" to entity.floatDays,
             "normal_days" to entity.normalDays,
@@ -361,7 +367,7 @@ class VendorRepository @Inject constructor(
             "sales_representative_fax" to entity.salesRepFax,
             "separate_check" to entity.separateCheck,
             "bump_percent" to entity.bumpPercent,
-            "freight_calc_method_type_id" to entity.freightCalcMethodType,
+            "freight_calc_method_type_id" to entity.freightMethodType.id,
             "freight_percent" to entity.freightPercent,
             "freight_amount" to entity.freightAmount,
             "charge_inventory_tax_1" to entity.chargeInvTax1,
@@ -403,7 +409,7 @@ class VendorRepository @Inject constructor(
          addressId = rs.getInt("v_address_id"),
          ourAccountNumber = rs.getInt("v_our_account_number"),
          payTo = rs.getInt("v_pay_to_id"),
-         freightOnBoardTypeId = rs.getInt("v_freight_on_board"),
+         freightOnboardType = mapOnboard(rs, "onboard_"),
          paymentTermsId = rs.getInt("v_payment_terms_id"),
          floatDays = rs.getInt("v_float_days"),
          normalDays = rs.getInt("v_normal_days"),
@@ -422,7 +428,7 @@ class VendorRepository @Inject constructor(
          salesRepFax = rs.getString("v_sales_representative_fax"),
          separateCheck = rs.getBoolean("v_separate_check"),
          bumpPercent = rs.getBigDecimal("v_bump_percent"),
-         freightCalcMethodType = rs.getInt("v_freight_calc_method_type_id"),
+         freightMethodType = mapMethod(rs, "method_"),
          freightPercent = rs.getBigDecimal("v_freight_percent"),
          freightAmount = rs.getBigDecimal("v_freight_amount"),
          chargeInvTax1 = rs.getString("v_charge_inventory_tax_1"),
@@ -432,4 +438,21 @@ class VendorRepository @Inject constructor(
          federalIdNumberVerification = rs.getBoolean("v_federal_id_number_verification"),
          emailAddress = rs.getString("v_email_address")
       )
+
+   private fun mapOnboard(rs: ResultSet, columnPrefix: String): FreightOnboardTypeEntity =
+      FreightOnboardTypeEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         value = rs.getString("${columnPrefix}value"),
+         description = rs.getString("${columnPrefix}description"),
+         localizationCode = rs.getString("${columnPrefix}localization_code")
+      )
+
+   private fun mapMethod(rs: ResultSet, columnPrefix: String): FreightMethodTypeEntity =
+      FreightMethodTypeEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         value = rs.getString("${columnPrefix}value"),
+         description = rs.getString("${columnPrefix}description"),
+         localizationCode = rs.getString("${columnPrefix}localization_code")
+      )
+
 }

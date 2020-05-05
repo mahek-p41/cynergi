@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeValueObject
+import com.cynergisuite.middleware.vendor.freight.onboard.FreightOnboardTypeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.OffsetDateTime
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -44,9 +47,10 @@ data class VendorValueObject(
    @field:Schema(name = "payTo", description = "Pay to vendor", minimum = "0", required = false)
    var payTo: Int? = null,
 
-   @field:Positive
-   @field:Schema(name = "freightOnBoardTypeId", description = "Vendor fob", minimum = "0", required = false)
-   var freightOnBoardTypeId: Int? = null,
+   @field:Valid
+   @field:NotNull
+   @field:Schema(name = "freightOnboardType", description = "Vendor freight onboard type")
+   var freightOnboardType: FreightOnboardTypeValueObject,
 
    @field:NotNull
    @field:Positive
@@ -120,9 +124,10 @@ data class VendorValueObject(
    @field:Schema(name = "bumpPercent", description = "Bump percent")
    val bumpPercent: BigDecimal? = null,
 
-   @field:Positive
-   @field:Schema(name = "freightCalcMethodType", description = "Method for calculating freight", minimum = "0", required = false)
-   var freightCalcMethodType: Int? = null,
+   @field:Valid
+   @field:NotNull
+   @field:Schema(name = "freightMethodType", description = "Vendor freight method type")
+   var freightMethodType: FreightMethodTypeValueObject,
 
    @field:Schema(name = "freightPercent", description = "Freight percent")
    val freightPercent: BigDecimal? = null,
@@ -166,7 +171,7 @@ data class VendorValueObject(
          addressId = entity.addressId,
          ourAccountNumber = entity.ourAccountNumber,
          payTo = entity.payTo,
-         freightOnboardTypeId = entity.freightOnBoardTypeId,
+         freightOnboardType = FreightOnboardTypeValueObject(entity.freightOnboardType),
          paymentTermsId = entity.paymentTermsId,
          floatDays = entity.floatDays,
          normalDays = entity.normalDays,
@@ -185,7 +190,7 @@ data class VendorValueObject(
          salesRepFax = entity.salesRepFax,
          separateCheck = entity.separateCheck,
          bumpPercent = entity.bumpPercent,
-         freightCalcMethodType = entity.freightCalcMethodType,
+         freightMethodType = FreightMethodTypeValueObject(entity.freightMethodType),
          freightPercent = entity.freightPercent,
          freightAmount = entity.freightAmount,
          chargeInvTax1 = entity.chargeInvTax1,
@@ -196,44 +201,5 @@ data class VendorValueObject(
          emailAddress = entity.emailAddress
       )
 
-   /*
-      constructor(entity: VendorEntity) :
-      this (
-         id = entity.id,
-         vendorNumber = entity.vendorNumber,
-         nameKey = entity.nameKey,
-         addressId = entity.addressId,
-         ourAccountNumber = entity.ourAccountNumber,
-         payTo = entity.payTo,
-         freightOnboardTypeId = entity.freightOnBoardTypeId,
-         paymentTermsId = entity.paymentTermsId,
-         floatDays = entity.floatDays,
-         normalDays = entity.normalDays,
-         returnPolicy = entity.returnPolicy!!,
-         shipViaId = entity.shipViaId,
-         vendorGroupId = entity.vendorGroupId!!,
-         shutdownFrom = entity.shutdownFrom,
-         shutdownThru = entity.shutdownThru,
-         minimumQuantity = entity.minimumQuantity,
-         minimumAmount = entity.minimumAmount,
-         freeShipQuantity = entity.freeShipQuantity,
-         freeShipAmount = entity.freeShipAmount,
-         vendor1099 = entity.vendor1099,
-         federalIdNumber = entity.federalIdNumber,
-         salesRepName = entity.salesRepName,
-         salesRepFax = entity.salesRepFax,
-         separateCheck = entity.separateCheck,
-         bumpPercent = entity.bumpPercent,
-         freightCalcMethodType = entity.freightCalcMethodType,
-         freightPercent = entity.freightPercent,
-         freightAmount = entity.freightAmount,
-         chargeInvTax1 = entity.chargeInvTax1,
-         chargeInvTax2 = entity.chargeInvTax2,
-         chargeInvTax3 = entity.chargeInvTax3,
-         chargeInvTax4 = entity.chargeInvTax4,
-         federalIdNumberVerification = entity.federalIdNumberVerification,
-         emailAddress = entity.emailAddress!!
-      )
-    */
    override fun myId(): Long? = id
 }
