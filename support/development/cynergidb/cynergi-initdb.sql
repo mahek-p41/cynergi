@@ -1,6 +1,8 @@
 -- BEGIN cynergidevelopdb SETUP
 \c cynergidevelopdb
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 
 DROP SERVER IF EXISTS fastinfo CASCADE;
