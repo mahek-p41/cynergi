@@ -23,10 +23,10 @@
     <logger name="io.micronaut.core.reflect" level="ERROR" />
     <logger name="io.micronaut.context.event" level="ERROR" />
     <logger name="io.micronaut.management" level="ERROR" />
-    <logger name="com.cynergisuite" level="TRACE" />
+    <logger name="com.cynergisuite" level="INFO" />
     <logger name="org.flywaydb" level="INFO" />
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="PROD_FILE"/>
     </root>
 </configuration>
