@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.ValidatorBase.Companion.logger
@@ -44,38 +45,21 @@ class VendorService @Inject constructor(
       )
    }
 
-   /*
-   @Validated
-   fun fetchAll(@Valid pageRequest: StandardPageRequest, dataset: String): Page<VendorValueObject> {
-      val validaPageRequest = vendorValidator.validationFetchAll(pageRequest, dataset)
-      val found: RepositoryPage<VendorEntity, StandardPageRequest> = vendorRepository.findAll(validaPageRequest, dataset)
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorValueObject> {
+      val found = vendorRepository.findAll(company, pageRequest)
 
-      return found.toPage {
-         VendorValueObject(it)
+      return found.toPage { vendor: VendorEntity ->
+         VendorValueObject(vendor)
       }
    }
 
-   fun exists(id: Long): Boolean =
-      vendorRepository.exists(id = id)
-
    @Validated
-   fun create(@Valid vo: VendorCreateValueObject, user: User): VendorValueObject {
-      val validVendor = vendorValidator.validateCreate(vo, user)
-      val vendor = vendorRepository.insert(validVendor)
+   fun update(id: Long, @Valid vo: VendorValueObject, company: Company): VendorValueObject {
+      val toUpdate = vendorValidator.validateUpdate(id, vo, company)
 
-      return VendorValueObject(vendor)
+      return VendorValueObject(
+         entity = vendorRepository.update(entity = toUpdate)
+      )
    }
-
-   fun findOrCreate(store: StoreEntity, employee: EmployeeEntity): VendorValueObject {
-      val createdOrInProgressVendor = vendorRepository.findOneCreatedOrInProgress(store)
-
-      return if (createdOrInProgressVendor != null) {
-         VendorValueObject(createdOrInProgressVendor)
-      } else {
-         create(VendorCreateValueObject(StoreValueObject(store)))
-      }
-   }
-
-   */
 
 }

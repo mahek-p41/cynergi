@@ -41,7 +41,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
     void "Term with 1 payments and one schedule record direct insert" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1, 1)]
+      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
       final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
@@ -59,7 +59,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "Term with 1 payments and 1 schedule record using post" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1, 1)]
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1.0, 1)]
       final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test2", null, null, null, schedules)
 
       when:
@@ -147,7 +147,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "Null discount percent" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 1, 1)]
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 1.0, 1)]
       final newVPT = new VendorPaymentTermValueObject([description: "test8", discountMonth: 3, scheduleRecords: schedules])
 
       when:
@@ -228,7 +228,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "post vendor payment term discountPercent that has 2 integral and 8 fractional" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1, 1)]
+      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1.0, 1)]
       final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test2", null, null, 20.00000008, schedules)
 
       when:

@@ -32,7 +32,7 @@ CREATE TABLE vendor_group
     id           BIGSERIAL                                              NOT NULL PRIMARY KEY,
     uu_row_id    UUID        DEFAULT uuid_generate_v1()                 NOT NULL,
     time_created TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
-    time_upDATEd TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
+    time_updated TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     company_id BIGINT REFERENCES company(id)                            NOT NULL,
     value         VARCHAR(10) CHECK (char_length(trim(value)) > 1)        NOT NULL,
     description  VARCHAR(50) CHECK (char_length(trim(description)) > 1) NOT NULL,

@@ -1,14 +1,21 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.*
+import com.cynergisuite.middleware.address.AddressEntity
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeEntity
 import com.cynergisuite.middleware.vendor.freight.onboard.FreightOnboardTypeEntity
+import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
+import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import io.micronaut.spring.tx.annotation.Transactional
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -19,11 +26,13 @@ import javax.inject.Singleton
 
 @Singleton
 class VendorRepository @Inject constructor(
+   private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository,
+   private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
-   private fun findOneQuery() = """
+   private fun baseSelectQuery() = """
          SELECT
             v.id                             AS v_id,
             v.uu_row_id                      AS v_uu_row_id,
@@ -80,25 +89,67 @@ class VendorRepository @Inject constructor(
             method.id                        AS method_id,
             method.value                     AS method_value,
             method.description               AS method_description,
-            method.localization_code         AS method_localization_code 
+            method.localization_code         AS method_localization_code,
+            address.id                                AS address_id,
+            address.uu_row_id                         AS address_uu_row_id,
+            address.time_created                      AS address_time_created,
+            address.time_updated                      AS address_time_updated,
+            address.number                            AS address_number,
+            address.name                              AS address_name,
+            address.address1                          AS address_address1,
+            address.address2                          AS address_address2,
+            address.city                              AS address_city,
+            address.state                             AS address_state,
+            address.postal_code                       AS address_postal_code,
+            address.latitude                          AS address_latitude,
+            address.longitude                         AS address_longitude,
+            address.country                           AS address_country,
+            address.county                            AS address_county,
+            address.phone                             AS address_phone,
+            address.fax                               AS address_fax,
+            vpt.id                                    AS vpt_id,
+            vpt.uu_row_id                             AS vpt_uu_row_id,
+            vpt.time_created                          AS vpt_time_created,
+            vpt.time_updated                          AS vpt_time_updated,
+            vpt.company_id                            AS vpt_company_id,
+            vpt.description                           AS vpt_description,
+            vpt.number                                AS vpt_number,
+            vpt.number_of_payments                    AS vpt_number_of_payments,
+            vpt.discount_month                        AS vpt_discount_month,
+            vpt.discount_days                         AS vpt_discount_days,
+            vpt.discount_percent                      AS vpt_discount_percent,
+            shipVia.id                                AS shipVia_id,
+            shipVia.uu_row_id                         AS shipVia_uu_row_id,
+            shipVia.time_created                      AS shipVia_time_created,
+            shipVia.time_updated                      AS shipVia_time_updated,
+            shipVia.description                       AS shipVia_description,
+            shipVia.number                            AS shipVia_number,
+            vgrp.id                                   AS vgrp_id,
+            vgrp.uu_row_id                            AS vgrp_uu_row_id,
+            vgrp.time_created                         AS vgrp_time_created,
+            vgrp.time_updated                         AS vgrp_time_updated,
+            vgrp.company_id                           AS vgrp_company_id,
+            vgrp.value                                AS vgrp_value,
+            vgrp.description                          AS vgrp_description,
+            count(*) OVER()                           AS total_elements
          FROM vendor v
-         JOIN company comp ON vpt.company_id = comp.id
-         JOIN freight_on_board_type_domain onboard ON onboard.id = v.freight_on_board_type_id
-         JOIN freight_calc_method_type_domain method ON method.id = v.freight_calc_method_type_id
+         JOIN company comp                            ON v.company_id = comp.id
+         JOIN freight_on_board_type_domain onboard    ON onboard.id = v.freight_on_board_type_id
+         JOIN freight_calc_method_type_domain method  ON method.id = v.freight_calc_method_type_id
+         JOIN address                                 ON address.id = v.address_id
+         JOIN vendor_payment_term vpt                 ON vpt.id = v.payment_terms_id
+         JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id
+         JOIN vendor_group vgrp                       ON vgrp.id = v.group_id
       """
 
    fun findOne(id: Long, company: Company): VendorEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${findOneQuery()}\nWHERE vpt.id = :id AND comp.id = :comp_id"
+      val query = "${baseSelectQuery()}\nWHERE v.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for Vendor using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
          val vendor = mapRow(rs, company)
-
-         //do {
-         //   mapRowVendorPaymentTermSchedule(rs)?.also { vendorPaymentTerm.scheduleRecords.add(it) }
-         //} while(rs.next())
 
          vendor
       }
@@ -108,149 +159,25 @@ class VendorRepository @Inject constructor(
       return found
    }
 
-
-   /*
-   fun findAll(pageRequest: StandardPageRequest, company: Long): RepositoryPage<VendorEntity, StandardPageRequest> {
-      val params = mutableMapOf<String, Any?>()
-      val status = pageRequest.status
-      val whereBuilder = StringBuilder("WHERE v.companyId = :company ")
-      val from = pageRequest.from
-      val thru = pageRequest.thru
-
-      if (from != null && thru != null) {
-         params["from"] = from
-         params["thru"] = thru
-         whereBuilder.append(" AND v.time_created BETWEEN :from AND :thru ")
+   fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorEntity, PageRequest> {
+         return jdbc.queryPaged("""
+         ${baseSelectQuery()}
+         WHERE comp.id = :comp_id
+         ORDER BY v.${page.snakeSortBy()} ${page.sortDirection()}
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+            mapOf(
+               "comp_id" to company.myId(),
+               "limit" to page.size(),
+               "offset" to page.offset()
+            ),
+            page
+         ) { rs, elements ->
+            do {
+               elements.add(mapRow(rs, company))
+            } while(rs.next())
+         }
       }
-
-      val sql = """
-            SELECT
-               v.id                             AS v_id,
-               v.uu_row_id                      AS v_uu_row_id,
-               v.time_created                   AS v_time_created,
-               v.time_updated                   AS v_time_updated,
-               v.company_id                     AS v_company_id,
-               v.number                         AS v_number,
-               v.name_key                       AS v_name_key,
-               v.address                        AS v_address,
-               v.our_account_number             AS v_our_account_number,
-               v.pay_to                         AS v_pay_to,
-   ???            v.freight_on_board               AS v_freight_on_board,
-               v.payment_terms                  AS v_payment_terms,
-               v.float_days                     AS v_float_days,
-               v.normal_days                    AS v_normal_days,
-               v.return_policy                  AS v_return_policy,
-               v.ship_via                       AS v_ship_via,
-               v.vendor_group                   AS v_vendor_group,
-               v.shutdown_from date             AS v_shutdown_from date,
-               v.shutdown_thru date             AS v_shutdown_thru date,
-               v.minimum_quantity               AS v_minimum_quantity,
-               v.minimum_amount                 AS v_minimum_amount,
-               v.free_ship_quantity             AS v_free_ship_quantity,
-               v.free_ship_amount               AS v_free_ship_amount,
-               v.vendor_1099                    AS v_vendor_1099,
-               v.federal_id_number              AS v_federal_id_number,
-               v.sales_rep_name                 AS v_sales_rep_name,
-               v.sales_rep_fax                  AS v_sales_rep_fax,
-               v.separate_check                 AS v_separate_check,
-               v.bump_percent                   AS v_bump_percent,
-               v.freight_calc_method            AS v_freight_calc_method,
-               v.freight_percent                AS v_freight_percent,
-               v.freight_amount                 AS v_freight_amount,
-               v.charge_inv_tax_1               AS v_charge_inv_tax_1,
-               v.charge_inv_tax_2               AS v_charge_inv_tax_2,
-               v.charge_inv_tax_3               AS v_charge_inv_tax_3,
-               v.charge_inv_tax_4               AS v_charge_inv_tax_4,
-               v.federal_id_number_verification AS v_federal_id_number_verification,
-               v.email_address                  AS v_email_address
-               FROM vendor v
-               $whereBuilder
-               ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-               LIMIT ${pageRequest.size()}
-               OFFSET ${pageRequest.offset()}
-               )
-         SELECT
-            v.id AS a_id,
-            v.uu_row_id AS a_uu_row_id,
-            v.time_created AS a_time_created,
-            v.time_updated AS a_time_updated,
-            v.store_number AS store_number,
-            v.number AS a_number,
-            v.total_details AS a_total_details,
-            v.total_exceptions AS a_total_exceptions,
-            v.current_status AS current_status,
-            v.last_updated AS a_last_updated,
-            v.inventory_count AS a_inventory_count,
-            v.exception_has_notes AS a_exception_has_notes,
-            v.dataset AS a_dataset,
-            av.id AS aa_id,
-            av.uu_row_id AS aa_uu_row_id,
-            av.time_created AS aa_time_created,
-            av.time_updated AS aa_time_updated,
-            astd.id AS astd_id,
-            astd.value AS astd_value,
-            astd.description AS astd_description,
-            astd.color AS astd_color,
-            astd.localization_code AS astd_localization_code,
-            aer.e_id AS aer_id,
-            aer.e_number AS aer_number,
-            aer.e_dataset AS aer_dataset,
-            aer.e_last_name AS aer_last_name,
-            aer.e_first_name_mi AS aer_first_name_mi,
-            aer.e_pass_code AS aer_pass_code,
-            aer.e_active AS aer_active,
-            aer.e_department AS aer_department,
-            aer.e_employee_type AS aer_employee_type,
-            aer.e_allow_auto_store_assign AS aer_allow_auto_store_assign,
-            s.id AS s_id,
-            s.name AS s_name,
-            s.number AS s_number,
-            s.dataset AS s_dataset,
-            se.id AS se_id,
-            se.name AS se_name,
-            se.dataset AS s_dataset,
-            total_elements AS total_elements
-         FROM vendors a
-              JOIN vendor_action aa
-                  ON v.id = av.vendor_id
-              JOIN vendor_status_type_domain astd
-                  ON av.status_id = astd.id
-              JOIN employees aer
-                  ON av.changed_by = aer.e_number
-              JOIN fastinfo_prod_import.store_vw s
-                  ON v.store_number = s.number
-                  AND s.dataset = :dataset
-              LEFT OUTER JOIN fastinfo_prod_import.store_vw se
-                  ON aer.s_number = se.number
-                  AND se.dataset = :dataset
-         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-      """.trimIndent()
-
-      logger.trace("Finding all vendors for {} using {}\n{}", pageRequest, params, sql)
-
-      val repoPage = jdbc.queryPaged<VendorEntity, StandardPageRequest>(sql, params, pageRequest) { rs, elements ->
-         var currentId: Long = -1
-         var currentParentEntity: VendorEntity? = null
-
-         do {
-            val tempId = rs.getLong("a_id")
-            val tempParentEntity: VendorEntity = if (tempId != currentId) {
-               currentId = tempId
-               currentParentEntity = mapRow(rs)
-               elements.add(currentParentEntity)
-               currentParentEntity
-            } else {
-               currentParentEntity!!
-            }
-
-            tempParentEntity.actions.add(vendorRepository.mapRow(rs))
-         } while(rs.next())
-      }
-
-      return repoPage.copy(elements = repoPage.elements.onEach(this::loadNextStates))
-   }
-
-    */
 
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM vendor WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
@@ -265,6 +192,9 @@ class VendorRepository @Inject constructor(
    @Transactional
    fun insert(entity: VendorEntity): VendorEntity {
       logger.debug("Inserting vendor {}", entity)
+
+      val address = addressRepository.insert(entity.address)
+      val entity = entity.copy(address = address)
 
       val vendor = jdbc.insertReturning(
          """
@@ -345,16 +275,16 @@ class VendorRepository @Inject constructor(
             "company_id" to entity.company.myId(),
             "number" to entity.vendorNumber,
             "name_key" to entity.nameKey,
-            "address_id" to entity.addressId,
+            "address_id" to entity.address.id,
             "our_account_number" to entity.ourAccountNumber,
             "pay_to_id" to entity.payTo,
             "freight_on_board_type_id" to entity.freightOnboardType.id,
-            "payment_terms_id" to entity.paymentTermsId,
+            "payment_terms_id" to entity.paymentTerm.id,
             "float_days" to entity.floatDays,
             "normal_days" to entity.normalDays,
             "return_policy" to entity.returnPolicy,
-            "ship_via_id" to entity.shipViaId,
-            "group_id" to entity.vendorGroupId,
+            "ship_via_id" to entity.shipVia.id,
+            "group_id" to entity.vendorGroup.id,
             "shutdown_from" to entity.shutdownFrom,
             "shutdown_thru" to entity.shutdownThru,
             "minimum_quantity" to entity.minimumQuantity,
@@ -377,28 +307,101 @@ class VendorRepository @Inject constructor(
             "federal_id_number_verification" to entity.federalIdNumberVerification,
             "email_address" to entity.emailAddress
             ),
-         RowMapper { rs, _ -> mapRow(rs, entity.company) }
+         RowMapper { rs, _ -> mapRowUpsert(rs, entity) }
       )
 
       return vendor
    }
 
-   /*
    @Transactional
    fun update(entity: VendorEntity): VendorEntity {
       logger.debug("Updating Vendor {}", entity)
 
-      val actions = entity.actions.asSequence()
-         .map { vendorActionRepository.upsert(entity, it) }
-         .toMutableSet()
+      val updated = jdbc.updateReturning("""
+         UPDATE vendor
+         SET
+         company_id = :companyId,
+         number = :number,
+         name_key = :nameKey,
+         address_id = :addressId,
+         our_account_number = :ourAccountNumber,
+         pay_to_id = :payTo,
+         freight_on_board_type_id = :freightOnboardType,
+         payment_terms_id = :paymentTerm,
+         float_days = :floatDays,
+         normal_days = :normalDays,
+         return_policy = :returnPolicy,
+         ship_via_id = :shipVia,
+         group_id = :vendorGroup,
+         shutdown_from = :shutdownFrom,
+         shutdown_thru = :shutdownThru,
+         minimum_quantity = :minimumQuantity,
+         minimum_amount = :minimumAmount,
+         free_ship_quantity = :freeShipQuantity,
+         free_ship_amount = :freeShipAmount,
+         vendor_1099 = :vendor1099,
+         federal_id_number = :federalIdNumber,
+         sales_representative_name = :salesRepName,
+         sales_representative_fax = :salesRepFax,
+         separate_check = :separateCheck,
+         bump_percent = :bumpPercent,
+         freight_calc_method_type_id = :freightMethodType,
+         freight_percent = :freightPercent,
+         freight_amount = :freightAmount,
+         charge_inventory_tax_1 = :chargeInvTax1,
+         charge_inventory_tax_2 = :chargeInvTax2,
+         charge_inventory_tax_3 = :chargeInvTax3,
+         charge_inventory_tax_4 = :chargeInvTax4,
+         federal_id_number_verification = :federalIdNumberVerification,
+         email_address = :emailAddress
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id" to entity.id,
+            "companyId" to entity.company.myId(),
+            "number" to entity.vendorNumber,
+            "nameKey" to entity.nameKey,
+            "addressId" to entity.address.id,
+            "ourAccountNumber" to entity.ourAccountNumber,
+            "payTo" to entity.payTo,
+            "freightOnboardType" to entity.freightOnboardType.id,
+            "paymentTerm" to entity.paymentTerm.id,
+            "floatDays" to entity.floatDays,
+            "normalDays" to entity.normalDays,
+            "returnPolicy" to entity.returnPolicy,
+            "shipVia" to entity.shipVia.id,
+            "vendorGroup" to entity.vendorGroup.id,
+            "shutdownFrom" to entity.shutdownFrom,
+            "shutdownThru" to entity.shutdownThru,
+            "minimumQuantity" to entity.minimumQuantity,
+            "minimumAmount" to entity.minimumAmount,
+            "freeShipQuantity" to entity.freeShipQuantity,
+            "freeShipAmount" to entity.freeShipAmount,
+            "vendor1099" to entity.vendor1099,
+            "federalIdNumber" to entity.federalIdNumber,
+            "salesRepName" to entity.salesRepName,
+            "salesRepFax" to entity.salesRepFax,
+            "separateCheck" to entity.separateCheck,
+            "bumpPercent" to entity.bumpPercent,
+            "freightMethodType" to entity.freightMethodType.id,
+            "freightPercent" to entity.freightPercent,
+            "freightAmount" to entity.freightAmount,
+            "chargeInvTax1" to entity.chargeInvTax1,
+            "chargeInvTax2" to entity.chargeInvTax2,
+            "chargeInvTax3" to entity.chargeInvTax3,
+            "chargeInvTax4" to entity.chargeInvTax4,
+            "federalIdNumberVerification" to entity.federalIdNumberVerification,
+            "emailAddress" to entity.emailAddress
+         ),
+         RowMapper { rs, _ -> mapRowUpsert(rs, entity) }
+      )
 
-      return entity.copy(actions = actions)
+      logger.debug("Updated Vendor {}", updated)
+
+      return updated
    }
-
-   fun mapRowOrNull(rs: ResultSet, rowPrefix: String = "v_"): VendorEntity? =
-      //rs.getString("${rowPrefix}id")?.let { mapRow(rs, rowPrefix) }
-      rs.getString("v_id")?.let { mapRow(rs) }
-    */
 
    private fun mapRow(rs: ResultSet, company: Company): VendorEntity =
       VendorEntity(
@@ -406,18 +409,18 @@ class VendorRepository @Inject constructor(
          company = company,
          vendorNumber = rs.getInt("v_number"),
          nameKey = rs.getString("v_name_key"),
-         addressId = rs.getInt("v_address_id"),
+         address = mapAddress(rs, "address_"),
          ourAccountNumber = rs.getInt("v_our_account_number"),
-         payTo = rs.getInt("v_pay_to_id"),
+         payTo = rs.getIntOrNull("v_pay_to_id"),
          freightOnboardType = mapOnboard(rs, "onboard_"),
-         paymentTermsId = rs.getInt("v_payment_terms_id"),
-         floatDays = rs.getInt("v_float_days"),
-         normalDays = rs.getInt("v_normal_days"),
+         paymentTerm = mapPaymentTerm(rs, company,"vpt_"),
+         floatDays = rs.getIntOrNull("v_float_days"),
+         normalDays = rs.getIntOrNull("v_normal_days"),
          returnPolicy = rs.getBoolean("v_return_policy"),
-         shipViaId = rs.getInt("v_ship_via_id"),
-         vendorGroupId = rs.getInt("v_group_id"),
-         shutdownFrom = rs.getOffsetDateTime("v_shutdown_from"),
-         shutdownThru = rs.getOffsetDateTime("v_shutdown_thru"),
+         shipVia = mapShipVia(rs, company,"shipVia_"),
+         vendorGroup = mapVendorGroup(rs, company,"vgrp_"),
+         shutdownFrom = rs.getLocalDate("v_shutdown_from"),
+         shutdownThru = rs.getLocalDate("v_shutdown_thru"),
          minimumQuantity = rs.getInt("v_minimum_quantity"),
          minimumAmount = rs.getBigDecimal("v_minimum_amount"),
          freeShipQuantity = rs.getInt("v_free_ship_quantity"),
@@ -431,12 +434,51 @@ class VendorRepository @Inject constructor(
          freightMethodType = mapMethod(rs, "method_"),
          freightPercent = rs.getBigDecimal("v_freight_percent"),
          freightAmount = rs.getBigDecimal("v_freight_amount"),
-         chargeInvTax1 = rs.getString("v_charge_inventory_tax_1"),
-         chargeInvTax2 = rs.getString("v_charge_inventory_tax_2"),
-         chargeInvTax3 = rs.getString("v_charge_inventory_tax_3"),
-         chargeInvTax4 = rs.getString("v_charge_inventory_tax_4"),
+         chargeInvTax1 = rs.getBoolean("v_charge_inventory_tax_1"),
+         chargeInvTax2 = rs.getBoolean("v_charge_inventory_tax_2"),
+         chargeInvTax3 = rs.getBoolean("v_charge_inventory_tax_3"),
+         chargeInvTax4 = rs.getBoolean("v_charge_inventory_tax_4"),
          federalIdNumberVerification = rs.getBoolean("v_federal_id_number_verification"),
          emailAddress = rs.getString("v_email_address")
+      )
+
+   private fun mapRowUpsert(rs: ResultSet, entity: VendorEntity): VendorEntity =
+      VendorEntity(
+         id = rs.getLong("id"),
+         company = entity.company,
+         vendorNumber = rs.getInt("number"),
+         nameKey = rs.getString("name_key"),
+         address = entity.address, //This needs to have the newly inserted address passed in
+         ourAccountNumber = rs.getInt("our_account_number"),
+         payTo = rs.getIntOrNull("pay_to_id"),
+         freightOnboardType = entity.freightOnboardType,
+         paymentTerm = entity.paymentTerm,
+         floatDays = rs.getIntOrNull("float_days"),
+         normalDays = rs.getIntOrNull("normal_days"),
+         returnPolicy = rs.getBoolean("return_policy"),
+         shipVia = entity.shipVia,
+         vendorGroup = entity.vendorGroup,
+         shutdownFrom = rs.getLocalDate("shutdown_from"),
+         shutdownThru = rs.getLocalDate("shutdown_thru"),
+         minimumQuantity = rs.getInt("minimum_quantity"),
+         minimumAmount = rs.getBigDecimal("minimum_amount"),
+         freeShipQuantity = rs.getInt("free_ship_quantity"),
+         freeShipAmount = rs.getBigDecimal("free_ship_amount"),
+         vendor1099 = rs.getBoolean("vendor_1099"),
+         federalIdNumber = rs.getString("federal_id_number"),
+         salesRepName = rs.getString("sales_representative_name"),
+         salesRepFax = rs.getString("sales_representative_fax"),
+         separateCheck = rs.getBoolean("separate_check"),
+         bumpPercent = rs.getBigDecimal("bump_percent"),
+         freightMethodType = entity.freightMethodType,
+         freightPercent = rs.getBigDecimal("freight_percent"),
+         freightAmount = rs.getBigDecimal("freight_amount"),
+         chargeInvTax1 = rs.getBoolean("charge_inventory_tax_1"),
+         chargeInvTax2 = rs.getBoolean("charge_inventory_tax_2"),
+         chargeInvTax3 = rs.getBoolean("charge_inventory_tax_3"),
+         chargeInvTax4 = rs.getBoolean("charge_inventory_tax_4"),
+         federalIdNumberVerification = rs.getBoolean("federal_id_number_verification"),
+         emailAddress = rs.getString("email_address")
       )
 
    private fun mapOnboard(rs: ResultSet, columnPrefix: String): FreightOnboardTypeEntity =
@@ -453,6 +495,52 @@ class VendorRepository @Inject constructor(
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
+      )
+
+   private fun mapAddress(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): AddressEntity =
+         AddressEntity(
+            id = rs.getLong("${columnPrefix}id"),
+            timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+            timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+            number = rs.getInt("${columnPrefix}number"),
+            name = rs.getString("${columnPrefix}name"),
+            address1 = rs.getString("${columnPrefix}address1"),
+            address2 = rs.getString("${columnPrefix}address2"),
+            city = rs.getString("${columnPrefix}city"),
+            state = rs.getString("${columnPrefix}state"),
+            postalCode = rs.getString("${columnPrefix}postal_code"),
+            latitude = rs.getDouble("${columnPrefix}latitude"),
+            longitude = rs.getDouble("${columnPrefix}longitude"),
+            country = rs.getString("${columnPrefix}country"),
+            county = rs.getString("${columnPrefix}county"),
+            phone = rs.getString("${columnPrefix}phone"),
+            fax = rs.getString("${columnPrefix}fax")
+         )
+
+   private fun mapPaymentTerm(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): VendorPaymentTermEntity =
+      VendorPaymentTermEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         company = company,
+         description = rs.getString("${columnPrefix}description"),
+         discountMonth = rs.getInt("${columnPrefix}discount_month"),
+         discountDays = rs.getInt("${columnPrefix}discount_days"),
+         discountPercent = rs.getBigDecimal("${columnPrefix}discount_percent")
+      )
+
+   private fun mapShipVia(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): ShipViaEntity =
+      ShipViaEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         description = rs.getString("${columnPrefix}description"),
+         number = rs.getInt("${columnPrefix}number"),
+         company = company
+      )
+
+   private fun mapVendorGroup(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): VendorGroupEntity =
+      VendorGroupEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         company = company,
+         value = rs.getString("${columnPrefix}value"),
+         description = rs.getString("${columnPrefix}description")
       )
 
 }

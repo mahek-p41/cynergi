@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.vendor
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeFactory
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
@@ -13,13 +14,12 @@ import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
-object VendorFactory {
+object VendorDataLoader {
 
    /*
    @JvmStatic
-   fun stream(numberIn: Int = 1, changedByIn: EmployeeEntity? = null): Stream<VendorEntity> {
+   fun stream(numberIn: Int = 1, company: Company): Stream<VendorEntity> {
       val number = if (numberIn > 0) numberIn else 1
-      val changedBy = changedByIn ?: EmployeeFactory.testEmployee()
       val faker = Faker()
       val company = faker.company()
       val address = faker.address()
@@ -33,7 +33,7 @@ object VendorFactory {
       //TODO faker for dates and boolean?
       return IntStream.range(0, number).mapToObj {
          VendorEntity(
-            companyId = ,
+            company = company,
             number = random.nextInt(1,1000),
             nameKey = company.name(),
             address = ,
@@ -72,51 +72,26 @@ object VendorFactory {
    }
 
    @JvmStatic
-   fun single(): VendorEntity =
-      single(storeIn = StoreFactory.random())
-
-   @JvmStatic
-   fun single(storeIn: StoreEntity): VendorEntity =
-      stream(1, storeIn).findFirst().orElseThrow { Exception("Unable to create Audit") }
+   fun single(company: Company): VendorEntity {
+      return stream(company = company).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+   }
 }
 
 @Singleton
-@Requires(env = ["develop", "test"])
-class AuditFactoryService @Inject constructor(
-   private val vendorRepository: VendorRepository,
-   private val employeeFactoryService: EmployeeFactoryService
+@Requires(env = ["demo", "test"])
+class VendorDataLoaderService @Inject constructor(
+   private val vendorRepository: VendorRepository
 ) {
 
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null): Stream<VendorEntity> =
-      stream(numberIn, storeIn, null, null)
-
-   fun stream(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?): Stream<AuditEntity> {
-      val changedBy = changedByIn ?: employeeFactoryService.single(datasetIn = store.dataset)
-
-      return VendorFactory.stream(numberIn, changedBy)
-         .map {
-            vendorRepository.insert(it)
-         }
+   fun stream(numberIn: Int = 1, company: Company): Stream<VendorEntity> {
+      return VendorDataLoader.stream(numberIn, company).map {
+         vendorRepository.insert(it)
+      }
    }
 
-   fun generate(numberIn: Int = 1, storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null, statusesIn: Set<AuditStatus>?) {
-      stream(numberIn, storeIn, changedByIn, statusesIn).forEach {  } // exercise the stream with the terminal forEach
+   fun single(company: Company): VendorEntity {
+      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create Vendor")}
    }
 
-   fun single(): VendorEntity =
-      single(storeIn = null)
-
-   fun single(storeIn: StoreEntity? = null): VendorEntity =
-      stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create Vendor") }
-
-   fun single(storeIn: StoreEntity? = null, changedByIn: EmployeeEntity? = null): VendorEntity =
-      single(storeIn = storeIn, changedByIn = changedByIn, statusesIn = null)
-
-   fun single(storeIn: StoreEntity? = null, changedByIn: EmployeeEntity?, statusesIn: Set<AuditStatus>?): VendorEntity =
-      stream(storeIn = storeIn, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create Vendor") }
-
-   fun single(statusesIn: Set<AuditStatus>?): VendorEntity =
-      stream(1, null, null, statusesIn).findFirst().orElseThrow { Exception("Unable to create Vendor") }
-
-   */
+    */
 }
