@@ -8,11 +8,11 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "FreightOnboardType", title = "Freight Onboard Type", description = "Freight Onboard Type")
+@Schema(name = "FreightOnboardTypeValueObject", title = "Freight Onboard Type", description = "Freight Onboard Type")
 data class FreightOnboardTypeValueObject (
 
    @field:NotNull
-   @field:Size(min = 3, max = 15)
+   @field:Size(min = 1, max = 15)
    @field:Schema(description = "Freight Onboard Type")
    var value: String? = null,
 

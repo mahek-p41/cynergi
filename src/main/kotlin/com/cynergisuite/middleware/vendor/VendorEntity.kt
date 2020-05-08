@@ -1,10 +1,15 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeEntity
 import com.cynergisuite.middleware.vendor.freight.onboard.FreightOnboardTypeEntity
+import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class VendorEntity(
@@ -12,18 +17,18 @@ data class VendorEntity(
    val company: Company,
    val vendorNumber: Int = 0,
    val nameKey: String, //30 max
-   val addressId: Int,
+   val address: AddressEntity,
    val ourAccountNumber: Int = 0,
-   val payTo: Int = 0,
+   val payTo: Int? = 0,
    val freightOnboardType: FreightOnboardTypeEntity,
-   val paymentTermsId: Int, //VendorTerm id
+   val paymentTerm: VendorPaymentTermEntity,
    val floatDays: Int? = 0,
    val normalDays: Int? = 0,
-   val returnPolicy: Boolean?,
-   val shipViaId: Int,
-   val vendorGroupId: Int?,
-   val shutdownFrom: OffsetDateTime?,
-   val shutdownThru: OffsetDateTime?,
+   val returnPolicy: Boolean,
+   val shipVia: ShipViaEntity,
+   val vendorGroup: VendorGroupEntity,
+   val shutdownFrom: LocalDate?,
+   val shutdownThru: LocalDate?,
    val minimumQuantity: Int?,
    val minimumAmount: BigDecimal?,
    val freeShipQuantity: Int?,
@@ -37,10 +42,10 @@ data class VendorEntity(
    val freightMethodType: FreightMethodTypeEntity,
    val freightPercent: BigDecimal?,
    val freightAmount: BigDecimal?,
-   val chargeInvTax1: String,
-   val chargeInvTax2: String,
-   val chargeInvTax3: String,
-   val chargeInvTax4: String,
+   val chargeInvTax1: Boolean = false,
+   val chargeInvTax2: Boolean = false,
+   val chargeInvTax3: Boolean = false,
+   val chargeInvTax4: Boolean = false,
    val federalIdNumberVerification: Boolean = false,
    val emailAddress: String? //New Field 320 max
 ) : Identifiable {
@@ -51,16 +56,16 @@ data class VendorEntity(
          company = company,
          vendorNumber = vo.vendorNumber!!,
          nameKey = vo.nameKey!!,
-         addressId = vo.addressId!!,
+         address = AddressEntity(vo.address),
          ourAccountNumber = vo.ourAccountNumber!!,
-         payTo = vo.payTo!!,
+         payTo = vo.payTo,
          freightOnboardType = freightOnboardType,
-         paymentTermsId = vo.paymentTermsId!!,
+         paymentTerm = VendorPaymentTermEntity(vo.paymentTerm, company),
          floatDays = vo.floatDays,
          normalDays = vo.normalDays,
-         returnPolicy = vo.returnPolicy,
-         shipViaId = vo.shipViaId!!,
-         vendorGroupId = vo.vendorGroupId,
+         returnPolicy = vo.returnPolicy!!,
+         shipVia = ShipViaEntity(vo.shipVia, company),
+         vendorGroup = VendorGroupEntity(vo.vendorGroup, company),
          shutdownFrom = vo.shutdownFrom,
          shutdownThru = vo.shutdownThru,
          minimumQuantity = vo.minimumQuantity,
@@ -83,48 +88,6 @@ data class VendorEntity(
          federalIdNumberVerification = vo.federalIdNumberVerification!!,
          emailAddress = vo.emailAddress
       )
-
-   /* Before most !! above
-   constructor(id: Long? = null, vo: VendorValueObject, company: Company) :
-      this(
-         id = id ?: vo.id,
-         company = company,
-         vendorNumber = vo.vendorNumber,
-         nameKey = vo.nameKey!!,
-         addressId = vo.addressId,
-         ourAccountNumber = vo.ourAccountNumber,
-         payTo = vo.payTo,
-         freightOnBoardTypeId = vo.freightOnBoardTypeId!!,
-         paymentTermsId = vo.paymentTermsId,
-         floatDays = vo.floatDays,
-         normalDays = vo.normalDays,
-         returnPolicy = vo.returnPolicy,
-         shipViaId = vo.shipViaId,
-         vendorGroupId = vo.vendorGroupId,
-         shutdownFrom = vo.shutdownFrom,
-         shutdownThru = vo.shutdownThru,
-         minimumQuantity = vo.minimumQuantity,
-         minimumAmount = vo.minimumAmount,
-         freeShipQuantity = vo.freeShipQuantity,
-         freeShipAmount = vo.freeShipAmount,
-         vend1099 = vo.vendor1099,
-         federalIdNumber = vo.federalIdNumber,
-         salesRepName = vo.salesRepName,
-         salesRepFax = vo.salesRepFax,
-         separateCheck = vo.separateCheck,
-         bumpPercent = vo.bumpPercent,
-         freightCalcMethodType = vo.freightCalcMethodType,
-         freightPercent = vo.freightPercent,
-         freightAmount = vo.freightAmount,
-         chargeInvTax1 = vo.chargeInvTax1,
-         chargeInvTax2 = vo.chargeInvTax2,
-         chargeInvTax3 = vo.chargeInvTax3,
-         chargeInvTax4 = vo.chargeInvTax4,
-         federalIdNumberVerification = vo.federalIdNumberVerification,
-         emailAddress = vo.emailAddress
-      )
-
-    */
 
    //constructor(source: VendorEntity, updateWith: VendorValueObject) :
    //   this(id = source.id!!, vo = updateWith, company = source.company)

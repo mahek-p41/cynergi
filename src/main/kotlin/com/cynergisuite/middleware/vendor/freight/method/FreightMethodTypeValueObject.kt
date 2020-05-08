@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 data class FreightMethodTypeValueObject (
 
    @field:NotNull
-   @field:Size(min = 3, max = 15)
+   @field:Size(min = 1, max = 15)
    @field:Schema(description = "Freight Method Type")
    var value: String? = null,
 

@@ -25,6 +25,17 @@ data class VendorPaymentTermEntity(
          scheduleRecords = vo.scheduleRecords.asSequence().map { VendorPaymentTermScheduleEntity(it) }.toMutableList()
       )
 
+   constructor(vo: VendorPaymentTermValueObject, company: Company) :
+      this(
+         id = vo.id,
+         company = company,
+         description = vo.description!!,
+         discountMonth = vo.discountMonth,
+         discountDays = vo.discountDays,
+         discountPercent = vo.discountPercent,
+         scheduleRecords = vo.scheduleRecords.asSequence().map { VendorPaymentTermScheduleEntity(it) }.toMutableList()
+      )
+
    constructor(source: VendorPaymentTermEntity, updateWith: VendorPaymentTermValueObject) :
       this(id = source.id!!, vo = updateWith, company = source.company)
 
