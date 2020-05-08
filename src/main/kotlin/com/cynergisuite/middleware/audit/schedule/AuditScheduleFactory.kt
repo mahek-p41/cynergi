@@ -48,6 +48,13 @@ object AuditScheduleFactory {
 
       arguments.add(
          ScheduleArgumentEntity(
+            "en-US",
+            "locale"
+         )
+      )
+
+      arguments.add(
+         ScheduleArgumentEntity(
             company.myId()?.toString()!!,
             "companyId"
          )

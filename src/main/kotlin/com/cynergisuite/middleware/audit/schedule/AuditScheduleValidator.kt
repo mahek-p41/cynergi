@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.schedule
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
@@ -12,7 +11,6 @@ import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.AUDIT_SCHEDULE
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
-import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import java.util.Locale
@@ -20,9 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditScheduleValidator(
-   private val departmentRepository: DepartmentRepository,
    private val scheduleRepository: ScheduleRepository,
-   private val scheduleTypeRepository: ScheduleTypeRepository,
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
 
@@ -57,6 +53,20 @@ class AuditScheduleValidator(
          )
       )
 
+      arguments.add(
+         ScheduleArgumentEntity(
+            user.myEmployeeType(),
+            "employeeType"
+         )
+      )
+
+      arguments.add(
+         ScheduleArgumentEntity(
+            user.myCompany().myId().toString(),
+            "companyId"
+         )
+      )
+
       return Pair(
          ScheduleEntity(
             title = dto.title!!,
@@ -86,8 +96,10 @@ class AuditScheduleValidator(
 
       val stores = mutableListOf<StoreEntity>()
       val schedule = scheduleRepository.findOne(dto.id!!)!!
-      val existingEmployee = schedule.arguments.firstOrNull { it.description == "employeeNumber" }
+      val existingCompany = schedule.arguments.firstOrNull { it.description == "companyId" }
       val existingLocale = schedule.arguments.firstOrNull { it.description == "locale" }
+      val existingEmployeeNumber = schedule.arguments.firstOrNull { it.description == "employeeNumber" }
+      val existingEmployeeType = schedule.arguments.first { it.description == "employeeType" }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
          .map { it to storeRepository.findOne(it.value.toInt(), user.myCompany())!! }
@@ -111,25 +123,30 @@ class AuditScheduleValidator(
          argsToUpdate.add(store)
       }
 
-      if (existingEmployee == null) {
-         argsToUpdate.add(ScheduleArgumentEntity(user.myEmployeeNumber().toString(), "employeeNumber"))
-      } else if (existingEmployee.value != user.myEmployeeNumber().toString()) {
-         argsToUpdate.add(existingEmployee.copy(value = user.myEmployeeNumber().toString()))
-      } else {
-         argsToUpdate.add(existingEmployee)
-      }
-
-      if (existingLocale == null) { // handle the case where a schedule might have been created without a locale
-         argsToUpdate.add(ScheduleArgumentEntity(locale.toLanguageTag(), "locale"))
-      } else if (existingLocale.value != locale.toLanguageTag()) {
-         argsToUpdate.add(existingLocale.copy(value = locale.toLanguageTag()))
-      } else {
-         argsToUpdate.add(existingLocale)
-      }
+      existingUpdate(existingCompany, "companyId") { user.myCompany().myId()!!.toString() }.also { argsToUpdate.add(it) }
+      existingUpdate(existingEmployeeNumber, "employeeNumber") { user.myEmployeeNumber().toString() }.also { argsToUpdate.add(it) }
+      existingUpdate(existingEmployeeType, "employeeType") { user.myEmployeeType() }.also { argsToUpdate.add(it) }
+      existingUpdate(existingLocale, "locale") { locale.toLanguageTag() }.also { argsToUpdate.add(it) }
 
       val scheduleToUpdate = schedule.copy(title = dto.title!!, description = dto.description!!, schedule = dto.schedule!!.name, arguments = argsToUpdate, enabled = dto.enabled!!)
 
       return scheduleToUpdate to stores
+   }
+
+   private fun existingUpdate(existing: ScheduleArgumentEntity?, description: String, replaceWith: () -> String): ScheduleArgumentEntity {
+      val replacement = replaceWith()
+
+      return when {
+         existing == null -> {
+            ScheduleArgumentEntity(replaceWith(), description)
+         }
+         existing.value != replacement -> {
+            existing.copy(value = replacement)
+         }
+         else -> {
+            existing
+         }
+      }
    }
 
    private fun doSharedValidation(dto: AuditScheduleCreateUpdateDataTransferObject, company: Company, errors: MutableSet<ValidationError>) {
