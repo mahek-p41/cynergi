@@ -31,9 +31,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       result.id == store.id
       result.storeNumber == store.number
       result.name == store.name
-      result.region.regionNumber == regions[0].number
       result.region.name == regions[0].name
-      result.region.division.divisionNumber == divisions[0].number
       result.region.division.name == divisions[0].name
    }
 
@@ -80,16 +78,12 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].region.regionNumber == regions[0].number
       pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[1].region.division.name == divisions[0].name
 
       when:
@@ -119,9 +113,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.first == true
       pageOneResult.last == true
@@ -147,16 +139,12 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].region.regionNumber == regions[0].number
       pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[1].region.division.name == divisions[0].name
       pageOneResult.first == true
       pageOneResult.last == true
@@ -182,16 +170,12 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].region.regionNumber == regions[0].number
       pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[1].region.division.name == divisions[0].name
       pageOneResult.first == true
       pageOneResult.last == true

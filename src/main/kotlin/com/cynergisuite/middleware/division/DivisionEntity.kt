@@ -23,7 +23,6 @@ data class DivisionEntity (
    fun toValueObject(): DivisionValueObject {
       return DivisionValueObject(
          id = this.id,
-         number = this.number,
          name = this.name,
          description = this.description,
          company = this.company.toValueObject()

@@ -60,13 +60,6 @@ class AuditScheduleValidator(
          )
       )
 
-      arguments.add(
-         ScheduleArgumentEntity(
-            user.myCompany().myId().toString(),
-            "companyId"
-         )
-      )
-
       return Pair(
          ScheduleEntity(
             title = dto.title!!,
@@ -74,6 +67,7 @@ class AuditScheduleValidator(
             schedule = dto.schedule!!.name,
             command = AUDIT_SCHEDULE,
             type = WEEKLY,
+            company = user.myCompany(),
             arguments = arguments,
             enabled = dto.enabled!!
          ),
@@ -96,10 +90,9 @@ class AuditScheduleValidator(
 
       val stores = mutableListOf<StoreEntity>()
       val schedule = scheduleRepository.findOne(dto.id!!)!!
-      val existingCompany = schedule.arguments.firstOrNull { it.description == "companyId" }
       val existingLocale = schedule.arguments.firstOrNull { it.description == "locale" }
       val existingEmployeeNumber = schedule.arguments.firstOrNull { it.description == "employeeNumber" }
-      val existingEmployeeType = schedule.arguments.first { it.description == "employeeType" }
+      val existingEmployeeType = schedule.arguments.firstOrNull { it.description == "employeeType" }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
          .map { it to storeRepository.findOne(it.value.toInt(), user.myCompany())!! }
@@ -123,7 +116,6 @@ class AuditScheduleValidator(
          argsToUpdate.add(store)
       }
 
-      existingUpdate(existingCompany, "companyId") { user.myCompany().myId()!!.toString() }.also { argsToUpdate.add(it) }
       existingUpdate(existingEmployeeNumber, "employeeNumber") { user.myEmployeeNumber().toString() }.also { argsToUpdate.add(it) }
       existingUpdate(existingEmployeeType, "employeeType") { user.myEmployeeType() }.also { argsToUpdate.add(it) }
       existingUpdate(existingLocale, "locale") { locale.toLanguageTag() }.also { argsToUpdate.add(it) }

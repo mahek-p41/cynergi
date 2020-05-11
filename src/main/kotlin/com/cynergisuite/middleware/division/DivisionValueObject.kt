@@ -14,11 +14,6 @@ data class DivisionValueObject(
    @field:Schema(name = "id", minimum = "1", description = "System generated ID")
    var id: Long? = null,
 
-   @field:Positive
-   @field:JsonProperty("divisionNumber")
-   @field:Schema(name = "number", minimum = "1", description = "Division number")
-   var number: Int? = null,
-
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a division")
    var name: String? = null,

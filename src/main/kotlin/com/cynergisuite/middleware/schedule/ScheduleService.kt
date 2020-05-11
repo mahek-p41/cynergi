@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.schedule
 
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
 import io.micronaut.context.ApplicationContext
@@ -14,6 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class ScheduleService @Inject constructor(
    private val applicationContext: ApplicationContext,
+   private val companyRepository: CompanyRepository,
    private val scheduleRepository: ScheduleRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleService::class.java)
@@ -28,23 +30,25 @@ class ScheduleService @Inject constructor(
    fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek): Int { // useful for calling on-demand
       var jobsRan = 0
 
-      scheduleRepository.forEach(WEEKLY) { schedule ->
-         val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
+      companyRepository.forEach { company ->
+         scheduleRepository.forEach(WEEKLY, company) { schedule ->
+            val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
 
-         if (applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
-            val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
+            if (schedule.enabled && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
+               val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
 
-            if (dailyTask.shouldProcess(schedule, dayOfWeek)) { // check if this job has anything to do for today
-               logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
+               if (dailyTask.shouldProcess(schedule, dayOfWeek)) { // check if this job has anything to do for today
+                  logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
 
-               val taskResult = dailyTask.processDaily(schedule, dayOfWeek) // process the job
+                  val taskResult = dailyTask.processDaily(schedule, dayOfWeek) // process the job
 
-               logger.debug("Task result for schedule {} was {}", schedule, taskResult)
+                  logger.debug("Task result for schedule {} was {}", schedule, taskResult)
 
-               jobsRan++ // increment the result
+                  jobsRan++ // increment the result
+               }
+            } else {
+               logger.error("Unable to find daily task for schedule {}", schedule)
             }
-         } else {
-            logger.error("Unable to find daily task for schedule {}", schedule)
          }
       }
 
