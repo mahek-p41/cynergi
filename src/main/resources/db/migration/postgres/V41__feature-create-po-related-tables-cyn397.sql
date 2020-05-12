@@ -78,8 +78,8 @@ CREATE TABLE purchase_order_header
     total_landed_amount           NUMERIC(11, 2),
     total_freight_amount          NUMERIC(11, 2),
     exception_ind_type_id         BIGINT REFERENCES exception_ind_type_domain (id)         NOT NULL,
-    vendor_submittal_date         DATE,
-    vendor_submittal_employee_sfk INTEGER,
+    vendor_submitted_time         TIMESTAMP,  -- Z columsn POH-VENDOR-SUBMITTAL-DATE, POH-VENDOR-SUBMITTAL-TIME, POH-VENDOR-SUBMITTAL-HOUR, POH-VENDOR-SUBMITTAL-MINUTE, POH-VENDOR-SUBMITTAL-SECOND
+    vendor_submitted_employee_sfk INTEGER,
     ecommerce_indicator           BOOLEAN     DEFAULT FALSE                                NOT NULL,
     customer_account_number_sfk   INTEGER
 );
@@ -98,7 +98,7 @@ CREATE INDEX idx_purchase_order_header_ship_location_type_id ON purchase_order_h
 CREATE INDEX idx_purchase_order_header_ship_via_id ON purchase_order_header (ship_via_id);
 CREATE INDEX idx_purchase_order_header_payment_term_type_id ON purchase_order_header (payment_term_type_id);
 CREATE INDEX idx_purchase_order_header_exception_ind_type_id ON purchase_order_header (exception_ind_type_id);
-CREATE INDEX idx_purchase_order_header_vend_subm_emp ON purchase_order_header (vendor_submittal_employee_sfk);
+CREATE INDEX idx_purchase_order_header_vend_subm_emp ON purchase_order_header (vendor_submitted_employee_sfk);
 CREATE INDEX idx_purchase_order_header_cust_acct_nbr ON purchase_order_header (customer_account_number_sfk);
 
 -- Begin purchase_order_detail
