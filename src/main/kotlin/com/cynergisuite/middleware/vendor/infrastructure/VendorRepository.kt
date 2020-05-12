@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.address.AddressEntity
@@ -195,6 +197,7 @@ class VendorRepository @Inject constructor(
 
       val address = addressRepository.insert(entity.address)
       val entity = entity.copy(address = address)
+      val payToId = if (entity.payTo != null) entity.payTo.myId() else null
 
       val vendor = jdbc.insertReturning(
          """
@@ -277,7 +280,7 @@ class VendorRepository @Inject constructor(
             "name_key" to entity.nameKey,
             "address_id" to entity.address.id,
             "our_account_number" to entity.ourAccountNumber,
-            "pay_to_id" to entity.payTo,
+            "pay_to_id" to payToId,
             "freight_on_board_type_id" to entity.freightOnboardType.id,
             "payment_terms_id" to entity.paymentTerm.id,
             "float_days" to entity.floatDays,
@@ -316,6 +319,7 @@ class VendorRepository @Inject constructor(
    @Transactional
    fun update(entity: VendorEntity): VendorEntity {
       logger.debug("Updating Vendor {}", entity)
+      val payToId = if (entity.payTo != null) entity.payTo.myId() else null
 
       val updated = jdbc.updateReturning("""
          UPDATE vendor
@@ -365,7 +369,7 @@ class VendorRepository @Inject constructor(
             "nameKey" to entity.nameKey,
             "addressId" to entity.address.id,
             "ourAccountNumber" to entity.ourAccountNumber,
-            "payTo" to entity.payTo,
+            "payTo" to payToId,
             "freightOnboardType" to entity.freightOnboardType.id,
             "paymentTerm" to entity.paymentTerm.id,
             "floatDays" to entity.floatDays,
@@ -403,15 +407,16 @@ class VendorRepository @Inject constructor(
       return updated
    }
 
-   private fun mapRow(rs: ResultSet, company: Company): VendorEntity =
-      VendorEntity(
+   private fun mapRow(rs: ResultSet, company: Company): VendorEntity {
+      val payToId = rs.getLongOrNull("v_pay_to_id")
+      return VendorEntity(
          id = rs.getLong("v_id"),
          company = company,
          vendorNumber = rs.getInt("v_number"),
          nameKey = rs.getString("v_name_key"),
          address = mapAddress(rs, "address_"),
          ourAccountNumber = rs.getInt("v_our_account_number"),
-         payTo = rs.getIntOrNull("v_pay_to_id"),
+         payTo = if (payToId != null) SimpleIdentifiableEntity(payToId) else null,
          freightOnboardType = mapOnboard(rs, "onboard_"),
          paymentTerm = mapPaymentTerm(rs, company,"vpt_"),
          floatDays = rs.getIntOrNull("v_float_days"),
@@ -441,16 +446,18 @@ class VendorRepository @Inject constructor(
          federalIdNumberVerification = rs.getBoolean("v_federal_id_number_verification"),
          emailAddress = rs.getString("v_email_address")
       )
+   }
 
-   private fun mapRowUpsert(rs: ResultSet, entity: VendorEntity): VendorEntity =
-      VendorEntity(
+   private fun mapRowUpsert(rs: ResultSet, entity: VendorEntity): VendorEntity {
+      val payToId = rs.getLongOrNull("pay_to_id")
+      return VendorEntity(
          id = rs.getLong("id"),
          company = entity.company,
          vendorNumber = rs.getInt("number"),
          nameKey = rs.getString("name_key"),
          address = entity.address, //This needs to have the newly inserted address passed in
          ourAccountNumber = rs.getInt("our_account_number"),
-         payTo = rs.getIntOrNull("pay_to_id"),
+         payTo = if (payToId != null) SimpleIdentifiableEntity(payToId) else null,
          freightOnboardType = entity.freightOnboardType,
          paymentTerm = entity.paymentTerm,
          floatDays = rs.getIntOrNull("float_days"),
@@ -480,6 +487,7 @@ class VendorRepository @Inject constructor(
          federalIdNumberVerification = rs.getBoolean("federal_id_number_verification"),
          emailAddress = rs.getString("email_address")
       )
+   }
 
    private fun mapOnboard(rs: ResultSet, columnPrefix: String): FreightOnboardTypeEntity =
       FreightOnboardTypeEntity(

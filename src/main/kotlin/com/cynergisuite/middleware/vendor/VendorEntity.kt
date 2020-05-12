@@ -15,11 +15,11 @@ import java.time.OffsetDateTime
 data class VendorEntity(
    val id: Long? = null,
    val company: Company,
-   val vendorNumber: Int = 0,
+   val vendorNumber: Int,
    val nameKey: String, //30 max
    val address: AddressEntity,
    val ourAccountNumber: Int = 0,
-   val payTo: Int? = 0,
+   val payTo: Identifiable?,
    val freightOnboardType: FreightOnboardTypeEntity,
    val paymentTerm: VendorPaymentTermEntity,
    val floatDays: Int? = 0,
@@ -50,7 +50,7 @@ data class VendorEntity(
    val emailAddress: String? //New Field 320 max
 ) : Identifiable {
 
-   constructor(id: Long? = null, vo: VendorValueObject, company: Company, freightOnboardType: FreightOnboardTypeEntity, freightMethodType: FreightMethodTypeEntity) :
+   constructor(id: Long? = null, vo: VendorValueObject, company: Company, freightOnboardType: FreightOnboardTypeEntity, freightMethodType: FreightMethodTypeEntity, payTo: Identifiable? = null) :
       this(
          id = id ?: vo.id,
          company = company,
@@ -58,7 +58,7 @@ data class VendorEntity(
          nameKey = vo.nameKey!!,
          address = AddressEntity(vo.address),
          ourAccountNumber = vo.ourAccountNumber!!,
-         payTo = vo.payTo,
+         payTo = payTo,
          freightOnboardType = freightOnboardType,
          paymentTerm = VendorPaymentTermEntity(vo.paymentTerm, company),
          floatDays = vo.floatDays,
@@ -88,9 +88,6 @@ data class VendorEntity(
          federalIdNumberVerification = vo.federalIdNumberVerification!!,
          emailAddress = vo.emailAddress
       )
-
-   //constructor(source: VendorEntity, updateWith: VendorValueObject) :
-   //   this(id = source.id!!, vo = updateWith, company = source.company)
 
    override fun myId(): Long? = id
 

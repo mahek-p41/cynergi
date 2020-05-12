@@ -18,7 +18,8 @@ import javax.validation.Valid
 @Singleton
 class VendorValidator @Inject constructor(
    private val freightMethodTypeRepository: FreightMethodTypeRepository,
-   private val freightOnboardTypeRepository: FreightOnboardTypeRepository
+   private val freightOnboardTypeRepository: FreightOnboardTypeRepository,
+   private val vendorRepository: VendorRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(VendorValidator::class.java)
 
@@ -29,6 +30,7 @@ class VendorValidator @Inject constructor(
 
       val freightOnboardType = freightOnboardTypeRepository.findOne(value = vo.freightOnboardType.value!!)
       val freightMethodType = freightMethodTypeRepository.findOne(value = vo.freightMethodType.value!!)
+      val payTo = vo.payTo?.id?.let { vendorRepository.findOne(it, company) }
 
       doValidation { errors ->
          doSharedValidation(errors, vo, company)
@@ -36,7 +38,7 @@ class VendorValidator @Inject constructor(
          freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(vo.freightMethodType.value!!)))
       }
 
-      return VendorEntity(vo = vo, company = company, freightOnboardType = freightOnboardType!!, freightMethodType = freightMethodType!!)
+      return VendorEntity(vo = vo, company = company, freightOnboardType = freightOnboardType!!, freightMethodType = freightMethodType!!, payTo = payTo)
    }
 
    fun validateUpdate(id: Long, vo: VendorValueObject, company: Company): VendorEntity {

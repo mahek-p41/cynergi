@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.middleware.address.AddressValueObject
 import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeValueObject
@@ -44,10 +45,9 @@ data class VendorValueObject(
    @field:Schema(name = "ourAccountNumber", description = "The vendor account number", minimum = "0", required = false)
    var ourAccountNumber: Int? = null,
 
-   //@field:NotNull
-   //@field:Positive
-   @field:Schema(name = "payTo", description = "Pay to vendor", minimum = "0", required = false)
-   var payTo: Int? = null,
+   @field:Valid
+   @field:Schema(name = "payTo", description = "Pay to vendor", minimum = "1", required = false)
+   var payTo: SimpleIdentifiableValueObject? = null,
 
    @field:Valid
    @field:NotNull
@@ -172,7 +172,7 @@ data class VendorValueObject(
          nameKey = entity.nameKey,
          address = AddressValueObject(entity.address),
          ourAccountNumber = entity.ourAccountNumber,
-         payTo = entity.payTo,
+         payTo = if (entity.payTo != null) SimpleIdentifiableValueObject(entity.payTo) else null,
          freightOnboardType = FreightOnboardTypeValueObject(entity.freightOnboardType),
          paymentTerm = VendorPaymentTermValueObject(entity.paymentTerm),
          floatDays = entity.floatDays,
