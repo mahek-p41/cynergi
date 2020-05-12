@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.vendor
 
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.address.AddressEntity
@@ -25,6 +26,7 @@ import javax.inject.Inject
 import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class VendorControllerSpecification extends ControllerSpecificationBase {
@@ -151,6 +153,96 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == true
       pageOneResult.elements.size() == 2
+   }
+
+   void "search vendors" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+
+      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressEntity = new AddressEntity(addressVO)
+
+      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
+
+      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+
+      final groupEntity = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
+      final vendorGroup = vendorGroupRepository.insert(groupEntity)
+
+      final onboard = freightOnboardTypeRepository.findOne(1)
+      final method = freightMethodTypeRepository.findOne(1)
+
+      final dateOne = LocalDate.now()
+      final dateTwo = LocalDate.now()
+      final vendorEntity1 = new VendorEntity(null, company, 3, "Vendor 1", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, dateOne, dateTwo, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com")
+      vendorRepository.insert(vendorEntity1).with { new VendorValueObject(it) }
+      final vendorEntity2 = new VendorEntity(null, company, 4, "Vendor 2", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, dateOne, dateTwo, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com")
+      vendorRepository.insert(vendorEntity2).with { new VendorValueObject(it) }
+      final vendorEntity3 = new VendorEntity(null, company, 5, "Vendor 3", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, dateOne, dateTwo, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com")
+      vendorRepository.insert(vendorEntity3).with { new VendorValueObject(it) }
+      final vendorEntity4 = new VendorEntity(null, company, 6, "Out of search result 1", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, dateOne, dateTwo, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com")
+      vendorRepository.insert(vendorEntity4).with { new VendorValueObject(it) }
+      final vendorEntity5 = new VendorEntity(null, company, 7, "Out of search result 2", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, dateOne, dateTwo, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com")
+      vendorRepository.insert(vendorEntity5).with { new VendorValueObject(it) }
+      def searchOne = new SearchPageRequest([query:"Vandor%202"])
+      def searchTwoPageOne = new SearchPageRequest([page:1, size:2, query:"Vandor%202"])
+      def searchTwoPageTwo = new SearchPageRequest([page:2, size:2, query:"Vandor%202"])
+      def searchTwoPageThree = new SearchPageRequest([page:3, size:2, query:"Vandor%202"])
+      def searchSqlInjection = new SearchPageRequest([query:"%20or%201=1;drop%20table%20account;--"])
+
+      when:
+      def searchOneResult = get("$path/search${searchOne}")
+
+      then:
+      searchOneResult.totalElements == 3
+      searchOneResult.totalPages == 1
+      searchOneResult.first == true
+      searchOneResult.last == true
+      searchOneResult.elements.size() == 3
+      searchOneResult.elements[0].nameKey == 'Vendor 2'
+      searchOneResult.elements[1].nameKey == 'Vendor 3'
+      searchOneResult.elements[2].nameKey == 'Vendor 1'
+
+      when:
+      def searchTwoPageOneResult = get("$path/search${searchTwoPageOne}")
+
+      then:
+      searchTwoPageOneResult.requested.with { new SearchPageRequest(it) } == searchTwoPageOne
+      searchTwoPageOneResult.totalElements == 3
+      searchTwoPageOneResult.totalPages == 2
+      searchTwoPageOneResult.first == true
+      searchTwoPageOneResult.last == false
+      searchTwoPageOneResult.elements.size() == 2
+      searchTwoPageOneResult.elements[0].nameKey == 'Vendor 2'
+      searchTwoPageOneResult.elements[1].nameKey == 'Vendor 3'
+
+      when:
+      def searchTwoPageTwoResult = get("$path/search${searchTwoPageTwo}")
+
+      then:
+      searchTwoPageTwoResult.requested.with { new SearchPageRequest(it) } == searchTwoPageTwo
+      searchTwoPageTwoResult.totalElements == 3
+      searchTwoPageTwoResult.totalPages == 2
+      searchTwoPageTwoResult.first == false
+      searchTwoPageTwoResult.last == true
+      searchTwoPageTwoResult.elements.size() == 1
+      searchTwoPageTwoResult.elements[0].nameKey == 'Vendor 1'
+
+      when:
+      get("$path/search${searchTwoPageThree}")
+
+      then:
+      def notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+
+      when:
+      def searchSqlInjectionResult = get("$path/search${searchSqlInjection}")
+
+      then:
+      searchSqlInjectionResult.requested.query == ' or 1=1'
+      searchSqlInjectionResult.totalElements < 5
    }
 
    void "Create vendor then modify resulting VO to insert with a post" () {

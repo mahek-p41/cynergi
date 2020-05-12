@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.vendor.freight.onboard
 
-import com.cynergisuite.middleware.vendor.freight.infrastructure.FreightMethodTypeRepository
 import com.cynergisuite.middleware.vendor.freight.infrastructure.FreightOnboardTypeRepository
 import javax.inject.Inject
 import javax.inject.Singleton

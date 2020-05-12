@@ -1,21 +1,26 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLongOrNull
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeEntity
 import com.cynergisuite.middleware.vendor.freight.onboard.FreightOnboardTypeEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
-import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
@@ -29,8 +34,6 @@ import javax.inject.Singleton
 @Singleton
 class VendorRepository @Inject constructor(
    private val addressRepository: AddressRepository,
-   private val companyRepository: CompanyRepository,
-   private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
@@ -180,6 +183,39 @@ class VendorRepository @Inject constructor(
             } while(rs.next())
          }
       }
+
+
+   fun search(company: Company, page: SearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
+      val searchQuery = page.query
+      var where = StringBuilder(" WHERE comp.id = :comp_id ")
+      var and = " AND "
+      var sortBy: String? = null
+
+      if (!searchQuery.isNullOrEmpty()) {
+         val fieldToSearch = " v.name_key "
+         where.append(and).append(" $fieldToSearch <-> :search_query < 0.9 ")
+         sortBy = " ORDER BY $fieldToSearch <-> :search_query "
+      }
+
+      return jdbc.queryPaged("""
+         ${baseSelectQuery()}
+         $where
+         $sortBy
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.myId(),
+            "limit" to page.size(),
+            "offset" to page.offset(),
+            "search_query" to searchQuery
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company))
+         } while(rs.next())
+      }
+   }
 
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM vendor WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!

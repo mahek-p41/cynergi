@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.*
+import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

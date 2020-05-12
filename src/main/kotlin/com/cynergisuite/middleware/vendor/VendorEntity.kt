@@ -10,7 +10,6 @@ import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 data class VendorEntity(
    val id: Long? = null,

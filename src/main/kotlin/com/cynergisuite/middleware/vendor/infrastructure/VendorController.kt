@@ -1,15 +1,15 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.vendor.VendorService
 import com.cynergisuite.middleware.vendor.VendorValueObject
-import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -82,6 +82,32 @@ class VendorController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val page =  vendorService.fetchAll(user.myCompany(), pageRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/search{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorEndpoints"], summary = "Fetch a listing of Vendors", description = "Fetch a paginated listing of Vendor", operationId = "vendor-search")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "204", description = "The requested Vendor was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun search(
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: SearchPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<VendorValueObject> {
+      logger.info("Fetching all vendors {}", pageRequest)
+
+      val user = userService.findUser(authentication)
+      val page =  vendorService.search(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)

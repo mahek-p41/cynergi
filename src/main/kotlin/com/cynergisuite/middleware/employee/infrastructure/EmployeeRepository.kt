@@ -173,9 +173,9 @@ class EmployeeRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(),
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),
-         "firstNameMi" to pageRequest.firstNameMi,
-         "lastName" to pageRequest.lastName,
-         "search" to pageRequest.search
+         "firstNameMi" to firstNameMi,
+         "lastName" to lastName,
+         "search_query" to searchString
       )
       var totalElements: Long? = null
       val elements = mutableListOf<EmployeeEntity>()
@@ -195,8 +195,8 @@ class EmployeeRepository @Inject constructor(
       // postgres uses index only if query use <-> pg_trgm operator, not pg_trgm function
       if (!searchString.isNullOrEmpty()) {
          val fieldToSearch = "COALESCE(emp_first_name_mi, '') || ' ' || COALESCE(emp_last_name, '')"
-         where.append(and).append(" $fieldToSearch <-> '$searchString' < 0.9 ")
-         sortBy = " $fieldToSearch <-> '$searchString' "
+         where.append(and).append(" $fieldToSearch <-> :search_query < 0.9 ")
+         sortBy = " $fieldToSearch <-> :search_query "
       }
 
       val pagedQuery = StringBuilder("${employeeBaseQuery()} $where ")

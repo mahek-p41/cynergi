@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.*
+import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.vendor.freight.infrastructure.FreightMethodTypeRepository
 import com.cynergisuite.middleware.vendor.freight.infrastructure.FreightOnboardTypeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
