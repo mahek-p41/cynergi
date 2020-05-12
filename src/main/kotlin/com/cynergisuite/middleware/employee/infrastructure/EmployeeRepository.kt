@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.employee.infrastructure
 
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.trimToNull
@@ -11,6 +13,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -161,6 +164,69 @@ class EmployeeRepository @Inject constructor(
       logger.trace("Searching for Employee: {} resulted in {}", user, found)
 
       return found
+   }
+
+   fun findAll(pageRequest: EmployeePageRequest, company: Company): RepositoryPage<EmployeeEntity, PageRequest> {
+      val firstNameMi = pageRequest.firstNameMi
+      val lastName = pageRequest.lastName
+      val searchString = pageRequest.search
+      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(),
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset(),
+         "firstNameMi" to pageRequest.firstNameMi,
+         "lastName" to pageRequest.lastName,
+         "search" to pageRequest.search
+      )
+      var totalElements: Long? = null
+      val elements = mutableListOf<EmployeeEntity>()
+      var where = StringBuilder(" WHERE comp_id = :comp_id AND emp_cynergi_system_admin = false ")
+      var and = " AND "
+      var sortBy = " emp_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}  "
+
+
+      if (!firstNameMi.isNullOrEmpty()) {
+         where.append(and).append(" emp_first_name_mi = :firstNameMi ")
+      }
+
+      if (!lastName.isNullOrEmpty()) {
+         where.append(and).append(" emp_last_name = :lastName ")
+      }
+
+      // postgres uses index only if query use <-> pg_trgm operator, not pg_trgm function
+      if (!searchString.isNullOrEmpty()) {
+         val fieldToSearch = "COALESCE(emp_first_name_mi, '') || ' ' || COALESCE(emp_last_name, '')"
+         where.append(and).append(" $fieldToSearch <-> '$searchString' < 0.9 ")
+         sortBy = " $fieldToSearch <-> '$searchString' "
+      }
+
+      val pagedQuery = StringBuilder("${employeeBaseQuery()} $where ")
+
+      val query = """
+         WITH paged AS (
+            $pagedQuery
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         ORDER BY $sortBy
+         LIMIT :limit OFFSET :offset
+      """
+      logger.trace("Fetching all employees using {} / {}", query, params)
+
+      jdbc.query(query, params) { rs ->
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+
+         elements.add(mapRow(rs))
+      }
+
+      return RepositoryPage(
+         requested = pageRequest,
+         elements = elements,
+         totalElements = totalElements ?: 0
+      )
    }
 
    fun exists(user: User): Boolean =
