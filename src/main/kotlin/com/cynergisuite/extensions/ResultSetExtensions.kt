@@ -30,3 +30,13 @@ fun ResultSet.getIntOrNull(columnLabel: String): Int? {
       null
    }
 }
+
+fun ResultSet.getLongOrNull(columnLabel: String): Long? {
+   val column = this.getString(columnLabel)?.trimToNull()
+
+   return if (!column.isNullOrBlank() && column.isDigits()) {
+      NumberUtils.toLong(column)
+   } else {
+      null
+   }
+}
