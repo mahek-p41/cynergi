@@ -34,7 +34,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == account.id
-         number == account.number
          description == account.description
          form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
@@ -95,7 +94,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == firstPageAccount[index].id
-            number == firstPageAccount[index].number
             description == firstPageAccount[index].description
             form1099Field == firstPageAccount[index].form1099Field
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
@@ -131,7 +129,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == secondPageAccount[index].id
-            number == secondPageAccount[index].number
             description == secondPageAccount[index].description
             form1099Field == secondPageAccount[index].form1099Field
             corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
@@ -167,7 +164,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == lastPageAccount[index].id
-            number == lastPageAccount[index].number
             description == lastPageAccount[index].description
             form1099Field == lastPageAccount[index].form1099Field
             corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
@@ -212,7 +208,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id > 0
-         number > 0
          description == account.description
          form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
@@ -298,7 +293,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final def updatedAccountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
       def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(updatedAccountDTO))
       jsonAccount.id = existingAccount.id
-      jsonAccount.number = existingAccount.number
+      //TODO jsonAccount.number = existingAccount.number
 
       when:
       def result = put("$path/$existingAccount.id", jsonAccount)
@@ -308,7 +303,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == existingAccount.id
-         number == existingAccount.number
          description == updatedAccountDTO.description
          form1099Field == updatedAccountDTO.form1099Field
          corporateAccountIndicator == updatedAccountDTO.corporateAccountIndicator

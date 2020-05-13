@@ -17,9 +17,6 @@ data class BankDTO (
    @field:Positive
    var id: Long? = null,
 
-   @field:Positive
-   var number: Int? = null,
-
    @field:Valid
    @field:NotNull
    @field:Schema(name = "address", description = "Bank Address.")
@@ -49,7 +46,6 @@ data class BankDTO (
    constructor(bankEntity: BankEntity) :
       this(
          id = bankEntity.id,
-         number = bankEntity.number,
          address = AddressValueObject(bankEntity.address),
          name = bankEntity.name,
          generalLedgerProfitCenter = SimpleIdentifiableDataTransferObject(bankEntity.generalLedgerProfitCenter.myId()),

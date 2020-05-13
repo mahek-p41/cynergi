@@ -6,10 +6,7 @@ import java.time.OffsetDateTime
 
 data class AccountEntity(
    val id: Long? = null,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val company: Company,
-   val number: Int,
    val description: String,
    val type: AccountType,
    val normalAccountBalance: NormalAccountBalanceType,
@@ -23,7 +20,6 @@ data class AccountEntity(
       this(
          id = accountDTO.id,
          company = company,
-         number = accountDTO.number,
          description = accountDTO.description,
          type = accountType,
          normalAccountBalance = normalAccountBalanceType,

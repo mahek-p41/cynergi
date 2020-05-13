@@ -39,7 +39,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == bank.id
-         number > 0
          name == bank.name
          accountNumber == bank.accountNumber
          generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.id
@@ -106,7 +105,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.eachWithIndex { it, index ->
          with (it) {
             id == firstPageBank[index].id
-            number > 0
             name == firstPageBank[index].name
             accountNumber == firstPageBank[index].accountNumber
             generalLedgerProfitCenter.id == firstPageBank[index].generalLedgerProfitCenter.id
@@ -147,7 +145,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.eachWithIndex { it, index ->
          with(it) {
             id == secondPageBank[index].id
-            number > 0
             name == secondPageBank[index].name
             accountNumber == secondPageBank[index].accountNumber
             generalLedgerProfitCenter.id == secondPageBank[index].generalLedgerProfitCenter.id
@@ -187,7 +184,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.elements.eachWithIndex { it, index ->
          with(it) {
             id == lastPageBank[index].id
-            number > 0
             name == lastPageBank[index].name
             accountNumber == lastPageBank[index].accountNumber
             generalLedgerProfitCenter.id == lastPageBank[index].generalLedgerProfitCenter.id
@@ -238,7 +234,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id > 0
-         number > 0
          name == bankDTO.name
          accountNumber == bankDTO.accountNumber
          generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
@@ -337,7 +332,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(updatedBankDTO))
       jsonBank.with {
          id = existingBank.id
-         number = existingBank.number
          address.id = existingBank.address.id
          address.number = existingBank.address.number
       }
@@ -351,7 +345,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id > 0
-         number > 0
          name == updatedBankDTO.name
          accountNumber == updatedBankDTO.accountNumber
          generalLedgerProfitCenter.id == updatedBankDTO.generalLedgerProfitCenter.id
