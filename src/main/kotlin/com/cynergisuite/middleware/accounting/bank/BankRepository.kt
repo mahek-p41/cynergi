@@ -78,7 +78,7 @@ class BankRepository @Inject constructor(
                JOIN company comp                               ON bank.company_id = comp.id
                JOIN fastinfo_prod_import.store_vw store        ON store.dataset = comp.dataset_code
                                                                   AND store.number = bank.general_ledger_profit_center_sfk
-               JOIN account                                    ON account.account_id = bank.general_ledger_account_sfk
+               JOIN account                                    ON account.account_id = bank.general_ledger_account_id
                JOIN address                                    ON address.id = bank.address_id
                JOIN bank_currency_code_type_domain currency    ON currency.id = bank.currency_code_id
       """
@@ -144,8 +144,8 @@ class BankRepository @Inject constructor(
       val bankCopy = bank.copy(address = address)
 
       return jdbc.insertReturning("""
-         INSERT INTO bank(company_id, address_id, name, general_ledger_profit_center_sfk, general_ledger_account_sfk, account_number, currency_code_id)
-	      VALUES (:company_id, :address_id, :name, :general_ledger_profit_center_sfk, :general_ledger_account_sfk, :account_number, :currency_code_id)
+         INSERT INTO bank(company_id, address_id, name, general_ledger_profit_center_sfk, general_ledger_account_id, account_number, currency_code_id)
+	      VALUES (:company_id, :address_id, :name, :general_ledger_profit_center_sfk, :general_ledger_account_id, :account_number, :currency_code_id)
          RETURNING
             *
          """.trimIndent(),
@@ -154,7 +154,7 @@ class BankRepository @Inject constructor(
             "address_id" to bankCopy.address.id,
             "name" to bankCopy.name,
             "general_ledger_profit_center_sfk" to bankCopy.generalLedgerProfitCenter.myNumber(),
-            "general_ledger_account_sfk" to bankCopy.generalLedgerAccount.id,
+            "general_ledger_account_id" to bankCopy.generalLedgerAccount.id,
             "account_number" to bankCopy.accountNumber,
             "currency_code_id" to bankCopy.currency.id
          ),
@@ -176,7 +176,7 @@ class BankRepository @Inject constructor(
             address_id = :address_id,
             name = :name,
             general_ledger_profit_center_sfk = :general_ledger_profit_center_sfk,
-            general_ledger_account_sfk = :general_ledger_account_sfk,
+            general_ledger_account_id = :general_ledger_account_id,
             account_number = :account_number,
             currency_code_id = :currency_code_id
          WHERE id = :id
@@ -189,7 +189,7 @@ class BankRepository @Inject constructor(
             "address_id" to bank.address.id,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
-            "general_ledger_account_sfk" to bank.generalLedgerAccount.id,
+            "general_ledger_account_id" to bank.generalLedgerAccount.id,
             "account_number" to bank.accountNumber,
             "currency_code_id" to bank.currency.id
          ),

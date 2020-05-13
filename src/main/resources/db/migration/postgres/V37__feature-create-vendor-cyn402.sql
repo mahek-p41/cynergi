@@ -53,7 +53,7 @@ CREATE TABLE vendor
     time_created                   TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     company_id                     BIGINT REFERENCES company (id)                         NOT NULL,
-    number                         INTEGER CHECK ( number > 0 )                           NOT NULL,
+    number                         BIGINT  CHECK ( number > 0 )                           NOT NULL,
     name_key                       VARCHAR(30) CHECK (char_length(trim(name_key)) > 1)    NOT NULL,
     address_id                     BIGINT REFERENCES address (id)                         NOT NULL,
     our_account_number             INTEGER                                                NOT NULL,
