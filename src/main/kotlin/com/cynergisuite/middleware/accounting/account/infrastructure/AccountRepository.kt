@@ -32,10 +32,6 @@ class AccountRepository @Inject constructor(
       return """
          SELECT
             account.id                                   AS account_id,
-            account.uu_row_id                            AS account_uu_row_id,
-            account.time_created                         AS account_time_created,
-            account.time_updated                         AS account_time_updated,
-            account.number                               AS account_number,
             account.description                          AS account_description,
             account.form_1099_field                      AS account_form_1099_field,
             account.corporate_account_indicator          AS account_corporate_account_indicator,
@@ -179,10 +175,7 @@ class AccountRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = company,
-         number = rs.getInt("${columnPrefix}number"),
          description = rs.getString("${columnPrefix}description"),
          type = mapAccountType(rs, "type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "balance_type_"),
@@ -195,10 +188,7 @@ class AccountRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, account: AccountEntity, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = account.company,
-         number = rs.getInt("${columnPrefix}number"),
          description = rs.getString("${columnPrefix}description"),
          type = account.type,
          normalAccountBalance = account.normalAccountBalance,

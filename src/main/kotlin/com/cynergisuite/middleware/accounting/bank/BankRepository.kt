@@ -36,10 +36,6 @@ class BankRepository @Inject constructor(
          )
          SELECT
             bank.id                                   AS bank_id,
-            bank.uu_row_id                            AS bank_uu_row_id,
-            bank.time_created                         AS bank_time_created,
-            bank.time_updated                         AS bank_time_updated,
-            bank.number                               AS bank_number,
             bank.name                                 AS bank_name,
             bank.account_number                       AS bank_account_number,
             comp.id                                   AS comp_id,
@@ -145,7 +141,7 @@ class BankRepository @Inject constructor(
       logger.debug("Inserting bank {}", bank)
 
       val address = addressRepository.insert(bank.address)
-      val bank = bank.copy(address = address)
+      val bankCopy = bank.copy(address = address)
 
       return jdbc.insertReturning("""
          INSERT INTO bank(company_id, address_id, name, general_ledger_profit_center_sfk, general_ledger_account_sfk, account_number, currency_code_id)
@@ -154,16 +150,16 @@ class BankRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to bank.company.myId(),
-            "address_id" to bank.address.id,
-            "name" to bank.name,
-            "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
-            "general_ledger_account_sfk" to bank.generalLedgerAccount.id,
-            "account_number" to bank.accountNumber,
-            "currency_code_id" to bank.currency.id
+            "company_id" to bankCopy.company.myId(),
+            "address_id" to bankCopy.address.id,
+            "name" to bankCopy.name,
+            "general_ledger_profit_center_sfk" to bankCopy.generalLedgerProfitCenter.myNumber(),
+            "general_ledger_account_sfk" to bankCopy.generalLedgerAccount.id,
+            "account_number" to bankCopy.accountNumber,
+            "currency_code_id" to bankCopy.currency.id
          ),
          RowMapper { rs, _ ->
-            mapRow(rs, bank)
+            mapRow(rs, bankCopy)
          }
       )
    }
@@ -206,12 +202,9 @@ class BankRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = company,
          address = mapAddress(rs, "address_"),
          name = rs.getString("${columnPrefix}name"),
-         number = rs.getInt("${columnPrefix}number"),
          generalLedgerProfitCenter = mapSimpleStore(rs, company,"store_"),
          generalLedgerAccount = accountRepository.mapRow(rs, company, "account_"),
          accountNumber = rs.getInt("${columnPrefix}account_number"),
@@ -222,12 +215,9 @@ class BankRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, bank: BankEntity, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          company = bank.company,
          address = bank.address,
          name = rs.getString("${columnPrefix}name"),
-         number = rs.getInt("${columnPrefix}number"),
          generalLedgerProfitCenter = bank.generalLedgerProfitCenter,
          generalLedgerAccount = bank.generalLedgerAccount,
          accountNumber = rs.getInt("${columnPrefix}account_number"),
@@ -270,5 +260,4 @@ class BankRepository @Inject constructor(
          phone = rs.getString("${columnPrefix}phone"),
          fax = rs.getString("${columnPrefix}fax")
       )
-
 }

@@ -9,11 +9,8 @@ import java.time.OffsetDateTime
 
 data class BankEntity(
    val id: Long? = null,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
    val company: Company,
    val address: AddressEntity,
-   val number: Int? = null,
    val name: String,
    val generalLedgerProfitCenter: Store,
    val generalLedgerAccount: AccountEntity,
@@ -26,7 +23,6 @@ data class BankEntity(
          id = bankDTO.id,
          company = company,
          address = AddressEntity(bankDTO.address),
-         number = bankDTO.number,
          name = bankDTO.name,
          generalLedgerProfitCenter = store,
          generalLedgerAccount = account,

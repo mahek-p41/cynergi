@@ -4,7 +4,6 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.company.Company
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -12,9 +11,6 @@ import javax.inject.Singleton
 import kotlin.random.Random
 
 object AccountFactory {
-
-   @JvmStatic
-   private val intCounter = AtomicInteger(1)
 
    @JvmStatic
    fun stream(numberIn: Int = 1, company: Company): Stream<AccountEntity> {
@@ -25,7 +21,6 @@ object AccountFactory {
       return IntStream.range(0, number).mapToObj {
          AccountEntity(
             company = company,
-            number = intCounter.getAndIncrement(),
             description = lorem.sentence(5,3),
             type = AccountTypeFactory.random(),
             normalAccountBalance = NormalAccountBalanceFactory.random(),
@@ -44,7 +39,6 @@ object AccountFactory {
 
       return IntStream.range(0, number).mapToObj {
          AccountDTO(
-            number = intCounter.getAndIncrement(),
             description = lorem.sentence(5,3),
             type = AccountTypeValueObject(AccountTypeFactory.random()),
             normalAccountBalance = NormalAccountBalanceTypeValueObject(NormalAccountBalanceFactory.random()),
