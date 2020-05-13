@@ -158,7 +158,7 @@ CREATE TABLE module_level
     module_type_id BIGINT REFERENCES module_type_domain (id) NOT NULL,
     company_id     BIGINT REFERENCES company (id)            NOT NULL,
     module_level   INTEGER                                   NOT NULL,
-    UNIQUE (module_type_id, module_level)
+    UNIQUE (company_id,module_type_id, module_level)
 );
 CREATE TRIGGER update_module_level_trg
     BEFORE UPDATE

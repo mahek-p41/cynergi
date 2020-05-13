@@ -4,7 +4,7 @@ CREATE TABLE address
     uu_row_id          UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
-    number integer CHECK (number > 0) DEFAULT currval('address_id_seq')         NOT NULL,
+    number BIGINT DEFAULT currval('address_id_seq')                             NOT NULL,
     name character varying(30) CHECK (char_length(trim(name)) > 1)              NOT NULL,
     address1 character varying(30)CHECK (char_length(trim(address1)) > 1)       NOT NULL ,
     address2 character varying(30),
@@ -16,9 +16,8 @@ CREATE TABLE address
     country varchar(50)CHECK (char_length(trim(city)) > 1)                      NOT NULL,
     county varchar(50),
     phone  varchar(21),
-    fax  varchar(21),
-    UNIQUE (number)
-);
+    fax  varchar(21)
+   );
 
 CREATE INDEX idx_name
 ON address(name);
@@ -39,7 +38,7 @@ CREATE TABLE vendor_payment_term (
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     company_id BIGINT REFERENCES company(id)                                    NOT NULL,
     description varchar(30) CHECK ( char_length(trim(description)) > 1)         NOT NULL,
-    number integer CHECK (number > 0) DEFAULT currval('vendor_payment_term_id_seq') NOT NULL,
+    number BIGINT DEFAULT currval('vendor_payment_term_id_seq')                 NOT NULL,
     number_of_payments integer DEFAULT 1                                        NOT NULL,
     discount_month  integer,
     discount_days  integer,
