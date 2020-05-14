@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.address.AddressEntity
@@ -196,8 +195,8 @@ class VendorRepository @Inject constructor(
       logger.debug("Inserting vendor {}", entity)
 
       val address = addressRepository.insert(entity.address)
-      val entity = entity.copy(address = address)
-      val payToId = if (entity.payTo != null) entity.payTo.myId() else null
+      val entityCopy = entity.copy(address = address)
+      val payToId = if (entityCopy.payTo != null) entityCopy.payTo.myId() else null
 
       val vendor = jdbc.insertReturning(
          """
@@ -275,42 +274,42 @@ class VendorRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to entity.company.myId(),
-            "number" to entity.vendorNumber,
-            "name_key" to entity.nameKey,
-            "address_id" to entity.address.id,
-            "our_account_number" to entity.ourAccountNumber,
+            "company_id" to entityCopy.company.myId(),
+            "number" to entityCopy.vendorNumber,
+            "name_key" to entityCopy.nameKey,
+            "address_id" to entityCopy.address.id,
+            "our_account_number" to entityCopy.ourAccountNumber,
             "pay_to_id" to payToId,
-            "freight_on_board_type_id" to entity.freightOnboardType.id,
-            "payment_terms_id" to entity.paymentTerm.id,
-            "float_days" to entity.floatDays,
-            "normal_days" to entity.normalDays,
-            "return_policy" to entity.returnPolicy,
-            "ship_via_id" to entity.shipVia.id,
-            "group_id" to entity.vendorGroup.id,
-            "shutdown_from" to entity.shutdownFrom,
-            "shutdown_thru" to entity.shutdownThru,
-            "minimum_quantity" to entity.minimumQuantity,
-            "minimum_amount" to entity.minimumAmount,
-            "free_ship_quantity" to entity.freeShipQuantity,
-            "free_ship_amount" to entity.freeShipAmount,
-            "vendor_1099" to entity.vendor1099,
-            "federal_id_number" to entity.federalIdNumber,
-            "sales_representative_name" to entity.salesRepName,
-            "sales_representative_fax" to entity.salesRepFax,
-            "separate_check" to entity.separateCheck,
-            "bump_percent" to entity.bumpPercent,
-            "freight_calc_method_type_id" to entity.freightMethodType.id,
-            "freight_percent" to entity.freightPercent,
-            "freight_amount" to entity.freightAmount,
-            "charge_inventory_tax_1" to entity.chargeInvTax1,
-            "charge_inventory_tax_2" to entity.chargeInvTax2,
-            "charge_inventory_tax_3" to entity.chargeInvTax3,
-            "charge_inventory_tax_4" to entity.chargeInvTax4,
-            "federal_id_number_verification" to entity.federalIdNumberVerification,
-            "email_address" to entity.emailAddress
+            "freight_on_board_type_id" to entityCopy.freightOnboardType.id,
+            "payment_terms_id" to entityCopy.paymentTerm.id,
+            "float_days" to entityCopy.floatDays,
+            "normal_days" to entityCopy.normalDays,
+            "return_policy" to entityCopy.returnPolicy,
+            "ship_via_id" to entityCopy.shipVia.id,
+            "group_id" to entityCopy.vendorGroup.id,
+            "shutdown_from" to entityCopy.shutdownFrom,
+            "shutdown_thru" to entityCopy.shutdownThru,
+            "minimum_quantity" to entityCopy.minimumQuantity,
+            "minimum_amount" to entityCopy.minimumAmount,
+            "free_ship_quantity" to entityCopy.freeShipQuantity,
+            "free_ship_amount" to entityCopy.freeShipAmount,
+            "vendor_1099" to entityCopy.vendor1099,
+            "federal_id_number" to entityCopy.federalIdNumber,
+            "sales_representative_name" to entityCopy.salesRepName,
+            "sales_representative_fax" to entityCopy.salesRepFax,
+            "separate_check" to entityCopy.separateCheck,
+            "bump_percent" to entityCopy.bumpPercent,
+            "freight_calc_method_type_id" to entityCopy.freightMethodType.id,
+            "freight_percent" to entityCopy.freightPercent,
+            "freight_amount" to entityCopy.freightAmount,
+            "charge_inventory_tax_1" to entityCopy.chargeInvTax1,
+            "charge_inventory_tax_2" to entityCopy.chargeInvTax2,
+            "charge_inventory_tax_3" to entityCopy.chargeInvTax3,
+            "charge_inventory_tax_4" to entityCopy.chargeInvTax4,
+            "federal_id_number_verification" to entityCopy.federalIdNumberVerification,
+            "email_address" to entityCopy.emailAddress
             ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity) }
+         RowMapper { rs, _ -> mapRowUpsert(rs, entityCopy) }
       )
 
       return vendor
@@ -508,9 +507,6 @@ class VendorRepository @Inject constructor(
    private fun mapAddress(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): AddressEntity =
          AddressEntity(
             id = rs.getLong("${columnPrefix}id"),
-            timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-            timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-            number = rs.getInt("${columnPrefix}number"),
             name = rs.getString("${columnPrefix}name"),
             address1 = rs.getString("${columnPrefix}address1"),
             address2 = rs.getString("${columnPrefix}address2"),

@@ -57,7 +57,6 @@ object BankFactory {
       return IntStream.range(0, number).mapToObj {
          BankDTO(
             address = AddressValueObject(
-               number = Random.nextInt(from = 1, until = 10),
                name = faker.address().firstName(),
                address1 = faker.address().streetName(),
                address2 = faker.address().secondaryAddress(),

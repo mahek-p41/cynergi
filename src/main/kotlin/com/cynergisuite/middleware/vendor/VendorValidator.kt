@@ -33,7 +33,7 @@ class VendorValidator @Inject constructor(
       val payTo = vo.payTo?.id?.let { vendorRepository.findOne(it, company) }
 
       doValidation { errors ->
-         doSharedValidation(errors, vo, company)
+         doSharedValidation(errors, vo)
          freightOnboardType ?: errors.add(ValidationError("freightOnboardType.value", NotFound(vo.freightOnboardType.value!!)))
          freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(vo.freightMethodType.value!!)))
       }
@@ -48,7 +48,7 @@ class VendorValidator @Inject constructor(
       val freightMethodType = freightMethodTypeRepository.findOne(value = vo.freightMethodType.value!!)
 
       doValidation { errors ->
-         doSharedValidation(errors, vo, company)
+         doSharedValidation(errors, vo)
          freightOnboardType ?: errors.add(ValidationError("freightOnboardType.value", NotFound(vo.freightOnboardType.value!!)))
          freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(vo.freightMethodType.value!!)))
       }
@@ -56,7 +56,7 @@ class VendorValidator @Inject constructor(
       return VendorEntity(vo = vo, company = company, freightOnboardType = freightOnboardType!!, freightMethodType = freightMethodType!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorValueObject, company: Company) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorValueObject) {
       if((vo.shutdownFrom != null) && vo.shutdownThru == null) {
          errors.add(ValidationError("shutdownThru", NotNull("shutdownThru")))
       }

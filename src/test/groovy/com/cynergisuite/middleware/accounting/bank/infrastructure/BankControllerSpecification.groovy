@@ -48,7 +48,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             name == bank.address.name
             address1 == bank.address.address1
             address2 == bank.address.address2
-            number > 0
             city == bank.address.city
             country == bank.address.country
             county == bank.address.county
@@ -114,7 +113,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
                name == firstPageBank[index].address.name
                address1 == firstPageBank[index].address.address1
                address2 == firstPageBank[index].address.address2
-               number > 0
                city == firstPageBank[index].address.city
                country == firstPageBank[index].address.country
                county == firstPageBank[index].address.county
@@ -154,7 +152,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
                name == secondPageBank[index].address.name
                address1 == secondPageBank[index].address.address1
                address2 == secondPageBank[index].address.address2
-               number > 0
                city == secondPageBank[index].address.city
                country == secondPageBank[index].address.country
                county == secondPageBank[index].address.county
@@ -193,7 +190,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
                name == lastPageBank[index].address.name
                address1 == lastPageBank[index].address.address1
                address2 == lastPageBank[index].address.address2
-               number > 0
                city == lastPageBank[index].address.city
                country == lastPageBank[index].address.country
                county == lastPageBank[index].address.county
@@ -243,7 +239,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             name == bankDTO.address.name
             address1 == bankDTO.address.address1
             address2 == bankDTO.address.address2
-            number > 0
             city == bankDTO.address.city
             country == bankDTO.address.country
             county == bankDTO.address.county
@@ -333,9 +328,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       jsonBank.with {
          id = existingBank.id
          address.id = existingBank.address.id
-         address.number = existingBank.address.number
       }
-
 
       when:
       def result = put("$path/$existingBank.id", jsonBank)
@@ -354,7 +347,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
             name == updatedBankDTO.address.name
             address1 == updatedBankDTO.address.address1
             address2 == updatedBankDTO.address.address2
-            number > 0
             city == updatedBankDTO.address.city
             country == updatedBankDTO.address.country
             county == updatedBankDTO.address.county

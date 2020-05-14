@@ -46,7 +46,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -81,7 +81,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -118,7 +118,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -157,7 +157,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -194,7 +194,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -231,7 +231,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -264,7 +264,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, 11, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
