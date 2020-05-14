@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.bank.BankCurrencyTypeService
-import com.cynergisuite.middleware.accounting.bank.BankCurrencyTypeValueObject
+import com.cynergisuite.middleware.accounting.account.AccountTypeService
+import com.cynergisuite.middleware.accounting.account.AccountTypeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -22,26 +22,26 @@ import javax.inject.Inject
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller("/api/accounting/account/type")
 class AccountTypeController @Inject constructor(
-   private val bankCurrencyTypeService: BankCurrencyTypeService,
+   private val accountTypeService: AccountTypeService,
    private val localizationService: LocalizationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountTypeController::class.java)
 
    @Get
-   @Operation(tags = ["BankCurrencyTypeEndpoints"], summary = "Fetch a list of bank currencies", description = "Fetch a listing of bank supported currencies", operationId = "bankCurrencyType-fetchAll")
+   @Operation(tags = ["AccountTypeEndpoints"], summary = "Fetch a list of account types", description = "Fetch a listing of account types", operationId = "accountType-fetchAll")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankCurrencyTypeValueObject::class))])
+      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountTypeValueObject::class))])
    ])
    fun fetchAll(
       httpRequest: HttpRequest<*>
-   ): List<BankCurrencyTypeValueObject> {
+   ): List<AccountTypeValueObject> {
       val locale = httpRequest.findLocaleWithDefault()
 
-      val statuses = bankCurrencyTypeService.fetchAll().map {
-         BankCurrencyTypeValueObject(it, it.localizeMyDescription(locale, localizationService))
+      val statuses = accountTypeService.fetchAll().map {
+         AccountTypeValueObject(it, it.localizeMyDescription(locale, localizationService))
       }
 
-      logger.debug("Listing of Bank Currency Codes resulted in {}", statuses)
+      logger.debug("Listing of Account Types resulted in {}", statuses)
 
       return statuses
    }
