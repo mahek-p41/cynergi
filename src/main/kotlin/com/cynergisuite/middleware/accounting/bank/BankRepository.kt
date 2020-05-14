@@ -244,9 +244,6 @@ class BankRepository @Inject constructor(
    private fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          address1 = rs.getString("${columnPrefix}address1"),
          address2 = rs.getString("${columnPrefix}address2"),

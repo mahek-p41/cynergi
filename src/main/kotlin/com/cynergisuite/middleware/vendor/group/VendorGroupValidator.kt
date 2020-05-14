@@ -25,7 +25,7 @@ class VendorGroupValidator @Inject constructor(
    fun validateCreate(vo: VendorGroupValueObject, company: Company): VendorGroupEntity {
       logger.trace("Validating Save VendorGroup {}", vo)
 
-      doValidation { errors -> doSharedValidation(errors, vo, company) }
+      doValidation { errors -> doSharedValidation(errors, vo) }
 
       return VendorGroupEntity(vo = vo, company = company)
    }
@@ -36,12 +36,12 @@ class VendorGroupValidator @Inject constructor(
 
       val existing = vendorGroupRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-      doValidation { errors -> doSharedValidation(errors, vo, company) }
+      doValidation { errors -> doSharedValidation(errors, vo) }
 
       return VendorGroupEntity(source = existing, updateWith = vo)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupValueObject, company: Company) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupValueObject) {
       if(vo.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }

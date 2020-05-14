@@ -24,10 +24,6 @@ class AddressRepository @Inject constructor(
       return """
          SELECT
             address.id                                AS address_id,
-            address.uu_row_id                         AS address_uu_row_id,
-            address.time_created                      AS address_time_created,
-            address.time_updated                      AS address_time_updated,
-            address.number                            AS address_number,
             address.name                              AS address_name,
             address.address1                          AS address_address1,
             address.address2                          AS address_address2,
@@ -135,9 +131,6 @@ class AddressRepository @Inject constructor(
    private fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
          id = rs.getLong("${columnPrefix}id"),
-         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
-         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
-         number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          address1 = rs.getString("${columnPrefix}address1"),
          address2 = rs.getString("${columnPrefix}address2"),

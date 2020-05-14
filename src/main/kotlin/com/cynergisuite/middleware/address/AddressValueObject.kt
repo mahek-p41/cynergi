@@ -14,9 +14,6 @@ data class AddressValueObject (
    @field:Positive
    var id: Long? = null,
 
-   @field:Positive
-   var number: Int? = null,
-
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a bank.")
    var name: String,
@@ -68,7 +65,6 @@ data class AddressValueObject (
    ) : Identifiable {
    constructor(address: AddressEntity) : this(
       id = address.id,
-      number = address.number,
       name = address.name,
       address1 = address.address1,
       address2 = address.address2,
