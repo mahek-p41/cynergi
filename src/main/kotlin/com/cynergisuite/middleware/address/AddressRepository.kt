@@ -127,7 +127,6 @@ class AddressRepository @Inject constructor(
       )
    }
 
-
    private fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
          id = rs.getLong("${columnPrefix}id"),
@@ -144,5 +143,4 @@ class AddressRepository @Inject constructor(
          phone = rs.getString("${columnPrefix}phone"),
          fax = rs.getString("${columnPrefix}fax")
       )
-
 }

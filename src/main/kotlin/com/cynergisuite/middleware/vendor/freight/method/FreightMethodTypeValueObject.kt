@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.vendor.freight.method
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
@@ -13,12 +12,11 @@ data class FreightMethodTypeValueObject (
 
    @field:NotNull
    @field:Size(min = 1, max = 15)
-   @field:Schema(description = "Freight Method Type")
+   @field:Schema(name = "value", description = "Freight Method Type")
    var value: String? = null,
 
-   @field:Nullable
    @field:Size(min = 3, max = 50)
-   @field:Schema(description = "Freight Method Description")
+   @field:Schema(name="description", description = "Freight Method Description")
    var description: String? = null
 
 ) {

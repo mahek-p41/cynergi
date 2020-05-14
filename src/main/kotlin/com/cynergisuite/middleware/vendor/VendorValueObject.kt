@@ -21,6 +21,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@Schema(name = "Vendor", title = "An entity containing vendor information", description = "An entity containing vendor information.")
 data class VendorValueObject(
 
    @field:Positive
@@ -49,7 +50,7 @@ data class VendorValueObject(
    var ourAccountNumber: Int? = null,
 
    @field:Valid
-   @field:Schema(name = "payTo", description = "Pay to vendor", minimum = "1", required = false)
+   @field:Schema(name = "payTo", description = "Pay to vendor.  Provide the ID of a valid vendor for the company that the user is logged in under. Use GET /api/vendor/search{?pageRequest*}", minimum = "1", required = false)
    var payTo: SimpleIdentifiableValueObject? = null,
 
    @field:Valid
@@ -62,11 +63,9 @@ data class VendorValueObject(
    @field:Schema(name = "paymentTerm", description = "Vendor Payment Term")
    var paymentTerm: VendorPaymentTermValueObject,
 
-   //@field:Positive
    @field:Schema(name = "floatDays", description = "The vendor float days", minimum = "0", required = false)
    var floatDays: Int? = null,
 
-   //@field:Positive
    @field:Schema(name = "normalDays", description = "The vendor normal days", minimum = "0", required = false)
    var normalDays: Int? = null,
 

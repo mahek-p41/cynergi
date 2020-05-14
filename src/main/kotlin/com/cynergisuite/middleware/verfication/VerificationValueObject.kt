@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -38,19 +37,15 @@ data class VerificationValueObject(
    @field:JsonProperty("cust_verified_date")
    var verifiedTime: LocalDate?,
 
-   @field:Nullable
    @field:JsonProperty("checklist_auto")
    var auto: VerificationAutoValueObject?,
 
-   @field:Nullable
    @field:JsonProperty("checklist_employment")
    var employment: VerificationEmploymentValueObject?,
 
-   @field:Nullable
    @field:JsonProperty("checklist_landlord")
    var landlord: VerificationLandlordValueObject?,
 
-   @field:Nullable
    @field:Size(max = 6)
    @field:JsonDeserialize(contentAs = VerificationReferenceValueObject::class)
    @field:JsonProperty("checklist_references")

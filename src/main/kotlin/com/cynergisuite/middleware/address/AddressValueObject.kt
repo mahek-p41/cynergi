@@ -6,61 +6,66 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
+import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AddressValueObject", title = "An entity containing a address information", description = "An entity containing a address information.")
+@Schema(name = "Address", title = "An entity containing address information", description = "An entity containing address information.")
 data class AddressValueObject (
 
    @field:Positive
    var id: Long? = null,
 
    @field:NotNull
-   @field:Schema(name = "name", description = "Human readable name for a bank.")
-   var name: String,
+   @field:Size(min = 2, max = 30)
+   @field:Schema(name = "name", description = "Human readable name for this address.")
+   var name: String? = null,
 
    @field:NotNull
-   @field:Schema(name = "address1", description = "Human readable address1 for a bank.")
-   var address1: String,
+   @field:Size(min = 2, max = 30)
+   @field:Schema(name = "address1", description = "Human readable address1.")
+   var address1: String? = null,
+
+   @field:Size(min = 2, max = 30)
+   @field:Schema(name = "address2", description = "Human readable address2.")
+   var address2: String? = null,
 
    @field:NotNull
-   @field:Schema(name = "address2", description = "Human readable address2 for a bank.")
-   var address2: String,
-
-   @field:NotNull
+   @field:Size(min = 2, max = 30)
    @field:Schema(name = "city", description = "City of a address.")
-   var city: String,
+   var city: String? = null,
 
    @field:NotNull
+   @field:Size(min = 2, max = 2)
    @field:Schema(name = "state", description = "State of a address.")
-   var state: String,
+   var state: String? = null,
 
    @field:NotNull
+   @field:Size(min = 3, max = 10)
    @field:Schema(name = "postalCode", description = "Postal code of a address.")
-   var postalCode: String,
+   var postalCode: String? = null,
 
-   @field:NotNull
    @field:Schema(name = "latitude", description = "Latitude of a address.")
-   var latitude: Double,
+   var latitude: Double? = null,
 
-   @field:NotNull
    @field:Schema(name = "longitude", description = "Longitude of a address.")
-   var longitude: Double,
+   var longitude: Double? = null,
 
    @field:NotNull
+   @field:Size(min = 2, max = 50)
    @field:Schema(name = "country", description = "Country of a address.")
-   var country: String,
+   var country: String? = null,
 
-   @field:NotNull
+   @field:Size(min = 2, max = 50)
    @field:Schema(name = "county", description = "County of a address.")
-   var county: String,
+   var county: String? = null,
 
-   @field:NotNull
+   @field:Size(min = 3, max = 21)
    @field:Schema(name = "phone", description = "Phone of a address.")
-   var phone: String,
+   var phone: String? = null,
 
-   @field:NotNull
+   @field:Size(min = 3, max = 21)
    @field:Schema(name = "county", description = "Fax of a address.")
-   var fax: String
+   var fax: String? = null
 
    ) : Identifiable {
    constructor(address: AddressEntity) : this(

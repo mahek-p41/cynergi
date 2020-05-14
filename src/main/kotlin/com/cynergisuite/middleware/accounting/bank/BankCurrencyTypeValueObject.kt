@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.accounting.bank
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
@@ -13,12 +12,11 @@ data class BankCurrencyTypeValueObject (
 
    @field:NotNull
    @field:Size(min = 3, max = 15)
-   @field:Schema(description = "Currency code")
+   @field:Schema(name = "value", description = "Currency code")
    var value: String? = null,
 
-   @field:Nullable
    @field:Size(min = 3, max = 50)
-   @field:Schema(description = "A localized description for currency")
+   @field:Schema(name = "description", description = "A localized description for currency")
    var description: String? = null
 
 ) {
