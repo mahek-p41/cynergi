@@ -32,7 +32,7 @@ object AccountFactory {
    }
 
    @JvmStatic
-   fun streamValueObject(numberIn: Int = 1, company: Company): Stream<AccountDTO> {
+   fun streamValueObject(numberIn: Int = 1): Stream<AccountDTO> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -67,6 +67,6 @@ class AccountFactoryService @Inject constructor(
    }
 
    fun singleValueObject(company: Company): AccountDTO {
-      return AccountFactory.streamValueObject(1, company).findFirst().orElseThrow { Exception("Unable to create Account")}
+      return AccountFactory.streamValueObject(1).findFirst().orElseThrow { Exception("Unable to create Account")}
    }
 }

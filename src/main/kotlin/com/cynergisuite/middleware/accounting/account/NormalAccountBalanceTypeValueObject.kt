@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.accounting.account
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
@@ -13,12 +12,11 @@ data class NormalAccountBalanceTypeValueObject (
 
    @field:NotNull
    @field:Size(min = 1, max = 10)
-   @field:Schema(description = "Normal account balance")
+   @field:Schema(name = "value", description = "Normal account balance")
    var value: String? = null,
 
-   @field:Nullable
    @field:Size(min = 1, max = 100)
-   @field:Schema(description = "A localized description for normal account balance")
+   @field:Schema(name = "description", description = "A localized description for normal account balance")
    var description: String? = null
 
 ) {

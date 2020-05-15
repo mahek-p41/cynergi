@@ -7,30 +7,30 @@ data class AddressEntity(
    val id: Long? = null,
    val name: String,
    val address1: String,
-   val address2: String,
+   val address2: String?,
    val city: String,
    val state: String,
    val postalCode: String,
-   val latitude: Double,
-   val longitude: Double,
+   val latitude: Double?,
+   val longitude: Double?,
    val country: String,
-   val county: String,
-   val phone: String,
-   val fax: String
+   val county: String?,
+   val phone: String?,
+   val fax: String?
 ) : Identifiable {
 
    constructor(address: AddressValueObject) :
       this (
          id = address.id,
-         name = address.name,
-         address1 = address.address1,
+         name = address.name!!,
+         address1 = address.address1!!,
          address2 = address.address2,
-         city = address.city,
-         state = address.state,
-         postalCode = address.postalCode,
+         city = address.city!!,
+         state = address.state!!,
+         postalCode = address.postalCode!!,
          latitude = address.latitude,
          longitude = address.longitude,
-         country = address.country,
+         country = address.country!!,
          county = address.county,
          phone = address.phone,
          fax = address.fax

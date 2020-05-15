@@ -379,10 +379,10 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
+      response.size() == 1
 
-      response.path == 'address.name'
-      response.message == 'Failed to convert argument [bankDTO] for value [null]'
+      response[0].path == 'bankDTO.address.name'
+      response[0].message == 'Is required'
    }
 
    void "update a invalid bank with non exist address id"() {

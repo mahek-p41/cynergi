@@ -36,7 +36,7 @@ class AccessControlService @Inject constructor(
       val authenticatedUser: User = securityService.authentication.map { userService.findUser(it) }.orElseThrow { AccessException(AccessDenied(), securityService.username().orElse(null)) }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset: String = accessControl!!.stringValue()!!.orElse(StringUtils.EMPTY)
-      val accessControlProviderClass = accessControl?.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
+      val accessControlProviderClass = accessControl.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java
       val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
 
       logger.trace("Checking access of asset {} using {} of user {}", asset, accessControlProviderClass, authenticatedUser)

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
-import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
@@ -15,7 +14,6 @@ import javax.validation.constraints.Positive
 @Schema(name = "AuditAction", title = "Single item of an Audit's history", description = "An action taken against an Audit such as going from CREATED to IN-PROGRESS at a point in time")
 data class AuditActionValueObject (
 
-   @field:Nullable
    @field:Positive
    @field:Schema(name = "id", description = "This is a database generated primary key", required = false)
    var id: Long? = null,
@@ -30,7 +28,6 @@ data class AuditActionValueObject (
    @field:Schema(name = "status", description = "A valid status to be associated with this AuditAction", required = true)
    var status: AuditStatusValueObject? = null,
 
-   @field:Nullable
    @field:Positive
    @field:Schema(name = "changedBy", description = "The Employee number to be associated with this action", required = false)
    var changedBy: EmployeeValueObject? = null
