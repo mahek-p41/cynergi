@@ -31,7 +31,7 @@ class VendorService @Inject constructor(
       )
    }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorValueObject> {
+   fun fetchAll(company: Company, pageRequest: VendorPageRequest): Page<VendorValueObject> {
       val found = vendorRepository.findAll(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
