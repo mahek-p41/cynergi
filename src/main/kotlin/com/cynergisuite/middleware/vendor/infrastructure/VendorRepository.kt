@@ -17,7 +17,6 @@ import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
-import com.cynergisuite.middleware.vendor.VendorPageRequest
 import com.cynergisuite.middleware.vendor.freight.method.FreightMethodTypeEntity
 import com.cynergisuite.middleware.vendor.freight.onboard.FreightOnboardTypeEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
@@ -165,29 +164,17 @@ class VendorRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: VendorPageRequest): RepositoryPage<VendorEntity, PageRequest> {
-      val searchString = page.search
-      var where = StringBuilder(" WHERE comp.id = :comp_id ")
-      var and = " AND "
-      var sortBy = " ORDER BY v.${page.snakeSortBy()} ${page.sortDirection()} "
-
-      if (!searchString.isNullOrEmpty()) {
-         val fieldToSearch = " v.name_key "
-         where.append(and).append(" $fieldToSearch <-> '$searchString' < 0.9 ")
-         sortBy = " ORDER BY $fieldToSearch <-> '$searchString' "
-      }
-
-      return jdbc.queryPaged("""
+   fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorEntity, PageRequest> {
+         return jdbc.queryPaged("""
          ${baseSelectQuery()}
-         $where
-         $sortBy
+         WHERE comp.id = :comp_id
+         ORDER BY v.${page.snakeSortBy()} ${page.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
             mapOf(
                "comp_id" to company.myId(),
                "limit" to page.size(),
-               "offset" to page.offset(),
-               "search" to page.search
+               "offset" to page.offset()
             ),
             page
          ) { rs, elements ->
