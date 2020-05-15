@@ -13,8 +13,12 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
+import org.eclipse.collections.api.factory.Maps
+import org.eclipse.collections.api.multimap.Multimap
+import org.eclipse.collections.impl.factory.Multimaps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -29,8 +33,11 @@ class AuditActionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditActionRepository::class.java)
 
-   fun findAll(parent: AuditEntity): List<AuditActionEntity> {
-      return jdbc.query("""
+   fun findAll(parents: Collection<Long>): Multimap<Long, AuditActionEntity> {
+      val result = Multimaps.mutable.list.empty<Long, AuditActionEntity>()
+
+      if (parents.isNotEmpty()) {
+         jdbc.query("""
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
          )
@@ -70,18 +77,25 @@ class AuditActionRepository @Inject constructor(
          comp.client_code                                    AS comp_client_code,
          comp.client_id                                      AS comp_client_id,
          comp.dataset_code                                   AS comp_dataset_code,
-         comp.federal_id_number                              AS comp_federal_id_number
+         comp.federal_id_number                              AS comp_federal_id_number,
+         audits.id                                           AS audit_id
       FROM audit_action auditActions
            JOIN audit audits ON auditActions.audit_id = audits.id
            JOIN company comp ON audits.company_id = comp.id
            JOIN audit_status_type_domain astd ON auditActions.status_id = astd.id
            JOIN employees auditActionEmployee ON comp.dataset_code = auditActionEmployee.comp_dataset_code AND auditActions.changed_by = auditActionEmployee.emp_number
-      WHERE auditActions.audit_id = :auditAction_id
+      WHERE auditActions.audit_id IN (:auditAction_id)
       """.trimIndent(),
-      mapOf("auditAction_id" to parent.id),
-      RowMapper { rs, _ ->
-         mapAuditAction(rs)
-      })
+            mapOf("auditAction_id" to parents),
+            RowCallbackHandler { rs ->
+               val action = mapAuditAction(rs)
+               val auditId = rs.getLong("audit_id")
+
+               result.put(auditId, action)
+            })
+      }
+
+      return result
    }
 
    @Transactional

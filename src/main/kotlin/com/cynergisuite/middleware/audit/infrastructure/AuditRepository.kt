@@ -307,6 +307,7 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+      val auditIds = mutableListOf<Long>()
       val whereClause = StringBuilder(" WHERE a.company_id = :comp_id ")
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
@@ -397,13 +398,19 @@ class AuditRepository @Inject constructor(
 
       val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
          do {
-            elements.add(mapRow(rs))
+            val audit = mapRow(rs)
+
+            elements.add(audit)
+
+            auditIds.add(audit.id!!)
          } while(rs.next())
       }
 
+      val actions = auditActionRepository.findAll(auditIds)
+
       return repoPage.copy(
          elements = repoPage.elements.asSequence()
-            .onEach { it.actions.addAll(auditActionRepository.findAll(it)) }
+            .onEach { it.actions.addAll(actions.get(it.id!!)) }
             .onEach(this::loadNextStates)
             .toList()
       )
