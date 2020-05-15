@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
@@ -119,6 +120,18 @@ class CompanyRepository @Inject constructor(
          elements = elements,
          totalElements = totalElements ?: 0
       )
+   }
+
+   fun forEach(callback: (Company) -> Unit) {
+      var result = findAll(StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+
+      while (result.elements.isNotEmpty()) {
+         for (company in result.elements) {
+            callback(company)
+         }
+
+         result = findAll(result.requested.nextPage())
+      }
    }
 
    fun exists(id: Long): Boolean {

@@ -273,29 +273,25 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
       result.enabled == true
 
-      loadedSchedule.arguments.size() == 6
+      loadedSchedule.arguments.size() == 5
       final args = loadedSchedule.arguments.sort { o1, o2 -> o1.description <=> o2.description }
       with(args[0]) {
-         description == "companyId"
-         value == company.id.toString()
-      }
-      with(args[1]) {
          description == "employeeNumber"
          value == nineNineEightEmployee.number.toString()
       }
-      with(args[2]) {
+      with(args[1]) {
          description == "employeeType"
          value == "eli"
       }
-      with(args[3]) {
+      with(args[2]) {
          description == "locale"
          value == "en-US"
       }
-      with(args[4]) {
+      with(args[3]) {
          description == "storeNumber"
          value == "3"
       }
-      with(args[5]) {
+      with(args[4]) {
          description == "storeNumber"
          value == "1"
       }
@@ -322,25 +318,21 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.enabled == false
 
-      loadedSchedule.arguments.size() == 5
+      loadedSchedule.arguments.size() == 4
       final args = loadedSchedule.arguments.sort { o1, o2 -> o1.description <=> o2.description }
       with(args[0]) {
-         description == "companyId"
-         value == company.id.toString()
-      }
-      with(args[1]) {
          description == "employeeNumber"
          value == nineNineEightEmployee.number.toString()
       }
-      with(args[2]) {
+      with(args[1]) {
          description == "employeeType"
          value == "eli"
       }
-      with(args[3]) {
+      with(args[2]) {
          description == "locale"
          value == "en-US"
       }
-      with(args[4]) {
+      with(args[3]) {
          description == "storeNumber"
          value == "1"
       }
@@ -381,25 +373,21 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.enabled == true
 
-      loadedSchedule.arguments.size() == 5
+      loadedSchedule.arguments.size() == 4
       final args = loadedSchedule.arguments.sort { o1, o2 -> o1.description <=> o2.description }
       with(args[0]) {
-         description == "companyId"
-         value == company.id.toString()
-      }
-      with(args[1]) {
          description == "employeeNumber"
          value == nineNineEightEmployee.number.toString()
       }
-      with(args[2]) {
+      with(args[1]) {
          description == "employeeType"
          value == "eli"
       }
-      with(args[3]) {
+      with(args[2]) {
          description == "locale"
          value == "en-US"
       }
-      with(args[4]) {
+      with(args[3]) {
          description == "storeNumber"
          value == "1"
       }

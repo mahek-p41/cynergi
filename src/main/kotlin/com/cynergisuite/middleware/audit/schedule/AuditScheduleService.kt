@@ -58,7 +58,7 @@ class AuditScheduleService @Inject constructor(
 
    @Validated
    fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<AuditScheduleDataTransferObject> {
-      val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
+      val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule"), company) // find all schedules that are of a command AuditSchedule
 
       return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, company) }
    }
@@ -118,9 +118,9 @@ class AuditScheduleService @Inject constructor(
 
    @Throws(ScheduleProcessingException::class)
    override fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek) : AuditScheduleResult {
+      val company = schedule.company
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
-      val company = schedule.arguments.firstOrNull { it.description == "companyId" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }
@@ -168,7 +168,7 @@ class AuditScheduleService @Inject constructor(
                   startDate = LocalDate.now(),
                   dateCreated = null,
                   expirationDate = LocalDate.now().plusDays(1),
-                  company = company.id.toString(),
+                  company = company.myId()!!.toString(),
                   message = schedule.description!!,
                   sendingEmployee = employee.number.toString(),
                   notificationType = STORE.value,
