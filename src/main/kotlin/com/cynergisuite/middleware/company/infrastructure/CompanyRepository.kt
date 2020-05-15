@@ -1,10 +1,12 @@
 package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
@@ -122,9 +124,20 @@ class CompanyRepository @Inject constructor(
       )
    }
 
+   fun forEach(callback: (Company) -> Unit) {
+      var result = findAll(StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+
+      while (result.elements.isNotEmpty()) {
+         for (company in result.elements) {
+            callback(company)
+         }
+
+         result = findAll(result.requested.nextPage())
+      }
+   }
+
    fun exists(id: Long? = null): Boolean {
       if (id == null) return false
-
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Company: {} exists resulted in {}", id, exists)

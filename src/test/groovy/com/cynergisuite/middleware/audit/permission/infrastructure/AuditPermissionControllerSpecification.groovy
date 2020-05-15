@@ -46,10 +46,10 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements.size() == 2
       result.elements[0].id == 1
       result.elements[0].value == "audit-approver"
-      result.elements[0].description == "Approve audits"
+      result.elements[0].description == "Approve Audits"
       result.elements[1].id == 2
       result.elements[1].value == "audit-permission-manager"
-      result.elements[1].description == "Edit permissions"
+      result.elements[1].description == "Change Audit Permissions"
    }
 
    void "fetch one by ID" () {

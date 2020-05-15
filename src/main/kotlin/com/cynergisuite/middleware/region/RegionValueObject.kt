@@ -14,11 +14,6 @@ data class RegionValueObject(
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
    var id: Long? = null,
 
-   @field:Positive
-   @field:JsonProperty("regionNumber")
-   @field:Schema(name = "number", minimum = "1", required = true, nullable = false, description = "Region number")
-   var number: Int? = null,
-
    @field:NotNull
    @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a region")
    var name: String? = null,

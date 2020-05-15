@@ -23,7 +23,6 @@ data class RegionEntity (
    fun toValueObject(): RegionValueObject {
       return RegionValueObject(
          id = this.id,
-         number = this.number,
          name = this.name,
          description = this.description,
          division = this.division.toValueObject()

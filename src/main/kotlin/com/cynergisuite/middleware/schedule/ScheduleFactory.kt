@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.schedule
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeFactory
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 object ScheduleFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null, commandIn: ScheduleCommandTypeEntity? = null): Stream<ScheduleEntity> {
+   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null, commandIn: ScheduleCommandTypeEntity? = null, company: Company): Stream<ScheduleEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val scheduleType = scheduleTypeIn ?: ScheduleTypeFactory.random()
       val faker = Faker()
@@ -28,14 +29,15 @@ object ScheduleFactory {
             description = team.sport(),
             schedule = team.creature(),
             command = command,
-            type = scheduleType
+            type = scheduleType,
+            company = company
          )
       }
    }
 
    @JvmStatic
-   fun single(scheduleTypeIn: ScheduleType? = null) : ScheduleEntity {
-      return stream(1, scheduleTypeIn).findFirst().orElseThrow{ Exception("Unable to create Schedule") }
+   fun single(scheduleTypeIn: ScheduleType? = null, company: Company) : ScheduleEntity {
+      return stream(1, scheduleTypeIn, company = company).findFirst().orElseThrow{ Exception("Unable to create Schedule") }
    }
 }
 
@@ -45,12 +47,12 @@ class ScheduleFactoryService @Inject constructor(
    private val scheduleRepository: ScheduleRepository
 ) {
 
-   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null): Stream<ScheduleEntity> {
-      return ScheduleFactory.stream(numberIn, scheduleTypeIn)
+   fun stream(numberIn: Int = 1, scheduleTypeIn: ScheduleType? = null, company: Company): Stream<ScheduleEntity> {
+      return ScheduleFactory.stream(numberIn, scheduleTypeIn, company = company)
          .map { scheduleRepository.insert(it) }
    }
 
-   fun single(): ScheduleEntity {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to create Schedule") }
+   fun single(company: Company): ScheduleEntity {
+      return stream(1, company = company).findFirst().orElseThrow { Exception("Unable to create Schedule") }
    }
 }
