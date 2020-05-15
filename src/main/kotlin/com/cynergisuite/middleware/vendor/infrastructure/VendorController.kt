@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.vendor.VendorPageRequest
 import com.cynergisuite.middleware.vendor.VendorService
 import com.cynergisuite.middleware.vendor.VendorValueObject
 import io.micronaut.http.HttpRequest
@@ -75,7 +74,7 @@ class VendorController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: VendorPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<VendorValueObject> {
