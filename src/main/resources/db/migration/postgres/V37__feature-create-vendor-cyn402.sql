@@ -85,7 +85,10 @@ CREATE TABLE vendor
     charge_inventory_tax_3         BOOLEAN     DEFAULT FALSE                              NOT NULL,
     charge_inventory_tax_4         BOOLEAN     DEFAULT FALSE                              NOT NULL,
     federal_id_number_verification BOOLEAN     DEFAULT FALSE                              NOT NULL,
-    email_address                  VARCHAR(320),
+    email_address        VARCHAR(320),
+    po_submit_email_address VARCHAR (40),
+    allow_drop_ship_to_cust        BOOLEAN     DEFAULT FALSE                              NOT NULL,
+    auto_submit_po                 BOOLEAN     DEFAULT FALSE                              NOT NULL,
     UNIQUE (company_id, number)
 );
 
