@@ -647,36 +647,13 @@ class AuditRepository @Inject constructor(
    }
 
    private fun mapAuditActionEmployee(rs: ResultSet): EmployeeEntity {
-      return EmployeeEntity(
-         id = rs.getLong("auditActionEmployee_id"),
-         type = rs.getString("auditActionEmployee_type"),
-         number = rs.getInt("auditActionEmployee_number"),
-         company = companyRepository.mapRow(rs, "comp_"),
-         lastName = rs.getString("auditActionEmployee_last_name"),
-         firstNameMi = rs.getString("auditActionEmployee_first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
-         passCode = rs.getString("auditActionEmployee_pass_code"),
-         store = mapStore(rs),
-         active = rs.getBoolean("auditActionEmployee_active"),
-         department = mapAuditActionEmployeeDepartment(rs),
-         cynergiSystemAdmin = rs.getBoolean("auditActionEmployee_cynergi_system_admin"),
-         alternativeStoreIndicator = rs.getString("auditActionEmployee_alternative_store_indicator"),
-         alternativeArea = rs.getInt("auditActionEmployee_alternative_area")
+      return employeeRepository.mapRow(
+         rs = rs,
+         columnPrefix = "auditActionEmployee_",
+         companyColumnPrefix = "comp_",
+         departmentColumnPrefix = "auditActionEmployeeDept_",
+         storeColumnPrefix = "auditStore_"
       )
-   }
-
-   private fun mapAuditActionEmployeeDepartment(rs: ResultSet): DepartmentEntity? {
-      return if (rs.getString("auditActionEmployeeDept_id") != null) {
-         DepartmentEntity(
-            id = rs.getLong("auditActionEmployeeDept_id"),
-            code = rs.getString("auditActionEmployeeDept_code"),
-            description = rs.getString("auditActionEmployeeDept_description"),
-            securityProfile = rs.getInt("auditActionEmployeeDept_security_profile"),
-            defaultMenu = rs.getString("auditActionEmployeeDept_default_menu"),
-            company = companyRepository.mapRow(rs, "comp_")
-         )
-      } else {
-         null
-      }
    }
 
    private fun loadNextStates(audit: AuditEntity) {
