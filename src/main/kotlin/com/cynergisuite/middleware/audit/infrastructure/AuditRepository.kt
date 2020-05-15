@@ -346,9 +346,9 @@ class AuditRepository @Inject constructor(
             a.id                                                          AS a_id,
             a.time_created                                                AS a_time_created,
             a.time_updated                                                AS a_time_updated,
-            auditStore.id                                                     AS auditStore_id,
-            auditStore.number                                                 AS auditStore_number,
-            auditStore.name                                                   AS auditStore_name,
+            auditStore.id                                                 AS auditStore_id,
+            auditStore.number                                             AS auditStore_number,
+            auditStore.name                                               AS auditStore_name,
             a.number                                                      AS a_number,
             (SELECT count(id) FROM audit_detail WHERE audit_id = a.id)    AS a_total_details,
             (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
@@ -364,7 +364,7 @@ class AuditRepository @Inject constructor(
                 SELECT time_updated FROM audit_exception WHERE audit_id = a.id
              ) AS m
             )                                                   AS a_last_updated,
-            a.inventory_count                              AS a_inventory_count,
+            a.inventory_count                                   AS a_inventory_count,
             s.current_status                                    AS a_current_status,
             comp.id                                             AS comp_id,
             comp.uu_row_id                                      AS comp_uu_row_id,
