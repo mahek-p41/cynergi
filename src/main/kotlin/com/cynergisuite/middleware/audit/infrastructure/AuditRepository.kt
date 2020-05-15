@@ -16,6 +16,7 @@ import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusReposi
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -35,6 +36,7 @@ import javax.inject.Singleton
 class AuditRepository @Inject constructor(
    private val auditActionRepository: AuditActionRepository,
    private val auditStatusRepository: AuditStatusRepository,
+   private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -630,19 +632,7 @@ class AuditRepository @Inject constructor(
          id = rs.getLong("auditStore_id"),
          number = rs.getInt("auditStore_number"),
          name = rs.getString("auditStore_name"),
-         company = mapCompany(rs)
-      )
-   }
-
-   private fun mapCompany(rs: ResultSet): Company {
-      return CompanyEntity(
-         id = rs.getLong("comp_id"),
-         name = rs.getString("comp_name"),
-         doingBusinessAs = rs.getString("comp_doing_business_as"),
-         clientCode = rs.getString("comp_client_code"),
-         clientId = rs.getInt("comp_client_id"),
-         federalIdNumber = rs.getString("comp_federal_id_number"),
-         datasetCode = rs.getString("comp_dataset_code")
+         company = companyRepository.mapRow(rs, "comp_")
       )
    }
 
@@ -661,7 +651,7 @@ class AuditRepository @Inject constructor(
          id = rs.getLong("auditActionEmployee_id"),
          type = rs.getString("auditActionEmployee_type"),
          number = rs.getInt("auditActionEmployee_number"),
-         company = mapCompany(rs),
+         company = companyRepository.mapRow(rs, "comp_"),
          lastName = rs.getString("auditActionEmployee_last_name"),
          firstNameMi = rs.getString("auditActionEmployee_first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("auditActionEmployee_pass_code"),
@@ -682,7 +672,7 @@ class AuditRepository @Inject constructor(
             description = rs.getString("auditActionEmployeeDept_description"),
             securityProfile = rs.getInt("auditActionEmployeeDept_security_profile"),
             defaultMenu = rs.getString("auditActionEmployeeDept_default_menu"),
-            company = mapCompany(rs)
+            company = companyRepository.mapRow(rs, "comp_")
          )
       } else {
          null
