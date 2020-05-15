@@ -1,14 +1,8 @@
 package com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure
 
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity

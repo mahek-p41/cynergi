@@ -1,11 +1,7 @@
 package com.cynergisuite.middleware.vendor.payment.term.schedule
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import java.math.BigDecimal
-import java.time.OffsetDateTime
-import java.util.*
 
 data class VendorPaymentTermScheduleEntity(
    val id: Long? = null,
