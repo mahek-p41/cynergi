@@ -2,10 +2,9 @@ package com.cynergisuite.middleware.division
 
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -14,7 +13,7 @@ import javax.inject.Singleton
 object DivisionFactory {
 
    @JvmStatic
-   private val divisionNumberCounter = AtomicInteger(1)
+   private val divisionNumberCounter = AtomicLong(1)
 
    @JvmStatic
    fun stream(numberIn: Int = 1, companyIn: CompanyEntity): Stream<DivisionEntity> {

@@ -13,7 +13,7 @@ data class AuthenticatedUser(
    val department: Department?,
    val location: Location,
    val alternativeStoreIndicator: String,
-   val alternativeArea: Int,
+   val alternativeArea: Long,
    val cynergiSystemAdmin: Boolean
 ): User, UserDetails(number.toString(), mutableListOf()) {
 
@@ -50,6 +50,6 @@ data class AuthenticatedUser(
    override fun myEmployeeNumber(): Int = number
    override fun myDepartment(): Department? = department
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
-   override fun myAlternativeArea(): Int = alternativeArea
+   override fun myAlternativeArea(): Long = alternativeArea
    override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
 }

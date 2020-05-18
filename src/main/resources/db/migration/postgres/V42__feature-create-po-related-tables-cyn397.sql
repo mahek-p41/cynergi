@@ -56,7 +56,6 @@ CREATE TABLE purchase_order_header
     time_created                  TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
     time_updated                  TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
     number                        BIGINT CHECK ( number > 0 ) DEFAULT currval('purchase_order_header_id_seq') NOT NULL,
-    description                   VARCHAR(30) CHECK ( char_length(trim(description)) > 1)                     NOT NULL,
     company_id                    BIGINT REFERENCES company (id)                                              NOT NULL,
     vendor_id                     BIGINT REFERENCES vendor (id)                                               NOT NULL,
     status_type_id                BIGINT REFERENCES purchase_order_status_type_domain (id)                    NOT NULL,

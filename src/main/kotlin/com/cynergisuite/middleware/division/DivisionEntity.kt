@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder
 
 data class DivisionEntity (
    val id: Long? = null,
-   val number: Int,
+   val number: Long? = null,
    val name: String,
    val description: String?,
    var company: CompanyEntity

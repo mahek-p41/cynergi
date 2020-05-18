@@ -165,7 +165,7 @@ class AuthenticationRepository @Inject constructor(
                passCode = row.getString("emp_pass_code"),
                cynergiSystemAdmin = row.getBoolean("emp_cynergi_system_admin"),
                alternativeStoreIndicator = row.getString("emp_alternative_store_indicator"),
-               alternativeArea = row.getInteger("emp_alternative_area")
+               alternativeArea = row.getLong("emp_alternative_area")
             )
          }
          .filter { employee ->

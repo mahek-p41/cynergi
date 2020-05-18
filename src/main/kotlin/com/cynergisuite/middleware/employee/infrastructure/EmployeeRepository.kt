@@ -316,7 +316,7 @@ class EmployeeRepository @Inject constructor(
          department = departmentRepository.mapRowOrNull(rs, company, departmentColumnPrefix),
          cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
-         alternativeArea = rs.getInt("${columnPrefix}alternative_area")
+         alternativeArea = rs.getLong("${columnPrefix}alternative_area")
       )
    }
 
@@ -341,6 +341,6 @@ class EmployeeRepository @Inject constructor(
          department = department,
          store = store,
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
-         alternativeArea = rs.getInt("alternative_area")
+         alternativeArea = rs.getLong("alternative_area")
       )
 }

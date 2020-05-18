@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder
 
 data class RegionEntity (
    val id: Long? = null,
-   val number: Int,
+   val number: Long,
    val name: String,
    val description: String?,
    val division: DivisionEntity

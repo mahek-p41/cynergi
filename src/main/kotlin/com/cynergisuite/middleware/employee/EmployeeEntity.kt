@@ -17,7 +17,7 @@ data class EmployeeEntity(
    val department: Department?,
    val store: Store?,
    val alternativeStoreIndicator: String,
-   val alternativeArea: Int
+   val alternativeArea: Long
 ) : Employee {
 
    constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: Store?) :

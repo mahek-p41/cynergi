@@ -477,7 +477,7 @@ class AuditExceptionRepository @Inject constructor(
          department = mapScannedByDepartment(rs, columnPrefix),
          cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
-         alternativeArea = rs.getInt("${columnPrefix}alternative_area")
+         alternativeArea = rs.getLong("${columnPrefix}alternative_area")
       )
    }
 

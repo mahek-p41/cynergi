@@ -43,7 +43,7 @@ class DivisionRepository @Inject constructor(
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = CompanyEntity.create(company)!!,   // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
-         number = rs.getInt("${columnPrefix}number"),
+         number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )
@@ -52,7 +52,7 @@ class DivisionRepository @Inject constructor(
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = division.company,
-         number = rs.getInt("${columnPrefix}number"),
+         number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )

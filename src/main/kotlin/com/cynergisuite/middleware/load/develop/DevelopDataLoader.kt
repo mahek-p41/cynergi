@@ -90,7 +90,7 @@ class DevelopDataLoader @Inject constructor(
       storeFactoryService.companyStoresToRegion(corptpDivison2Region1, corptpStore3, corptpStore4, corptpStore5)
 
       val nineNineEightEmployeeCorptpEmployee = employeeFactoryService.singleSuperUser(998, corptp, "user", "super", "pass")
-      val corptpDivision2Manager = employeeFactoryService.single(1000, corptp, corptpDistrictManagerDepartment, corptpStoreHomeOffice, "manager", "divisional", "12345", "D", corptpDivsion2.number)
+      val corptpDivision2Manager = employeeFactoryService.single(1000, corptp, corptpDistrictManagerDepartment, corptpStoreHomeOffice, "manager", "divisional", "12345", "D", corptpDivsion2.number ?: 0)
       val corptpStore1StoreManager = employeeFactoryService.single(corptpStore1, corptpStoreManagerDepartment)
       val corptpStore2StoreManager = employeeFactoryService.single(corptpStore2, corptpStoreManagerDepartment)
       val corptpStore3StoreManager = employeeFactoryService.single(corptpStore3, corptpStoreManagerDepartment)

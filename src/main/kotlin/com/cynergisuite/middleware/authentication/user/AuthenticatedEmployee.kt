@@ -18,7 +18,7 @@ data class AuthenticatedEmployee(
    val passCode: String,
    val cynergiSystemAdmin: Boolean,
    val alternativeStoreIndicator: String,
-   val alternativeArea: Int
+   val alternativeArea: Long
 ) : User {
 
    constructor(user: AuthenticatedEmployee, passCodeOverride: String) :
@@ -60,6 +60,6 @@ data class AuthenticatedEmployee(
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
-   override fun myAlternativeArea(): Int = alternativeArea
+   override fun myAlternativeArea(): Long = alternativeArea
    override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
 }

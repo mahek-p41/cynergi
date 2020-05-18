@@ -57,7 +57,7 @@ data class EmployeeValueObject(
    @field:NotNull
    @field:Min(value = 1)
    @field:Schema(name = "alternativeArea", description = "Employee's alternate area")
-   var alternativeArea: Int? = null,
+   var alternativeArea: Long? = null,
 
    @field:JsonIgnore
    @field:NotNull
@@ -66,7 +66,7 @@ data class EmployeeValueObject(
 
 ) : Identifiable {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String, alternativeArea: Int) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String, alternativeArea: Long) :
       this(
          id = null,
          type = type,

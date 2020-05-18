@@ -43,7 +43,7 @@ class RegionRepository @Inject constructor(
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
          division = divisionRepository.mapRow(rs, company, "div_"),
-         number = rs.getInt("${columnPrefix}number"),
+         number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )
@@ -52,7 +52,7 @@ class RegionRepository @Inject constructor(
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
          division = region.division,
-         number = rs.getInt("${columnPrefix}number"),
+         number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )

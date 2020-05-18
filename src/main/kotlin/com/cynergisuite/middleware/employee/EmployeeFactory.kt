@@ -21,7 +21,7 @@ object EmployeeFactory {
    private val employeeNumberCounter = AtomicInteger(100_000)
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdmin: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: Store? = null, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<EmployeeEntity> {
+   fun stream(numberIn: Int = 1, employeeNumberIn: Int? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, passCode: String? = null, activeIn: Boolean = true, cynergiSystemAdmin: Boolean = false, companyIn: Company? = null, departmentIn: Department? = null, storeIn: Store? = null, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Long? = null): Stream<EmployeeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val name = faker.name()
@@ -89,7 +89,7 @@ class EmployeeFactoryService @Inject constructor(
       return stream(employeeNumberIn = employeeNumber, companyIn = company, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = cynergiSystemAdmin).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
-   fun single(employeeNumber: Int, company: Company, department: Department, store: Store, lastName: String, firstNameMiIn: String? = null, passCode: String, alternativeStoreIndicator: String, alternativeArea: Int): EmployeeEntity {
+   fun single(employeeNumber: Int, company: Company, department: Department, store: Store, lastName: String, firstNameMiIn: String? = null, passCode: String, alternativeStoreIndicator: String, alternativeArea: Long): EmployeeEntity {
       return stream(employeeNumberIn = employeeNumber, companyIn = company, departmentIn = department, storeIn = store, lastNameIn = lastName, firstNameMiIn = firstNameMiIn, passCodeIn = passCode, cynergiSystemAdminIn = false, alternativeStoreIndicator = alternativeStoreIndicator, alternativeArea = alternativeArea).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
@@ -126,11 +126,11 @@ class EmployeeFactoryService @Inject constructor(
       return streamAuthenticated(company = company, store = store, department = department, lastNameIn = lastName, firstNameMiIn = firstNameMi).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   fun singleAuthenticated(company: Company, store: Store, department: Department, alternativeStoreIndicator: String, alternativeArea: Int): AuthenticatedEmployee {
+   fun singleAuthenticated(company: Company, store: Store, department: Department, alternativeStoreIndicator: String, alternativeArea: Long): AuthenticatedEmployee {
       return streamAuthenticated(company = company, store = store, department = department, cynergiSystemAdmin = false, alternativeStoreIndicatorIn = alternativeStoreIndicator, alternativeAreaIn = alternativeArea).findFirst().orElseThrow { Exception("Unable to create AuthenticatedEmployee") }
    }
 
-   private fun streamAuthenticated(numberIn: Int = 1, company: Company, store: Store, department: Department? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, cynergiSystemAdmin: Boolean = false, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Int? = null): Stream<AuthenticatedEmployee> {
+   private fun streamAuthenticated(numberIn: Int = 1, company: Company, store: Store, department: Department? = null, lastNameIn: String? = null, firstNameMiIn: String? = null, cynergiSystemAdmin: Boolean = false, alternativeStoreIndicatorIn: String? = null, alternativeAreaIn: Long? = null): Stream<AuthenticatedEmployee> {
       return stream(numberIn = numberIn, storeIn = store, companyIn = company, departmentIn = department, lastNameIn = lastNameIn, firstNameMiIn = firstNameMiIn, cynergiSystemAdminIn = cynergiSystemAdmin, alternativeStoreIndicator = alternativeStoreIndicatorIn, alternativeArea = alternativeAreaIn)
          .map { employee ->
             AuthenticatedEmployee(
@@ -154,7 +154,7 @@ class EmployeeFactoryService @Inject constructor(
                       firstNameMiIn: String? = null, passCodeIn: String? = null, activeIn: Boolean = true,
                       cynergiSystemAdminIn: Boolean = false, companyIn: Company? = null,
                       departmentIn: Department? = null, storeIn: Store? = null,
-                      alternativeStoreIndicator: String? = null, alternativeArea: Int? = null): Stream<EmployeeEntity> {
+                      alternativeStoreIndicator: String? = null, alternativeArea: Long? = null): Stream<EmployeeEntity> {
       val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: companyFactoryService.random()
 
       return EmployeeFactory.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)

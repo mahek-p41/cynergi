@@ -1,7 +1,7 @@
 CREATE TABLE freight_on_board_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)               NOT NULL,
+    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
     description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
     localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
     UNIQUE (value)
@@ -14,7 +14,7 @@ VALUES (1, 'D', 'Destination', 'destination'),
 CREATE TABLE freight_calc_method_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
-    value              VARCHAR(10) CHECK ( char_length(trim(value)) > 0)               NOT NULL,
+    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
     description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
     localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
     UNIQUE (value)
@@ -33,8 +33,8 @@ CREATE TABLE vendor_group
     uu_row_id    UUID        DEFAULT uuid_generate_v1()                 NOT NULL,
     time_created TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     time_updated TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
-    company_id BIGINT REFERENCES company(id)                            NOT NULL,
-    value         VARCHAR(10) CHECK (char_length(trim(value)) > 1)        NOT NULL,
+    company_id   BIGINT REFERENCES company (id)                         NOT NULL,
+    value        VARCHAR(10) CHECK (char_length(trim(value)) > 1)       NOT NULL,
     description  VARCHAR(50) CHECK (char_length(trim(description)) > 1) NOT NULL,
     UNIQUE (company_id, value)
 );
@@ -53,7 +53,7 @@ CREATE TABLE vendor
     time_created                   TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     company_id                     BIGINT REFERENCES company (id)                         NOT NULL,
-    number                         BIGINT  CHECK ( number > 0 )                           NOT NULL,
+    number                         BIGINT CHECK ( number > 0 )                            NOT NULL,
     name_key                       VARCHAR(30) CHECK (char_length(trim(name_key)) > 1)    NOT NULL,
     address_id                     BIGINT REFERENCES address (id)                         NOT NULL,
     our_account_number             INTEGER                                                NOT NULL,
@@ -85,8 +85,8 @@ CREATE TABLE vendor
     charge_inventory_tax_3         BOOLEAN     DEFAULT FALSE                              NOT NULL,
     charge_inventory_tax_4         BOOLEAN     DEFAULT FALSE                              NOT NULL,
     federal_id_number_verification BOOLEAN     DEFAULT FALSE                              NOT NULL,
-    email_address        VARCHAR(320),
-    po_submit_email_address VARCHAR (40),
+    email_address                  VARCHAR(320),
+    po_submit_email_address        VARCHAR(320),
     allow_drop_ship_to_cust        BOOLEAN     DEFAULT FALSE                              NOT NULL,
     auto_submit_po                 BOOLEAN     DEFAULT FALSE                              NOT NULL,
     UNIQUE (company_id, number)
