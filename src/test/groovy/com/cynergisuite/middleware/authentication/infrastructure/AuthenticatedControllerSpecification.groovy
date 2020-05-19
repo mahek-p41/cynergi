@@ -21,8 +21,6 @@ import static io.micronaut.http.HttpRequest.POST
 @MicronautTest(transactional = false)
 class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
    @Inject AuditPermissionFactoryService auditPermissionFactoryService
 
    void "Get user permissions with dataset 1" () {

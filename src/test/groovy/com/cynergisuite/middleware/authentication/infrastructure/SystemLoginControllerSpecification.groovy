@@ -21,8 +21,6 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "login successful with user who doesn't have department" () {
       given:

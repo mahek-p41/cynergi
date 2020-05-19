@@ -24,7 +24,6 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject AuditScheduleService auditScheduleService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "one store test"() {
       given:

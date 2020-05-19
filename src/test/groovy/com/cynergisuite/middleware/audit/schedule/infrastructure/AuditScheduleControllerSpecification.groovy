@@ -27,9 +27,7 @@ import static java.time.DayOfWeek.TUESDAY
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject AuditPermissionRepository auditPermissionRepository
-   @Inject DepartmentFactoryService departmentFactoryService
    @Inject ScheduleRepository scheduleRepository
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch one"() {
       given:

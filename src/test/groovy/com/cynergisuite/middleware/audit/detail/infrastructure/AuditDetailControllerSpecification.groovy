@@ -35,8 +35,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditDetailFactoryService auditDetailFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
 
    //Passes

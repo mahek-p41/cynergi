@@ -19,7 +19,6 @@ import static java.time.DayOfWeek.WEDNESDAY
 class ScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditRepository auditRepository
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject ScheduleService scheduleService
 

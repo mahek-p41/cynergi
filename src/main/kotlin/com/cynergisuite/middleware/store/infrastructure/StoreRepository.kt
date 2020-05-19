@@ -47,7 +47,7 @@ class StoreRepository @Inject constructor(
             comp.client_code AS comp_client_code,
             comp.client_id AS comp_client_id,
             comp.dataset_code AS comp_dataset_code,
-            comp.federal_id_number,
+            comp.federal_id_number AS comp_federal_id_number,
             region.id AS reg_id,
             region.uu_row_id AS reg_uu_row_id,
             region.time_created AS reg_time_created,
@@ -221,7 +221,7 @@ class StoreRepository @Inject constructor(
                   clientCode = rs.getString("comp_client_code"),
                   clientId = rs.getInt("comp_client_id"),
                   datasetCode = rs.getString("comp_dataset_code"),
-                  federalIdNumber = rs.getString("federal_id_number")
+                  federalIdNumber = rs.getString("comp_federal_id_number")
                )
             )
          )

@@ -39,8 +39,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    @Inject AuditExceptionFactoryService auditExceptionFactoryService
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
 
    void "fetch one audit exception by id with no attached notes" () {

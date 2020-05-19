@@ -23,8 +23,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class AuditPermissionControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditPermissionFactoryService auditPermissionFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch all permission types" () {
       given:

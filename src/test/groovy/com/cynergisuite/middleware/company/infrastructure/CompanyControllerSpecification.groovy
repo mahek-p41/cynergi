@@ -23,8 +23,6 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 class CompanyControllerSpecification extends ControllerSpecificationBase {
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    private static String path = '/company'
 

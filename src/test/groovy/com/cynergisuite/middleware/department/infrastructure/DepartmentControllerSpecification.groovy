@@ -16,7 +16,6 @@ import static org.apache.commons.lang3.StringUtils.trimToNull
 
 @MicronautTest(transactional = false)
 class DepartmentControllerSpecification extends ControllerSpecificationBase {
-   @Inject DepartmentFactoryService departmentFactoryService
 
    void "fetch one by department id" () {
       given:
