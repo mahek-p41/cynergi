@@ -150,11 +150,10 @@ CREATE OR REPLACE FUNCTION purchase_order_detail_sequence_increment_fn()
     RETURNS TRIGGER AS
 $$
 DECLARE
-    sequence CONSTANT              INT := new.sequence;
     purchaseOrderHeader CONSTANT   INT := new.purchase_order_header_id;
     maxPurchaseOrderDetailSequence INT;
 BEGIN
-    PERFORM pg_advisory_xact_lock(sequence);
+    PERFORM pg_advisory_xact_lock(purchaseOrderHeader);
 
     maxPurchaseOrderDetailSequence := (SELECT COALESCE(MAX(sequence), 0) + 1 FROM purchase_order_detail WHERE purchase_order_header_id = purchaseOrderHeader);
 
