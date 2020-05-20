@@ -3,8 +3,12 @@ package com.cynergisuite.middleware.audit.schedule.infrastructure
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
+import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
+import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
@@ -22,6 +26,8 @@ import static java.time.DayOfWeek.TUESDAY
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
+   @Inject AuditPermissionRepository auditPermissionRepository
+   @Inject DepartmentFactoryService departmentFactoryService
    @Inject ScheduleRepository scheduleRepository
    @Inject EmployeeFactoryService employeeFactoryService
 
@@ -408,5 +414,22 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "id"
       response[0].message == "Is required"
+   }
+
+   void "fetch audit schedule with 998 user and multiple permissions" () {
+      setup:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final auditApprover = AuditPermissionTypeFactory.findByValue('audit-approver')
+      final pageOne = new StandardPageRequest(1, 100, "id", "ASC")
+      departmentFactoryService.department('SM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+      departmentFactoryService.department('AM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+      departmentFactoryService.department('AR', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+
+      when:
+      get("/audit/schedule${pageOne}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == NO_CONTENT
    }
 }
