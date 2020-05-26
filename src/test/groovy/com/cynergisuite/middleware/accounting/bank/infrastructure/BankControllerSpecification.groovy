@@ -8,11 +8,10 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
 
+
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.INTERNAL_SERVER_ERROR
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -270,10 +269,11 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status == INTERNAL_SERVER_ERROR
+      exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == 'Data access exception'
+      response[0].message == 'Is required'
+      response[0].path == 'bankDTO.accountNumber'
    }
 
    void "create an invalid bank without address"() {
@@ -286,15 +286,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       jsonBank.remove('address')
 
       when:
-      def result = post("$path/", jsonBank)
+      post("$path/", jsonBank)
 
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.path == 'address'
-      response.message == 'Failed to convert argument [bankDTO] for value [null]'
+      response.size() == 1
+      response[0].path == 'bankDTO.address'
+      response[0].message == 'Is required'
    }
 
    void "create an invalid bank with non exist currency value"() {
@@ -398,10 +398,11 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status == INTERNAL_SERVER_ERROR
+      exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == 'Data access exception'
+      response[0].message == '1,000 was unable to be found'
+      response[0].path == 'address.id'
    }
 
    void "update a invalid bank without currency"() {
@@ -419,8 +420,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.path == 'currency'
-      response.message == 'Failed to convert argument [bankDTO] for value [null]'
+      response.size() == 1
+      response[0].path == 'bankDTO.currency'
+      response[0].message == 'Is required'
    }
 }

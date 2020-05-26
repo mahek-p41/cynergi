@@ -203,11 +203,11 @@ class BankRepository @Inject constructor(
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = company,
-         address = mapAddress(rs, "address_"),
+         address = addressRepository.mapAddress(rs, "address_"),
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = mapSimpleStore(rs, company,"store_"),
          generalLedgerAccount = accountRepository.mapRow(rs, company, "account_"),
-         accountNumber = rs.getInt("${columnPrefix}account_number"),
+         accountNumber = rs.getString("${columnPrefix}account_number"),
          currency = mapCurrency(rs, "currency_")
       )
    }
@@ -220,7 +220,7 @@ class BankRepository @Inject constructor(
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = bank.generalLedgerProfitCenter,
          generalLedgerAccount = bank.generalLedgerAccount,
-         accountNumber = rs.getInt("${columnPrefix}account_number"),
+         accountNumber = rs.getString("${columnPrefix}account_number"),
          currency = bank.currency
       )
    }
@@ -239,22 +239,5 @@ class BankRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          company = company
-      )
-
-   private fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
-      AddressEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         name = rs.getString("${columnPrefix}name"),
-         address1 = rs.getString("${columnPrefix}address1"),
-         address2 = rs.getString("${columnPrefix}address2"),
-         city = rs.getString("${columnPrefix}city"),
-         state = rs.getString("${columnPrefix}state"),
-         postalCode = rs.getString("${columnPrefix}postal_code"),
-         latitude = rs.getDouble("${columnPrefix}latitude"),
-         longitude = rs.getDouble("${columnPrefix}longitude"),
-         country = rs.getString("${columnPrefix}country"),
-         county = rs.getString("${columnPrefix}county"),
-         phone = rs.getString("${columnPrefix}phone"),
-         fax = rs.getString("${columnPrefix}fax")
       )
 }

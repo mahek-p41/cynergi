@@ -1,4 +1,3 @@
-
 CREATE TABLE purchase_order_header_status_action (
    id              BIGSERIAL                                            NOT NULL PRIMARY KEY,
    uu_row_id       UUID        DEFAULT uuid_generate_v1()               NOT NULL,

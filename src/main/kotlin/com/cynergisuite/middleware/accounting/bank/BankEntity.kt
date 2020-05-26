@@ -14,7 +14,7 @@ data class BankEntity(
    val name: String,
    val generalLedgerProfitCenter: Store,
    val generalLedgerAccount: AccountEntity,
-   val accountNumber: Int,
+   val accountNumber: String,
    val currency: BankCurrencyType
 ) : Identifiable {
 
@@ -22,11 +22,11 @@ data class BankEntity(
       this(
          id = bankDTO.id,
          company = company,
-         address = AddressEntity(bankDTO.address),
-         name = bankDTO.name,
+         address = AddressEntity(bankDTO.address!!),
+         name = bankDTO.name!!,
          generalLedgerProfitCenter = store,
          generalLedgerAccount = account,
-         accountNumber = bankDTO.accountNumber,
+         accountNumber = bankDTO.accountNumber!!,
          currency = currencyType
       )
 

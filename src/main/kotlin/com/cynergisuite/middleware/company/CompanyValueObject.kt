@@ -2,11 +2,11 @@ package com.cynergisuite.middleware.company
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.CompareToBuilder
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
+import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Company", title = "An entity containing a rental company", description = "An entity containing a rental company.", requiredProperties = ["clientId", "name", "clientId", "datasetCode"])
@@ -24,16 +24,17 @@ data class CompanyValueObject(
    var doingBusinessAs: String? = null,
 
    @field:NotNull
-   @field:Schema(name = "clientCode", required = true, nullable = false, description = "Three digit company code")
+   @field:Size(min = 1, max = 6)
+   @field:Schema(name = "clientCode", required = true, nullable = false, description = "Six digit company code")
    var clientCode: String? = null,
 
    @field:Positive
    @field:NotNull
-   @field:JsonProperty("clientId")
    @field:Schema(name = "clientId", minimum = "1000", required = true, nullable = false, description = "Unique host company number, HT wide")
    var clientId: Int? = null,
 
    @field:NotNull
+   @field:Size(min = 1, max = 6)
    @field:Schema(name = "datasetCode", required = false, nullable = false, description = "Dataset that this company belongs to")
    var datasetCode: String? = null,
 

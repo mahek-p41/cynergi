@@ -22,11 +22,11 @@ CREATE TABLE account_type_domain (
 
 INSERT INTO account_type_domain(id,value,description,localization_code)
 Values
-(1, 'A', 'Asset Account', 'asset.account') ,
-(2, 'C', 'Capital Account', 'capital.account'),
-(3, 'E', 'Expense Account', 'expense.account') ,
-(4, 'L', 'Liability Account', 'liability.account'),
-(5, 'R', 'Revenue Account', 'revenue.account');
+(1, 'A', 'Asset Account', 'account.asset') ,
+(2, 'C', 'Capital Account', 'account.capital'),
+(3, 'E', 'Expense Account', 'account.expense') ,
+(4, 'L', 'Liability Account', 'account.liability'),
+(5, 'R', 'Revenue Account', 'account.revenue');
 
 CREATE TABLE normal_account_balance_type_domain (
    id integer                                                                  NOT NULL PRIMARY KEY,
@@ -78,7 +78,7 @@ CREATE TABLE bank_currency_code_type_domain (
 INSERT INTO bank_currency_code_type_domain(id,value,description,localization_code)
 Values
 (1,'USA', 'United States', 'united.states') ,
-(2,'CAN', 'Canada', 'Canada');
+(2,'CAN', 'Canada', 'canada');
 
 CREATE TABLE bank (
     id                 BIGSERIAL                                                NOT NULL PRIMARY KEY,

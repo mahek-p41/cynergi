@@ -9,14 +9,13 @@ import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
+
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.FORBIDDEN
-import static io.micronaut.http.HttpStatus.INTERNAL_SERVER_ERROR
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
@@ -260,14 +259,15 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       jsonCompany.datasetCode = 'InvalidCode'
 
       when:
-      def result = post("$path", jsonCompany)
+      post("$path", jsonCompany)
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == INTERNAL_SERVER_ERROR
+      exception.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == 'Data access exception'
+      response[0].message == 'Size of provided value InvalidCode is invalid'
+      response[0].path == 'companyVO.datasetCode'
    }
 
    void "create an invalid company with duplicate clientId & datasetCode"() {

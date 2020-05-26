@@ -76,7 +76,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = JsonParseException::class)
    fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDataTransferObject> {
-      logger.error("Unable to parse request body", exception)
+      logger.warn("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -89,6 +89,8 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = IOException::class)
    fun inputOutputExceptionHandler(httpRequest: HttpRequest<*>, exception: IOException) {
+      logger.trace("InputOutput Exception", exception)
+
       when (exception.message?.trim()?.toLowerCase()) {
          "an existing connection was forcibly closed by the remote host", "connection reset by peer" ->
             logger.warn("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
@@ -99,7 +101,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = NotImplementedError::class)
    fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<ErrorDataTransferObject> {
-      logger.error("Endpoint not implemented", exception)
+      logger.warn("Endpoint not implemented", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -110,7 +112,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = ConversionErrorException::class)
    fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDataTransferObject> {
-      logger.error("Unable to parse request body", exception)
+      logger.warn("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
       val argument = exception.argument
@@ -139,7 +141,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = OperationNotPermittedException::class)
    fun operationNotPermitted(httpRequest: HttpRequest<*>, exception: OperationNotPermittedException): HttpResponse<ErrorDataTransferObject> {
-      logger.error("An operation that is not permitted was initiated", exception)
+      logger.warn("An operation that is not permitted was initiated", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 

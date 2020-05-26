@@ -43,7 +43,7 @@ object BankFactory {
             name = faker.company().name(),
             generalLedgerProfitCenter = SimpleStore.create(store)!!,
             generalLedgerAccount = accountEntity,
-            accountNumber = Random.nextInt(1000, 1000000),
+            accountNumber = Random.nextInt(1000, 1000000).toString(),
             currency = currencyType
          )
       }
@@ -73,7 +73,7 @@ object BankFactory {
             name = faker.company().name(),
             generalLedgerProfitCenter = SimpleIdentifiableDataTransferObject(store.myId()),
             generalLedgerAccount = SimpleIdentifiableDataTransferObject(accountEntity.id),
-            accountNumber = Random.nextInt(1000, 1000000),
+            accountNumber = Random.nextInt(1000, 1000000).toString(),
             currency = BankCurrencyTypeValueObject(currencyType)
          )
       }

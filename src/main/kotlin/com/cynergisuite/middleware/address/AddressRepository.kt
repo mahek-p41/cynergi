@@ -52,6 +52,13 @@ class AddressRepository @Inject constructor(
       return found
    }
 
+   fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM address WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+
+      logger.trace("Checking if AccountStatusCode: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
 
    @Transactional
    fun insert(address: AddressEntity): AddressEntity {
@@ -127,7 +134,7 @@ class AddressRepository @Inject constructor(
       )
    }
 
-   private fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
+   fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
          id = rs.getLong("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
