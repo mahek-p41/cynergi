@@ -118,7 +118,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final department = departmentFactoryService.department('RM', company)
       final store = storeFactoryService.store(1, company)
-      final singleStoreUser = employeeFactoryService.singleAuthenticated(company, store, department, 'R', regions[0].number)
+      final singleStoreUser = employeeFactoryService.singleAuthenticated(company, store, department, 'R', regions[0].id)
       final singleStoreUserToken = loginEmployee(singleStoreUser)
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
 

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.store
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.location.Location
-import com.cynergisuite.middleware.region.RegionValueObject
+import com.cynergisuite.middleware.region.RegionDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -32,7 +32,7 @@ data class StoreValueObject (
    @field:Valid
    @field:NotNull
    @field:Schema(name = "region", required = false, nullable = true, description = "Region that a store belong to")
-   var region: RegionValueObject? = null
+   var region: RegionDTO? = null
 
 ) : Identifiable {
 
