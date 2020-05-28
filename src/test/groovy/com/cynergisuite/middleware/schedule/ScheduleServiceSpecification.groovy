@@ -29,7 +29,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       auditFactoryService.single(storeOne, [AuditStatusFactory.created()] as Set)
       auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set, OffsetDateTime.now().minusDays(10))
+      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final employee = employeeFactoryService.single(storeOne)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
 
@@ -53,8 +53,8 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       given: 'One past due audit in status open'
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created()] as Set, OffsetDateTime.now().minusDays(2))
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set, OffsetDateTime.now().minusDays(10))
+      auditFactoryService.single(storeOne, [AuditStatusFactory.created()] as Set)
+      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final employee = employeeFactoryService.single(storeOne)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
 
@@ -79,7 +79,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set, OffsetDateTime.now().minusDays(10))
+      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
       auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
 
