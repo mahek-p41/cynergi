@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.employee.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.employee.EmployeeService

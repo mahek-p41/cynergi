@@ -5,7 +5,6 @@ import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.EmployeeValueObject
 import org.apache.commons.lang3.builder.CompareToBuilder
 
 data class DivisionEntity (

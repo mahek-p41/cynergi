@@ -6,7 +6,6 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
-import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton

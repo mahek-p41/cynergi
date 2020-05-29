@@ -8,11 +8,11 @@ import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.domain.ValidPageSortBy
 import com.cynergisuite.extensions.beginningOfWeek
 import com.cynergisuite.extensions.endOfWeek
+import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.audit.status.CANCELED
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.audit.status.APPROVED
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder

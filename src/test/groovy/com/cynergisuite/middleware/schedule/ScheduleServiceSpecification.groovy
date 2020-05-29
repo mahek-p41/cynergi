@@ -6,11 +6,9 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
-import java.time.OffsetDateTime
 
 import static java.time.DayOfWeek.TUESDAY
 import static java.time.DayOfWeek.WEDNESDAY

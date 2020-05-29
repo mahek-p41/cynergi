@@ -8,8 +8,6 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTra
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 

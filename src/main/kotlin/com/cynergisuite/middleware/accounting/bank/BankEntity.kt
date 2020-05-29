@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.Store
-import java.time.OffsetDateTime
 
 data class BankEntity(
    val id: Long? = null,

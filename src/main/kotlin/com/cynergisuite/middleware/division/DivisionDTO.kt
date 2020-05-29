@@ -2,10 +2,6 @@ package com.cynergisuite.middleware.division
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
-import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
-import com.cynergisuite.middleware.accounting.account.AccountTypeValueObject
-import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceTypeValueObject
-import com.cynergisuite.middleware.company.CompanyValueObject
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull

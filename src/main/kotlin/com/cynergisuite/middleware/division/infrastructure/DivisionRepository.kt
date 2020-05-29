@@ -10,7 +10,6 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
-import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.address
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional

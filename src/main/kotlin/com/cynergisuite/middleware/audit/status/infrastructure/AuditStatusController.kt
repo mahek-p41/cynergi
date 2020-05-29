@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.status.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.status.AuditStatusService
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest

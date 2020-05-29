@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.schedule.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.address
 
 import com.cynergisuite.domain.Identifiable
-import java.time.OffsetDateTime
 
 data class AddressEntity(
    val id: Long? = null,

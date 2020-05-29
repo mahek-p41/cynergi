@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTer
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 

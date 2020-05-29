@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client

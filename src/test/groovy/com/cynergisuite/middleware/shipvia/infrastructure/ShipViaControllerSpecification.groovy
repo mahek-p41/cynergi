@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.shipvia.ShipViaFactoryService
 import com.cynergisuite.middleware.shipvia.ShipViaValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND

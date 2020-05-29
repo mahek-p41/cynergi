@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
-import java.time.OffsetDateTime
 
 data class AccountEntity(
    val id: Long? = null,

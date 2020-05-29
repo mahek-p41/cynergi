@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.location.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
