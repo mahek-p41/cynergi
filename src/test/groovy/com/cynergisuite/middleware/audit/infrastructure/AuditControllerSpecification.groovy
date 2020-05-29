@@ -37,8 +37,6 @@ import spock.lang.Unroll
 import javax.inject.Inject
 import java.time.OffsetDateTime
 
-import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.beginningOfWeek
-import static com.cynergisuite.extensions.OffsetDateTimeExtensionsKt.endOfWeek
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.PUT
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -628,7 +626,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
-      def twoCreatedAudits = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', from: beginningOfWeek(OffsetDateTime.now()), thru: endOfWeek(OffsetDateTime.now()), status: [AuditStatusFactory.created().value] as Set]))
+      def twoCreatedAudits = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', from: OffsetDateTime.now(), thru: OffsetDateTime.now(), status: [AuditStatusFactory.created().value] as Set]))
 
       then:
       notThrown(HttpClientResponseException)
