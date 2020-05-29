@@ -10,10 +10,13 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import io.micronaut.spring.tx.annotation.Transactional
+import org.eclipse.collections.impl.factory.Sets
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
@@ -178,29 +181,12 @@ class AuditPermissionRepository @Inject constructor(
       } while (rs.next())
    }
 
-   fun findOneByAsset(asset: String, company: Company): AuditPermissionEntity? {
+   fun permissionDepartmentByAsset(asset: String, company: Company): Set<Department> {
       logger.debug("Searching for AuditPermission with asset {}/{}", asset, company)
+      val departments = Sets.mutable.empty<Department>()
 
-      val found = jdbc.findFirstOrNull("""
+      jdbc.query("""
          SELECT
-            ap.id                   AS ap_id,
-            ap.uu_row_id            AS ap_uu_row_id,
-            ap.time_created         AS ap_time_created,
-            ap.time_updated         AS ap_time_updated,
-            aptd.id                 AS aptd_id,
-            aptd.value              AS aptd_value,
-            aptd.description        AS aptd_description,
-            aptd.localization_code  AS aptd_localization_code,
-            comp.id                 AS comp_id,
-            comp.uu_row_id          AS comp_uu_row_id,
-            comp.time_created       AS comp_time_created,
-            comp.time_updated       AS comp_time_updated,
-            comp.name               AS comp_name,
-            comp.doing_business_as  AS comp_doing_business_as,
-            comp.client_code        AS comp_client_code,
-            comp.client_id          AS comp_client_id,
-            comp.dataset_code       AS comp_dataset_code,
-            comp.federal_id_number  AS comp_federal_id_number,
             dept.id                 AS dept_id,
             dept.code               AS dept_code,
             dept.description        AS dept_description,
@@ -213,15 +199,16 @@ class AuditPermissionRepository @Inject constructor(
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE aptd.value = :asset
                AND comp.id = :comp_id""",
-         mapOf("asset" to asset, "comp_id" to company.myId()),
-         RowMapper<AuditPermissionEntity> { rs, _ ->
-            processFindRow(rs, company)
-         }
-      )
+         mapOf("asset" to asset, "comp_id" to company.myId())
+      ) { rs ->
+          val dept = departmentRepository.mapRow(rs, company, "dept_")
 
-      logger.trace("Searching for AuditPermission with asset {} resulted in {}", asset, found)
+         departments.add(dept)
+      }
 
-      return found
+      logger.trace("Searching for AuditPermission with asset {} resulted in {}", asset, departments)
+
+      return departments
    }
 
    private fun processFindRow(rs: ResultSet, company: Company): AuditPermissionEntity {
