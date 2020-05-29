@@ -15,15 +15,12 @@ import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -430,31 +427,26 @@ class AuditRepository @Inject constructor(
       val status = pageRequest.status
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId())
       val storeNumbers = pageRequest.storeNumber
-      val whereBuilderForStatusAndTimeCreated = StringBuilder()
-      val whereBuilderForCompanyAndStore = StringBuilder("WHERE a.company_id = :comp_id ")
+      val whereClause = StringBuilder("WHERE a.company_id = :comp_id ")
       val from = pageRequest.from
       val thru = pageRequest.thru
-      var where = " WHERE "
-      var and = EMPTY
 
-      processAlternativeStoreIndicator(whereBuilderForCompanyAndStore, params, user)
+      processAlternativeStoreIndicator(whereClause, params, user)
 
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csaa.time_created BETWEEN :from AND :thru ")
-         where = EMPTY
-         and = " AND "
+         whereClause.append(" AND a.time_created BETWEEN :from AND :thru ")
       }
 
       if (!status.isNullOrEmpty()) {
          params["statuses"] = status
-         whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csastd.value IN (:statuses) ")
+         whereClause.append(" AND current_status IN (:statuses) ")
       }
 
       if (!storeNumbers.isNullOrEmpty()) {
          params["store_numbers"] = storeNumbers
-         whereBuilderForCompanyAndStore.append(" AND a.store_number IN (:store_numbers) ")
+         whereClause.append(" AND a.store_number IN (:store_numbers) ")
       }
 
       val sql = """
@@ -470,7 +462,6 @@ class AuditRepository @Inject constructor(
             FROM audit_action csaa
                JOIN audit_status_type_domain csastd
                  ON csaa.status_id = csastd.id
-            $whereBuilderForStatusAndTimeCreated
             ),
             maxStatus AS (
                SELECT MAX(id) AS current_status_id, audit_id
@@ -492,7 +483,7 @@ class AuditRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-         $whereBuilderForCompanyAndStore
+         $whereClause
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,

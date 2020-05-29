@@ -713,9 +713,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       ]
    }
 
-   void "fetch audit status counts using specified from and statuses" () {
+   void "fetch audit status counts using specified from/thru and statuses" () {
       setup:
-      final def from = OffsetDateTime.now().minusDays(1)
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
       auditFactoryService.generate(1, employee, [AuditStatusFactory.created()] as Set)
@@ -724,8 +723,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(4, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
+      final def from = OffsetDateTime.now().minusDays(1)
+      final def thru = OffsetDateTime.now()
+
       when:
-      def counts = get("${path}/counts?from=${from}&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts?from=$from&thru=$thru&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
@@ -737,21 +739,38 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    @Unroll
-   void "fetch audit status counts using specified from and statuses #statusValuesIn and store numbers #storeNumberValuesIn" () {
+   void "fetch audit status counts using specified from/thru and statuses #statusValuesIn and store numbers #storeNumberValuesIn" () {
       given:
-      final def from = OffsetDateTime.now().minusDays(1)
       final def company = companyFactoryService.forDatasetCode('tstds1')
       final def storeOne = storeFactoryService.store(1, company)
       final def storeThree = storeFactoryService.store(3, company)
       final def employee = employeeFactoryService.single(company)
-      auditFactoryService.generate(1, storeOne, employee, [AuditStatusFactory.created()] as Set)
-      auditFactoryService.generate(2, storeOne, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      auditFactoryService.generate(3, storeOne, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      auditFactoryService.generate(2, storeThree, employee, [AuditStatusFactory.created()] as Set)
-      auditFactoryService.generate(2, storeThree, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      auditFactoryService.generate(1, storeOne, employee,
+            [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, storeOne, employee,
+            [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+
+      final inProgressAuditFromLastWeek = auditFactoryService.single(storeOne, employee,
+            [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+
+      auditFactoryService.generate(3, storeOne, employee,
+            [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditFactoryService.generate(2, storeThree, employee,
+            [AuditStatusFactory.created()] as Set)
+      auditFactoryService.generate(2, storeThree, employee,
+            [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      final completedAuditFromLastWeek = auditFactoryService.single(storeThree, employee,
+            [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+
+      final def from = OffsetDateTime.now().minusDays(3)
+      final def thru = OffsetDateTime.now()
 
       when:
-      def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
+      jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: inProgressAuditFromLastWeek.timeCreated.minusDays(8), id: inProgressAuditFromLastWeek.id])
+      jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: completedAuditFromLastWeek.timeCreated.minusDays(8), id: completedAuditFromLastWeek.id])
+      def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, thru:thru, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
          .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
 
       then:
