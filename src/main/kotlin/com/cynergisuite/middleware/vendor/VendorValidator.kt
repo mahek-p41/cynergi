@@ -2,13 +2,17 @@ package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
-import com.cynergisuite.middleware.vendor.freight.infrastructure.FreightMethodTypeRepository
-import com.cynergisuite.middleware.vendor.freight.infrastructure.FreightOnboardTypeRepository
+import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
+import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.FreightOnboardTypeRepository
+import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
+import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -17,53 +21,84 @@ import javax.validation.Valid
 
 @Singleton
 class VendorValidator @Inject constructor(
-   private val freightMethodTypeRepository: FreightMethodTypeRepository,
+   private val freightCalcMethodTypeRepository: FreightCalcMethodTypeRepository,
    private val freightOnboardTypeRepository: FreightOnboardTypeRepository,
+   private val shipViaRepository: ShipViaRepository,
+   private val vendorGroupRepository: VendorGroupRepository,
+   private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val vendorRepository: VendorRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(VendorValidator::class.java)
 
-
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid vo: VendorValueObject, company: Company): VendorEntity {
+   fun validateCreate(@Valid vo: VendorDTO, company: Company): VendorEntity {
       logger.trace("Validating Save Vendor {}", vo)
 
-      val freightOnboardType = freightOnboardTypeRepository.findOne(value = vo.freightOnboardType.value!!)
-      val freightMethodType = freightMethodTypeRepository.findOne(value = vo.freightMethodType.value!!)
-      val payTo = vo.payTo?.id?.let { vendorRepository.findOne(it, company) }
+      return validateCreateUpdate(dto = vo, company = company)
+   }
+
+   @Throws(ValidationException::class, NotFoundException::class)
+   fun validateUpdate(id: Long, dto: VendorDTO, company: Company): VendorEntity {
+      logger.trace("Validating Update Vendor {}", dto)
+
+      val existingVendor = vendorRepository.findOne(id, company) ?: throw NotFoundException(id)
+
+      return validateCreateUpdate(existingVendor, dto = dto, company = company)
+   }
+
+   private fun validateCreateUpdate(existingVendor: VendorEntity? = null, dto: VendorDTO, company: Company): VendorEntity {
+      val vendorGroupId = dto.vendorGroup?.id
+      val vendorGroup = if (vendorGroupId != null) vendorGroupRepository.findOne(vendorGroupId, company) else null
+      val vendorPaymentTermId = dto.paymentTerm?.id
+      val vendorPaymentTerm = if (vendorPaymentTermId != null) vendorPaymentTermRepository.findOne(vendorPaymentTermId, company) else null
+      val freightOnboardType = freightOnboardTypeRepository.findOne(value = dto.freightOnboardType!!.value!!)
+      val freightMethodType = freightCalcMethodTypeRepository.findOne(value = dto.freightCalcMethodType!!.value!!)
+      val payToId = dto.payTo?.id
+      val payTo = if (payToId != null) vendorRepository.findOne(payToId, company) else null
 
       doValidation { errors ->
-         doSharedValidation(errors, vo)
-         freightOnboardType ?: errors.add(ValidationError("freightOnboardType.value", NotFound(vo.freightOnboardType.value!!)))
-         freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(vo.freightMethodType.value!!)))
+         if (vendorGroupId != null && vendorGroup == null) {
+            errors.add(ValidationError("vendorGroup.id", NotFound(vendorGroupId)))
+         }
+
+         if (vendorPaymentTermId == null) {
+            errors.add(ValidationError("paymentTerm.id", NotNull("id")))
+         } else if (vendorPaymentTerm == null) {
+            errors.add(ValidationError("paymentTerm.id", NotFound(vendorPaymentTermId)))
+         }
+
+         if (payToId != null && payTo == null) {
+            errors.add(ValidationError("payTo.id", NotFound(payToId)))
+         }
+
+         if (!shipViaRepository.exists(dto.shipVia!!.id!!, company)) {
+            errors.add(ValidationError("shipVia.id", NotFound(dto.shipVia!!.id!!)))
+         }
+
+         freightOnboardType ?: errors.add(ValidationError("freightOnboardType.value", NotFound(dto.freightOnboardType!!.value!!)))
+         freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(dto.freightCalcMethodType!!.value!!)))
       }
 
-      return VendorEntity(vo = vo, company = company, freightOnboardType = freightOnboardType!!, freightMethodType = freightMethodType!!, payTo = payTo)
+      return if (existingVendor != null) {
+         VendorEntity(
+            existingVendor = existingVendor,
+            dto = dto,
+            vendorPaymentTerm = vendorPaymentTerm!!,
+            vendorGroup = vendorGroup,
+            freightOnboardType = freightOnboardType!!,
+            freightMethodType = freightMethodType!!,
+            payTo = payTo
+         )
+      } else {
+         VendorEntity(
+            dto = dto,
+            vendorPaymentTerm = vendorPaymentTerm!!,
+            company = company,
+            vendorGroup = vendorGroup,
+            freightOnboardType = freightOnboardType!!,
+            freightMethodType = freightMethodType!!,
+            payTo = payTo
+         )
+      }
    }
-
-   fun validateUpdate(id: Long, vo: VendorValueObject, company: Company): VendorEntity {
-      logger.trace("Validating Update Vendor {}", vo)
-
-      val freightOnboardType = freightOnboardTypeRepository.findOne(value = vo.freightOnboardType.value!!)
-      val freightMethodType = freightMethodTypeRepository.findOne(value = vo.freightMethodType.value!!)
-
-      doValidation { errors ->
-         doSharedValidation(errors, vo)
-         freightOnboardType ?: errors.add(ValidationError("freightOnboardType.value", NotFound(vo.freightOnboardType.value!!)))
-         freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(vo.freightMethodType.value!!)))
-      }
-
-      return VendorEntity(vo = vo, company = company, freightOnboardType = freightOnboardType!!, freightMethodType = freightMethodType!!)
-   }
-
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorValueObject) {
-      if((vo.shutdownFrom != null) && vo.shutdownThru == null) {
-         errors.add(ValidationError("shutdownThru", NotNull("shutdownThru")))
-      }
-
-      if((vo.shutdownThru != null) && vo.shutdownFrom == null) {
-         errors.add(ValidationError("shutdownFrom", NotNull("shutdownFrom")))
-      }
-   }
-
 }

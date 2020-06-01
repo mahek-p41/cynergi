@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.vendor
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
-import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.validation.Validated
@@ -17,42 +16,40 @@ class VendorService @Inject constructor(
    private val vendorValidator: VendorValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): VendorValueObject? =
-      vendorRepository.findOne(id, company)?.let{ VendorValueObject(entity = it) }
+   fun fetchById(id: Long, company: Company): VendorDTO? =
+      vendorRepository.findOne(id, company)?.let{ VendorDTO(entity = it) }
 
    @Validated
-   fun create(@Valid vo: VendorValueObject, company: Company): VendorValueObject {
-      logger.debug("Vendor Create Before Validation VendorVO {}", vo)
+   fun create(@Valid vo: VendorDTO, company: Company): VendorDTO {
       val toCreate = vendorValidator.validateCreate(vo, company)
-      logger.debug("Vendor Create After Validation VendorEntity {}", toCreate)
-      return VendorValueObject(
+
+      return VendorDTO(
          entity = vendorRepository.insert(entity = toCreate)
       )
    }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorValueObject> {
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorDTO> {
       val found = vendorRepository.findAll(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
-         VendorValueObject(vendor)
+         VendorDTO(vendor)
       }
    }
 
-   fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorValueObject> {
+   fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
-         VendorValueObject(vendor)
+         VendorDTO(vendor)
       }
    }
 
    @Validated
-   fun update(id: Long, @Valid vo: VendorValueObject, company: Company): VendorValueObject {
+   fun update(id: Long, @Valid vo: VendorDTO, company: Company): VendorDTO {
       val toUpdate = vendorValidator.validateUpdate(id, vo, company)
 
-      return VendorValueObject(
+      return VendorDTO(
          entity = vendorRepository.update(entity = toUpdate)
       )
    }
-
 }

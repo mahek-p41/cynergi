@@ -28,7 +28,7 @@ class VendorPaymentTermValidator @Inject constructor(
    //TODO be deleted if it is the paymentTerms on a Vendor record.
 
    @Throws(ValidationException::class)
-   fun validateCreate(vo: VendorPaymentTermValueObject, company: Company): VendorPaymentTermEntity {
+   fun validateCreate(vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
       logger.trace("Validating Save VendorPaymentTerm {}", vo)
 
       doValidation { errors -> doSharedValidation(errors, vo, company) }
@@ -37,7 +37,7 @@ class VendorPaymentTermValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, vo: VendorPaymentTermValueObject, company: Company): VendorPaymentTermEntity {
+   fun validateUpdate(id: Long, vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
       logger.trace("Validating Update VendorPaymentTerm {}", vo)
 
       val existing = vendorPaymentTermRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -47,7 +47,7 @@ class VendorPaymentTermValidator @Inject constructor(
       return VendorPaymentTermEntity(source = existing, updateWith = vo)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorPaymentTermValueObject, company: Company) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorPaymentTermDTO, company: Company) {
       if((vo.discountDays != null || vo.discountMonth != null) && vo.discountPercent == null) {
          errors.add(ValidationError("discountPercent", NotNull("discountPercent")))
       }

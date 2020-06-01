@@ -16,34 +16,32 @@ class VendorGroupService @Inject constructor(
    private val vendorGroupValidator: VendorGroupValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): VendorGroupValueObject? =
-      vendorGroupRepository.findOne(id, company)?.let{ VendorGroupValueObject(entity = it) }
+   fun fetchById(id: Long, company: Company): VendorGroupDTO? =
+      vendorGroupRepository.findOne(id, company)?.let{ VendorGroupDTO(entity = it) }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorGroupValueObject> {
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorGroupDTO> {
       val found = vendorGroupRepository.findAll(pageRequest, company)
 
       return found.toPage { vendorGroup: VendorGroupEntity ->
-         VendorGroupValueObject(vendorGroup)
+         VendorGroupDTO(vendorGroup)
       }
    }
 
    @Validated
-   fun create(@Valid vo: VendorGroupValueObject, company: Company): VendorGroupValueObject {
-      logger.debug("VendorGroup Create Before Validation VendorGroupVO {}", vo)
+   fun create(@Valid vo: VendorGroupDTO, company: Company): VendorGroupDTO {
       val toCreate = vendorGroupValidator.validateCreate(vo, company)
-      logger.debug("VendorGroup Create After Validation VendorGroupEntity {}", toCreate)
-      return VendorGroupValueObject(
+
+      return VendorGroupDTO(
          entity = vendorGroupRepository.insert(entity = toCreate)
       )
    }
 
    @Validated
-   fun update(id: Long, @Valid vo: VendorGroupValueObject, company: Company): VendorGroupValueObject {
+   fun update(id: Long, @Valid vo: VendorGroupDTO, company: Company): VendorGroupDTO {
       val toUpdate = vendorGroupValidator.validateUpdate(id, vo, company)
 
-      return VendorGroupValueObject(
+      return VendorGroupDTO(
          entity = vendorGroupRepository.update(entity = toUpdate)
       )
    }
-
 }

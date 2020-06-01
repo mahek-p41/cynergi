@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermService
-import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermValueObject
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermDTO
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -45,7 +45,7 @@ class VendorPaymentTermController @Inject constructor(
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a single VendorPaymentTerm", description = "Fetch a single VendorPaymentTerm by it's system generated primary key", operationId = "vendorPaymentTerm-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested VendorPaymentTerm was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -54,7 +54,7 @@ class VendorPaymentTermController @Inject constructor(
       @QueryValue("id") id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorPaymentTermValueObject {
+   ): VendorPaymentTermDTO {
       logger.info("Fetching VendorPaymentTerm by {}", id)
 
       val user = userService.findUser(authentication)
@@ -78,7 +78,7 @@ class VendorPaymentTermController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<VendorPaymentTermValueObject> {
+   ): Page<VendorPaymentTermDTO> {
       logger.info("Fetching all vendor payment terms {}", pageRequest)
 
       val user = userService.findUser(authentication)
@@ -96,17 +96,17 @@ class VendorPaymentTermController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Create a single VendorPaymentTerm", description = "Create a single VendorPaymentTerm. The logged in Employee is used for the scannedBy property", operationId = "vendorPaymentTerm-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
       ApiResponse(responseCode = "400", description = "If the request body is invalid"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The vendor payment term was unable to be found or the scanArea was unknown"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body vo: VendorPaymentTermValueObject,
+      @Body vo: VendorPaymentTermDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorPaymentTermValueObject {
+   ): VendorPaymentTermDTO {
       logger.debug("Requested Create VendorPaymentTerm {}", vo)
 
       val user = userService.findUser(authentication)
@@ -123,7 +123,7 @@ class VendorPaymentTermController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Update a single VendorPaymentTerm", description = "Update a single VendorPaymentTerm where the update is the addition of a note", operationId = "vendorPaymentTerm-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
       ApiResponse(responseCode = "400", description = "If request body is invalid"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested VendorPaymentTerm was unable to be found"),
@@ -131,10 +131,10 @@ class VendorPaymentTermController @Inject constructor(
    ])
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the vendor payment term being updated") @QueryValue("id") id: Long,
-      @Body vo: VendorPaymentTermValueObject,
+      @Body vo: VendorPaymentTermDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorPaymentTermValueObject {
+   ): VendorPaymentTermDTO {
       logger.info("Requested Update VendorPaymentTerm {}", vo)
 
       val user = userService.findUser(authentication)
@@ -144,5 +144,4 @@ class VendorPaymentTermController @Inject constructor(
 
       return response
    }
-
 }

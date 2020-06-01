@@ -139,6 +139,19 @@ class VendorGroupRepository @Inject constructor(
       return updated
    }
 
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String): VendorGroupEntity? {
+      return if (rs.getString("${columnPrefix}id") != null) {
+         VendorGroupEntity(
+            id = rs.getLong("${columnPrefix}id"),
+            company = company,
+            value = rs.getString("${columnPrefix}value"),
+            description = rs.getString("${columnPrefix}description")
+         )
+      } else {
+         null
+      }
+   }
+
    private fun mapRow(rs: ResultSet): VendorGroupEntity {
       return VendorGroupEntity(
          id = rs.getLong("vgrp_id"),
@@ -156,5 +169,4 @@ class VendorGroupRepository @Inject constructor(
          description = rs.getString("description")
       )
    }
-
 }

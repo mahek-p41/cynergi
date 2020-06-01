@@ -133,6 +133,13 @@ class AddressRepository @Inject constructor(
       )
    }
 
+   fun upsert(address: AddressEntity): AddressEntity =
+      if (address.id != null) {
+         update(address)
+      } else {
+         insert(address)
+      }
+
    fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
          id = rs.getLong("${columnPrefix}id"),

@@ -20,28 +20,27 @@ class VendorGroupValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupValidator::class.java)
 
-
    @Throws(ValidationException::class)
-   fun validateCreate(vo: VendorGroupValueObject, company: Company): VendorGroupEntity {
-      logger.trace("Validating Save VendorGroup {}", vo)
+   fun validateCreate(dto: VendorGroupDTO, company: Company): VendorGroupEntity {
+      logger.trace("Validating Save VendorGroup {}", dto)
 
-      doValidation { errors -> doSharedValidation(errors, vo) }
+      doValidation { errors -> doSharedValidation(errors, dto) }
 
-      return VendorGroupEntity(vo = vo, company = company)
+      return VendorGroupEntity(dto = dto, company = company)
    }
 
-   @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, vo: VendorGroupValueObject, company: Company): VendorGroupEntity {
+   @Throws(ValidationException::class, NotFoundException::class)
+   fun validateUpdate(id: Long, vo: VendorGroupDTO, company: Company): VendorGroupEntity {
       logger.trace("Validating Update VendorGroup {}", vo)
 
       val existing = vendorGroupRepository.findOne(id, company) ?: throw NotFoundException(id)
 
       doValidation { errors -> doSharedValidation(errors, vo) }
 
-      return VendorGroupEntity(source = existing, updateWith = vo)
+      return existing.copy(value = vo.value!!, description = vo.description!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupValueObject) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupDTO) {
       if(vo.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }
@@ -49,7 +48,5 @@ class VendorGroupValidator @Inject constructor(
       if(vo.description == null) {
          errors.add(ValidationError("description", NotNull("description")))
       }
-
    }
-
 }

@@ -13,9 +13,9 @@ data class VendorPaymentTermEntity(
    val discountDays: Int?,
    val discountPercent: BigDecimal?,
    val scheduleRecords: MutableList<VendorPaymentTermScheduleEntity> = mutableListOf()
-   ) : Identifiable {
+) : Identifiable {
 
-   constructor(id: Long? = null, vo: VendorPaymentTermValueObject, company: Company) :
+   constructor(id: Long? = null, vo: VendorPaymentTermDTO, company: Company) :
       this(id = id ?: vo.id,
          company = company,
          description = vo.description!!,
@@ -25,7 +25,7 @@ data class VendorPaymentTermEntity(
          scheduleRecords = vo.scheduleRecords.asSequence().map { VendorPaymentTermScheduleEntity(it) }.toMutableList()
       )
 
-   constructor(vo: VendorPaymentTermValueObject, company: Company) :
+   constructor(vo: VendorPaymentTermDTO, company: Company) :
       this(
          id = vo.id,
          company = company,
@@ -36,7 +36,7 @@ data class VendorPaymentTermEntity(
          scheduleRecords = vo.scheduleRecords.asSequence().map { VendorPaymentTermScheduleEntity(it) }.toMutableList()
       )
 
-   constructor(source: VendorPaymentTermEntity, updateWith: VendorPaymentTermValueObject) :
+   constructor(source: VendorPaymentTermEntity, updateWith: VendorPaymentTermDTO) :
       this(id = source.id!!, vo = updateWith, company = source.company)
 
    override fun myId(): Long? = id
