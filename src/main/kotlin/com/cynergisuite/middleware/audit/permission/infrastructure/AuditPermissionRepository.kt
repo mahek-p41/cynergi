@@ -16,7 +16,6 @@ import io.micronaut.spring.tx.annotation.Transactional
 import org.eclipse.collections.impl.factory.Sets
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet

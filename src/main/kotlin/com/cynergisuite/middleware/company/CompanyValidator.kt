@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid

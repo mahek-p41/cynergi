@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.department.DepartmentService
 import com.cynergisuite.middleware.department.DepartmentValueObject

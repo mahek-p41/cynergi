@@ -8,8 +8,6 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -27,9 +25,7 @@ import static java.time.DayOfWeek.TUESDAY
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject AuditPermissionRepository auditPermissionRepository
-   @Inject DepartmentFactoryService departmentFactoryService
    @Inject ScheduleRepository scheduleRepository
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch one"() {
       given:

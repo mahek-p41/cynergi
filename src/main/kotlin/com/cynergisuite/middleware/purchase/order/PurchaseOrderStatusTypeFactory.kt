@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.purchase.order
 
 import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
-import kotlin.random.Random
 
 object PurchaseOrderStatusTypeFactory {
 

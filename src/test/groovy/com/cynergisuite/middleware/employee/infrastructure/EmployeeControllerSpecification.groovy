@@ -23,7 +23,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       pageOneResult.requested.with { new EmployeePageRequest(it) } == pageOne
-      pageOneResult.totalElements == 47
+      pageOneResult.totalElements == 48
       pageOneResult.totalPages == 3
       pageOneResult.first == true
       pageOneResult.last == false
@@ -40,7 +40,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       pageTwoResult.requested.with { new EmployeePageRequest(it) } == pageTwo
-      pageTwoResult.totalElements == 47
+      pageTwoResult.totalElements == 48
       pageTwoResult.totalPages == 3
       pageTwoResult.first == false
       pageTwoResult.last == false
@@ -58,11 +58,11 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       pageThreeResult.requested.with { new EmployeePageRequest(it) } == pageLast
-      pageThreeResult.totalElements == 47
+      pageThreeResult.totalElements == 48
       pageThreeResult.totalPages == 3
       pageThreeResult.first == false
       pageThreeResult.last == true
-      pageThreeResult.elements.size() == 7
+      pageThreeResult.elements.size() == 8
       with(pageThreeResult.elements[0]) {
          number == 90003
          lastName == 'STORE MANAGER'

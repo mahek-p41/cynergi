@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.company.CompanyValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema

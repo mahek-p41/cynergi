@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.audit.status.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.status.Approved
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Canceled
 import com.cynergisuite.middleware.audit.status.Completed
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
-import com.cynergisuite.middleware.audit.status.Approved
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 

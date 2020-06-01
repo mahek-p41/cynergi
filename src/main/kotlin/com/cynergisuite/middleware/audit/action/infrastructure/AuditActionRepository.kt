@@ -5,15 +5,9 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
-import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.store.SimpleStore
-import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
-import org.eclipse.collections.api.factory.Maps
 import org.eclipse.collections.api.multimap.Multimap
 import org.eclipse.collections.impl.factory.Multimaps
 import org.slf4j.Logger

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.region
 
-import com.cynergisuite.middleware.division.DivisionValueObject
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.cynergisuite.middleware.division.DivisionDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -25,5 +24,5 @@ data class RegionValueObject(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "division", required = false, nullable = true, description = "Division that a region belong to")
-   var division: DivisionValueObject? = null
+   var division: DivisionDTO? = null
 )

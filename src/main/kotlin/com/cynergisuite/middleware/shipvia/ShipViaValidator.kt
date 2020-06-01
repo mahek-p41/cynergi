@@ -3,10 +3,7 @@ package com.cynergisuite.middleware.shipvia
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.shipvia.infrastructure.ShipViaRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
