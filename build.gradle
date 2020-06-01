@@ -40,6 +40,12 @@ configurations {
    developmentOnly
 }
 
+kapt {
+   arguments {
+      arg("micronaut.processing.incremental", true)
+   }
+}
+
 sourceSets {
    test {
       groovy {
