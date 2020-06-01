@@ -209,7 +209,7 @@ class InventoryRepository(
       val elements = mutableListOf<InventoryEntity>()
       val params = mutableMapOf<String, Any?>(
          "audit_id" to audit.id,
-         "comp_id" to company.myId(),
+         "comp_id" to company!!.myId(),
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset())
 

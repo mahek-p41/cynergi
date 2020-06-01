@@ -557,7 +557,7 @@ class AuditRepository @Inject constructor(
          """.trimMargin(),
          mapOf(
             "store_number" to entity.store.myNumber(),
-            "company_id" to entity.store.myCompany().myId()
+            "company_id" to entity.store.myCompany()!!.myId()
          ),
          RowMapper { rs, _ ->
             AuditEntity(

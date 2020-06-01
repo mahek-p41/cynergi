@@ -41,7 +41,7 @@ data class StoreValueObject (
          id = entity.id,
          number = entity.number,
          name = entity.name,
-         region = entity.region.toValueObject()
+         region = entity.region?.toValueObject()
       )
 
    constructor(location: Location) :

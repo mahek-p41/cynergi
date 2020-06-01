@@ -100,18 +100,13 @@ class StoreFactoryService(
                id = it.myId(),
                name = it.myName(),
                number = it.myNumber(),
-               company = it.myCompany()
+               company = it.myCompany()!!
             )
          }
          ?: throw Exception("Unable to find Store")
 
-   fun companyStoresToRegion(region: RegionEntity): Stream<Pair<RegionEntity, Location>> {
-      return StoreFactory.stores(region.division.company).stream()
-         .map { storeRepository.assignToRegion(it, region) }
-   }
-
-   fun companyStoresToRegionWithDevData(company: Company, region: RegionEntity): Stream<Pair<RegionEntity, Location>> {
-      return StoreFactory.storesDevelop(company).stream()
+   fun companyStoresToRegion(region: RegionEntity, limit: Long): Stream<Pair<RegionEntity, Location>> {
+      return StoreFactory.stores(region.division.company).stream().limit(limit)
          .map { storeRepository.assignToRegion(it, region) }
    }
 
@@ -122,11 +117,11 @@ class StoreFactoryService(
    fun random(company: Company): StoreEntity {
       val randomStore = StoreFactory.random(company)
 
-      assert(company.myDataset() == randomStore.myCompany().myDataset())
+      randomStore.myCompany()?.let {assert(company.myDataset() == it.myDataset())}
 
       val store = storeRepository.findOne(randomStore.myNumber(), company) ?: throw Exception("Unable to find StoreEntity")
 
-      assert(store.myCompany().myDataset() == company.myDataset())
+      store.myCompany()?.let { assert(it.myDataset() == company.myDataset()) }
 
       return store
    }

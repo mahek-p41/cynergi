@@ -121,7 +121,7 @@ data class InventoryValueObject(
          status = item.status,
          primaryLocation = StoreValueObject(item.primaryLocation),
          locationType = locationType,
-         dataset = item.primaryLocation.myCompany().myDataset()
+         dataset = item.primaryLocation.myCompany()!!.myDataset()
       )
 
    override fun myId(): Long? = id

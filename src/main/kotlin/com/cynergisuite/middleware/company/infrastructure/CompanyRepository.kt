@@ -64,7 +64,7 @@ class CompanyRepository @Inject constructor(
          """,
          mapOf(
             "store_id" to store.myId(),
-            "dataset" to store.myCompany().myDataset()
+            "dataset" to store.myCompany()!!.myDataset()
          ),
          RowMapper { rs, _ -> mapRow(rs) }
       )

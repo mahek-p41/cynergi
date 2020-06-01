@@ -32,8 +32,10 @@ object EmployeeFactory {
          throw Exception("Department's Company and Company do not match ${departmentIn.myCompany()} / $company")
       }
 
-      if (storeIn != null && storeIn.myCompany() != company) {
-         throw Exception("Store's Company and Company do not match ${storeIn.myCompany()} / $company")
+      storeIn?.myCompany()?.let {
+         if (it != company) {
+            throw Exception("Store's Company and Company do not match $it / $company")
+         }
       }
 
       return IntStream.range(0, number).mapToObj {

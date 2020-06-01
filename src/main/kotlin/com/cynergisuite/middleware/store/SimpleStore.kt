@@ -26,7 +26,7 @@ data class SimpleStore(
    companion object Factory {
       fun create(store: Store): SimpleStore? {
          return when (store) {
-            is StoreEntity -> SimpleStore(store.id, store.number, store.name, CompanyValueObject.create(store.myCompany())!!)
+            is StoreEntity -> SimpleStore(store.id, store.number, store.name, CompanyValueObject.create(store.myCompany()!!)!!)
             is SimpleStore -> SimpleStore(store.id, store.number, store.name, CompanyValueObject.create(store.company)!!)
             else -> null
          }
