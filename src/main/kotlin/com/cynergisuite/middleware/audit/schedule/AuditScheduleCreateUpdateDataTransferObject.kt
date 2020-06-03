@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.location.Location
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
@@ -34,7 +34,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
    @field:Valid
    @field:NotEmpty
    @field:Schema(name = "stores", description = "Set of stores the audit schedule is supposed to run against")
-   var stores: Set<SimpleIdentifiableDataTransferObject> = mutableSetOf(), // is from a schedule argument that is collected together
+   var stores: Set<SimpleIdentifiableDTO> = mutableSetOf(), // is from a schedule argument that is collected together
 
    @field:NotNull
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")
@@ -46,7 +46,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          title = title,
          description = description,
          schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.myId()) }.toSet(),
+         stores = stores.asSequence().map { SimpleIdentifiableDTO(it.myId()) }.toSet(),
          enabled = true
       )
 
@@ -55,7 +55,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          title = title,
          description = description,
          schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.myId()) }.toSet(),
+         stores = stores.asSequence().map { SimpleIdentifiableDTO(it.myId()) }.toSet(),
          enabled = enabled
       )
 
@@ -65,7 +65,7 @@ data class AuditScheduleCreateUpdateDataTransferObject(
          title = title,
          description = description,
          schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDataTransferObject(it.myId()) }.toSet(),
+         stores = stores.asSequence().map { SimpleIdentifiableDTO(it.myId()) }.toSet(),
          enabled = true
       )
 }

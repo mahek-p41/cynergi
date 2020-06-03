@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.division
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
@@ -39,7 +39,7 @@ data class DivisionEntity (
          number = this.number,
          name = this.name,
          description = this.description,
-         divisionalManager = this.divisionalManager?.let { SimpleIdentifiableDataTransferObject(it) }
+         divisionalManager = this.divisionalManager?.let { SimpleIdentifiableDTO(it) }
       )
    }
 

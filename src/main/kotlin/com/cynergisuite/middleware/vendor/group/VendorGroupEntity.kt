@@ -10,23 +10,13 @@ data class VendorGroupEntity(
    val description: String
 ) : Identifiable {
 
-   constructor(id: Long? = null, vo: VendorGroupValueObject, company: Company) :
-      this(id = id ?: vo.id,
-         company = company,
-         value = vo.value!!,
-         description = vo.description!!
-      )
-
-   constructor(vo: VendorGroupValueObject, company: Company) :
+   constructor(dto: VendorGroupDTO, company: Company):
       this(
-         id = vo.id,
+         id = dto.id,
          company = company,
-         value = vo.value!!,
-         description = vo.description!!
+         value = dto.value!!,
+         description = dto.description!!
       )
-
-   constructor(source: VendorGroupEntity, updateWith: VendorGroupValueObject) :
-      this(id = source.id!!, vo = updateWith, company = source.company)
 
    override fun myId(): Long? = id
 }

@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.vendor.VendorService
-import com.cynergisuite.middleware.vendor.VendorValueObject
+import com.cynergisuite.middleware.vendor.VendorDTO
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -44,7 +44,7 @@ class VendorController @Inject constructor(
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorEndpoints"], summary = "Fetch a single Vendor", description = "Fetch a single Vendor by it's system generated primary key", operationId = "vendor-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorDTO::class))]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Vendor was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -53,7 +53,7 @@ class VendorController @Inject constructor(
       @QueryValue("id") id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorValueObject {
+   ): VendorDTO {
       logger.info("Fetching Vendor by {}", id)
 
       val user = userService.findUser(authentication)
@@ -77,7 +77,7 @@ class VendorController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<VendorValueObject> {
+   ): Page<VendorDTO> {
       logger.info("Fetching all vendors {}", pageRequest)
 
       val user = userService.findUser(authentication)
@@ -103,7 +103,7 @@ class VendorController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: SearchPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<VendorValueObject> {
+   ): Page<VendorDTO> {
       logger.info("Fetching all vendors {}", pageRequest)
 
       val user = userService.findUser(authentication)
@@ -121,17 +121,17 @@ class VendorController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorEndpoints"], summary = "Create a single Vendor", description = "Create a single Vendor. The logged in Employee is used for the scannedBy property", operationId = "vendor-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorDTO::class))]),
       ApiResponse(responseCode = "400", description = "If the request body is invalid"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The vendor was unable to be found or the scanArea was unknown"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body vo: VendorValueObject,
+      @Body vo: VendorDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorValueObject {
+   ): VendorDTO {
       logger.debug("Requested Create Vendor {}", vo)
 
       val user = userService.findUser(authentication)
@@ -147,7 +147,7 @@ class VendorController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorEndpoints"], summary = "Update a single Vendor", description = "Update a single Vendor where the update is the addition of a note", operationId = "vendor-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorDTO::class))]),
       ApiResponse(responseCode = "400", description = "If request body is invalid"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Vendor was unable to be found"),
@@ -155,10 +155,10 @@ class VendorController @Inject constructor(
    ])
    fun update(
       @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the vendor being updated") @QueryValue("id") id: Long,
-      @Body vo: VendorValueObject,
+      @Body vo: VendorDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorValueObject {
+   ): VendorDTO {
       logger.info("Requested Update Vendor {}", vo)
 
       val user = userService.findUser(authentication)

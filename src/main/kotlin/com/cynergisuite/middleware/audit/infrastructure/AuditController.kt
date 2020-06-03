@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
@@ -186,9 +186,9 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun approve(
-        @Body audit: SimpleIdentifiableDataTransferObject,
-        authentication: Authentication,
-        httpRequest: HttpRequest<*>
+      @Body audit: SimpleIdentifiableDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): AuditValueObject {
       logger.info("Requested approval of audit {}", audit)
 
@@ -264,8 +264,8 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun approveAllExceptions(
-        @Body audit: SimpleIdentifiableDataTransferObject,
-        authentication: Authentication
+      @Body audit: SimpleIdentifiableDTO,
+      authentication: Authentication
    ): AuditApproveAllExceptionsDataTransferObject {
       logger.info("Requested approval on all audit exceptions associated with audit {}", audit)
 

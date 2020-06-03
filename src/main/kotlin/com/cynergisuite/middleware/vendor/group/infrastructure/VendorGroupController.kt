@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.vendor.group.VendorGroupDTO
 import com.cynergisuite.middleware.vendor.group.VendorGroupService
-import com.cynergisuite.middleware.vendor.group.VendorGroupValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -44,7 +44,7 @@ class VendorGroupController @Inject constructor(
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Fetch a single VendorGroup", description = "Fetch a single VendorGroup by it's system generated primary key", operationId = "vendorGroup-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested VendorGroup was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -53,7 +53,7 @@ class VendorGroupController @Inject constructor(
       @QueryValue("id") id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorGroupValueObject {
+   ): VendorGroupDTO {
       logger.info("Fetching VendorGroup by {}", id)
 
       val user = userService.findUser(authentication)
@@ -77,7 +77,7 @@ class VendorGroupController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<VendorGroupValueObject> {
+   ): Page<VendorGroupDTO> {
       logger.info("Fetching all VendorGroups {}", pageRequest)
 
       val user = userService.findUser(authentication)
@@ -95,17 +95,17 @@ class VendorGroupController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Create a single VendorGroup", description = "Create a single VendorGroup. The logged in Employee is used for the scannedBy property", operationId = "vendorGroup-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
       ApiResponse(responseCode = "400", description = "If the request body is invalid"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The VendorGroup was unable to be found or the scanArea was unknown"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun create(
-      @Body vo: VendorGroupValueObject,
+      @Body vo: VendorGroupDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorGroupValueObject {
+   ): VendorGroupDTO {
       logger.debug("Requested Create VendorGroup {}", vo)
 
       val user = userService.findUser(authentication)
@@ -121,7 +121,7 @@ class VendorGroupController @Inject constructor(
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Update a single VendorGroup", description = "Update a single VendorGroup where the update is the addition of a note", operationId = "vendorGroup-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
       ApiResponse(responseCode = "400", description = "If request body is invalid"),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested VendorGroup was unable to be found"),
@@ -129,10 +129,10 @@ class VendorGroupController @Inject constructor(
    ])
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the VendorGroup being updated") @QueryValue("id") id: Long,
-      @Body vo: VendorGroupValueObject,
+      @Body vo: VendorGroupDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorGroupValueObject {
+   ): VendorGroupDTO {
       logger.info("Requested Update VendorGroup {}", vo)
 
       val user = userService.findUser(authentication)
@@ -142,5 +142,4 @@ class VendorGroupController @Inject constructor(
 
       return response
    }
-
 }

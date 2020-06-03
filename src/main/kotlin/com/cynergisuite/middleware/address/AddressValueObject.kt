@@ -68,6 +68,7 @@ data class AddressValueObject (
    var fax: String? = null
 
    ) : Identifiable {
+
    constructor(address: AddressEntity) : this(
       id = address.id,
       name = address.name,

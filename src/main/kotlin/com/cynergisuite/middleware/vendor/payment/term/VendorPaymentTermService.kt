@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import io.micronaut.validation.Validated
@@ -16,35 +15,32 @@ class VendorPaymentTermService @Inject constructor(
    private val vendorPaymentTermValidator: VendorPaymentTermValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): VendorPaymentTermValueObject? =
-      vendorPaymentTermRepository.findOne(id, company)?.let{ VendorPaymentTermValueObject(entity = it) }
+   fun fetchById(id: Long, company: Company): VendorPaymentTermDTO? =
+      vendorPaymentTermRepository.findOne(id, company)?.let{ VendorPaymentTermDTO(entity = it) }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorPaymentTermValueObject> {
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorPaymentTermDTO> {
       val found = vendorPaymentTermRepository.findAll(company, pageRequest)
 
       return found.toPage { vendorPaymentTerm: VendorPaymentTermEntity ->
-         VendorPaymentTermValueObject(vendorPaymentTerm)
+         VendorPaymentTermDTO(vendorPaymentTerm)
       }
    }
 
    @Validated
-   fun create(@Valid vo: VendorPaymentTermValueObject, company: Company): VendorPaymentTermValueObject {
-      logger.debug("VPTS Create Before Validation VendorPaymentTermVO {}", vo)
+   fun create(@Valid vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
       val toCreate = vendorPaymentTermValidator.validateCreate(vo, company)
-      logger.debug("VPTS Create After Validation VendorPaymentTermEntity {}", toCreate)
-      return VendorPaymentTermValueObject(
+
+      return VendorPaymentTermDTO(
          entity = vendorPaymentTermRepository.insert(entity = toCreate)
       )
    }
 
    @Validated
-   fun update(id: Long, @Valid vo: VendorPaymentTermValueObject, company: Company): VendorPaymentTermValueObject {
+   fun update(id: Long, @Valid vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
       val toUpdate = vendorPaymentTermValidator.validateUpdate(id, vo, company)
 
-      return VendorPaymentTermValueObject(
+      return VendorPaymentTermDTO(
          entity = vendorPaymentTermRepository.update(entity = toUpdate)
       )
    }
-
-
 }

@@ -11,7 +11,7 @@ data class VendorPaymentTermScheduleEntity(
    val scheduleOrderNumber: Int
 ) : Identifiable {
 
-   constructor(vo: VendorPaymentTermScheduleValueObject) :
+   constructor(vo: VendorPaymentTermScheduleDTO) :
       this(
          id = vo.id,
          dueMonth = vo.dueMonth,

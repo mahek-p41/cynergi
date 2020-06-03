@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.division
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
@@ -47,7 +47,7 @@ object DivisionFactory {
             number = divisionNumberCounter.getAndIncrement(),
             name = name,
             description = description,
-            divisionalManager = SimpleIdentifiableDataTransferObject(divisionalManagerIn?.id)
+            divisionalManager = SimpleIdentifiableDTO(divisionalManagerIn?.id)
          )
       }
    }

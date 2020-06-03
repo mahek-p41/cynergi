@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.schedule
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -27,6 +27,6 @@ data class ScheduleCreateDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   var type: SimpleIdentifiableDataTransferObject? = null
+   var type: SimpleIdentifiableDTO? = null
 
 )

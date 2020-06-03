@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AccountDTO", title = "An data transfer object containing a account information", description = "An data transfer object containing a account information.")
+@Schema(name = "Account", title = "An data transfer object containing a account information", description = "An data transfer object containing a account information.")
 data class AccountDTO (
 
    @field:Positive

@@ -10,8 +10,7 @@ CREATE TABLE company
     client_id          INTEGER    CHECK ( client_id > 0 )                       NOT NULL,
     dataset_code       VARCHAR(6) CHECK ( char_length(trim(dataset_code)) = 6 ) NOT NULL,
     federal_tax_number VARCHAR(12),
-    UNIQUE (client_id),
-    UNIQUE (dataset_code)
+    UNIQUE (client_id)
 );
 CREATE TRIGGER update_company_trg
     BEFORE UPDATE

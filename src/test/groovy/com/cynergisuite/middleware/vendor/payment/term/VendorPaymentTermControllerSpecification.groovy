@@ -4,7 +4,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
-import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleValueObject
+import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleDTO
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -17,14 +17,14 @@ import static io.micronaut.http.HttpStatus.BAD_REQUEST
 class VendorPaymentTermControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor/payment/term"
 
-   @Inject VendorPaymentTermDataLoaderService vendorPaymentTermDataLoaderService
+   @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorPaymentTermService vendorPaymentTermService
    @Inject VendorPaymentTermRepository vendorPaymentTermRepository
    @Inject VendorPaymentTermScheduleRepository vendorPaymentTermScheduleRepository
 
    void "fetch one vendor payment term by id"() {
       given:
-      final def vendorPaymentTerm = vendorPaymentTermDataLoaderService.single(nineNineEightAuthenticatedEmployee.myCompany())
+      final def vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(nineNineEightAuthenticatedEmployee.myCompany())
 
       when:
       def result = get("$path/${vendorPaymentTerm.id}")
@@ -59,8 +59,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "Term with 1 payments and 1 schedule record using post" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1.0, 1)]
-      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test2", null, null, null, schedules)
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 90, 1.0, 1)]
+      final vendorPaymentTerm = new VendorPaymentTermDTO(null, "test2", null, null, null, schedules)
 
       when:
       def result = post(path, vendorPaymentTerm)
@@ -75,8 +75,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "Term with 2 payments and 2 schedule records using post" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 0.50, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 0.50, 2)]
-      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test3", null, null, null, schedules)
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 0.50, 1), new VendorPaymentTermScheduleDTO(null, null, 60, 0.50, 2)]
+      final vendorPaymentTerm = new VendorPaymentTermDTO(null, "test3", null, null, null, schedules)
 
       when:
       def result = post(path, vendorPaymentTerm)
@@ -92,7 +92,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "insert vendor payment term without a schedule" () {
       given:
-      final existingVPT = new VendorPaymentTermValueObject([description: "test4"])
+      final existingVPT = new VendorPaymentTermDTO([description: "test4"])
 
       when:
       post(path, existingVPT)
@@ -111,7 +111,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       final company = companyFactoryService.forDatasetCode('tstds1')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test5", null, null, null, schedules)
-      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermValueObject(it) }
+      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
 
       when:
       existing.scheduleRecords[0].dueDays = 45
@@ -131,7 +131,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       final company = companyFactoryService.forDatasetCode('tstds1')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test6", null, null, null, schedules)
-      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermValueObject(it) }
+      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
 
       when:
       existing.scheduleRecords[0].duePercent = 0.70
@@ -147,8 +147,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "Null discount percent" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 1.0, 1)]
-      final newVPT = new VendorPaymentTermValueObject([description: "test8", discountMonth: 3, scheduleRecords: schedules])
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 1.0, 1)]
+      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: 3, scheduleRecords: schedules])
 
       when:
       post(path, newVPT)
@@ -165,7 +165,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       final company = companyFactoryService.forDatasetCode('tstds1')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test6", null, null, null, schedules)
-      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermValueObject(it) }
+      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
 
       when:
       existing.scheduleRecords.remove(0)
@@ -187,7 +187,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       final company = companyFactoryService.forDatasetCode('tstds1')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test7", null, null, null, schedules)
-      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermValueObject(it) }
+      final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
 
       when:
       existing.scheduleRecords.remove(1)
@@ -228,8 +228,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "post vendor payment term discountPercent that has 2 integral and 8 fractional" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 90, 1.0, 1)]
-      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test2", null, null, 20.00000008, schedules)
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 90, 1.0, 1)]
+      final vendorPaymentTerm = new VendorPaymentTermDTO(null, "test2", null, null, 20.00000008, schedules)
 
       when:
       post(path, vendorPaymentTerm)
@@ -245,8 +245,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "post vendor payment term with 0 percent properties" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 0.0, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 0.50, 2)]
-      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test3", null, null, 0.0, schedules)
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 0.0, 1), new VendorPaymentTermScheduleDTO(null, null, 60, 0.50, 2)]
+      final vendorPaymentTerm = new VendorPaymentTermDTO(null, "test3", null, null, 0.0, schedules)
 
       when:
       post(path, vendorPaymentTerm)
@@ -264,8 +264,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "post vendor payment term with two 49 duePercents" () {
       given:
-      final schedules = [new VendorPaymentTermScheduleValueObject(null, null, 30, 0.49, 1), new VendorPaymentTermScheduleValueObject(null, null, 60, 0.49, 2)]
-      final vendorPaymentTerm = new VendorPaymentTermValueObject(null, "test3", null, null, null, schedules)
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 0.49, 1), new VendorPaymentTermScheduleDTO(null, null, 60, 0.49, 2)]
+      final vendorPaymentTerm = new VendorPaymentTermDTO(null, "test3", null, null, null, schedules)
 
       when:
       post(path, vendorPaymentTerm)

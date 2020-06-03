@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.division
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -29,7 +29,7 @@ data class DivisionDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "divisionalManager", description = "Divisional manager id")
-   var divisionalManager: SimpleIdentifiableDataTransferObject? = null
+   var divisionalManager: SimpleIdentifiableDTO? = null
 ): Identifiable {
    override fun myId() = id
 
@@ -39,6 +39,6 @@ data class DivisionDTO(
          number = entity.number,
          name = entity.name,
          description = entity.description,
-         divisionalManager = SimpleIdentifiableDataTransferObject(entity.divisionalManager?.id)
+         divisionalManager = SimpleIdentifiableDTO(entity.divisionalManager?.id)
       )
 }
