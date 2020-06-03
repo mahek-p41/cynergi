@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.address.AddressValueObject
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
@@ -43,7 +43,7 @@ data class VendorDTO(
 
    @field:Valid
    @field:Schema(name = "payTo", description = "Pay to vendor.  Provide the ID of a valid vendor for the company that the user is logged in under. Use GET /api/vendor/search{?pageRequest*}", minimum = "1", required = false)
-   var payTo: SimpleIdentifiableDataTransferObject? = null,
+   var payTo: SimpleIdentifiableDTO? = null,
 
    @field:Valid
    @field:NotNull
@@ -53,7 +53,7 @@ data class VendorDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "paymentTerm", description = "Vendor Payment Term")
-   var paymentTerm: SimpleIdentifiableDataTransferObject? = null,
+   var paymentTerm: SimpleIdentifiableDTO? = null,
 
    @field:Schema(name = "floatDays", description = "The vendor float days", minimum = "0", required = false)
    var floatDays: Int? = null,
@@ -72,7 +72,7 @@ data class VendorDTO(
 
    @field:Valid
    @field:Schema(name = "vendorGroup", description = "Vendor Group")
-   var vendorGroup: SimpleIdentifiableDataTransferObject? = null,
+   var vendorGroup: SimpleIdentifiableDTO? = null,
 
    @field:Positive
    @field:Schema(name = "minimumQuantity", description = "Minimum quantity to order from vendor", minimum = "0", required = false)
@@ -116,7 +116,7 @@ data class VendorDTO(
 
    @field:Valid
    @field:NotNull
-   @field:Schema(name = "freightMethodType", description = "Vendor freight method type")
+   @field:Schema(name = "freightCalcMethodType", description = "Vendor freight method type")
    var freightCalcMethodType: FreightCalcMethodTypeDTO? = null,
 
    @field:Digits(integer = 1, fraction = 7)
@@ -170,14 +170,14 @@ data class VendorDTO(
          name = entity.name,
          address = AddressValueObject(entity.address),
          ourAccountNumber = entity.ourAccountNumber,
-         payTo = if (entity.payTo != null) SimpleIdentifiableDataTransferObject(entity.payTo) else null,
+         payTo = if (entity.payTo != null) SimpleIdentifiableDTO(entity.payTo) else null,
          freightOnboardType = FreightOnboardTypeDTO(entity.freightOnboardType),
-         paymentTerm = SimpleIdentifiableDataTransferObject(entity.paymentTerm),
+         paymentTerm = SimpleIdentifiableDTO(entity.paymentTerm),
          floatDays = entity.floatDays,
          normalDays = entity.normalDays,
          returnPolicy = entity.returnPolicy,
          shipVia = ShipViaValueObject(entity.shipVia),
-         vendorGroup = if (entity.vendorGroup != null) SimpleIdentifiableDataTransferObject(entity.vendorGroup) else null,
+         vendorGroup = if (entity.vendorGroup != null) SimpleIdentifiableDTO(entity.vendorGroup) else null,
          minimumQuantity = entity.minimumQuantity,
          minimumAmount = entity.minimumAmount,
          freeShipQuantity = entity.freeShipQuantity,

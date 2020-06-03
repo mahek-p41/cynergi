@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -142,7 +142,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.requested.sortDirection == "ASC"
       pageOneResult.elements != null
       pageOneResult.elements.size() == 10
-      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) } == firstTenDiscrepancies
@@ -175,7 +175,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) } == firstFiveDiscrepancies
@@ -188,7 +188,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+      pageTwoResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) } == secondFiveDiscrepancies
@@ -233,7 +233,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      final pageOneAuditExceptions = pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+      final pageOneAuditExceptions = pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) }
@@ -316,7 +316,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       auditOne.number == 1
       auditTwo.number == 2
       pageOneResult.elements.size() == 3
-      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
@@ -347,7 +347,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
-      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
 
       when:
       def result = post("/audit/${audit.id}/exception", exception)
@@ -386,7 +386,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = AuditScanAreaFactory.random()
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
-      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), scanArea: new AuditScanAreaValueObject(scanArea), exceptionCode: exceptionCode])
 
       when:
       def result = post("/audit/${audit.id}/exception", exception, authToken)
@@ -422,7 +422,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
-      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), exceptionCode: exceptionCode])
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
 
       when:
       def result = post("/audit/${audit.id}/exception", exception)
@@ -479,7 +479,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
 
       when:
-      post("/audit/-1/exception", new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem.id), exceptionCode: exceptionCode]))
+      post("/audit/-1/exception", new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem.id), exceptionCode: exceptionCode]))
 
       then:
       final notFoundException = thrown(HttpClientResponseException)
@@ -498,7 +498,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
 
       when:
-      post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(), exceptionCode: exceptionCode]))
+      post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(), exceptionCode: exceptionCode]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -520,7 +520,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
 
       when:
-      post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableValueObject(inventoryItem), scanArea: scanArea, exceptionCode: exceptionCode]))
+      post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), scanArea: scanArea, exceptionCode: exceptionCode]))
 
       then:
       final e = thrown(HttpClientResponseException)

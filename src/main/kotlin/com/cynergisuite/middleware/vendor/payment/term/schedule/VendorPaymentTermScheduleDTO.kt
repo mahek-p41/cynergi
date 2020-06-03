@@ -12,7 +12,8 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
-data class VendorPaymentTermScheduleValueObject(
+@Schema(name = "VendorPaymentTermSchedule", title = "Single vendor payment term schedule definition", description = "Single vendor payment term schedule")
+data class VendorPaymentTermScheduleDTO(
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")

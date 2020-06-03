@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -64,7 +64,7 @@ data class AuditDetailValueObject (
    constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
       this(
          entity = entity,
-         audit = SimpleIdentifiableValueObject(entity.audit),
+         audit = SimpleIdentifiableDTO(entity.audit),
          auditScanArea = auditScanArea
       )
 

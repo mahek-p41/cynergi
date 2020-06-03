@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.SearchPageRequest
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.address.AddressEntity
@@ -24,9 +24,8 @@ import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaym
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import java.time.LocalDate
 import javax.inject.Inject
-import org.codehaus.groovy.runtime.typehandling.GroovyCastException
+
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -243,7 +242,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
       when:
-      vendor.payTo = new SimpleIdentifiableDataTransferObject(payToVendor)
+      vendor.payTo = new SimpleIdentifiableDTO(payToVendor)
       def result = post(path, vendor)
       vendor.id = result.id
       vendor.address.id = result.address?.id
@@ -276,8 +275,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 2
       response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("${String.format('%d', vendorPaymentTerm.id)} was unable to be found", "paymentTerm.id"),
          new ErrorDataTransferObject("${String.format('%d', shipVia.id)} was unable to be found", "shipVia.id"),
+         new ErrorDataTransferObject("${String.format('%d', vendorPaymentTerm.id)} was unable to be found", "paymentTerm.id"),
       ]
    }
 

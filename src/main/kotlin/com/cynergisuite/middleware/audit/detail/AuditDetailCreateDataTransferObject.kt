@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.detail
 
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
@@ -12,7 +12,7 @@ data class AuditDetailCreateDataTransferObject(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "inventory", description = "Inventory item being associated with a new AuditDetail")
-   val inventory: SimpleIdentifiableValueObject?,
+   val inventory: SimpleIdentifiableDTO?,
 
    @field:Valid
    @field:NotNull

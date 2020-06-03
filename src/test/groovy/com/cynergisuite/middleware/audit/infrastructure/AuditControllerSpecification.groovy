@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
@@ -1253,7 +1252,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       audit.number == 1
       pageOneResult.elements.size() == 3
-      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['approved'] = true }
@@ -1295,7 +1294,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditOne.number > 0
       pageOneResult.elements != null
       pageOneResult.elements.size() == 3
-      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
          .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
          .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['approved'] = true }
@@ -1310,7 +1309,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, false).toList()
 
       when:
-      def result = put("$path/approve/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
+      def result = put("$path/approve/exceptions", new SimpleIdentifiableDTO(audit.myId()))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1327,7 +1326,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, true).toList()
 
       when:
-      def result = put("$path/approve/exceptions", new SimpleIdentifiableDataTransferObject(audit.myId()))
+      def result = put("$path/approve/exceptions", new SimpleIdentifiableDTO(audit.myId()))
 
       then:
       notThrown(HttpClientResponseException)

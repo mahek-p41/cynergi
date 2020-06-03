@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleValueObject
+import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -13,6 +13,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@Schema(name = "VendorPaymentTerm", title = "Vendor payment term definition", description = "Descibes a vendor payment term that can be associated with one or more vendors")
 data class VendorPaymentTermDTO(
 
    @field:Positive
@@ -40,7 +41,7 @@ data class VendorPaymentTermDTO(
    @field:Valid
    @field:Size(min = 1)
    @field:Schema(name = "scheduleRecords", description = "Listing of schedule records associated with a Vendor Payment Term")
-   var scheduleRecords: MutableList<VendorPaymentTermScheduleValueObject> = mutableListOf()
+   var scheduleRecords: MutableList<VendorPaymentTermScheduleDTO> = mutableListOf()
 
 ) : Identifiable {
 
@@ -51,7 +52,7 @@ data class VendorPaymentTermDTO(
          discountMonth = entity.discountMonth,
          discountDays = entity.discountDays,
          discountPercent = entity.discountPercent,
-         scheduleRecords = entity.scheduleRecords.asSequence().map { VendorPaymentTermScheduleValueObject(it) }.toMutableList()
+         scheduleRecords = entity.scheduleRecords.asSequence().map { VendorPaymentTermScheduleDTO(it) }.toMutableList()
       )
 
    override fun myId(): Long? = id

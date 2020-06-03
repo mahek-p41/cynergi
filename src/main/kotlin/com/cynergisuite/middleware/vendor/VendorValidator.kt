@@ -49,8 +49,8 @@ class VendorValidator @Inject constructor(
    private fun validateCreateUpdate(existingVendor: VendorEntity? = null, dto: VendorDTO, company: Company): VendorEntity {
       val vendorGroupId = dto.vendorGroup?.id
       val vendorGroup = if (vendorGroupId != null) vendorGroupRepository.findOne(vendorGroupId, company) else null
-      val vendorPaymentTermId = dto.paymentTerm?.id
-      val vendorPaymentTerm = if (vendorPaymentTermId != null) vendorPaymentTermRepository.findOne(vendorPaymentTermId, company) else null
+      val vendorPaymentTermId = dto.paymentTerm?.id!!
+      val vendorPaymentTerm = vendorPaymentTermRepository.findOne(vendorPaymentTermId, company)
       val freightOnboardType = freightOnboardTypeRepository.findOne(value = dto.freightOnboardType!!.value!!)
       val freightMethodType = freightCalcMethodTypeRepository.findOne(value = dto.freightCalcMethodType!!.value!!)
       val payToId = dto.payTo?.id
@@ -61,9 +61,7 @@ class VendorValidator @Inject constructor(
             errors.add(ValidationError("vendorGroup.id", NotFound(vendorGroupId)))
          }
 
-         if (vendorPaymentTermId == null) {
-            errors.add(ValidationError("paymentTerm.id", NotNull("id")))
-         } else if (vendorPaymentTerm == null) {
+         if (vendorPaymentTerm == null) {
             errors.add(ValidationError("paymentTerm.id", NotFound(vendorPaymentTermId)))
          }
 

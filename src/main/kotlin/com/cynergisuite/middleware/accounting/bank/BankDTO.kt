@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.address.AddressValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "BankDTO", title = "An entity containing a bank information", description = "An entity containing a bank information.")
+@Schema(name = "Bank", title = "An entity containing a bank information", description = "An entity containing a bank information.")
 data class BankDTO (
 
    @field:Positive
@@ -30,12 +30,12 @@ data class BankDTO (
    @field:Valid
    @field:NotNull
    @field:Schema(name = "generalLedgerProfitCenter", required = true, description = "Store the bank is associated with.")
-   var generalLedgerProfitCenter: SimpleIdentifiableDataTransferObject? = null,
+   var generalLedgerProfitCenter: SimpleIdentifiableDTO? = null,
 
    @field:Valid
    @field:NotNull
    @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
-   var generalLedgerAccount: SimpleIdentifiableDataTransferObject? = null,
+   var generalLedgerAccount: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 50)
@@ -53,8 +53,8 @@ data class BankDTO (
          id = bankEntity.id,
          address = AddressValueObject(bankEntity.address),
          name = bankEntity.name,
-         generalLedgerProfitCenter = SimpleIdentifiableDataTransferObject(bankEntity.generalLedgerProfitCenter.myId()),
-         generalLedgerAccount = SimpleIdentifiableDataTransferObject(bankEntity.generalLedgerAccount.myId()),
+         generalLedgerProfitCenter = SimpleIdentifiableDTO(bankEntity.generalLedgerProfitCenter.myId()),
+         generalLedgerAccount = SimpleIdentifiableDTO(bankEntity.generalLedgerAccount.myId()),
          accountNumber = bankEntity.accountNumber,
          currency = BankCurrencyTypeValueObject(bankEntity.currency)
       )

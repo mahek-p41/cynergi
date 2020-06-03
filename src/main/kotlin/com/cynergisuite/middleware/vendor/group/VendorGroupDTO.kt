@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.company.Company
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
+@Schema(name = "VendorGroup", title = "Defines a vendor group", description = "Defines a single vendor grouping that can be assigned to vendors")
 data class VendorGroupDTO(
 
    @field:Positive

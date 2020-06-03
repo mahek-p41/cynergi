@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "FreightMethodType", title = "Freight Method Type", description = "Freight Method Type")
+@Schema(name = "FreightCalcMethodType", title = "Freight Method Type", description = "Freight Method Type")
 data class FreightCalcMethodTypeDTO (
 
    @field:NotNull

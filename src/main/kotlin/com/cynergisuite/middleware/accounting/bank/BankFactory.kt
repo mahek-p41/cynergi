@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.bank
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressValueObject
@@ -71,8 +71,8 @@ object BankFactory {
                fax = faker.phoneNumber().phoneNumber()
             ),
             name = faker.company().name(),
-            generalLedgerProfitCenter = SimpleIdentifiableDataTransferObject(store.myId()),
-            generalLedgerAccount = SimpleIdentifiableDataTransferObject(accountEntity.id),
+            generalLedgerProfitCenter = SimpleIdentifiableDTO(store.myId()),
+            generalLedgerAccount = SimpleIdentifiableDTO(accountEntity.id),
             accountNumber = Random.nextInt(1000, 1000000).toString(),
             currency = BankCurrencyTypeValueObject(currencyType)
          )
