@@ -78,20 +78,20 @@ class DevelopDataLoader @Inject constructor(
       val corptpStore1 = storeFactoryService.store(1, corptp)
       val corptpStore1StoreManager = employeeFactoryService.single(corptpStore1, corptpStoreManagerDepartment)
 
-      val corptpDivision1 = divisionFactoryService.single(corptp, corptpStore1StoreManager)
-      val corptpDivision1Region1 = regionFactoryService.single(corptpDivision1)
-      storeFactoryService.companyStoresToRegion(corptpDivision1Region1, corptpStore1)
+      val corptpDivision2 = divisionFactoryService.single(corptp, corptpStore1StoreManager)
+      val corptpDivision2Region2 = regionFactoryService.single(corptpDivision2)
+      storeFactoryService.companyStoresToRegion(corptpDivision2Region2, corptpStore1)
 
       val corptpStore2 = storeFactoryService.store(2, corptp)
-      val corptpDivision1Region2 = regionFactoryService.single(corptpDivision1)
-      storeFactoryService.companyStoresToRegion(corptpDivision1Region2, corptpStore2)
+      val corptpDivision2Region3 = regionFactoryService.single(corptpDivision2)
+      storeFactoryService.companyStoresToRegion(corptpDivision2Region3, corptpStore2)
 
-      val corptpDivision2 = divisionFactoryService.single(corptp, corptpStore1StoreManager)
-      val corptpDivision2Region1 = regionFactoryService.single(corptpDivision2)
+      val corptpDivision3 = divisionFactoryService.single(corptp, corptpStore1StoreManager)
+      val corptpDivision3Region4 = regionFactoryService.single(corptpDivision3)
       val corptpStore3 = storeFactoryService.store(3, corptp)
       val corptpStore4 = storeFactoryService.store(4, corptp)
       val corptpStore5 = storeFactoryService.store(5, corptp)
-      storeFactoryService.companyStoresToRegion(corptpDivision2Region1, corptpStore3, corptpStore4, corptpStore5)
+      storeFactoryService.companyStoresToRegion(corptpDivision3Region4, corptpStore3, corptpStore4, corptpStore5)
 
       val nineNineEightEmployeeCorptpEmployee = employeeFactoryService.singleSuperUser(998, corptp, "user", "super", "pass")
       val corptpStore2StoreManager = employeeFactoryService.single(corptpStore2, corptpStoreManagerDepartment)

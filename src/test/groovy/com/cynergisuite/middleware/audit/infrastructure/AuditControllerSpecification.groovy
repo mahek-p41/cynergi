@@ -412,11 +412,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       audits.elements != null
-      audits.elements.size() == 2
+      audits.elements.size() == 1
       audits.elements[0].store.storeNumber == storeOne.number
       audits.elements[0].id == storeOneAudit.id
-      audits.elements[1].store.storeNumber == storeThree.number
-      audits.elements[1].id == storeThreeAudit.id
    }
 
    void "fetch all audits based on login with alt store indicator of 'D'" () {
@@ -436,11 +434,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       audits.elements != null
-      audits.elements.size() == 2
+      audits.elements.size() == 1
       audits.elements[0].store.storeNumber == storeOne.number
       audits.elements[0].id == storeOneAudit.id
-      audits.elements[1].store.storeNumber == storeThree.number
-      audits.elements[1].id == storeThreeAudit.id
    }
 
    @Unroll

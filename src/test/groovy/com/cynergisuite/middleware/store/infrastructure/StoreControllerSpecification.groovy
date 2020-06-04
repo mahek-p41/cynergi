@@ -37,7 +37,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       when:
       def result = get("$path/$store3.id")
 
-      then: 'store should have a assigned region'
+      then: 'store should not have a assigned region'
       notThrown(HttpClientResponseException)
       result.id == store3.id
       result.storeNumber == store3.number

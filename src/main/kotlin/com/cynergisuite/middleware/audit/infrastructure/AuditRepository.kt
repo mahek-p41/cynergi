@@ -227,15 +227,31 @@ class AuditRepository @Inject constructor(
             total_elements                                      AS total_elements
          FROM audits a
               JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN fastinfo_prod_import.store_vw auditStore
+                     ON comp.dataset_code = auditStore.dataset
+                        AND a.store_number = auditStore.number
+               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number
+               LEFT JOIN region reg ON reg.id = rts.region_id
+               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          ORDER BY a.id
       """
+
+   /**
+    * The sub-query added to make sure we get unassigned store
+    * but won't get the store of region belong to another company
+    * which have the same store number
+    **/
+   private val subQuery = """
+                           (rts.region_id IS null
+                              OR rts.region_id NOT IN (
+                                    SELECT region.id
+                                    FROM region JOIN division ON region.division_id = division.id
+                                    WHERE division.company_id <> :comp_id
+                                 ))
+   """
 
    fun findOne(id: Long, company: Company): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
@@ -331,6 +347,8 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (:current_status) ")
       }
 
+      whereClause.append(" AND $subQuery ")
+
       val sql = """
          WITH maxStatus AS (
             SELECT MAX(id) AS current_status_id, audit_id
@@ -378,16 +396,15 @@ class AuditRepository @Inject constructor(
             comp.federal_id_number                              AS comp_federal_id_number,
             count(*) OVER() AS total_elements
          FROM audit a
-              JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store rts ON reg.id = rts.region_id
-              JOIN fastinfo_prod_import.store_vw auditStore
-                   ON rts.store_number = auditStore.number
-                      AND comp.dataset_code = auditStore.dataset
-                      AND a.store_number = auditStore.number
-              JOIN status s ON s.audit_id = a.id
-              JOIN maxStatus ms ON s.id = ms.current_status_id
+               JOIN company comp ON a.company_id = comp.id
+               JOIN fastinfo_prod_import.store_vw auditStore
+                     ON comp.dataset_code = auditStore.dataset
+                        AND a.store_number = auditStore.number
+               JOIN status s ON s.audit_id = a.id
+               JOIN maxStatus ms ON s.id = ms.current_status_id
+               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number
+               LEFT JOIN region reg ON reg.id = rts.region_id
+               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          $whereClause
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
@@ -451,6 +468,8 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND a.store_number IN (:store_numbers) ")
       }
 
+      whereClause.append(" AND $subQuery ")
+
       val sql = """
          WITH status AS (
             SELECT
@@ -479,12 +498,12 @@ class AuditRepository @Inject constructor(
             count(*) AS current_status_count
          FROM audit a
             JOIN company comp ON a.company_id = comp.id
-            JOIN division div ON comp.id = div.company_id
-            JOIN region reg ON div.id = reg.division_id
-            JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
+            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
+            LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number
+            LEFT JOIN region reg ON reg.id = rts.region_id
+            LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          $whereClause
          GROUP BY status.current_status,
                   status.current_status_description,

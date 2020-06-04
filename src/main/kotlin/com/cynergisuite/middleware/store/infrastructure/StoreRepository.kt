@@ -50,7 +50,6 @@ class StoreRepository @Inject constructor(
             region.time_created AS reg_time_created,
             region.time_updated AS reg_time_updated,
             region.division_id AS reg_division_id,
-            region.number AS reg_number,
             region.name AS reg_name,
             region.description AS reg_description,
             division.id AS div_id,
@@ -80,7 +79,7 @@ class StoreRepository @Inject constructor(
                                     FROM region JOIN division ON region.division_id = division.id
                                     WHERE division.company_id <> :comp_id
                                  ))
-   """.trimIndent()
+   """
 
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
@@ -123,8 +122,8 @@ class StoreRepository @Inject constructor(
             params["store_number"] = user.myLocation().myNumber()
          }
          "R" -> {
-            pagedQuery.append(" AND region.number = :region_number ")
-            params["region_number"] = user.myAlternativeArea()
+            pagedQuery.append(" AND region.id = :region_id ")
+            params["region_id"] = user.myAlternativeArea()
          }
          "D" -> {
             pagedQuery.append(" AND division.number = :division_number ")
