@@ -22,8 +22,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -484,7 +484,7 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun mapScannedByStore(rs: ResultSet, columnPrefix: String): Store? {
       return if (rs.getString("${columnPrefix}store_id") != null) {
-         SimpleStore(
+         StoreEntity(
             id = rs.getLong("${columnPrefix}store_id"),
             number = rs.getInt("${columnPrefix}store_number"),
             name = rs.getString("${columnPrefix}store_name"),

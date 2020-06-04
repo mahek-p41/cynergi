@@ -6,12 +6,9 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -88,7 +85,7 @@ class StoreRepository @Inject constructor(
 
       logger.debug("Searching for Store by number {}/{}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { mapRow(it) }
+      val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company) }
 
       logger.trace("Search for Store by number: {} resulted in {}", number, found)
 
@@ -208,39 +205,12 @@ class StoreRepository @Inject constructor(
       return region to store
    }
 
-   private fun mapRow(rs: ResultSet) =
-      StoreEntity(
-         id = rs.getLong("id"),
-         number = rs.getInt("number"),
-         name = rs.getString("name"),
-         region = RegionEntity(
-            id = rs.getLong("reg_id"),
-            number = rs.getInt("reg_number"),
-            name = rs.getString("reg_name"),
-            description = rs.getString("reg_description"),
-            division = DivisionEntity(
-               id = rs.getLong("div_id"),
-               number = rs.getInt("div_number"),
-               name = rs.getString("div_name"),
-               description = rs.getString("div_description"),
-               company = CompanyEntity(
-                  id = rs.getLong("comp_id"),
-                  name = rs.getString("comp_name"),
-                  doingBusinessAs = rs.getString("comp_doing_business_as"),
-                  clientCode = rs.getString("comp_client_code"),
-                  clientId = rs.getInt("comp_client_id"),
-                  datasetCode = rs.getString("comp_dataset_code"),
-                  federalIdNumber = rs.getString("federal_id_number")
-               )
-            )
-         )
-      )
-
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store =
-      SimpleStore(
+      StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
+         region = regionRepository.mapRowOrNull(rs, company, "reg_"),
          company = company
       )
 
@@ -249,7 +219,8 @@ class StoreRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         region = regionRepository.mapRow(rs, company, "reg_")
+         region = regionRepository.mapRowOrNull(rs, company, "reg_"),
+         company = company
       )
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
