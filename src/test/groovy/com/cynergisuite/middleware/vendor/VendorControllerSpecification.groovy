@@ -274,10 +274,10 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.toSet() == [
-         new ErrorDataTransferObject("${String.format('%d', shipVia.id)} was unable to be found", "shipVia.id"),
+      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("${String.format('%d', vendorPaymentTerm.id)} was unable to be found", "paymentTerm.id"),
-      ].toSet()
+         new ErrorDataTransferObject("${String.format('%d', shipVia.id)} was unable to be found", "shipVia.id"),
+      ].sort { o1, o2 -> o1 <=> o2 }
    }
 
    void "update one" () {
