@@ -5,7 +5,6 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.address.AddressValueObject
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -67,11 +66,11 @@ data class VendorDTO(
 
    @field:Valid
    @field:NotNull
-   @field:Schema(name = "shipVia", description = "Ship Via")
-   var shipVia: ShipViaValueObject? = null,
+   @field:Schema(name = "shipVia", description = "Ship Via", implementation = SimpleIdentifiableDTO::class)
+   var shipVia: SimpleIdentifiableDTO? = null,
 
    @field:Valid
-   @field:Schema(name = "vendorGroup", description = "Vendor Group")
+   @field:Schema(name = "vendorGroup", description = "Vendor Group", implementation = SimpleIdentifiableDTO::class)
    var vendorGroup: SimpleIdentifiableDTO? = null,
 
    @field:Positive
@@ -176,7 +175,7 @@ data class VendorDTO(
          floatDays = entity.floatDays,
          normalDays = entity.normalDays,
          returnPolicy = entity.returnPolicy,
-         shipVia = ShipViaValueObject(entity.shipVia),
+         shipVia = SimpleIdentifiableDTO(entity.shipVia),
          vendorGroup = if (entity.vendorGroup != null) SimpleIdentifiableDTO(entity.vendorGroup) else null,
          minimumQuantity = entity.minimumQuantity,
          minimumAmount = entity.minimumAmount,

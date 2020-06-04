@@ -17,7 +17,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class ShipViaControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/shipvia"
+   private static final String path = "/shipping/shipvia"
 
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
 

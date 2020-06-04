@@ -12,7 +12,7 @@ data class Page<I: Identifiable>(
    @field:Schema(name = "elements", description = "The elements up to 100 returned by the query", required = true)
    val elements: List<I> = emptyList(),
 
-   @field:Schema(name = "requested", description = "The page request used when calculating the number of results to return", required = true)
+   @field:Schema(name = "requested", description = "The page request used when calculating the number of results to return", required = true, implementation = StandardPageRequest::class)
    val requested: PageRequest,
 
    @field:Schema(name = "totalElements", description = "The total number of elements that can possibly be returned at the time this query was executed", required = true)

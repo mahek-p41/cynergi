@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
 import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.FreightOnboardTypeRepository
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
@@ -49,7 +48,9 @@ class VendorValidator @Inject constructor(
    private fun validateCreateUpdate(existingVendor: VendorEntity? = null, dto: VendorDTO, company: Company): VendorEntity {
       val vendorGroupId = dto.vendorGroup?.id
       val vendorGroup = if (vendorGroupId != null) vendorGroupRepository.findOne(vendorGroupId, company) else null
-      val vendorPaymentTermId = dto.paymentTerm?.id!!
+      val shipViaId = dto.shipVia!!.id!!
+      val shipVia = shipViaRepository.findOne(shipViaId, company)
+      val vendorPaymentTermId = dto.paymentTerm!!.id!!
       val vendorPaymentTerm = vendorPaymentTermRepository.findOne(vendorPaymentTermId, company)
       val freightOnboardType = freightOnboardTypeRepository.findOne(value = dto.freightOnboardType!!.value!!)
       val freightMethodType = freightCalcMethodTypeRepository.findOne(value = dto.freightCalcMethodType!!.value!!)
@@ -69,7 +70,7 @@ class VendorValidator @Inject constructor(
             errors.add(ValidationError("payTo.id", NotFound(payToId)))
          }
 
-         if (!shipViaRepository.exists(dto.shipVia!!.id!!, company)) {
+         if (shipVia == null) {
             errors.add(ValidationError("shipVia.id", NotFound(dto.shipVia!!.id!!)))
          }
 
@@ -82,6 +83,7 @@ class VendorValidator @Inject constructor(
             existingVendor = existingVendor,
             dto = dto,
             vendorPaymentTerm = vendorPaymentTerm!!,
+            shipVia = shipVia!!,
             vendorGroup = vendorGroup,
             freightOnboardType = freightOnboardType!!,
             freightMethodType = freightMethodType!!,
@@ -91,6 +93,7 @@ class VendorValidator @Inject constructor(
          VendorEntity(
             dto = dto,
             vendorPaymentTerm = vendorPaymentTerm!!,
+            shipVia = shipVia!!,
             company = company,
             vendorGroup = vendorGroup,
             freightOnboardType = freightOnboardType!!,

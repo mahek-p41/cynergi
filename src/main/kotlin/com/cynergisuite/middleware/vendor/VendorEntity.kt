@@ -48,7 +48,7 @@ data class VendorEntity(
    val autoSubmitPurchaseOrder: Boolean = false
 ) : Identifiable {
 
-   constructor(id: Long? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
+   constructor(id: Long? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
       this(
          id = id ?: dto.id,
          company = company,
@@ -61,7 +61,7 @@ data class VendorEntity(
          floatDays = dto.floatDays,
          normalDays = dto.normalDays,
          returnPolicy = dto.returnPolicy!!,
-         shipVia = ShipViaEntity(dto.shipVia!!, company),
+         shipVia = shipVia,
          vendorGroup = vendorGroup,
          minimumQuantity = dto.minimumQuantity,
          minimumAmount = dto.minimumAmount,
@@ -87,11 +87,12 @@ data class VendorEntity(
          autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder!!
       )
 
-   constructor(existingVendor: VendorEntity, vendorPaymentTerm: VendorPaymentTermEntity, dto: VendorDTO, vendorGroup: VendorGroupEntity?, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
+   constructor(existingVendor: VendorEntity, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, dto: VendorDTO, vendorGroup: VendorGroupEntity?, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
       this(
          id = existingVendor.id,
          dto = dto,
          vendorPaymentTerm = vendorPaymentTerm,
+         shipVia = shipVia,
          vendorGroup = vendorGroup,
          company = existingVendor.company,
          freightOnboardType = freightOnboardType,

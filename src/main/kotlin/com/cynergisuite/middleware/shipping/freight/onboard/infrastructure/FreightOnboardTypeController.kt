@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/vendor/freight/onboard")
+@Controller("/api/shipping/freight/onboard")
 class FreightOnboardTypeController @Inject constructor(
    private val freightOnboardTypeService: FreightOnboardTypeService,
    private val localizationService: LocalizationService

@@ -33,7 +33,7 @@ import javax.inject.Inject
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/shipvia")
+@Controller("/api/shipping/shipvia")
 class ShipViaController @Inject constructor(
    private val shipViaService: ShipViaService,
    private val userService: UserService
@@ -55,7 +55,8 @@ class ShipViaController @Inject constructor(
    ): ShipViaValueObject {
       logger.info("Fetching ShipVia by {}", id)
 
-      val response = shipViaService.fetchById(id = id) ?: throw NotFoundException(id)
+      val user = userService.findUser(authentication)
+      val response = shipViaService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetch ShipVia by {} resulted {}", id, response)
 
@@ -125,11 +126,10 @@ class ShipViaController @Inject constructor(
       logger.info("Requested Update ShipVia {}", vo)
 
       val employee = userService.findUser(authentication)
-      val response = shipViaService.update(vo, employee)
+      val response = shipViaService.update(vo, employee.myCompany())
 
       logger.debug("Requested Update ShipVia {} resulted in {}", vo, response)
 
       return response
    }
-
 }

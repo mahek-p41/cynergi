@@ -44,10 +44,10 @@ class ShipViaRepository @Inject constructor(
            JOIN company comp ON shipVia.company_id = comp.id
    """
 
-   fun findOne(id: Long): ShipViaEntity? {
+   fun findOne(id: Long, company: Company): ShipViaEntity? {
       logger.debug("Searching for ShipVia by id {}", id)
 
-      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id", mapOf("id" to id), this::mapRow)
+      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.myId()), this::mapRow)
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
@@ -73,10 +73,19 @@ class ShipViaRepository @Inject constructor(
          } while(rs.next())
       }
    }
+
    fun exists(id: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id AND company_id = :comp_id)", mapOf("id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
 
-      logger.trace("Checking if ShipVia: {} exists resulted in {}", id, exists)
+      logger.trace("Checking if ShipVia: {}/{} exists resulted in {}", id, company, exists)
+
+      return exists
+   }
+
+   fun exists(description: String, company: Company): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE UPPER(description) = UPPER(:description) AND company_id = :comp_id)", mapOf("description" to description, "comp_id" to company.myId()), Boolean::class.java)!!
+
+      logger.trace("Checking if ShipVia: {}/{} exists resulted in {}", description, company, exists)
 
       return exists
    }

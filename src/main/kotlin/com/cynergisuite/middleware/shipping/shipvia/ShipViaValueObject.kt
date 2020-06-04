@@ -9,6 +9,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@Schema(name = "ShipVia", title = "Ship Via Definition", description = "Defines a single Ship Via for a company")
 data class ShipViaValueObject(
 
    @field:Positive

@@ -17,8 +17,8 @@ class ShipViaService @Inject constructor(
    private val shipViaValidator: ShipViaValidator
 ) {
 
-   fun fetchById(id: Long): ShipViaValueObject? =
-      shipViaRepository.findOne(id)?.let{ ShipViaValueObject(entity = it) }
+   fun fetchById(id: Long, company: Company): ShipViaValueObject? =
+      shipViaRepository.findOne(id, company)?.let{ ShipViaValueObject(entity = it) }
 
    @Validated
    fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<ShipViaValueObject> {
@@ -39,9 +39,9 @@ class ShipViaService @Inject constructor(
    }
 
    @Validated
-   fun update(@Valid vo: ShipViaValueObject, employee: User): ShipViaValueObject {
+   fun update(@Valid vo: ShipViaValueObject, company: Company): ShipViaValueObject {
       val id = vo.id ?: throw NotFoundException(vo.id?.toString() ?: "") // FIXME need to better handle getting ID.  Should alter the UI to pass id as a path param
-      val toUpdate = shipViaValidator.validateUpdate(id, vo)
+      val toUpdate = shipViaValidator.validateUpdate(id, vo, company)
 
       return ShipViaValueObject(
          entity = shipViaRepository.update(entity = toUpdate)
