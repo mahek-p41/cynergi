@@ -8,7 +8,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.store.SimpleStore
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -23,7 +23,8 @@ import javax.inject.Singleton
 class BankRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val addressRepository: AddressRepository,
-   private val accountRepository: AccountRepository
+   private val accountRepository: AccountRepository,
+   private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankRepository::class.java)
 
@@ -203,7 +204,7 @@ class BankRepository @Inject constructor(
          company = company,
          address = addressRepository.mapAddress(rs, "address_"),
          name = rs.getString("${columnPrefix}name"),
-         generalLedgerProfitCenter = mapSimpleStore(rs, company,"store_"),
+         generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "store_"),
          generalLedgerAccount = accountRepository.mapRow(rs, company, "account_"),
          accountNumber = rs.getString("${columnPrefix}account_number"),
          currency = mapCurrency(rs, "currency_")
@@ -229,13 +230,5 @@ class BankRepository @Inject constructor(
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
-      )
-
-   private fun mapSimpleStore(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): SimpleStore =
-      SimpleStore(
-         id = rs.getLong("${columnPrefix}id"),
-         number = rs.getInt("${columnPrefix}number"),
-         name = rs.getString("${columnPrefix}name"),
-         company = company
       )
 }

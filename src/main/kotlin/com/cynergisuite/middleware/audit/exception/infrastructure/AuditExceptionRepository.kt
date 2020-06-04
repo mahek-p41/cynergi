@@ -22,8 +22,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -329,7 +329,7 @@ class AuditExceptionRepository @Inject constructor(
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
       val auditCompany = audit.store.myCompany()
-      var result = findAll(audit, auditCompany!!, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      var result = findAll(audit, auditCompany, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
       while(result.elements.isNotEmpty()) {
@@ -491,7 +491,7 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun mapScannedByStore(rs: ResultSet, columnPrefix: String): Store? {
       return if (rs.getString("${columnPrefix}store_id") != null) {
-         SimpleStore(
+         StoreEntity(
             id = rs.getLong("${columnPrefix}store_id"),
             number = rs.getInt("${columnPrefix}store_number"),
             name = rs.getString("${columnPrefix}store_name"),

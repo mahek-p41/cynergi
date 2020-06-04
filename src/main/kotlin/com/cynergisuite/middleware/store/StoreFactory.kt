@@ -14,43 +14,43 @@ object StoreFactory {
 
    @JvmStatic
    private val stores = listOf( // list of stores defined in cynergi-inittestdb.sql that aren't HOME OFFICE
-      SimpleStore(
+      StoreEntity(
          id = 1,
          number = 1,
          name = "KANSAS CITY",
          company = CompanyFactory.tstds1()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 2,
          number = 3,
          name = "INDEPENDENCE",
          company = CompanyFactory.tstds1()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 4,
          number = 1,
          name = "Pelham Trading Post, Inc",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 5,
          number = 2,
          name = "Camilla Trading Post, Inc.",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 6,
          number = 3,
          name = "Arlington Trading Post",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 7,
          number = 4,
          name = "Moultrie Trading Post, Inc",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 8,
          number = 5,
          name = "Bainbridge Trading Post",
@@ -96,11 +96,11 @@ class StoreFactoryService(
    fun store(storeNumber: Int, company: Company): Store =
       locationRepository.findOne(storeNumber, company)
          ?.let {
-            SimpleStore(
+            StoreEntity(
                id = it.myId(),
                name = it.myName(),
                number = it.myNumber(),
-               company = it.myCompany()!!
+               company = it.myCompany()
             )
          }
          ?: throw Exception("Unable to find Store")
@@ -117,11 +117,11 @@ class StoreFactoryService(
    fun random(company: Company): StoreEntity {
       val randomStore = StoreFactory.random(company)
 
-      randomStore.myCompany()?.let {assert(company.myDataset() == it.myDataset())}
+      assert(company.myDataset() == randomStore.myCompany().myDataset())
 
       val store = storeRepository.findOne(randomStore.myNumber(), company) ?: throw Exception("Unable to find StoreEntity")
 
-      store.myCompany()?.let { assert(it.myDataset() == company.myDataset()) }
+      assert(store.myCompany().myDataset() == company.myDataset())
 
       return store
    }

@@ -89,7 +89,7 @@ class AuditFactoryService @Inject constructor(
 
    fun single(changedByIn: AuthenticatedEmployee, statusesIn: Set<AuditStatus>): AuditEntity {
       val location = changedByIn.myLocation()
-      val store = storeRepository.findOne(location.myNumber(), location.myCompany()!!) ?: throw Exception("Unable to create AuditEntity due to invalid location on changedBy")
+      val store = storeRepository.findOne(location.myNumber(), location.myCompany()) ?: throw Exception("Unable to create AuditEntity due to invalid location on changedBy")
       val changedBy = employeeRepository.findOne(changedByIn) ?: throw Exception("Unable to create AuditEntity due to invalid changedBy")
 
       return stream(store = store, changedBy = changedBy, statusesIn = statusesIn).findFirst().orElseThrow { Exception("Unable to create AuditEntity") }

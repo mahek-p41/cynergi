@@ -6,12 +6,9 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -226,10 +223,11 @@ class StoreRepository @Inject constructor(
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store =
-      SimpleStore(
+      StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
+         region = regionRepository.mapRowOrNull(rs, company, "reg_"),
          company = company
       )
 
@@ -238,7 +236,8 @@ class StoreRepository @Inject constructor(
             id = rs.getLong("${columnPrefix}id"),
             number = rs.getInt("${columnPrefix}number"),
             name = rs.getString("${columnPrefix}name"),
-            region = regionRepository.mapRowOrNull(rs, company, "reg_")
+            region = regionRepository.mapRowOrNull(rs, company, "reg_"),
+            company = company
          )
 
 
