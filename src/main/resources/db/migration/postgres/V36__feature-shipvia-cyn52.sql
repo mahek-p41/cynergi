@@ -1,3 +1,13 @@
+ALTER TABLE division
+   ALTER COLUMN number SET DATA TYPE BIGINT;
+ALTER TABLE division
+   ALTER COLUMN number SET DEFAULT currval('division_id_seq');
+
+ALTER TABLE region
+   ALTER COLUMN number SET DATA TYPE BIGINT;
+ALTER TABLE region
+   ALTER COLUMN number SET DEFAULT currval('region_id_seq');
+
 CREATE TABLE ship_via
 (
     id           BIGSERIAL                                                       NOT NULL PRIMARY KEY,
