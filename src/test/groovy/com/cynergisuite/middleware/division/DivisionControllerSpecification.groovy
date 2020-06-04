@@ -314,7 +314,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       response.message == '0 was unable to be found'
    }
 
-   void "delete an invalid division with region assigned"() {
+   void "delete a division with region assigned"() {
       given:
       def divisionToDelete = divisions[0]
 
@@ -333,7 +333,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "delete an invalid division from other company with region assigned"() {
+   void "delete a division from other company with region assigned"() {
       when:
       def result = delete("$path/${divisions[1].id}")
 
@@ -387,7 +387,6 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
    void "delete a division with logged in user who is not superuser"() {
       given:
       final def division = this.divisions[0]
-      final def jsonDivision = jsonOutput.toJson(division)
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)

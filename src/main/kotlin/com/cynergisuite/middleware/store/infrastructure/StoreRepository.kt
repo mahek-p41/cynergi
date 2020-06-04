@@ -206,7 +206,6 @@ class StoreRepository @Inject constructor(
          name = rs.getString("name"),
          region = RegionEntity(
             id = rs.getLong("reg_id"),
-            number = rs.getLong("reg_number"),
             name = rs.getString("reg_name"),
             description = rs.getString("reg_description"),
             division = DivisionEntity(

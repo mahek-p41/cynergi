@@ -29,7 +29,7 @@ CREATE TABLE region
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                NOT NULL,
     division_id        BIGINT REFERENCES division(id)                       NOT NULL,
-    number             INTEGER DEFAULT 1 NOT NULL,
+    number             BIGINT DEFAULT currval('region_id_seq'),
     name               varchar(50) DEFAULT 'Region' NOT NULL,
     employee_number    INTEGER CHECK( employee_number > 0 ) NOT NULL,
     description        varchar(50),
