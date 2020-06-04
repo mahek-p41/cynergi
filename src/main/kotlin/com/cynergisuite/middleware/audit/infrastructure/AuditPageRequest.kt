@@ -1,23 +1,11 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequestBase
-import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_PAGE
-import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SIZE
-import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_BY
-import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.domain.ValidPageSortBy
-import com.cynergisuite.extensions.beginningOfWeek
-import com.cynergisuite.extensions.endOfWeek
-import com.cynergisuite.middleware.audit.status.APPROVED
-import com.cynergisuite.middleware.audit.status.CANCELED
-import com.cynergisuite.middleware.audit.status.COMPLETED
-import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.OffsetDateTime
-import java.time.ZoneId
 
 @Schema(
    name = "AuditPageRequest",
@@ -44,21 +32,6 @@ class AuditPageRequest(
    var status: Set<String>? = emptySet()
 
 ) : PageRequestBase<AuditPageRequest>(page, size, sortBy, sortDirection) {
-
-   constructor(pageRequestIn: AuditPageRequest? = null) :
-      this(
-         page = pageRequestIn?.page ?: DEFAULT_PAGE,
-         size = pageRequestIn?.size ?: DEFAULT_SIZE,
-         sortBy = pageRequestIn?.sortBy ?: DEFAULT_SORT_BY,
-         sortDirection = pageRequestIn?.sortDirection ?: DEFAULT_SORT_DIRECTION
-      ) {
-         val statusesIn = pageRequestIn?.status
-
-         this.status = if ( !statusesIn.isNullOrEmpty() ) statusesIn else setOf(CREATED.value, IN_PROGRESS.value, COMPLETED.value, CANCELED.value, APPROVED.value)
-         this.from = buildFrom(this.status!!, pageRequestIn)
-         this.thru = buildThru(from, this.status!!, pageRequestIn)
-         this.storeNumber = pageRequestIn?.storeNumber
-      }
 
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy()
@@ -101,23 +74,4 @@ class AuditPageRequest(
          "status" to status
       )
 
-   private fun buildFrom(statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
-      val fromIn = pageRequestIn?.from
-
-      return if (statuses.size < 3 && (statuses.contains(CREATED.value) || statuses.contains(IN_PROGRESS.value)) && fromIn == null) {
-         null
-      } else {
-         fromIn ?: OffsetDateTime.now(ZoneId.of("UTC")).beginningOfWeek()
-      }
-   }
-
-   private fun buildThru(from: OffsetDateTime?, statuses: Set<String>, pageRequestIn: AuditPageRequest?): OffsetDateTime? {
-      val thruIn = pageRequestIn?.thru ?: from?.endOfWeek()
-
-      return if (statuses.size < 3 && (statuses.contains(CREATED.value) || statuses.contains(IN_PROGRESS.value)) && thruIn == null) {
-         null
-      } else {
-         thruIn
-      }
-   }
 }

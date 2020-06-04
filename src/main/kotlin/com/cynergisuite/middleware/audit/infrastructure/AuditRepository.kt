@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.beginningOfDay
+import com.cynergisuite.extensions.endOfDay
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
@@ -308,8 +310,8 @@ class AuditRepository @Inject constructor(
       val whereClause = StringBuilder(" WHERE a.company_id = :comp_id ")
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
-      val from = pageRequest.from
-      val thru = pageRequest.thru
+      val from = pageRequest.from?.beginningOfDay()
+      val thru = pageRequest.thru?.endOfDay()
 
       processAlternativeStoreIndicator(whereClause, params, user)
 
@@ -428,8 +430,8 @@ class AuditRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId())
       val storeNumbers = pageRequest.storeNumber
       val whereClause = StringBuilder("WHERE a.company_id = :comp_id ")
-      val from = pageRequest.from
-      val thru = pageRequest.thru
+      val from = pageRequest.from?.beginningOfDay()
+      val thru = pageRequest.thru?.endOfDay()
 
       processAlternativeStoreIndicator(whereClause, params, user)
 

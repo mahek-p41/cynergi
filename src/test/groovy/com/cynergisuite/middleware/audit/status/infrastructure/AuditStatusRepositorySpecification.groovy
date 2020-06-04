@@ -37,20 +37,12 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[1].value == "CANCELED"
       result.nextStates[0].nextStates[1].description == "Canceled"
       result.nextStates[0].nextStates[1].localizationCode == "audit.status.canceled"
-      result.nextStates[0].nextStates[1].nextStates.size() == 1
-      result.nextStates[0].nextStates[1].nextStates[0].id == 5
-      result.nextStates[0].nextStates[1].nextStates[0].value == "APPROVED"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates.empty
+      result.nextStates[0].nextStates[1].nextStates.size() == 0
       result.nextStates[1].id == 4
       result.nextStates[1].value == "CANCELED"
       result.nextStates[1].description == "Canceled"
       result.nextStates[1].localizationCode == "audit.status.canceled"
-      result.nextStates[1].nextStates.size() == 1
-      result.nextStates[1].nextStates[0].id == 5
-      result.nextStates[1].nextStates[0].value == "APPROVED"
-      result.nextStates[1].nextStates[0].description == "Approved"
-      result.nextStates[1].nextStates[0].localizationCode == "audit.status.approved"
-      result.nextStates[1].nextStates[0].nextStates.empty
+      result.nextStates[1].nextStates.size() == 0
 
       when:
       result = auditStatusRepository.findOne("created")
@@ -79,20 +71,12 @@ class AuditStatusRepositorySpecification extends Specification {
       result.nextStates[0].nextStates[1].value == "CANCELED"
       result.nextStates[0].nextStates[1].description == "Canceled"
       result.nextStates[0].nextStates[1].localizationCode == "audit.status.canceled"
-      result.nextStates[0].nextStates[1].nextStates.size() == 1
-      result.nextStates[0].nextStates[1].nextStates[0].id == 5
-      result.nextStates[0].nextStates[1].nextStates[0].value == "APPROVED"
-      result.nextStates[0].nextStates[1].nextStates[0].nextStates.empty
+      result.nextStates[0].nextStates[1].nextStates.size() == 0
       result.nextStates[1].id == 4
       result.nextStates[1].value == "CANCELED"
       result.nextStates[1].description == "Canceled"
       result.nextStates[1].localizationCode == "audit.status.canceled"
-      result.nextStates[1].nextStates.size() == 1
-      result.nextStates[1].nextStates[0].id == 5
-      result.nextStates[1].nextStates[0].value == "APPROVED"
-      result.nextStates[1].nextStates[0].description == "Approved"
-      result.nextStates[1].nextStates[0].localizationCode == "audit.status.approved"
-      result.nextStates[1].nextStates[0].nextStates.empty
+      result.nextStates[1].nextStates.size() == 0
    }
 
    void "find in-progress" () {
@@ -143,11 +127,6 @@ class AuditStatusRepositorySpecification extends Specification {
       result.value == "CANCELED"
       result.description == "Canceled"
       result.localizationCode == "audit.status.canceled"
-      result.nextStates.size() == 1
-      result.nextStates[0].id == 5
-      result.nextStates[0].value == "APPROVED"
-      result.nextStates[0].description == "Approved"
-      result.nextStates[0].localizationCode == "audit.status.approved"
-      result.nextStates[0].nextStates.empty
+      result.nextStates.size() == 0
    }
 }
