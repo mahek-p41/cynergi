@@ -68,7 +68,7 @@ class DevelopDataLoader @Inject constructor(
 
       val nineNineEightEmployeeCorrtoEmployee = employeeFactoryService.singleSuperUser(998, corrto, "user", "super", "pass")
       val corrtoStore3StoreManager = employeeFactoryService.single(corrtoStore3, corrtoStoreManagerDepartment)
-      val corrtoRegion1Manager = employeeFactoryService.single(1000, corrto, corrtoRegionalManagerDepartment, corrtoStoreHomeOffice, "manager", "regional", "12345", "R", corrtoDivision1Region1.number)
+      val corrtoRegion1Manager = employeeFactoryService.single(1000, corrto, corrtoRegionalManagerDepartment, corrtoStoreHomeOffice, "manager", "regional", "12345", "R", corrtoDivision1Region1.id!!)
       // end setting up corrto stores and employees
 
       // begin setting up corptp stores and employees
@@ -162,7 +162,7 @@ class DevelopDataLoader @Inject constructor(
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())
       logger.info("Store 3 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore3StoreManager.number, corrtoStore3StoreManager.passCode, corrtoStore3StoreManager.store.myNumber(), corrtoStore3StoreManager.department?.myCode())
-      logger.info("Division {} Region {} regional manager {} / {} -> ", corrtoDivision1Region1.division.number, corrtoDivision1Region1.number, corrtoRegion1Manager.number, corrtoRegion1Manager.passCode)
+      logger.info("Division {} Region {} regional manager {} / {} -> ", corrtoDivision1Region1.division.number, corrtoDivision1Region1.id, corrtoRegion1Manager.number, corrtoRegion1Manager.passCode)
       logger.info("Corrto 998 User {} / {}", nineNineEightEmployeeCorrtoEmployee.number, nineNineEightEmployeeCorrtoEmployee.passCode)
 
       logger.info("Store 1 corptp employee {} / {} -> Store Number {} -> Department {}", corptpStore1StoreManager.number, corptpStore1StoreManager.passCode, corptpStore1StoreManager.store?.myNumber(), corptpStore1StoreManager.department?.myCode())

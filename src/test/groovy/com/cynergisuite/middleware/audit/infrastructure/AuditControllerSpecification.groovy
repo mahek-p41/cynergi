@@ -401,7 +401,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final regionalManager = departmentFactoryService.department('RM', company)
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
-      final regionalManagerEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, regionalManager, 'R', regions[0].number) //should only be able to access audits for the store they are assigned
+      final regionalManagerEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, regionalManager, 'R', regions[0].id) //should only be able to access audits for the store they are assigned
       final regionalManagerEmployeeAuth = loginEmployee(regionalManagerEmployee)
       final storeOneAudit = auditFactoryService.single(storeOne)
       final storeThreeAudit = auditFactoryService.single(storeThree)

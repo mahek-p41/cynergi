@@ -23,7 +23,7 @@ class DivisionValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateCreate(@Valid divisionDTO: DivisionDTO, company: Company): DivisionEntity {
       logger.trace("Validating Save Division {}", divisionDTO)
-      val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, "eli", company)
+      val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, company)
 
       doValidation { errors ->
          divisionalManager ?: errors.add(ValidationError("dto.divisionalManager.id", NotFound(divisionDTO.divisionalManager?.id!!)))
@@ -35,7 +35,7 @@ class DivisionValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateUpdate(id: Long, divisionDTO: DivisionDTO, company: Company): DivisionEntity {
       logger.trace("Validating Update Division {}", divisionDTO)
-      val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, "eli", company)
+      val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, company)
 
       doValidation { errors ->
          divisionRepository.findOne(id, company) ?: errors.add(ValidationError("dto.id", NotFound(id)))

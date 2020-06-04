@@ -120,9 +120,21 @@ class SimpleEmployeeRepository @Inject constructor(
    fun findOne(user: User): EmployeeEntity? =
       findOne(user.myId(), user.myEmployeeType(), user.myCompany())
 
+   fun findOne(id: Long, company: Company): EmployeeEntity? {
+      val found = jdbc.findFirstOrNull(
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id LIMIT 1",
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
+
+      logger.trace("Searching for Employee: {} {} {} resulted in {}", company, found)
+
+      return found
+   }
+
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type LIMIT 1",
          mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -135,8 +147,13 @@ class SimpleEmployeeRepository @Inject constructor(
    fun findOne(number: Int, employeeType: String, company: Company): EmployeeEntity? {
       logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
-      val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE emp_number = :emp_number AND emp_type = :emp_type AND comp_id = :comp_id",
+      val found = jdbc.findFirstOrNull("""
+            ${employeeBaseQuery()}
+            WHERE emp_number = :emp_number
+                  AND emp_type = :emp_type
+                  AND comp_id = :comp_id
+            LIMIT 1
+            """,
          mapOf("emp_number" to number, "emp_type" to employeeType, "comp_id" to company.myId()),
          RowMapper { rs, _ -> mapRow(rs) }
       )
@@ -154,6 +171,7 @@ class SimpleEmployeeRepository @Inject constructor(
          WHERE emp_id = :id
                AND emp_type = :employee_type
                AND comp_id = :comp_id
+         LIMIT 1
          """,
          mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "comp_id" to user.myCompany().myId()),
          RowMapper { rs, _ -> mapRow(rs) }
@@ -326,6 +344,7 @@ class SimpleEmployeeRepository @Inject constructor(
       } catch (e: SQLException) {
          null
       }
+
    private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: Store?) : EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
