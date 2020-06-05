@@ -1,14 +1,5 @@
 import java.text.SimpleDateFormat
 
-buildscript {
-   repositories {
-      mavenCentral()
-   }
-   dependencies {
-      classpath "org.openapitools:openapi-generator-gradle-plugin:4.0.0"
-   }
-}
-
 plugins {
    id "io.spring.dependency-management" version "1.0.6.RELEASE"
    id "com.github.johnrengelman.shadow" version "5.2.0"
@@ -90,9 +81,6 @@ dependencies {
    runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
    runtimeOnly "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3"
    compile "org.postgresql:postgresql:42.2.12"
-
-   kaptTest "io.micronaut:micronaut-inject-java"
-   kaptTest platform("io.micronaut:micronaut-bom:$micronautVersion")
 
    testImplementation "io.micronaut:micronaut-http-client"
    testImplementation("org.spockframework:spock-core") { exclude group: "org.codehaus.groovy", module: "groovy-all" }
