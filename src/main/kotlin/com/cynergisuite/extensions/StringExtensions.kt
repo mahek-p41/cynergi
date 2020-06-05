@@ -9,6 +9,12 @@ fun String?.trimToNull(): String? =
 fun String?.isDigits(): Boolean =
    NumberUtils.isDigits(this)
 
+/**
+ * Check whether a String can be converted into a valid Java number (think int, long, float or double)
+ */
+fun String?.isNumber(): Boolean =
+   NumberUtils.isCreatable(this)
+
 fun String.isAllUpperCase(): Boolean =
    StringUtils.isAllUpperCase(this)
 

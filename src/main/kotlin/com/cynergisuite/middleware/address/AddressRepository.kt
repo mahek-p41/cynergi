@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.address
 
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getDoubleOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import io.micronaut.spring.tx.annotation.Transactional
@@ -149,8 +150,8 @@ class AddressRepository @Inject constructor(
          city = rs.getString("${columnPrefix}city"),
          state = rs.getString("${columnPrefix}state"),
          postalCode = rs.getString("${columnPrefix}postal_code"),
-         latitude = rs.getDouble("${columnPrefix}latitude"),
-         longitude = rs.getDouble("${columnPrefix}longitude"),
+         latitude = rs.getDoubleOrNull("${columnPrefix}latitude"),
+         longitude = rs.getDoubleOrNull("${columnPrefix}longitude"),
          country = rs.getString("${columnPrefix}country"),
          county = rs.getString("${columnPrefix}county"),
          phone = rs.getString("${columnPrefix}phone"),

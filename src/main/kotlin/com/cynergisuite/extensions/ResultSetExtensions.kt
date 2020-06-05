@@ -31,6 +31,16 @@ fun ResultSet.getIntOrNull(columnLabel: String): Int? {
    }
 }
 
+fun ResultSet.getDoubleOrNull(columnLabel: String): Double? {
+   val column = this.getString(columnLabel)?.trimToNull()
+
+   return if (!column.isNullOrBlank() && column.isNumber()) {
+      NumberUtils.toDouble(column)
+   } else {
+      null
+   }
+}
+
 fun ResultSet.getLongOrNull(columnLabel: String): Long? {
    val column = this.getString(columnLabel)?.trimToNull()
 
