@@ -23,7 +23,6 @@ class TruncateDatabaseService {
 
    @Transactional
    void truncate() {
-      final Set<String> exclusionTables = Collections.unmodifiableSet([ 'menu', 'module' ] as Set)
       final List<String> tables = []
 
       logger.debug("Querying for tables to cleanup")
