@@ -41,6 +41,21 @@ VALUES (1, 'B', 'Both Purchase Order and Requisition', 'both.purchase.order.and.
        (3, 'P', 'Purchase Order Only', 'purchase.order.only'),
        (4, 'R', 'Requisition Only', 'requisition.only');
 
+CREATE TABLE approval_required_flag_type_domain
+(
+    id                INTEGER                                                        NOT NULL PRIMARY KEY,
+    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
+    description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
+    localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
+    UNIQUE (value)
+);
+INSERT INTO approval_required_flag_type_domain (id, value, description, localization_code)
+VALUES (1, 'B', 'Both Purchase Order and Requisition', 'both.purchase.order.and.requisition'),
+       (2, 'N', 'No Approval', 'no.approval'),
+       (3, 'P', 'Purchase Order Only', 'purchase.order.only'),
+       (4, 'R', 'Requisition Only', 'requisition.only');
+
+
 CREATE TABLE purchase_order_control
 (
     id                                     BIGSERIAL                                                     NOT NULL PRIMARY KEY,
@@ -62,6 +77,7 @@ CREATE TABLE purchase_order_control
     invoice_by_location                    BOOLEAN     DEFAULT FALSE                                     NOT NULL,
     validate_inventory                     BOOLEAN     DEFAULT FALSE                                     NOT NULL,
     default_approver_id_sfk                INTEGER,
+    approval_required_flag_type_id         BIGINT REFERENCES approval_required_flag_type_domain (id)     NOT NULL,
     UNIQUE (company_id)
 );
 CREATE TRIGGER update_purchase_order_control_trg
@@ -73,3 +89,4 @@ CREATE INDEX idx_purchase_order_control_company_id ON purchase_order_control (co
 CREATE INDEX idx_purchase_order_control_default_vendor_id ON purchase_order_control (default_vendor_id);
 CREATE INDEX idx_purchase_order_control_update_purchase_order_cost_id ON purchase_order_control (update_purchase_order_cost_type_id);
 CREATE INDEX idx_purchase_order_control_default_purchase_order_type_id ON purchase_order_control (default_purchase_order_type_id);
+CREATE INDEX idx_purchase_order_control_approval_required_flag_type_id ON purchase_order_control (approval_required_flag_type_id);
