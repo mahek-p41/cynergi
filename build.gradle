@@ -82,6 +82,9 @@ dependencies {
    runtimeOnly "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3"
    compile "org.postgresql:postgresql:42.2.12"
 
+   kaptTest "io.micronaut:micronaut-inject-java"
+   kaptTest platform("io.micronaut:micronaut-bom:$micronautVersion")
+
    testImplementation "io.micronaut:micronaut-http-client"
    testImplementation("org.spockframework:spock-core") { exclude group: "org.codehaus.groovy", module: "groovy-all" }
    testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
