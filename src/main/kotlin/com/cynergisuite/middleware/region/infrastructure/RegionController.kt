@@ -4,10 +4,11 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.region.RegionDTO
-import com.cynergisuite.middleware.region.RegionService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
+import com.cynergisuite.middleware.region.RegionDTO
+import com.cynergisuite.middleware.region.RegionService
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
@@ -156,5 +157,49 @@ class RegionController @Inject constructor(
       val user = userService.findUser(authentication)
 
       return regionService.delete(id, user.myCompany()) ?: throw NotFoundException(id)
+   }
+
+   @Post(uri = "/{id:[0-9]+}/store" ,processes = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["RegionEndpoints"], summary = "Assign a store to region", description = "Assign a store to region.", operationId = "region-assign-store")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully able to assign a store to region", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun assignStore(
+      @QueryValue("id") regionId: Long,
+      @Body storeDTO: StoreDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Requested assign a Store to Region {}", storeDTO)
+
+      val user = userService.findUser(authentication)
+      regionService.assignStoreToRegion(regionId, storeDTO.number!!, user.myCompany())
+
+   }
+
+
+   @Delete(uri = "/{id:[0-9]+}/store", produces = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Operation(tags = ["RegionEndpoints"], summary = "Unassign a store from region", description = "Unassign a store from region", operationId = "region-unassign-store")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If the Region was able to be deleted", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "404", description = "The requested Region was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun unassignStore(
+      @QueryValue("id") regionId: Long,
+      @Body storeDTO: StoreDTO,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.info("Requested unassign a Store to Region {}", storeDTO)
+
+      val user = userService.findUser(authentication)
+      regionService.unassignStoreToRegion(regionId, storeDTO.number!!, user.myCompany())
    }
 }

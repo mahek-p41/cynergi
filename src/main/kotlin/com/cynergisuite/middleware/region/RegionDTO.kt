@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.region
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.division.DivisionDTO
-import com.cynergisuite.middleware.division.DivisionEntity
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotNull

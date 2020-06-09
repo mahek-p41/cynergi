@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -77,13 +77,13 @@ data class InventoryValueObject(
    val returnedDate: LocalDate?,
 
    @field:Schema(name = "location", description = "Current location that the referenced inventory item is stored at", nullable = true)
-   val location: StoreValueObject?,
+   val location: StoreDTO?,
 
    @field:Schema(name = "status", description = "Status of referenced inventory item")
    val status: String,
 
    @field:Schema(name = "primaryLocation", description = "Location of where the referenced inventory item is actively managed")
-   val primaryLocation: StoreValueObject,
+   val primaryLocation: StoreDTO,
 
    @field:Schema(name = "locationType", description = "Location Type")
    val locationType: InventoryLocationTypeValueObject,
@@ -117,9 +117,9 @@ data class InventoryValueObject(
          idleDays = item.idleDays,
          condition = item.condition,
          returnedDate = item.returnedDate,
-         location = item.location?.let { StoreValueObject(it) },
+         location = item.location?.let { StoreDTO(it) },
          status = item.status,
-         primaryLocation = StoreValueObject(item.primaryLocation),
+         primaryLocation = StoreDTO(item.primaryLocation),
          locationType = locationType,
          dataset = item.primaryLocation.myCompany().myDataset()
       )

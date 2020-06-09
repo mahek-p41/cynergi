@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.vendor.payment.term.schedule
 
-import com.cynergisuite.middleware.company.Company
 import java.math.BigDecimal
 
 object VendorPaymentTermScheduleTestDataLoader {

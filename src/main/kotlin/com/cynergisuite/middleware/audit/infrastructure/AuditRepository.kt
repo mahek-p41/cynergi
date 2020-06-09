@@ -233,7 +233,7 @@ class AuditRepository @Inject constructor(
               JOIN fastinfo_prod_import.store_vw auditStore
                      ON comp.dataset_code = auditStore.dataset
                         AND a.store_number = auditStore.number
-               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number
+               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
                LEFT JOIN region reg ON reg.id = rts.region_id
                LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          ORDER BY a.id
@@ -402,7 +402,7 @@ class AuditRepository @Inject constructor(
                         AND a.store_number = auditStore.number
                JOIN status s ON s.audit_id = a.id
                JOIN maxStatus ms ON s.id = ms.current_status_id
-               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number
+               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
                LEFT JOIN region reg ON reg.id = rts.region_id
                LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          $whereClause
@@ -501,7 +501,7 @@ class AuditRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-            LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number
+            LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
             LEFT JOIN region reg ON reg.id = rts.region_id
             LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          $whereClause

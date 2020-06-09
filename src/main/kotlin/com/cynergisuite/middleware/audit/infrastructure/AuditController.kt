@@ -14,7 +14,7 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -140,7 +140,7 @@ class AuditController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val defaultStore = user.myLocation()
-      val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
+      val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreDTO(defaultStore))
 
       val response = auditService.create(vo = auditToCreate, user = user, locale = httpRequest.findLocaleWithDefault())
 

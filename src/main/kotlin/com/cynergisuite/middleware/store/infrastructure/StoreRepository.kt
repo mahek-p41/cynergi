@@ -61,7 +61,7 @@ class StoreRepository @Inject constructor(
             division.description AS div_description
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
-            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id
 			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
       """
@@ -168,7 +168,7 @@ class StoreRepository @Inject constructor(
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
-            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id
 			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
          WHERE store.id = :store_id
@@ -189,7 +189,7 @@ class StoreRepository @Inject constructor(
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
-            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id
 			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
          WHERE store.number = :store_number
@@ -205,16 +205,17 @@ class StoreRepository @Inject constructor(
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
    @Transactional
-   fun assignToRegion(store: Location, region: RegionEntity): Pair<RegionEntity, Location> {
+   fun assignToRegion(store: Location, region: RegionEntity, companyId: Long): Pair<RegionEntity, Location> {
       logger.trace("Assigning Store {} to Region {}", store, region)
 
       jdbc.update("""
-         INSERT INTO region_to_store (region_id, store_number)
-         VALUES (:region_id, :store_number)
+         INSERT INTO region_to_store (region_id, store_number, company_id)
+         VALUES (:region_id, :store_number, :company_id)
          """.trimIndent(),
          mapOf(
             "region_id" to region.id,
-            "store_number" to store.myNumber()
+            "store_number" to store.myNumber(),
+            "company_id" to companyId
          )
       )
 
