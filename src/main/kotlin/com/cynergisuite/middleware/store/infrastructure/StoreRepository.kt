@@ -6,12 +6,9 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
@@ -53,7 +50,6 @@ class StoreRepository @Inject constructor(
             region.time_created AS reg_time_created,
             region.time_updated AS reg_time_updated,
             region.division_id AS reg_division_id,
-            region.number AS reg_number,
             region.name AS reg_name,
             region.description AS reg_description,
             division.id AS div_id,
@@ -64,32 +60,51 @@ class StoreRepository @Inject constructor(
             division.name AS div_name,
             division.description AS div_description
          FROM fastinfo_prod_import.store_vw store
-              JOIN region_to_store r2s ON r2s.store_number = store.number
-				  JOIN region ON region.id = r2s.region_id
-				  JOIN division ON region.division_id = division.id
-              JOIN company comp ON comp.dataset_code = store.dataset AND division.company_id = comp.id
+            JOIN company comp ON comp.dataset_code = store.dataset
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+            LEFT JOIN region ON  r2s.region_id = region.id
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
       """
    }
 
+   /**
+    * The sub-query added to make sure we get unassigned store
+    * but won't get the store of region belong to another company
+    * which have the same store number
+    **/
+   private val subQuery = """
+                           (r2s.region_id IS null
+                              OR r2s.region_id NOT IN (
+                                    SELECT region.id
+                                    FROM region JOIN division ON region.division_id = division.id
+                                    WHERE division.company_id <> :comp_id
+                                 ))
+   """
+
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE store.id = :id AND comp.id = :comp_id"
+      val query = """${selectBaseQuery()} WHERE store.id = :id AND comp.id = :comp_id
+                                                AND $subQuery
+      """.trimMargin()
       val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company) }
 
-      logger.trace("Searching for Store: {} resulted in {}", id, found)
+      logger.trace("Searching for Store with params {} resulted in {}", params, found)
 
       return found
    }
 
+
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id"
+      val query = """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
+                                                AND $subQuery
+      """.trimMargin()
 
       logger.debug("Searching for Store by number {}/{}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { mapRow(it) }
+      val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company) }
 
-      logger.trace("Search for Store by number: {} resulted in {}", number, found)
+      logger.trace("Search for Store by number with params resulted in {}", params, found)
 
       return found
    }
@@ -99,7 +114,7 @@ class StoreRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
-      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id ")
+      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
 
       when(user.myAlternativeStoreIndicator()) {
          "N" -> {
@@ -107,8 +122,8 @@ class StoreRepository @Inject constructor(
             params["store_number"] = user.myLocation().myNumber()
          }
          "R" -> {
-            pagedQuery.append(" AND region.number = :region_number ")
-            params["region_number"] = user.myAlternativeArea()
+            pagedQuery.append(" AND region.id = :region_id ")
+            params["region_id"] = user.myAlternativeArea()
          }
          "D" -> {
             pagedQuery.append(" AND division.number = :division_number ")
@@ -152,11 +167,12 @@ class StoreRepository @Inject constructor(
       val exists = jdbc.queryForObject("""
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
-              JOIN company comp ON comp.dataset_code = store.dataset
-              JOIN region_to_store r2s ON r2s.store_number = store.number
-				  JOIN region ON region.id = r2s.region_id
-				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
-         WHERE store.id = :store_id AND comp.id = :comp_id
+            JOIN company comp ON comp.dataset_code = store.dataset
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+            LEFT JOIN region ON  r2s.region_id = region.id
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
+         WHERE store.id = :store_id
+               AND $subQuery
       """.trimIndent(), mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", id, exists)
@@ -164,15 +180,21 @@ class StoreRepository @Inject constructor(
       return exists
    }
 
+   /**
+    * The sub-query added to make sure we won't get the store of region belong to another company
+    * which have the same store number
+    **/
    fun exists(number: Int, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
-              JOIN company comp ON comp.dataset_code = store.dataset
-              JOIN region_to_store r2s ON r2s.store_number = store.number
-				  JOIN region ON region.id = r2s.region_id
-				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
-         WHERE store.number = :store_number AND comp.id = :comp_id
+            JOIN company comp ON comp.dataset_code = store.dataset
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
+            LEFT JOIN region ON  r2s.region_id = region.id
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
+         WHERE store.number = :store_number
+                  AND comp.id = :comp_id
+                  AND $subQuery
       """.trimIndent(), mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java)!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", number, exists)
@@ -199,38 +221,12 @@ class StoreRepository @Inject constructor(
       return region to store
    }
 
-   private fun mapRow(rs: ResultSet) =
-      StoreEntity(
-         id = rs.getLong("id"),
-         number = rs.getInt("number"),
-         name = rs.getString("name"),
-         region = RegionEntity(
-            id = rs.getLong("reg_id"),
-            name = rs.getString("reg_name"),
-            description = rs.getString("reg_description"),
-            division = DivisionEntity(
-               id = rs.getLong("div_id"),
-               number = rs.getLong("div_number"),
-               name = rs.getString("div_name"),
-               description = rs.getString("div_description"),
-               company = CompanyEntity(
-                  id = rs.getLong("comp_id"),
-                  name = rs.getString("comp_name"),
-                  doingBusinessAs = rs.getString("comp_doing_business_as"),
-                  clientCode = rs.getString("comp_client_code"),
-                  clientId = rs.getInt("comp_client_id"),
-                  datasetCode = rs.getString("comp_dataset_code"),
-                  federalIdNumber = rs.getString("comp_federal_id_number")
-               )
-            )
-         )
-      )
-
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store =
-      SimpleStore(
+      StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
+         region = regionRepository.mapRowOrNull(rs, company, "reg_"),
          company = company
       )
 
@@ -239,7 +235,8 @@ class StoreRepository @Inject constructor(
             id = rs.getLong("${columnPrefix}id"),
             number = rs.getInt("${columnPrefix}number"),
             name = rs.getString("${columnPrefix}name"),
-            region = regionRepository.mapRow(rs, company, "reg_")
+            region = regionRepository.mapRowOrNull(rs, company, "reg_"),
+            company = company
          )
 
 

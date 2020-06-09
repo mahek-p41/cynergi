@@ -15,9 +15,6 @@ class StoreService @Inject constructor(
    fun fetchById(id: Long, company: Company): StoreValueObject? =
       storeRepository.findOne(id, company)?.let { StoreValueObject(entity = it) }
 
-   fun fetchByNumber(number: Int, company: Company): StoreValueObject? =
-      storeRepository.findOne(number, company)?.let { StoreValueObject(entity = it) }
-
    fun fetchAll(pageRequest: PageRequest, user: User): Page<StoreValueObject> {
       val stores = storeRepository.findAll(pageRequest, user)
 

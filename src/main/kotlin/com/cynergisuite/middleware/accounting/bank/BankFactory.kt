@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressValueObject
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -41,7 +41,7 @@ object BankFactory {
                fax = faker.phoneNumber().phoneNumber()
             ),
             name = faker.company().name(),
-            generalLedgerProfitCenter = SimpleStore.create(store)!!,
+            generalLedgerProfitCenter = StoreEntity(store.myId(), store.myNumber(), store.myName(), store.myRegion(), store.myCompany()),
             generalLedgerAccount = accountEntity,
             accountNumber = Random.nextInt(1000, 1000000).toString(),
             currency = currencyType

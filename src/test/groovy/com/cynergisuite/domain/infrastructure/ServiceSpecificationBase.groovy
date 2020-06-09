@@ -42,8 +42,9 @@ abstract class ServiceSpecificationBase extends Specification {
       divisions = [division1, division2]
 
       this.regions = divisions.collect { division -> regionFactoryService.single(division) }.toList()
+      // Assign region for maximum 2 stores of each company
       this.regions.each { region ->
-         storeFactoryService.companyStoresToRegion(region).toList()
+         storeFactoryService.companyStoresToRegion(region,1).toList()
       }
    }
 }

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.sql.SQLException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -202,7 +203,7 @@ class RegionRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
+   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "reg_"): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
          division = divisionRepository.mapRow(rs, company, "div_"),
@@ -210,6 +211,17 @@ class RegionRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          regionalManager = simpleEmployeeRepository.mapRowOrNull(rs)
       )
+
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "reg_", companyPrefix: String = "comp_", departmentPrefix: String = "dept_", storePrefix: String = "store_"): RegionEntity?  =
+      try {
+         if (rs.getString("${columnPrefix}id") != null) {
+            mapRow(rs, company)
+         } else {
+            null
+         }
+      } catch (e: SQLException) {
+         null
+      }
 
    fun mapRow(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
       RegionEntity(
