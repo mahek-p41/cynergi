@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.shipping.shipvia
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository

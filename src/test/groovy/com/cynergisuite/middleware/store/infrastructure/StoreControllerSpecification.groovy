@@ -30,18 +30,23 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one store by id without region assigned" () {
-      given: 'store number 1 is not assigned to any region'
-      final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def store3 = storeFactoryService.store(3, company)
+      given: 'store store3Tstds1 is not assigned to any region, store store3Tstds2 is assigned to a region'
+      final def tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final def tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final def store3Tstds1 = storeFactoryService.store(3, tstds1)
+      final def store3Tstds2 = storeFactoryService.store(3, tstds2)
+      final region2Tstds2 = regions[1]
+      // this make the test failed (no store return) if there are no company_id column in region_to_store
+      storeFactoryService.companyStoresToRegion(region2Tstds2, store3Tstds2)
 
       when:
-      def result = get("$path/$store3.id")
+      def result = get("$path/$store3Tstds1.id")
 
       then: 'store should not have a assigned region'
       notThrown(HttpClientResponseException)
-      result.id == store3.id
-      result.storeNumber == store3.number
-      result.name == store3.name
+      result.id == store3Tstds1.id
+      result.storeNumber == store3Tstds1.number
+      result.name == store3Tstds1.name
       result.region == null
    }
 

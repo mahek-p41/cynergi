@@ -45,4 +45,12 @@ class RegionService @Inject constructor(
    fun delete(id: Long, company: Company): RegionDTO? {
       return regionRepository.delete(id, company)?.let { RegionDTO(it) }
    }
+
+   fun assignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
+      regionRepository.assignStoreToRegion(regionId, storeNumber, myCompany)
+   }
+
+   fun unassignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
+      regionRepository.unassignStoreToRegion(regionId, storeNumber, myCompany)
+   }
 }

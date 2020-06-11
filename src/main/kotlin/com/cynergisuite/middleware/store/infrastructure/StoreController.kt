@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.store.StoreService
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -40,14 +40,14 @@ class StoreController @Inject constructor(
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
       ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long,
       authentication: Authentication
-   ): StoreValueObject {
+   ): StoreDTO {
       logger.info("Fetching Store by id {}", id)
 
       val user = userService.findUser(authentication)
@@ -70,7 +70,7 @@ class StoreController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication
-   ): Page<StoreValueObject> {
+   ): Page<StoreDTO> {
       logger.info("Fetching all stores {}", pageRequest)
 
       val user = userService.findUser(authentication)
