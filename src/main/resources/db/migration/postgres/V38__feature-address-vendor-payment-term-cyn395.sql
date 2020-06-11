@@ -19,10 +19,10 @@ CREATE TABLE address
     fax  varchar(21)
    );
 
-CREATE INDEX idx_name
+CREATE INDEX address_name_idx
 ON address(name);
 
-CREATE INDEX idx_postal_code
+CREATE INDEX address_postal_code_idx
 ON address(postal_code);
 
 CREATE TRIGGER update_address_trg
@@ -46,7 +46,7 @@ CREATE TABLE vendor_payment_term (
     UNIQUE (company_id, number)
 );
 
-CREATE INDEX idx_vendor_payment_term_company_id
+CREATE INDEX vendor_payment_term_company_id_idx
 ON vendor_payment_term(company_id);
 
 CREATE TRIGGER update_vendor_payment_term_trg
@@ -69,7 +69,7 @@ CREATE TABLE vendor_payment_term_schedule (
     UNIQUE (payment_term_id, schedule_order_number)
  );
 
-CREATE INDEX idx_vendor_payment_schedule_payment_term_id
+CREATE INDEX vendor_payment_schedule_payment_term_id_idx
 ON vendor_payment_term_schedule(payment_term_id);
 
 

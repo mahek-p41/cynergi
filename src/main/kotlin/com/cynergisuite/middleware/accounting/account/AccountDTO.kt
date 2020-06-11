@@ -9,43 +9,44 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Account", title = "An data transfer object containing a account information", description = "An data transfer object containing a account information.")
+@Schema(name = "Account", title = "A data transfer object containing account information", description = "An data transfer object containing a account information.")
 data class AccountDTO (
 
    @field:Positive
    var id: Long? = null,
 
    @field:NotNull
-   @field:Schema(name = "description", description = "Description for an account.")
-   var description: String,
+   @field:Schema(name = "name", description = "Description for an account.")
+   var name: String? = null,
 
    @field:Valid
    @field:NotNull
    @field:Schema(name = "account type", description = "Account type")
-   var type: AccountTypeValueObject,
+   var type: AccountTypeValueObject? = null,
 
    @field:Valid
    @field:NotNull
    @field:Schema(name = "normal account type", description = "Normal account type")
-   var normalAccountBalance: NormalAccountBalanceTypeValueObject,
+   var normalAccountBalance: NormalAccountBalanceTypeValueObject? = null,
 
    @field:Valid
    @field:NotNull
    @field:Schema(name = "account status", description = "Account status")
-   var status: AccountStatusTypeValueObject,
+   var status: AccountStatusTypeValueObject? = null,
 
    @field:NotNull
    @field:Schema(name = "form 1099 field", required = true, description = "Field # on the 1099 form for this account")
-   var form1099Field: Int,
+   var form1099Field: Int? = null,
 
    @field:NotNull
    @field:Schema(name = "corporate account indicator", required = true, description = "Corporate account indicator")
-   var corporateAccountIndicator: Boolean
+   var corporateAccountIndicator: Boolean? = null
+
    ) : Identifiable {
    constructor(accountEntity: AccountEntity) :
       this(
          id = accountEntity.id,
-         description = accountEntity.description,
+         name = accountEntity.name,
          type = AccountTypeValueObject(accountEntity.type),
          normalAccountBalance = NormalAccountBalanceTypeValueObject(accountEntity.normalAccountBalance),
          status = AccountStatusTypeValueObject(accountEntity.status),
@@ -59,7 +60,7 @@ data class AccountDTO (
                status: AccountStatusTypeValueObject) :
       this(
          id = accountEntity.id,
-         description = accountEntity.description,
+         name = accountEntity.name,
          type = type,
          normalAccountBalance = normalAccountBalance,
          status = status,

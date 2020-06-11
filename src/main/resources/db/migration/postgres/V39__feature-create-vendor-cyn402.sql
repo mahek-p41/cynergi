@@ -1,3 +1,6 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+
 CREATE TABLE freight_on_board_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
@@ -85,29 +88,55 @@ CREATE TABLE vendor
     purchase_order_submit_email_address VARCHAR(320),
     allow_drop_ship_to_customer         BOOLEAN                     DEFAULT FALSE                    NOT NULL,
     auto_submit_purchase_order          BOOLEAN                     DEFAULT FALSE                    NOT NULL,
+    search_vector                       TSVECTOR                                                     NOT NULL,
     UNIQUE (company_id, number)
 );
-
 CREATE TRIGGER update_vendor_trg
     BEFORE UPDATE
     ON vendor
     FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 
-CREATE INDEX idx_company_id
+CREATE OR REPLACE FUNCTION vendor_search_update_fn()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    vendNum CONSTANT TEXT := CAST(new.number AS TEXT);
+    vendName CONSTANT TEXT := new.name;
+BEGIN
+    new.search_vector :=
+        setweight(to_tsvector(vendNum), 'A') ||
+        setweight(to_tsvector(vendName), 'B');
+
+    RETURN new;
+END;
+$$
+    LANGUAGE plpgsql STRICT;
+
+CREATE TRIGGER vendor_search_update_trg
+    BEFORE INSERT OR UPDATE
+    ON vendor FOR EACH ROW EXECUTE PROCEDURE vendor_search_update_fn();
+
+CREATE INDEX vendor_company_id_idx
     ON vendor (company_id);
 
-CREATE INDEX idx_address_id
+CREATE INDEX vendor_address_id_idx
     ON vendor (address_id);
 
-CREATE INDEX idx_freight_on_board_type_id
+CREATE INDEX vendor_freight_on_board_type_id_idx
     ON vendor (freight_on_board_type_id);
 
-CREATE INDEX idx_ship_via_id
+CREATE INDEX vendor_ship_via_id_idx
     ON vendor (ship_via_id);
 
-CREATE INDEX idx_group_id
+CREATE INDEX vendor_group_id_idx
     ON vendor (group_id);
 
-CREATE INDEX idx_freight_calc_method_type_id
+CREATE INDEX vendor_freight_calc_method_type_id_idx
     ON vendor (freight_calc_method_type_id);
+
+CREATE INDEX vendor_name_trgm_idx
+    ON vendor USING gist (name gist_trgm_ops);
+
+CREATE INDEX vendor_vector_idx
+    ON vendor USING gin(search_vector);

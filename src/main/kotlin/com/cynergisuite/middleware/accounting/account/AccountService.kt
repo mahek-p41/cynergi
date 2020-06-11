@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.localization.LocalizationService
@@ -23,6 +24,15 @@ class AccountService @Inject constructor(
    @Validated
    fun fetchAll(company: Company, @Valid pageRequest: PageRequest, locale: Locale): Page<AccountDTO> {
       val found = accountRepository.findAll(company, pageRequest)
+
+      return found.toPage { account: AccountEntity ->
+         transformEntity(account, locale)
+      }
+   }
+
+   @Validated
+   fun search(company: Company, @Valid pageRequest: SearchPageRequest, locale: Locale): Page<AccountDTO> {
+      val found = accountRepository.search(company, pageRequest)
 
       return found.toPage { account: AccountEntity ->
          transformEntity(account, locale)

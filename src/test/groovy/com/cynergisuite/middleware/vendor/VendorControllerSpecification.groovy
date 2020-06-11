@@ -22,10 +22,11 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -361,15 +362,15 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorEntity5 = new VendorEntity(null, company, "Out of search result 2", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false)
       vendorRepository.insert(vendorEntity5).with { new VendorDTO(it) }
       def searchOne = new SearchPageRequest([query:"Vandor%202"])
-      def searchTwoPageOne = new SearchPageRequest([page:1, size:2, query:"Vandor%202"])
-      def searchTwoPageTwo = new SearchPageRequest([page:2, size:2, query:"Vandor%202"])
-      def searchTwoPageThree = new SearchPageRequest([page:3, size:2, query:"Vandor%202"])
+      def searchFivePageOne = new SearchPageRequest([page:1, size:5, query:"Vandor%202"])
+      def searchFivePageTwo = new SearchPageRequest([page:2, size:5, query:"Vandor%202"])
       def searchSqlInjection = new SearchPageRequest([query:"%20or%201=1;drop%20table%20account;--"])
 
       when:
       def searchOneResult = get("$path/search${searchOne}")
 
       then:
+      notThrown(HttpClientException)
       searchOneResult.totalElements == 3
       searchOneResult.totalPages == 1
       searchOneResult.first == true
@@ -380,32 +381,21 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       searchOneResult.elements[2].name == 'Vendor 1'
 
       when:
-      def searchTwoPageOneResult = get("$path/search${searchTwoPageOne}")
+      def searchTwoPageOneResult = get("$path/search${searchFivePageOne}")
 
       then:
-      searchTwoPageOneResult.requested.with { new SearchPageRequest(it) } == searchTwoPageOne
+      notThrown(HttpClientException)
+      searchTwoPageOneResult.requested.with { new SearchPageRequest(it) } == searchFivePageOne
       searchTwoPageOneResult.totalElements == 3
-      searchTwoPageOneResult.totalPages == 2
+      searchTwoPageOneResult.totalPages == 1
       searchTwoPageOneResult.first == true
-      searchTwoPageOneResult.last == false
-      searchTwoPageOneResult.elements.size() == 2
+      searchTwoPageOneResult.last == true
+      searchTwoPageOneResult.elements.size() == 3
       searchTwoPageOneResult.elements[0].name == 'Vendor 2'
       searchTwoPageOneResult.elements[1].name == 'Vendor 3'
 
       when:
-      def searchTwoPageTwoResult = get("$path/search${searchTwoPageTwo}")
-
-      then:
-      searchTwoPageTwoResult.requested.with { new SearchPageRequest(it) } == searchTwoPageTwo
-      searchTwoPageTwoResult.totalElements == 3
-      searchTwoPageTwoResult.totalPages == 2
-      searchTwoPageTwoResult.first == false
-      searchTwoPageTwoResult.last == true
-      searchTwoPageTwoResult.elements.size() == 1
-      searchTwoPageTwoResult.elements[0].name == 'Vendor 1'
-
-      when:
-      get("$path/search${searchTwoPageThree}")
+      get("$path/search${searchFivePageTwo}")
 
       then:
       def notFoundException = thrown(HttpClientResponseException)
@@ -415,8 +405,64 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       def searchSqlInjectionResult = get("$path/search${searchSqlInjection}")
 
       then:
+      notThrown(HttpClientException)
       searchSqlInjectionResult.requested.query == ' or 1=1'
       searchSqlInjectionResult.totalElements < 5
+   }
+
+   void "search vendors by number" () {
+      given: "A random collection of 20 vendors with a target vendor"
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final randomVendors = vendorTestDataLoaderService.stream(20, company, vendorPaymentTerm, shipVia)
+      final targetVendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Super Awesome Company")
+
+      when: "A specific vendor is searched for by their 'number'"
+      def result = get("$path/search?query=${targetVendor.id}&fuzzy=false")
+
+      then: "That vendor is returned"
+      notThrown(HttpClientResponseException)
+      result.totalElements == 1
+      result.first == true
+      result.last == true
+      with(result.elements[0]) {
+         id == targetVendor.id
+         name == targetVendor.name
+         new AddressValueObject(address) == new AddressValueObject(targetVendor.address)
+         ourAccountNumber == targetVendor.ourAccountNumber
+         new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(targetVendor.freightOnboardType)
+         paymentTerm.id == targetVendor.paymentTerm.id
+         returnPolicy == targetVendor.returnPolicy
+         new ShipViaValueObject(shipVia) == new ShipViaValueObject(targetVendor.shipVia)
+         minimumQuantity == targetVendor.minimumQuantity
+         minimumAmount?.toString() == targetVendor.minimumAmount?.toString()
+         freeShipQuantity == targetVendor.freeShipQuantity
+         freeShipAmount?.toString() == targetVendor.freeShipAmount?.toString()
+         vendor1099 == targetVendor.vendor1099
+         federalIdNumber == targetVendor.federalIdNumber
+         salesRepresentativeName == targetVendor.salesRepresentativeName
+         salesRepresentativeFax == targetVendor.salesRepresentativeFax
+         separateCheck == targetVendor.separateCheck
+         new FreightCalcMethodTypeDTO(freightCalcMethodType) == new FreightCalcMethodTypeDTO(targetVendor.freightCalcMethodType)
+         freightPercent?.toString() == targetVendor.freightPercent?.toString()
+         chargeInventoryTax1 == targetVendor.chargeInventoryTax1
+         chargeInventoryTax2 == targetVendor.chargeInventoryTax2
+         chargeInventoryTax3 == targetVendor.chargeInventoryTax3
+         chargeInventoryTax4 == targetVendor.chargeInventoryTax4
+         federalIdNumberVerification == targetVendor.federalIdNumberVerification
+         emailAddress == targetVendor.emailAddress
+         purchaseOrderSubmitEmailAddress == targetVendor.purchaseOrderSubmitEmailAddress
+         allowDropShipToCustomer == targetVendor.allowDropShipToCustomer
+         autoSubmitPurchaseOrder == targetVendor.autoSubmitPurchaseOrder
+      }
+
+      when: "Throw SQL Injection at it"
+      result = get("$path/search?query=%20or%201=1;drop%20table%20account;--")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == NO_CONTENT
    }
 
    void "Try creating vendor with a negative ourAccountNumber" () {

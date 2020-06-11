@@ -20,7 +20,7 @@ import javax.inject.Singleton
 object VendorTestDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, vendorGroupIn: VendorGroupEntity? = null): Stream<VendorEntity> {
+   fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, vendorGroupIn: VendorGroupEntity? = null, nameIn: String? = null): Stream<VendorEntity> {
       val faker = Faker()
       val random = faker.random()
       val number = if (numberIn < 0) 1 else numberIn
@@ -34,7 +34,7 @@ object VendorTestDataLoader {
          VendorEntity(
             id = null,
             company = companyIn,
-            name = companyFaker.name().truncate(30) ?: "Test",
+            name = nameIn ?: companyFaker.name().truncate(30) ?: "Test",
             address = AddressTestDataLoader.single(),
             ourAccountNumber = numbers.numberBetween(1, 1_000_000),
             payTo = null,
@@ -81,12 +81,22 @@ object VendorTestDataLoader {
 class VendorTestDataLoaderService(
    private val vendorRepository: VendorRepository
 ) {
+
    fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): Stream<VendorEntity> {
-      return VendorTestDataLoader.stream(numberIn, companyIn, paymentTermIn, shipViaIn)
+      return VendorTestDataLoader.stream(numberIn, companyIn, paymentTermIn, shipViaIn, nameIn = null)
+         .map { vendorRepository.insert(it) }
+   }
+
+   fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String? = null): Stream<VendorEntity> {
+      return VendorTestDataLoader.stream(numberIn, companyIn, paymentTermIn, shipViaIn, nameIn = nameIn)
          .map { vendorRepository.insert(it) }
    }
 
    fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): VendorEntity {
       return stream(companyIn = companyIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+   }
+
+   fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String): VendorEntity {
+      return stream(companyIn = companyIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn, nameIn = nameIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
    }
 }

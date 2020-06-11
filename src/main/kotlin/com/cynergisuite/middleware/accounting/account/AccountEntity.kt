@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.company.Company
 data class AccountEntity(
    val id: Long? = null,
    val company: Company,
-   val description: String,
+   val name: String,
    val type: AccountType,
    val normalAccountBalance: NormalAccountBalanceType,
    val status: AccountStatusType,
@@ -19,12 +19,12 @@ data class AccountEntity(
       this(
          id = accountDTO.id,
          company = company,
-         description = accountDTO.description,
+         name = accountDTO.name!!,
          type = accountType,
          normalAccountBalance = normalAccountBalanceType,
          status = accountStatusType,
-         form1099Field = accountDTO.form1099Field,
-         corporateAccountIndicator = accountDTO.corporateAccountIndicator
+         form1099Field = accountDTO.form1099Field!!,
+         corporateAccountIndicator = accountDTO.corporateAccountIndicator!!
       )
 
    override fun myId(): Long? = id

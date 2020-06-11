@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountFactoryService
+import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -21,7 +21,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject BankFactoryService bankFactoryService
-   @Inject AccountFactoryService accountFactoryService
+   @Inject AccountDataLoaderService accountFactoryService
 
    void "fetch one bank by id" () {
       given:

@@ -1,22 +1,24 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceType
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.lang.StringBuilder
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,7 +33,7 @@ class AccountRepository @Inject constructor(
       return """
          SELECT
             account.id                                   AS account_id,
-            account.description                          AS account_description,
+            account.name                                 AS account_name,
             account.form_1099_field                      AS account_form_1099_field,
             account.corporate_account_indicator          AS account_corporate_account_indicator,
             comp.id                                      AS comp_id,
@@ -82,8 +84,10 @@ class AccountRepository @Inject constructor(
    }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<AccountEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
-      val query = """
+      var totalElements: Long? = null
+      val resultList: MutableList<AccountEntity> = mutableListOf()
+
+      jdbc.query("""
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE comp.id = :comp_id
@@ -93,12 +97,14 @@ class AccountRepository @Inject constructor(
             count(*) OVER() as total_elements
          FROM paged AS p
          ORDER by account_${page.snakeSortBy()} ${page.sortDirection()}
-         LIMIT ${page.size()} OFFSET ${page.offset()}
-      """
-      var totalElements: Long? = null
-      val resultList: MutableList<AccountEntity> = mutableListOf()
-
-      jdbc.query(query, params) { rs ->
+         LIMIT :limit OFFSET :offset
+         """,
+         mapOf(
+            "comp_id" to company.myId(),
+            "limit" to page.size(),
+            "offset" to page.offset()
+         )
+      ) { rs ->
          resultList.add(mapRow(rs, company, "account_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -112,19 +118,61 @@ class AccountRepository @Inject constructor(
       )
    }
 
+   fun search(company: Company, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
+      val searchQuery = page.query
+      val where = StringBuilder(" WHERE comp.id = :comp_id ")
+      val sortBy = if (!searchQuery.isNullOrEmpty()) {
+         if (page.fuzzy == false) {
+            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
+            EMPTY
+         } else {
+            val fieldToSearch = " account.name "
+            where.append(" AND $fieldToSearch <-> :search_query < 0.9 ")
+            " ORDER BY $fieldToSearch <-> :search_query "
+         }
+      } else {
+         EMPTY
+      }
+
+      return jdbc.queryPaged("""
+         WITH paged AS (
+            ${selectBaseQuery()}
+            $where
+            $sortBy
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.myId(),
+            "limit" to page.size(),
+            "offset" to page.offset(),
+            "search_query" to searchQuery
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "account_"))
+         } while (rs.next())
+      }
+   }
+
    @Transactional
    fun insert(account: AccountEntity): AccountEntity {
       logger.debug("Inserting bank {}", account)
 
       return jdbc.insertReturning("""
-         INSERT INTO account(company_id, description, type_id, normal_account_balance_type_id, status_type_id, form_1099_field, corporate_account_indicator)
-	      VALUES (:company_id, :description, :type_id, :normal_account_balance_type_id, :status_type_id, :form_1099_field, :corporate_account_indicator)
+         INSERT INTO account(company_id, name, type_id, normal_account_balance_type_id, status_type_id, form_1099_field, corporate_account_indicator)
+	      VALUES (:company_id, :name, :type_id, :normal_account_balance_type_id, :status_type_id, :form_1099_field, :corporate_account_indicator)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "company_id" to account.company.myId(),
-            "description" to account.description,
+            "name" to account.name,
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
@@ -145,7 +193,7 @@ class AccountRepository @Inject constructor(
          UPDATE account
          SET
             company_id = :company_id,
-            description = :description,
+            name = :name,
             type_id = :type_id,
             normal_account_balance_type_id = :normal_account_balance_type_id,
             status_type_id = :status_type_id,
@@ -158,7 +206,7 @@ class AccountRepository @Inject constructor(
          mapOf(
             "id" to account.id,
             "company_id" to account.company.myId(),
-            "description" to account.description,
+            "name" to account.name,
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
@@ -175,7 +223,7 @@ class AccountRepository @Inject constructor(
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = company,
-         description = rs.getString("${columnPrefix}description"),
+         name = rs.getString("${columnPrefix}name"),
          type = mapAccountType(rs, "type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "balance_type_"),
          status = mapAccountStatusType(rs, "status_"),
@@ -188,7 +236,7 @@ class AccountRepository @Inject constructor(
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = account.company,
-         description = rs.getString("${columnPrefix}description"),
+         name = rs.getString("${columnPrefix}name"),
          type = account.type,
          normalAccountBalance = account.normalAccountBalance,
          status = account.status,
@@ -220,16 +268,4 @@ class AccountRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
-
-   private fun mapCompany(rs: ResultSet, columnPrefix: String): CompanyEntity =
-      CompanyEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         name = rs.getString("${columnPrefix}name"),
-         doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
-         clientCode = rs.getString("${columnPrefix}client_code"),
-         clientId = rs.getInt("${columnPrefix}client_id"),
-         datasetCode = rs.getString("${columnPrefix}dataset_code"),
-         federalIdNumber = rs.getString("${columnPrefix}federal_id_number")
-      )
-
 }

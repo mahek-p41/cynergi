@@ -2,9 +2,11 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountFactoryService
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -19,7 +21,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account'
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
-   @Inject AccountFactoryService accountFactoryService
+   @Inject AccountDataLoaderService accountFactoryService
 
    void "fetch one account by id" () {
       given:
@@ -34,7 +36,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == account.id
-         description == account.description
+         name == account.name
          form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
          with(type) {
@@ -94,7 +96,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == firstPageAccount[index].id
-            description == firstPageAccount[index].description
+            name == firstPageAccount[index].name
             form1099Field == firstPageAccount[index].form1099Field
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
             with(type) {
@@ -129,7 +131,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == secondPageAccount[index].id
-            description == secondPageAccount[index].description
+            name == secondPageAccount[index].name
             form1099Field == secondPageAccount[index].form1099Field
             corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
             with(type) {
@@ -164,7 +166,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == lastPageAccount[index].id
-            description == lastPageAccount[index].description
+            name == lastPageAccount[index].name
             form1099Field == lastPageAccount[index].form1099Field
             corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
             with(type) {
@@ -195,6 +197,58 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
+   void "search accounts" () {
+      given: "A company and 3 accounts 2 of them with bank in the name"
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1 = accountFactoryService.single(company, "East Hill Bank")
+      final account2 = accountFactoryService.single(company, "7 Hills Bank and Trust")
+      final account3 = accountFactoryService.single(company, "Bob's Credit Union")
+
+      when: "fuzzy querying for a name with bank"
+      def result = get("$path/search?query=bank")
+
+      then:
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 2
+         totalPages == 1
+         elements.size() == 2
+         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account1),
+            new AccountDTO(account2)
+         ]
+      }
+
+      when: "strict querying for a number"
+      result = get("$path/search?query=${account3.id}&fuzzy=false")
+
+      then:
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 1
+         totalPages == 1
+         elements.size() == 1
+         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account3)
+         ]
+      }
+
+      when: "fuzzy searching for band"
+      result = get("$path/search?query=band")
+
+      then:
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 2
+         totalPages == 1
+         elements.size() == 2
+         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account1),
+            new AccountDTO(account2)
+         ]
+      }
+   }
+
    void "create a valid account"() {
       given:
       final def account = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
@@ -208,7 +262,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id > 0
-         description == account.description
+         name == account.name
          form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
          with(type) {
@@ -230,23 +284,23 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "create an invalid account without description"() {
+   void "create an invalid account without name"() {
       given: 'get json account object and make it invalid'
-      final def accountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
+      final accountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
       // Make invalid json
-      def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.remove('description')
+      final jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
+      jsonAccount.remove('name')
 
       when:
-      def result = post("$path/", jsonAccount)
+      post("$path/", jsonAccount)
 
       then:
-      def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.path == 'description'
-      response.message == 'Failed to convert argument [accountDTO] for value [null]'
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.path[0] == 'accountDTO.name'
+      response.message[0] == 'Is required'
    }
 
    void "create an invalid account without type"() {
@@ -257,15 +311,15 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       jsonAccount.remove('type')
 
       when:
-      def result = post("$path/", jsonAccount)
+      post("$path/", jsonAccount)
 
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.path == 'type'
-      response.message == 'Failed to convert argument [accountDTO] for value [null]'
+      response.size() == 1
+      response.path[0] == 'accountDTO.type'
+      response.message[0] == 'Is required'
    }
 
    void "create an invalid account with non exist type value"() {
@@ -303,7 +357,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == existingAccount.id
-         description == updatedAccountDTO.description
+         name == updatedAccountDTO.name
          form1099Field == updatedAccountDTO.form1099Field
          corporateAccountIndicator == updatedAccountDTO.corporateAccountIndicator
          with(type) {
@@ -329,7 +383,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       given:
       final def accountDTO = accountFactoryService.single( nineNineEightEmployee.company)
       def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.description = ''
+      jsonAccount.name = ''
 
       when:
       put("$path/$accountDTO.id", jsonAccount)
@@ -338,20 +392,19 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
-
-      response.path == 'description'
-      response.message == 'Failed to convert argument [accountDTO] for value [null]' // Maybe a more general message would be better
+      response.size() == 1
+      response.path[0] == 'accountVO.name'
+      response.message[0] == 'Is required' // Maybe a more general message would be better
    }
 
    void "update a invalid account with non exist status id"() {
       given:
-      final def accountDTO = accountFactoryService.single( nineNineEightEmployee.company)
-      def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
+      final accountDTO = accountFactoryService.single( nineNineEightEmployee.company)
+      final jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
       jsonAccount.status.value = 'Z'
 
       when:
-      def result = put("$path/$accountDTO.id", jsonAccount)
+      put("$path/$accountDTO.id", jsonAccount)
 
       then:
       def exception = thrown(HttpClientResponseException)

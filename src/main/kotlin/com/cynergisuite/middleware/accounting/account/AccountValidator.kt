@@ -27,14 +27,14 @@ class AccountValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateCreate(@Valid accountVO: AccountDTO, company: Company): AccountEntity {
       logger.trace("Validating Save Account {}", accountVO)
-      val accountType = accountTypeRepository.findOne(value = accountVO.type.value!!)
-      val balanceType = balanceTypeRepository.findOne(value = accountVO.normalAccountBalance.value!!)
-      val statusType = statusTypeRepository.findOne(value = accountVO.status.value!!)
+      val accountType = accountTypeRepository.findOne(value = accountVO.type?.value!!)
+      val balanceType = balanceTypeRepository.findOne(value = accountVO.normalAccountBalance?.value!!)
+      val statusType = statusTypeRepository.findOne(value = accountVO.status?.value!!)
 
       doValidation { errors ->
-         accountType ?: errors.add(ValidationError("vo.type.value", NotFound(accountVO.type.value!!)))
-         balanceType ?: errors.add(ValidationError("vo.normalAccountBalance.value", NotFound(accountVO.normalAccountBalance.value!!)))
-         statusType ?: errors.add(ValidationError("vo.status.value", NotFound(accountVO.status.value!!)))
+         accountType ?: errors.add(ValidationError("vo.type.value", NotFound(accountVO.type?.value!!)))
+         balanceType ?: errors.add(ValidationError("vo.normalAccountBalance.value", NotFound(accountVO.normalAccountBalance?.value!!)))
+         statusType ?: errors.add(ValidationError("vo.status.value", NotFound(accountVO.status?.value!!)))
       }
 
       return AccountEntity(accountVO, company, accountType!!, balanceType!!, statusType!!)
@@ -43,15 +43,15 @@ class AccountValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateUpdate(id: Long, accountVO: AccountDTO, company: Company): AccountEntity {
       logger.trace("Validating Update Account {}", accountVO)
-      val accountType = accountTypeRepository.findOne(value = accountVO.type.value!!)
-      val balanceType = balanceTypeRepository.findOne(value = accountVO.normalAccountBalance.value!!)
-      val statusType = statusTypeRepository.findOne(value = accountVO.status.value!!)
+      val accountType = accountTypeRepository.findOne(value = accountVO.type?.value!!)
+      val balanceType = balanceTypeRepository.findOne(value = accountVO.normalAccountBalance?.value!!)
+      val statusType = statusTypeRepository.findOne(value = accountVO.status?.value!!)
 
       doValidation { errors ->
          accountRepository.findOne(id, company) ?: errors.add(ValidationError("vo.id", NotFound(id)))
-         accountType ?: errors.add(ValidationError("vo.type.value", NotFound(accountVO.type.value!!)))
-         balanceType ?: errors.add(ValidationError("vo.normalAccountBalance.value", NotFound(accountVO.normalAccountBalance.value!!)))
-         statusType ?: errors.add(ValidationError("vo.status.value", NotFound(accountVO.status.value!!)))
+         accountType ?: errors.add(ValidationError("vo.type.value", NotFound(accountVO.type?.value!!)))
+         balanceType ?: errors.add(ValidationError("vo.normalAccountBalance.value", NotFound(accountVO.normalAccountBalance?.value!!)))
+         statusType ?: errors.add(ValidationError("vo.status.value", NotFound(accountVO.status?.value!!)))
       }
 
       return AccountEntity(accountVO, company, accountType!!, balanceType!!, statusType!!)
