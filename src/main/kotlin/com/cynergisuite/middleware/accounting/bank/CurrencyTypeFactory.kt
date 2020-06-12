@@ -10,14 +10,14 @@ object CurrencyFactory {
       BankCurrencyType(
          id = 1,
          value = "USA",
-         description = "United States",
-         localizationCode = "united.states"
+         description = "U.S. Dollar",
+         localizationCode = "united.states.dollar"
       ),
       BankCurrencyType(
          id = 2,
          value = "CAN",
-         description = "Canada",
-         localizationCode = "Canada"
+         description = "Canadian Dollar",
+         localizationCode = "canadian.dollar"
       )
    )
 
