@@ -37,7 +37,7 @@ class VendorRepository @Inject constructor(
    private val vendorGroupRepository: VendorGroupRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
-   private fun baseSelectQuery() = """
+   fun baseSelectQuery() = """
          SELECT
             v.id                                  AS v_id,
             v.uu_row_id                           AS v_uu_row_id,
@@ -440,7 +440,7 @@ class VendorRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, company: Company): VendorEntity {
+   fun mapRow(rs: ResultSet, company: Company): VendorEntity {
       val payToId = rs.getLongOrNull("v_pay_to_id")
 
       return VendorEntity(

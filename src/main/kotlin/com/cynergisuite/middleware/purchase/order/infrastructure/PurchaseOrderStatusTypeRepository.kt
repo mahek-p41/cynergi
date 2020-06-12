@@ -16,7 +16,6 @@ class PurchaseOrderStatusTypeRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderStatusTypeRepository::class.java)
-   private val rowMapper = PurchaseOrderStatusTypeRowMapper()
 
    fun exists(value: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM purchase_order_status_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
@@ -27,33 +26,33 @@ class PurchaseOrderStatusTypeRepository @Inject constructor(
    }
 
    fun findOne(id: Long): PurchaseOrderStatusType? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM purchase_order_status_type_domain WHERE id = :id", mapOf("id" to id), rowMapper)
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = "SELECT * FROM purchase_order_status_type_domain WHERE id = :id"
+      logger.trace("Searching for PurchaseOrderStatusTypeDomain {}: \nQuery {}", params, query)
 
-      logger.trace("Searching for PurchaseOrderStatusTypeDomain: {} resulted in {}", id, found)
+      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+
+      logger.trace("Searching for PurchaseOrderStatusTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
       return found
    }
 
    fun findOne(value: String): PurchaseOrderStatusType? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM purchase_order_status_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), rowMapper)
+      val params = mutableMapOf<String, Any?>("value" to value.toUpperCase())
+      val query = "SELECT * FROM purchase_order_status_type_domain WHERE UPPER(value) = :value"
+      logger.trace("Searching for PurchaseOrderStatusTypeDomain {}: \nQuery {}", params, query)
 
-      logger.trace("Searching for PurchaseOrderStatusTypeDomain: {} resulted in {}", value, found)
+      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+
+      logger.trace("Searching for PurchaseOrderStatusTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
       return found
    }
 
    fun findAll(): List<PurchaseOrderStatusType> =
-      jdbc.query("SELECT * FROM purchase_order_status_type_domain ORDER BY id", rowMapper)
+      jdbc.query("SELECT * FROM purchase_order_status_type_domain ORDER BY id") { rs, _ -> mapRow(rs) }
 
-}
-
-private class PurchaseOrderStatusTypeRowMapper(
-   private val columnPrefix: String = EMPTY
-) : RowMapper<PurchaseOrderStatusType> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): PurchaseOrderStatusType =
-      mapRow(rs, columnPrefix)
-
-   fun mapRow(rs: ResultSet, columnPrefix: String): PurchaseOrderStatusType =
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): PurchaseOrderStatusType =
       PurchaseOrderStatusType(
          id = rs.getLong("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
@@ -61,4 +60,5 @@ private class PurchaseOrderStatusTypeRowMapper(
          localizationCode = rs.getString("${columnPrefix}localization_code"),
          possibleDefault = rs.getBoolean("${columnPrefix}possible_default")
       )
+
 }

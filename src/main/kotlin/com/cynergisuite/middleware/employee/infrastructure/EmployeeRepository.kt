@@ -130,6 +130,18 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
+   fun findOne(id: Long): EmployeeEntity? {
+      val found = jdbc.findFirstOrNull(
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id",
+         mutableMapOf("emp_id" to id),
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
+
+      logger.trace("Searching for Employee: {} {} {} resulted in {}", id, found)
+
+      return found
+   }
+
    fun findOne(number: Int, employeeType: String, company: Company): EmployeeEntity? {
       logger.debug("Searching for employee with {} {} {}", number, employeeType, company)
 
@@ -260,6 +272,38 @@ class EmployeeRepository @Inject constructor(
       )!!
 
       logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, employeeType, company, exists)
+
+      return exists
+   }
+
+   fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT count(emp_id) = 1 FROM (
+            SELECT emp_id FROM (
+               SELECT
+                  1 AS from_priority,
+                  emp.id AS emp_id,
+               FROM fastinfo_prod_import.employee_vw emp
+                  JOIN company comp ON emp.dataset = comp.dataset_code
+                  LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+               UNION
+               SELECT
+                  2 AS from_priority,
+                  emp.id AS emp_id,
+               FROM employee emp
+                  JOIN company comp ON emp.company_id = comp.id
+                  LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+            ) AS inner_employees
+            ORDER BY from_priority
+         ) AS employees
+         WHERE emp_id = :emp_id""",
+         mapOf("emp_id" to id),
+         Boolean::class.java
+      )!!
+
+      logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, exists)
 
       return exists
    }
