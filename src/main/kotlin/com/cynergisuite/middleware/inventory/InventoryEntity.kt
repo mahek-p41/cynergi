@@ -19,7 +19,7 @@ data class InventoryEntity(
    val modelNumber: String,
    val productCode: String,
    val description: String,
-   val receivedDate: LocalDate,
+   val receivedDate: LocalDate?,
    val originalCost: BigDecimal,
    val actualCost: BigDecimal,
    val modelCategory: String,
