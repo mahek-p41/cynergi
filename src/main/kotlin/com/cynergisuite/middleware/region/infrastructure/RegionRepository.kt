@@ -193,13 +193,43 @@ class RegionRepository @Inject constructor(
 
    @Transactional
    private fun deleteRegionToStore(region: RegionEntity) {
-      logger.debug("Deleting Region To Store belong to Division {}", region)
+      logger.debug("Deleting Region To Store belong to region {}", region)
 
       jdbc.update("""
          DELETE FROM region_to_store
          WHERE region_id = :region_id
          """,
          mapOf("region_id" to region.id)
+      )
+   }
+
+   @Transactional
+   fun unassignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
+      logger.debug("Deleting Region To Store region id {}, store number {}", regionId, storeNumber)
+
+      jdbc.update("""
+         DELETE FROM region_to_store
+         WHERE region_id = :region_id AND store_number = :store_number
+         """,
+         mapOf(
+            "region_id" to regionId,
+            "store_number" to storeNumber
+         )
+      )
+   }
+
+   fun assignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
+      logger.trace("Assigning Store {} to Region {}", regionId, storeNumber)
+
+      jdbc.update("""
+         INSERT INTO region_to_store (region_id, store_number, company_id)
+         VALUES (:region_id, :store_number, :company_id)
+         """.trimIndent(),
+         mapOf(
+            "region_id" to regionId,
+            "store_number" to storeNumber,
+            "company_id" to myCompany.myId()
+         )
       )
    }
 
@@ -231,4 +261,5 @@ class RegionRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          regionalManager = region.regionalManager
       )
+
 }

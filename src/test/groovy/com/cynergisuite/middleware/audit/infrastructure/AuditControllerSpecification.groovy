@@ -24,7 +24,7 @@ import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -347,6 +347,49 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeThreeFilterResult.elements[4].actions[0].changedBy.number == tenAuditsStoreThree[4].actions[0].changedBy.number
       storeThreeFilterResult.elements[4].actions[0].changedBy.lastName == tenAuditsStoreThree[4].actions[0].changedBy.lastName
       storeThreeFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThree[4].actions[0].changedBy.firstNameMi
+   }
+
+   void "fetch all audits by store without assigned region" () {
+      given: 'login user with tstds1, assign store3Tstds2 to region2Tstds2'
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store1Tstds1 = storeFactoryService.store(1, tstds1)
+      final store3Tstds1 = storeFactoryService.store(3, tstds1)
+      final store3Tstds2 = storeFactoryService.store(3, tstds2)
+      auditFactoryService.stream(5, store1Tstds1).collect { new AuditValueObject(it, locale, localizationService) }
+      final tenAuditsStoreThreeTstds1 = auditFactoryService.stream(10, store3Tstds1).collect { new AuditValueObject(it, locale, localizationService) }
+      final region2Tstds2 = regions[1]
+      // this make the query failed (no audit return) if there are no company_id column in region_to_store
+      storeFactoryService.companyStoresToRegion(region2Tstds2, store3Tstds2)
+
+
+      when:
+      def storeOneFilterResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', storeNumber: [3]]))
+
+      then: 'tenAuditsStoreThreeTstds1 which has not been assigned to any regions should be return'
+      notThrown(HttpClientResponseException)
+      storeOneFilterResult.requested.storeNumber == [store3Tstds1.number]
+      storeOneFilterResult.totalElements == 10
+      storeOneFilterResult.totalPages == 2
+      storeOneFilterResult.first == true
+      storeOneFilterResult.last == false
+      storeOneFilterResult.elements != null
+      storeOneFilterResult.elements.size() == 5
+      storeOneFilterResult.elements[0].id > 0
+      storeOneFilterResult.elements[0].store.storeNumber == store3Tstds1.number
+      storeOneFilterResult.elements[0].actions[0].id == tenAuditsStoreThreeTstds1[0].actions[0].id
+      storeOneFilterResult.elements[0].actions[0].status.value == tenAuditsStoreThreeTstds1[0].actions[0].status.value
+      storeOneFilterResult.elements[0].actions[0].status.description == tenAuditsStoreThreeTstds1[0].actions[0].status.description
+      storeOneFilterResult.elements[0].actions[0].changedBy.number == tenAuditsStoreThreeTstds1[0].actions[0].changedBy.number
+      storeOneFilterResult.elements[0].actions[0].changedBy.lastName == tenAuditsStoreThreeTstds1[0].actions[0].changedBy.lastName
+      storeOneFilterResult.elements[0].actions[0].changedBy.firstNameMi == tenAuditsStoreThreeTstds1[0].actions[0].changedBy.firstNameMi
+      storeOneFilterResult.elements[4].actions[0].id == tenAuditsStoreThreeTstds1[4].actions[0].id
+      storeOneFilterResult.elements[4].actions[0].status.value == tenAuditsStoreThreeTstds1[4].actions[0].status.value
+      storeOneFilterResult.elements[4].actions[0].status.description == tenAuditsStoreThreeTstds1[4].actions[0].status.description
+      storeOneFilterResult.elements[4].actions[0].changedBy.number == tenAuditsStoreThreeTstds1[4].actions[0].changedBy.number
+      storeOneFilterResult.elements[4].actions[0].changedBy.lastName == tenAuditsStoreThreeTstds1[4].actions[0].changedBy.lastName
+      storeOneFilterResult.elements[4].actions[0].changedBy.firstNameMi == tenAuditsStoreThreeTstds1[4].actions[0].changedBy.firstNameMi
+
    }
 
    void "fetch all audits based on login with alt store indicator of 'N'" () {
@@ -804,10 +847,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audits and verify audit numbers are sequential" () {
       when:
-      def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
-      post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 1])]))
+      def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 3])]))
+      post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 1])]))
       put(path, new AuditUpdateValueObject([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
-      def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 3])]))
+      def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 3])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -863,7 +906,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit with invalid store" () {
       when:
-      post(path, new AuditCreateValueObject([store:  new StoreValueObject([number: 13])]))
+      post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 13])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -881,7 +924,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       auditFactoryService.single(store1Tstds1)
-      final newAudit = AuditFactory.single(store1Tstds1).with { new AuditCreateValueObject([store: new StoreValueObject(it.store)]) }
+      final newAudit = AuditFactory.single(store1Tstds1).with { new AuditCreateValueObject([store: new StoreDTO(it.store)]) }
 
       when:
       post(path, newAudit, store1Tstds1UserAccessToken)
@@ -1086,7 +1129,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "process audit from CREATED to IN-PROGRESS finally to COMPLETED" () {
       when:
-      def openedResult = post(path, new AuditCreateValueObject([store: new StoreValueObject(number: 3)]))
+      def openedResult = post(path, new AuditCreateValueObject([store: new StoreDTO(number: 3)]))
 
       then:
       notThrown(HttpClientResponseException)

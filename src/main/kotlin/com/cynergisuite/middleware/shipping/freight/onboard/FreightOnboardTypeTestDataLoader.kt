@@ -1,8 +1,5 @@
 package com.cynergisuite.middleware.shipping.freight.onboard
 
-import io.micronaut.context.annotation.Requires
-import javax.inject.Singleton
-
 object FreightOnboardTypeTestDataLoader {
    private val freightOnboards = listOf(
       FreightOnboardType(

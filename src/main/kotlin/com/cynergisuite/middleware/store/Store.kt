@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.store
 
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 

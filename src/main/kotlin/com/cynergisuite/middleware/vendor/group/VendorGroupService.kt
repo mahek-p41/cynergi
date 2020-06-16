@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import io.micronaut.validation.Validated

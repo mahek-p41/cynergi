@@ -107,11 +107,11 @@ class StoreFactoryService(
 
    fun companyStoresToRegion(region: RegionEntity, limit: Long): Stream<Pair<RegionEntity, Location>> {
       return StoreFactory.stores(region.division.company).stream().limit(limit)
-         .map { storeRepository.assignToRegion(it, region) }
+         .map { storeRepository.assignToRegion(it, region, region.division.company.myId()!!) }
    }
 
    fun companyStoresToRegion(region: RegionEntity, vararg stores: Store): List<Pair<RegionEntity, Location>> {
-      return stores.map { storeRepository.assignToRegion(it, region) }
+      return stores.map { storeRepository.assignToRegion(it, region, region.division.company.myId()!!) }
    }
 
    fun random(company: Company): StoreEntity {

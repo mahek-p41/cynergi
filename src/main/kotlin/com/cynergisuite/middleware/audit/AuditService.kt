@@ -23,7 +23,7 @@ import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.lowagie.text.Document
 import com.lowagie.text.Element
 import com.lowagie.text.Element.ALIGN_LEFT
@@ -116,7 +116,7 @@ class AuditService @Inject constructor(
       return if (createdOrInProgressAudit != null) {
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
-         create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
+         create(AuditCreateValueObject(StoreDTO(store)), user, locale)
       }
    }
 

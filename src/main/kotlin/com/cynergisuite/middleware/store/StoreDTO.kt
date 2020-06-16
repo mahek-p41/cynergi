@@ -13,11 +13,11 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Store", title = "A location where rental inventory is processed", description = "A location within Cynergi where rental items in inventory are managed.", requiredProperties = ["number"])
-data class StoreValueObject (
+data class StoreDTO (
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
-   var id: Long = 0,
+   var id: Long? = 0,
 
    @field:Positive
    @field:NotNull
