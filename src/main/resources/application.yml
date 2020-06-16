@@ -29,6 +29,8 @@ jackson:
       writeDatesAsTimestamps: false
    deserialization:
       failOnUnknownProperties: false
+   json-view:
+      enabled: true
 datasources:
    default:
       driverClassName: org.postgresql.Driver

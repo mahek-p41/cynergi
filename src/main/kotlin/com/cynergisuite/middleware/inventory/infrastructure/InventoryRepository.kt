@@ -264,7 +264,7 @@ class InventoryRepository(
          modelNumber = rs.getString("model_number"),
          productCode = rs.getString("product_code"),
          description = rs.getString("description"),
-         receivedDate = rs.getLocalDate("received_date"),
+         receivedDate = rs.getLocalDateOrNull("received_date"),
          originalCost = rs.getBigDecimal("original_cost"),
          actualCost = rs.getBigDecimal("actual_cost"),
          modelCategory = rs.getString("model_category"),
