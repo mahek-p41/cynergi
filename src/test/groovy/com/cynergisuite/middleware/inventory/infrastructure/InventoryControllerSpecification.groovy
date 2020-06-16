@@ -6,7 +6,7 @@ import io.micronaut.test.annotation.MicronautTest
 
 @MicronautTest(transactional = false)
 class InventoryControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/inventory"
+   private static final String path = "/inventory/all"
 
    void "fetch first page without locationType" () {
       given:
@@ -55,6 +55,47 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].primaryLocation.name == "KANSAS CITY"
       pageOneResult.elements[0].locationType.value == "STORE"
       pageOneResult.elements[0].locationType.description == "Store"
+   }
+
+   void "fetch first page of inventory-app without locationType" () {
+      given:
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
+
+      when:
+      def pageOneResult = get("inventory/${pageOne}&extraParamter=one&exParamTwo=2", tstds1Store1UserLogin)
+
+      then:
+      notThrown(HttpClientResponseException)
+      with(pageOneResult) {
+         locationType == null
+         requested.storeNumber == tstds1Store1User.myLocation().myNumber()
+         requested.inventoryStatus == ["R", "D", "N", "O"]
+         elements != null
+         elements.size() == 5
+         totalElements == 423
+         totalPages == 85
+         first == true
+         last == false
+         elements[0].id == 73821
+         elements[0].serialNumber == "201-00923"
+         elements[0].lookupKey == "201-00923"
+         elements[0].barcode == "201-00923"
+         elements[0].modelNumber == "FPGIDFRAMEDART"
+         elements[0].description == "MISCELLANEOUS FURNITURE PICT"
+         // below this values should be null
+         elements[0].lookupKeyType == null
+         elements[0].originalCost == null
+         elements[0].actualCost == null
+         elements[0].modelCategory == null
+         elements[0].timesRented == null
+         elements[0].totalRevenue == null
+         elements[0].remainingValue == null
+         elements[0].sellPrice == null
+         elements[0].assignedValue == null
+         elements[0].idleDays == null
+      }
    }
 
    void "fetch first page with locationType" () {
@@ -207,7 +248,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       when:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      def inventory = get("${path}/1104000198", tstds1Store1UserLogin)
+      def inventory = get("inventory/1104000198", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)

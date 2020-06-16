@@ -6,8 +6,11 @@ import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
+import com.cynergisuite.middleware.inventory.InventoryDTO
 import com.cynergisuite.middleware.inventory.InventoryService
-import com.cynergisuite.middleware.inventory.InventoryValueObject
+import com.cynergisuite.middleware.json.view.Full
+import com.cynergisuite.middleware.json.view.InventoryApp
+import com.fasterxml.jackson.annotation.JsonView
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
@@ -35,8 +38,9 @@ class InventoryController(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InventoryController::class.java)
 
+   @JsonView(value = [Full::class])
    @Throws(AccessException::class)
-   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "/all{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -48,7 +52,7 @@ class InventoryController(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<InventoryValueObject> {
+   ): Page<InventoryDTO> {
       logger.info("Fetch all inventory for store")
 
       val user = userService.findUser(authentication)
@@ -65,11 +69,29 @@ class InventoryController(
       }
    }
 
+   @JsonView(value = [InventoryApp::class])
+   @Throws(AccessException::class)
+   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "403", description = "If authentication fails"),
+      ApiResponse(responseCode = "204", description = "The the result is empty"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun fetchAllInventoryApp(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: InventoryPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<InventoryDTO> {
+      return fetchAll(pageRequest, authentication, httpRequest)
+   }
+
    @Throws(AccessException::class, NotFoundException::class)
    @Get(uri = "/{lookupKey}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookupKey", description = "Fetch an Inventory item by lookupKey", operationId = "inventory-fetchByLookupKey")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryValueObject::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
       ApiResponse(responseCode = "403", description = "If authentication fails"),
       ApiResponse(responseCode = "404", description = "If the barcode was unable to be located"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -78,7 +100,7 @@ class InventoryController(
       @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey") lookupKey: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): InventoryValueObject {
+   ): InventoryDTO {
       logger.info("Fetching Inventory by barcode {}", lookupKey)
 
       val user = userService.findUser(authentication)
