@@ -58,8 +58,6 @@ class AuditActionRepository @Inject constructor(
          auditActionEmployee.dept_id                         AS auditActionEmployeeDept_id,
          auditActionEmployee.dept_code                       AS auditActionEmployeeDept_code,
          auditActionEmployee.dept_description                AS auditActionEmployeeDept_description,
-         auditActionEmployee.dept_security_profile           AS auditActionEmployeeDept_security_profile,
-         auditActionEmployee.dept_default_menu               AS auditActionEmployeeDept_default_menu,
          auditActionEmployee.store_id                        AS auditActionEmployee_store_id,
          auditActionEmployee.store_number                    AS auditActionEmployee_store_number,
          auditActionEmployee.store_name                      AS auditActionEmployee_store_name,

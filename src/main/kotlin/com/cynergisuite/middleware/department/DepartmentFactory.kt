@@ -11,25 +11,28 @@ object DepartmentFactory {
 
    @JvmStatic
    private val departments: List<DepartmentEntity> = listOf(
-      DepartmentEntity(id = 1, code = "AM", description = "ASST MGR", securityProfile = 90004, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 2, code = "AR", description = "ACCOUNT REP", securityProfile = 90005, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 3, code = "DE", description = "DELIVERY DVR", securityProfile = 90007, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 4, code = "EX", description = "EXECUTIVE", securityProfile = 90000, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 5, code = "MM", description = "MARKET MGR", securityProfile = 90002, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 6, code = "RM", description = "REGIONAL MGR", securityProfile = 90001, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 7, code = "SA", description = "SALES ASSOC", securityProfile = 90006, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 8, code = "SM", description = "STORE MGR", securityProfile = 90003, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
-      DepartmentEntity(id = 9, code = "TE", description = "TERMINATED", securityProfile = 90008, defaultMenu = "HOMEHT", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 1, code = "AM", description = "ASST MGR", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 2, code = "AR", description = "ACCOUNT REP", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 3, code = "DE", description = "DELIVERY DVR", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 4, code = "EX", description = "EXECUTIVE", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 5, code = "MM", description = "MARKET MGR", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 6, code = "RM", description = "REGIONAL MGR", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 7, code = "SA", description = "SALES ASSOC", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 8, code = "SM", description = "STORE MGR", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 9, code = "TE", description = "TERMINATED", company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 10, code = "NO", description = null, company = CompanyFactory.tstds1()),
+      DepartmentEntity(id = 11, code = "CY", description = null, company = CompanyFactory.tstds1()),
 
-      DepartmentEntity(id = 10, code = "AM", description = "ACCOUNT MGR", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 11, code = "CO", description = "COLLECTIONS", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 12, code = "DE", description = "DELIVERY", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 13, code = "DM", description = "DISTRICT MGR", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 14, code = "MG", description = "MANAGEMENT", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 15, code = "OF", description = "OFFICE", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 16, code = "SA", description = "SALES ASSOCI", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 17, code = "SM", description = "STORE MANAGE", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2()),
-      DepartmentEntity(id = 18, code = "WH", description = "WAREHOUSE", securityProfile = 0, defaultMenu = "", company = CompanyFactory.tstds2())
+      DepartmentEntity(id = 12, code = "AM", description = "ACCOUNT MGR", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 13, code = "CO", description = "COLLECTIONS", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 14, code = "DE", description = "DELIVERY", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 15, code = "DM", description = "DISTRICT MGR", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 16, code = "MG", description = "MANAGEMENT", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 17, code = "OF", description = "OFFICE", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 18, code = "SA", description = "SALES ASSOCI", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 19, code = "SM", description = "STORE MANAGE", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 20, code = "WH", description = "WAREHOUSE", company = CompanyFactory.tstds2()),
+      DepartmentEntity(id = 21, code = "HO", description = null, company = CompanyFactory.tstds2())
    )
 
    @JvmStatic

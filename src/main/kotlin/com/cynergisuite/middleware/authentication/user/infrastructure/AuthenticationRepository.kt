@@ -68,8 +68,6 @@ class AuthenticationRepository @Inject constructor(
                   dept.id                         AS dept_id,
                   dept.code                       AS dept_code,
                   dept.description                AS dept_description,
-                  dept.security_profile           AS dept_security_profile,
-                  dept.default_menu               AS dept_default_menu,
                   assignedLoc.id                  AS assignedLoc_id,
                   assignedLoc.number              AS assignedLoc_number,
                   assignedLoc.name                AS assignedLoc_name,
@@ -109,8 +107,6 @@ class AuthenticationRepository @Inject constructor(
                   dept.id                         AS dept_id,
                   dept.code                       AS dept_code,
                   dept.description                AS dept_description,
-                  dept.security_profile           AS dept_security_profile,
-                  dept.default_menu               AS dept_default_menu,
                   assignedLoc.id                  AS assignedLoc_id,
                   assignedLoc.number              AS assignedLoc_number,
                   assignedLoc.name                AS assignedLoc_name,
@@ -255,8 +251,6 @@ class AuthenticationRepository @Inject constructor(
             id = row.getLong("dept_id"),
             code = row.getString("dept_code"),
             description = row.getString("dept_description"),
-            securityProfile = row.getInteger("dept_security_profile"),
-            defaultMenu = row.getString("dept_default_menu"),
             company = company
          )
       } else {

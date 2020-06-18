@@ -2,10 +2,9 @@ package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.department.DepartmentService
-import com.cynergisuite.middleware.department.DepartmentValueObject
+import com.cynergisuite.middleware.department.DepartmentDTO
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -38,14 +37,14 @@ class DepartmentController @Inject constructor(
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the department was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = DepartmentValueObject::class))]),
+      ApiResponse(responseCode = "200", description = "If the department was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = DepartmentDTO::class))]),
       ApiResponse(responseCode = "404", description = "The requested department was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
       authentication: Authentication
-   ): DepartmentValueObject {
+   ): DepartmentDTO {
       logger.info("Fetching department by {}", id)
 
       val user = userService.findUser(authentication)
@@ -67,7 +66,7 @@ class DepartmentController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication
-   ): Page<DepartmentValueObject> {
+   ): Page<DepartmentDTO> {
       logger.info("Fetching all departments {}", pageRequest)
 
       val user = userService.findUser(authentication)
