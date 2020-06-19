@@ -24,7 +24,8 @@ class RegionRepository @Inject constructor(
    @Transactional
    fun insert(region: RegionEntity): RegionEntity {
       logger.debug("Inserting region {}", region)
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
             INSERT INTO region(division_id, number, name, description)
             VALUES (:division_id, :number, :name, :description)
             RETURNING *

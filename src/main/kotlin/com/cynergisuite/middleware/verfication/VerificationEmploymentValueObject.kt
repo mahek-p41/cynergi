@@ -31,7 +31,7 @@ data class VerificationEmploymentValueObject(
    @field:JsonProperty("emp_reliable")
    var reliable: Boolean?,
 
-   @field:Size(max= 50)
+   @field:Size(max = 50)
    @field:JsonProperty("emp_title")
    var title: String? = null
 

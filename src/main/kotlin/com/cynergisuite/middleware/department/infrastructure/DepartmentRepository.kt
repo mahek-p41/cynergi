@@ -23,7 +23,8 @@ class DepartmentRepository @Inject constructor(
    fun findOne(id: Long, company: Company): DepartmentEntity? {
       logger.debug("Search for department by id {}", id)
 
-      val found = jdbc.findFirstOrNull("""
+      val found = jdbc.findFirstOrNull(
+         """
          SELECT
             dept.id AS d_id,
             dept.code AS d_code,
@@ -46,7 +47,8 @@ class DepartmentRepository @Inject constructor(
    fun findOneByCodeAndDataset(code: String, company: Company): DepartmentEntity? {
       logger.debug("Searching for department by code {}", code)
 
-      val found = jdbc.findFirstOrNull("""
+      val found = jdbc.findFirstOrNull(
+         """
          SELECT
             dept.id AS d_id,
             dept.code AS d_code,
@@ -73,7 +75,8 @@ class DepartmentRepository @Inject constructor(
       var totalElements: Long? = null
       val elements = mutableListOf<DepartmentEntity>()
 
-      jdbc.query("""
+      jdbc.query(
+         """
          SELECT
             dept.id AS d_id,
             dept.code AS d_code,
@@ -108,7 +111,8 @@ class DepartmentRepository @Inject constructor(
    }
 
    override fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(dept.id) > 0
          FROM fastinfo_prod_import.department_vw dept
               JOIN company comp ON dept.dataset = comp.dataset_code

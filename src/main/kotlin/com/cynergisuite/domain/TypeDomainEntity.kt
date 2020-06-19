@@ -18,11 +18,11 @@ interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Ident
 
    fun basicEquality(typeDomainEntity: TypeDomainEntity<ENTITY>): Boolean =
       this.myId() == typeDomainEntity.myId() &&
-      this.myValue() == typeDomainEntity.myValue() &&
-      this.myDescription() == typeDomainEntity.myDescription() &&
-      this.myLocalizationCode() == typeDomainEntity.myLocalizationCode()
+         this.myValue() == typeDomainEntity.myValue() &&
+         this.myDescription() == typeDomainEntity.myDescription() &&
+         this.myLocalizationCode() == typeDomainEntity.myLocalizationCode()
 
-   fun basicHashCode() : Int =
+   fun basicHashCode(): Int =
       HashCodeBuilder()
          .append(myId())
          .append(myValue())

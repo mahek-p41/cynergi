@@ -22,7 +22,8 @@ class AuditExceptionNoteRepository(
    fun insert(note: AuditExceptionNote): AuditExceptionNote {
       logger.debug("Inserting AuditExceptionNote {}", note)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO audit_exception_note (note, entered_by, audit_exception_id)
          VALUES (:note, :entered_by, :audit_exception_id)
          RETURNING

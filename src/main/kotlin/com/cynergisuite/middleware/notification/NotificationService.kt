@@ -56,7 +56,6 @@ class NotificationService @Inject constructor(
          notifications = notificationRepository.findAllBySendingEmployee(companyId = companyId, sendingEmployee = sendingEmployee).map { NotificationValueObject(it) }
       )
 
-
    /**
     * Acts as a wrapper to map the original front-end expectation of an object with a notifications property pointing to the
     * notification that was in the DB.

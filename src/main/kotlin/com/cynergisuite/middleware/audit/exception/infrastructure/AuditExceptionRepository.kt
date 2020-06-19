@@ -43,7 +43,8 @@ class AuditExceptionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
-   private fun findOneQuery(): String = """
+   private fun findOneQuery(): String =
+      """
       WITH employees AS (
          ${employeeRepository.employeeBaseQuery()}
       )
@@ -158,7 +159,7 @@ class AuditExceptionRepository @Inject constructor(
             if (enteredBy != null) {
                mapRowAuditExceptionNote(rs, enteredBy)?.also { exception.notes.add(it) }
             }
-         } while(rs.next())
+         } while (rs.next())
 
          exception
       }
@@ -177,9 +178,10 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
-      val comp_id = company.myId()
-      val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to comp_id, "limit" to page.size(), "offset" to page.offset())
-      val sql = """
+      val compId = company.myId()
+      val params = mutableMapOf("audit_id" to audit.id, "comp_id" to compId, "limit" to page.size(), "offset" to page.offset())
+      val sql =
+         """
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
          ), paged AS (
@@ -320,7 +322,7 @@ class AuditExceptionRepository @Inject constructor(
       var result = findAll(audit, auditCompany, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
-      while(result.elements.isNotEmpty()) {
+      while (result.elements.isNotEmpty()) {
          result.elements.forEach { auditException: AuditExceptionEntity ->
             callback(auditException, index % 2 == 0)
             index++
@@ -344,7 +346,8 @@ class AuditExceptionRepository @Inject constructor(
    fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Inserting audit_exception {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO audit_exception(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, exception_code, approved, approved_by, lookup_key, audit_id)
          VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :exception_code, :approved, :approved_by, :lookup_key, :audit_id)
          RETURNING
@@ -375,7 +378,8 @@ class AuditExceptionRepository @Inject constructor(
    fun approveAllExceptions(audit: AuditEntity, employee: User): Int {
       logger.debug("Updating audit_exception {}", audit)
 
-      return jdbc.update("""
+      return jdbc.update(
+         """
          UPDATE audit_exception
          SET approved = true,
              approved_by = :approved_by
@@ -393,7 +397,8 @@ class AuditExceptionRepository @Inject constructor(
    fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
       logger.debug("Updating audit_exception {}", entity)
 
-      jdbc.updateReturning("""
+      jdbc.updateReturning(
+         """
          UPDATE audit_exception
          SET approved = :approved,
              approved_by = :approved_by

@@ -19,7 +19,7 @@ class AuditStatusService(
    fun fetchAll(): List<AuditStatus> =
       auditStatusRepository.findAll()
 
-   fun requestedStatusIsValid(currentStatus: AuditStatus, requestedStatus: AuditStatus) : Boolean {
+   fun requestedStatusIsValid(currentStatus: AuditStatus, requestedStatus: AuditStatus): Boolean {
       return currentStatus.nextStates.contains(requestedStatus)
    }
 }

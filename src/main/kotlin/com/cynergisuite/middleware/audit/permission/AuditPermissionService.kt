@@ -40,7 +40,8 @@ class AuditPermissionService @Inject constructor(
       return auditPermissionRepository.findAllPermissionTypes(pageRequest).toPage {
          AuditPermissionTypeValueObject(
             it,
-            it.localizeMyDescription(locale, localizationService))
+            it.localizeMyDescription(locale, localizationService)
+         )
       }
    }
 

@@ -14,7 +14,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditDetail", title = "Single item associated with an Audit", description = "Single line item that has been successfully found during the audit process")
-data class AuditDetailValueObject (
+data class AuditDetailValueObject(
 
    @field:Positive
    var id: Long? = null,

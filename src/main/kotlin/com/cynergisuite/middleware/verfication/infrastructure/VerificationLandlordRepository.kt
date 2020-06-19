@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.verfication.infrastructure
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.VerificationLandlord
@@ -44,7 +43,8 @@ class VerificationLandlordRepository(
    fun insert(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Inserting verification_landlord {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO verification_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent, verification_id)
          VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent, :verification_id)
          RETURNING
@@ -71,7 +71,8 @@ class VerificationLandlordRepository(
    fun update(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Updating verification_landlord {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE verification_landlord
          SET
             address = :address,

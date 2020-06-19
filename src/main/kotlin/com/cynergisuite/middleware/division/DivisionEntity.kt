@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.CompanyEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 
-data class DivisionEntity (
+data class DivisionEntity(
    val id: Long? = null,
    val number: Int,
    val name: String,

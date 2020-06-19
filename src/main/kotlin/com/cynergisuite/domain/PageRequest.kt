@@ -37,7 +37,7 @@ interface PageRequest {
    name = "PageRequestBase",
    title = "Basic implementation of a page request"
 )
-abstract class PageRequestBase<out PAGE: PageRequest>(
+abstract class PageRequestBase<out PAGE : PageRequest>(
 
    @field:Min(value = 1)
    @field:Schema(minimum = "1", description = "The page that is requested.  Starts with 1", defaultValue = "1")
@@ -106,7 +106,7 @@ abstract class PageRequestBase<out PAGE: PageRequest>(
          .append(this.sortDirection)
          .toHashCode()
 
-   final override fun toString(): String { //= myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
+   final override fun toString(): String { // = myToString("?page=$page&size=$size&sortBy=$sortBy&sortDirection=$sortDirection")
       val stringBuilder = StringBuilder()
       var separator = "?"
 

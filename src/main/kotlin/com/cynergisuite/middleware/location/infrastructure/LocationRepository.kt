@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.location.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -22,7 +20,8 @@ class LocationRepository @Inject constructor(
 ) {
 
    fun findOne(locationNumber: Int, company: Company): Location? {
-      return jdbc.findFirstOrNull("""
+      return jdbc.findFirstOrNull(
+         """
          SELECT
             location.id AS id,
             location.number AS number,
@@ -46,7 +45,7 @@ class LocationRepository @Inject constructor(
             "location_number" to locationNumber,
             "comp_id" to company.myId()
          ),
-         rowMapper = RowMapper { rs, _ ->  mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
+         rowMapper = RowMapper { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
       )
    }
 
@@ -64,5 +63,4 @@ class LocationRepository @Inject constructor(
          name = rs.getString("${columnPrefix}name"),
          company = company
       )
-
 }

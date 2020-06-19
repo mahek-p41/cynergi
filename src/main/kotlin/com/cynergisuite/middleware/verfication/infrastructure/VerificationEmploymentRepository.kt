@@ -4,7 +4,6 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.VerificationEmployment
@@ -45,7 +44,8 @@ class VerificationEmploymentRepository(
    fun insert(entity: VerificationEmployment): VerificationEmployment {
       logger.debug("Inserting verification_employment  {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO verification_employment(department, hire_date, leave_message, name, reliable, title, verification_id)
          VALUES(:department, :hire_date, :leave_message, :name, :reliable, :title, :verification_id)
          RETURNING
@@ -68,7 +68,8 @@ class VerificationEmploymentRepository(
    fun update(entity: VerificationEmployment): VerificationEmployment {
       logger.debug("Updating verification_employment {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE verification_employment
          SET
             department = :department,

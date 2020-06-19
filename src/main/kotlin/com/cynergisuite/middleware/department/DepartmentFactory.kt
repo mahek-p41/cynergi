@@ -66,7 +66,7 @@ class DepartmentFactoryService(
    private val departmentRepository: DepartmentRepository
 ) {
 
-   fun department(code: String, company: Company) : DepartmentEntity =
+   fun department(code: String, company: Company): DepartmentEntity =
       departmentRepository.findOneByCodeAndDataset(code, company) ?: throw Exception("Unable to find department $code")
 
    fun random(): DepartmentEntity {

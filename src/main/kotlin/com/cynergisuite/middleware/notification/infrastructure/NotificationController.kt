@@ -50,13 +50,16 @@ class NotificationController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get("/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "notification-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "The Notification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationResponseValueObject::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Notification was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "The Notification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationResponseValueObject::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Notification was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(name = "id", description = "The Notification ID to lookup", required = true, `in` = PATH) @QueryValue("id") id: Long
+      @Parameter(name = "id", description = "The Notification ID to lookup", required = true, `in` = PATH) @QueryValue("id")
+      id: Long
    ): NotificationResponseValueObject {
       logger.trace("Fetching Notification by {}", id)
 
@@ -70,18 +73,23 @@ class NotificationController @Inject constructor(
    @Get(produces = [APPLICATION_JSON])
    @Deprecated(message = "Needs to be removed for a path based endpoint rather than header base", replaceWith = ReplaceWith("fetchAllByCompany and fetchAllByCompanyAndUser"))
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a listing of Notifications", description = "Fetch a listing of Notifications by it's system generated primary key", operationId = "notification-fetchAll", deprecated = true)
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationsResponseValueObject::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationsResponseValueObject::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "X-Auth-Company", `in` = HEADER, required = true, schema = Schema(type = "string")) @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
-      @Parameter(name = "X-Auth-User", `in` = HEADER) @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once the front-end is using the framework's JWT
-      @Parameter(name = "type", description = "The type of notifications to be loaded", required = false, `in` = QUERY, schema = Schema(type = "string", defaultValue = "E")) @QueryValue(value = "type", defaultValue = "E") type: String
-   ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
+      @Parameter(name = "X-Auth-Company", `in` = HEADER, required = true, schema = Schema(type = "string")) @Header("X-Auth-Company")
+      companyId: String, // FIXME this needs to be made part of the path at some point
+      @Parameter(name = "X-Auth-User", `in` = HEADER) @Header("X-Auth-User", defaultValue = EMPTY)
+      authId: String, // FIXME once the front-end is using the framework's JWT
+      @Parameter(name = "type", description = "The type of notifications to be loaded", required = false, `in` = QUERY, schema = Schema(type = "string", defaultValue = "E")) @QueryValue(value = "type", defaultValue = "E")
+      type: String
+   ): NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
       logger.trace("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
 
-      val response = when(type.toUpperCase()) {
+      val response = when (type.toUpperCase()) {
          "A" -> notificationService.fetchAllByCompanyWrapped(companyId = companyId, type = type)
 
          else -> notificationService.fetchAllByRecipientWrapped(companyId = companyId, sendingEmployee = authId, type = type)
@@ -95,14 +103,18 @@ class NotificationController @Inject constructor(
    @Get("/admin", produces = [APPLICATION_JSON])
    @Deprecated(message = "Needs to be removed for a path based endpoint rather than header base", replaceWith = ReplaceWith("fetchAllByCompany and fetchAllByCompanyAndUser"))
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a listing of Notifications as an Admin", description = "Fetch a listing of Notifications by it's Company and User", operationId = "notificationAdmin-fetchAll", deprecated = true)
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationsResponseValueObject::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationsResponseValueObject::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllAdmin(
-      @Parameter(name = "X-Auth-Company", `in` = HEADER, required = true, schema = Schema(type = "string")) @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
-      @Parameter(name = "X-Auth-User", `in` = HEADER, schema = Schema(type = "string")) @Header("X-Auth-User") authId: String  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
-   ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications
+      @Parameter(name = "X-Auth-Company", `in` = HEADER, required = true, schema = Schema(type = "string")) @Header("X-Auth-Company")
+      companyId: String, // FIXME this needs to be made part of the path at some point
+      @Parameter(name = "X-Auth-User", `in` = HEADER, schema = Schema(type = "string")) @Header("X-Auth-User")
+      authId: String // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
+   ): NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications
       logger.trace("Fetching All Notifications by Admin by company: {}, authId: {}", companyId, authId)
 
       val response = notificationService.findAllBySendingEmployee(companyId = companyId, sendingEmployee = authId)
@@ -115,10 +127,12 @@ class NotificationController @Inject constructor(
    @Get("/permissions", produces = [APPLICATION_JSON])
    @Deprecated(message = "This is here for the original front-end for looking up permissions by department", replaceWith = ReplaceWith("something that handles this as yet TBD"))
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a listing of Notification Permissions", description = "Fetch a listing of Notification Permissions", operationId = "notificationPermissions-fetchAll", deprecated = true)
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Listing of permissions was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Map::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Listing of permissions was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Map::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchPermissions(): Map<String, Any> {
       val response = mapOf(
          "id" to 1,
@@ -132,10 +146,12 @@ class NotificationController @Inject constructor(
 
    @Get("/types", produces = [APPLICATION_JSON])
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a listing of Notification Types", description = "Fetch a listing of valid Notification Types defined by the system", operationId = "notificationTypes-fetchAllTypes")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<NotificationTypeValueObject>::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<NotificationTypeValueObject>::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllTypes(): List<NotificationTypeValueObject> {
       logger.trace("Fetching All Notification Type Domains")
 
@@ -149,10 +165,12 @@ class NotificationController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get("/company/{companyId}", produces = [APPLICATION_JSON])
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a listing of Notification Types", description = "Fetch a listing of valid Notification Types defined by the system", operationId = "notifications-fetchAll-company")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<NotificationValueObject>::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<NotificationValueObject>::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllByCompany(
       @QueryValue("companyId") companyId: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
@@ -169,10 +187,12 @@ class NotificationController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get("/company/{companyId}/{sendingEmployee}", produces = [APPLICATION_JSON])
    @Operation(tags = ["NotificationEndpoints"], summary = "Fetch a listing of Notifications by company and sending employee", operationId = "notifications-fetchAll-company-employee")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<NotificationValueObject>::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Listing of notifications was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<NotificationValueObject>::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllByCompanyAndUser(
       @QueryValue("companyId") companyId: String,
       @QueryValue("sendingEmployee") sendingEmployee: String,
@@ -190,12 +210,15 @@ class NotificationController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["NotificationEndpoints"], summary = "Create a single Notification", description = "Create a single Notification and return the resulting item", operationId = "notification-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Notification update was successful", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationRequestValueObject::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Notification update was successful", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationRequestValueObject::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun create(
-      @Valid @Body dto: NotificationRequestValueObject
+      @Valid @Body
+      dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
       logger.trace("Requested Create Notification {}", dto)
 
@@ -211,13 +234,16 @@ class NotificationController @Inject constructor(
    @Put("/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["NotificationEndpoints"], summary = "Update a single Notification", description = "Update a single Notification by it's system generated primary key", operationId = "notification-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Notification update was successful", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationRequestValueObject::class))]),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Notification update was successful", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = NotificationRequestValueObject::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @QueryValue("id") id: Long,
-      @Valid @Body dto: NotificationRequestValueObject
+      @Valid @Body
+      dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
       val notificationValueObject = dto.notification.copy(id = id) // the legacy front-end doesn't pass in the id as part of the request body, it is part of the path instead
       logger.trace("Requested Update Notification {}", notificationValueObject)
@@ -234,10 +260,12 @@ class NotificationController @Inject constructor(
    @Delete("/{id}")
    @Status(HttpStatus.NO_CONTENT)
    @Operation(tags = ["NotificationEndpoints"], summary = "Delete a single Notification", description = "Delete a single Notification by it's system generated primary key", operationId = "notification-deleteOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the operation produced no errors.  No error is thrown if the item didn't exist."),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the operation produced no errors.  No error is thrown if the item didn't exist."),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun delete(
       @QueryValue("id") id: Long
    ) {

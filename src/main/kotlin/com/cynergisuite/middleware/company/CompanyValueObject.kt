@@ -64,6 +64,5 @@ data class CompanyValueObject(
          federalTaxNumber = federalTaxNumberOverride
       )
 
-
    override fun myId(): Long? = id
 }

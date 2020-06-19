@@ -14,7 +14,6 @@ import com.cynergisuite.middleware.store.StoreFactoryService
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -122,10 +121,10 @@ class AuditFactoryService @Inject constructor(
       val company = changedBy.company
       val store = changedBy.store ?: storeFactoryService.random(company)
 
-      stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
+      stream(numberIn = numberIn, store = store, changedBy = changedBy, statusesIn = statuses).forEach { }
    }
 
    fun generate(numberIn: Int, store: Store, changedBy: EmployeeEntity, statuses: Set<AuditStatus>) {
-      stream(numberIn = numberIn, store= store, changedBy = changedBy, statusesIn = statuses).forEach {  }
+      stream(numberIn = numberIn, store = store, changedBy = changedBy, statusesIn = statuses).forEach { }
    }
 }

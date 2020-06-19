@@ -22,7 +22,7 @@ class LoginCredentials(
    @field:Schema(name = "dataset", required = false, description = "Semi required property of which dataset to assign to a user's login.  If a user's dataset can be determined automatically this isn't required.")
    var dataset: String? = null
 
-): UsernamePasswordCredentials(
+) : UsernamePasswordCredentials(
    username,
    password
 )

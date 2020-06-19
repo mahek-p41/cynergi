@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.Verification
@@ -36,7 +36,8 @@ class VerificationRepository @Inject constructor(
    )
 
    @Language("PostgreSQL")
-   private val selectAllBase = """
+   private val selectAllBase =
+      """
       SELECT
          v.id AS v_id,
          v.uu_row_id AS v_uu_row_id,
@@ -128,7 +129,7 @@ class VerificationRepository @Inject constructor(
 
          do {
             verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
-         } while(rs.next())
+         } while (rs.next())
 
          verification
       }
@@ -144,7 +145,7 @@ class VerificationRepository @Inject constructor(
 
          do {
             verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
-         } while(rs.next())
+         } while (rs.next())
 
          verification
       }
@@ -181,7 +182,8 @@ class VerificationRepository @Inject constructor(
 
       logger.debug("Inserting Verification {}", paramMap)
 
-      val inserted = jdbc.insertReturning("""
+      val inserted = jdbc.insertReturning(
+         """
          INSERT INTO verification (customer_account, customer_comments, verified_by, company)
          VALUES(:customer_account, :customer_comments, :verified_by, :company)
          RETURNING
@@ -209,7 +211,8 @@ class VerificationRepository @Inject constructor(
 
       val existing = findOne(id = entity.id!!)!!
 
-      val updated = jdbc.updateReturning("""
+      val updated = jdbc.updateReturning(
+         """
          UPDATE verification
          SET
             customer_account = :customer_account,

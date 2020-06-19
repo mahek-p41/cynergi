@@ -22,7 +22,7 @@ import javax.validation.constraints.Size
    description = "A single item associated with an Exception encountered during an Audit.  It describes the problem as best can be determined by the data at hand.",
    requiredProperties = ["barcode", "exceptionCode", "audit", "approved"]
 )
-data class AuditExceptionValueObject (
+data class AuditExceptionValueObject(
 
    @field:Positive
    @field:Schema(name = "id", description = "System generated ID", example = "1")
@@ -76,7 +76,7 @@ data class AuditExceptionValueObject (
    @field:Valid
    @field:NotNull
    @field:Schema(name = "scannedBy", description = "The Employee who is reporting the exception.  This is filled in by the system based on login credentials")
-   var scannedBy: EmployeeValueObject? = null,  // this will be filled out by the system based on how they are logged in
+   var scannedBy: EmployeeValueObject? = null, // this will be filled out by the system based on how they are logged in
 
    @field:NotNull
    @field:Schema(name = "approved", description = "Whether this exception has been approved by the designated employee", example = "true", defaultValue = "false")
@@ -84,7 +84,7 @@ data class AuditExceptionValueObject (
 
    @field:Valid
    @field:Schema(name = "approvedBy", description = "The Employee who approved the exception.  This is filled in by the system based on login credentials")
-   var approvedBy: EmployeeValueObject? = null,  // this will be filled out by the system based on how they are logged in
+   var approvedBy: EmployeeValueObject? = null, // this will be filled out by the system based on how they are logged in
 
    @field:Size(min = 2, max = 200)
    @field:Schema(name = "lookupKey", description = "The key that can be used to determine what inventory entry lines up with this exception")

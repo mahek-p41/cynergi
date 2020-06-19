@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import java.time.OffsetDateTime
 
-data class AuditActionEntity (
+data class AuditActionEntity(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,

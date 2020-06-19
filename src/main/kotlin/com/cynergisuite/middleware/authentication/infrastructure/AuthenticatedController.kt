@@ -31,10 +31,12 @@ class AuthenticatedController @Inject constructor(
 
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["AuthenticationEndpoints"], summary = "Check authentication credentials and list claims", operationId = "authenticated")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the authentication token is valid", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))]),
-      ApiResponse(responseCode = "401", description = "For any other reason that this endpoint can't be accessed, example the token has expired or is not a valid token", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the authentication token is valid", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))]),
+         ApiResponse(responseCode = "401", description = "For any other reason that this endpoint can't be accessed, example the token has expired or is not a valid token", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuthenticatedUserInformation::class))])
+      ]
+   )
    fun authenticated(authentication: Authentication?, httpRequest: HttpRequest<*>): HttpResponse<AuthenticatedUserInformation> {
       logger.debug("Checking authentication {}", authentication)
 
@@ -69,10 +71,12 @@ class AuthenticatedController @Inject constructor(
 
    @Head("/check")
    @Operation(tags = ["AuthenticationEndpoints"], summary = "Check if an authentication is valid", description = "Simple HEAD operation that allows for checking if a token is valid or not.  Useful to check on application load if a stored token is still valid.", operationId = "authenticated-check")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the authentication token is valid"),
-      ApiResponse(responseCode = "401", description = "For any other reason that this endpoint can't be accessed, example the token has expired or is not a valid token")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the authentication token is valid"),
+         ApiResponse(responseCode = "401", description = "For any other reason that this endpoint can't be accessed, example the token has expired or is not a valid token")
+      ]
+   )
    fun authenticationCheck(): HttpResponse<Any> {
       return HttpResponse.ok()
    }

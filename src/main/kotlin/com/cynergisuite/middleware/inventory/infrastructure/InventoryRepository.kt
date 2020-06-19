@@ -5,7 +5,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.company.Company
@@ -30,7 +29,8 @@ class InventoryRepository(
 ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
 
-   private val selectBase = """
+   private val selectBase =
+      """
       SELECT
          i.id AS id,
          i.serial_number AS serial_number,
@@ -83,12 +83,13 @@ class InventoryRepository(
            JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
            LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
-   """.trimIndent()
+      """.trimIndent()
 
    fun findOne(id: Long, company: Company): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
-      val inventory = jdbc.findFirstOrNull("""
+      val inventory = jdbc.findFirstOrNull(
+         """
          $selectBase
          WHERE comp.id = :comp_id
                AND i.id = :id
@@ -97,7 +98,7 @@ class InventoryRepository(
             "comp_id" to company.myId(),
             "id" to id
          ),
-         RowMapper { rs, _ -> mapRow(rs)}
+         RowMapper { rs, _ -> mapRow(rs) }
       )
 
       logger.debug("Search for Inventory by ID {} produced {}", id, inventory)
@@ -106,12 +107,15 @@ class InventoryRepository(
    }
 
    override fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(i.id) > 0
          FROM company comp
               JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
          WHERE i.id = :i_id AND comp.id = :comp_id
-      """.trimIndent(), mapOf("i_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
+         """.trimIndent(),
+         mapOf("i_id" to id, "comp_id" to company.myId()), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)
 
@@ -124,10 +128,12 @@ class InventoryRepository(
    fun findByLookupKey(lookupKey: String, company: Company): InventoryEntity? {
       logger.debug("Finding Inventory by barcode with {}", lookupKey)
 
-      val inventory = jdbc.findFirstOrNull("""
+      val inventory = jdbc.findFirstOrNull(
+         """
          $selectBase
          WHERE i.lookup_key = :lookup_key
-               AND comp.id = :comp_id""".trimIndent(),
+               AND comp.id = :comp_id
+         """.trimIndent(),
          mapOf(
             "lookup_key" to lookupKey,
             "comp_id" to company.myId()
@@ -158,7 +164,8 @@ class InventoryRepository(
          params["location_type"] = pageRequest.locationType!!
       }
 
-      val sql = """
+      val sql =
+         """
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
@@ -174,7 +181,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
       LIMIT :limit
          OFFSET :offset
-      """.trimIndent()
+         """.trimIndent()
 
       logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql)
 
@@ -196,7 +203,7 @@ class InventoryRepository(
    fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
       var pageResult = findUnscannedIdleInventory(audit, StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC"))
       var inventories: MutableList<InventoryEntity> = mutableListOf()
-      while(pageResult.elements.isNotEmpty()) {
+      while (pageResult.elements.isNotEmpty()) {
          inventories.addAll(pageResult.elements)
          pageResult = findUnscannedIdleInventory(audit, pageResult.requested.nextPage())
       }
@@ -211,9 +218,11 @@ class InventoryRepository(
          "audit_id" to audit.id,
          "comp_id" to company.myId(),
          "limit" to pageRequest.size(),
-         "offset" to pageRequest.offset())
+         "offset" to pageRequest.offset()
+      )
 
-      val sql = """
+      val sql =
+         """
       WITH paged AS (
          $selectBase
             JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)
@@ -232,7 +241,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
          OFFSET :offset
-      """.trimIndent()
+         """.trimIndent()
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 

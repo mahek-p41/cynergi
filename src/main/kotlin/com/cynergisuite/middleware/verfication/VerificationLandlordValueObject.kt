@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "VerificationLandlord", title = "Landlord Verification for a customer", description = "Landlord verification for a single customer associated with a Verification")
-data class VerificationLandlordValueObject (
+data class VerificationLandlordValueObject(
 
    @field:Positive
    var id: Long? = null,

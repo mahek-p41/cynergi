@@ -25,7 +25,8 @@ class CompanyRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(CompanyRepository::class.java)
    private val simpleCompanyRowMapper = CompanyRowMapper()
 
-   fun companyBaseQuery() = """
+   fun companyBaseQuery() =
+      """
       SELECT
          comp.id                  AS id,
          comp.uu_row_id           AS uu_row_id,
@@ -43,7 +44,8 @@ class CompanyRepository @Inject constructor(
    fun findCompanyByStore(store: Store): CompanyEntity? {
       logger.debug("Search for company using store id {}", store.myId())
 
-      val found = jdbc.findFirstOrNull("""
+      val found = jdbc.findFirstOrNull(
+         """
          SELECT
            comp.id                  AS id,
            comp.uu_row_id           AS uu_row_id,
@@ -158,7 +160,8 @@ class CompanyRepository @Inject constructor(
    fun insert(company: CompanyEntity): CompanyEntity {
       logger.debug("Inserting company {}", company)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number)
          VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number)
          RETURNING

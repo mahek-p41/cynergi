@@ -13,7 +13,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Notification", title = "Single Notification", description = "Describes a single notification")
-data class NotificationValueObject (
+data class NotificationValueObject(
 
    @field:Positive
    var id: Long? = null,
@@ -27,7 +27,7 @@ data class NotificationValueObject (
    @field:NotNull
    var expirationDate: LocalDate?,
 
-   @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten
+   @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten 
    @field:NotNull
    @field:Size(min = 6, max = 6)
    var company: String?,
@@ -74,13 +74,13 @@ data class NotificationValueObject (
          recipients = entity.recipients.map { NotificationRecipientValueObject(it) }
       )
 
-   constructor(entity: Notification, recipients: List<NotificationRecipient>):
+   constructor(entity: Notification, recipients: List<NotificationRecipient>) :
       this(
          entity = entity
       ) {
 
-      this.recipients = recipients.map { NotificationRecipientValueObject(it) }
-   }
+         this.recipients = recipients.map { NotificationRecipientValueObject(it) }
+      }
 
    constructor(entity: Notification, notificationType: String) :
       this(

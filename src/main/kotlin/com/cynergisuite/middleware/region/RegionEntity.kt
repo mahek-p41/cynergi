@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.division.DivisionEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 
-data class RegionEntity (
+data class RegionEntity(
    val id: Long? = null,
    val number: Int,
    val name: String,
@@ -31,6 +31,3 @@ data class RegionEntity (
 
    override fun myId(): Long? = id
 }
-
-
-

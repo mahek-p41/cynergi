@@ -13,7 +13,7 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditAction", title = "Single item of an Audit's history", description = "An action taken against an Audit such as going from CREATED to IN-PROGRESS at a point in time")
-data class AuditActionValueObject (
+data class AuditActionValueObject(
 
    @field:Nullable
    @field:Positive

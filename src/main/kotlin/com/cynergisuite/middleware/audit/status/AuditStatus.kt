@@ -54,9 +54,9 @@ class AuditStatusEntity(
  */
 object Created : AuditStatus(1, "CREATED", "Created", "audit.status.created", "A572A7")
 object InProgress : AuditStatus(2, "IN-PROGRESS", "In Progress", "audit.status.in-progress", "DB843D")
-object Completed: AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed", "12A2DC")
-object Canceled: AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled", "AA4643")
-object Approved: AuditStatus(5, "APPROVED", "Approved", "audit.status.approved", "89A54E")
+object Completed : AuditStatus(3, "COMPLETED", "Completed", "audit.status.completed", "12A2DC")
+object Canceled : AuditStatus(4, "CANCELED", "Canceled", "audit.status.canceled", "AA4643")
+object Approved : AuditStatus(5, "APPROVED", "Approved", "audit.status.approved", "89A54E")
 
 /*
  * aliases to act as alternatives to using the init-case object definition from above.  Kotlin doesn't recommend having

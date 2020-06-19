@@ -65,7 +65,7 @@ class AuditExceptionValidator @Inject constructor (
          if (scanArea != null) {
             val scanAreaValue = scanArea.value
 
-            if (scanAreaValue != null && scanAreaRepository.doesNotExist(scanAreaValue) ) {
+            if (scanAreaValue != null && scanAreaRepository.doesNotExist(scanAreaValue)) {
                errors.add(
                   ValidationError("audit.scanArea", AuditScanAreaNotFound(scanAreaValue))
                )

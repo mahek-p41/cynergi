@@ -63,7 +63,7 @@ class UserAuthenticationProvider @Inject constructor(
 
                      credentialsRequireStore(userNumber)
                   }
-               } else if (chosenStore != null){
+               } else if (chosenStore != null) {
                   logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
 
                   credentialsMatched(employeeAssignedStore, employee)

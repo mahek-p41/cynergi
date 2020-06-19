@@ -5,14 +5,14 @@ import java.time.OffsetDateTime
 import java.util.Objects
 import java.util.UUID
 
-data class VerificationReference (
+data class VerificationReference(
    val id: Long? = null,
    val uuRowId: UUID = UUID.randomUUID(),
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val address: Boolean?,
    val hasHomePhone: Boolean?,
-   val known: Int?,  // years known?
+   val known: Int?, // years known?
    val leaveMessage: Boolean?,
    val rating: String?,
    val relationship: Boolean?,
@@ -43,9 +43,9 @@ data class VerificationReference (
 
    override fun equals(other: Any?): Boolean {
       return when {
-          this === other -> true
-          other is VerificationReference -> this.uuRowId == other.uuRowId
-          else -> false
+         this === other -> true
+         other is VerificationReference -> this.uuRowId == other.uuRowId
+         else -> false
       }
    }
 

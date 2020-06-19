@@ -11,7 +11,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "NotificationRecipient", title = "Employee receiving a Notification", description = "The person who a Notification is intended for")
-data class NotificationRecipientValueObject (
+data class NotificationRecipientValueObject(
 
    @field:Positive
    var id: Long? = null,
@@ -35,7 +35,7 @@ data class NotificationRecipientValueObject (
    constructor(description: String, store: Store) :
       this(
          description = description,
-         recipient= store.myNumber().toString().padStart(3, '0')
+         recipient = store.myNumber().toString().padStart(3, '0')
       )
 
    override fun myId(): Long? = id

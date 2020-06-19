@@ -14,7 +14,7 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Audit", title = "Single Audit associated with a single Store", description = "A single audit for a store on a specified date along with it's current state")
-data class AuditValueObject (
+data class AuditValueObject(
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
@@ -45,7 +45,7 @@ data class AuditValueObject (
    val lastUpdated: OffsetDateTime? = null,
 
    @field:Positive
-   @field:Schema(name = "inventoryCount", description="Total idle inventory count associated with an audit's store", minimum = "0", readOnly = true, required = false)
+   @field:Schema(name = "inventoryCount", description = "Total idle inventory count associated with an audit's store", minimum = "0", readOnly = true, required = false)
    var inventoryCount: Int = 0,
 
    @field:Schema(name = "actions", required = true, description = "Listing of actions associated with this Audit")

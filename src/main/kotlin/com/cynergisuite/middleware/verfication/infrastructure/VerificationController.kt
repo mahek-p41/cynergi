@@ -45,13 +45,16 @@ class VerificationController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(value = "/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "The Verification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Verification was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "The Verification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Verification was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(name = "id", description = "The Verification ID to lookup", required = true, `in` = ParameterIn.PATH) @QueryValue("id") id: Long
+      @Parameter(name = "id", description = "The Verification ID to lookup", required = true, `in` = ParameterIn.PATH) @QueryValue("id")
+      id: Long
    ): VerificationValueObject {
       logger.trace("Fetching Verification by {}", id)
 
@@ -65,14 +68,18 @@ class VerificationController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(value = "/account/{customerAccount}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-fetchOne-company-customerAccount")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "The Verification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Verification was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "The Verification was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Verification was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(name = "id", description = "The Company ID that a Verification is to be to looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("companyId") companyId: String,
-      @Parameter(name = "id", description = "The customer account number that a Verification is to be looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("customerAccount") customerAccount: String
+      @Parameter(name = "id", description = "The Company ID that a Verification is to be to looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("companyId")
+      companyId: String,
+      @Parameter(name = "id", description = "The customer account number that a Verification is to be looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("customerAccount")
+      customerAccount: String
    ): VerificationValueObject {
       logger.trace("Fetching Verification by company: {}, customer account {}", companyId, customerAccount)
 
@@ -86,14 +93,17 @@ class VerificationController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class)
    @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "The Verification was created successfully", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "The requested Verification to be created was invalid"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "The Verification was created successfully", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "The requested Verification to be created was invalid"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun create(
       @QueryValue("companyId") companyId: String,
-      @Valid @Body dto: VerificationValueObject
+      @Valid @Body
+      dto: VerificationValueObject
    ): VerificationValueObject {
       logger.trace("Requested Create Validation {} with company: {}", dto, companyId)
 
@@ -109,14 +119,17 @@ class VerificationController @Inject constructor(
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class)
    @Operation(tags = ["VerificationEndpoints"], summary = "Fetch a single Notification", description = "Fetch a single Notification by it's system generated primary key", operationId = "verification-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "The Verification was created successfully", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "The requested update was invalid"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "The Verification was created successfully", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VerificationValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "The requested update was invalid"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @QueryValue("companyId") companyId: String,
-      @Valid @Body dto: VerificationValueObject
+      @Valid @Body
+      dto: VerificationValueObject
    ): VerificationValueObject {
       logger.trace("Requested Update Validation {} with company: {}", dto, companyId)
 

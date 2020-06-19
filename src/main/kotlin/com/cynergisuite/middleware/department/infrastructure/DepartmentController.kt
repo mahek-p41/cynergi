@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.department.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.department.DepartmentService
 import com.cynergisuite.middleware.department.DepartmentDTO
+import com.cynergisuite.middleware.department.DepartmentService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -36,13 +36,16 @@ class DepartmentController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the department was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = DepartmentDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested department was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the department was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = DepartmentDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested department was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the department with", `in` = ParameterIn.PATH) @QueryValue("id")
+      id: Long,
       authentication: Authentication
    ): DepartmentDTO {
       logger.info("Fetching department by {}", id)
@@ -58,13 +61,16 @@ class DepartmentController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a listing of departments", description = "Fetch a paginated listing of departments", operationId = "department-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The the result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<DepartmentDTO> {
       logger.info("Fetching all departments {}", pageRequest)

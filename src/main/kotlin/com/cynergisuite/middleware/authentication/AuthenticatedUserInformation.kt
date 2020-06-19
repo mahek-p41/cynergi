@@ -38,5 +38,4 @@ data class AuthenticatedUserInformation(
          alternativeArea = user.myAlternativeArea(),
          permissions = permissions
       )
-
 }

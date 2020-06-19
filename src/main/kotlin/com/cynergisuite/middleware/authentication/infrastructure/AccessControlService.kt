@@ -42,8 +42,8 @@ class AccessControlService @Inject constructor(
       logger.trace("Checking access of asset {} using {} of user {}", asset, accessControlProviderClass, authenticatedUser)
 
       return if (
-         securityService.isAuthenticated
-         && (authenticatedUser.isCynergiAdmin() || accessControlProvider.canUserAccess(authenticatedUser, asset, parameters))
+         securityService.isAuthenticated &&
+         (authenticatedUser.isCynergiAdmin() || accessControlProvider.canUserAccess(authenticatedUser, asset, parameters))
       ) {
          context.proceed()
       } else {

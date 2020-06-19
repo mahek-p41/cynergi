@@ -113,4 +113,3 @@ data class VerificationAutoValueObject(
 
    override fun myId(): Long? = id
 }
-

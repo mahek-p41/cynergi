@@ -32,10 +32,10 @@ data class NotificationTypeEntity(
    override val localizationCode: String
 ) : NotificationType(id, value, description, localizationCode)
 
-object Store: NotificationType(1, "S", "Store", "notification.store")
-object Employee: NotificationType(2, "E", "Employee", "notification.employee")
-object Department: NotificationType(3, "D", "Department", "notification.department")
-object All: NotificationType(4, "A", "All", "notification.all")
+object Store : NotificationType(1, "S", "Store", "notification.store")
+object Employee : NotificationType(2, "E", "Employee", "notification.employee")
+object Department : NotificationType(3, "D", "Department", "notification.department")
+object All : NotificationType(4, "A", "All", "notification.all")
 
 typealias STORE = Store
 typealias EMPLOYEE = Employee

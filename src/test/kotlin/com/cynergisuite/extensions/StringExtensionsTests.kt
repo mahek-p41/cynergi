@@ -6,56 +6,56 @@ import org.junit.jupiter.api.Test
 class StringExtensionsTests {
 
    @Test
-   fun `not null blank string trim to null` () {
+   fun `not null blank string trim to null`() {
       val str = "   "
 
       assertThat(str.trimToNull()).isNull()
    }
 
    @Test
-   fun `null string trim to null` () {
+   fun `null string trim to null`() {
       val str: String? = null
 
       assertThat(str.trimToNull()).isNull()
    }
 
    @Test
-   fun `string with characters wrapped in a space` () {
+   fun `string with characters wrapped in a space`() {
       val str = " test string "
 
       assertThat(str.trimToNull()).isEqualTo("test string")
    }
 
    @Test
-   fun `string with numbers only` () {
+   fun `string with numbers only`() {
       val str = "123"
 
       assertThat(str.isDigits()).isTrue()
    }
 
    @Test
-   fun `string with some letters and digits` () {
+   fun `string with some letters and digits`() {
       val str = "123ABC"
 
       assertThat(str.isDigits()).isFalse()
    }
 
    @Test
-   fun `null string for digits` () {
+   fun `null string for digits`() {
       val str: String? = null
 
       assertThat(str.isDigits()).isFalse()
    }
 
    @Test
-   fun `all uppercase` () {
+   fun `all uppercase`() {
       val str = "UPPERCASE"
 
       assertThat(str.isAllUpperCase()).isTrue()
    }
 
    @Test
-   fun `all lowercase` () {
+   fun `all lowercase`() {
       val str = "lowercase"
 
       assertThat(str.isAllLowerCase()).isTrue()

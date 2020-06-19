@@ -11,5 +11,3 @@ indent_size = 3
 continuation_indent_size = 3
 curly_bracket_next_line = false
 spaces_around_operators = true
-wildcard_import_limit = 1000
-

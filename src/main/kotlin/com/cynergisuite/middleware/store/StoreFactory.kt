@@ -65,7 +65,7 @@ object StoreFactory {
 
    @JvmStatic
    fun store(number: Int, company: Company): Store {
-      return stores.filter { it.company.myDataset() == company.myDataset() && it.number == number}.first()
+      return stores.filter { it.company.myDataset() == company.myDataset() && it.number == number }.first()
    }
 
    fun stores(company: Company): List<Store> {
@@ -75,7 +75,7 @@ object StoreFactory {
    fun storesDevelop(company: Company): List<Store> {
       return stores
          .map { store ->
-            when(store.company.myDataset()) {
+            when (store.company.myDataset()) {
                CompanyFactory.tstds1().datasetCode -> store.copy(company = CompanyFactory.corrto())
                CompanyFactory.tstds2().datasetCode -> store.copy(company = CompanyFactory.corptp())
                else -> store

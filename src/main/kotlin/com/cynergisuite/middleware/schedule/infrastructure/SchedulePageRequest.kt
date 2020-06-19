@@ -13,14 +13,17 @@ import javax.validation.constraints.Size
    allOf = [PageRequestBase::class]
 )
 class SchedulePageRequest(
-   page: Int?, size: Int?, sortBy: String?, sortDirection: String?,
+   page: Int?,
+   size: Int?,
+   sortBy: String?,
+   sortDirection: String?,
 
    @field:Size(min = 3, max = 25)
    var command: String? = null
 
 ) : PageRequestBase<SchedulePageRequest>(page, size, sortBy, sortDirection) {
 
-   constructor(pageRequest: PageRequest, command: String):
+   constructor(pageRequest: PageRequest, command: String) :
       this(
          page = pageRequest.page(),
          size = pageRequest.size(),

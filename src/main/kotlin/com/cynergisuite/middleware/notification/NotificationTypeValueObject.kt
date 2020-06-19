@@ -8,7 +8,7 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "NotificationType", description = "Describes what type a notification is.  These values are driven from the database and therefore have no fixed listing")
-data class NotificationTypeValueObject (
+data class NotificationTypeValueObject(
 
    @field:Positive
    var id: Long? = null,

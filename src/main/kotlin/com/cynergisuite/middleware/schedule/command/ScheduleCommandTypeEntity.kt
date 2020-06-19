@@ -31,7 +31,6 @@ class ScheduleCommandTypeEntity(
    localizationCode: String
 ) : ScheduleCommandType(id, value, description, localizationCode)
 
-object AuditSchedule: ScheduleCommandType(1, "AuditSchedule", "Scheduling audits for stores", "schedule.command.audit")
+object AuditSchedule : ScheduleCommandType(1, "AuditSchedule", "Scheduling audits for stores", "schedule.command.audit")
 
 typealias AUDIT_SCHEDULE = AuditSchedule
-

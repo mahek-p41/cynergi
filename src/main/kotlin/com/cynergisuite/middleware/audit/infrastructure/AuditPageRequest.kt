@@ -73,5 +73,4 @@ class AuditPageRequest(
          "storeNumber" to storeNumber,
          "status" to status
       )
-
 }

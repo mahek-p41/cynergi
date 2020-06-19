@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.audit.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
@@ -52,14 +52,17 @@ class AuditController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Audit was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id")
+      id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
@@ -76,21 +79,24 @@ class AuditController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If there are Audits that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If there are Audits that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: AuditPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page =  auditService.fetchAll(pageRequest, user, httpRequest.findLocaleWithDefault())
+      val page = auditService.fetchAll(pageRequest, user, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -102,13 +108,16 @@ class AuditController @Inject constructor(
    @Throws(ValidationException::class)
    @Get(uri = "/counts{?pageRequest*}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAuditStatusCounts(
-      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: AuditPageRequest,
+      @Parameter(name = "auditStatusCountRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: AuditPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusCountDataTransferObject> {
@@ -123,13 +132,15 @@ class AuditController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Create a single audit", description = "Create a single audit in the CREATED state. The logged in Employee is used for the openedBy property", operationId = "audit-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun create(
       @Body audit: AuditCreateValueObject,
       authentication: Authentication,
@@ -151,13 +162,15 @@ class AuditController @Inject constructor(
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Update a single Audit", description = "This operation is useful for changing the state of the Audit.  Depending on the state being changed the logged in employee will be used for the appropriate fields", operationId = "audit-completeOrCancel")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun addNoteCompleteOrCancel(
       @Body audit: AuditUpdateValueObject,
       authentication: Authentication,
@@ -177,13 +190,15 @@ class AuditController @Inject constructor(
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Approve an audit", description = "This operation will approve all audit exceptions associated with the provided audit that haven't already been approved as well as approving the audit.", operationId = "audit-updateApproved")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun approve(
       @Body audit: SimpleIdentifiableDataTransferObject,
       authentication: Authentication,
@@ -202,14 +217,17 @@ class AuditController @Inject constructor(
    @Get(uri = "/{id:[0-9]+}/report/exception", produces = ["application/pdf"])
    @Throws(NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to generate Audit Exception Report", content = [Content(mediaType = "application/pdf")]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to generate Audit Exception Report", content = [Content(mediaType = "application/pdf")]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAuditExceptionReport(
-      @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id")
+      id: Long,
       authentication: Authentication
    ): HttpResponse<*> {
       val user = userService.findUser(authentication)
@@ -225,19 +243,24 @@ class AuditController @Inject constructor(
 
    @Get(uri = "/{id:[0-9]+}/report/unscanned", produces = ["application/pdf"])
    @Throws(NotFoundException::class)
-   @Operation(tags = ["AuditEndpoints"],
+   @Operation(
+      tags = ["AuditEndpoints"],
       summary = "Request Unscanned Idle Inventory Report",
       description = "This operation will generate a PDF representation of the Audit's items that haven't been scanned.",
-      operationId = "audit-fetchUnscannedIdleInventoryReport")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to generate Unscanned Idle Inventory Report", content = [Content(mediaType = "application/pdf")]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+      operationId = "audit-fetchUnscannedIdleInventoryReport"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to generate Unscanned Idle Inventory Report", content = [Content(mediaType = "application/pdf")]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchUnscannedIdleInventoryReport(
       @Parameter(description = "Primary Key to lookup the Audit with that the Unscanned Idle Inventory Report will be generated from", `in` = PATH)
-      @QueryValue("id") id: Long,
+      @QueryValue("id")
+      id: Long,
       authentication: Authentication
    ): HttpResponse<*> {
       val user = userService.findUser(authentication)
@@ -255,13 +278,15 @@ class AuditController @Inject constructor(
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Approve all audit exceptions", description = "This operation will approve all audit exceptions associated with the provided audit that haven't already been approved", operationId = "audit-updateApprovedAllExceptions")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun approveAllExceptions(
       @Body audit: SimpleIdentifiableDataTransferObject,
       authentication: Authentication

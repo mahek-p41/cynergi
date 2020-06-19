@@ -4,8 +4,6 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -104,7 +102,7 @@ class StoreRepository @Inject constructor(
       val elements = mutableListOf<StoreEntity>()
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id ")
 
-      when(user.myAlternativeStoreIndicator()) {
+      when (user.myAlternativeStoreIndicator()) {
          "N" -> {
             pagedQuery.append(" AND store.number = :store_number ")
             params["store_number"] = user.myLocation().myNumber()
@@ -122,7 +120,8 @@ class StoreRepository @Inject constructor(
          }
       }
 
-      val query = """
+      val query =
+         """
          WITH paged AS (
             $pagedQuery
          )
@@ -152,7 +151,8 @@ class StoreRepository @Inject constructor(
    }
 
    override fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
@@ -160,7 +160,9 @@ class StoreRepository @Inject constructor(
 				  JOIN region ON region.id = r2s.region_id
 				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
          WHERE store.id = :store_id AND comp.id = :comp_id
-      """.trimIndent(), mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
+      """.trimIndent(),
+         mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", id, exists)
 
@@ -168,7 +170,8 @@ class StoreRepository @Inject constructor(
    }
 
    fun exists(number: Int, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
@@ -176,7 +179,9 @@ class StoreRepository @Inject constructor(
 				  JOIN region ON region.id = r2s.region_id
 				  JOIN division ON region.division_id = division.id AND division.company_id = comp.id
          WHERE store.number = :store_number AND comp.id = :comp_id
-      """.trimIndent(), mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java)!!
+      """.trimIndent(),
+         mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", number, exists)
 
@@ -189,7 +194,8 @@ class StoreRepository @Inject constructor(
    fun assignToRegion(store: Location, region: RegionEntity): Pair<RegionEntity, Location> {
       logger.trace("Assigning Store {} to Region {}", store, region)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          INSERT INTO region_to_store (region_id, store_number)
          VALUES (:region_id, :store_number)
          """.trimIndent(),
@@ -239,13 +245,12 @@ class StoreRepository @Inject constructor(
       )
 
    fun mapRowWithRegion(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
-         StoreEntity(
-            id = rs.getLong("${columnPrefix}id"),
-            number = rs.getInt("${columnPrefix}number"),
-            name = rs.getString("${columnPrefix}name"),
-            region = regionRepository.mapRow(rs, company, "reg_")
-         )
-
+      StoreEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         region = regionRepository.mapRow(rs, company, "reg_")
+      )
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
       if (rs.getString("${columnPrefix}id") != null) {

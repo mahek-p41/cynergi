@@ -8,7 +8,7 @@ import io.micronaut.http.annotation.QueryValue
 
 abstract class DatasetLimitingAccessControlProvider(
    private val datasetRequiringRepository: DatasetRequiringRepository
-): AccessControlProvider {
+) : AccessControlProvider {
 
    final override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       return when {

@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.notification.infrastructure
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.NotificationRecipient
@@ -45,7 +44,8 @@ class NotificationRecipientRepository @Inject constructor(
    fun insert(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Inserting notification_recipient {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO notification_recipient(description, recipient, notification_id)
          VALUES (:description, :recipient, :notification_id)
          RETURNING
@@ -64,7 +64,8 @@ class NotificationRecipientRepository @Inject constructor(
    fun update(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Updating notification_recipient {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE notification_recipient
          SET
             description = :description,

@@ -56,7 +56,7 @@ data class VerificationValueObject(
    @field:JsonProperty("checklist_references")
    var references: MutableList<VerificationReferenceValueObject> = mutableListOf()
 
-): Identifiable {
+) : Identifiable {
    constructor(entity: Verification) :
       this(
          id = entity.id,

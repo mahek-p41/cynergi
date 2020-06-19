@@ -1,14 +1,12 @@
 package com.cynergisuite.middleware.region
 
 import com.cynergisuite.middleware.division.DivisionEntity
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import java.util.stream.Stream
-
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,5 +45,4 @@ class RegionFactoryService @Inject constructor(
 
    fun single(divisionIn: DivisionEntity): RegionEntity =
       stream(division = divisionIn).findFirst().orElseThrow { Exception("Unable to create RegionEntity") }
-
 }

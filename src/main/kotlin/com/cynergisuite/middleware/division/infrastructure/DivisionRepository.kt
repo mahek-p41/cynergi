@@ -1,7 +1,5 @@
 package com.cynergisuite.middleware.division.infrastructure
 
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -30,7 +28,7 @@ class DivisionRepository @Inject constructor(
                INSERT INTO division(company_id, number, name, description)
                VALUES (:company_id, :number, :name, :description)
                RETURNING *
-            """.trimIndent(),
+         """.trimIndent(),
          mapOf(
             "company_id" to entity.company.id,
             "number" to entity.number,

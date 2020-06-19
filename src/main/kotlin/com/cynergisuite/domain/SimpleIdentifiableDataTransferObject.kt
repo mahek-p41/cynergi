@@ -12,9 +12,9 @@ data class SimpleIdentifiableDataTransferObject(
    @field:Schema(name = "id", description = "System managed ID that points to a valid instance")
    var id: Long? = null
 
-): Identifiable {
+) : Identifiable {
 
-   constructor(identifiable: Identifiable):
+   constructor(identifiable: Identifiable) :
       this(
          id = identifiable.myId()
       )

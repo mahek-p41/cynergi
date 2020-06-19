@@ -43,7 +43,11 @@ class SystemLoginController(
          ApiResponse(responseCode = "401", description = "If the login was not successful")
       ]
    )
-   fun login(@Valid @Body loginCredentials: LoginCredentials, request: HttpRequest<*>): Single<HttpResponse<*>> {
+   fun login(
+      @Valid @Body
+      loginCredentials: LoginCredentials,
+      request: HttpRequest<*>
+   ): Single<HttpResponse<*>> {
       logger.debug("Store login attempted with {}", loginCredentials)
 
       return loginController.login(loginCredentials, request)

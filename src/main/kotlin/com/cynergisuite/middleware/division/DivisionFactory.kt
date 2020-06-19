@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.division
 
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.concurrent.atomic.AtomicInteger
@@ -45,5 +44,4 @@ class DivisionFactoryService @Inject constructor(
 
    fun single(companyIn: CompanyEntity): DivisionEntity =
       stream(company = companyIn).findFirst().orElseThrow { Exception("Unable to create DivisionEntity") }
-
 }

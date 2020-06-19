@@ -17,23 +17,26 @@ object CompanyFactory {
          clientCode = "RCT",
          clientId = 1234,
          datasetCode = "tstds1",
-         federalIdNumber = "A1000B200"),
+         federalIdNumber = "A1000B200"
+      ),
       CompanyEntity(
          name = "Pelham Trading Post, Inc.",
          doingBusinessAs = "RentACenter",
          clientCode = "PTP",
          clientId = 4321,
          datasetCode = "tstds2",
-         federalIdNumber = "BX101010")
+         federalIdNumber = "BX101010"
+      )
    )
 
    @JvmStatic
    private val companiesDevData = companies
       .map {
-         company -> when (company.datasetCode) {
-         "tstds1" -> company.copy(datasetCode = "corrto")
-         "tstds2" -> company.copy(datasetCode = "corptp")
-         else -> company
+         company ->
+         when (company.datasetCode) {
+            "tstds1" -> company.copy(datasetCode = "corrto")
+            "tstds2" -> company.copy(datasetCode = "corptp")
+            else -> company
          }
       }
       .toList()
