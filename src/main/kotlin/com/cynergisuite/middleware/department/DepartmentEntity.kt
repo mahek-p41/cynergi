@@ -5,9 +5,7 @@ import com.cynergisuite.middleware.company.Company
 data class DepartmentEntity(
    val id: Long,
    val code: String,
-   val description: String,
-   val securityProfile: Int,
-   val defaultMenu: String,
+   val description: String?,
    val company: Company // aka company
 ) : Department, Comparable<Department> {
    override fun myId(): Long? = id

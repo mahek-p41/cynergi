@@ -22,31 +22,33 @@ INSERT INTO fastinfo_prod_import.store_vw (number, name, dataset) VALUES (9000, 
 CREATE TABLE fastinfo_prod_import.department_vw (
     id               BIGSERIAL                              NOT NULL PRIMARY KEY,
     code             VARCHAR(2)                             NOT NULL,
-    description      VARCHAR(12)                            NOT NULL,
+    description      VARCHAR(12),
     dataset          VARCHAR(6)                             NOT NULL,
-    security_profile INTEGER                                NOT NULL,
-    default_menu     VARCHAR(8)                             NOT NULL,
     time_created     TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
     time_updated     TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL
 );
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('AM', 'ASST MGR', 'tstds1', 90004, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('AR', 'ACCOUNT REP', 'tstds1', 90005, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('DE', 'DELIVERY DVR', 'tstds1', 90007, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('EX', 'EXECUTIVE', 'tstds1', 90000, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('MM', 'MARKET MGR', 'tstds1', 90002, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('RM', 'REGIONAL MGR', 'tstds1', 90001, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('SA', 'SALES ASSOC', 'tstds1', 90006, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('SM', 'STORE MGR', 'tstds1', 90003, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('TE', 'TERMINATED', 'tstds1', 90008, 'HOMEHT');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('AM', 'ACCOUNT MGR', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('CO', 'COLLECTIONS', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('DE', 'DELIVERY', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('DM', 'DISTRICT MGR', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('MG', 'MANAGEMENT', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('OF', 'OFFICE', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('SA', 'SALES ASSOCI', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('SM', 'STORE MANAGE', 'tstds2', 0, '');
-INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset, security_profile, default_menu) VALUES ('WH', 'WAREHOUSE', 'tstds2', 0, '');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('AM', 'ASST MGR', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('AR', 'ACCOUNT REP', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('DE', 'DELIVERY DVR', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('EX', 'EXECUTIVE', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('MM', 'MARKET MGR', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('RM', 'REGIONAL MGR', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('SA', 'SALES ASSOC', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('SM', 'STORE MGR', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('TE', 'TERMINATED', 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('NO', null, 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('CY', null, 'tstds1');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('AM', 'ACCOUNT MGR', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('CO', 'COLLECTIONS', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('DE', 'DELIVERY', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('DM', 'DISTRICT MGR', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('MG', 'MANAGEMENT', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('OF', 'OFFICE', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('SA', 'SALES ASSOCI', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('SM', 'STORE MANAGE', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('WH', 'WAREHOUSE', 'tstds2');
+INSERT INTO fastinfo_prod_import.department_vw (code, description, dataset) VALUES ('HO', null, 'tstds2');
+
 
 CREATE TABLE fastinfo_prod_import.employee_vw (
     id                          BIGINT                                           NOT NULL,

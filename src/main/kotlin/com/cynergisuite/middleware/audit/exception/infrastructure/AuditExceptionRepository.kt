@@ -7,7 +7,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -91,8 +90,6 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy.dept_id                                          AS scannedBy_dept_id,
          scannedBy.dept_code                                        AS scannedBy_dept_code,
          scannedBy.dept_description                                 AS scannedBy_dept_description,
-         scannedBy.dept_security_profile                            AS scannedBy_dept_security_profile,
-         scannedBy.dept_default_menu                                AS scannedBy_dept_default_menu,
          scannedBy.store_id                                         AS scannedBy_store_id,
          scannedBy.store_number                                     AS scannedBy_store_number,
          scannedBy.store_name                                       AS scannedBy_store_name,
@@ -109,8 +106,6 @@ class AuditExceptionRepository @Inject constructor(
          approvedBy.dept_id                                         AS approvedBy_dept_id,
          approvedBy.dept_code                                       AS approvedBy_dept_code,
          approvedBy.dept_description                                AS approvedBy_dept_description,
-         approvedBy.dept_security_profile                           AS approvedBy_dept_security_profile,
-         approvedBy.dept_default_menu                               AS approvedBy_dept_default_menu,
          approvedBy.store_id                                        AS approvedBy_store_id,
          approvedBy.store_number                                    AS approvedBy_store_number,
          approvedBy.store_name                                      AS approvedBy_store_name,
@@ -132,8 +127,6 @@ class AuditExceptionRepository @Inject constructor(
          auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
          auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
          auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
-         auditExceptionNoteEmployee.dept_security_profile           AS auditExceptionNoteEmployee_dept_security_profile,
-         auditExceptionNoteEmployee.dept_default_menu               AS auditExceptionNoteEmployee_dept_default_menu,
          auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
          auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
          auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
@@ -233,8 +226,6 @@ class AuditExceptionRepository @Inject constructor(
                scannedBy.dept_id                           AS scannedBy_dept_id,
                scannedBy.dept_code                         AS scannedBy_dept_code,
                scannedBy.dept_description                  AS scannedBy_dept_description,
-               scannedBy.dept_security_profile             AS scannedBy_dept_security_profile,
-               scannedBy.dept_default_menu                 AS scannedBy_dept_default_menu,
                scannedBy.store_id                          AS scannedBy_store_id,
                scannedBy.store_number                      AS scannedBy_store_number,
                scannedBy.store_name                        AS scannedBy_store_name,
@@ -251,8 +242,6 @@ class AuditExceptionRepository @Inject constructor(
                approvedBy.dept_id                         AS approvedBy_dept_id,
                approvedBy.dept_code                       AS approvedBy_dept_code,
                approvedBy.dept_description                AS approvedBy_dept_description,
-               approvedBy.dept_security_profile           AS approvedBy_dept_security_profile,
-               approvedBy.dept_default_menu               AS approvedBy_dept_default_menu,
                approvedBy.store_id                        AS approvedBy_store_id,
                approvedBy.store_number                    AS approvedBy_store_number,
                approvedBy.store_name                      AS approvedBy_store_name,
@@ -287,8 +276,6 @@ class AuditExceptionRepository @Inject constructor(
             auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
             auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
             auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
-            auditExceptionNoteEmployee.dept_security_profile           AS auditExceptionNoteEmployee_dept_security_profile,
-            auditExceptionNoteEmployee.dept_default_menu               AS auditExceptionNoteEmployee_dept_default_menu,
             auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
             auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
             auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
@@ -509,8 +496,6 @@ class AuditExceptionRepository @Inject constructor(
             id = rs.getLong("${columnPrefix}dept_id"),
             code = rs.getString("${columnPrefix}dept_code"),
             description = rs.getString("${columnPrefix}dept_description"),
-            securityProfile = rs.getInt("${columnPrefix}dept_security_profile"),
-            defaultMenu = rs.getString("${columnPrefix}dept_default_menu"),
             company = mapCompany(rs)
          )
       } else {

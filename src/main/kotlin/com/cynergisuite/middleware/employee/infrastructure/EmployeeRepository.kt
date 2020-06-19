@@ -66,8 +66,6 @@ class EmployeeRepository @Inject constructor(
                dept.id                         AS dept_id,
                dept.code                       AS dept_code,
                dept.description                AS dept_description,
-               dept.security_profile           AS dept_security_profile,
-               dept.default_menu               AS dept_default_menu,
                store.id                        AS store_id,
                store.number                    AS store_number,
                store.name                      AS store_name
@@ -102,8 +100,6 @@ class EmployeeRepository @Inject constructor(
                dept.id                         AS dept_id,
                dept.code                       AS dept_code,
                dept.description                AS dept_description,
-               dept.security_profile           AS dept_security_profile,
-               dept.default_menu               AS dept_default_menu,
                store.id                        AS store_id,
                store.number                    AS store_number,
                store.name                      AS store_name

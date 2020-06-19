@@ -42,14 +42,9 @@ BEGIN
             id AS id,
             TRIM(loc_dept_code) AS code,
             loc_dept_desc AS description,
-            loc_dept_security_profile AS security_profile,
-            loc_dept_default_menu AS default_menu,
             ''' || r.schema_name || '''::text AS dataset
          FROM ' || r.schema_name || '.level2_departments
          WHERE loc_dept_code IS NOT NULL
-               AND loc_dept_desc IS NOT NULL
-               AND loc_dept_security_profile IS NOT NULL
-               AND loc_dept_default_menu IS NOT NULL
       ';
 
       unionStr := ' UNION ';
@@ -242,9 +237,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
   id BIGINT,
   dataset VARCHAR,
   code VARCHAR,
-  description VARCHAR,
-  security_profile INTEGER,
-  default_menu VARCHAR
+  description VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (
