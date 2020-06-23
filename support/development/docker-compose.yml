@@ -55,13 +55,11 @@ services:
       command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "cynergiuser" ]
    fastinfopsql:
       container_name: fastinfopsql
+      image: cynergipgdbbase
       depends_on:
          - cynergidb
       networks:
          - cynerginet
-      build:
-         context: db
-         dockerfile: fastinfosnapshot.dockerfile
       command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "fastinfo_production", "postgres" ]
    cynergitestdb:
       container_name: cynergitestdb

@@ -29,21 +29,21 @@ CREATE TABLE rebate
     general_ledger_credit_account_id BIGINT REFERENCES account(id)
  );
 
-CREATE UNIQUE INDEX idx_rebate_id_desc ON rebate USING btree (vendor_id, (UPPER(description)));
+CREATE UNIQUE INDEX rebate_id_desc_uq ON rebate USING btree (vendor_id, (UPPER(description)));
 
-CREATE INDEX idx_rebate_vendor_id
+CREATE INDEX rebate_vendor_id_idx
 ON rebate(vendor_id);
 
-CREATE INDEX idx_rebate_status_type_id
+CREATE INDEX rebate_status_type_id_idx
 ON status_type_domain(id);
 
-CREATE INDEX idx_rebate_type_id
+CREATE INDEX rebate_type_id_idx
 ON rebate(rebate_type_id);
 
-CREATE INDEX idx_rebate_gl_debit_account_id
+CREATE INDEX rebate_gl_debit_account_id_idx
 ON rebate(general_ledger_debit_account_id);
 
-CREATE INDEX idx_rebate_gl_credit_account_id
+CREATE INDEX rebate_gl_credit_account_id_idx
 ON rebate(general_ledger_credit_account_id);
 
 CREATE TRIGGER update_rebate_trg

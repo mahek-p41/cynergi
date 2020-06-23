@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.AccountService
@@ -41,7 +42,7 @@ class AccountController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountEndpoints"], summary = "Fetch a single Account", description = "Fetch a single Account by ID", operationId = "account-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
@@ -84,6 +85,32 @@ class AccountController @Inject constructor(
       logger.debug("Listing of Account Currency Codes resulted in {}", accounts)
 
       return accounts
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/search{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
+   @Operation(tags = ["AccountEndpoints"], summary = "Search for a list of accounts", description = "search of a paginated listing of accounts based on a query", operationId = "account-search")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+      ApiResponse(responseCode = "204", description = "The requested Account was unable to be found, or the result is empty"),
+      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun search(
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: SearchPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountDTO> {
+      logger.info("Search for accounts {}", pageRequest)
+
+      val user = userService.findUser(authentication)
+      val page = accountService.search(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
    }
 
    @Post(processes = [MediaType.APPLICATION_JSON])

@@ -21,7 +21,7 @@ import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -185,17 +185,20 @@ class VendorRepository @Inject constructor(
       }
    }
 
-
    fun search(company: Company, page: SearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
       val searchQuery = page.query
-      var where = StringBuilder(" WHERE comp.id = :comp_id ")
-      var and = " AND "
-      var sortBy: String? = null
-
-      if (!searchQuery.isNullOrEmpty()) {
-         val fieldToSearch = " v.name "
-         where.append(and).append(" $fieldToSearch <-> :search_query < 0.9 ")
-         sortBy = " ORDER BY $fieldToSearch <-> :search_query "
+      val where = StringBuilder(" WHERE comp.id = :comp_id ")
+      val sortBy = if (!searchQuery.isNullOrEmpty()) {
+         if (page.fuzzy == false) {
+            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
+            EMPTY
+         } else {
+            val fieldToSearch = " v.name "
+            where.append(" AND $fieldToSearch <-> :search_query < 0.9 ")
+            " ORDER BY $fieldToSearch <-> :search_query "
+         }
+      } else {
+         EMPTY
       }
 
       return jdbc.queryPaged("""
@@ -536,7 +539,7 @@ class VendorRepository @Inject constructor(
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
 
-   private fun mapPaymentTerm(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): VendorPaymentTermEntity =
+   private fun mapPaymentTerm(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): VendorPaymentTermEntity =
       VendorPaymentTermEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = company,
@@ -546,7 +549,7 @@ class VendorRepository @Inject constructor(
          discountPercent = rs.getBigDecimal("${columnPrefix}discount_percent")
       )
 
-   private fun mapShipVia(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): ShipViaEntity =
+   private fun mapShipVia(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): ShipViaEntity =
       ShipViaEntity(
          id = rs.getLong("${columnPrefix}id"),
          description = rs.getString("${columnPrefix}description"),

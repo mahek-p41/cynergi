@@ -10,10 +10,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
 
-object AccountFactory {
+object AccountDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, company: Company): Stream<AccountEntity> {
+   fun stream(numberIn: Int = 1, company: Company, name: String? = null): Stream<AccountEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -21,7 +21,7 @@ object AccountFactory {
       return IntStream.range(0, number).mapToObj {
          AccountEntity(
             company = company,
-            description = lorem.sentence(5,3),
+            name = name ?: lorem.sentence(5,3),
             type = AccountTypeFactory.random(),
             normalAccountBalance = NormalAccountBalanceFactory.random(),
             status = AccountStatusFactory.random(),
@@ -32,14 +32,14 @@ object AccountFactory {
    }
 
    @JvmStatic
-   fun streamValueObject(numberIn: Int = 1): Stream<AccountDTO> {
+   fun streamDTO(numberIn: Int = 1): Stream<AccountDTO> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
 
       return IntStream.range(0, number).mapToObj {
          AccountDTO(
-            description = lorem.sentence(5,3),
+            name = lorem.sentence(5,3),
             type = AccountTypeValueObject(AccountTypeFactory.random()),
             normalAccountBalance = NormalAccountBalanceTypeValueObject(NormalAccountBalanceFactory.random()),
             status = AccountStatusTypeValueObject(AccountStatusFactory.random()),
@@ -52,12 +52,12 @@ object AccountFactory {
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class AccountFactoryService @Inject constructor(
+class AccountDataLoaderService @Inject constructor(
    private val accountRepository: AccountRepository
 ) {
 
    fun stream(numberIn: Int = 1, company: Company): Stream<AccountEntity> {
-      return AccountFactory.stream(numberIn, company).map {
+      return AccountDataLoader.stream(numberIn, company).map {
          accountRepository.insert(it)
       }
    }
@@ -66,7 +66,13 @@ class AccountFactoryService @Inject constructor(
       return stream(1, company).findFirst().orElseThrow { Exception("Unable to create Account")}
    }
 
+   fun single(company: Company, name: String? = null): AccountEntity {
+      return AccountDataLoader.stream(1, company, name)
+         .map { accountRepository.insert(it) }
+         .findFirst().orElseThrow { Exception("Unable to create Account") }
+   }
+
    fun singleValueObject(company: Company): AccountDTO {
-      return AccountFactory.streamValueObject(1).findFirst().orElseThrow { Exception("Unable to create Account")}
+      return AccountDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create Account")}
    }
 }

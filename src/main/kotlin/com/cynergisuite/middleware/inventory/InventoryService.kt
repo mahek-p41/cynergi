@@ -6,15 +6,19 @@ import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
+import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Singleton
+import javax.validation.Valid
 
 @Singleton
 class InventoryService(
    private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
-   fun fetchAll(pageRequest: InventoryPageRequest, company: Company, locale: Locale): Page<InventoryDTO> {
+
+   @Validated
+   fun fetchAll(@Valid pageRequest: InventoryPageRequest, company: Company, locale: Locale): Page<InventoryDTO> {
       val inventory = inventoryRepository.findAll(pageRequest, company)
 
       return inventory.toPage  { item ->

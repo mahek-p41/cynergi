@@ -85,8 +85,8 @@ CREATE TRIGGER update_purchase_order_control_trg
     ON purchase_order_control
     FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
-CREATE INDEX idx_purchase_order_control_company_id ON purchase_order_control (company_id);
-CREATE INDEX idx_purchase_order_control_default_vendor_id ON purchase_order_control (default_vendor_id);
-CREATE INDEX idx_purchase_order_control_update_purchase_order_cost_id ON purchase_order_control (update_purchase_order_cost_type_id);
-CREATE INDEX idx_purchase_order_control_default_purchase_order_type_id ON purchase_order_control (default_purchase_order_type_id);
-CREATE INDEX idx_purchase_order_control_approval_required_flag_type_id ON purchase_order_control (approval_required_flag_type_id);
+CREATE INDEX purchase_order_control_company_id_idx ON purchase_order_control (company_id);
+CREATE INDEX purchase_order_control_default_vendor_id_idx ON purchase_order_control (default_vendor_id);
+CREATE INDEX purchase_order_control_update_purchase_order_cost_id_idx ON purchase_order_control (update_purchase_order_cost_type_id);
+CREATE INDEX purchase_order_control_default_purchase_order_type_id_idx ON purchase_order_control (default_purchase_order_type_id);
+CREATE INDEX purchase_order_control_approval_required_flag_type_id_idx ON purchase_order_control (approval_required_flag_type_id);

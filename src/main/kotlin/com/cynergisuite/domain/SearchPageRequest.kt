@@ -1,6 +1,8 @@
 package com.cynergisuite.domain
 
 import io.swagger.v3.oas.annotations.media.Schema
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 @Schema(
    name = "SearchPageRequest",
@@ -12,8 +14,13 @@ class SearchPageRequest(
    page: Int? = null,
    size: Int? = null,
 
+   @field:NotNull
+   @field:NotBlank
    @field:Schema(name = "query", description = "Search string")
-   var query: String? = null
+   var query: String? = null,
+
+   @field:Schema(name = "fuzzy", description = "If the query should be a fuzzy match or an exact one", defaultValue = "true")
+   var fuzzy: Boolean? = true
 
 ) : PageRequestBase<SearchPageRequest>(page, size, null, null) {
 

@@ -104,7 +104,7 @@ class VendorController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<VendorDTO> {
-      logger.info("Fetching all vendors {}", pageRequest)
+      logger.info("Searching for vendors {}", pageRequest)
 
       val user = userService.findUser(authentication)
       val page =  vendorService.search(user.myCompany(), pageRequest)
