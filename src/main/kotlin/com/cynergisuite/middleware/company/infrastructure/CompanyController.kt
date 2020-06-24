@@ -40,7 +40,6 @@ class CompanyController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(CompanyController::class.java)
 
    @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
-   @AccessControl("fetchOne", accessControlProvider = CompanyAccessControlProvider::class)
    @Throws(NotFoundException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Fetch a single company", description = "Fetch a single company by ID", operationId = "company-fetchOne")
    @ApiResponses(value = [

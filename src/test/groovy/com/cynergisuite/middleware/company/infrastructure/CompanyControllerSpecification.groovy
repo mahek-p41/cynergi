@@ -43,23 +43,6 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "fetch one non-accessible company by id" () {
-      given:
-      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
-      final companyTstds2 = companyFactoryService.forDatasetCode("tstds2")
-      final companyTstds1Store = storeFactoryService.random(companyTstds1)
-      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
-      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
-      final loginAccessToken = loginEmployee(authenticatedEmployee)
-
-      when:
-      get("$path/$companyTstds2.id", loginAccessToken)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
-   }
-
    void "fetch all predefined companies without login" () {
       given:
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
