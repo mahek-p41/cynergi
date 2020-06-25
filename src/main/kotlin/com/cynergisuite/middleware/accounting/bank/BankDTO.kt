@@ -18,11 +18,6 @@ data class BankDTO (
    @field:Positive
    var id: Long? = null,
 
-   @field:Valid
-   @field:NotNull
-   @field:Schema(name = "address", description = "Bank Address.")
-   var address: AddressValueObject? = null,
-
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a bank.")
    var name: String? = null,
@@ -33,30 +28,16 @@ data class BankDTO (
    var generalLedgerProfitCenter: SimpleIdentifiableDTO? = null,
 
    @field:Valid
-   @field:NotNull
    @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
-   var generalLedgerAccount: SimpleIdentifiableDTO? = null,
-
-   @field:NotNull
-   @field:Size(min = 3, max = 50)
-   @field:Schema(name = "accountNumber", required = true, description = "The bank's account number.")
-   var accountNumber: String? = null,
-
-   @field:Valid
-   @field:NotNull
-   @field:Schema(name = "currency", description = "The bank account's currency.")
-   var currency: BankCurrencyTypeValueObject? = null
+   var generalLedgerAccount: SimpleIdentifiableDTO? = null
 
    ) : Identifiable {
    constructor(bankEntity: BankEntity) :
       this(
          id = bankEntity.id,
-         address = AddressValueObject(bankEntity.address),
          name = bankEntity.name,
          generalLedgerProfitCenter = SimpleIdentifiableDTO(bankEntity.generalLedgerProfitCenter.myId()),
-         generalLedgerAccount = SimpleIdentifiableDTO(bankEntity.generalLedgerAccount.myId()),
-         accountNumber = bankEntity.accountNumber,
-         currency = BankCurrencyTypeValueObject(bankEntity.currency)
+         generalLedgerAccount = SimpleIdentifiableDTO(bankEntity.generalLedgerAccount.myId())
       )
 
    override fun myId(): Long? = id

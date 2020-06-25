@@ -71,11 +71,10 @@ class BankController @Inject constructor(
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+      authentication: Authentication
    ): Page<BankDTO> {
       val user = userService.findUser(authentication)
-      val banks = bankService.fetchAll(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+      val banks = bankService.fetchAll(user.myCompany(), pageRequest)
 
       if (banks.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
@@ -96,13 +95,12 @@ class BankController @Inject constructor(
    ])
    fun save(
       @Body bankDTO: BankDTO,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+      authentication: Authentication
    ): BankDTO {
       logger.info("Requested Save Bank {}", bankDTO)
 
       val user = userService.findUser(authentication)
-      val response = bankService.create(bankDTO, user.myCompany(), httpRequest.findLocaleWithDefault())
+      val response = bankService.create(bankDTO, user.myCompany())
 
       logger.debug("Requested Save Bank {} resulted in {}", bankDTO, response)
 
@@ -121,13 +119,12 @@ class BankController @Inject constructor(
    fun update(
       @QueryValue("id") id: Long,
       @Body bankDTO: BankDTO,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+      authentication: Authentication
    ): BankDTO {
       logger.info("Requested Update Bank {}", bankDTO)
 
       val user = userService.findUser(authentication)
-      val response = bankService.update(id, bankDTO, user.myCompany(), httpRequest.findLocaleWithDefault())
+      val response = bankService.update(id, bankDTO, user.myCompany())
 
       logger.debug("Requested Update Bank {} resulted in {}", bankDTO, response)
 

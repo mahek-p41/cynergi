@@ -33,7 +33,7 @@ class VendorValidator @Inject constructor(
    fun validateCreate(@Valid vo: VendorDTO, company: Company): VendorEntity {
       logger.trace("Validating Save Vendor {}", vo)
 
-      return validateCreateUpdate(dto = vo, company = company)
+      return doValidation(dto = vo, company = company)
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
@@ -42,10 +42,10 @@ class VendorValidator @Inject constructor(
 
       val existingVendor = vendorRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-      return validateCreateUpdate(existingVendor, dto = dto, company = company)
+      return doValidation(existingVendor, dto = dto, company = company)
    }
 
-   private fun validateCreateUpdate(existingVendor: VendorEntity? = null, dto: VendorDTO, company: Company): VendorEntity {
+   private fun doValidation(existingVendor: VendorEntity? = null, dto: VendorDTO, company: Company): VendorEntity {
       val vendorGroupId = dto.vendorGroup?.id
       val vendorGroup = if (vendorGroupId != null) vendorGroupRepository.findOne(vendorGroupId, company) else null
       val shipViaId = dto.shipVia!!.id!!
