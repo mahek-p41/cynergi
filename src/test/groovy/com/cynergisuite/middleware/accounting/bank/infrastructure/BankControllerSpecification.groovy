@@ -3,12 +3,13 @@ package com.cynergisuite.middleware.accounting.bank.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -25,10 +26,10 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one bank by id" () {
       given:
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      final def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
       when:
       def result = get("$path/${bank.id}")
@@ -39,28 +40,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id == bank.id
          name == bank.name
-         accountNumber == bank.accountNumber
          generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.id
          generalLedgerAccount.id == bank.generalLedgerAccount.id
-         with(address) {
-            id > 0
-            name == bank.address.name
-            address1 == bank.address.address1
-            address2 == bank.address.address2
-            city == bank.address.city
-            country == bank.address.country
-            county == bank.address.county
-            latitude == bank.address.latitude
-            longitude == bank.address.longitude
-            postalCode == bank.address.postalCode
-            state == bank.address.state
-            phone == bank.address.phone
-            fax == bank.address.fax
-         }
-         with(currency) {
-            description == bank.currency.description
-            value == bank.currency.value
-         }
       }
    }
 
@@ -78,17 +59,17 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       bankFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'), store, account)
-      final def banks = bankFactoryService.stream(12, nineNineEightEmployee.company, store, account).toList()
-      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
-      def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
-      def pageFour = new StandardPageRequest(4, 5, "id", "ASC")
-      def firstPageBank = banks[0..4]
-      def secondPageBank = banks[5..9]
-      def lastPageBank = banks[10,11]
+      final banks = bankFactoryService.stream(12, nineNineEightEmployee.company, store, account).toList()
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageLast = new StandardPageRequest(3, 5, "id", "ASC")
+      final pageFour = new StandardPageRequest(4, 5, "id", "ASC")
+      final firstPageBank = banks[0..4]
+      final secondPageBank = banks[5..9]
+      final lastPageBank = banks[10,11]
 
       when:
       def pageOneResult = get("$path${pageOne}")
@@ -104,28 +85,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          with (it) {
             id == firstPageBank[index].id
             name == firstPageBank[index].name
-            accountNumber == firstPageBank[index].accountNumber
             generalLedgerProfitCenter.id == firstPageBank[index].generalLedgerProfitCenter.id
             generalLedgerAccount.id == firstPageBank[index].generalLedgerAccount.id
-            with (address) {
-               id > 0
-               name == firstPageBank[index].address.name
-               address1 == firstPageBank[index].address.address1
-               address2 == firstPageBank[index].address.address2
-               city == firstPageBank[index].address.city
-               country == firstPageBank[index].address.country
-               county == firstPageBank[index].address.county
-               latitude == firstPageBank[index].address.latitude
-               longitude == firstPageBank[index].address.longitude
-               postalCode == firstPageBank[index].address.postalCode
-               state == firstPageBank[index].address.state
-               phone == firstPageBank[index].address.phone
-               fax == firstPageBank[index].address.fax
-            }
-            with (currency) {
-               description == firstPageBank[index].currency.description
-               value == firstPageBank[index].currency.value
-            }
          }
       }
 
@@ -143,28 +104,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          with(it) {
             id == secondPageBank[index].id
             name == secondPageBank[index].name
-            accountNumber == secondPageBank[index].accountNumber
             generalLedgerProfitCenter.id == secondPageBank[index].generalLedgerProfitCenter.id
             generalLedgerAccount.id == secondPageBank[index].generalLedgerAccount.id
-            with(address) {
-               id > 0
-               name == secondPageBank[index].address.name
-               address1 == secondPageBank[index].address.address1
-               address2 == secondPageBank[index].address.address2
-               city == secondPageBank[index].address.city
-               country == secondPageBank[index].address.country
-               county == secondPageBank[index].address.county
-               latitude == secondPageBank[index].address.latitude
-               longitude == secondPageBank[index].address.longitude
-               postalCode == secondPageBank[index].address.postalCode
-               state == secondPageBank[index].address.state
-               phone == secondPageBank[index].address.phone
-               fax == secondPageBank[index].address.fax
-            }
-            with(currency) {
-               description == secondPageBank[index].currency.description
-               value == secondPageBank[index].currency.value
-            }
          }
       }
       when:
@@ -181,28 +122,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          with(it) {
             id == lastPageBank[index].id
             name == lastPageBank[index].name
-            accountNumber == lastPageBank[index].accountNumber
             generalLedgerProfitCenter.id == lastPageBank[index].generalLedgerProfitCenter.id
             generalLedgerAccount.id == lastPageBank[index].generalLedgerAccount.id
-            with(address) {
-               id > 0
-               name == lastPageBank[index].address.name
-               address1 == lastPageBank[index].address.address1
-               address2 == lastPageBank[index].address.address2
-               city == lastPageBank[index].address.city
-               country == lastPageBank[index].address.country
-               county == lastPageBank[index].address.county
-               latitude == lastPageBank[index].address.latitude
-               longitude == lastPageBank[index].address.longitude
-               postalCode == lastPageBank[index].address.postalCode
-               state == lastPageBank[index].address.state
-               phone == lastPageBank[index].address.phone
-               fax == lastPageBank[index].address.fax
-            }
-            with(currency) {
-               description == lastPageBank[index].currency.description
-               value == lastPageBank[index].currency.value
-            }
          }
       }
 
@@ -210,16 +131,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
    void "create a valid bank"() {
       given:
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store, account)
-      final def jsonBank = jsonOutput.toJson(bankDTO)
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+      final jsonBank = jsonOutput.toJson(bankDTO)
 
       when:
       def result = post("$path/", jsonBank)
@@ -230,108 +151,62 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id > 0
          name == bankDTO.name
-         accountNumber == bankDTO.accountNumber
          generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
          generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
-         with(address) {
-            id > 0
-            name == bankDTO.address.name
-            address1 == bankDTO.address.address1
-            address2 == bankDTO.address.address2
-            city == bankDTO.address.city
-            country == bankDTO.address.country
-            county == bankDTO.address.county
-            latitude == bankDTO.address.latitude
-            longitude == bankDTO.address.longitude
-            postalCode == bankDTO.address.postalCode
-            state == bankDTO.address.state
-            phone == bankDTO.address.phone
-            fax == bankDTO.address.fax
-         }
-         with(currency) {
-            description == bankDTO.currency.description
-            value == bankDTO.currency.value
-         }
       }
    }
 
-   void "create an invalid bank without account number"() {
-      given: 'get json bank object and make it invalid'
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store, account)
-      // Make invalid json
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.remove('accountNumber')
+   void "create invalid bank with other company's account" () {
+      given:
+      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final account = accountFactoryService.single(company2)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
 
       when:
-      def result = post("$path/", jsonBank)
+      post("$path/", bankDTO)
 
       then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
+      final response = ex.response.bodyAsJson()
       response.size() == 1
-      response[0].message == 'Is required'
-      response[0].path == 'bankDTO.accountNumber'
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
+         new ErrorDataTransferObject("${String.format('%,d', account.id)} was unable to be found", "generalLedgerAccount.id")
+      ]
    }
 
-   void "create an invalid bank without address"() {
-      given: 'get json bank object and make it invalid'
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store, account)
-      // Make invalid json
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.remove('address')
+   void "create invalid bank with other company's store" () {
+      given:
+      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, company2)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
 
       when:
-      post("$path/", jsonBank)
+      post("$path/", bankDTO)
 
       then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
+      final response = ex.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'bankDTO.address'
-      response[0].message == 'Is required'
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
+         new ErrorDataTransferObject("${String.format('%,d', store.id)} was unable to be found", "generalLedgerProfitCenter.id")
+      ]
    }
 
-   void "create an invalid bank with non exist currency value"() {
-      given: 'get json bank object and make it invalid'
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.singleDTO(store, account)
-      // Make invalid json
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.currency.value = 'USDT'
-
-      when:
-      post("$path/", jsonBank)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'currency.value'
-      response[0].message == 'USDT was unable to be found'
-   }
-
-   void "update a valid bank"() {
+   void "update a valid bank's profit center"() {
       given: 'Update existingBank in DB with all new data in jsonBank'
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      final def updatedBankDTO = bankFactoryService.singleDTO(store, account)
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(updatedBankDTO))
-      jsonBank.with {
-         id = existingBank.id
-         address.id = existingBank.address.id
-      }
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final updateStore = storeFactoryService.store(1, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final updatedBankDTO = bankFactoryService.singleDTO(store, account)
 
       when:
-      def result = put("$path/$existingBank.id", jsonBank)
+      updatedBankDTO.generalLedgerProfitCenter.id = updateStore.id
+      def result = put("$path/$existingBank.id", updatedBankDTO)
 
       then:
       notThrown(HttpClientResponseException)
@@ -339,28 +214,31 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id > 0
          name == updatedBankDTO.name
-         accountNumber == updatedBankDTO.accountNumber
-         generalLedgerProfitCenter.id == updatedBankDTO.generalLedgerProfitCenter.id
+         generalLedgerProfitCenter.id == updateStore.id
          generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
-         with(address) {
-            id > 0
-            name == updatedBankDTO.address.name
-            address1 == updatedBankDTO.address.address1
-            address2 == updatedBankDTO.address.address2
-            city == updatedBankDTO.address.city
-            country == updatedBankDTO.address.country
-            county == updatedBankDTO.address.county
-            latitude == updatedBankDTO.address.latitude
-            longitude == updatedBankDTO.address.longitude
-            postalCode == updatedBankDTO.address.postalCode
-            state == updatedBankDTO.address.state
-            phone == updatedBankDTO.address.phone
-            fax == updatedBankDTO.address.fax
-         }
-         with(currency) {
-            description == updatedBankDTO.currency.description
-            value == updatedBankDTO.currency.value
-         }
+      }
+   }
+
+   void "update a valid bank's profit gl account"() {
+      given: 'Update existingBank in DB with all new data in jsonBank'
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final updateAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final updatedBankDTO = bankFactoryService.singleDTO(store, account)
+
+      when:
+      updatedBankDTO.generalLedgerAccount.id = updateAccount.id
+      def result = put("$path/$existingBank.id", updatedBankDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         name == updatedBankDTO.name
+         generalLedgerProfitCenter.id == store.id
+         generalLedgerAccount.id == updateAccount.id
       }
    }
 
@@ -370,7 +248,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store, account)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.address.name = ''
+      jsonBank.name = ''
 
       when:
       put("$path/$bankDTO.id", jsonBank)
@@ -381,47 +259,29 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
 
-      response[0].path == 'bankDTO.address.name'
+      response[0].path == 'bankDTO.name'
       response[0].message == 'Is required'
    }
 
-   void "update a invalid bank with non exist address id"() {
-      given:
+   void "update a valid bank with no id"() {
+      given: 'Update existingBank in DB with all new data in jsonBank'
       final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.address.id = 1000
+      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final def updatedBankDTO = new BankDTO(existingBank)
 
       when:
-      put("$path/$bankDTO.id", jsonBank)
+      updatedBankDTO.id = null
+      def result = put("$path/$existingBank.id", updatedBankDTO)
 
       then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].message == '1,000 was unable to be found'
-      response[0].path == 'address.id'
-   }
+      notThrown(HttpClientResponseException)
 
-   void "update a invalid bank without currency"() {
-      given:
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.remove('currency')
-
-      when:
-      put("$path/$bankDTO.id", jsonBank)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'bankDTO.currency'
-      response[0].message == 'Is required'
+      with(result) {
+         id > 0
+         name == updatedBankDTO.name
+         generalLedgerProfitCenter.id == store.id
+         generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
+      }
    }
 }

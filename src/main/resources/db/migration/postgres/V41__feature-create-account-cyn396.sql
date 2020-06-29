@@ -94,19 +94,6 @@ EXECUTE PROCEDURE last_updated_column_fn();
 -- end account setup
 
 -- begin bank setup
-CREATE TABLE bank_currency_code_type_domain
-(
-    id                integer                                                        NOT NULL PRIMARY KEY,
-    value             varchar(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
-    description       varchar(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
-    localization_code varchar(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (value)
-);
-
-INSERT INTO bank_currency_code_type_domain(id, value, description, localization_code)
-VALUES (1, 'USA', 'United States', 'united.states'),
-       (2, 'CAN', 'Canada', 'canada');
-
 CREATE TABLE bank
 (
     id                               BIGSERIAL                                                  NOT NULL PRIMARY KEY,
@@ -114,14 +101,10 @@ CREATE TABLE bank
     time_created                     TIMESTAMPTZ                 DEFAULT clock_timestamp()      NOT NULL,
     time_updated                     TIMESTAMPTZ                 DEFAULT clock_timestamp()      NOT NULL,
     company_id                       BIGINT REFERENCES company (id)                             NOT NULL,
-    address_id                       BIGINT REFERENCES address (id)                             NOT NULL,
     number                           BIGINT CHECK ( number > 0 ) DEFAULT currval('bank_id_seq') NOT NULL,
     name                             varchar(50) CHECK ( char_length(trim(name)) > 1)           NOT NULL,
-    general_ledger_profit_center_sfk INTEGER CHECK ( general_ledger_profit_center_sfk > 0 )     NOT NULL, --profit center is store
-    general_ledger_account_id        BIGINT REFERENCES account (id),
-    account_number                   varchar(50) CHECK ( char_length(trim(account_number)) > 1) NOT NULL, -- bank account number provided
-    currency_code_id                 BIGINT REFERENCES bank_currency_code_type_domain (id)      NOT NULL,
-    UNIQUE (company_id, account_number)
+    general_ledger_profit_center_sfk INTEGER CHECK ( general_ledger_profit_center_sfk > 0 )     NOT NULL, --profit center is store or possibly home office
+    general_ledger_account_id        BIGINT REFERENCES account (id)                             NOT NULL
 );
 CREATE TRIGGER update_bank_trg
     BEFORE UPDATE
@@ -129,5 +112,4 @@ CREATE TRIGGER update_bank_trg
     FOR EACH ROW
 EXECUTE PROCEDURE last_updated_column_fn();
 CREATE INDEX bank_company_id_idx ON bank (company_id);
-CREATE INDEX bank_address_id_idx ON bank (address_id);
 -- end bank setup
