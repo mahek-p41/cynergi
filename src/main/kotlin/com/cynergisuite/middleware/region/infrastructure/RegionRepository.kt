@@ -68,9 +68,7 @@ class RegionRepository @Inject constructor(
                emp.comp_federal_id_number             AS comp_federal_id_number,
                emp.dept_id                            AS dept_id,
                emp.dept_code                          AS dept_code,
-               emp.dept_description                   AS dept_description,
-               emp.dept_security_profile              AS dept_security_profile,
-               emp.dept_default_menu                  AS dept_default_menu
+               emp.dept_description                   AS dept_description
 	      FROM region AS reg
             JOIN division AS div ON div.id = reg.division_id
             LEFT JOIN emp ON emp.emp_number = reg.manager_number

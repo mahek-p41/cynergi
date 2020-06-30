@@ -55,9 +55,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.id                 AS dept_id,
             dept.code               AS dept_code,
             dept.description        AS dept_description,
-            dept.dataset            AS dept_dataset,
-            dept.security_profile   AS dept_security_profile,
-            dept.default_menu       AS dept_default_menu
+            dept.dataset            AS dept_dataset
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
@@ -65,7 +63,7 @@ class AuditPermissionRepository @Inject constructor(
          WHERE ap.id = :ap_id
                AND comp.id = :comp_id""",
          mapOf("ap_id" to id, "comp_id" to company.myId()),
-         RowMapper<AuditPermissionEntity> { rs, _ ->
+         RowMapper { rs, _ ->
             processFindRow(rs, company)
          }
       )
@@ -102,8 +100,6 @@ class AuditPermissionRepository @Inject constructor(
             dept.code               AS dept_code,
             dept.description        AS dept_description,
             dept.dataset            AS dept_dataset,
-            dept.security_profile   AS dept_security_profile,
-            dept.default_menu       AS dept_default_menu,
             count(*) OVER() as total_elements
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
@@ -150,8 +146,6 @@ class AuditPermissionRepository @Inject constructor(
             dept.code               AS dept_code,
             dept.description        AS dept_description,
             dept.dataset            AS dept_dataset,
-            dept.security_profile   AS dept_security_profile,
-            dept.default_menu       AS dept_default_menu,
             count(*) OVER() as total_elements
          FROM audit_permission ap
             JOIN company comp ON ap.company_id = comp.id
@@ -189,9 +183,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.id                 AS dept_id,
             dept.code               AS dept_code,
             dept.description        AS dept_description,
-            dept.dataset            AS dept_dataset,
-            dept.security_profile   AS dept_security_profile,
-            dept.default_menu       AS dept_default_menu
+            dept.dataset            AS dept_dataset
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id

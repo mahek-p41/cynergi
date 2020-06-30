@@ -25,9 +25,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.department_vw (
     id BIGINT,
     dataset VARCHAR,
     code VARCHAR,
-    description VARCHAR,
-    security_profile INTEGER,
-    default_menu VARCHAR
+    description VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'department_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.employee_vw (

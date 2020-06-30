@@ -12,12 +12,12 @@ class DepartmentService @Inject constructor(
    private val departmentRepository: DepartmentRepository
 ) {
 
-   fun fetchOne(id: Long, user: User): DepartmentValueObject? =
-      departmentRepository.findOne(id, user.myCompany())?.let { DepartmentValueObject(it) }
+   fun fetchOne(id: Long, user: User): DepartmentDTO? =
+      departmentRepository.findOne(id, user.myCompany())?.let { DepartmentDTO(it) }
 
-   fun fetchAll(pageRequest: PageRequest, user: User): Page<DepartmentValueObject> {
+   fun fetchAll(pageRequest: PageRequest, user: User): Page<DepartmentDTO> {
       val departments = departmentRepository.findAll(pageRequest, user.myCompany())
 
-      return departments.toPage { DepartmentValueObject(it) }
+      return departments.toPage { DepartmentDTO(it) }
    }
 }

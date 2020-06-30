@@ -29,7 +29,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -81,7 +81,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -155,7 +155,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, validEmployee.store.number, null)),
+            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, validEmployee.store.myNumber(), null)),
             Argument.of(String),
             Argument.of(String)
          )
@@ -178,7 +178,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(user.number.toString(), user.passCode, user.store.number, 'tstds2')),
+            POST("/login", new LoginCredentials(user.number.toString(), user.passCode, user.store.myNumber(), 'tstds2')),
             Argument.of(String),
             Argument.of(String)
          )
@@ -252,7 +252,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()

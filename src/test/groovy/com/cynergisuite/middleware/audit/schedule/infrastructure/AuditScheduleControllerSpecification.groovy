@@ -276,7 +276,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == true
 
       loadedSchedule.arguments.size() == 5
-      final args = loadedSchedule.arguments.sort { o1, o2 -> o1.description <=> o2.description }
+      final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
       with(args[0]) {
          description == "employeeNumber"
          value == nineNineEightEmployee.number.toString()
@@ -291,11 +291,11 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       }
       with(args[3]) {
          description == "storeNumber"
-         value == "3"
+         value == "1"
       }
       with(args[4]) {
          description == "storeNumber"
-         value == "1"
+         value == "3"
       }
    }
 
@@ -321,7 +321,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == false
 
       loadedSchedule.arguments.size() == 4
-      final args = loadedSchedule.arguments.sort { o1, o2 -> o1.description <=> o2.description }
+      final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
       with(args[0]) {
          description == "employeeNumber"
          value == nineNineEightEmployee.number.toString()
@@ -376,7 +376,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.enabled == true
 
       loadedSchedule.arguments.size() == 4
-      final args = loadedSchedule.arguments.sort { o1, o2 -> o1.description <=> o2.description }
+      final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
       with(args[0]) {
          description == "employeeNumber"
          value == nineNineEightEmployee.number.toString()

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.permission
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.department.DepartmentValueObject
+import com.cynergisuite.middleware.department.DepartmentDTO
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -27,7 +27,7 @@ data class AuditPermissionValueObject(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "department", description = "Department assigned to this audit permission")
-   var department: DepartmentValueObject
+   var department: DepartmentDTO
 
 ) : Identifiable {
 
@@ -35,7 +35,7 @@ data class AuditPermissionValueObject(
       this(
          id = entity.id,
          type = AuditPermissionTypeValueObject(entity.type, locale, localizationService),
-         department = DepartmentValueObject(entity.department)
+         department = DepartmentDTO(entity.department)
       )
 
    override fun myId(): Long? = id
