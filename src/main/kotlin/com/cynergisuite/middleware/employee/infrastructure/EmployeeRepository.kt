@@ -132,12 +132,12 @@ class EmployeeRepository @Inject constructor(
 
    fun findOne(id: Long): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE comp_id = :comp_id",
+         "${employeeBaseQuery()} WHERE emp_id = :emp_id LIMIT 1",
          mutableMapOf("emp_id" to id),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.trace("Searching for Employee: {} {} {} resulted in {}", id, found)
+      logger.trace("Searching for Employee: {} resulted in {}", id, found)
 
       return found
    }

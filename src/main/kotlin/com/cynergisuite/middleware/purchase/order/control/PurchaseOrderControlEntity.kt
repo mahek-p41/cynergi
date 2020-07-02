@@ -20,23 +20,23 @@ data class PurchaseOrderControlEntity(
    val printVendorComments: Boolean,
    val includeFreightInCost: Boolean,
    val updateCostOnModel: Boolean,
-   val defaultVendor: VendorEntity,
+   val defaultVendor: VendorEntity? = null,
    val updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
    val defaultPurchaseOrderType: PurchaseOrderType,
    val sortByShipToOnPrint: Boolean,
    val invoiceByLocation: Boolean,
    val validateInventory: Boolean,
-   val defaultApprover: EmployeeEntity,
+   val defaultApprover: EmployeeEntity? = null,
    val approvalRequiredFlagType: ApprovalRequiredFlagType
 ) : Identifiable {
 
    constructor(
       dto: PurchaseOrderControlDTO,
       defaultStatusType: PurchaseOrderStatusType,
-      defaultVendor: VendorEntity,
+      defaultVendor: VendorEntity?,
       updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
       defaultPurchaseOrderType: PurchaseOrderType,
-      defaultApprover: EmployeeEntity,
+      defaultApprover: EmployeeEntity?,
       approvalRequiredFlagType: ApprovalRequiredFlagType
    ) :
       this(

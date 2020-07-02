@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagType
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusType
@@ -40,13 +41,17 @@ class PurchaseOrderControlValidator @Inject constructor(
    fun validateCreate(@Valid dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlEntity {
       logger.debug("Validating Create PurchaseOrderControl {}", dto)
       val defaultStatusType = purchaseOrderStatusTypeRepository.findOne(dto.defaultStatusType!!.value)!!
-      val defaultVendor = vendorRepository.findOne(dto.defaultVendor!!.id!!, company)!!
+      val defaultVendor = dto.defaultVendor?.id?.let { vendorRepository.findOne(it, company) }
       val updatePurchaseOrderCost = updatePurchaseOrderCostTypeRepository.findOne(dto.updatePurchaseOrderCost!!.value)!!
       val defaultPurchaseOrderType = purchaseOrderTypeRepository.findOne(dto.defaultPurchaseOrderType!!.value)!!
-      val defaultApprover = employeeRepository.findOne(dto.defaultApprover!!.id!!)!!
+      val defaultApprover = dto.defaultApprover?.id?.let { employeeRepository.findOne(it) }
       val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.findOne(dto.approvalRequiredFlagType!!.value)!!
 
       doValidation { errors ->
+         if (purchaseOrderControlRepository.exists(company)) {
+            errors.add(ValidationError("company", Duplicate("Purchase order control for user's company " + company.myDataset())))
+         }
+
          doSharedValidation(errors, dto, defaultStatusType, defaultVendor, updatePurchaseOrderCost, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType)
       }
 
@@ -108,13 +113,17 @@ class PurchaseOrderControlValidator @Inject constructor(
          }
       }
 
-      defaultVendor ?: errors.add(ValidationError("defaultVendor.id", NotFound(dto.defaultVendor!!.id!!)))
+      if (dto.defaultVendor?.id != null) {
+         defaultVendor ?: errors.add(ValidationError("defaultVendor.id", NotFound(dto.defaultVendor!!.id!!)))
+      }
 
       updatePurchaseOrderCost ?: errors.add(ValidationError("updatePurchaseOrderCost.value", NotFound(dto.updatePurchaseOrderCost!!.value)))
 
       defaultPurchaseOrderType ?: errors.add(ValidationError("defaultPurchaseOrderType.value", NotFound(dto.defaultPurchaseOrderType!!.value)))
 
-      defaultApprover ?: errors.add(ValidationError("defaultApprover.id", NotFound(dto.defaultApprover!!.id!!)))
+      if (dto.defaultApprover?.id != null) {
+         defaultApprover ?: errors.add(ValidationError("defaultApprover.id", NotFound(dto.defaultApprover!!.id!!)))
+      }
 
       approvalRequiredFlagType ?: errors.add(ValidationError("approvalRequiredFlagType.value", NotFound(dto.approvalRequiredFlagType!!.value)))
    }

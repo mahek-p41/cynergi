@@ -15,6 +15,7 @@ import javax.validation.constraints.Positive
 data class PurchaseOrderControlDTO(
 
    @field:Positive
+   @field:Schema(description = "Purchase order control id")
    var id: Long? = null,
 
    @field:NotNull
@@ -71,9 +72,8 @@ data class PurchaseOrderControlDTO(
    @field:Schema(description = "Validate inventory")
    var validateInventory: Boolean? = null,
 
-   @field:NotNull
    @field:Schema(description = "Default approver")
-   var defaultApprover: SimpleIdentifiableDTO? = null,
+   var defaultApprover: SimpleIdentifiableDTO?,
 
    @field:NotNull
    @field:Schema(description = "Approval required flag type")
@@ -97,15 +97,16 @@ data class PurchaseOrderControlDTO(
          printVendorComments = entity.printVendorComments,
          includeFreightInCost = entity.includeFreightInCost,
          updateCostOnModel = entity.updateCostOnModel,
-         defaultVendor = SimpleIdentifiableDTO(entity.defaultVendor),
+         defaultVendor = entity.defaultVendor?.let { SimpleIdentifiableDTO(it) },
          updatePurchaseOrderCost = updatePurchaseOrderCost,
          defaultPurchaseOrderType = defaultPurchaseOrderType,
          sortByShipToOnPrint = entity.sortByShipToOnPrint,
          invoiceByLocation = entity.invoiceByLocation,
          validateInventory = entity.validateInventory,
-         defaultApprover = SimpleIdentifiableDTO(entity.defaultApprover),
+         defaultApprover = entity.defaultApprover?.let { SimpleIdentifiableDTO(it) },
          approvalRequiredFlagType = approvalRequiredFlagType
       )
+
 
    override fun myId(): Long? = id
 }

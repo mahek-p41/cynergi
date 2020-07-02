@@ -57,18 +57,12 @@ class PurchaseOrderControlRepository @Inject constructor(
             purchaseOrderControl.drop_five_characters_on_model_number            AS purchaseOrderControl_drop_five_characters_on_model_number,
             purchaseOrderControl.update_account_payable                          AS purchaseOrderControl_update_account_payable,
             purchaseOrderControl.print_second_description                        AS purchaseOrderControl_print_second_description,
-            purchaseOrderControl.default_status_type_id                          AS purchaseOrderControl_default_status_type_id,
             purchaseOrderControl.print_vendor_comments                           AS purchaseOrderControl_print_vendor_comments,
             purchaseOrderControl.include_freight_in_cost                         AS purchaseOrderControl_include_freight_in_cost,
             purchaseOrderControl.update_cost_on_model                            AS purchaseOrderControl_update_cost_on_model,
-            purchaseOrderControl.default_vendor_id                               AS purchaseOrderControl_default_vendor_id,
-            purchaseOrderControl.update_purchase_order_cost_type_id              AS purchaseOrderControl_update_purchase_order_cost_type_id,
-            purchaseOrderControl.default_purchase_order_type_id                  AS purchaseOrderControl_default_purchase_order_type_id,
             purchaseOrderControl.sort_by_ship_to_on_print                        AS purchaseOrderControl_sort_by_ship_to_on_print,
             purchaseOrderControl.invoice_by_location                             AS purchaseOrderControl_invoice_by_location,
             purchaseOrderControl.validate_inventory                              AS purchaseOrderControl_validate_inventory,
-            purchaseOrderControl.default_approver_id_sfk                         AS purchaseOrderControl_default_approver_id_sfk,
-            purchaseOrderControl.approval_required_flag_type_id                  AS purchaseOrderControl_approval_required_flag_type_id,
             statusType.id                                                        AS statusType_id,
             statusType.value                                                     AS statusType_value,
             statusType.description                                               AS statusType_description,
@@ -205,26 +199,26 @@ class PurchaseOrderControlRepository @Inject constructor(
             appReqFlagType.localization_code                                     AS appReqFlagType_localization_code
          FROM purchase_order_control purchaseOrderControl
             JOIN purchase_order_status_type_domain statusType ON purchaseOrderControl.default_status_type_id = statusType.id
-            JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.id
+            JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.v_id
             JOIN update_purchase_order_cost_type_domain updatePOCostType ON purchaseOrderControl.update_purchase_order_cost_type_id = updatePOCostType.id
             JOIN purchase_order_type_domain defaultPOType ON purchaseOrderControl.default_purchase_order_type_id = defaultPOType.id
-            JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.id
+            JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_id AND defApp.emp_type = 'eli'
             JOIN approval_required_flag_type_domain appReqFlagType ON purchaseOrderControl.approval_required_flag_type_id = appReqFlagType.id
       """
    }
 
    fun findOne(company: Company): PurchaseOrderControlEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE comp.id = :comp.id"
+      val query = "${selectBaseQuery()} WHERE purchaseOrderControl.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-            val defaultStatusType = purchaseOrderStatusTypeRepository.mapRow(rs, "default_status_type_")
-            val defaultVendor = vendorRepository.mapRow(rs, company)
-            val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "update_purchase_order_cost_type_")
-            val defaultPurchaseOrderType = purchaseOrderTypeRepository.mapRow(rs, "default_purchase_order_type_")
-            val defaultApprover = employeeRepository.mapRow(rs, "default_approver_")
-            val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "approval_required_flag_type_")
+            val defaultStatusType = purchaseOrderStatusTypeRepository.mapRow(rs, "statusType_")
+            val defaultVendor = vendorRepository.mapRow(rs, company, "defVen_")
+            val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
+            val defaultPurchaseOrderType = purchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
+            val defaultApprover = employeeRepository.mapRow(rs, "defApp_")
+            val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
 
-            mapRow(rs, defaultStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType)
+            mapRow(rs, defaultStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_" )
          }
       )
 
@@ -234,9 +228,17 @@ class PurchaseOrderControlRepository @Inject constructor(
    }
 
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM purchase_order_control WHERE id = :id", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM purchase_order_control WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if PurchaseOrderControl: {} exists resulted in {}", id, exists)
+
+      return exists
+   }
+
+   fun exists(company: Company): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM purchase_order_control WHERE company_id = :company_id)", mapOf("company_id" to company.myId()), Boolean::class.java)!!
+
+      logger.trace("Checking if PurchaseOrderControl: {} exists resulted in {}", company, exists)
 
       return exists
    }
@@ -294,13 +296,13 @@ class PurchaseOrderControlRepository @Inject constructor(
             "print_vendor_comments" to entity.printVendorComments,
             "include_freight_in_cost" to entity.includeFreightInCost,
             "update_cost_on_model" to entity.updateCostOnModel,
-            "default_vendor_id" to entity.defaultVendor.id,
+            "default_vendor_id" to entity.defaultVendor?.id,
             "update_purchase_order_cost_type_id" to entity.updatePurchaseOrderCost.id,
             "default_purchase_order_type_id" to entity.defaultPurchaseOrderType.id,
             "sort_by_ship_to_on_print" to entity.sortByShipToOnPrint,
             "invoice_by_location" to entity.invoiceByLocation,
             "validate_inventory" to entity.validateInventory,
-            "default_approver_id_sfk" to entity.defaultApprover.id,
+            "default_approver_id_sfk" to entity.defaultApprover?.id,
             "approval_required_flag_type_id" to entity.approvalRequiredFlagType.id
          ),
          RowMapper { rs, _ ->
@@ -354,13 +356,13 @@ class PurchaseOrderControlRepository @Inject constructor(
             "print_vendor_comments" to entity.printVendorComments,
             "include_freight_in_cost" to entity.includeFreightInCost,
             "update_cost_on_model" to entity.updateCostOnModel,
-            "default_vendor_id" to entity.defaultVendor.id,
+            "default_vendor_id" to entity.defaultVendor?.id,
             "update_purchase_order_cost_type_id" to entity.updatePurchaseOrderCost.id,
             "default_purchase_order_type_id" to entity.defaultPurchaseOrderType.id,
             "sort_by_ship_to_on_print" to entity.sortByShipToOnPrint,
             "invoice_by_location" to entity.invoiceByLocation,
             "validate_inventory" to entity.validateInventory,
-            "default_approver_id_sfk" to entity.defaultApprover.id,
+            "default_approver_id_sfk" to entity.defaultApprover?.id,
             "approval_required_flag_type_id" to entity.approvalRequiredFlagType.id
          ),
          RowMapper { rs, _ ->
@@ -380,10 +382,10 @@ class PurchaseOrderControlRepository @Inject constructor(
    private fun mapRow(
       rs: ResultSet,
       defaultStatusType: PurchaseOrderStatusType,
-      defaultVendor: VendorEntity,
+      defaultVendor: VendorEntity?,
       updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
       defaultPurchaseOrderType: PurchaseOrderType,
-      defaultApprover: EmployeeEntity,
+      defaultApprover: EmployeeEntity?,
       approvalRequiredFlagType: ApprovalRequiredFlagType,
       columnPrefix: String = EMPTY
    ): PurchaseOrderControlEntity {

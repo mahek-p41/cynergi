@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDTO
@@ -13,8 +12,6 @@ import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -31,27 +28,28 @@ class PurchaseOrderControlController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderControlController::class.java)
 
-   @Get(uri = "/api/purchase/order/control", produces = [APPLICATION_JSON])
+   @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Fetch a single PurchaseOrderControlDTO", description = "Fetch a single PurchaseOrderControlDTO that is associated with the logged-in user's company", operationId = "purchaseOrderControl-fetchOne")
    @ApiResponses(value = [
       ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
+      ApiResponse(responseCode = "404", description = "The requested PurchaseOrderControl was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchOne(
-      @QueryValue("company") company: Company,
       authentication: Authentication
-   ): PurchaseOrderControlDTO? {
-      logger.info("Fetching PurchaseOrderControl by {}", company)
-
+   ): PurchaseOrderControlDTO {
       val user = userService.findUser(authentication)
-      val response = purchaseOrderControlService.fetchOne(company = user.myCompany())
+      val userCompany = user.myCompany()
+      logger.info("Fetching PurchaseOrderControl by {}", userCompany)
 
-      logger.debug("Fetching PurchaseOrderControl by {} resulted in", company, response)
+      val response = purchaseOrderControlService.fetchOne(userCompany) ?: throw NotFoundException("Purchase order of the company")
+
+      logger.debug("Fetching PurchaseOrderControl by {} resulted in", userCompany, response)
 
       return response
    }
 
-   @Post(uri = "/api/purchase/order/control", processes = [APPLICATION_JSON])
+   @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoint"], summary = "Create a PurchaseOrderControlEntity", description = "Create a PurchaseOrderControlEntity", operationId = "purchaseOrderControl-create")
    @ApiResponses(value = [
@@ -61,26 +59,27 @@ class PurchaseOrderControlController @Inject constructor(
    ])
    @AccessControl("POCTLUP")
    fun create(
-      @Parameter(name = "company", `in` = ParameterIn.PATH, description = "The company for which the PO control record is being written")
-      @QueryValue("company") company: Company,
       @Body dto: PurchaseOrderControlDTO,
       authentication: Authentication
    ): PurchaseOrderControlDTO {
+      val user = userService.findUser(authentication)
+      val userCompany = user.myCompany()
       logger.info("Requested Create PurchaseOrderControl {}", dto)
 
-      val user = userService.findUser(authentication)
-      val response = purchaseOrderControlService.create(dto, company = user.myCompany())
+      val response = purchaseOrderControlService.create(dto, userCompany)
 
       logger.debug("Requested Create PurchaseOrderControl {} resulted in {}", dto, response)
 
       return response
    }
 
-   @Put(uri = "/api/purchase/order/control", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Update a PurchaseOrderControlEntity", description = "Update a PurchaseOrderControlEntity from a body of PurchaseOrderControlDTO", operationId = "purchaseOrderControl-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to update PurchaseOrderControl", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
+      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+      ApiResponse(responseCode = "404", description = "The requested PurchaseOrderControl was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    @AccessControl("POCTLUP")
@@ -89,10 +88,11 @@ class PurchaseOrderControlController @Inject constructor(
       @Body dto: PurchaseOrderControlDTO,
       authentication: Authentication
    ): PurchaseOrderControlDTO {
+      val user = userService.findUser(authentication)
+      val userCompany = user.myCompany()
       logger.info("Requested Update PurchaseOrderControl {}", dto)
 
-      val user = userService.findUser(authentication)
-      val response = purchaseOrderControlService.update(id, dto, company = user.myCompany())
+      val response = purchaseOrderControlService.update(id, dto, userCompany)
 
       logger.debug("Requested Update PurchaseOrderControl {} resulted in {}", dto, response)
 

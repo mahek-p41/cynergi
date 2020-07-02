@@ -440,45 +440,45 @@ class VendorRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company): VendorEntity {
-      val payToId = rs.getLongOrNull("v_pay_to_id")
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String? = "v_"): VendorEntity {
+      val payToId = rs.getLongOrNull("${columnPrefix}pay_to_id")
 
       return VendorEntity(
-         id = rs.getLong("v_id"),
+         id = rs.getLong("${columnPrefix}id"),
          company = company,
-         name = rs.getString("v_name"),
+         name = rs.getString("${columnPrefix}name"),
          address = addressRepository.mapAddress(rs, "address_"),
-         ourAccountNumber = rs.getInt("v_our_account_number"),
+         ourAccountNumber = rs.getInt("${columnPrefix}our_account_number"),
          payTo = if (payToId != null) SimpleIdentifiableEntity(payToId) else null,
          freightOnboardType = mapOnboard(rs, "onboard_"),
          paymentTerm = mapPaymentTerm(rs, company, "vpt_"),
-         floatDays = rs.getIntOrNull("v_float_days"),
-         normalDays = rs.getIntOrNull("v_normal_days"),
-         returnPolicy = rs.getBoolean("v_return_policy"),
+         floatDays = rs.getIntOrNull("${columnPrefix}float_days"),
+         normalDays = rs.getIntOrNull("${columnPrefix}normal_days"),
+         returnPolicy = rs.getBoolean("${columnPrefix}return_policy"),
          shipVia = mapShipVia(rs, company, "shipVia_"),
          vendorGroup = vendorGroupRepository.mapRowOrNull(rs, company, "vgrp_"),
-         minimumQuantity = rs.getIntOrNull("v_minimum_quantity"),
-         minimumAmount = rs.getBigDecimal("v_minimum_amount"),
-         freeShipQuantity = rs.getIntOrNull("v_free_ship_quantity"),
-         freeShipAmount = rs.getBigDecimal("v_free_ship_amount"),
-         vendor1099 = rs.getBoolean("v_vendor_1099"),
-         federalIdNumber = rs.getString("v_federal_id_number"),
-         salesRepresentativeName = rs.getString("v_sales_representative_name"),
-         salesRepresentativeFax = rs.getString("v_sales_representative_fax"),
-         separateCheck = rs.getBoolean("v_separate_check"),
-         bumpPercent = rs.getBigDecimal("v_bump_percent"),
+         minimumQuantity = rs.getIntOrNull("${columnPrefix}minimum_quantity"),
+         minimumAmount = rs.getBigDecimal("${columnPrefix}minimum_amount"),
+         freeShipQuantity = rs.getIntOrNull("${columnPrefix}free_ship_quantity"),
+         freeShipAmount = rs.getBigDecimal("${columnPrefix}free_ship_amount"),
+         vendor1099 = rs.getBoolean("${columnPrefix}vendor_1099"),
+         federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
+         salesRepresentativeName = rs.getString("${columnPrefix}sales_representative_name"),
+         salesRepresentativeFax = rs.getString("${columnPrefix}sales_representative_fax"),
+         separateCheck = rs.getBoolean("${columnPrefix}separate_check"),
+         bumpPercent = rs.getBigDecimal("${columnPrefix}bump_percent"),
          freightCalcMethodType = mapMethod(rs, "method_"),
-         freightPercent = rs.getBigDecimal("v_freight_percent"),
-         freightAmount = rs.getBigDecimal("v_freight_amount"),
-         chargeInventoryTax1 = rs.getBoolean("v_charge_inventory_tax_1"),
-         chargeInventoryTax2 = rs.getBoolean("v_charge_inventory_tax_2"),
-         chargeInventoryTax3 = rs.getBoolean("v_charge_inventory_tax_3"),
-         chargeInventoryTax4 = rs.getBoolean("v_charge_inventory_tax_4"),
-         federalIdNumberVerification = rs.getBoolean("v_federal_id_number_verification"),
-         emailAddress = rs.getString("v_email_address"),
-         purchaseOrderSubmitEmailAddress = rs.getString("v_purchase_order_submit_email_address"),
-         allowDropShipToCustomer = rs.getBoolean("v_allow_drop_ship_to_customer"),
-         autoSubmitPurchaseOrder = rs.getBoolean("v_auto_submit_purchase_order")
+         freightPercent = rs.getBigDecimal("${columnPrefix}freight_percent"),
+         freightAmount = rs.getBigDecimal("${columnPrefix}freight_amount"),
+         chargeInventoryTax1 = rs.getBoolean("${columnPrefix}charge_inventory_tax_1"),
+         chargeInventoryTax2 = rs.getBoolean("${columnPrefix}charge_inventory_tax_2"),
+         chargeInventoryTax3 = rs.getBoolean("${columnPrefix}charge_inventory_tax_3"),
+         chargeInventoryTax4 = rs.getBoolean("${columnPrefix}charge_inventory_tax_4"),
+         federalIdNumberVerification = rs.getBoolean("${columnPrefix}federal_id_number_verification"),
+         emailAddress = rs.getString("${columnPrefix}email_address"),
+         purchaseOrderSubmitEmailAddress = rs.getString("${columnPrefix}purchase_order_submit_email_address"),
+         allowDropShipToCustomer = rs.getBoolean("${columnPrefix}allow_drop_ship_to_customer"),
+         autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order")
       )
    }
 
