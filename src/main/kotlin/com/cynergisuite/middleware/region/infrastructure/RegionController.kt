@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.region.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -10,7 +11,7 @@ import com.cynergisuite.middleware.region.RegionDTO
 import com.cynergisuite.middleware.region.RegionService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.MediaType
+import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
@@ -43,10 +44,10 @@ class RegionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(RegionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["RegionEndpoints"], summary = "Fetch a single Region", description = "Fetch a single Region by ID", operationId = "region-fetchOne")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
       ApiResponse(responseCode = "404", description = "The requested Region was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -68,9 +69,9 @@ class RegionController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["RegionEndpoints"], summary = "Fetch a list of regions", description = "Fetch a list of regions", operationId = "region-fetchAll")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))])
    ])
-   @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
       authentication: Authentication,
@@ -88,12 +89,12 @@ class RegionController @Inject constructor(
       return regions
    }
 
-   @Post(processes = [MediaType.APPLICATION_JSON])
+   @Post(processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RegionEndpoints"], summary = "Create a single region", description = "Create a single region.", operationId = "region-create")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Region", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to save Region", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
@@ -112,12 +113,12 @@ class RegionController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}" ,processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}" ,processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RegionEndpoints"], summary = "Update a single region", description = "Update a single region.", operationId = "region-update")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Region", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to update Region", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "404", description = "The requested Region was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -138,11 +139,11 @@ class RegionController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["RegionEndpoints"], summary = "Delete a single Region", description = "Delete a single Region by it's system generated primary key", operationId = "region-delete")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Region was able to be deleted", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
+      ApiResponse(responseCode = "200", description = "If the Region was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Region was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -159,47 +160,48 @@ class RegionController @Inject constructor(
       return regionService.delete(id, user.myCompany()) ?: throw NotFoundException(id)
    }
 
-   @Post(uri = "/{id:[0-9]+}/store" ,processes = [MediaType.APPLICATION_JSON])
+   @Post(uri = "/{regionId:[0-9]+}/store" ,processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RegionEndpoints"], summary = "Assign a store to region", description = "Assign a store to region.", operationId = "region-assign-store")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to assign a store to region", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
+      ApiResponse(responseCode = "200", description = "If successfully able to assign a store to region", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
       ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun assignStore(
-      @QueryValue("id") regionId: Long,
-      @Body storeDTO: StoreDTO,
+      @QueryValue("regionId") regionId: Long,
+      @Body storeDTO: SimpleIdentifiableDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
       logger.info("Requested assign a Store to Region {}", storeDTO)
 
       val user = userService.findUser(authentication)
-      regionService.assignStoreToRegion(regionId, storeDTO.number!!, user.myCompany())
 
+      regionService.assignStoreToRegion(regionId, storeDTO, user.myCompany())
    }
 
 
-   @Delete(uri = "/{id:[0-9]+}/store", produces = [MediaType.APPLICATION_JSON])
+   @Delete(uri = "/{regionId:[0-9]+}/store/{storeId:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["RegionEndpoints"], summary = "Unassign a store from region", description = "Unassign a store from region", operationId = "region-unassign-store")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Region was able to be deleted", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
+      ApiResponse(responseCode = "200", description = "If the Region was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
       ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
       ApiResponse(responseCode = "404", description = "The requested Region was unable to be found"),
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun unassignStore(
-      @QueryValue("id") regionId: Long,
-      @Body storeDTO: StoreDTO,
+      @QueryValue("regionId") regionId: Long,
+      @QueryValue("storeId") storeId: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {
-      logger.info("Requested unassign a Store to Region {}", storeDTO)
+      logger.info("Requested unassign a Store {} from Region {}", storeId, regionId)
 
       val user = userService.findUser(authentication)
-      regionService.unassignStoreToRegion(regionId, storeDTO.number!!, user.myCompany())
+
+      regionService.unassignStoreToRegion(regionId, storeId, user.myCompany())
    }
 }

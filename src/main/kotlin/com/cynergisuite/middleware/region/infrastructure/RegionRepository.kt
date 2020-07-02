@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.region.RegionEntity
+import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
@@ -202,31 +203,31 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun unassignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
-      logger.debug("Deleting Region To Store region id {}, store number {}", regionId, storeNumber)
+   fun unassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+      logger.debug("Deleting Region To Store region id {}, store number {}", region, store)
 
       jdbc.update("""
          DELETE FROM region_to_store
          WHERE region_id = :region_id AND store_number = :store_number
          """,
          mapOf(
-            "region_id" to regionId,
-            "store_number" to storeNumber
+            "region_id" to region.myId(),
+            "store_number" to store.myId()
          )
       )
    }
 
-   fun assignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
-      logger.trace("Assigning Store {} to Region {}", regionId, storeNumber)
+   fun assignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+      logger.trace("Assigning Store {} to Region {}", region, store)
 
       jdbc.update("""
          INSERT INTO region_to_store (region_id, store_number, company_id)
          VALUES (:region_id, :store_number, :company_id)
          """.trimIndent(),
          mapOf(
-            "region_id" to regionId,
-            "store_number" to storeNumber,
-            "company_id" to myCompany.myId()
+            "region_id" to region.myId(),
+            "store_number" to store.myNumber(),
+            "company_id" to company.myId()
          )
       )
    }
