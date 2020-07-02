@@ -1,12 +1,17 @@
 package com.cynergisuite.middleware.region
 
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.division.DivisionEntity
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+import javax.inject.Inject
+
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -15,6 +20,8 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class RegionControllerSpecification extends ControllerSpecificationBase {
+   @Inject EmployeeFactoryService userSetupEmployeeFactoryService
+
    private static String path = '/region'
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
@@ -343,8 +350,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "create a region with logged in user who is not superuser"() {
       given:
-      final def region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
-      final def jsonRegion = jsonOutput.toJson(region)
+      final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+      final jsonRegion = jsonOutput.toJson(region)
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)
@@ -353,7 +360,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final loginAccessToken = loginEmployee(authenticatedEmployee)
 
       when:
-      def result = post("$path/", jsonRegion, loginAccessToken)
+      post("$path/", jsonRegion, loginAccessToken)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -362,8 +369,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a region with logged in user who is not superuser"() {
       given:
-      final def region = this.regions[0]
-      final def jsonRegion = jsonOutput.toJson(region)
+      final region = this.regions[0]
+      final jsonRegion = jsonOutput.toJson(region)
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)
@@ -372,7 +379,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final loginAccessToken = loginEmployee(authenticatedEmployee)
 
       when:
-      def result = put("$path/", jsonRegion, loginAccessToken)
+      put("$path/", jsonRegion, loginAccessToken)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -381,7 +388,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "delete a region with logged in user who is not superuser"() {
       given:
-      final def region = this.regions[0]
+      final region = this.regions[0]
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)
@@ -390,10 +397,90 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final loginAccessToken = loginEmployee(authenticatedEmployee)
 
       when:
-      def result = delete("$path/${region.id}", loginAccessToken)
+      delete("$path/${region.id}", loginAccessToken)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == FORBIDDEN
+   }
+
+   void "associate store with region for tstds2" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store = storeFactoryService.store(2, tstds2)
+      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
+      final division = divisionFactoryService.single(tstds2)
+      final region = regionFactoryService.single(division)
+
+      when:
+      def result = post("$path/${region.id}/store", new SimpleIdentifiableDTO(store.myId()), tstds2SuperUserLogin)
+
+      then:
+      notThrown(HttpClientResponseException)
+      result == null
+   }
+
+   void "associate store with region for tstds1 against tstds2" () {
+      given: "division/region/store from tstds1"
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1Store3 = storeFactoryService.store(3, tstds1)
+      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
+      final division = divisionFactoryService.single(tstds1)
+      final region = regionFactoryService.single(division)
+
+      when: "attempting to associate division/region/store from a company separate from the one the user is logged in under"
+      post("$path/${region.id}/store", new SimpleIdentifiableDTO(tstds1Store3.myId()), tstds2SuperUserLogin)
+
+      then: "a not found should result"
+      final ex = thrown(HttpClientResponseException)
+      ex.status == NOT_FOUND
+      final response = ex.response.bodyAsJson()
+      response.message == "${region.id} was unable to be found"
+   }
+
+   void "disassociate store from region for tstds2" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store = storeFactoryService.store(2, tstds2)
+      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
+      final division = divisionFactoryService.single(tstds2)
+      final region = regionFactoryService.single(division)
+      final regionStore = storeFactoryService.companyStoresToRegion(region, store)
+
+      when:
+      def result = delete("$path/${region.id}/store/${store.myId()}", tstds2SuperUserLogin)
+
+      then:
+      notThrown(HttpClientResponseException)
+      result == null
+   }
+
+   void "disassociate store from region for tstds1 using tstds2 user" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store = storeFactoryService.store(3, tstds1)
+      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
+      final division = divisionFactoryService.single(tstds1)
+      final region = regionFactoryService.single(division)
+      final regionStore = storeFactoryService.companyStoresToRegion(region, store)
+
+      when:
+      delete("$path/${region.id}/store/${store.myId()}", tstds2SuperUserLogin)
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == NOT_FOUND
+      final response = ex.response.bodyAsJson()
+      response.message == "${region.id} was unable to be found"
    }
 }

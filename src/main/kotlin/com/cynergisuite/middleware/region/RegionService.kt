@@ -2,8 +2,12 @@ package com.cynergisuite.middleware.region
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
+import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,7 +16,8 @@ import javax.validation.Valid
 @Singleton
 class RegionService @Inject constructor(
    private val regionRepository: RegionRepository,
-   private val regionValidator: RegionValidator
+   private val regionValidator: RegionValidator,
+   private val storeRepository: StoreRepository
 ) {
 
 
@@ -46,11 +51,19 @@ class RegionService @Inject constructor(
       return regionRepository.delete(id, company)?.let { RegionDTO(it) }
    }
 
-   fun assignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
-      regionRepository.assignStoreToRegion(regionId, storeNumber, myCompany)
+   @Validated
+   fun assignStoreToRegion(regionId: Long, @Valid storeDTO: SimpleIdentifiableDTO, company: Company) {
+      val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
+      val store = storeRepository.findOne(storeDTO.id!!, company) ?: throw NotFoundException(storeDTO.id!!)
+
+      regionRepository.assignStoreToRegion(region, store, company)
    }
 
-   fun unassignStoreToRegion(regionId: Long, storeNumber: Int, myCompany: Company) {
-      regionRepository.unassignStoreToRegion(regionId, storeNumber, myCompany)
+   @Throws(NotFoundException::class)
+   fun unassignStoreToRegion(regionId: Long, storeId: Long, company: Company) {
+      val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
+      val store = storeRepository.findOne(storeId, company) ?: throw NotFoundException(storeId)
+
+      regionRepository.unassignStoreToRegion(region, store, company)
    }
 }
