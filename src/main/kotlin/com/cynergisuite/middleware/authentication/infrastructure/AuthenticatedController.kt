@@ -57,11 +57,11 @@ class AuthenticatedController @Inject constructor(
             }
          }
 
-         logger.debug("User is authenticated {}", user)
+         logger.info("User is authenticated {}", user)
 
          HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber))
       } else {
-         logger.debug("User was not authenticated")
+         logger.info("User was not authenticated")
 
          HttpResponse
             .status<AuthenticatedUserInformation>(UNAUTHORIZED)

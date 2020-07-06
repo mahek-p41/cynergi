@@ -82,7 +82,7 @@ class AuthenticationRepository @Inject constructor(
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if(storeNumber != null) " = $3" else "IS NULL"}
-                  JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
+                  JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
                UNION
                SELECT
                   2                               AS from_priority,
@@ -121,7 +121,7 @@ class AuthenticationRepository @Inject constructor(
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if(storeNumber != null) " = $3" else "IS NULL"}
-                  JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw)
+                  JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
             ) AS inner_users
             WHERE emp_active = true
             ORDER BY from_priority
