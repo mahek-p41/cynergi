@@ -41,6 +41,7 @@ pipeline {
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${gradleProps.releaseVersion}.tar.xz"
                sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -oStrictHostKeyChecking=no ./build/libs/cynergi-middleware.tar.xz $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c \"'ln -s /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-current.tar.xz '\""
                sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c \"'touch /home/jenkins/ELIMINATION/DEVELOP/build.trigger '\""
             }
          }
@@ -55,6 +56,7 @@ pipeline {
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${gradleProps.releaseVersion}.tar.xz"
                sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -oStrictHostKeyChecking=no ./build/libs/cynergi-middleware.tar.xz $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c \"'ln -s /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-current.tar.xz '\""
                sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c \"'touch /home/jenkins/ELIMINATION/STAGING/build.trigger '\""
             }
          }
@@ -69,6 +71,7 @@ pipeline {
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware-${gradleProps.releaseVersion}-all.jar http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${gradleProps.releaseVersion}.jar"
                sh "curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/cynergi-middleware.tar.xz http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${gradleProps.releaseVersion}.tar.xz"
                sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -oStrictHostKeyChecking=no ./build/libs/cynergi-middleware.tar.xz $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz"
+               sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c \"'ln -s /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-current.tar.xz '\""
                sh "sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c \"'touch /home/jenkins/ELIMINATION/RELEASE/build.trigger '\""
             }
          }
