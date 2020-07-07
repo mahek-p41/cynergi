@@ -26,7 +26,7 @@ class UserAuthenticationProvider @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(UserAuthenticationProvider::class.java)
 
    override fun authenticate(authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
-      logger.debug("Authentication requested for user {}", authenticationRequest?.identity)
+      logger.info("Authentication requested for user {}", authenticationRequest?.identity)
 
       val userNumber = (authenticationRequest?.identity as String?)?.toInt()
       val secret = authenticationRequest?.secret as String?
@@ -34,26 +34,42 @@ class UserAuthenticationProvider @Inject constructor(
       val dataset = if (authenticationRequest is LoginCredentials) authenticationRequest.dataset else null
 
       return if (userNumber != null && secret != null && dataset != null) {
+         logger.info("Checking authentication for userNumber: {} dataset: {} storeNumber: {}", userNumber, dataset, storeNumber)
+
          userService
             .fetchUserByAuthentication(userNumber, secret, dataset, storeNumber)
             .flatMapPublisher { employee ->
+               logger.info("Employee {} authenticated", authenticationRequest?.identity)
+
                val employeeAssignedStore = employee.location // this can be null which unless user is a cynergi admin you must have a store assigned
                val chosenStore = employee.chosenLocation // this is what the user chose as their store during login
                val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
                if (employee.cynergiSystemAdmin) {
+                  logger.info("Employee {} is cynergi admin", authenticationRequest?.identity)
+
                   credentialsAssociatedWithAdmin(employee, fallbackStore)
                } else if (employeeAssignedStore != null) {
                   if (employeeAssignedStore == chosenStore) {
+                     logger.info("Employee {} assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
+
                      credentialsMatched(employeeAssignedStore, employee)
                   } else if (storeNumber != null && chosenStore == null) {
+                     logger.info("Employee {} cannot login into chosen store {}", authenticationRequest?.identity, chosenStore)
+
                      credentialsProvidedDidNotMatch()
                   } else {
+                     logger.info("Employee {} required choosing a store and did not choose one", authenticationRequest?.identity)
+
                      credentialsRequireStore(userNumber)
                   }
                } else if (chosenStore != null){
+                  logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
+
                   credentialsMatched(employeeAssignedStore, employee)
                } else {
+                  logger.info("Employee {} did not provide matching credentials", authenticationRequest?.identity)
+
                   credentialsProvidedDidNotMatch()
                }
             }

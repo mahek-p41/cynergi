@@ -58,11 +58,11 @@ class NotificationController @Inject constructor(
    fun fetchOne(
       @Parameter(name = "id", description = "The Notification ID to lookup", required = true, `in` = PATH) @QueryValue("id") id: Long
    ): NotificationResponseValueObject {
-      logger.info("Fetching Notification by {}", id)
+      logger.trace("Fetching Notification by {}", id)
 
       val response = notificationService.fetchResponseById(id = id) ?: throw NotFoundException(id)
 
-      logger.debug("Fetch Notification by {} resulted {}", id, response)
+      logger.trace("Fetch Notification by {} resulted {}", id, response)
 
       return response
    }
@@ -79,7 +79,7 @@ class NotificationController @Inject constructor(
       @Parameter(name = "X-Auth-User", `in` = HEADER) @Header("X-Auth-User", defaultValue = EMPTY) authId: String,  // FIXME once the front-end is using the framework's JWT
       @Parameter(name = "type", description = "The type of notifications to be loaded", required = false, `in` = QUERY, schema = Schema(type = "string", defaultValue = "E")) @QueryValue(value = "type", defaultValue = "E") type: String
    ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
-      logger.info("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
+      logger.trace("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
 
       val response = when(type.toUpperCase()) {
          "A" -> notificationService.fetchAllByCompanyWrapped(companyId = companyId, type = type)
@@ -103,11 +103,11 @@ class NotificationController @Inject constructor(
       @Parameter(name = "X-Auth-Company", `in` = HEADER, required = true, schema = Schema(type = "string")) @Header("X-Auth-Company") companyId: String, // FIXME this needs to be made part of the path at some point
       @Parameter(name = "X-Auth-User", `in` = HEADER, schema = Schema(type = "string")) @Header("X-Auth-User") authId: String  // FIXME once cynergi-middleware is handling the authentication this should be pulled from the security mechanism
    ) : NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications
-      logger.info("Fetching All Notifications by Admin by company: {}, authId: {}", companyId, authId)
+      logger.trace("Fetching All Notifications by Admin by company: {}, authId: {}", companyId, authId)
 
       val response = notificationService.findAllBySendingEmployee(companyId = companyId, sendingEmployee = authId)
 
-      logger.debug("Fetching All Notifications by Admin by company: {}, authId: {} resulted in {}", companyId, authId, response)
+      logger.trace("Fetching All Notifications by Admin by company: {}, authId: {} resulted in {}", companyId, authId, response)
 
       return response
    }
@@ -125,7 +125,7 @@ class NotificationController @Inject constructor(
          "depts_allowed" to listOf("ALL")
       )
 
-      logger.debug("Fetch Permissions resulted in {}", response)
+      logger.trace("Fetch Permissions resulted in {}", response)
 
       return response
    }
@@ -137,11 +137,11 @@ class NotificationController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun fetchAllTypes(): List<NotificationTypeValueObject> {
-      logger.info("Fetching All Notification Type Domains")
+      logger.trace("Fetching All Notification Type Domains")
 
       val response = notificationService.findAllTypes()
 
-      logger.debug("Fetching All Notification Type Domains resulted in {}", response)
+      logger.trace("Fetching All Notification Type Domains resulted in {}", response)
 
       return response
    }
@@ -157,11 +157,11 @@ class NotificationController @Inject constructor(
       @QueryValue("companyId") companyId: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
    ): List<NotificationValueObject> {
-      logger.info("Fetch all notifications by company {}, type {}", companyId, type)
+      logger.trace("Fetch all notifications by company {}, type {}", companyId, type)
 
       val response = notificationService.fetchAllByCompany(companyId = companyId, type = type)
 
-      logger.debug("Fetch all notifications by company {}, type {} resulted in {}", companyId, type, response)
+      logger.trace("Fetch all notifications by company {}, type {} resulted in {}", companyId, type, response)
 
       return response
    }
@@ -178,11 +178,11 @@ class NotificationController @Inject constructor(
       @QueryValue("sendingEmployee") sendingEmployee: String,
       @QueryValue(value = "type", defaultValue = "E") type: String
    ): List<NotificationValueObject> {
-      logger.info("Fetch All Notifications by Company and User with company: {}, sendingEmployee: {}, type: {}", companyId, sendingEmployee, type)
+      logger.trace("Fetch All Notifications by Company and User with company: {}, sendingEmployee: {}, type: {}", companyId, sendingEmployee, type)
 
       val response = notificationService.fetchAllByRecipient(companyId = companyId, sendingEmployee = sendingEmployee, type = type)
 
-      logger.debug("Fetch All Notifications by Company and User with company: {}, sendingEmployee: {}, type: {} resulted in {}", companyId, sendingEmployee, type, response)
+      logger.trace("Fetch All Notifications by Company and User with company: {}, sendingEmployee: {}, type: {} resulted in {}", companyId, sendingEmployee, type, response)
 
       return response
    }
@@ -197,13 +197,13 @@ class NotificationController @Inject constructor(
    fun create(
       @Valid @Body dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
-      logger.info("Requested Create Notification {}", dto)
+      logger.trace("Requested Create Notification {}", dto)
 
       notificationValidator.validateCreate(vo = dto.notification)
 
       val response = notificationService.create(dto = dto.notification)
 
-      logger.debug("Requested Create Notification {} resulted in {}", dto, response)
+      logger.trace("Requested Create Notification {} resulted in {}", dto, response)
 
       return NotificationResponseValueObject(notification = response)
    }
@@ -220,13 +220,13 @@ class NotificationController @Inject constructor(
       @Valid @Body dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
       val notificationValueObject = dto.notification.copy(id = id) // the legacy front-end doesn't pass in the id as part of the request body, it is part of the path instead
-      logger.info("Requested Update Notification {}", notificationValueObject)
+      logger.trace("Requested Update Notification {}", notificationValueObject)
 
       notificationValidator.validateUpdate(vo = notificationValueObject)
 
       val response = notificationService.update(dto = notificationValueObject)
 
-      logger.debug("Requested Update Notification {} resulted in {}", notificationValueObject, response)
+      logger.trace("Requested Update Notification {} resulted in {}", notificationValueObject, response)
 
       return NotificationResponseValueObject(notification = response)
    }
