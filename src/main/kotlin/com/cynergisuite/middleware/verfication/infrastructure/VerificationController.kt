@@ -53,11 +53,11 @@ class VerificationController @Inject constructor(
    fun fetchOne(
       @Parameter(name = "id", description = "The Verification ID to lookup", required = true, `in` = ParameterIn.PATH) @QueryValue("id") id: Long
    ): VerificationValueObject {
-      logger.info("Fetching Verification by {}", id)
+      logger.trace("Fetching Verification by {}", id)
 
       val response = verificationService.fetchById(id = id) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Verification by {} resulted in", id, response)
+      logger.trace("Fetching Verification by {} resulted in", id, response)
 
       return response
    }
@@ -74,11 +74,11 @@ class VerificationController @Inject constructor(
       @Parameter(name = "id", description = "The Company ID that a Verification is to be to looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("companyId") companyId: String,
       @Parameter(name = "id", description = "The customer account number that a Verification is to be looked up by", required = true, `in` = ParameterIn.PATH) @QueryValue("customerAccount") customerAccount: String
    ): VerificationValueObject {
-      logger.info("Fetching Verification by company: {}, customer account {}", companyId, customerAccount)
+      logger.trace("Fetching Verification by company: {}, customer account {}", companyId, customerAccount)
 
       val response = verificationService.fetchByCustomerAccount(customerAccount = customerAccount) ?: throw NotFoundException(customerAccount)
 
-      logger.debug("Fetching Verification by company: {}, customer account {} resulted in {}", companyId, customerAccount, response)
+      logger.trace("Fetching Verification by company: {}, customer account {} resulted in {}", companyId, customerAccount, response)
 
       return response
    }
@@ -95,13 +95,13 @@ class VerificationController @Inject constructor(
       @QueryValue("companyId") companyId: String,
       @Valid @Body dto: VerificationValueObject
    ): VerificationValueObject {
-      logger.info("Requested Create Validation {} with company: {}", dto, companyId)
+      logger.trace("Requested Create Validation {} with company: {}", dto, companyId)
 
       verificationValidator.validateCreate(vo = dto, parent = companyId)
 
       val response = verificationService.create(dto = dto, parent = companyId)
 
-      logger.info("Requested Create Validation {} with company: {} resulted in", dto, companyId, response)
+      logger.trace("Requested Create Validation {} with company: {} resulted in", dto, companyId, response)
 
       return response
    }
@@ -118,13 +118,13 @@ class VerificationController @Inject constructor(
       @QueryValue("companyId") companyId: String,
       @Valid @Body dto: VerificationValueObject
    ): VerificationValueObject {
-      logger.info("Requested Update Validation {} with company: {}", dto, companyId)
+      logger.trace("Requested Update Validation {} with company: {}", dto, companyId)
 
       verificationValidator.validateUpdate(vo = dto, parent = companyId)
 
       val response = verificationService.update(dto = dto, parent = companyId)
 
-      logger.info("Requested Update Validation {} with company: {} resulted in", dto, companyId, response)
+      logger.trace("Requested Update Validation {} with company: {} resulted in", dto, companyId, response)
 
       return response
    }
