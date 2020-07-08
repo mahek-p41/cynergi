@@ -208,11 +208,11 @@ class VerificationRepository @Inject constructor(
       logger.debug("Updating Verification {}", entity)
 
       val existing = findOne(id = entity.id!!)!!
-      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) {
-         existing.verifiedTime
-      } else {
-         entity.verifiedTime
-      }
+//      val verifiedTime: OffsetDateTime? = if (existing.verifiedBy == entity.verifiedBy) {
+//         existing.verifiedTime
+//      } else {
+//         entity.verifiedTime
+//      }
 
       val updated = jdbc.updateReturning("""
          UPDATE verification
@@ -230,7 +230,7 @@ class VerificationRepository @Inject constructor(
             "customer_account" to entity.customerAccount,
             "customer_comments" to entity.customerComments,
             "verified_by" to entity.verifiedBy,
-            "verified_time" to verifiedTime,
+            "verified_time" to entity.verifiedTime,
             "company" to entity.company
          ),
          simpleVerificationRowMapper
