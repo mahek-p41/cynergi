@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.verfication
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.time.OffsetDateTime
+import java.time.LocalDate
 import java.util.stream.Collectors.toList
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -29,7 +29,7 @@ object VerificationTestDataLoader {
             customerAccount = num.digits(6),
             customerComments = chuckNorris.fact(),
             verifiedBy = num.digits(6),
-            verifiedTime = OffsetDateTime.now(),
+            verifiedTime = LocalDate.now(),
             company = num.digits(6),
             auto = null,
             employment = null,

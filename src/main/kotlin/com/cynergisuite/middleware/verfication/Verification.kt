@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.domain.Identifiable
+import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.ZoneId
 
 data class Verification(
    val id: Long? = null,
@@ -11,7 +11,7 @@ data class Verification(
    val customerAccount: String, // TODO convert from soft foreign key to customer
    val customerComments: String?,
    val verifiedBy: String, // TODO convert from soft foreign key to employee
-   val verifiedTime: OffsetDateTime,
+   val verifiedTime: LocalDate,
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    var auto: VerificationAuto? = null,
    var employment: VerificationEmployment? = null,
@@ -25,7 +25,7 @@ data class Verification(
          customerAccount = dto.customerAccount!!,
          customerComments = dto.customerComments,
          verifiedBy = dto.verifiedBy!!,
-         verifiedTime = dto.verifiedTime!!.atStartOfDay(ZoneId.of("UTC")).toOffsetDateTime(),
+         verifiedTime = LocalDate.now(),
          company = company
       ) {
 
