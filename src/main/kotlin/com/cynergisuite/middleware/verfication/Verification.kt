@@ -25,7 +25,7 @@ data class Verification(
          customerAccount = dto.customerAccount!!,
          customerComments = dto.customerComments,
          verifiedBy = dto.verifiedBy!!,
-         verifiedTime = LocalDate.now(),
+         verifiedTime = dto.verifiedTime!!,
          company = company
       ) {
 
