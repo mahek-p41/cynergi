@@ -58,7 +58,7 @@ data class VerificationValueObject(
          customerAccount = entity.customerAccount,
          customerComments = entity.customerComments,
          verifiedBy = entity.verifiedBy,
-         verifiedTime = entity.verifiedTime.toLocalDate(),
+         verifiedTime = entity.verifiedTime,
          auto = copyAutoEntityToValueObject(entity = entity),
          employment = copyEmploymentEntityToValueObject(entity = entity),
          landlord = copyLandlordEntityToValueObject(entity = entity),
