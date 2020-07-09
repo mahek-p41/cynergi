@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.verfication.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.Verification
@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
-import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -279,7 +278,7 @@ private class VerificationRowMapper(
          customerAccount = rs.getString("${columnPrefix}customer_account"),
          customerComments = rs.getString("${columnPrefix}customer_comments"),
          verifiedBy = rs.getString("${columnPrefix}verified_by"),
-         verifiedTime = rs.getOffsetDateTime("${columnPrefix}verified_time"),
+         verifiedTime = rs.getLocalDate("${columnPrefix}verified_time"),
          company = rs.getString("${columnPrefix}company"),
          auto = auto,
          employment = employment,
