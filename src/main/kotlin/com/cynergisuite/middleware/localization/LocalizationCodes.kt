@@ -26,11 +26,6 @@ open class LocalizationCodeImpl(
 
 abstract class Validation(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class NotNull(notNullProperty: String) : Validation("javax.validation.constraints.NotNull.message", arrayOf(notNullProperty))
-class Size : Validation("javax.validation.constraints.Size.message", emptyArray())
-class Positive : Validation("javax.validation.constraints.Positive.message", emptyArray())
-class Min : Validation("javax.validation.constraints.Min.message", emptyArray())
-class Max : Validation("javax.validation.constraints.Max.message", emptyArray())
-class Pattern : Validation("javax.validation.constraints.Pattern.message", emptyArray())
 
 abstract class Cynergi(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", arrayOf(duplicateValue))
@@ -55,18 +50,20 @@ class AuditExceptionHasNotBeenApproved(auditExceptionId: Long): Cynergi("cynergi
 class AuditDueToday(auditNumber: Int): Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
 class AuditPastDue(auditNumber: Int): Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 
+class VendorPaymentTermDuePercentDoesNotAddUp(percent: String): Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
+
 abstract class SystemCode(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class NotFound(unfindable: Any): SystemCode("system.not.found", arrayOf(unfindable)) {
    constructor(user: User) : this(user.myEmployeeNumber())
 }
 class InternalError: SystemCode("system.internal.error", emptyArray())
+class DataAccessError: SystemCode("system.data.access.exception", emptyArray())
+class DataIntegrityViolationError: SystemCode("system.data.integrity.violation", emptyArray())
 class RouteError(routeArgument: String): SystemCode("system.route.error", arrayOf(routeArgument))
 class NotImplemented(pathNotImplemented: String): SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
-class LoggedIn(user: String): SystemCode("system.logged.in", arrayOf(user))
 class NotLoggedIn: SystemCode("system.not.logged.in", emptyArray())
 class AccessDenied: SystemCode("system.access.denied", emptyArray())
 class AccessDeniedCredentialsDoNotMatch(user: String): SystemCode("system.access.denied.creds.do.not.match", arrayOf(user))
 class AccessDeniedStore(user: String): SystemCode("system.access.denied.store", arrayOf(user))
 class Unknown: SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String): SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
-class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?): SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))

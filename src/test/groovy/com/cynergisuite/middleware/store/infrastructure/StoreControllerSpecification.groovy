@@ -2,11 +2,8 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -15,26 +12,42 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class StoreControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/store"
 
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
-
-   void "fetch one store by id" () {
-      given:
+   void "fetch one store by id with the a region assigned" () {
+      given: 'store number 1 is assigned to a region of company tstds1'
       final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def store = storeFactoryService.store(3, company)
+      final def store1 = storeFactoryService.store(1, company)
 
       when:
-      def result = get("$path/$store.id")
+      def result = get("$path/$store1.id")
 
-      then:
+      then: 'store should have a assigned region'
       notThrown(HttpClientResponseException)
-      result.id == store.id
-      result.storeNumber == store.number
-      result.name == store.name
-      result.region.regionNumber == regions[0].number
+      result.id == store1.id
+      result.storeNumber == store1.number
+      result.name == store1.name
       result.region.name == regions[0].name
-      result.region.division.divisionNumber == divisions[0].number
       result.region.division.name == divisions[0].name
+   }
+
+   void "fetch one store by id without region assigned" () {
+      given: 'store store3Tstds1 is not assigned to any region, store store3Tstds2 is assigned to a region'
+      final def tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final def tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final def store3Tstds1 = storeFactoryService.store(3, tstds1)
+      final def store3Tstds2 = storeFactoryService.store(3, tstds2)
+      final region2Tstds2 = regions[1]
+      // this make the test failed (no store return) if there are no company_id column in region_to_store
+      storeFactoryService.companyStoresToRegion(region2Tstds2, store3Tstds2)
+
+      when:
+      def result = get("$path/$store3Tstds1.id")
+
+      then: 'store should not have a assigned region'
+      notThrown(HttpClientResponseException)
+      result.id == store3Tstds1.id
+      result.storeNumber == store3Tstds1.number
+      result.name == store3Tstds1.name
+      result.region == null
    }
 
    void "fetch one store by id not found" () {
@@ -80,17 +93,12 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.elements[1].id == 2
       pageOneResult.elements[1].storeNumber == 3
       pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].region.regionNumber == regions[0].number
-      pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
-      pageOneResult.elements[1].region.division.name == divisions[0].name
+      pageOneResult.elements[1].region == null
 
       when:
       get("${path}${pageTwo}")
@@ -119,9 +127,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
       pageOneResult.first == true
       pageOneResult.last == true
@@ -132,32 +138,23 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final department = departmentFactoryService.department('RM', company)
       final store = storeFactoryService.store(1, company)
-      final singleStoreUser = employeeFactoryService.singleAuthenticated(company, store, department, 'R', regions[0].number)
+      final singleStoreUser = employeeFactoryService.singleAuthenticated(company, store, department, 'R', regions[0].id)
       final singleStoreUserToken = loginEmployee(singleStoreUser)
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
 
       when:
       def pageOneResult = get("${path}${pageOne}", singleStoreUserToken)
 
-      then:
+      then: 'Only store 1 assigned to a region'
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
-      pageOneResult.elements.size() == 2
+      pageOneResult.elements.size() == 1
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
-      pageOneResult.elements[1].id == 2
-      pageOneResult.elements[1].storeNumber == 3
-      pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].region.regionNumber == regions[0].number
-      pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
-      pageOneResult.elements[1].region.division.name == divisions[0].name
       pageOneResult.first == true
       pageOneResult.last == true
    }
@@ -174,25 +171,16 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       when:
       def pageOneResult = get("${path}${pageOne}", singleStoreUserToken)
 
-      then:
+      then: 'Only store 1 assigned to a region'
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
-      pageOneResult.elements.size() == 2
+      pageOneResult.elements.size() == 1
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[0].region.regionNumber == regions[0].number
       pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.divisionNumber == divisions[0].number
       pageOneResult.elements[0].region.division.name == divisions[0].name
-      pageOneResult.elements[1].id == 2
-      pageOneResult.elements[1].storeNumber == 3
-      pageOneResult.elements[1].name == "INDEPENDENCE"
-      pageOneResult.elements[1].region.regionNumber == regions[0].number
-      pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.divisionNumber == divisions[0].number
-      pageOneResult.elements[1].region.division.name == divisions[0].name
       pageOneResult.first == true
       pageOneResult.last == true
    }

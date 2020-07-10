@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -24,7 +23,6 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
    @Inject AuditScheduleService auditScheduleService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "one store test"() {
       given:

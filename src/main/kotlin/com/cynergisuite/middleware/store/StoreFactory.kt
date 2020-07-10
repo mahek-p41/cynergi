@@ -14,43 +14,43 @@ object StoreFactory {
 
    @JvmStatic
    private val stores = listOf( // list of stores defined in cynergi-inittestdb.sql that aren't HOME OFFICE
-      SimpleStore(
+      StoreEntity(
          id = 1,
          number = 1,
          name = "KANSAS CITY",
          company = CompanyFactory.tstds1()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 2,
          number = 3,
          name = "INDEPENDENCE",
          company = CompanyFactory.tstds1()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 4,
          number = 1,
          name = "Pelham Trading Post, Inc",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 5,
          number = 2,
          name = "Camilla Trading Post, Inc.",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 6,
          number = 3,
          name = "Arlington Trading Post",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 7,
          number = 4,
          name = "Moultrie Trading Post, Inc",
          company = CompanyFactory.tstds2()
       ),
-      SimpleStore(
+      StoreEntity(
          id = 8,
          number = 5,
          name = "Bainbridge Trading Post",
@@ -96,7 +96,7 @@ class StoreFactoryService(
    fun store(storeNumber: Int, company: Company): Store =
       locationRepository.findOne(storeNumber, company)
          ?.let {
-            SimpleStore(
+            StoreEntity(
                id = it.myId(),
                name = it.myName(),
                number = it.myNumber(),
@@ -105,18 +105,13 @@ class StoreFactoryService(
          }
          ?: throw Exception("Unable to find Store")
 
-   fun companyStoresToRegion(region: RegionEntity): Stream<Pair<RegionEntity, Location>> {
-      return StoreFactory.stores(region.division.company).stream()
-         .map { storeRepository.assignToRegion(it, region) }
-   }
-
-   fun companyStoresToRegionWithDevData(company: Company, region: RegionEntity): Stream<Pair<RegionEntity, Location>> {
-      return StoreFactory.storesDevelop(company).stream()
-         .map { storeRepository.assignToRegion(it, region) }
+   fun companyStoresToRegion(region: RegionEntity, limit: Long): Stream<Pair<RegionEntity, Location>> {
+      return StoreFactory.stores(region.division.company).stream().limit(limit)
+         .map { storeRepository.assignToRegion(it, region, region.division.company.myId()!!) }
    }
 
    fun companyStoresToRegion(region: RegionEntity, vararg stores: Store): List<Pair<RegionEntity, Location>> {
-      return stores.map { storeRepository.assignToRegion(it, region) }
+      return stores.map { storeRepository.assignToRegion(it, region, region.division.company.myId()!!) }
    }
 
    fun random(company: Company): StoreEntity {

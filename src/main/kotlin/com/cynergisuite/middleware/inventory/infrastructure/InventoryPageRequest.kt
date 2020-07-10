@@ -22,7 +22,7 @@ class InventoryPageRequest(
 
    @field:Positive
    @field:Min(1)
-   @field:Schema(name = "storeNumber", minimum = "1", description = "The Store Number to filter results with")
+   @field:Schema(name = "storeNumber", minimum = "1", description = "The Store Number to filter results with, if not provided then the login store will be used")
    var storeNumber: Int? = null,
 
    @field:Schema(name = "inventoryStatus", description = "Set of inventory statues to be queried for", allowableValues = ["N", "O", "R", "D"], required = false, nullable = true)
@@ -67,7 +67,7 @@ class InventoryPageRequest(
          .append(this.locationType)
          .toHashCode()
 
-   protected override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): InventoryPageRequest =
+   override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): InventoryPageRequest =
       InventoryPageRequest(
          page = page,
          size = size,
@@ -78,7 +78,7 @@ class InventoryPageRequest(
          locationType = this.locationType
       )
 
-   protected override fun myToStringValues(): List<Pair<String, Any?>> =
+   override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "storeNumber" to storeNumber,
          "inventoryStatus" to inventoryStatus,

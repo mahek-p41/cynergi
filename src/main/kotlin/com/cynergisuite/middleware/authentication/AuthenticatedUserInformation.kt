@@ -23,7 +23,7 @@ data class AuthenticatedUserInformation(
    val alternativeStoreIndicator: String? = null,
 
    @field:Schema(name = "alternativeArea", title = "Alternative area to use for user access", description = "Number of the division or region an employee may access depending on alternativeStoreIndicator")
-   val alternativeArea: Int? = null,
+   val alternativeArea: Long? = null,
 
    @field:Schema(name = "permissions", title = "Permissions that user has access to", description = "Listing of permissions of an employee")
    val permissions: Set<String>? = null

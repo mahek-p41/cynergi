@@ -1,9 +1,10 @@
 package com.cynergisuite.middleware.schedule.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
@@ -24,6 +25,7 @@ import javax.inject.Singleton
 @Singleton
 class ScheduleRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
+   private val companyRepository: CompanyRepository,
    private val scheduleArgumentRepository: ScheduleArgumentRepository,
    private val scheduleCommandTypeRepository: ScheduleCommandTypeRepository,
    private val scheduleTypeRepository: ScheduleTypeRepository
@@ -58,17 +60,29 @@ class ScheduleRepository @Inject constructor(
             sa.time_created             AS sa_time_created,
             sa.time_updated             AS sa_time_updated,
             sa.value                    AS sa_value,
-            sa.description              AS sa_description
+            sa.description              AS sa_description,
+            comp.id                     AS comp_id,
+            comp.uu_row_id              AS comp_uu_row_id,
+            comp.time_created           AS comp_time_created,
+            comp.time_updated           AS comp_time_updated,
+            comp.name                   AS comp_name,
+            comp.doing_business_as      AS comp_doing_business_as,
+            comp.client_code            AS comp_client_code,
+            comp.client_id              AS comp_client_id,
+            comp.dataset_code           AS comp_dataset_code,
+            comp.federal_id_number      AS comp_federal_id_number
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
               JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
+              JOIN company comp ON sched.company_id = comp.id
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id)
       ) { rs: ResultSet ->
          val localSchedule = found ?: mapRow(
             rs = rs,
+            company = companyRepository.mapRow(rs, "comp_"),
             scheduleTypeProvider = { scheduleTypeRepository.mapRow(rs, "schedType_") },
             scheduleCommandProvider = { scheduleCommandTypeRepository.mapRow(rs, "sctd_") }
          )
@@ -83,27 +97,25 @@ class ScheduleRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: SchedulePageRequest, type: ScheduleType? = null): RepositoryPage<ScheduleEntity, SchedulePageRequest> {
+   fun findAll(pageRequest: SchedulePageRequest, company: Company, type: ScheduleType? = null): RepositoryPage<ScheduleEntity, SchedulePageRequest> {
       logger.trace("Fetching All schedules {}", pageRequest)
 
       val command = pageRequest.command
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
-      var where = "WHERE"
-      var and = EMPTY
+      var where = "WHERE comp.id = :comp_id"
       val whereClause = StringBuilder()
-      val params = mutableMapOf<String, Any>()
+      val params = mutableMapOf<String, Any>("limit" to pageRequest.size(), "offset" to pageRequest.offset(), "comp_id" to company.myId()!!)
 
       if (command != null) {
-         whereClause.append(" $where sctd.value = :sctd_value")
+         whereClause.append(" $where AND sctd.value = :sctd_value")
          params["sctd_value"] = command
          where = EMPTY
-         and = " AND "
       }
 
       if (type != null) {
-         whereClause.append("$where $and schedType.value = :schedType_value")
+         whereClause.append("$where AND schedType.value = :schedType_value")
          params["schedType_value"] = type.value
       }
 
@@ -126,14 +138,25 @@ class ScheduleRepository @Inject constructor(
                sctd.value                                                      AS sctd_value,
                sctd.description                                                AS sctd_description,
                sctd.localization_code                                          AS sctd_localization_code,
+               comp.id                                                         AS comp_id,
+               comp.uu_row_id                                                  AS comp_uu_row_id,
+               comp.time_created                                               AS comp_time_created,
+               comp.time_updated                                               AS comp_time_updated,
+               comp.name                                                       AS comp_name,
+               comp.doing_business_as                                          AS comp_doing_business_as,
+               comp.client_code                                                AS comp_client_code,
+               comp.client_id                                                  AS comp_client_id,
+               comp.dataset_code                                               AS comp_dataset_code,
+               comp.federal_id_number                                          AS comp_federal_id_number,
                (SELECT count(id) FROM schedule $whereClause) AS total_elements
             FROM schedule sched
                JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
                JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
+               JOIN company comp ON sched.company_id = comp.id
             $whereClause
-            ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection}
-               LIMIT ${pageRequest.size}
-               OFFSET ${pageRequest.offset()}
+            ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+               LIMIT :limit
+               OFFSET :offset
          )
          SELECT
             sched.*,
@@ -145,6 +168,7 @@ class ScheduleRepository @Inject constructor(
             sa.description                                                     AS sa_description
          FROM schedules sched
               LEFT OUTER JOIN schedule_arg sa ON sched_id = sa.schedule_id
+         ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}, sa.id
       """
       jdbc.query(sql.trimIndent(), params) { rs ->
          val dbScheduleId = rs.getLong("sched_id")
@@ -152,6 +176,7 @@ class ScheduleRepository @Inject constructor(
          val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {
             val created = mapRow(
                rs = rs,
+               company = companyRepository.mapRow(rs, "comp_"),
                scheduleTypeProvider = { scheduleTypeRepository.mapRow(rs, "schedType_") },
                scheduleCommandProvider = { scheduleCommandTypeRepository.mapRow(rs, "sctd_") }
             )
@@ -180,15 +205,15 @@ class ScheduleRepository @Inject constructor(
       )
    }
 
-   fun forEach(type: ScheduleType, callback: (ScheduleEntity) -> Unit) {
-      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), type)
+   fun forEach(type: ScheduleType, company: Company, callback: (ScheduleEntity) -> Unit) {
+      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
 
-      while(result.elements.isNotEmpty()) {
+      while (result.elements.isNotEmpty()) {
          for (schedule in result.elements) {
             callback(schedule)
          }
 
-         result = findAll(result.requested.nextPage(), type)
+         result = findAll(result.requested.nextPage(), company, type)
       }
    }
 
@@ -207,8 +232,8 @@ class ScheduleRepository @Inject constructor(
       logger.debug("Inserting Schedule {}", entity)
 
       val inserted = jdbc.insertReturning("""
-         INSERT INTO schedule(title, description, schedule, command_id, enabled, type_id)
-         VALUES(:title, :description, :schedule, :command_id, :enabled, :type_id)
+         INSERT INTO schedule(title, description, schedule, command_id, enabled, type_id, company_id)
+         VALUES(:title, :description, :schedule, :command_id, :enabled, :type_id, :company_id)
          RETURNING
             *
          """.trimIndent(),
@@ -218,7 +243,8 @@ class ScheduleRepository @Inject constructor(
             "schedule" to entity.schedule,
             "command_id" to entity.command.id,
             "enabled" to entity.enabled,
-            "type_id" to entity.type.id
+            "type_id" to entity.type.id,
+            "company_id" to entity.company.myId()
          ),
          RowMapper { rs, _ ->
             mapRow(rs, entity)
@@ -273,9 +299,9 @@ class ScheduleRepository @Inject constructor(
    }
 
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =
-      mapRow(rs, "", { entity.type }, { entity.command })
+      mapRow(rs, entity.company, "", { entity.type }, { entity.command })
 
-   private fun mapRow(rs: ResultSet, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType): ScheduleEntity =
+   private fun mapRow(rs: ResultSet, company: Company, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType): ScheduleEntity =
       ScheduleEntity(
          id = rs.getLong("${scheduleColumnPrefix}id"),
          title = rs.getString("${scheduleColumnPrefix}title"),
@@ -283,6 +309,7 @@ class ScheduleRepository @Inject constructor(
          schedule = rs.getString("${scheduleColumnPrefix}schedule"),
          enabled = rs.getBoolean("${scheduleColumnPrefix}enabled"),
          command = scheduleCommandProvider(rs),
-         type = scheduleTypeProvider(rs)
+         type = scheduleTypeProvider(rs),
+         company = company
       )
 }

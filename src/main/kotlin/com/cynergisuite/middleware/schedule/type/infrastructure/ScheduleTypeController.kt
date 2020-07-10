@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.schedule.type.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeService
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject

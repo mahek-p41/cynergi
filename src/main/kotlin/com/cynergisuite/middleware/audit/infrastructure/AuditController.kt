@@ -1,11 +1,11 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
@@ -14,7 +14,7 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -140,7 +140,7 @@ class AuditController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val defaultStore = user.myLocation()
-      val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreValueObject(defaultStore))
+      val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreDTO(defaultStore))
 
       val response = auditService.create(vo = auditToCreate, user = user, locale = httpRequest.findLocaleWithDefault())
 
@@ -186,7 +186,7 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun approve(
-      @Body audit: SimpleIdentifiableDataTransferObject,
+      @Body audit: SimpleIdentifiableDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
@@ -264,7 +264,7 @@ class AuditController @Inject constructor(
       ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
    ])
    fun approveAllExceptions(
-      @Body audit: SimpleIdentifiableDataTransferObject,
+      @Body audit: SimpleIdentifiableDTO,
       authentication: Authentication
    ): AuditApproveAllExceptionsDataTransferObject {
       logger.info("Requested approval on all audit exceptions associated with audit {}", audit)

@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -21,8 +19,6 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "login successful with user who doesn't have department" () {
       given:
@@ -33,7 +29,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -85,7 +81,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -159,7 +155,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, validEmployee.store.number, null)),
+            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, validEmployee.store.myNumber(), null)),
             Argument.of(String),
             Argument.of(String)
          )
@@ -182,7 +178,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(user.number.toString(), user.passCode, user.store.number, 'tstds2')),
+            POST("/login", new LoginCredentials(user.number.toString(), user.passCode, user.store.myNumber(), 'tstds2')),
             Argument.of(String),
             Argument.of(String)
          )
@@ -256,7 +252,81 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def response = httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response.employeeNumber == "${employee.number}"
+      response.storeNumber == 3
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
+   }
+
+   void "login with user that has an assigned store, but doesn't provide one"() {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final department = departmentFactoryService.department('SA', company)
+      final store = storeFactoryService.store(1, company)
+      final employee = employeeFactoryService.single(store, department)
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, null, employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      final error = thrown(HttpClientResponseException)
+      error.status == UNAUTHORIZED
+      final json = error.response.bodyAsJson()
+      json.message == "Store is required for ${employee.number} to access"
+   }
+
+   void "login with user doesn't have a store assigned, but chooses one" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final department = departmentFactoryService.department('RM', company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(department)
+
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.myDataset())),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()

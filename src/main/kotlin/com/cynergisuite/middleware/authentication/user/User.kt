@@ -12,6 +12,6 @@ interface User {
    fun myEmployeeType(): String
    fun myEmployeeNumber(): Int
    fun myAlternativeStoreIndicator(): String
-   fun myAlternativeArea(): Int
+   fun myAlternativeArea(): Long
    fun isCynergiAdmin(): Boolean
 }

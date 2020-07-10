@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
+import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -22,8 +24,8 @@ import static java.time.DayOfWeek.TUESDAY
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScheduleFactoryService auditScheduleFactoryService
+   @Inject AuditPermissionRepository auditPermissionRepository
    @Inject ScheduleRepository scheduleRepository
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch one"() {
       given:
@@ -228,7 +230,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule with invalid store" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(42L)] as Set, enabled: true]))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleIdentifiableDTO(42L)] as Set, enabled: true]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -273,11 +275,28 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
       result.enabled == true
 
-      loadedSchedule.arguments.size() == 4
-      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == nineNineEightAuthenticatedEmployee.number.toString() } != null
-      loadedSchedule.arguments.find { it.description == "locale" } != null
-      loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
-      loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeThree.number.toString() } != null
+      loadedSchedule.arguments.size() == 5
+      final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
+      with(args[0]) {
+         description == "employeeNumber"
+         value == nineNineEightEmployee.number.toString()
+      }
+      with(args[1]) {
+         description == "employeeType"
+         value == "eli"
+      }
+      with(args[2]) {
+         description == "locale"
+         value == "en-US"
+      }
+      with(args[3]) {
+         description == "storeNumber"
+         value == "1"
+      }
+      with(args[4]) {
+         description == "storeNumber"
+         value == "3"
+      }
    }
 
    void "update audit schedule change from enabled to disabled" () {
@@ -288,7 +307,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDataTransferObject(storeOne.id)] as Set, enabled: false]))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDTO(storeOne.id)] as Set, enabled: false]))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
@@ -301,10 +320,24 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.enabled == false
 
-      loadedSchedule.arguments.size() == 3
-      loadedSchedule.arguments.find { it.description == "employeeNumber" && it.value == nineNineEightAuthenticatedEmployee.number.toString() } != null
-      loadedSchedule.arguments.find { it.description == "locale" } != null
-      loadedSchedule.arguments.find { it.description == "storeNumber" && it.value == storeOne.number.toString() } != null
+      loadedSchedule.arguments.size() == 4
+      final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
+      with(args[0]) {
+         description == "employeeNumber"
+         value == nineNineEightEmployee.number.toString()
+      }
+      with(args[1]) {
+         description == "employeeType"
+         value == "eli"
+      }
+      with(args[2]) {
+         description == "locale"
+         value == "en-US"
+      }
+      with(args[3]) {
+         description == "storeNumber"
+         value == "1"
+      }
    }
 
    void "update audit schedule remove store" () {
@@ -342,10 +375,24 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
       result.enabled == true
 
-      loadedSchedule.arguments.size() == 3
-      loadedSchedule.arguments.find { it.description == "employeeNumber" } != null
-      loadedSchedule.arguments.find { it.description == "locale" } != null
-      loadedSchedule.arguments.find { it.description == "storeNumber" } != null
+      loadedSchedule.arguments.size() == 4
+      final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
+      with(args[0]) {
+         description == "employeeNumber"
+         value == nineNineEightEmployee.number.toString()
+      }
+      with(args[1]) {
+         description == "employeeType"
+         value == "eli"
+      }
+      with(args[2]) {
+         description == "locale"
+         value == "en-US"
+      }
+      with(args[3]) {
+         description == "storeNumber"
+         value == "1"
+      }
    }
 
    void "update audit schedule without id" () {
@@ -363,5 +410,22 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "id"
       response[0].message == "Is required"
+   }
+
+   void "fetch audit schedule with 998 user and multiple permissions" () {
+      setup:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final auditApprover = AuditPermissionTypeFactory.findByValue('audit-approver')
+      final pageOne = new StandardPageRequest(1, 100, "id", "ASC")
+      departmentFactoryService.department('SM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+      departmentFactoryService.department('AM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+      departmentFactoryService.department('AR', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+
+      when:
+      get("/audit/schedule${pageOne}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == NO_CONTENT
    }
 }

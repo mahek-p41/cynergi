@@ -12,17 +12,14 @@ import javax.inject.Singleton
 class StoreService @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
-   fun fetchById(id: Long, company: Company): StoreValueObject? =
-      storeRepository.findOne(id, company)?.let { StoreValueObject(entity = it) }
+   fun fetchById(id: Long, company: Company): StoreDTO? =
+      storeRepository.findOne(id, company)?.let { StoreDTO(entity = it) }
 
-   fun fetchByNumber(number: Int, company: Company): StoreValueObject? =
-      storeRepository.findOne(number, company)?.let { StoreValueObject(entity = it) }
-
-   fun fetchAll(pageRequest: PageRequest, user: User): Page<StoreValueObject> {
+   fun fetchAll(pageRequest: PageRequest, user: User): Page<StoreDTO> {
       val stores = storeRepository.findAll(pageRequest, user)
 
       return stores.toPage { store ->
-         StoreValueObject(store)
+         StoreDTO(store)
       }
    }
 

@@ -22,7 +22,7 @@ import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.validation.Validated
 import java.time.DayOfWeek
@@ -58,7 +58,7 @@ class AuditScheduleService @Inject constructor(
 
    @Validated
    fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<AuditScheduleDataTransferObject> {
-      val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule")) // find all schedules that are of a command AuditSchedule
+      val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule"), company) // find all schedules that are of a command AuditSchedule
 
       return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, company) }
    }
@@ -73,7 +73,7 @@ class AuditScheduleService @Inject constructor(
          title = inserted.title,
          description = inserted.description,
          schedule = inserted.schedule.let { DayOfWeek.valueOf(it) },
-         stores = stores.map { StoreValueObject(it) },
+         stores = stores.map { StoreDTO(it) },
          enabled = inserted.enabled
       )
    }
@@ -88,19 +88,19 @@ class AuditScheduleService @Inject constructor(
          title = updated.title,
          description = updated.description,
          schedule = schedule.schedule.let { DayOfWeek.valueOf(it) },
-         stores = stores.map { StoreValueObject(it) },
+         stores = stores.map { StoreDTO(it) },
          enabled = updated.enabled
       )
    }
 
    private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, company: Company): AuditScheduleDataTransferObject {
-      val stores = mutableListOf<StoreValueObject>()
+      val stores = mutableListOf<StoreDTO>()
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOne(arg.value.toInt(), company)!!
 
-            stores.add(StoreValueObject(store))
+            stores.add(StoreDTO(store))
          }
       }
 
@@ -118,9 +118,9 @@ class AuditScheduleService @Inject constructor(
 
    @Throws(ScheduleProcessingException::class)
    override fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek) : AuditScheduleResult {
+      val company = schedule.company
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
-      val company = schedule.arguments.firstOrNull { it.description == "companyId" }?.value?.let { companyRepository.findOne(it.toLong()) } ?: throw ScheduleProcessingException("Unable to determine company for schedule")
       val locale = schedule.arguments.asSequence()
          .filter { it.description == "locale" }
          .map { Locale.forLanguageTag(it.value) }
@@ -168,7 +168,7 @@ class AuditScheduleService @Inject constructor(
                   startDate = LocalDate.now(),
                   dateCreated = null,
                   expirationDate = LocalDate.now().plusDays(1),
-                  company = company.id.toString(),
+                  company = company.myId()!!.toString(),
                   message = schedule.description!!,
                   sendingEmployee = employee.number.toString(),
                   notificationType = STORE.value,

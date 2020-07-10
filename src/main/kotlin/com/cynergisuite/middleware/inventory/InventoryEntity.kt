@@ -4,7 +4,6 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -19,7 +18,7 @@ data class InventoryEntity(
    val modelNumber: String,
    val productCode: String,
    val description: String,
-   val receivedDate: LocalDate,
+   val receivedDate: LocalDate?,
    val originalCost: BigDecimal,
    val actualCost: BigDecimal,
    val modelCategory: String,

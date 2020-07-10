@@ -15,14 +15,11 @@ class AuditAccessControlProvider @Inject constructor(
 ): AccessControlProvider {
 
    override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
-      val auditPermission = auditPermissionRepository.findOneByAsset(asset, user.myCompany())
-      val userDepartment = user.myDepartment()
+      val auditPermission = auditPermissionRepository.permissionDepartmentByAsset(asset, user.myCompany())
 
-      return if (auditPermission == null || user.isCynergiAdmin()) {
-         true
-      } else {
-         auditPermission.department == userDepartment
-      }
+      return user.isCynergiAdmin() || // if user is high touch admin then allow no questions asked
+         auditPermission.isEmpty() || // if no permissions have been setup for this asset then allow
+         auditPermission.contains(user.myDepartment()) // if permissions have been setup and the user's department is contained in that permission then allow
    }
 
    override fun generateException(user: User, asset: String?, parameters: MutableMap<String, MutableArgumentValue<*>>): Exception {

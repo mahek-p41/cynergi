@@ -6,56 +6,56 @@ import org.junit.jupiter.api.Test
 class StringExtensionsTests {
 
    @Test
-   fun `not null blank string trim to null` () {
+   fun `not null blank string trim to null`() {
       val str = "   "
 
       assertThat(str.trimToNull()).isNull()
    }
 
    @Test
-   fun `null string trim to null` () {
+   fun `null string trim to null`() {
       val str: String? = null
 
       assertThat(str.trimToNull()).isNull()
    }
 
    @Test
-   fun `string with characters wrapped in a space` () {
+   fun `string with characters wrapped in a space`() {
       val str = " test string "
 
       assertThat(str.trimToNull()).isEqualTo("test string")
    }
 
    @Test
-   fun `string with numbers only` () {
+   fun `string with numbers only`() {
       val str = "123"
 
       assertThat(str.isDigits()).isTrue()
    }
 
    @Test
-   fun `string with some letters and digits` () {
+   fun `string with some letters and digits`() {
       val str = "123ABC"
 
       assertThat(str.isDigits()).isFalse()
    }
 
    @Test
-   fun `null string for digits` () {
+   fun `null string for digits`() {
       val str: String? = null
 
       assertThat(str.isDigits()).isFalse()
    }
 
    @Test
-   fun `all uppercase` () {
+   fun `all uppercase`() {
       val str = "UPPERCASE"
 
       assertThat(str.isAllUpperCase()).isTrue()
    }
 
    @Test
-   fun `all lowercase` () {
+   fun `all lowercase`() {
       val str = "lowercase"
 
       assertThat(str.isAllLowerCase()).isTrue()
@@ -97,5 +97,33 @@ class StringExtensionsTests {
       val str: String? = null
 
       assertThat(str.truncate(10)).isNull()
+   }
+
+   @Test
+   fun `is a number 11 point 21`() {
+      val str = "11.21"
+
+      assertThat(str.isNumber()).isTrue()
+   }
+
+   @Test
+   fun `no decimal but all digits`() {
+      val str = "1121"
+
+      assertThat(str.isNumber()).isTrue()
+   }
+
+   @Test
+   fun `null is not a number`() {
+      val str: String? = null
+
+      assertThat(str.isNumber()).isFalse()
+   }
+
+   @Test
+   fun `has letters and digits when checking if string is number`() {
+      val str = "asdf1234.56"
+
+      assertThat(str.isNumber()).isFalse()
    }
 }

@@ -1,0 +1,287 @@
+package com.cynergisuite.middleware.accounting.bank.infrastructure
+
+import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankDTO
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import io.micronaut.http.client.exceptions.HttpClientResponseException
+import io.micronaut.test.annotation.MicronautTest
+import javax.inject.Inject
+
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+
+@MicronautTest(transactional = false)
+class BankControllerSpecification extends ControllerSpecificationBase {
+   private static String path = '/accounting/bank'
+   private JsonOutput jsonOutput = new JsonOutput()
+   private JsonSlurper jsonSlurper = new JsonSlurper()
+   @Inject BankFactoryService bankFactoryService
+   @Inject AccountDataLoaderService accountFactoryService
+
+   void "fetch one bank by id" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      when:
+      def result = get("$path/${bank.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id == bank.id
+         name == bank.name
+         generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == bank.generalLedgerAccount.id
+      }
+   }
+
+   void "fetch one bank by id not found" () {
+      when:
+      get("$path/0")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == '0 was unable to be found'
+   }
+
+   void "fetch all" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'), store, account)
+      final banks = bankFactoryService.stream(12, nineNineEightEmployee.company, store, account).toList()
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageLast = new StandardPageRequest(3, 5, "id", "ASC")
+      final pageFour = new StandardPageRequest(4, 5, "id", "ASC")
+      final firstPageBank = banks[0..4]
+      final secondPageBank = banks[5..9]
+      final lastPageBank = banks[10,11]
+
+      when:
+      def pageOneResult = get("$path${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
+      pageOneResult.totalElements == 12
+      pageOneResult.totalPages == 3
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.eachWithIndex { it, index ->
+         with (it) {
+            id == firstPageBank[index].id
+            name == firstPageBank[index].name
+            generalLedgerProfitCenter.id == firstPageBank[index].generalLedgerProfitCenter.id
+            generalLedgerAccount.id == firstPageBank[index].generalLedgerAccount.id
+         }
+      }
+
+      when:
+      def pageTwoResult = get("$path${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new StandardPageRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 12
+      pageTwoResult.totalPages == 3
+      pageTwoResult.first == false
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == secondPageBank[index].id
+            name == secondPageBank[index].name
+            generalLedgerProfitCenter.id == secondPageBank[index].generalLedgerProfitCenter.id
+            generalLedgerAccount.id == secondPageBank[index].generalLedgerAccount.id
+         }
+      }
+      when:
+      def pageLastResult = get("$path${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new StandardPageRequest(it) } == pageLast
+      pageLastResult.totalElements == 12
+      pageLastResult.totalPages == 3
+      pageLastResult.first == false
+      pageLastResult.last == true
+      pageLastResult.elements.size() == 2
+      pageLastResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == lastPageBank[index].id
+            name == lastPageBank[index].name
+            generalLedgerProfitCenter.id == lastPageBank[index].generalLedgerProfitCenter.id
+            generalLedgerAccount.id == lastPageBank[index].generalLedgerAccount.id
+         }
+      }
+
+      when:
+      get("$path/${pageFour}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "create a valid bank"() {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+      final jsonBank = jsonOutput.toJson(bankDTO)
+
+      when:
+      def result = post("$path/", jsonBank)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         name == bankDTO.name
+         generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
+      }
+   }
+
+   void "create invalid bank with other company's account" () {
+      given:
+      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final account = accountFactoryService.single(company2)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+
+      when:
+      post("$path/", bankDTO)
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
+      final response = ex.response.bodyAsJson()
+      response.size() == 1
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
+         new ErrorDataTransferObject("${String.format('%,d', account.id)} was unable to be found", "generalLedgerAccount.id")
+      ]
+   }
+
+   void "create invalid bank with other company's store" () {
+      given:
+      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, company2)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+
+      when:
+      post("$path/", bankDTO)
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
+      final response = ex.response.bodyAsJson()
+      response.size() == 1
+      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
+         new ErrorDataTransferObject("${String.format('%,d', store.id)} was unable to be found", "generalLedgerProfitCenter.id")
+      ]
+   }
+
+   void "update a valid bank's profit center"() {
+      given: 'Update existingBank in DB with all new data in jsonBank'
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final updateStore = storeFactoryService.store(1, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final updatedBankDTO = bankFactoryService.singleDTO(store, account)
+
+      when:
+      updatedBankDTO.generalLedgerProfitCenter.id = updateStore.id
+      def result = put("$path/$existingBank.id", updatedBankDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         name == updatedBankDTO.name
+         generalLedgerProfitCenter.id == updateStore.id
+         generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
+      }
+   }
+
+   void "update a valid bank's profit gl account"() {
+      given: 'Update existingBank in DB with all new data in jsonBank'
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final updateAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final updatedBankDTO = bankFactoryService.singleDTO(store, account)
+
+      when:
+      updatedBankDTO.generalLedgerAccount.id = updateAccount.id
+      def result = put("$path/$existingBank.id", updatedBankDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         name == updatedBankDTO.name
+         generalLedgerProfitCenter.id == store.id
+         generalLedgerAccount.id == updateAccount.id
+      }
+   }
+
+   void "update a invalid bank without bank name"() {
+      given:
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
+      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store, account)
+      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
+      jsonBank.name = ''
+
+      when:
+      put("$path/$bankDTO.id", jsonBank)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'bankDTO.name'
+      response[0].message == 'Is required'
+   }
+
+   void "update a valid bank with no id"() {
+      given: 'Update existingBank in DB with all new data in jsonBank'
+      final def account = accountFactoryService.single(nineNineEightEmployee.company)
+      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final def updatedBankDTO = new BankDTO(existingBank)
+
+      when:
+      updatedBankDTO.id = null
+      def result = put("$path/$existingBank.id", updatedBankDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         name == updatedBankDTO.name
+         generalLedgerProfitCenter.id == store.id
+         generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
+      }
+   }
+}

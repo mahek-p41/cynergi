@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.permission.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -8,8 +8,6 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTra
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -23,8 +21,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class AuditPermissionControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditPermissionFactoryService auditPermissionFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch all permission types" () {
       given:
@@ -46,10 +42,10 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       result.elements.size() == 2
       result.elements[0].id == 1
       result.elements[0].value == "audit-approver"
-      result.elements[0].description == "Approve audits"
+      result.elements[0].description == "Approve Audits"
       result.elements[1].id == 2
       result.elements[1].value == "audit-permission-manager"
-      result.elements[1].description == "Edit permissions"
+      result.elements[1].description == "Change Audit Permissions"
    }
 
    void "fetch one by ID" () {
@@ -174,14 +170,14 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final auditTwo = auditFactoryService.single(store, assistantManagerEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      def auditOneApproval = put("/audit/approve", new SimpleIdentifiableDataTransferObject(auditOne), assistantManagerLogin)
+      def auditOneApproval = put("/audit/approve", new SimpleIdentifiableDTO(auditOne), assistantManagerLogin)
 
       then:
       notThrown(Exception)
       auditOneApproval.id == auditOne.id
 
       when:
-      put("/audit/sign-off", new SimpleIdentifiableDataTransferObject(auditTwo), deliveryDriverLogin)
+      put("/audit/sign-off", new SimpleIdentifiableDTO(auditTwo), deliveryDriverLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -214,14 +210,14 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       permission.department.code == salesAssociateDepartment.code
 
       when:
-      def auditOneApproval = put("/audit/approve", new SimpleIdentifiableDataTransferObject(auditOne), salesAssociateLogin)
+      def auditOneApproval = put("/audit/approve", new SimpleIdentifiableDTO(auditOne), salesAssociateLogin)
 
       then:
       notThrown(Exception)
       auditOneApproval.id == auditOne.id
 
       when:
-      put("/audit/sign-off", new SimpleIdentifiableDataTransferObject(auditTwo), deliveryDriverLogin)
+      put("/audit/sign-off", new SimpleIdentifiableDTO(auditTwo), deliveryDriverLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -241,7 +237,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final audit = auditFactoryService.single(store, salesAssociate, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      put("/audit/approve", new SimpleIdentifiableDataTransferObject(audit), salesAssociateLogin)
+      put("/audit/approve", new SimpleIdentifiableDTO(audit), salesAssociateLogin)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -259,7 +255,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       deletedAuditSignOffPermission.department.code == deliveryDriverDepartment.code
 
       when:
-      def salesAssociateSignOffAudit = put("/audit/approve", new SimpleIdentifiableDataTransferObject(audit), salesAssociateLogin)
+      def salesAssociateSignOffAudit = put("/audit/approve", new SimpleIdentifiableDTO(audit), salesAssociateLogin)
 
       then:
       notThrown(Exception)

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -47,7 +47,7 @@ data class EmployeeValueObject(
 
    @field:JsonIgnore
    @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
-   var store: StoreValueObject? = null,
+   var store: StoreDTO? = null,
 
    @field:NotNull
    @field:Size(min = 1, max = 1)
@@ -57,7 +57,7 @@ data class EmployeeValueObject(
    @field:NotNull
    @field:Min(value = 1)
    @field:Schema(name = "alternativeArea", description = "Employee's alternate area")
-   var alternativeArea: Int? = null,
+   var alternativeArea: Long? = null,
 
    @field:JsonIgnore
    @field:NotNull
@@ -66,7 +66,7 @@ data class EmployeeValueObject(
 
 ) : Identifiable {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String, alternativeArea: Int) :
+   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long) :
       this(
          id = null,
          type = type,
@@ -88,7 +88,7 @@ data class EmployeeValueObject(
          lastName = entity.lastName,
          firstNameMi = entity.firstNameMi,
          passCode = entity.passCode,
-         store = entity.store?.let { StoreValueObject(it) },
+         store = entity.store?.let { StoreDTO(it) },
          active = entity.active,
          alternativeStoreIndicator = entity.alternativeStoreIndicator,
          alternativeArea = entity.alternativeArea

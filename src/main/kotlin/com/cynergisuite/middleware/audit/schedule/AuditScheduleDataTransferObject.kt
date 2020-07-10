@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
 import javax.validation.Valid
@@ -34,7 +34,7 @@ data class AuditScheduleDataTransferObject(
    @field:Valid
    @field:NotEmpty
    @field:Schema(name = "stores", description = "Set of stores the audit schedule is supposed to run against")
-   var stores: List<StoreValueObject> = mutableListOf(), // is from a schedule argument that is collected together
+   var stores: List<StoreDTO> = mutableListOf(), // is from a schedule argument that is collected together
 
    @field:NotNull
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")

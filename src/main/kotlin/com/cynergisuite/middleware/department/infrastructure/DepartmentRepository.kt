@@ -28,9 +28,7 @@ class DepartmentRepository @Inject constructor(
             dept.id AS d_id,
             dept.code AS d_code,
             dept.description AS d_description,
-            dept.security_profile AS d_security_profile,
-            dept.dataset AS d_dataset,
-            dept.default_menu AS d_default_menu
+            dept.dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
          WHERE dept.id = :id
@@ -53,9 +51,7 @@ class DepartmentRepository @Inject constructor(
             dept.id AS d_id,
             dept.code AS d_code,
             dept.description AS d_description,
-            dept.security_profile AS d_security_profile,
-            dept.dataset AS d_dataset,
-            dept.default_menu AS d_default_menu
+            dept.dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
          WHERE dept.code = :code
@@ -82,9 +78,7 @@ class DepartmentRepository @Inject constructor(
             dept.id AS d_id,
             dept.code AS d_code,
             dept.description AS d_description,
-            dept.security_profile AS d_security_profile,
             dept.dataset AS d_dataset,
-            dept.default_menu AS d_default_menu,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
          FROM fastinfo_prod_import.department_vw dept
          JOIN company comp ON comp.dataset_code = dept.dataset
@@ -143,8 +137,6 @@ class DepartmentRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          code = rs.getString("${columnPrefix}code"),
          description = rs.getString("${columnPrefix}description"),
-         securityProfile = rs.getInt("${columnPrefix}security_profile"),
-         defaultMenu = rs.getString("${columnPrefix}default_menu"),
          company = company
       )
 }

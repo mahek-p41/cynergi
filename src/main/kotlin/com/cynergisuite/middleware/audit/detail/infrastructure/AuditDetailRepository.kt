@@ -6,7 +6,6 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -77,8 +76,6 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.dept_id                         AS dept_id,
             scannedBy.dept_code                       AS dept_code,
             scannedBy.dept_description                AS dept_description,
-            scannedBy.dept_security_profile           AS dept_security_profile,
-            scannedBy.dept_default_menu               AS dept_default_menu,
             asatd.id                                  AS asatd_id,
             asatd.value                               AS asatd_value,
             asatd.description                         AS asatd_description,

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.schedule.argument
 
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleFactoryService
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
@@ -39,14 +40,14 @@ class ScheduleArgumentFactoryService(
    private val scheduleFactoryService: ScheduleFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, scheduleIn: ScheduleEntity? = null): Stream<ScheduleArgumentEntity> {
-      val schedule = scheduleIn ?: scheduleFactoryService.single()
+   fun stream(numberIn: Int = 1, scheduleIn: ScheduleEntity? = null, company: Company): Stream<ScheduleArgumentEntity> {
+      val schedule = scheduleIn ?: scheduleFactoryService.single(company)
 
       return ScheduleArgumentFactory.stream(1)
          .map { scheduleArgumentRepository.insert(schedule, it) }
    }
 
-   fun single(scheduleIn: ScheduleEntity? = null): ScheduleArgumentEntity {
-      return stream(1, scheduleIn).findFirst().orElseThrow { Exception("Unable to create ScheduleArgument") }
+   fun single(scheduleIn: ScheduleEntity? = null, company: Company): ScheduleArgumentEntity {
+      return stream(1, scheduleIn, company).findFirst().orElseThrow { Exception("Unable to create ScheduleArgument") }
    }
 }

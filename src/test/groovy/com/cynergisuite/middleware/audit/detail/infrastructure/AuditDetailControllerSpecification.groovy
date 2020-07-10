@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -12,8 +12,6 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -35,8 +33,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditDetailFactoryService auditDetailFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
    @Inject InventoryService inventoryService
 
    //Passes
@@ -89,7 +85,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 20
-      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect {
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}.collect {
          new AuditDetailValueObject(it)
       } == firstFiveDetails
 
@@ -101,7 +97,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect {
+      pageTwoResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}.collect {
          new AuditDetailValueObject(it)
       } == secondFiveDetails
 
@@ -136,7 +132,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements != null
       result.elements.size() == 10
       result.totalElements == 12
-      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
+      result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
    }
 
    //Passes
@@ -164,7 +160,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == 10
       result.totalElements == 21
       result.totalPages == 3
-      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
+      result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort {o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
    }
 
    //Passes
@@ -180,7 +176,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       response.message == "0 was unable to be found"
    }
 
-   //Fails line 202. Cannot get property 'id' on null object.
    void "create audit detail" () {
       given:
       final locale = Locale.US
@@ -194,7 +189,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = AuditScanAreaFactory.random()
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -219,8 +214,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = AuditScanAreaFactory.random()
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final detail = new AuditDetailCreateDataTransferObject(null, null)
-      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: null]), new AuditScanAreaValueObject([value: null]))
-      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: 800000]), new AuditScanAreaValueObject(scanArea))
+      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: null]), new AuditScanAreaValueObject([value: null]))
+      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: 800000]), new AuditScanAreaValueObject(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -282,7 +277,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = AuditScanAreaFactory.random()
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new AuditScanAreaValueObject(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)

@@ -48,8 +48,8 @@ object AuditScheduleFactory {
 
       arguments.add(
          ScheduleArgumentEntity(
-            company.myId()?.toString()!!,
-            "companyId"
+            "en-US",
+            "locale"
          )
       )
 
@@ -73,6 +73,7 @@ object AuditScheduleFactory {
          schedule = dayOfWeek.name,
          command = ScheduleCommandTypeFactory.auditSchedule(),
          type = ScheduleTypeFactory.weekly(),
+         company = user.myCompany(),
          arguments = arguments
       )
    }

@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.beginningOfDay
+import com.cynergisuite.extensions.endOfDay
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
@@ -15,14 +17,12 @@ import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.department.DepartmentEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.store.SimpleStore
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -35,6 +35,7 @@ import javax.inject.Singleton
 class AuditRepository @Inject constructor(
    private val auditActionRepository: AuditActionRepository,
    private val auditStatusRepository: AuditStatusRepository,
+   private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -92,8 +93,6 @@ class AuditRepository @Inject constructor(
          auditActionEmployee.dept_id                                   AS auditActionEmployeeDept_id,
          auditActionEmployee.dept_code                                 AS auditActionEmployeeDept_code,
          auditActionEmployee.dept_description                          AS auditActionEmployeeDept_description,
-         auditActionEmployee.dept_security_profile                     AS auditActionEmployeeDept_security_profile,
-         auditActionEmployee.dept_default_menu                         AS auditActionEmployeeDept_default_menu,
          auditActionEmployee.emp_alternative_store_indicator           AS auditActionEmployee_alternative_store_indicator,
          auditActionEmployee.emp_alternative_area                      AS auditActionEmployee_alternative_area,
          auditStore.id                                                 AS auditStore_id,
@@ -207,8 +206,6 @@ class AuditRepository @Inject constructor(
             auditActionEmployee.dept_id                         AS auditActionEmployeeDept_id,
             auditActionEmployee.dept_code                       AS auditActionEmployeeDept_code,
             auditActionEmployee.dept_description                AS auditActionEmployeeDept_description,
-            auditActionEmployee.dept_security_profile           AS auditActionEmployeeDept_security_profile,
-            auditActionEmployee.dept_default_menu               AS auditActionEmployeeDept_default_menu,
             auditStore.id                                       AS auditStore_id,
             auditStore.name                                     AS auditStore_name,
             auditStore.number                                   AS auditStore_number,
@@ -226,15 +223,31 @@ class AuditRepository @Inject constructor(
             total_elements                                      AS total_elements
          FROM audits a
               JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN fastinfo_prod_import.store_vw auditStore
+                     ON comp.dataset_code = auditStore.dataset
+                        AND a.store_number = auditStore.number
+               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+               LEFT JOIN region reg ON reg.id = rts.region_id
+               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
          ORDER BY a.id
       """
+
+   /**
+    * The sub-query added to make sure we get unassigned store
+    * but won't get the store of region belong to another company
+    * which have the same store number
+    **/
+   private val subQuery = """
+                           (rts.region_id IS null
+                              OR rts.region_id NOT IN (
+                                    SELECT region.id
+                                    FROM region JOIN division ON region.division_id = division.id
+                                    WHERE division.company_id <> :comp_id
+                                 ))
+   """
 
    fun findOne(id: Long, company: Company): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
@@ -262,6 +275,7 @@ class AuditRepository @Inject constructor(
 
    private fun executeFindForMultipleAudits(query: String, params: MutableMap<String, Any>): List<AuditEntity> {
       val elements = mutableListOf<AuditEntity>()
+
       jdbc.query(query, params) { rs ->
          var currentId: Long = -1
          var currentParentEntity: AuditEntity? = null
@@ -279,8 +293,8 @@ class AuditRepository @Inject constructor(
                tempParentEntity.actions.add(mapAuditAction(rs))
 
          } while (rs.next())
-
       }
+
       return elements
    }
 
@@ -304,11 +318,12 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+      val auditIds = mutableListOf<Long>()
       val whereClause = StringBuilder(" WHERE a.company_id = :comp_id ")
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
-      val from = pageRequest.from
-      val thru = pageRequest.thru
+      val from = pageRequest.from?.beginningOfDay()
+      val thru = pageRequest.thru?.endOfDay()
 
       processAlternativeStoreIndicator(whereClause, params, user)
 
@@ -328,103 +343,43 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (:current_status) ")
       }
 
+      whereClause.append(" AND $subQuery ")
+
       val sql = """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         ), audits AS (
-            WITH status AS (
-               SELECT
-                  csastd.value AS current_status,
-                  csaa.audit_id AS audit_id, csaa.id
-               FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
-            ), maxStatus AS (
-               SELECT MAX(id) AS current_status_id, audit_id
-               FROM audit_action
-               GROUP BY audit_id
-            )
+         WITH maxStatus AS (
+            SELECT MAX(id) AS current_status_id, audit_id
+            FROM audit_action
+            GROUP BY audit_id
+         ), status AS (
             SELECT
-               a.id AS id,
-               a.uu_row_id AS uu_row_id,
-               a.time_created AS time_created,
-               a.time_updated AS time_updated,
-               a.store_number AS store_number,
-               a.number AS number,
-               (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
-               (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
-               (  SELECT count(aen.id) > 0
-                  FROM audit_exception ae
-                     JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
-                  WHERE ae.audit_id = a.id
-               ) AS exception_has_notes,
-               (SELECT max(time_updated)
-                FROM (
-                   SELECT time_updated FROM audit_detail WHERE audit_id = a.id
-                   UNION
-                   SELECT time_updated FROM audit_exception WHERE audit_id = a.id
-                ) AS m
-               ) AS last_updated,
-               a.inventory_count AS inventory_count,
-               a.company_id AS company_id,
-               s.current_status AS current_status,
-               (SELECT count(a.id)
-                FROM audit a
-                    JOIN status s ON s.audit_id = a.id
-                    JOIN maxStatus ms ON s.id = ms.current_status_id
-                    JOIN company comp ON a.company_id = comp.id
-                    JOIN division div ON comp.id = div.company_id
-                    JOIN region reg ON div.id = reg.division_id
-                $whereClause) AS total_elements
-            FROM audit a
-                 JOIN status s ON s.audit_id = a.id
-                 JOIN maxStatus ms ON s.id = ms.current_status_id
-                 JOIN company comp ON a.company_id = comp.id
-                 JOIN division div ON comp.id = div.company_id
-                 JOIN region reg ON div.id = reg.division_id
-            $whereClause
-            ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-            LIMIT :limit OFFSET :offset
+               csastd.value AS current_status,
+               csaa.audit_id AS audit_id, csaa.id
+            FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
          )
          SELECT
-            a.id                                                AS a_id,
-            a.uu_row_id                                         AS a_uu_row_id,
-            a.time_created                                      AS a_time_created,
-            a.time_updated                                      AS a_time_updated,
-            a.store_number                                      AS store_number,
-            a.number                                            AS a_number,
-            a.total_details                                     AS a_total_details,
-            a.total_exceptions                                  AS a_total_exceptions,
-            a.current_status                                    AS current_status,
-            a.last_updated                                      AS a_last_updated,
+            a.id                                                          AS a_id,
+            a.time_created                                                AS a_time_created,
+            a.time_updated                                                AS a_time_updated,
+            auditStore.id                                                 AS auditStore_id,
+            auditStore.number                                             AS auditStore_number,
+            auditStore.name                                               AS auditStore_name,
+            a.number                                                      AS a_number,
+            (SELECT count(id) FROM audit_detail WHERE audit_id = a.id)    AS a_total_details,
+            (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            (SELECT count(aen.id) > 0
+               FROM audit_exception ae
+                  JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
+               WHERE ae.audit_id = a.id
+            ) AS a_exception_has_notes,
+            (SELECT max(time_updated)
+             FROM (
+                SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+                UNION
+                SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+             ) AS m
+            )                                                   AS a_last_updated,
             a.inventory_count                                   AS a_inventory_count,
-            a.exception_has_notes                               AS a_exception_has_notes,
-            auditAction.id                                      AS auditAction_id,
-            auditAction.uu_row_id                               AS auditAction_uu_row_id,
-            auditAction.time_created                            AS auditAction_time_created,
-            auditAction.time_updated                            AS auditAction_time_updated,
-            astd.id                                             AS astd_id,
-            astd.value                                          AS astd_value,
-            astd.description                                    AS astd_description,
-            astd.color                                          AS astd_color,
-            astd.localization_code                              AS astd_localization_code,
-            auditActionEmployee.emp_id                          AS auditActionEmployee_id,
-            auditActionEmployee.emp_number                      AS auditActionEmployee_number,
-            auditActionEmployee.emp_last_name                   AS auditActionEmployee_last_name,
-            auditActionEmployee.emp_first_name_mi               AS auditActionEmployee_first_name_mi,
-            auditActionEmployee.emp_pass_code                   AS auditActionEmployee_pass_code,
-            auditActionEmployee.emp_active                      AS auditActionEmployee_active,
-            auditActionEmployee.emp_type                        AS auditActionEmployee_type,
-            auditActionEmployee.emp_cynergi_system_admin        AS auditActionEmployee_cynergi_system_admin,
-            auditActionEmployee.emp_alternative_store_indicator AS auditActionEmployee_alternative_store_indicator,
-            auditActionEmployee.emp_alternative_area            AS auditActionEmployee_alternative_area,
-            auditActionEmployee.dept_id                         AS auditActionEmployeeDept_id,
-            auditActionEmployee.dept_code                       AS auditActionEmployeeDept_code,
-            auditActionEmployee.dept_description                AS auditActionEmployeeDept_description,
-            auditActionEmployee.dept_security_profile           AS auditActionEmployeeDept_security_profile,
-            auditActionEmployee.dept_default_menu               AS auditActionEmployeeDept_default_menu,
-            auditStore.id                                       AS auditStore_id,
-            auditStore.name                                     AS auditStore_name,
-            auditStore.number                                   AS auditStore_number,
-            auditStore.dataset                                  AS auditStore_dataset,
+            s.current_status                                    AS a_current_status,
             comp.id                                             AS comp_id,
             comp.uu_row_id                                      AS comp_uu_row_id,
             comp.time_created                                   AS comp_time_created,
@@ -435,41 +390,42 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
-            total_elements                                      AS total_elements
-         FROM audits a
-              JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-              JOIN audit_action auditAction ON a.id = auditAction.audit_id
-              JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-              JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+            count(*) OVER() AS total_elements
+         FROM audit a
+               JOIN company comp ON a.company_id = comp.id
+               JOIN fastinfo_prod_import.store_vw auditStore
+                     ON comp.dataset_code = auditStore.dataset
+                        AND a.store_number = auditStore.number
+               JOIN status s ON s.audit_id = a.id
+               JOIN maxStatus ms ON s.id = ms.current_status_id
+               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+               LEFT JOIN region reg ON reg.id = rts.region_id
+               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
+         $whereClause
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         LIMIT :limit OFFSET :offset
       """.trimIndent()
 
       logger.trace("Finding all audits using {}\n{}", params, sql)
 
       val repoPage = jdbc.queryPaged<AuditEntity, AuditPageRequest>(sql, params, pageRequest) { rs, elements ->
-         var currentId: Long = -1
-         var currentParentEntity: AuditEntity? = null
-
          do {
-            val tempId = rs.getLong("a_id")
-            val tempParentEntity: AuditEntity = if (tempId != currentId) {
-               currentId = tempId
-               currentParentEntity = mapRow(rs)
-               elements.add(currentParentEntity)
-               currentParentEntity
-            } else {
-               currentParentEntity!!
-            }
+            val audit = mapRow(rs)
 
-            tempParentEntity.actions.add(mapAuditAction(rs))
+            elements.add(audit)
+
+            auditIds.add(audit.id!!)
          } while(rs.next())
       }
 
-      return repoPage.copy(elements = repoPage.elements.onEach(this::loadNextStates))
+      val actions = auditActionRepository.findAll(auditIds)
+
+      return repoPage.copy(
+         elements = repoPage.elements.asSequence()
+            .onEach { it.actions.addAll(actions.get(it.id!!)) }
+            .onEach(this::loadNextStates)
+            .toList()
+      )
    }
 
    fun exists(id: Long): Boolean {
@@ -486,32 +442,29 @@ class AuditRepository @Inject constructor(
       val status = pageRequest.status
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId())
       val storeNumbers = pageRequest.storeNumber
-      val whereBuilderForStatusAndTimeCreated = StringBuilder()
-      val whereBuilderForCompanyAndStore = StringBuilder("WHERE a.company_id = :comp_id ")
-      val from = pageRequest.from
-      val thru = pageRequest.thru
-      var where = " WHERE "
-      var and = EMPTY
+      val whereClause = StringBuilder("WHERE a.company_id = :comp_id ")
+      val from = pageRequest.from?.beginningOfDay()
+      val thru = pageRequest.thru?.endOfDay()
 
-      processAlternativeStoreIndicator(whereBuilderForCompanyAndStore, params, user)
+      processAlternativeStoreIndicator(whereClause, params, user)
 
       if (from != null && thru != null) {
          params["from"] = from
          params["thru"] = thru
-         whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csaa.time_created BETWEEN :from AND :thru ")
-         where = EMPTY
-         and = " AND "
+         whereClause.append(" AND a.time_created BETWEEN :from AND :thru ")
       }
 
       if (!status.isNullOrEmpty()) {
          params["statuses"] = status
-         whereBuilderForStatusAndTimeCreated.append(where).append(and).append(" csastd.value IN (:statuses) ")
+         whereClause.append(" AND current_status IN (:statuses) ")
       }
 
       if (!storeNumbers.isNullOrEmpty()) {
          params["store_numbers"] = storeNumbers
-         whereBuilderForCompanyAndStore.append(" AND a.store_number IN (:store_numbers) ")
+         whereClause.append(" AND a.store_number IN (:store_numbers) ")
       }
+
+      whereClause.append(" AND $subQuery ")
 
       val sql = """
          WITH status AS (
@@ -526,7 +479,6 @@ class AuditRepository @Inject constructor(
             FROM audit_action csaa
                JOIN audit_status_type_domain csastd
                  ON csaa.status_id = csastd.id
-            $whereBuilderForStatusAndTimeCreated
             ),
             maxStatus AS (
                SELECT MAX(id) AS current_status_id, audit_id
@@ -542,13 +494,13 @@ class AuditRepository @Inject constructor(
             count(*) AS current_status_count
          FROM audit a
             JOIN company comp ON a.company_id = comp.id
-            JOIN division div ON comp.id = div.company_id
-            JOIN region reg ON div.id = reg.division_id
-            JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
+            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
-         $whereBuilderForCompanyAndStore
+            LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+            LEFT JOIN region reg ON reg.id = rts.region_id
+            LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
+         $whereClause
          GROUP BY status.current_status,
                   status.current_status_description,
                   status.current_status_localization_code,
@@ -691,23 +643,11 @@ class AuditRepository @Inject constructor(
    }
 
    private fun mapStore(rs: ResultSet): Store {
-      return SimpleStore(
+      return StoreEntity(
          id = rs.getLong("auditStore_id"),
          number = rs.getInt("auditStore_number"),
          name = rs.getString("auditStore_name"),
-         company = mapCompany(rs)
-      )
-   }
-
-   private fun mapCompany(rs: ResultSet): Company {
-      return CompanyEntity(
-         id = rs.getLong("comp_id"),
-         name = rs.getString("comp_name"),
-         doingBusinessAs = rs.getString("comp_doing_business_as"),
-         clientCode = rs.getString("comp_client_code"),
-         clientId = rs.getInt("comp_client_id"),
-         federalIdNumber = rs.getString("comp_federal_id_number"),
-         datasetCode = rs.getString("comp_dataset_code")
+         company = companyRepository.mapRow(rs, "comp_")
       )
    }
 
@@ -722,36 +662,13 @@ class AuditRepository @Inject constructor(
    }
 
    private fun mapAuditActionEmployee(rs: ResultSet): EmployeeEntity {
-      return EmployeeEntity(
-         id = rs.getLong("auditActionEmployee_id"),
-         type = rs.getString("auditActionEmployee_type"),
-         number = rs.getInt("auditActionEmployee_number"),
-         company = mapCompany(rs),
-         lastName = rs.getString("auditActionEmployee_last_name"),
-         firstNameMi = rs.getString("auditActionEmployee_first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
-         passCode = rs.getString("auditActionEmployee_pass_code"),
-         store = mapStore(rs),
-         active = rs.getBoolean("auditActionEmployee_active"),
-         department = mapAuditActionEmployeeDepartment(rs),
-         cynergiSystemAdmin = rs.getBoolean("auditActionEmployee_cynergi_system_admin"),
-         alternativeStoreIndicator = rs.getString("auditActionEmployee_alternative_store_indicator"),
-         alternativeArea = rs.getInt("auditActionEmployee_alternative_area")
+      return employeeRepository.mapRow(
+         rs = rs,
+         columnPrefix = "auditActionEmployee_",
+         companyColumnPrefix = "comp_",
+         departmentColumnPrefix = "auditActionEmployeeDept_",
+         storeColumnPrefix = "auditStore_"
       )
-   }
-
-   private fun mapAuditActionEmployeeDepartment(rs: ResultSet): DepartmentEntity? {
-      return if (rs.getString("auditActionEmployeeDept_id") != null) {
-         DepartmentEntity(
-            id = rs.getLong("auditActionEmployeeDept_id"),
-            code = rs.getString("auditActionEmployeeDept_code"),
-            description = rs.getString("auditActionEmployeeDept_description"),
-            securityProfile = rs.getInt("auditActionEmployeeDept_security_profile"),
-            defaultMenu = rs.getString("auditActionEmployeeDept_default_menu"),
-            company = mapCompany(rs)
-         )
-      } else {
-         null
-      }
    }
 
    private fun loadNextStates(audit: AuditEntity) {

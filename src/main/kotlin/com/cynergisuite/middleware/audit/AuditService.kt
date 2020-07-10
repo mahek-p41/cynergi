@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.makeCell
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
@@ -23,7 +23,7 @@ import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.lowagie.text.Document
 import com.lowagie.text.Element
 import com.lowagie.text.Element.ALIGN_LEFT
@@ -116,7 +116,7 @@ class AuditService @Inject constructor(
       return if (createdOrInProgressAudit != null) {
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
-         create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
+         create(AuditCreateValueObject(StoreDTO(store)), user, locale)
       }
    }
 
@@ -136,7 +136,7 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun approve(@Valid audit: SimpleIdentifiableDataTransferObject, user: User, locale: Locale): AuditValueObject {
+   fun approve(@Valid audit: SimpleIdentifiableDTO, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateApproved(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
       val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
@@ -182,7 +182,7 @@ class AuditService @Inject constructor(
 
 
    @Validated
-   fun approveAllExceptions(@Valid audit: SimpleIdentifiableDataTransferObject, user: User): AuditApproveAllExceptionsDataTransferObject {
+   fun approveAllExceptions(@Valid audit: SimpleIdentifiableDTO, user: User): AuditApproveAllExceptionsDataTransferObject {
       val toApprove = auditValidator.validateApproveAll(audit, user.myCompany())
 
       return AuditApproveAllExceptionsDataTransferObject(

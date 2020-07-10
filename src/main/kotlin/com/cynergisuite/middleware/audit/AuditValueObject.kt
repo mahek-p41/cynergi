@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -24,7 +24,7 @@ data class AuditValueObject (
    val timeCreated: OffsetDateTime? = null,
 
    @field:Schema(name = "store", required = false, description = "Store the audit is associated with")
-   var store: StoreValueObject? = null,
+   var store: StoreDTO? = null,
 
    @field:Positive
    @field:Schema(name = "number", minimum = "0", required = false, description = "Audit Count")
@@ -57,7 +57,7 @@ data class AuditValueObject (
       this (
          id = entity.id,
          timeCreated = entity.timeCreated,
-         store = StoreValueObject(entity.store),
+         store = StoreDTO(entity.store),
          auditNumber = entity.number,
          totalDetails = entity.totalDetails,
          totalExceptions = entity.totalExceptions,

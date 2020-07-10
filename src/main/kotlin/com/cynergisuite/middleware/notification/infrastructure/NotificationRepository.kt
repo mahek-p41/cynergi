@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.notification.infrastructure
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.updateReturning
