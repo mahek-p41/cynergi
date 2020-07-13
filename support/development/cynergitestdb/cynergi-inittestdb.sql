@@ -271,3 +271,50 @@ COPY fastinfo_prod_import.customer_vw(
    last_name
 ) FROM '/tmp/fastinfo/test-customer.csv' DELIMITER ',' CSV HEADER;
 
+CREATE TABLE fastinfo_prod_import.operator_vw(
+    id                             BIGSERIAL                             NOT NULL PRIMARY KEY,
+    dataset                        VARCHAR(6)                            NOT NULL,
+    time_created                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    number                         INTEGER                               NOT NULL,
+    name                           VARCHAR(20)                           NOT NULL,
+    account_payable_security       INTEGER                               NOT NULL,
+    purchase_order_security        INTEGER                               NOT NULL,
+    general_ledger_security        INTEGER                               NOT NULL,
+    system_administration_security INTEGER                               NOT NULL,
+    file_maintenance_security      INTEGER                               NOT NULL,
+    bank_reconciliation_security   INTEGER                               NOT NULL
+);
+
+/*
+ select
+   CASE
+      WHEN dataset = 'corrto' THEN 'tstds1'
+      WHEN dataset = 'corptp' THEN 'tstds2'
+   END AS dataset,
+   time_created,
+   time_updated,
+   number,
+   name,
+   account_payable_security,
+   purchase_order_security,
+   general_ledger_security,
+   system_administration_security,
+   file_maintenance_security,
+   bank_reconciliation_security
+ from operator_vw
+*/
+
+COPY fastinfo_prod_import.operator_vw(
+    dataset,
+    time_created,
+    time_updated,
+    number,
+    name,
+    account_payable_security,
+    purchase_order_security,
+    general_ledger_security,
+    system_administration_security,
+    file_maintenance_security,
+    bank_reconciliation_security
+) FROM '/tmp/fastinfo/test-operator.csv' DELIMITER ',' CSV HEADER;

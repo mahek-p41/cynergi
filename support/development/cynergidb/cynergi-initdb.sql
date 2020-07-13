@@ -97,6 +97,21 @@ CREATE FOREIGN TABLE fastinfo_prod_import.customer_vw (
     last_name VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'customer_vw', SCHEMA_NAME 'public');
 
+CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    name VARCHAR,
+    account_payable_security INTEGER,
+    purchase_order_security INTEGER,
+    general_ledger_security INTEGER,
+    system_administration_security INTEGER,
+    file_maintenance_security INTEGER,
+    bank_reconciliation_security INTEGER,
+    number INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
+
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
 -- END cynergidevelopdb SETUP
