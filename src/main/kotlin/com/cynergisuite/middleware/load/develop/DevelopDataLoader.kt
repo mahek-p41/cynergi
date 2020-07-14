@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.load.develop
 
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.area.AreaDataLoaderService
+import com.cynergisuite.middleware.area.ModuleDataLoaderService
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
@@ -42,7 +44,8 @@ class DevelopDataLoader @Inject constructor(
    private val regionFactoryService: RegionFactoryService,
    private val storeFactoryService: StoreFactoryService,
    private val accountDataLoaderService: AccountDataLoaderService,
-   private val bankFactoryService: BankFactoryService
+   private val bankFactoryService: BankFactoryService,
+   private val areaDataLoaderService: AreaDataLoaderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -158,6 +161,10 @@ class DevelopDataLoader @Inject constructor(
 
       val accountCorptp = accountDataLoaderService.single(corptp)
       bankFactoryService.single(corptp, corptpStore1, accountCorptp)
+
+      areaDataLoaderService.enableArea(1, companies[0])
+      areaDataLoaderService.enableArea(5, companies[0])
+      areaDataLoaderService.enableArea(5, companies[1])
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())

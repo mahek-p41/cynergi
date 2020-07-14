@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AreaTypeService @Inject constructor(
+class AreaService @Inject constructor(
    private val repository: AreaRepository,
    private val localizationService: LocalizationService
 ) {
