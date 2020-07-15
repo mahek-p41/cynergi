@@ -9,3 +9,4 @@ FROM region_to_store r2s
 			   JOIN division ON region.division_id = division.id;
 
 ALTER TABLE region_to_store ADD FOREIGN KEY (company_id) REFERENCES company (id);
+ALTER TABLE region_to_store ALTER COLUMN company_id SET NOT NULL;

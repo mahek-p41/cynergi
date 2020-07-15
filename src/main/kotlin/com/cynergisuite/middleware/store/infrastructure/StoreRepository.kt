@@ -60,10 +60,10 @@ class StoreRepository @Inject constructor(
             division.name AS div_name,
             division.description AS div_description
          FROM fastinfo_prod_import.store_vw store
-            JOIN company comp ON comp.dataset_code = store.dataset
-            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
-            LEFT JOIN region ON  r2s.region_id = region.id
-			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
+              JOIN company comp ON comp.dataset_code = store.dataset
+              LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = :comp_id
+              LEFT OUTER JOIN region ON r2s.region_id = region.id
+              LEFT OUTER JOIN division ON region.division_id = division.id
       """
    }
 
@@ -73,19 +73,25 @@ class StoreRepository @Inject constructor(
     * which have the same store number
     **/
    private val subQuery = """
-                           (r2s.region_id IS null
-                              OR r2s.region_id NOT IN (
-                                    SELECT region.id
-                                    FROM region JOIN division ON region.division_id = division.id
-                                    WHERE division.company_id <> :comp_id
-                                 ))
+      (r2s.region_id IS null
+         OR r2s.region_id NOT IN (
+               SELECT region.id
+               FROM region JOIN division ON region.division_id = division.id
+               WHERE division.company_id <> :comp_id
+            ))
    """
 
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = """${selectBaseQuery()} WHERE store.id = :id AND comp.id = :comp_id
-                                                AND $subQuery
+      val query = """
+         ${selectBaseQuery()}
+         WHERE store.id = :id
+               AND comp.id = :comp_id
+               AND $subQuery
       """.trimMargin()
+
+      logger.trace("{} / {}", query, params)
+
       val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company) }
 
       logger.trace("Searching for Store with params {} resulted in {}", params, found)
@@ -93,9 +99,8 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-
    fun findOne(number: Int, company: Company): StoreEntity? {
-      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
+      val params = mutableMapOf("number" to number, "comp_id" to company.myId())
       val query = """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
                                                 AND $subQuery
       """.trimMargin()
@@ -111,7 +116,7 @@ class StoreRepository @Inject constructor(
 
    fun findAll(pageRequest: PageRequest, user: User): RepositoryPage<StoreEntity, PageRequest> {
       val company = user.myCompany()
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+      val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
