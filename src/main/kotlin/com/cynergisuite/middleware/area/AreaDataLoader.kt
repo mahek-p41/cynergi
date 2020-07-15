@@ -86,7 +86,7 @@ class AreaDataLoaderService(
          it.company.myDataset() == company.myDataset()
       }
       .map {
-         repository.insert(it, company)
+         repository.insert(company, it)
       }
 
    fun enableArea(areaTypeId: Long, company: Company) =

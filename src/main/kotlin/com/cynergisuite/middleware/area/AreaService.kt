@@ -10,11 +10,22 @@ import javax.inject.Singleton
 @Singleton
 class AreaService @Inject constructor(
    private val repository: AreaRepository,
-   private val localizationService: LocalizationService
+   private val localizationService: LocalizationService,
+   private val validator: AreaValidator
 ) {
 
    fun fetchAll(company: Company, locale: Locale): List<AreaTypeDTO> =
       repository.findAll(company).map { transformEntity(it, locale) }
+
+   fun enableArea(company: Company, areaTypeId: Long) {
+      validator.validateAreaId(company, areaTypeId)
+      repository.enable(company, areaTypeId)
+   }
+
+   fun disableArea(company: Company, areaTypeId: Long) {
+      validator.validateAreaId(company, areaTypeId)
+      repository.disable(company, areaTypeId)
+   }
 
    private fun transformEntity(areaType: AreaType, locale: Locale): AreaTypeDTO =
       AreaTypeDTO(

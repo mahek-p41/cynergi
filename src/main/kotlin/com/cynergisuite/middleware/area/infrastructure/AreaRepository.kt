@@ -83,7 +83,34 @@ class AreaRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(areaEntity: AreaEntity, company: Company): AreaEntity {
+   fun enable(company: Company, areaTypeId: Long) {
+      logger.debug("Enable area {} for company {}", areaTypeId, company.myDataset())
+
+      jdbc.update("""
+         INSERT INTO area(company_id, area_type_id)
+         VALUES (:company_id, :area_type_id)
+         """,
+         mapOf(
+            "company_id" to company.myId(),
+            "area_type_id" to areaTypeId
+         )
+      )
+   }
+
+   @Transactional
+   fun disable(company: Company, areaTypeId: Long) {
+      logger.debug("Disable area {} for company {}", areaTypeId, company.myDataset())
+
+      jdbc.update("""
+         DELETE FROM area
+         WHERE company_id = :company_id AND area_type_id = :area_type_id
+         """,
+         mapOf("company_id" to company.myId(), "area_type_id" to areaTypeId)
+      )
+   }
+
+   @Transactional
+   fun insert(company: Company, areaEntity: AreaEntity): AreaEntity {
       logger.debug("Inserting area {}", areaEntity)
 
       return jdbc.insertReturning("""
@@ -98,6 +125,17 @@ class AreaRepository @Inject constructor(
          ),
          RowMapper { rs, _ -> mapEntity(rs, company, areaEntity.areaType) }
       )
+   }
+
+   fun exists(areaTypeId: Long): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)
+         """,
+         mapOf("area_type_id" to areaTypeId), Boolean::class.java)!!
+
+      logger.trace("Checking if Area exists {}")
+
+      return exists
    }
 
    private fun mapEntity(rs: ResultSet, company: Company, areaType: AreaType, columnPrefix: String = EMPTY): AreaEntity =

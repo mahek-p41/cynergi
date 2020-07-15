@@ -53,4 +53,47 @@ class AreaController @Inject constructor(
 
       return areas
    }
+
+   @Post(uri = "/enable" ,processes = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AreaEndpoints"], description = "Enable area for company.", operationId = "enable-area")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully enable area for company"),
+      ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun enableArea(
+      @Body areaIdDTO: SimpleIdentifiableDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      val company = userService.findUser(authentication).myCompany()
+
+      logger.info("Enable area {} for company {}", areaIdDTO.id, company.myId())
+
+      areaService.enableArea(company, areaIdDTO.id!!)
+   }
+
+   @Post(uri = "/disable" ,processes = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AreaEndpoints"], description = "Disable area for company.", operationId = "disable-area")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully disable area for company"),
+      ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun disableArea(
+      @Body areaIdDTO: SimpleIdentifiableDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      val company = userService.findUser(authentication).myCompany()
+
+      logger.info("Disable area {} for company {}", areaIdDTO.id, company.myId())
+
+      areaService.disableArea(company, areaIdDTO.id!!)
+   }
+
 }
