@@ -410,6 +410,55 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       searchSqlInjectionResult.totalElements < 5
    }
 
+   void "search vendors by name not fuzzy" () {
+      given: "Three vendors 2 with similar names"
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendorOne = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Vendor One")
+      final vendorTwo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Vendor Two")
+      final vendorThree = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Couch Maker")
+
+      when: "A first page is requested searching for Vendor One"
+      def result = get("$path/search?query=vendor%20one&fuzzy=false")
+
+      then: "1 element should come back"
+      notThrown(HttpClientResponseException)
+      result.totalElements == 1
+      result.first == true
+      result.last == true
+      with(result.elements[0]) {
+         id == vendorOne.id
+         name == vendorOne.name
+         new AddressValueObject(address) == new AddressValueObject(vendorOne.address)
+         ourAccountNumber == vendorOne.ourAccountNumber
+         new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendorOne.freightOnboardType)
+         paymentTerm.id == vendorOne.paymentTerm.id
+         returnPolicy == vendorOne.returnPolicy
+         new ShipViaValueObject(shipVia) == new ShipViaValueObject(vendorOne.shipVia)
+         minimumQuantity == vendorOne.minimumQuantity
+         minimumAmount?.toString() == vendorOne.minimumAmount?.toString()
+         freeShipQuantity == vendorOne.freeShipQuantity
+         freeShipAmount?.toString() == vendorOne.freeShipAmount?.toString()
+         vendor1099 == vendorOne.vendor1099
+         federalIdNumber == vendorOne.federalIdNumber
+         salesRepresentativeName == vendorOne.salesRepresentativeName
+         salesRepresentativeFax == vendorOne.salesRepresentativeFax
+         separateCheck == vendorOne.separateCheck
+         new FreightCalcMethodTypeDTO(freightCalcMethodType) == new FreightCalcMethodTypeDTO(vendorOne.freightCalcMethodType)
+         freightPercent?.toString() == vendorOne.freightPercent?.toString()
+         chargeInventoryTax1 == vendorOne.chargeInventoryTax1
+         chargeInventoryTax2 == vendorOne.chargeInventoryTax2
+         chargeInventoryTax3 == vendorOne.chargeInventoryTax3
+         chargeInventoryTax4 == vendorOne.chargeInventoryTax4
+         federalIdNumberVerification == vendorOne.federalIdNumberVerification
+         emailAddress == vendorOne.emailAddress
+         purchaseOrderSubmitEmailAddress == vendorOne.purchaseOrderSubmitEmailAddress
+         allowDropShipToCustomer == vendorOne.allowDropShipToCustomer
+         autoSubmitPurchaseOrder == vendorOne.autoSubmitPurchaseOrder
+      }
+   }
+
    void "search vendors by number" () {
       given: "A random collection of 20 vendors with a target vendor"
       final company = companyFactoryService.forDatasetCode('tstds1')
