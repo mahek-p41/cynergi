@@ -191,8 +191,6 @@ class PurchaseOrderControlRepository @Inject constructor(
             defApp.dept_id                                                       AS dept_id,
             defApp.dept_code                                                     AS dept_code,
             defApp.dept_description                                              AS dept_description,
-            defApp.dept_security_profile                                         AS dept_security_profile,
-            defApp.dept_default_menu                                             AS dept_default_menu,
             appReqFlagType.id                                                    AS appReqFlagType_id,
             appReqFlagType.value                                                 AS appReqFlagType_value,
             appReqFlagType.description                                           AS appReqFlagType_description,
