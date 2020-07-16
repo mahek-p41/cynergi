@@ -36,6 +36,7 @@ doit() {
 }
 
  ##############################################################################################
+cd ../../src/main/resources/db/migration/postgres
 [ ! "$1" ] && echo -n "Start renumbering with which one?: " && read RENUM || RENUM="$1"
 TEMPSH=/tmp/temp_shell.$$.sh; rm -f $TEMPSH
 
@@ -43,6 +44,7 @@ START=$(getVersion "$RENUM")
 [ $(echo $START | cut -c1) != "V" ] && START="V${START}"
 
 KEEP="$START"
+
 
 doit $KEEP
 if [ -s $TEMPSH ]
