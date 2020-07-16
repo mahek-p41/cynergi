@@ -4,6 +4,18 @@
 \c fastinfo_production
 SET args.datasets TO :'datasets';
 
+CREATE OR REPLACE FUNCTION isnumeric(text) RETURNS BOOLEAN AS $$
+DECLARE x NUMERIC;
+BEGIN
+    x = $1::NUMERIC;
+    RETURN TRUE;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+    STRICT
+    LANGUAGE plpgsql IMMUTABLE;
+
 DO $$
 DECLARE
    argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
@@ -289,7 +301,49 @@ BEGIN
    EXECUTE sqlToExec;
 END $$;
 
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW operator_vw AS';
+   unionAll := '';
 
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'operator_vw') THEN
+      DROP VIEW operator_vw;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT DISTINCT ON (operator_name)
+            operator.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            operator.created_at AT TIME ZONE ''UTC'' AS time_created,
+            operator.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            operator.operator_name                   AS name,
+            operator.operator_security_2             AS account_payable_security,
+            operator.operator_security_4             AS purchase_order_security,
+            operator.operator_security_5             AS general_ledger_security,
+            operator.operator_security_10            AS system_administration_security,
+            operator.operator_security_11            AS file_maintenance_security,
+            operator.operator_security_16            AS bank_reconciliation_security,
+            CAST(operator_name AS INTEGER)           AS number
+         FROM ' || r.schema_name || '.level1_operators operator
+         INNER JOIN employee_vw employee ON CAST(operator.operator_name AS INTEGER) = employee.number AND ''' || r.schema_name || '''::text = employee.dataset
+         WHERE operator_type = ''O'' AND isnumeric(operator.operator_name)
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY name, id DESC';
+
+   EXECUTE sqlToExec;
+END $$;
 -- End fastinfo setup
 
 -- Begin cynergidb setup
@@ -391,6 +445,21 @@ CREATE FOREIGN TABLE fastinfo_prod_import.customer_vw (
    first_name_mi VARCHAR,
    last_name VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'customer_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    name VARCHAR,
+    account_payable_security INTEGER,
+    purchase_order_security INTEGER,
+    general_ledger_security INTEGER,
+    system_administration_security INTEGER,
+    file_maintenance_security INTEGER,
+    bank_reconciliation_security INTEGER,
+    number INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
