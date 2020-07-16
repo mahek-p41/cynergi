@@ -14,33 +14,33 @@ class AreaService @Inject constructor(
    private val validator: AreaValidator
 ) {
 
-   fun fetchAll(company: Company, locale: Locale): List<AreaTypeDTO> =
+   fun fetchAll(company: Company, locale: Locale): List<AreaDTO> =
       repository.findAll(company).map { transformEntity(it, locale) }
 
    fun enableArea(company: Company, areaTypeId: Long) {
-      validator.validateAreaId(company, areaTypeId)
+      validator.validateAreaTypeId(company, areaTypeId)
       repository.enable(company, areaTypeId)
    }
 
    fun disableArea(company: Company, areaTypeId: Long) {
-      validator.validateAreaId(company, areaTypeId)
+      validator.validateAreaTypeId(company, areaTypeId)
       repository.disable(company, areaTypeId)
    }
 
-   private fun transformEntity(areaType: AreaType, locale: Locale): AreaTypeDTO =
-      AreaTypeDTO(
+   private fun transformEntity(areaType: AreaType, locale: Locale): AreaDTO =
+      AreaDTO(
          type = areaType,
          localizedDescription = areaType.localizeMyDescription(locale, localizationService),
          menus = areaType.menus
             .map { menuType ->
                val moduleTypes = menuType.modules
                   .map {
-                     ModuleTypeDTO(
+                     ModuleDTO(
                         type = it,
                         localizedDescription = it.localizeMyDescription(locale, localizationService))
                   }
 
-               MenuTypeDTO(
+               MenuDTO(
                   type = menuType,
                   localizedDescription = menuType.localizeMyDescription(locale, localizationService),
                   modules = moduleTypes)

@@ -83,4 +83,12 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
          Argument.of(String)
       ).bodyAsJson()
    }
+
+   Object delete(String path, Object body, String accessToken = nineNineEightAccessToken) throws HttpClientResponseException {
+      return client.exchange(
+         DELETE("/${path}", body).header("Authorization", "Bearer $accessToken"),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
+   }
 }

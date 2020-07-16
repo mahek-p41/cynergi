@@ -2,9 +2,9 @@ package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
-import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal

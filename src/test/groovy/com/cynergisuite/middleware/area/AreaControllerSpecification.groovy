@@ -15,9 +15,9 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all areas" () {
       given:
-      def predefinedTstds1Areas = AreaDataLoader.predefinedConfigEntities().findAll { it.company.myDataset() == "tstds1" }.collect { new AreaDTO(it) }
-      def area1Menus = menuDataLoaderService.predefined().findAll { it.areaType.id == 1 }.collect { new MenuTypeDTO(it) }
-      def menu2Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 5 }.collect { new ModuleTypeDTO(it) }
+      def predefinedAreas = AreaDataLoader.areaTypes()
+      def area1Menus = menuDataLoaderService.predefined().findAll { it.areaType.id == 1 }.collect { new MenuDTO(it) }
+      def menu2Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 5 }.collect { new ModuleDTO(it) }
 
       when:
       def response = get( "/area")
@@ -26,10 +26,10 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       response.size() == 5
       with(response[0]) {
-         def predefinedArea = predefinedTstds1Areas[0]
-         it.id == predefinedArea.areaType.id
-         it.value == predefinedArea.areaType.value
-         it.description == predefinedArea.areaType.description
+         def predefinedArea = predefinedAreas[0]
+         it.id == predefinedArea.id
+         it.value == predefinedArea.value
+         it.description == predefinedArea.description
          it.enabled == true
 
          it.menus.size() == area1Menus.size()
@@ -65,9 +65,6 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "enable/disable an area" () {
-      given:
-      AreaDataLoader.predefinedConfigEntities().findAll { it.company.myDataset() == "tstds1" }.collect { new AreaDTO(it) }
-
       when:
       def response = get( "/area")
 
@@ -77,7 +74,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response.find { it.id == 3 }.enabled == false
 
       when:
-      post( "/area/enable", new SimpleIdentifiableDTO(3))
+      post( "/area", new SimpleIdentifiableDTO(3))
 
       then: 'Area 3 is enabled'
       notThrown(HttpClientResponseException)
@@ -91,7 +88,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response2.find { it.id == 3 }.enabled == true
 
       when:
-      post( "/area/disable", new SimpleIdentifiableDTO(3))
+      delete( "/area", new SimpleIdentifiableDTO(3))
 
       then: 'Area 3 is disabled'
       notThrown(HttpClientResponseException)
@@ -106,11 +103,8 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "enable/disable an invalid area" () {
-      given:
-      AreaDataLoader.predefinedConfigEntities().findAll { it.company.myDataset() == "tstds1" }.collect { new AreaDTO(it) }
-
       when:
-      post( "/area/enable", new SimpleIdentifiableDTO(99))
+      post( "/area", new SimpleIdentifiableDTO(99))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -118,10 +112,10 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].message == '99 was unable to be found'
-      response[0].path == 'areaId'
+      response[0].path == 'areaTypeId'
 
       when:
-      post( "/area/disable", new SimpleIdentifiableDTO(99))
+      delete( "/area", new SimpleIdentifiableDTO(99))
 
       then:
       final exception2 = thrown(HttpClientResponseException)
@@ -129,7 +123,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       def response2 = exception.response.bodyAsJson()
       response2.size() == 1
       response2[0].message == '99 was unable to be found'
-      response2[0].path == 'areaId'
+      response2[0].path == 'areaTypeId'
    }
 
 }

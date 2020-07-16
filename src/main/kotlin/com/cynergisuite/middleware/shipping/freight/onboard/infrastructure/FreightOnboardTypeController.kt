@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.shipping.freight.onboard.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeService
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
+import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller

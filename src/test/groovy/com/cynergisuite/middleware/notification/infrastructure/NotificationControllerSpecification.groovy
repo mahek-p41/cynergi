@@ -22,8 +22,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
-import static io.micronaut.http.HttpRequest.*
-import static io.micronaut.http.HttpStatus.*
+import static io.micronaut.http.HttpRequest.DELETE
+import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.POST
+import static io.micronaut.http.HttpRequest.PUT
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class NotificationControllerSpecification extends ControllerSpecificationBase {

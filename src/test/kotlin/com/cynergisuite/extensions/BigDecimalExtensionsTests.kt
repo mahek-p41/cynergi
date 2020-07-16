@@ -3,7 +3,10 @@ package com.cynergisuite.extensions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
-import java.math.RoundingMode.*
+import java.math.RoundingMode.DOWN
+import java.math.RoundingMode.HALF_EVEN
+import java.math.RoundingMode.HALF_UP
+import java.math.RoundingMode.UP
 
 class BigDecimalExtensionsTests {
 

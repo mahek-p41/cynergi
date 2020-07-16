@@ -19,12 +19,12 @@ class AreaValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AreaValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateAreaId(company: Company, @Valid areaId: Long) {
-      logger.trace("Validating Save Account {}", areaId)
+   fun validateAreaTypeId(company: Company, @Valid areaId: Long) {
+      logger.trace("Validating AreaTypeId {}", areaId)
 
       doValidation { errors ->
          if (!areaRepository.exists(areaId)) {
-            errors.add(ValidationError("areaId", NotFound(areaId)))
+            errors.add(ValidationError("areaTypeId", NotFound(areaId)))
          }
       }
    }

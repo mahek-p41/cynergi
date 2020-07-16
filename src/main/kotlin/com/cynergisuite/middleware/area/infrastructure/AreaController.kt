@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.area.AreaDTO
 import com.cynergisuite.middleware.area.AreaService
-import com.cynergisuite.middleware.area.AreaTypeDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -11,9 +11,9 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
@@ -38,12 +38,12 @@ class AreaController @Inject constructor(
    @Get
    @Operation(tags = ["AreaEndpoints"], description = "Fetch the canonical structure of areas - menus - modules", operationId = "area-fetchAll")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaTypeDTO::class))])
+      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaDTO::class))])
    ])
    fun fetchAll(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
-   ): List<AreaTypeDTO> {
+   ): List<AreaDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
       val user = userService.findUser(authentication)
@@ -54,7 +54,7 @@ class AreaController @Inject constructor(
       return areas
    }
 
-   @Post(uri = "/enable" ,processes = [MediaType.APPLICATION_JSON])
+   @Post(processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], description = "Enable area for company.", operationId = "enable-area")
@@ -75,7 +75,7 @@ class AreaController @Inject constructor(
       areaService.enableArea(company, areaIdDTO.id!!)
    }
 
-   @Post(uri = "/disable" ,processes = [MediaType.APPLICATION_JSON])
+   @Delete(processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], description = "Disable area for company.", operationId = "disable-area")
