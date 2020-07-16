@@ -1,5 +1,7 @@
 package com.cynergisuite.domain.infrastructure
 
+import com.cynergisuite.middleware.area.AreaDataLoaderService
+import com.cynergisuite.middleware.area.ModuleDataLoaderService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -21,6 +23,8 @@ abstract class ServiceSpecificationBase extends Specification {
    @Inject StoreFactoryService storeFactoryService
    @Inject EmployeeFactoryService employeeFactoryService
    @Inject TruncateDatabaseService truncateDatabaseService
+   @Inject AreaDataLoaderService areaDataLoaderService
+   @Inject ModuleDataLoaderService moduleDataLoaderService
 
    List<CompanyEntity> companies
    List<DivisionEntity> divisions
@@ -46,5 +50,11 @@ abstract class ServiceSpecificationBase extends Specification {
       this.regions.each { region ->
          storeFactoryService.companyStoresToRegion(region, 1).toList()
       }
+
+      companies.each {
+         areaDataLoaderService.areaConfigs(it).toList()
+         moduleDataLoaderService.moduleConfigs(it).toList()
+      }
+
    }
 }

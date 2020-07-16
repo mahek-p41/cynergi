@@ -74,7 +74,7 @@ class DevelopDataLoader @Inject constructor(
       // begin setting up corptp stores and employees
       val corptp = companies.first { it.datasetCode == "corptp" }
       val corptpStoreManagerDepartment = departmentFactoryService.department("SM", corptp)
-      val corptpStoreHomeOffice = storeFactoryService.store(9000, corptp)
+      storeFactoryService.store(9000, corptp)
       val corptpStore1 = storeFactoryService.store(1, corptp)
       val corptpStore1StoreManager = employeeFactoryService.single(corptpStore1, corptpStoreManagerDepartment)
 
