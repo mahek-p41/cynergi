@@ -218,6 +218,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       when:
       toUpdateVerification.customerComments = "Updated comments"
       def updatedVerification = client.retrieve(PUT(path, toUpdateVerification), VerificationValueObject)
+      updatedVerification.verifiedTime = toUpdateVerification.verifiedTime
 
       then:
       notThrown(HttpClientResponseException)
