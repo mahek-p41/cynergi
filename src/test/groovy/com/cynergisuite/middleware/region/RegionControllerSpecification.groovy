@@ -47,6 +47,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          id == region1.id
          name == region1.name
          description == region1.description
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
       }
 
       when:
@@ -60,6 +66,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          name == region2.name
          description == region2.description
          regionalManager.id == region2.regionalManager.id
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
       }
    }
 
@@ -104,6 +116,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
             id == firstPageRegion[index].id
             name == firstPageRegion[index].name
             description == firstPageRegion[index].description
+            with(division) {
+               id == this.tstds1Division.id
+               number == this.tstds1Division.number
+               name == this.tstds1Division.name
+               description == this.tstds1Division.description
+            }
          }
       }
 
@@ -123,6 +141,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
             name == secondPageRegion[index].name
             description == secondPageRegion[index].description
             regionalManager.id == secondPageRegion[index].regionalManager.id
+            with(division) {
+               id == this.tstds1Division.id
+               number == this.tstds1Division.number
+               name == this.tstds1Division.name
+               description == this.tstds1Division.description
+            }
          }
 
       }
@@ -142,6 +166,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
             name == lastPageRegion[index].name
             description == lastPageRegion[index].description
             regionalManager.id == lastPageRegion[index].regionalManager.id
+            with(division) {
+               id == this.tstds1Division.id
+               number == this.tstds1Division.number
+               name == this.tstds1Division.name
+               description == this.tstds1Division.description
+            }
          }
 
       }
@@ -170,6 +200,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          name == region.name
          description == region.description
          regionalManager.id == region.regionalManager.id
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
       }
    }
 
@@ -248,6 +284,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          name == updatedRegionDTO.name
          description == updatedRegionDTO.description
          regionalManager.id == updatedRegionDTO.regionalManager.id
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
       }
    }
 
@@ -303,6 +345,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          name == existingRegion.name
          description == existingRegion.description
          regionalManager.id == existingRegion.regionalManager.id
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
       }
    }
 
@@ -332,6 +380,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          id == regionToDelete.id
          name == regionToDelete.name
          description == regionToDelete.description
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
       }
    }
 
@@ -452,7 +506,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds2)
       final region = regionFactoryService.single(division)
-      final regionStore = storeFactoryService.companyStoresToRegion(region, store)
+      storeFactoryService.companyStoresToRegion(region, store)
 
       when:
       def result = delete("$path/${region.id}/store/${store.myId()}", tstds2SuperUserLogin)
@@ -472,7 +526,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds1)
       final region = regionFactoryService.single(division)
-      final regionStore = storeFactoryService.companyStoresToRegion(region, store)
+      storeFactoryService.companyStoresToRegion(region, store)
 
       when:
       delete("$path/${region.id}/store/${store.myId()}", tstds2SuperUserLogin)
