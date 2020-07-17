@@ -9,63 +9,63 @@ object MenuTypeDataLoader {
       MenuType(
          id = 1,
          value = "ACCOUNTS PAYABLE",
-         description = "Account Payable Menu",
+         description = "Account Payable",
          localizationCode = "account.payable.menu",
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 2,
          value = "BANK RECONCILIATION",
-         description = "Bank Reconciliation Menu",
+         description = "Bank Reconciliation",
          localizationCode = "bank.reconciliation.menu",
          areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 3,
          value = "GENERAL LEDGER",
-         description = "General Ledger Menu",
+         description = "General Ledger",
          localizationCode = "general.ledger.menu",
          areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 4,
          value = "PURCHASE ORDER",
-         description = "Purchase Order Menu",
+         description = "Purchase Order",
          localizationCode = "purchase.order.menu",
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 5,
          value = "INVOICE MAINTENANCE",
-         description = "Account Payable Invoice Maintenance",
+         description = "AP Invoice Maintenance",
          localizationCode = "account.payable.invoice.maintenance",
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 6,
          value = "CHECK MAINTENANCE",
-         description = "Account Payable Check Maintenance",
+         description = "AP Check Maintenance",
          localizationCode = "account.payable.check.maintenance",
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 7,
          value = "REPORTS MENU",
-         description = "Accounts Payable Reports Menu",
+         description = "AP Reports",
          localizationCode = "account.payable.reports.menu",
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 8,
          value = "PO MAINTENANCE",
-         description = "Purchase Order Maintenance",
+         description = "PO Maintenance",
          localizationCode = "purchase.order.maintenance",
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 9,
          value = "PO REPORTS",
-         description = "Purchase Order Reports",
+         description = "PO Reports",
          localizationCode = "purchase.order.reports",
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
@@ -177,7 +177,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 25,
          value = "PO CONTROL",
-         description = "PO Control Menu",
+         description = "PO Control",
          localizationCode = "po.control.menu",
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),

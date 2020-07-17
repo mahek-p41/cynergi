@@ -24,7 +24,7 @@ object ModuleDataLoader {
          program = "APAGERPT",
          description = "Aging Report",
          localizationCode = "aging.report",
-         menuType = MenuTypeDataLoader.menuTypes().forId(1)
+         menuType = MenuTypeDataLoader.menuTypes().forId(7)
       ),
       ModuleType(
          id = 3,
@@ -72,7 +72,7 @@ object ModuleDataLoader {
          program = "APGLRPT",
          description = "G/L Analysis",
          localizationCode = "gl.analysis",
-         menuType = MenuTypeDataLoader.menuTypes().forId(3)
+         menuType = MenuTypeDataLoader.menuTypes().forId(17)
       ),
       ModuleType(
          id = 9,
@@ -80,7 +80,7 @@ object ModuleDataLoader {
          program = "APRPT",
          description = "Vendor Invoices",
          localizationCode = "vendor.invoices",
-         menuType = MenuTypeDataLoader.menuTypes().forId(1)
+         menuType = MenuTypeDataLoader.menuTypes().forId(26)
       ),
       ModuleType(
          id = 10,
@@ -96,7 +96,7 @@ object ModuleDataLoader {
          program = "APPURGE",
          description = "Purge AP Records",
          localizationCode = "purge.ap.records",
-         menuType = MenuTypeDataLoader.menuTypes().forId(1)
+         menuType = MenuTypeDataLoader.menuTypes().forId(29)
       ),
       ModuleType(
          id = 12,

@@ -69,7 +69,7 @@ object AreaDataLoader {
    fun areaTypes(): List<AreaType> = areaTypes
 
    @JvmStatic
-   fun predefinedAreas(): List<AreaEntity> = areaConfigEntities
+   fun predefinedConfigEntities(): List<AreaEntity> = areaConfigEntities
 
 }
 
@@ -78,8 +78,9 @@ object AreaDataLoader {
 class AreaDataLoaderService(
    private val repository: AreaRepository
 ) {
-   fun predefined() = AreaDataLoader.predefinedAreas()
-   fun areaConfigs(company: Company): Stream<AreaEntity> = AreaDataLoader.predefinedAreas()
+   fun predefined() = AreaDataLoader.areaTypes()
+   fun predefinedConfigEntities() = AreaDataLoader.predefinedConfigEntities()
+   fun areaConfigs(company: Company): Stream<AreaEntity> = AreaDataLoader.predefinedConfigEntities()
       .stream()
       .filter {
          it.company.myDataset() == company.myDataset()
@@ -87,4 +88,7 @@ class AreaDataLoaderService(
       .map {
          repository.insert(it, company)
       }
+
+   fun enableArea(areaTypeId: Long, company: Company) =
+      repository.insert(areaEntity = AreaEntity(areaType = predefined().forId(areaTypeId)!!, company = company), company = company)
 }

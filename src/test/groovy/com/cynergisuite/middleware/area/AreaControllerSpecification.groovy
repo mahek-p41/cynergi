@@ -1,10 +1,13 @@
 package com.cynergisuite.middleware.area
 
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
+
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 
 @MicronautTest(transactional = false)
 class AreaControllerSpecification extends ControllerSpecificationBase {
@@ -12,9 +15,8 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all areas" () {
       given:
-      def predefinedTstds1Areas = areaDataLoaderService.predefined().findAll { it.company.myDataset() == "tstds1" }.collect { new AreaDTO(it) }
+      def predefinedTstds1Areas = AreaDataLoader.predefinedConfigEntities().findAll { it.company.myDataset() == "tstds1" }.collect { new AreaDTO(it) }
       def area1Menus = menuDataLoaderService.predefined().findAll { it.areaType.id == 1 }.collect { new MenuTypeDTO(it) }
-      def menu1Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 1 }.collect { new ModuleTypeDTO(it) }
       def menu2Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 5 }.collect { new ModuleTypeDTO(it) }
 
       when:
@@ -37,19 +39,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
             it.value == area1Menus[0].value
             it.description == area1Menus[0].description
 
-            it.modules.size() == menu1Modules.size()
-            with(it.modules[0]) {
-               it.id == menu1Modules[0].id
-               it.value == menu1Modules[0].value
-               it.description == menu1Modules[0].description
-               it.level == 15
-            }
-            with(it.modules[1]) {
-               it.id == menu1Modules[1].id
-               it.value == menu1Modules[1].value
-               it.description == menu1Modules[1].description
-               it.level == 100
-            }
+            it.modules.size() == 0
          }
 
          with(it.menus[1]) {
