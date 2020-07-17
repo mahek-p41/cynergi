@@ -46,6 +46,7 @@ data class RegionDTO(
          number = entity.number,
          name = entity.name,
          description = entity.description,
-         regionalManager = SimpleIdentifiableDTO(entity.regionalManager?.id)
+         regionalManager = SimpleIdentifiableDTO(entity.regionalManager?.id),
+         division = DivisionDTO(entity.division)
       )
 }
