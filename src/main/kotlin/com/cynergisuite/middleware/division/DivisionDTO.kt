@@ -16,7 +16,7 @@ data class DivisionDTO(
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", description = "System Z external number")
-   var number: Long,
+   var number: Long? = null,
 
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a division")
@@ -30,6 +30,7 @@ data class DivisionDTO(
    @field:NotNull
    @field:Schema(name = "divisionalManager", description = "Divisional manager id")
    var divisionalManager: SimpleIdentifiableDTO? = null
+
 ): Identifiable {
    override fun myId() = id
 

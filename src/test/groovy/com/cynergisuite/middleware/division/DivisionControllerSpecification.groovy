@@ -161,6 +161,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id > 0
          number > 0
+         number == id
          name == division.name
          description == division.description
          divisionalManager.id == division.divisionalManager.id
@@ -239,7 +240,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == existingDivision.id
-         number == updatedDivisionDTO.number
+         number == existingDivision.number
          name == updatedDivisionDTO.name
          description == updatedDivisionDTO.description
          divisionalManager.id == updatedDivisionDTO.divisionalManager.id

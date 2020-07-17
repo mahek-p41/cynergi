@@ -33,35 +33,35 @@ class DivisionRepository @Inject constructor(
             ${simpleEmployeeRepository.employeeBaseQuery()}
          )
          SELECT
-               div.id                                 AS div_id,
-               div.number                             AS div_number,
-               div.name                               AS div_name,
-               div.manager_number                     AS div_manager_number,
-               div.description                        AS div_description,
-               emp.emp_id                             AS emp_id,
-               emp.emp_type                           AS emp_type,
-               emp.emp_number                         AS emp_number,
-               emp.emp_last_name                      AS emp_last_name,
-               emp.emp_first_name_mi                  AS emp_first_name_mi,
-               emp.emp_pass_code                      AS emp_pass_code,
-               emp.emp_active                         AS emp_active,
-               emp.emp_department                     AS emp_department,
-               emp. emp_cynergi_system_admin          AS emp_cynergi_system_admin,
-               emp.emp_alternative_store_indicator    AS emp_alternative_store_indicator,
-               emp.emp_alternative_area               AS emp_alternative_area,
-               emp.comp_id                            AS comp_id,
-               emp.comp_uu_row_id                     AS comp_uu_row_id,
-               emp.comp_time_created                  AS comp_time_created,
-               emp.comp_time_updated                  AS comp_time_updated,
-               emp.comp_name                          AS comp_name,
-               emp.comp_doing_business_as             AS comp_doing_business_as,
-               emp.comp_client_code                   AS comp_client_code,
-               emp.comp_client_id                     AS comp_client_id,
-               emp.comp_dataset_code                  AS comp_dataset_code,
-               emp.comp_federal_id_number             AS comp_federal_id_number,
-               emp.dept_id                            AS dept_id,
-               emp.dept_code                          AS dept_code,
-               emp.dept_description                   AS dept_description
+            div.id                                 AS div_id,
+            div.number                             AS div_number,
+            div.name                               AS div_name,
+            div.manager_number                     AS div_manager_number,
+            div.description                        AS div_description,
+            emp.emp_id                             AS emp_id,
+            emp.emp_type                           AS emp_type,
+            emp.emp_number                         AS emp_number,
+            emp.emp_last_name                      AS emp_last_name,
+            emp.emp_first_name_mi                  AS emp_first_name_mi,
+            emp.emp_pass_code                      AS emp_pass_code,
+            emp.emp_active                         AS emp_active,
+            emp.emp_department                     AS emp_department,
+            emp. emp_cynergi_system_admin          AS emp_cynergi_system_admin,
+            emp.emp_alternative_store_indicator    AS emp_alternative_store_indicator,
+            emp.emp_alternative_area               AS emp_alternative_area,
+            emp.comp_id                            AS comp_id,
+            emp.comp_uu_row_id                     AS comp_uu_row_id,
+            emp.comp_time_created                  AS comp_time_created,
+            emp.comp_time_updated                  AS comp_time_updated,
+            emp.comp_name                          AS comp_name,
+            emp.comp_doing_business_as             AS comp_doing_business_as,
+            emp.comp_client_code                   AS comp_client_code,
+            emp.comp_client_id                     AS comp_client_id,
+            emp.comp_dataset_code                  AS comp_dataset_code,
+            emp.comp_federal_id_number             AS comp_federal_id_number,
+            emp.dept_id                            AS dept_id,
+            emp.dept_code                          AS dept_code,
+            emp.dept_description                   AS dept_description
 	      FROM division AS div
             LEFT JOIN emp ON emp.emp_number = div.manager_number
       """
@@ -118,13 +118,12 @@ class DivisionRepository @Inject constructor(
       logger.debug("Inserting division {}", entity)
       return jdbc.insertReturning(
          """
-               INSERT INTO division(company_id, number, name, description, manager_number)
-               VALUES (:company_id, :number, :name, :description, :manager_number)
-               RETURNING *
-            """.trimIndent(),
+            INSERT INTO division(company_id, name, description, manager_number)
+            VALUES (:company_id, :name, :description, :manager_number)
+            RETURNING *
+         """.trimIndent(),
          mapOf(
             "company_id" to entity.company.id,
-            "number" to entity.number,
             "name" to entity.name,
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number
@@ -141,7 +140,6 @@ class DivisionRepository @Inject constructor(
          UPDATE division
          SET
             company_id = :company_id,
-            number = :number,
             name = :name,
             description = :description,
             manager_number = :manager_number
@@ -151,7 +149,6 @@ class DivisionRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "number" to entity.number,
             "name" to entity.name,
             "company_id" to entity.company.myId(),
             "description" to entity.description,

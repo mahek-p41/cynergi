@@ -6,16 +6,12 @@ import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 object DivisionFactory {
-
-   @JvmStatic
-   private val divisionNumberCounter = AtomicLong(1)
 
    @JvmStatic
    fun stream(numberIn: Int = 1, companyIn: CompanyEntity, divisionalManagerIn: EmployeeEntity? = null): Stream<DivisionEntity> {
@@ -27,7 +23,6 @@ object DivisionFactory {
          val description = "$name Description"
          DivisionEntity(
             name = name,
-            number = divisionNumberCounter.getAndIncrement(),
             description = description,
             company = companyIn,
             divisionalManager = divisionalManagerIn
@@ -44,7 +39,6 @@ object DivisionFactory {
          val name = lorem.word().capitalize() + " Division"
          val description = "$name Description"
          DivisionDTO(
-            number = divisionNumberCounter.getAndIncrement(),
             name = name,
             description = description,
             divisionalManager = SimpleIdentifiableDTO(divisionalManagerIn?.id)

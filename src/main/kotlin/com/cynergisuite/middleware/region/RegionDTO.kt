@@ -15,6 +15,10 @@ data class RegionDTO(
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
    var id: Long? = null,
 
+   @field:Positive
+   @field:Schema(name = "id", minimum = "1", description = "System Z external number")
+   var number: Long? = null,
+
    @field:NotNull
    @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a region")
    var name: String? = null,
@@ -32,12 +36,14 @@ data class RegionDTO(
    @field:NotNull
    @field:Schema(name = "regionalManager", description = "Regional manager id")
    var regionalManager: SimpleIdentifiableDTO? = null
+
 ): Identifiable {
    override fun myId() = id
 
    constructor(entity: RegionEntity) :
       this(
          id = entity.id,
+         number = entity.number,
          name = entity.name,
          description = entity.description,
          regionalManager = SimpleIdentifiableDTO(entity.regionalManager?.id)

@@ -45,6 +45,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       with(result1) {
          id == region1.id
+         number == region1.number
          name == region1.name
          description == region1.description
       }
@@ -57,6 +58,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       with(result2) {
          id == region2.id
+         number == region2.number
          name == region2.name
          description == region2.description
          regionalManager.id == region2.regionalManager.id
@@ -102,6 +104,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == firstPageRegion[index].id
+            number == firstPageRegion[index].number
             name == firstPageRegion[index].name
             description == firstPageRegion[index].description
          }
@@ -120,6 +123,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == secondPageRegion[index].id
+            number == secondPageRegion[index].number
             name == secondPageRegion[index].name
             description == secondPageRegion[index].description
             regionalManager.id == secondPageRegion[index].regionalManager.id
@@ -139,6 +143,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == lastPageRegion[index].id
+            number == lastPageRegion[index].number
             name == lastPageRegion[index].name
             description == lastPageRegion[index].description
             regionalManager.id == lastPageRegion[index].regionalManager.id
@@ -168,6 +173,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id > 0
          name == region.name
+         number > 0
+         number == id
          description == region.description
          regionalManager.id == region.regionalManager.id
       }
@@ -245,6 +252,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == existingRegion.id
+         number == existingRegion.number
          name == updatedRegionDTO.name
          description == updatedRegionDTO.description
          regionalManager.id == updatedRegionDTO.regionalManager.id
@@ -300,6 +308,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == existingRegion.id
+         number == existingRegion.number
          name == existingRegion.name
          description == existingRegion.description
          regionalManager.id == existingRegion.regionalManager.id
@@ -330,6 +339,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == regionToDelete.id
+         number == regionToDelete.number
          name == regionToDelete.name
          description == regionToDelete.description
       }

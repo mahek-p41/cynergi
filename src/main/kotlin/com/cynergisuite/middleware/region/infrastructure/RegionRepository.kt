@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -38,6 +39,7 @@ class RegionRepository @Inject constructor(
          SELECT
                reg.id                                 AS reg_id,
                reg.name                               AS reg_name,
+               reg.number                             AS reg_number,
                reg.manager_number                     AS reg_manager_number,
                reg.division_id                        AS reg_division_id,
                reg.description                        AS reg_description,
@@ -79,10 +81,11 @@ class RegionRepository @Inject constructor(
    fun findOne(id: Long, company: Company): RegionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE reg.id = :id AND div.company_id = :comp_id"
+
       logger.trace("Searching for Region params {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-         mapRow(rs, company, "reg_")
+            mapRow(rs, company, "reg_")
          }
       )
 
@@ -110,6 +113,7 @@ class RegionRepository @Inject constructor(
 
       jdbc.query(query, params) { rs ->
          resultList.add(mapRow(rs, company, "reg_"))
+
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -125,6 +129,7 @@ class RegionRepository @Inject constructor(
    @Transactional
    fun insert(region: RegionEntity): RegionEntity {
       logger.debug("Inserting region {}", region)
+
       return jdbc.insertReturning("""
             INSERT INTO region(division_id, name, description, manager_number)
             VALUES (:division_id, :name, :description, :manager_number)
@@ -235,6 +240,7 @@ class RegionRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "reg_"): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
+         number = rs.getLong("${columnPrefix}number"),
          division = divisionRepository.mapRow(rs, company, "div_"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
@@ -252,13 +258,13 @@ class RegionRepository @Inject constructor(
          null
       }
 
-   fun mapRow(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
+   fun mapRow(rs: ResultSet, region: RegionEntity, columnPrefix: String = EMPTY): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
+         number = rs.getLong("${columnPrefix}number"),
          division = region.division,
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
          regionalManager = region.regionalManager
       )
-
 }
