@@ -326,15 +326,15 @@ BEGIN
             operator.created_at AT TIME ZONE ''UTC'' AS time_created,
             operator.updated_at AT TIME ZONE ''UTC'' AS time_updated,
             operator.operator_name                   AS name,
+            CAST(operator_name AS INTEGER)           AS number,
             operator.operator_security_2             AS account_payable_security,
             operator.operator_security_4             AS purchase_order_security,
             operator.operator_security_5             AS general_ledger_security,
             operator.operator_security_10            AS system_administration_security,
             operator.operator_security_11            AS file_maintenance_security,
-            operator.operator_security_16            AS bank_reconciliation_security,
-            CAST(operator_name AS INTEGER)           AS number
+            operator.operator_security_16            AS bank_reconciliation_security
          FROM ' || r.schema_name || '.level1_operators operator
-         INNER JOIN employee_vw employee ON CAST(operator.operator_name AS INTEGER) = employee.number AND ''' || r.schema_name || '''::text = employee.dataset
+         INNER JOIN ' || r.schema_name || '.level2_employees employee ON CAST(operator.operator_name AS INTEGER) = employee.emp_nbr
          WHERE operator_type = ''O'' AND isnumeric(operator.operator_name)
          ';
 
@@ -452,13 +452,13 @@ CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
     time_created TIMESTAMPTZ,
     time_updated TIMESTAMPTZ,
     name VARCHAR,
+    number INTEGER,
     account_payable_security INTEGER,
     purchase_order_security INTEGER,
     general_ledger_security INTEGER,
     system_administration_security INTEGER,
     file_maintenance_security INTEGER,
-    bank_reconciliation_security INTEGER,
-    number INTEGER
+    bank_reconciliation_security INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
