@@ -158,6 +158,59 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
+      response[0].message == "Is required"
+      response[0].path == "discountPercent"
+   }
+
+   void "Null discount month and discount days" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 1.0, 1)]
+      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: null, discountDays: null, discountPercent: 1, scheduleRecords: schedules])
+
+      when:
+      post(path, newVPT)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "Cannot be updated to 1"
+      response[0].path == "discountPercent"
+   }
+
+   void "Discount percent is 0" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 1.0, 1)]
+      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: 3, discountPercent: 0, scheduleRecords: schedules])
+
+      when:
+      post(path, newVPT)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "discountPercent must be greater than zero"
+      response[0].path == "discountPercent"
+   }
+
+   void "Discount percent greater than 1" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 1.0, 1)]
+      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: 3, discountPercent: 1.5, scheduleRecords: schedules])
+
+      when:
+      post(path, newVPT)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].message == "Must be in range of (0, 1]"
+      response[0].path == "discountPercent"
    }
 
    void "delete the first of two schedule records" () {

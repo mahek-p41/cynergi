@@ -30,6 +30,7 @@ class NotNull(notNullProperty: String) : Validation("javax.validation.constraint
 abstract class Cynergi(code: String, arguments: Array<Any?>): LocalizationCodeImpl(code, arguments)
 class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", arrayOf(duplicateValue))
 class NotUpdatable(notUpdatableValue: Any?) : Cynergi("cynergi.validation.not.updatable", arrayOf(notUpdatableValue))
+class MustBeInRangeOf(value: Any?) : Cynergi("cynergi.validation.must.be.in.range.of", arrayOf(value))
 class EndDateBeforeStart(endDate: String, startDate: String) : Cynergi("cynergi.validation.end.date.before.start", arrayOf(endDate, startDate))
 class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cynergi.validation.notification.recipients.not.required", arrayOf(notificationType))
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))

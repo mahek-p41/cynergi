@@ -2,14 +2,14 @@ package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.extensions.equalTo
+import com.cynergisuite.extensions.greaterThan
 import com.cynergisuite.extensions.sum
 import com.cynergisuite.extensions.toFixed
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.NotNull
-import com.cynergisuite.middleware.localization.VendorPaymentTermDuePercentDoesNotAddUp
+import com.cynergisuite.middleware.localization.*
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,14 +48,18 @@ class VendorPaymentTermValidator @Inject constructor(
    }
 
    private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorPaymentTermDTO, company: Company) {
-      if((vo.discountDays != null || vo.discountMonth != null) && vo.discountPercent == null) {
+      if ((vo.discountDays != null || vo.discountMonth != null) && vo.discountPercent == null) {
          errors.add(ValidationError("discountPercent", NotNull("discountPercent")))
+      } else if (vo.discountDays == null && vo.discountMonth == null && vo.discountPercent != null) {
+         errors.add(ValidationError("discountPercent", NotUpdatable(vo.discountPercent)))
+      } else if ((vo.discountDays != null || vo.discountMonth != null) && (vo.discountPercent!!.greaterThan(ONE))) {
+            errors.add(ValidationError("discountPercent", MustBeInRangeOf("(0, 1]")))
       }
 
       val entity = VendorPaymentTermEntity(vo = vo, company = company)
       val percentageSum: BigDecimal = entity.scheduleRecords.asSequence().map { it.duePercent }.sum()
 
-      if(!percentageSum.equalTo(ONE)) {
+      if (!percentageSum.equalTo(ONE)) {
          val responseValue = percentageSum * BigDecimal(100)
 
          errors.add(ValidationError("scheduleRecords.duePercent[*]", VendorPaymentTermDuePercentDoesNotAddUp(responseValue.toFixed(5, 5))))
