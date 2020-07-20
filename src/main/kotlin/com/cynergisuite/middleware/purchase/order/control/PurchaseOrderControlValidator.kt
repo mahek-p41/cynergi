@@ -44,7 +44,7 @@ class PurchaseOrderControlValidator @Inject constructor(
       val defaultVendor = dto.defaultVendor?.id?.let { vendorRepository.findOne(it, company) }
       val updatePurchaseOrderCost = updatePurchaseOrderCostTypeRepository.findOne(dto.updatePurchaseOrderCost!!.value)!!
       val defaultPurchaseOrderType = purchaseOrderTypeRepository.findOne(dto.defaultPurchaseOrderType!!.value)!!
-      val defaultApprover = dto.defaultApprover?.id?.let { employeeRepository.findOne(it) }
+      val defaultApprover = dto.defaultApprover?.id?.let { employeeRepository.findOne(it, company) }
       val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.findOne(dto.approvalRequiredFlagType!!.value)!!
 
       doValidation { errors ->
@@ -74,7 +74,7 @@ class PurchaseOrderControlValidator @Inject constructor(
       val defaultVendor = vendorRepository.findOne(dto.defaultVendor!!.id!!, company)
       val updatePurchaseOrderCost = updatePurchaseOrderCostTypeRepository.findOne(dto.updatePurchaseOrderCost!!.value)
       val defaultPurchaseOrderType = purchaseOrderTypeRepository.findOne(dto.defaultPurchaseOrderType!!.value)
-      val defaultApprover = employeeRepository.findOne(dto.defaultApprover!!.id!!)
+      val defaultApprover = employeeRepository.findOne(dto.defaultApprover!!.id!!, company)
       val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.findOne(dto.approvalRequiredFlagType!!.value)
 
       doValidation { errors ->

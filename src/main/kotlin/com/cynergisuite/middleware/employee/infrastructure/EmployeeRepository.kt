@@ -130,14 +130,14 @@ class EmployeeRepository @Inject constructor(
       return found
    }
 
-   fun findOne(id: Long): EmployeeEntity? {
+   fun findOne(id: Long, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
-         "${employeeBaseQuery()} WHERE emp_id = :emp_id LIMIT 1",
-         mutableMapOf("emp_id" to id),
+         "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id LIMIT 1",
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id),
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.trace("Searching for Employee: {} resulted in {}", id, found)
+      logger.trace("Searching for Employee: {} resulted in {}", id, company, found)
 
       return found
    }
@@ -276,13 +276,14 @@ class EmployeeRepository @Inject constructor(
       return exists
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject("""
          SELECT count(emp_id) = 1 FROM (
-            SELECT emp_id FROM (
+            SELECT emp_id, comp_id FROM (
                SELECT
                   1 AS from_priority,
                   emp.id AS emp_id,
+                  comp.id AS comp_id
                FROM fastinfo_prod_import.employee_vw emp
                   JOIN company comp ON emp.dataset = comp.dataset_code
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
@@ -291,6 +292,7 @@ class EmployeeRepository @Inject constructor(
                SELECT
                   2 AS from_priority,
                   emp.id AS emp_id,
+                  comp.id AS comp_id
                FROM employee emp
                   JOIN company comp ON emp.company_id = comp.id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
@@ -298,12 +300,12 @@ class EmployeeRepository @Inject constructor(
             ) AS inner_employees
             ORDER BY from_priority
          ) AS employees
-         WHERE emp_id = :emp_id""",
-         mapOf("emp_id" to id),
+         WHERE emp_id = :emp_id AND comp_id = :comp_id""",
+         mapOf("emp_id" to id, "comp_id" to company.myId()),
          Boolean::class.java
       )!!
 
-      logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, exists)
+      logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, company, exists)
 
       return exists
    }
