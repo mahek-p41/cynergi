@@ -22,6 +22,8 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -34,6 +36,8 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 @MicronautTest(transactional = false)
 class VendorControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor"
+   private JsonOutput jsonOutput = new JsonOutput()
+   private JsonSlurper jsonSlurper = new JsonSlurper()
 
    @Inject AddressRepository addressRepository
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
@@ -281,6 +285,94 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
+   void "create vendor with null email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.remove('emailAddress')
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "emailAddress"
+      response[0].message == "Is required"
+   }
+
+   void "create vendor with invalid email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.emailAddress = "invalidEmail"
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "emailAddress"
+      response[0].message == "invalidEmail is an invalid email address"
+   }
+
+   void "create vendor with null po submit email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.remove('purchaseOrderSubmitEmailAddress')
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "purchaseOrderSubmitEmailAddress"
+      response[0].message == "Is required"
+   }
+
+   void "create vendor with invalid po submit email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.purchaseOrderSubmitEmailAddress = "invalidEmail"
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "purchaseOrderSubmitEmailAddress"
+      response[0].message == "invalidEmail is an invalid email address"
+   }
+
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -330,6 +422,102 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       result.address.id > 0
       result.address.id == vendor.address.id
       new VendorDTO(result) == vendor
+   }
+
+   void "update vendor with null email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.remove('emailAddress')
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "emailAddress"
+      response[0].message == "Is required"
+   }
+
+   void "update vendor with invalid email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.emailAddress = "invalidEmail"
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "emailAddress"
+      response[0].message == "invalidEmail is an invalid email address"
+   }
+
+   void "update vendor with null po submit email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.remove('purchaseOrderSubmitEmailAddress')
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "purchaseOrderSubmitEmailAddress"
+      response[0].message == "Is required"
+   }
+
+   void "update vendor with invalid po submit email address" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.autoSubmitPurchaseOrder = true
+      jsonVendor.purchaseOrderSubmitEmailAddress = "invalidEmail"
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "purchaseOrderSubmitEmailAddress"
+      response[0].message == "invalidEmail is an invalid email address"
    }
 
    void "search vendors" () {
