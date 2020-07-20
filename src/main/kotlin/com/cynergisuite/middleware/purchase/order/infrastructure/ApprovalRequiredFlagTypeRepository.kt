@@ -16,7 +16,6 @@ class ApprovalRequiredFlagTypeRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ApprovalRequiredFlagTypeRepository::class.java)
-   private val rowMapper = ApprovalRequiredFlagTypeRowMapper()
 
    fun exists(value: String): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM approval_required_flag_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
@@ -27,37 +26,38 @@ class ApprovalRequiredFlagTypeRepository @Inject constructor(
    }
 
    fun findOne(id: Long): ApprovalRequiredFlagType? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM approval_required_flag_type_domain WHERE id = :id", mapOf("id" to id), rowMapper)
+      val params = mutableMapOf<String, Any?>("id" to id)
+      val query = "SELECT * FROM approval_required_flag_type_domain WHERE id = :id"
+      logger.trace("Searching for ApprovalRequiredFlagTypeDomain {}: \nQuery {}", params, query)
 
-      logger.trace("Searching for ApprovalRequiredFlagTypeDomain: {} resulted in {}", id, found)
+      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+
+      logger.trace("Searching for ApprovalRequiredFlagTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
       return found
    }
 
    fun findOne(value: String): ApprovalRequiredFlagType? {
-      val found = jdbc.findFirstOrNull("SELECT * FROM approval_required_flag_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), rowMapper)
+      val params = mutableMapOf<String, Any?>("value" to value.toUpperCase())
+      val query = "SELECT * FROM approval_required_flag_type_domain WHERE UPPER(value) = :value"
+      logger.trace("Searching for ApprovalRequiredFlagTypeDomain {}: \nQuery {}", params, query)
 
-      logger.trace("Searching for ApprovalRequiredFlagTypeDomain: {} resulted in {}", value, found)
+      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+
+      logger.trace("Searching for ApprovalRequiredFlagTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
       return found
    }
 
    fun findAll(): List<ApprovalRequiredFlagType> =
-      jdbc.query("SELECT * FROM approval_required_flag_type_domain ORDER BY id", rowMapper)
+      jdbc.query("SELECT * FROM approval_required_flag_type_domain ORDER BY id") { rs, _ -> mapRow(rs) }
 
-}
-
-private class ApprovalRequiredFlagTypeRowMapper(
-   private val columnPrefix: String = EMPTY
-) : RowMapper<ApprovalRequiredFlagType> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): ApprovalRequiredFlagType =
-      mapRow(rs, columnPrefix)
-
-   fun mapRow(rs: ResultSet, columnPrefix: String): ApprovalRequiredFlagType =
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): ApprovalRequiredFlagType =
       ApprovalRequiredFlagType(
          id = rs.getLong("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
+
 }
