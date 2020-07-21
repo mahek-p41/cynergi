@@ -44,7 +44,7 @@ class RegionService @Inject constructor(
    fun update(id: Long, @Valid regionDTO: RegionDTO, company: Company): RegionDTO {
       val toUpdate = regionValidator.validateUpdate(id, regionDTO, company)
 
-      return RegionDTO(regionRepository.update(toUpdate))
+      return RegionDTO(regionRepository.update(id, toUpdate))
    }
 
    fun delete(id: Long, company: Company): RegionDTO? {

@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.MustMatchPathVariable
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,6 +45,7 @@ class RegionValidator @Inject constructor(
       val division = divisionRepository.findOne(regionDTO.division?.id!!, company)
 
       doValidation { errors ->
+         if (id != regionDTO.myId()) errors.add(ValidationError("dto.id", MustMatchPathVariable("Id")))
          regionRepository.findOne(id, company) ?: errors.add(ValidationError("dto.id", NotFound(id)))
          doShareValidator(regionalManager, errors, regionDTO, division)
       }

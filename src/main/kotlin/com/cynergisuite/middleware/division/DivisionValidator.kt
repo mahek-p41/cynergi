@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.MustMatchPathVariable
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,6 +39,7 @@ class DivisionValidator @Inject constructor(
       val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, company)
 
       doValidation { errors ->
+         if (id != divisionDTO.myId()) errors.add(ValidationError("dto.id", MustMatchPathVariable("Id")))
          divisionRepository.findOne(id, company) ?: errors.add(ValidationError("dto.id", NotFound(id)))
          divisionalManager ?: errors.add(ValidationError("dto.divisionalManager.id", NotFound(divisionDTO.divisionalManager?.id!!)))
       }

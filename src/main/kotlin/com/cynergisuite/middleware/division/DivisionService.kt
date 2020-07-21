@@ -39,7 +39,7 @@ class DivisionService @Inject constructor(
    fun update(id: Long, @Valid divisionDTO: DivisionDTO, company: Company): DivisionDTO {
       val toUpdate = divisionValidator.validateUpdate(id, divisionDTO, company)
 
-      return DivisionDTO(divisionRepository.update(toUpdate))
+      return DivisionDTO(divisionRepository.update(id, toUpdate))
    }
 
    fun delete(id: Long, company: Company): DivisionDTO? {

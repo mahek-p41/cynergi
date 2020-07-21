@@ -145,7 +145,7 @@ class RegionRepository @Inject constructor(
       )
    }
    @Transactional
-   fun update(entity: RegionEntity): RegionEntity {
+   fun update(id: Long, entity: RegionEntity): RegionEntity {
       logger.debug("Updating region {}", entity)
 
       return jdbc.updateReturning("""
@@ -160,7 +160,7 @@ class RegionRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id,
+            "id" to id,
             "name" to entity.name,
             "division_id" to entity.division.id,
             "description" to entity.description,

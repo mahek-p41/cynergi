@@ -133,7 +133,7 @@ class DivisionRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: DivisionEntity): DivisionEntity {
+   fun update(id: Long, entity: DivisionEntity): DivisionEntity {
       logger.debug("Updating division {}", entity)
 
       return jdbc.updateReturning("""
@@ -148,7 +148,7 @@ class DivisionRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id,
+            "id" to id,
             "name" to entity.name,
             "company_id" to entity.company.myId(),
             "description" to entity.description,

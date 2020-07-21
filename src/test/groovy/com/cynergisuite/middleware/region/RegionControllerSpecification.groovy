@@ -301,6 +301,63 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
+   void "update a invalid region with non-existing region id"() {
+      given:
+      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      jsonRegion.id = 99
+
+      when:
+      put("$path/99", jsonRegion)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == '99 was unable to be found'
+   }
+
+   void "update a invalid region without region id"() {
+      given:
+      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      jsonRegion.remove('id')
+
+      when:
+      put("$path/$regionDTO.id", jsonRegion)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == 'Id must match path variable'
+   }
+
+   void "update a invalid region with un-match id in payload"() {
+      given:
+      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      jsonRegion.id = 99
+
+      when:
+      put("$path/$regionDTO.id", jsonRegion)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == 'Id must match path variable'
+   }
+
    void "update a invalid region without region description"() {
       given:
       final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
