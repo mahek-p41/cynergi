@@ -79,8 +79,10 @@ class RegionRepository @Inject constructor(
    }
 
    fun findOne(id: Long, company: Company): RegionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE reg.id = :id AND div.company_id = :comp_id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
+      val query = """${selectBaseQuery()} WHERE reg.id = :id
+                                                AND div.company_id = :comp_id
+                                                AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
 
       logger.trace("Searching for Region params {}: \nQuery {}", params, query)
 
@@ -95,11 +97,12 @@ class RegionRepository @Inject constructor(
    }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<RegionEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
       val query = """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE div.company_id = :comp_id
+                  AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
          )
          SELECT
             p.*,

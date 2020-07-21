@@ -27,7 +27,7 @@ class DivisionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DivisionRepository::class.java)
 
-   fun selectBaseQuery(): String {
+   private fun selectBaseQuery(): String {
       return """
          WITH emp AS (
             ${simpleEmployeeRepository.employeeBaseQuery()}
@@ -68,8 +68,10 @@ class DivisionRepository @Inject constructor(
    }
 
    fun findOne(id: Long, company: Company): DivisionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE div.id = :id AND div.company_id = :comp_id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
+      val query = """${selectBaseQuery()} WHERE div.id = :id
+                                                AND div.company_id = :comp_id
+                                                AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
       logger.trace("Searching for Division params {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
@@ -83,11 +85,11 @@ class DivisionRepository @Inject constructor(
    }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<DivisionEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
       val query = """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE div.company_id = :comp_id
+            WHERE div.company_id = :comp_id AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
          )
          SELECT
             p.*,
@@ -106,11 +108,15 @@ class DivisionRepository @Inject constructor(
          }
       }
 
-      return RepositoryPage(
+      val found = RepositoryPage(
          requested = page,
          elements = resultList,
          totalElements = totalElements ?: 0
       )
+
+      logger.trace("Searching for Division params {}: \nQuery {} \nResulted in {}", params, query, found)
+
+      return found
    }
 
    @Transactional
@@ -152,7 +158,7 @@ class DivisionRepository @Inject constructor(
             "name" to entity.name,
             "company_id" to entity.company.myId(),
             "description" to entity.description,
-            "manager_number" to entity.divisionalManager?.id
+            "manager_number" to entity.divisionalManager?.number
          ),
          RowMapper { rs, _ -> mapRow(rs, entity)
          }
