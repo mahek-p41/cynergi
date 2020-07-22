@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
 import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.FreightOnboardTypeRepository
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
@@ -56,6 +57,9 @@ class VendorValidator @Inject constructor(
       val freightMethodType = freightCalcMethodTypeRepository.findOne(value = dto.freightCalcMethodType!!.value!!)
       val payToId = dto.payTo?.id
       val payTo = if (payToId != null) vendorRepository.findOne(payToId, company) else null
+      val autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder
+      val emailAddress = dto.emailAddress
+      val purchaseOrderSubmitEmailAddress = dto.purchaseOrderSubmitEmailAddress
 
       doValidation { errors ->
          if (vendorGroupId != null && vendorGroup == null) {
@@ -76,6 +80,14 @@ class VendorValidator @Inject constructor(
 
          freightOnboardType ?: errors.add(ValidationError("freightOnboardType.value", NotFound(dto.freightOnboardType!!.value!!)))
          freightMethodType ?: errors.add(ValidationError("freightMethodType.value", NotFound(dto.freightCalcMethodType!!.value!!)))
+
+         if (autoSubmitPurchaseOrder == true && emailAddress == null) {
+            errors.add(ValidationError("emailAddress", NotNull("emailAddress")))
+         }
+
+         if (autoSubmitPurchaseOrder == true && purchaseOrderSubmitEmailAddress == null) {
+            errors.add(ValidationError("purchaseOrderSubmitEmailAddress", NotNull("purchaseOrderSubmitEmailAddress")))
+         }
       }
 
       return if (existingVendor != null) {

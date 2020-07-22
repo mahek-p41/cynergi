@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import javax.validation.Valid
 import javax.validation.constraints.Digits
+import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -145,10 +146,12 @@ data class VendorDTO(
    @field:Schema(name = "federalIdNumberVerification", description = "Whether vendor has FIN verification", example = "true", defaultValue = "false")
    var federalIdNumberVerification: Boolean? = null,
 
+   @field:Email
    @field:Size(min = 0, max = 320)
    @field:Schema(name = "emailAddress", description = "Vendor's Email Address", minLength = 0, maxLength = 320)
    var emailAddress: String? = null,
 
+   @field:Email
    @field:Size(min = 0, max = 320)
    @field:Schema(name = "purchaseOrderSubmitEmailAddress", description = "If available and enabled this is the email address that a purchase order will be submitted to", minLength = 0, maxLength = 320)
    var purchaseOrderSubmitEmailAddress: String? = null,
