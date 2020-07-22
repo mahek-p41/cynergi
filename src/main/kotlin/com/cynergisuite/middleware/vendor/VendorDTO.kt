@@ -10,7 +10,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import javax.validation.Valid
-import javax.validation.constraints.*
+import javax.validation.constraints.Digits
+import javax.validation.constraints.Email
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Positive
+import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Vendor", title = "An entity containing vendor information", description = "An entity containing vendor information.")
