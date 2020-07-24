@@ -65,6 +65,7 @@ class DevelopDataLoader @Inject constructor(
       val corrtoDivision1 = divisionFactoryService.single(corrto, corrtoStore1DivisionalManager)
 
       val corrtoDivision1Region1 = regionFactoryService.single(corrtoDivision1)
+      regionFactoryService.single(corrtoDivision1, corrtoStore1StoreManager)
       val corrtoStore3 = storeFactoryService.store(3, corrto)
       val corrtoStoreHomeOffice = storeFactoryService.store(9000, corrto)
       storeFactoryService.companyStoresToRegion(corrtoDivision1Region1, corrtoStore1, corrtoStore3)

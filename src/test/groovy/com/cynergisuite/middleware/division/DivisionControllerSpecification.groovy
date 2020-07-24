@@ -247,7 +247,64 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "update a invalid division without division description"() {
+   void "update a division with non-existing division id"() {
+      given:
+      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
+      jsonDivision.id = 99
+
+      when:
+      put("$path/99", jsonDivision)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == '99 was unable to be found'
+   }
+
+   void "update an invalid division without division id"() {
+      given:
+      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
+      jsonDivision.remove('id')
+
+      when:
+      put("$path/$divisionDTO.id", jsonDivision)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == 'Id must match path variable'
+   }
+
+   void "update an invalid division with un-match id in payload"() {
+      given:
+      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
+      jsonDivision.id = 99
+
+      when:
+      put("$path/$divisionDTO.id", jsonDivision)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == 'Id must match path variable'
+   }
+
+   void "update an invalid division without division description"() {
       given:
       final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
@@ -266,7 +323,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       response[0].message == 'Is required'
    }
 
-   void "update a invalid division with non exist divisionalManager value"() {
+   void "update an invalid division with non exist divisionalManager value"() {
       given:
       final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))

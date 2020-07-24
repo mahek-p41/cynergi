@@ -44,7 +44,7 @@ class RegionService @Inject constructor(
    fun update(id: Long, @Valid regionDTO: RegionDTO, company: Company): RegionDTO {
       val toUpdate = regionValidator.validateUpdate(id, regionDTO, company)
 
-      return RegionDTO(regionRepository.update(toUpdate))
+      return RegionDTO(regionRepository.update(id, toUpdate))
    }
 
    fun delete(id: Long, company: Company): RegionDTO? {
@@ -56,7 +56,11 @@ class RegionService @Inject constructor(
       val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
       val store = storeRepository.findOne(storeDTO.id!!, company) ?: throw NotFoundException(storeDTO.id!!)
 
-      regionRepository.assignStoreToRegion(region, store, company)
+      if (regionRepository.isStoreAssignedToRegion(store, company)) {
+         regionRepository.reassignStoreToRegion(region, store, company)
+      } else {
+         regionRepository.assignStoreToRegion(region, store, company)
+      }
    }
 
    @Throws(NotFoundException::class)

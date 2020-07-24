@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeReposit
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -79,8 +78,10 @@ class RegionRepository @Inject constructor(
    }
 
    fun findOne(id: Long, company: Company): RegionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE reg.id = :id AND div.company_id = :comp_id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
+      val query = """${selectBaseQuery()} WHERE reg.id = :id
+                                                AND div.company_id = :comp_id
+                                                AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
 
       logger.trace("Searching for Region params {}: \nQuery {}", params, query)
 
@@ -95,11 +96,12 @@ class RegionRepository @Inject constructor(
    }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<RegionEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
       val query = """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE div.company_id = :comp_id
+                  AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
          )
          SELECT
             p.*,
@@ -145,7 +147,7 @@ class RegionRepository @Inject constructor(
       )
    }
    @Transactional
-   fun update(entity: RegionEntity): RegionEntity {
+   fun update(id: Long, entity: RegionEntity): RegionEntity {
       logger.debug("Updating region {}", entity)
 
       return jdbc.updateReturning("""
@@ -160,7 +162,7 @@ class RegionRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id,
+            "id" to id,
             "name" to entity.name,
             "division_id" to entity.division.id,
             "description" to entity.description,
@@ -235,6 +237,33 @@ class RegionRepository @Inject constructor(
             "company_id" to company.myId()
          )
       )
+   }
+
+   fun reassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+      logger.trace("Re-assigning Store {} to Region {}", region, store)
+
+      jdbc.update("""
+         UPDATE region_to_store
+         SET
+            region_id = :region_id
+         WHERE store_number = :store_number AND company_id = :company_id
+         """,
+         mapOf(
+            "region_id" to region.myId(),
+            "store_number" to store.myNumber(),
+            "company_id" to company.myId()
+         ))
+   }
+
+   fun isStoreAssignedToRegion(store: Store, company: Company): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT EXISTS (SELECT * FROM region_to_store WHERE store_number = :store_number AND company_id = :company_id)
+         """,
+         mapOf("store_number" to store.myNumber(), "company_id" to company.myId()), Boolean::class.java)!!
+
+      logger.trace("Checking if a store is assigned to a region")
+
+      return exists
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "reg_"): RegionEntity =

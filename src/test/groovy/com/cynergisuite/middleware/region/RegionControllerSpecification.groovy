@@ -301,6 +301,63 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
+   void "update a invalid region with non-existing region id"() {
+      given:
+      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      jsonRegion.id = 99
+
+      when:
+      put("$path/99", jsonRegion)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == '99 was unable to be found'
+   }
+
+   void "update a invalid region without region id"() {
+      given:
+      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      jsonRegion.remove('id')
+
+      when:
+      put("$path/$regionDTO.id", jsonRegion)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == 'Id must match path variable'
+   }
+
+   void "update a invalid region with un-match id in payload"() {
+      given:
+      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      jsonRegion.id = 99
+
+      when:
+      put("$path/$regionDTO.id", jsonRegion)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+
+      response[0].path == 'dto.id'
+      response[0].message == 'Id must match path variable'
+   }
+
    void "update a invalid region without region description"() {
       given:
       final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
@@ -546,5 +603,64 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       ex.status == NOT_FOUND
       final response = ex.response.bodyAsJson()
       response.message == "${region.id} was unable to be found"
+   }
+
+   void "re-associate store with another region of the same company" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final division = divisionFactoryService.single(tstds1)
+      final newRegion = regionFactoryService.single(division)
+      final store1 = storeFactoryService.store(1, tstds1)
+
+      when:
+      def result = get("/store")
+
+      then: 'state of stores before re-associate'
+      notThrown(HttpClientResponseException)
+      with(result) {
+         elements != null
+         totalElements == 2
+         elements[0].id == 1
+         elements[0].storeNumber == store1.myNumber()
+         elements[0].name == store1.myName()
+         elements[0].region.id == this.regions[0].id
+         elements[0].region.name == this.regions[0].name
+      }
+
+      when: 're-associate store with a new region'
+      post("$path/${newRegion.id}/store", new SimpleIdentifiableDTO(store1.myId()))
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def result2 = get("/store")
+
+      then: 'state after store re-associate with a new region'
+      notThrown(HttpClientResponseException)
+      with(result2) {
+         elements != null
+         totalElements == 2
+         elements[0].id == 1
+         elements[0].storeNumber == store1.myNumber()
+         elements[0].name == store1.myName()
+         elements[0].region.id == newRegion.id
+         elements[0].region.name == newRegion.name
+      }
+   }
+
+   void "re-associate store with another region of the other company" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final store1 = storeFactoryService.store(1, tstds1)
+
+      when: 're-associate store with a region of other company'
+      post("$path/${regions[1].id}/store", new SimpleIdentifiableDTO(store1.myId()))
+
+      then: "a not found should result"
+      final ex = thrown(HttpClientResponseException)
+      ex.status == NOT_FOUND
+      final response = ex.response.bodyAsJson()
+      response.message == "${regions[1].id} was unable to be found"
    }
 }
