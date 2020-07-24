@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeReposit
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -238,6 +237,33 @@ class RegionRepository @Inject constructor(
             "company_id" to company.myId()
          )
       )
+   }
+
+   fun reassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+      logger.trace("Re-assigning Store {} to Region {}", region, store)
+
+      jdbc.update("""
+         UPDATE region_to_store
+         SET
+            region_id = :region_id
+         WHERE store_number = :store_number AND company_id = :company_id
+         """,
+         mapOf(
+            "region_id" to region.myId(),
+            "store_number" to store.myNumber(),
+            "company_id" to company.myId()
+         ))
+   }
+
+   fun isStoreAssignedToRegion(store: Store, company: Company): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT EXISTS (SELECT * FROM region_to_store WHERE store_number = :store_number AND company_id = :company_id)
+         """,
+         mapOf("store_number" to store.myNumber(), "company_id" to company.myId()), Boolean::class.java)!!
+
+      logger.trace("Checking if a store is assigned to a region")
+
+      return exists
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "reg_"): RegionEntity =
