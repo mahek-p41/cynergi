@@ -179,7 +179,7 @@ data class VendorDTO(
          normalDays = entity.normalDays,
          returnPolicy = entity.returnPolicy,
          shipVia = SimpleIdentifiableDTO(entity.shipVia),
-         vendorGroup = if (entity.vendorGroup != null) SimpleIdentifiableDTO(entity.vendorGroup) else null,
+         vendorGroup = if (entity.vendorGroup != null) SimpleIdentifiableDTO(entity.vendorGroup.myId()) else null,
          minimumQuantity = entity.minimumQuantity,
          minimumAmount = entity.minimumAmount,
          freeShipQuantity = entity.freeShipQuantity,

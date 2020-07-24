@@ -31,7 +31,7 @@ class VendorGroupService @Inject constructor(
       val toCreate = vendorGroupValidator.validateCreate(vo, company)
 
       return VendorGroupDTO(
-         entity = vendorGroupRepository.insert(entity = toCreate)
+         entity = vendorGroupRepository.insert(toCreate, company)
       )
    }
 

@@ -16,6 +16,7 @@ import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.Freig
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaValueObject
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
+import com.cynergisuite.middleware.vendor.group.VendorGroupTestDataLoaderService
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
@@ -45,6 +46,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
    @Inject VendorRepository vendorRepository
    @Inject VendorGroupRepository vendorGroupRepository
+   @Inject VendorGroupTestDataLoaderService vendorGroupTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
    @Inject VendorPaymentTermRepository vendorPaymentTermRepository
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
@@ -285,7 +287,90 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
-   void "create vendor with null email address" () {
+   void "create valid vendor with vendor group" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
+      companies.each {
+         vendorGroups.addAll(vendorGroupTestDataLoaderService.stream(it).collect())
+      }
+      vendor.vendorGroup = new SimpleIdentifiableDTO(vendorGroups[0].id)
+
+      when:
+      def result = post(path, vendor)
+      vendor.id = result.id
+      vendor.address.id = result.address?.id
+      vendor.vendorGroup = result.vendorGroup
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id > 0
+      result.address.id != null
+      result.address.id > 0
+      result.vendorGroup != null
+      new VendorDTO(result) == vendor
+   }
+
+   void "create valid vendor without vendor group" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
+      companies.each {
+         vendorGroups.addAll(vendorGroupTestDataLoaderService.stream(it).collect())
+      }
+      vendor.vendorGroup = null
+
+      when:
+      def result = post(path, vendor)
+      vendor.id = result.id
+      vendor.address.id = result.address?.id
+      //vendor.vendorGroup = result.vendorGroup
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id > 0
+      result.address.id != null
+      result.address.id > 0
+      result.vendorGroup == null
+      new VendorDTO(result) == vendor
+   }
+
+   void "create invalid vendor with non-existing vendor group" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
+      companies.each {
+         vendorGroups.addAll(vendorGroupTestDataLoaderService.stream(it).collect())
+      }
+      jsonVendor.vendorGroup = new SimpleIdentifiableDTO(vendorGroups[3].id)
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "vendorGroup.id"
+      response[0].message == "${vendorGroups[3].id} was unable to be found"
+   }
+
+   void "create invalid vendor with null email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
@@ -307,7 +392,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "Is required"
    }
 
-   void "create vendor with invalid email address" () {
+   void "create invalid vendor with invalid email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
@@ -329,7 +414,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "invalidEmail is an invalid email address"
    }
 
-   void "create vendor with null po submit email address" () {
+   void "create invalid vendor with null po submit email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
@@ -351,7 +436,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "Is required"
    }
 
-   void "create vendor with invalid po submit email address" () {
+   void "create invalid vendor with invalid po submit email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
@@ -534,7 +619,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
 
       final groupEntity = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
-      final vendorGroup = vendorGroupRepository.insert(groupEntity)
+      final vendorGroup = vendorGroupRepository.insert(groupEntity, company)
 
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)
@@ -716,7 +801,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
 
       final VGRP = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
-      final vendorGroup = vendorGroupRepository.insert(VGRP)
+      final vendorGroup = vendorGroupRepository.insert(VGRP, company)
 
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)
@@ -752,7 +837,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
 
       final VGRP = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
-      final vendorGroup = vendorGroupRepository.insert(VGRP)
+      final vendorGroup = vendorGroupRepository.insert(VGRP, company)
 
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)

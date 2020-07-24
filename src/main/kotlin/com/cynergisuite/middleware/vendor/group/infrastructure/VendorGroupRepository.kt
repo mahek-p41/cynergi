@@ -48,6 +48,14 @@ class VendorGroupRepository @Inject constructor(
            JOIN company comp ON vgrp.company_id = comp.id
    """
 
+   fun exists(value: String, company: Company): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM vendor_group WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.myId()), Boolean::class.java)!!
+
+      logger.trace("Checking if VendorGroup: {} exists resulted in {}", value, exists)
+
+      return exists
+   }
+
    fun findOne(id: Long, company: Company): VendorGroupEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${baseSelectQuery()}\nWHERE vgrp.id = :id AND comp.id = :comp_id"
@@ -86,10 +94,10 @@ class VendorGroupRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: VendorGroupEntity): VendorGroupEntity {
+   fun insert(entity: VendorGroupEntity, company: Company): VendorGroupEntity {
       logger.debug("Inserting VendorGroup {}", entity)
 
-      val inserted = jdbc.insertReturning(
+      return jdbc.insertReturning(
          """
          INSERT INTO vendor_group(company_id, value, description)
          VALUES (
@@ -101,14 +109,12 @@ class VendorGroupRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to entity.company.myId(),
+            "company_id" to company.myId(),
             "value" to entity.value,
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
+         RowMapper { rs, _ -> mapDdlRow(rs, company) }
       )
-
-      return inserted
    }
 
    @Transactional
