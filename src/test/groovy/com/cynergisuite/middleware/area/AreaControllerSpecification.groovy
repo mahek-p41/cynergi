@@ -58,7 +58,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
                it.id == menu2Modules[1].id
                it.value == menu2Modules[1].value
                it.description == menu2Modules[1].description
-               it.level == 100
+               it.level == null
             }
          }
       }

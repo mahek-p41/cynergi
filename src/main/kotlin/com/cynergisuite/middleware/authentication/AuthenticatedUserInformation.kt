@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.authentication
 
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.UserSecurityLevels
 import com.cynergisuite.middleware.company.CompanyValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -26,17 +27,21 @@ data class AuthenticatedUserInformation(
    val alternativeArea: Long? = null,
 
    @field:Schema(name = "permissions", title = "Permissions that user has access to", description = "Listing of permissions of an employee")
-   val permissions: Set<String>? = null
+   val permissions: Set<String>? = null,
+
+   @field:Schema(name = "securityLevels", title = "User Security Levels", description = "Listing of security levels of an employee")
+   val securityLevels: UserSecurityLevels? = null
 
 ) {
-   constructor(user: User, permissions: Set<String>, companyOverride: CompanyValueObject) :
+   constructor(user: User, permissions: Set<String>, companyOverride: CompanyValueObject, securityLevels: UserSecurityLevels? = null) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
          storeNumber = user.myLocation().myNumber(),
          company = companyOverride,
          alternativeStoreIndicator = user.myAlternativeStoreIndicator(),
          alternativeArea = user.myAlternativeArea(),
-         permissions = permissions
+         permissions = permissions,
+         securityLevels = securityLevels
       )
 
 }

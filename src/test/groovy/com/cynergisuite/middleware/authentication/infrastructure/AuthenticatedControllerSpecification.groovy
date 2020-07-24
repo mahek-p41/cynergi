@@ -4,6 +4,7 @@ import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.authentication.LoginCredentials
+import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -20,6 +21,7 @@ import static io.micronaut.http.HttpRequest.POST
 class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
    @Inject AuditPermissionFactoryService auditPermissionFactoryService
+   @Inject EmployeeFactoryService userSetupEmployeeFactoryService
 
    void "Get user permissions with dataset 1" () {
       given: 'Setup employee with audit-permission-manager permission'
@@ -68,6 +70,16 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
          federalTaxNumber = null
       }
       response.permissions as Set ==  ["audit-approver", "audit-permission-manager"].toSet()
+
+      and: 'user that has not been configured security level & is not cynergi admin'
+      with(response.securityLevels) {
+         accountPayableLevel == 0
+         purchaseOrderLevel == 0
+         generalLedgerLevel == 0
+         systemAdministrationLevel == 0
+         fileMaintenanceLevel == 0
+         bankReconciliationLevel == 0
+      }
    }
 
    void "Get user permissions with dataset 2" () {
@@ -122,6 +134,122 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
          federalTaxNumber = null
       }
       response.permissions as Set ==  ["audit-approver"].toSet()
+
+      and: 'user that has not been configured security level & is not cynergi admin'
+      with(response.securityLevels) {
+         accountPayableLevel == 0
+         purchaseOrderLevel == 0
+         generalLedgerLevel == 0
+         systemAdministrationLevel == 0
+         fileMaintenanceLevel == 0
+         bankReconciliationLevel == 0
+      }
+   }
+
+   void "Get user security levels with cynergi admin" () {
+      given: 'Setup super user'
+      def company = companyFactoryService.forDatasetCode('tstds1')
+      def employee = userSetupEmployeeFactoryService.singleSuperUser(998, company, 'man', 'super', 'pass')
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials('998', employee.passCode, employee.store?.number, employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def response = httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response.employeeNumber == "${employee.number}"
+      response.storeNumber == 9000
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
+      response.permissions as Set ==  ["audit-approver", "audit-permission-manager", "cynergi-system-admin"].toSet()
+
+      with(response.securityLevels) {
+         accountPayableLevel == 99
+         purchaseOrderLevel == 99
+         generalLedgerLevel == 99
+         systemAdministrationLevel == 99
+         fileMaintenanceLevel == 99
+         bankReconciliationLevel == 99
+      }
+   }
+
+   void "Get user security levels with user has config in operator_vw" () {
+      given: 'Login user number 100'
+      def company = companyFactoryService.forDatasetCode('tstds1')
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("100", "pass", 1, company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def response = httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response.employeeNumber == "100"
+      response.storeNumber == 1
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
+      response.permissions as Set ==  ["audit-approver", "audit-permission-manager"].toSet()
+      with(response.securityLevels) {
+         accountPayableLevel == 0
+         purchaseOrderLevel == 10
+         generalLedgerLevel == 0
+         systemAdministrationLevel == 99
+         fileMaintenanceLevel == 99
+         bankReconciliationLevel == 0
+      }
    }
 
 }
