@@ -2,14 +2,16 @@ package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.extensions.equalTo
-import com.cynergisuite.extensions.greaterThan
 import com.cynergisuite.extensions.sum
 import com.cynergisuite.extensions.toFixed
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.*
+import com.cynergisuite.middleware.localization.MustBeInRangeOf
+import com.cynergisuite.middleware.localization.NotNull
+import com.cynergisuite.middleware.localization.NotUpdatable
+import com.cynergisuite.middleware.localization.VendorPaymentTermDuePercentDoesNotAddUp
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -52,7 +54,7 @@ class VendorPaymentTermValidator @Inject constructor(
          errors.add(ValidationError("discountPercent", NotNull("discountPercent")))
       } else if (vo.discountDays == null && vo.discountMonth == null && vo.discountPercent != null) {
          errors.add(ValidationError("discountPercent", NotUpdatable(vo.discountPercent)))
-      } else if ((vo.discountDays != null || vo.discountMonth != null) && (vo.discountPercent!!.greaterThan(ONE))) {
+      } else if ((vo.discountDays != null || vo.discountMonth != null) && (vo.discountPercent!! > ONE)) {
             errors.add(ValidationError("discountPercent", MustBeInRangeOf("(0, 1]")))
       }
 

@@ -4,8 +4,6 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.time.OffsetDateTime
-import javax.validation.Valid
-import javax.validation.constraints.Email
 
 interface LocalizationCode {
    fun getCode(): String

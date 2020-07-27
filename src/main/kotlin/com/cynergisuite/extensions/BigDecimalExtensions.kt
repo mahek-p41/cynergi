@@ -1,6 +1,5 @@
 package com.cynergisuite.extensions
 
-import com.github.javafaker.Bool
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.math.RoundingMode.HALF_EVEN
@@ -22,6 +21,3 @@ fun BigDecimal.toFixed(maxFractionDigits: Int, minFractionDigits: Int = 0, round
  */
 fun BigDecimal.equalTo(num: BigDecimal): Boolean =
    this.compareTo(num) == 0
-
-fun BigDecimal.greaterThan(num: BigDecimal): Boolean =
-   this > num

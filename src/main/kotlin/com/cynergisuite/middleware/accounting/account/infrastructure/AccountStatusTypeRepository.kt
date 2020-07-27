@@ -61,5 +61,4 @@ class AccountStatusTypeRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
-
 }
