@@ -188,7 +188,13 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', 5),
        (100, 'SETSYS', 'Modify Company Areas', 'modify.company.areas', 'SETSYS',21),
        (101, 'APPARAMS', 'AP Control', 'ap.control','APPARAMS', 28),
        (102, 'GLPARAMS', 'GL Control', 'gl.control','GLPARAMS', 31),
-       (103, 'POPARAMS', 'PO Control', 'po.control','POPARAMS', 24);
+       (103, 'POPARAMS', 'PO Control', 'po.control','POPARAMS', 24),
+       (104, 'SVCADD', 'Add a Ship Via Code', 'add.svc', 'SVCADD', 27),
+       (105, 'SVCCHG', 'Change a Ship Via Code', 'change.svc', 'SVCCHG', 27),
+       (106, 'SVCDEL', 'Delete a Ship Via Code', 'delete.svc', 'SVCDEL', 27),
+       (107, 'SVCPRT', 'Print Ship Via Code', 'print.report.svc', 'SVCPRT', 27),
+       (108, 'SVCSHW', 'Show a Ship Via Code', 'show.svc', 'SVCSHW', 27);
+
 
 CREATE TABLE area
 (
