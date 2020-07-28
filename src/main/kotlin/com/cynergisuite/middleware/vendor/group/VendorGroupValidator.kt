@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import org.slf4j.Logger
@@ -24,7 +25,7 @@ class VendorGroupValidator @Inject constructor(
    fun validateCreate(dto: VendorGroupDTO, company: Company): VendorGroupEntity {
       logger.trace("Validating Save VendorGroup {}", dto)
 
-      doValidation { errors -> doSharedValidation(errors, dto) }
+      doValidation { errors -> doSharedValidation(errors, dto, company) }
 
       return VendorGroupEntity(dto = dto, company = company)
    }
@@ -35,18 +36,22 @@ class VendorGroupValidator @Inject constructor(
 
       val existing = vendorGroupRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-      doValidation { errors -> doSharedValidation(errors, vo) }
+      doValidation { errors -> doSharedValidation(errors, vo, company) }
 
       return existing.copy(value = vo.value!!, description = vo.description!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupDTO) {
-      if(vo.value == null) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupDTO, company: Company) {
+      if (vo.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }
 
-      if(vo.description == null) {
+      if (vo.description == null) {
          errors.add(ValidationError("description", NotNull("description")))
+      }
+
+      if (vendorGroupRepository.exists(vo.value!!, company)) {
+         errors.add(ValidationError("value", Duplicate("value")))
       }
    }
 }
