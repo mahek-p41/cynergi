@@ -1,4 +1,4 @@
-FROM adoptopenjdk:8u252-b09-jdk-openj9-0.20.0-bionic
+FROM adoptopenjdk:8u262-b10-jdk-openj9-0.21.0-bionic
 
 ARG USER_ID
 ARG GROUP_ID
