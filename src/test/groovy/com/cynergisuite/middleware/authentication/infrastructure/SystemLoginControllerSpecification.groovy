@@ -398,7 +398,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       final e = thrown(HttpClientResponseException)
-      e.response.body() == null
+      e.response.bodyAsJson().message == 'You are not logged in'
       e.status == UNAUTHORIZED
    }
 }

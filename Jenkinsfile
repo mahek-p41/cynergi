@@ -17,9 +17,10 @@ pipeline {
          steps {
             dir('./support/deployment') {
                sh 'docker-compose rm -f'
+               sh 'docker-compose build cynergipgdb'
                sh 'docker-compose build cynergitestdeploydb'
                sh 'docker-compose up -d cynergitestdeploydb'
-               sh 'sleep 10'
+               sh 'docker-compose build --force-rm --quiet cynergidbready && docker-compose run --rm cynergidbready'
             }
          }
       }

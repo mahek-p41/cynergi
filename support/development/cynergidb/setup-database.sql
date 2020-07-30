@@ -15,7 +15,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
-      DROP VIEW company_vw;
+      DROP VIEW company_vw CASCADE;
    END IF;
 END $$;
 
@@ -30,7 +30,7 @@ BEGIN
    unionStr := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'department_vw') THEN
-      DROP VIEW department_vw;
+      DROP VIEW department_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -64,7 +64,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'store_vw') THEN
-      DROP VIEW store_vw;
+      DROP VIEW store_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -99,7 +99,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'employee_vw') THEN
-      DROP VIEW employee_vw;
+      DROP VIEW employee_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -148,7 +148,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'inventory_vw') THEN
-      DROP VIEW inventory_vw;
+      DROP VIEW inventory_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
