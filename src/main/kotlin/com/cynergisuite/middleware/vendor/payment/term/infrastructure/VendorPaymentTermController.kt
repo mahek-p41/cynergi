@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermDTO
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body

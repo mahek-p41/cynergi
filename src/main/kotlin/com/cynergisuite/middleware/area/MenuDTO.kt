@@ -8,8 +8,8 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "MenuType", title = "Menu type", description = "Menu type")
-data class MenuTypeDTO (
+@Schema(name = "Menu", title = "MenuDTO", description = "A data transfer object containing a menu information")
+data class MenuDTO (
 
    @field:Positive
    var id: Long? = null,
@@ -20,11 +20,11 @@ data class MenuTypeDTO (
    var value: String? = null,
 
    @field:Size(min = 1, max = 100)
-   @field:Schema(description = "A localized description for menu type")
+   @field:Schema(description = "A localized description for menu")
    var description: String? = null,
 
-   @field:Schema(description = "AreaEntity type")
-   var modules: MutableList<ModuleTypeDTO>
+   @field:Schema(description = "List of modules under a menu")
+   var modules: MutableList<ModuleDTO>
 ) {
 
    constructor(type: MenuType) :
@@ -32,14 +32,14 @@ data class MenuTypeDTO (
          id = type.id,
          value = type.value,
          description = type.description,
-         modules = type.modules.map { ModuleTypeDTO(it) } as MutableList<ModuleTypeDTO>
+         modules = type.modules.map { ModuleDTO(it) } as MutableList<ModuleDTO>
       )
 
-   constructor(type: MenuType, localizedDescription: String, modules: List<ModuleTypeDTO>? = null) :
+   constructor(type: MenuType, localizedDescription: String, modules: List<ModuleDTO>? = null) :
       this(
          id = type.id,
          value = type.value,
          description = localizedDescription,
-         modules = (modules ?: type.modules.map { ModuleTypeDTO(it) }) as MutableList<ModuleTypeDTO>
+         modules = (modules ?: type.modules.map { ModuleDTO(it) }) as MutableList<ModuleDTO>
       )
 }

@@ -11,32 +11,32 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "ModuleType", title = "Module type", description = "Module type")
-data class ModuleTypeDTO (
+@Schema(name = "Module", title = "ModuleDTO", description = "A data transfer object containing a module information")
+data class ModuleDTO (
 
+   @field:NotNull
    @field:Positive
    var id: Long? = null,
 
-   @field:NotNull
    @field:Size(min = 1, max = 10)
    @field:Schema(description = "Module value")
    var value: String? = null,
 
-   @field:NotNull
    @field:Size(min = 1, max = 10)
    @field:Schema(description = "Module program")
    var program: String? = null,
 
    @field:Size(min = 1, max = 100)
-   @field:Schema(description = "A localized description for module type")
+   @field:Schema(description = "A localized description for module")
    var description: String? = null,
 
+   @field:NotNull
    @field:Min(value = 0)
-   @field:Max(value = 100)
-   @field:Schema(description = "Configured security level of a module", minimum = "0", maximum = "100")
+   @field:Max(value = 99)
+   @field:Schema(description = "Configured security level of a module", minimum = "0", maximum = "99")
    var level: Int?,
 
-   @field:Schema(description = "Menu type")
+   @field:Schema(description = "Menu in which module belongs to")
    var menuType: SimpleIdentifiableDTO? = null
 
 ) {

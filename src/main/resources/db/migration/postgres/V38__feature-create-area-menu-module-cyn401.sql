@@ -114,7 +114,6 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', 5),
 
 CREATE TABLE area
 (
-    id             BIGSERIAL                                 NOT NULL PRIMARY KEY,
     uu_row_id      UUID        DEFAULT uuid_generate_v1()    NOT NULL,
     time_created   TIMESTAMPTZ DEFAULT clock_timestamp()     NOT NULL,
     time_updated   TIMESTAMPTZ DEFAULT clock_timestamp()     NOT NULL,
@@ -131,7 +130,6 @@ EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE TABLE module
 (
-    id             BIGSERIAL                                  NOT NULL PRIMARY KEY,
     uu_row_id      UUID        DEFAULT uuid_generate_v1()     NOT NULL,
     time_created   TIMESTAMPTZ DEFAULT clock_timestamp()      NOT NULL,
     time_updated   TIMESTAMPTZ DEFAULT clock_timestamp()      NOT NULL,

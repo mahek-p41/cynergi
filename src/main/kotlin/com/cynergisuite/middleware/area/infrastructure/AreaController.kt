@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.area.AreaDTO
 import com.cynergisuite.middleware.area.AreaService
-import com.cynergisuite.middleware.area.AreaTypeDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -11,9 +11,9 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
@@ -38,12 +38,12 @@ class AreaController @Inject constructor(
    @Get
    @Operation(tags = ["AreaEndpoints"], description = "Fetch the canonical structure of areas - menus - modules", operationId = "area-fetchAll")
    @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaTypeDTO::class))])
+      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaDTO::class))])
    ])
    fun fetchAll(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
-   ): List<AreaTypeDTO> {
+   ): List<AreaDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
       val user = userService.findUser(authentication)
@@ -53,4 +53,47 @@ class AreaController @Inject constructor(
 
       return areas
    }
+
+   @Post(processes = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AreaEndpoints"], description = "Enable area for company.", operationId = "enable-area")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully enable area for company"),
+      ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun enableArea(
+      @Body areaIdDTO: SimpleIdentifiableDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      val company = userService.findUser(authentication).myCompany()
+
+      logger.info("Enable area {} for company {}", areaIdDTO.id, company.myId())
+
+      areaService.enableArea(company, areaIdDTO.id!!)
+   }
+
+   @Delete(processes = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AreaEndpoints"], description = "Disable area for company.", operationId = "disable-area")
+   @ApiResponses(value = [
+      ApiResponse(responseCode = "200", description = "If successfully disable area for company"),
+      ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
+      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+   ])
+   fun disableArea(
+      @Body areaIdDTO: SimpleIdentifiableDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      val company = userService.findUser(authentication).myCompany()
+
+      logger.info("Disable area {} for company {}", areaIdDTO.id, company.myId())
+
+      areaService.disableArea(company, areaIdDTO.id!!)
+   }
+
 }

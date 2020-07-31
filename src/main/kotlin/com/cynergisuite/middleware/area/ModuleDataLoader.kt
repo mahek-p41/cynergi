@@ -3,9 +3,7 @@ package com.cynergisuite.middleware.area
 import com.cynergisuite.extensions.forId
 import com.cynergisuite.middleware.area.infrastructure.ModuleRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyFactory
 import io.micronaut.context.annotation.Requires
-import java.util.stream.Stream
 import javax.inject.Singleton
 
 object ModuleDataLoader {
@@ -332,32 +330,17 @@ object ModuleDataLoader {
       )
    )
 
-   private val moduleConfigEntities = listOf(
-      ModuleEntity(
-         company = CompanyFactory.tstds1(),
-         moduleType = moduleTypes.forId(1)!!,
-         level = 10
-      ),
-      ModuleEntity(
-         company = CompanyFactory.tstds1(),
-         moduleType = moduleTypes.forId(2)!!,
-         level = 15
-      )
-//      ModuleEntity(
-//         company = CompanyFactory.tstds1(),
-//         moduleType = moduleTypes.forId(4)!!,
-//         level = 12
-//      )
-   )
-
    @JvmStatic
    fun moduleTypes(): List<ModuleType> = moduleTypes
 
    @JvmStatic
-   fun predefinedModules(): List<ModuleEntity> = moduleConfigEntities
-
-   @JvmStatic
    fun random(): ModuleType = moduleTypes.random()
+
+   fun singleDTO(moduleTypeId: Long, level: Int) =
+      ModuleDTO(
+         id = moduleTypeId,
+         level = level
+      )
 }
 
 @Singleton
@@ -367,12 +350,9 @@ class ModuleDataLoaderService(
 ) {
    fun predefined() = ModuleDataLoader.moduleTypes()
 
-   fun moduleConfigs(company: Company): Stream<ModuleEntity> = ModuleDataLoader.predefinedModules()
-      .stream()
-      .filter {
-         it.company.myDataset() == company.myDataset()
-      }
-      .map {
-         repository.insert(it, company)
-      }
+   fun configureLevel(id: Long, level: Int, company: Company) {
+      repository.insertConfig(ModuleDataLoader.moduleTypes().first { it.id == id }.copy(level = level), company)
+   }
+
+   fun singleDTO(moduleTypeId: Long, level: Int) = ModuleDataLoader.singleDTO(moduleTypeId, level)
 }

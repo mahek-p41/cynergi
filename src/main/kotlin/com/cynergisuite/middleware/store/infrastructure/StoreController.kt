@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
-import com.cynergisuite.middleware.store.StoreService
 import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.StoreService
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get

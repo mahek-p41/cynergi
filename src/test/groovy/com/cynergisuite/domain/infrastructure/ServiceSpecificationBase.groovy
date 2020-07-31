@@ -51,10 +51,14 @@ abstract class ServiceSpecificationBase extends Specification {
          storeFactoryService.companyStoresToRegion(region, 1).toList()
       }
 
-      companies.each {
-         areaDataLoaderService.areaConfigs(it).toList()
-         moduleDataLoaderService.moduleConfigs(it).toList()
-      }
+      areaDataLoaderService.enableArea(1, tstds1)
+      areaDataLoaderService.enableArea(2, tstds1)
+      areaDataLoaderService.enableArea(4, tstds1)
+      areaDataLoaderService.enableArea(1, tstds2)
+      areaDataLoaderService.enableArea(2, tstds2)
+
+      moduleDataLoaderService.configureLevel(1, 10, tstds1)
+      moduleDataLoaderService.configureLevel(2, 15, tstds1)
 
    }
 }

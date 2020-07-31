@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.bank.CompanyAccessControlProvider
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.company.CompanyValueObject

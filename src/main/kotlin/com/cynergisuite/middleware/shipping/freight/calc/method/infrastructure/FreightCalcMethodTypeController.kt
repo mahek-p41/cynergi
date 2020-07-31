@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.localization.LocalizationService
-import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeService
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
+import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller

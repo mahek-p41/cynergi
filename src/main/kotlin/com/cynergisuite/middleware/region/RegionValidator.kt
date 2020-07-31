@@ -5,12 +5,12 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.MustMatchPathVariable
 import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject

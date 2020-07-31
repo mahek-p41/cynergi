@@ -2,13 +2,11 @@ package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.middleware.area.AreaEntity
 import com.cynergisuite.middleware.area.AreaType
 import com.cynergisuite.middleware.area.MenuType
 import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.Company
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -36,7 +34,7 @@ class AreaRepository @Inject constructor(
             areas.value AS area_value,
             areas.description AS area_description,
             areas.localization_code AS area_localization_code,
-            (areas_configs.id IS NOT NULL) AS area_enabled,
+            (areas_configs.area_type_id IS NOT NULL) AS area_enabled,
             menus.id AS menu_id,
             menus.value AS menu_value,
             menus.description AS menu_description,
@@ -45,7 +43,6 @@ class AreaRepository @Inject constructor(
             modules.value AS module_value,
             modules.description AS module_description,
             modules.localization_code AS module_localization_code,
-            module_configs.id AS module_configs_id,
             module_configs.level AS module_configs_level
          FROM area_type_domain areas
             LEFT OUTER JOIN menu_type_domain menus ON areas.id = menus.area_type_id
@@ -83,8 +80,35 @@ class AreaRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(areaEntity: AreaEntity, company: Company): AreaEntity {
-      logger.debug("Inserting area {}", areaEntity)
+   fun enable(company: Company, areaTypeId: Long) {
+      logger.debug("Enable area {} for company {}", areaTypeId, company.myDataset())
+
+      jdbc.update("""
+         INSERT INTO area(company_id, area_type_id)
+         VALUES (:company_id, :area_type_id)
+         """,
+         mapOf(
+            "company_id" to company.myId(),
+            "area_type_id" to areaTypeId
+         )
+      )
+   }
+
+   @Transactional
+   fun disable(company: Company, areaTypeId: Long) {
+      logger.debug("Disable area {} for company {}", areaTypeId, company.myDataset())
+
+      jdbc.update("""
+         DELETE FROM area
+         WHERE company_id = :company_id AND area_type_id = :area_type_id
+         """,
+         mapOf("company_id" to company.myId(), "area_type_id" to areaTypeId)
+      )
+   }
+
+   @Transactional
+   fun insert(company: Company, areaType: AreaType): AreaType {
+      logger.debug("Inserting area {}", areaType)
 
       return jdbc.insertReturning("""
          INSERT INTO area(company_id, area_type_id)
@@ -94,18 +118,22 @@ class AreaRepository @Inject constructor(
          """,
          mapOf(
             "company_id" to company.myId(),
-            "area_type_id" to areaEntity.areaType.myId()
+            "area_type_id" to areaType.myId()
          ),
-         RowMapper { rs, _ -> mapEntity(rs, company, areaEntity.areaType) }
+         RowMapper { rs, _ -> areaType }
       )
    }
 
-   private fun mapEntity(rs: ResultSet, company: Company, areaType: AreaType, columnPrefix: String = EMPTY): AreaEntity =
-      AreaEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         company = company,
-         areaType = areaType
-      )
+   fun exists(areaTypeId: Long): Boolean {
+      val exists = jdbc.queryForObject("""
+         SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)
+         """,
+         mapOf("area_type_id" to areaTypeId), Boolean::class.java)!!
+
+      logger.trace("Checking if Area exists {}")
+
+      return exists
+   }
 
    private fun mapArea(rs: ResultSet): AreaType {
       return AreaType(
@@ -135,7 +163,7 @@ class AreaRepository @Inject constructor(
             value = rs.getString("module_value"),
             description = rs.getString("module_description"),
             localizationCode = rs.getString("module_localization_code"),
-            level = rs.getIntOrNull("module_configs_level") ?: 100
+            level = rs.getIntOrNull("module_configs_level")
          )
       } else {
          null

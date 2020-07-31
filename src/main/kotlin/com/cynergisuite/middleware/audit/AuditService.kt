@@ -22,8 +22,8 @@ import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.StoreEntity
 import com.lowagie.text.Document
 import com.lowagie.text.Element
 import com.lowagie.text.Element.ALIGN_LEFT
