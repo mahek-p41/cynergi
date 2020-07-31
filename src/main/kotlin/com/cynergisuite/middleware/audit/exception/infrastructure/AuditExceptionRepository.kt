@@ -10,6 +10,8 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.address.AddressEntity
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
@@ -19,6 +21,7 @@ import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExce
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -36,8 +39,10 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditExceptionRepository @Inject constructor(
+   private val addressRepository: AddressRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
+   private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -47,6 +52,9 @@ class AuditExceptionRepository @Inject constructor(
       """
       WITH employees AS (
          ${employeeRepository.employeeBaseQuery()}
+      ),
+      company AS (
+         ${companyRepository.companyBaseQuery()}
       )
       SELECT
          auditException.id                                          AS auditException_id,
@@ -78,6 +86,19 @@ class AuditExceptionRepository @Inject constructor(
          comp.client_id                                             AS comp_client_id,
          comp.dataset_code                                          AS comp_dataset_code,
          comp.federal_id_number                                     AS comp_federal_id_number,
+         comp.address_id                                            AS address_id,
+         comp.address_name                                          AS address_name,
+         comp.address_address1                                      AS address_address1,
+         comp.address_address2                                      AS address_address2,
+         comp.address_city                                          AS address_city,
+         comp.address_state                                         AS address_state,
+         comp.address_postal_code                                   AS address_postal_code,
+         comp.address_latitude                                      AS address_latitude,
+         comp.address_longitude                                     AS address_longitude,
+         comp.address_country                                       AS address_country,
+         comp.address_county                                        AS address_county,
+         comp.address_phone                                         AS address_phone,
+         comp.address_fax                                           AS address_fax,
          scannedBy.emp_id                                           AS scannedBy_id,
          scannedBy.emp_type                                         AS scannedBy_type,
          scannedBy.emp_number                                       AS scannedBy_number,
@@ -148,13 +169,14 @@ class AuditExceptionRepository @Inject constructor(
       logger.debug("Searching for AuditExceptions using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
-         val scannedBy = mapEmployeeNotNull(rs, "scannedBy_")
-         val approvedBy = mapEmployee(rs, "approvedBy_")
+         val address = addressRepository.mapAddressOrNull(rs, "address_")
+         val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
+         val approvedBy = mapEmployee(rs, address, "approvedBy_")
          val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "auditScanArea_")
          val exception = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
 
          do {
-            val enteredBy = mapEmployee(rs, "auditExceptionNoteEmployee_")
+            val enteredBy = mapEmployee(rs, address, "auditExceptionNoteEmployee_")
 
             if (enteredBy != null) {
                mapRowAuditExceptionNote(rs, enteredBy)?.also { exception.notes.add(it) }
@@ -185,6 +207,9 @@ class AuditExceptionRepository @Inject constructor(
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
          ), paged AS (
+            WITH company AS (
+               ${companyRepository.companyBaseQuery()}
+            )
             SELECT
                auditException.id                           AS auditException_id,
                auditException.uu_row_id                    AS auditException_uu_row_id,
@@ -198,8 +223,8 @@ class AuditExceptionRepository @Inject constructor(
                auditException.inventory_model              AS auditException_inventory_model,
                auditException.exception_code               AS auditException_exception_code,
                auditException.audit_id                     AS auditException_audit_id,
-               auditException.approved                   AS auditException_approved,
-               auditException.approved_by                AS auditException_approved_by,
+               auditException.approved                     AS auditException_approved,
+               auditException.approved_by                  AS auditException_approved_by,
                auditException.lookup_key                   AS auditException_lookup_key,
                auditScanArea.id                            AS auditScanArea_id,
                auditScanArea.value                         AS auditScanArea_value,
@@ -215,6 +240,19 @@ class AuditExceptionRepository @Inject constructor(
                comp.client_id                              AS comp_client_id,
                comp.dataset_code                           AS comp_dataset_code,
                comp.federal_id_number                      AS comp_federal_id_number,
+               comp.address_id                             AS address_id,
+               comp.address_name                           AS address_name,
+               comp.address_address1                       AS address_address1,
+               comp.address_address2                       AS address_address2,
+               comp.address_city                           AS address_city,
+               comp.address_state                          AS address_state,
+               comp.address_postal_code                    AS address_postal_code,
+               comp.address_latitude                       AS address_latitude,
+               comp.address_longitude                      AS address_longitude,
+               comp.address_country                        AS address_country,
+               comp.address_county                         AS address_county,
+               comp.address_phone                          AS address_phone,
+               comp.address_fax                            AS address_fax,
                scannedBy.emp_id                            AS scannedBy_id,
                scannedBy.emp_type                          AS scannedBy_type,
                scannedBy.emp_number                        AS scannedBy_number,
@@ -231,22 +269,22 @@ class AuditExceptionRepository @Inject constructor(
                scannedBy.store_id                          AS scannedBy_store_id,
                scannedBy.store_number                      AS scannedBy_store_number,
                scannedBy.store_name                        AS scannedBy_store_name,
-               approvedBy.emp_id                          AS approvedBy_id,
-               approvedBy.emp_type                        AS approvedBy_type,
-               approvedBy.emp_number                      AS approvedBy_number,
-               approvedBy.emp_last_name                   AS approvedBy_last_name,
-               approvedBy.emp_first_name_mi               AS approvedBy_first_name_mi,
-               approvedBy.emp_pass_code                   AS approvedBy_pass_code,
-               approvedBy.emp_active                      AS approvedBy_active,
-               approvedBy.emp_cynergi_system_admin        AS approvedBy_cynergi_system_admin,
-               approvedBy.emp_alternative_store_indicator AS approvedBy_alternative_store_indicator,
-               approvedBy.emp_alternative_area            AS approvedBy_alternative_area,
-               approvedBy.dept_id                         AS approvedBy_dept_id,
-               approvedBy.dept_code                       AS approvedBy_dept_code,
-               approvedBy.dept_description                AS approvedBy_dept_description,
-               approvedBy.store_id                        AS approvedBy_store_id,
-               approvedBy.store_number                    AS approvedBy_store_number,
-               approvedBy.store_name                      AS approvedBy_store_name,
+               approvedBy.emp_id                           AS approvedBy_id,
+               approvedBy.emp_type                         AS approvedBy_type,
+               approvedBy.emp_number                       AS approvedBy_number,
+               approvedBy.emp_last_name                    AS approvedBy_last_name,
+               approvedBy.emp_first_name_mi                AS approvedBy_first_name_mi,
+               approvedBy.emp_pass_code                    AS approvedBy_pass_code,
+               approvedBy.emp_active                       AS approvedBy_active,
+               approvedBy.emp_cynergi_system_admin         AS approvedBy_cynergi_system_admin,
+               approvedBy.emp_alternative_store_indicator  AS approvedBy_alternative_store_indicator,
+               approvedBy.emp_alternative_area             AS approvedBy_alternative_area,
+               approvedBy.dept_id                          AS approvedBy_dept_id,
+               approvedBy.dept_code                        AS approvedBy_dept_code,
+               approvedBy.dept_description                 AS approvedBy_dept_description,
+               approvedBy.store_id                         AS approvedBy_store_id,
+               approvedBy.store_number                     AS approvedBy_store_number,
+               approvedBy.store_name                       AS approvedBy_store_name,
                count(*) OVER () AS total_elements
             FROM audit_exception auditException
                JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
@@ -290,14 +328,15 @@ class AuditExceptionRepository @Inject constructor(
       logger.debug("find all audit exceptions {}/{}", sql, params)
 
       return jdbc.queryPaged(sql, params, page) { rs, elements ->
+         val address = addressRepository.mapAddressOrNull(rs, "address_")
          var currentId = -1L
          var currentParentEntity: AuditExceptionEntity? = null
 
          do {
             val tempId = rs.getLong("auditException_id")
             val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
-               val scannedBy = mapEmployeeNotNull(rs, "scannedBy_")
-               val approvedBy = mapEmployee(rs, "approvedBy_")
+               val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
+               val approvedBy = mapEmployee(rs, address, "approvedBy_")
                val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "auditScanArea_")
 
                currentId = tempId
@@ -308,7 +347,7 @@ class AuditExceptionRepository @Inject constructor(
                currentParentEntity!!
             }
 
-            val enteredBy = mapEmployee(rs, "auditExceptionNoteEmployee_")
+            val enteredBy = mapEmployee(rs, address, "auditExceptionNoteEmployee_")
 
             if (enteredBy != null) {
                mapRowAuditExceptionNote(rs, enteredBy)?.also { tempParentEntity.notes.add(it) }
@@ -444,7 +483,7 @@ class AuditExceptionRepository @Inject constructor(
          audit = audit
       )
 
-   private fun mapCompany(rs: ResultSet): CompanyEntity {
+   private fun mapCompany(rs: ResultSet, address: AddressEntity?): CompanyEntity {
       return CompanyEntity(
          id = rs.getLong("comp_id"),
          name = rs.getString("comp_name"),
@@ -452,56 +491,57 @@ class AuditExceptionRepository @Inject constructor(
          clientCode = rs.getString("comp_client_code"),
          clientId = rs.getInt("comp_client_id"),
          federalIdNumber = rs.getString("comp_federal_id_number"),
+         address = address,
          datasetCode = rs.getString("comp_dataset_code")
       )
    }
 
-   private fun mapEmployeeNotNull(rs: ResultSet, columnPrefix: String): EmployeeEntity {
+   private fun mapEmployeeNotNull(rs: ResultSet, address: AddressEntity?, columnPrefix: String): EmployeeEntity {
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
          number = rs.getInt("${columnPrefix}number"),
-         company = mapCompany(rs),
+         company = mapCompany(rs, address),
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"),
          passCode = rs.getString("${columnPrefix}pass_code"),
-         store = mapScannedByStore(rs, columnPrefix),
+         store = mapScannedByStore(rs, address, columnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
-         department = mapScannedByDepartment(rs, columnPrefix),
+         department = mapScannedByDepartment(rs, address, columnPrefix),
          cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
          alternativeArea = rs.getLong("${columnPrefix}alternative_area")
       )
    }
 
-   private fun mapEmployee(rs: ResultSet, columnPrefix: String): EmployeeEntity? {
+   private fun mapEmployee(rs: ResultSet, address: AddressEntity?, columnPrefix: String): EmployeeEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
-         mapEmployeeNotNull(rs, columnPrefix)
+         mapEmployeeNotNull(rs, address, columnPrefix)
       } else {
          null
       }
    }
 
-   private fun mapScannedByStore(rs: ResultSet, columnPrefix: String): Store? {
+   private fun mapScannedByStore(rs: ResultSet, address: AddressEntity?, columnPrefix: String): Store? {
       return if (rs.getString("${columnPrefix}store_id") != null) {
          StoreEntity(
             id = rs.getLong("${columnPrefix}store_id"),
             number = rs.getInt("${columnPrefix}store_number"),
             name = rs.getString("${columnPrefix}store_name"),
-            company = mapCompany(rs)
+            company = mapCompany(rs, address)
          )
       } else {
          null
       }
    }
 
-   private fun mapScannedByDepartment(rs: ResultSet, columnPrefix: String): DepartmentEntity? {
+   private fun mapScannedByDepartment(rs: ResultSet, address: AddressEntity?, columnPrefix: String): DepartmentEntity? {
       return if (rs.getString("${columnPrefix}dept_id") != null) {
          DepartmentEntity(
             id = rs.getLong("${columnPrefix}dept_id"),
             code = rs.getString("${columnPrefix}dept_code"),
             description = rs.getString("${columnPrefix}dept_description"),
-            company = mapCompany(rs)
+            company = mapCompany(rs, address)
          )
       } else {
          null

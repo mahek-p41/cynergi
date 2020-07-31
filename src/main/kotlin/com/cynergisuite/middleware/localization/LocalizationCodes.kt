@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.localization
 
+import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.builder.ToStringBuilder
@@ -36,9 +37,10 @@ class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cyn
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
-class InvalidCompany(company: Company) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.myDataset()))
-class MustMatchPathVariable(value: Any?) : Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
+class InvalidCompany(company: Company): Cynergi("cynergi.validation.invalid.company", arrayOf(company.myDataset()))
+class MustMatchPathVariable(value: Any?): Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
+class AddressNeedsUpdated(address: AddressEntity) : Cynergi("cynergi.validation.address.needs.updated", arrayOf(address))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
@@ -61,7 +63,6 @@ class NotFound(unfindable: Any) : SystemCode("system.not.found", arrayOf(unfinda
 }
 class InternalError : SystemCode("system.internal.error", emptyArray())
 class DataAccessError : SystemCode("system.data.access.exception", emptyArray())
-class DataIntegrityViolationError : SystemCode("system.data.integrity.violation", emptyArray())
 class RouteError(routeArgument: String) : SystemCode("system.route.error", arrayOf(routeArgument))
 class NotImplemented(pathNotImplemented: String) : SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class NotLoggedIn : SystemCode("system.not.logged.in", emptyArray())

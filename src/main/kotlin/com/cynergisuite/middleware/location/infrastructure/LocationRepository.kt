@@ -23,22 +23,36 @@ class LocationRepository @Inject constructor(
       return jdbc.findFirstOrNull(
          """
          SELECT
-            location.id AS id,
-            location.number AS number,
-            location.name AS name,
-            comp.id AS comp_id,
-            comp.uu_row_id AS comp_uu_row_id,
-            comp.time_created AS comp_time_created,
-            comp.time_updated AS comp_time_updated,
-            comp.name AS comp_name,
-            comp.doing_business_as AS comp_doing_business_as,
-            comp.client_code AS comp_client_code,
-            comp.client_id AS comp_client_id,
-            comp.dataset_code AS comp_dataset_code,
-            comp.federal_id_number AS comp_federal_id_number
+            location.id                   AS id,
+            location.number               AS number,
+            location.name                 AS name,
+            comp.id                       AS comp_id,
+            comp.uu_row_id                AS comp_uu_row_id,
+            comp.time_created             AS comp_time_created,
+            comp.time_updated             AS comp_time_updated,
+            comp.name                     AS comp_name,
+            comp.doing_business_as        AS comp_doing_business_as,
+            comp.client_code              AS comp_client_code,
+            comp.client_id                AS comp_client_id,
+            comp.dataset_code             AS comp_dataset_code,
+            comp.federal_id_number        AS comp_federal_id_number,
+            address.id                    AS address_id,
+            address.name                  AS address_name,
+            address.address1              AS address_address1,
+            address.address2              AS address_address2,
+            address.city                  AS address_city,
+            address.state                 AS address_state,
+            address.postal_code           AS address_postal_code,
+            address.latitude              AS address_latitude,
+            address.longitude             AS address_longitude,
+            address.country               AS address_country,
+            address.county                AS address_county,
+            address.phone                 AS address_phone,
+            address.fax                   AS address_fax
          FROM fastinfo_prod_import.store_vw location
               JOIN company comp ON comp.dataset_code = location.dataset
-         WHERE number = :location_number
+              LEFT JOIN address ON comp.address_id = address.id
+         WHERE location.number = :location_number
                AND comp.id = :comp_id
          """.trimIndent(),
          params = mapOf(

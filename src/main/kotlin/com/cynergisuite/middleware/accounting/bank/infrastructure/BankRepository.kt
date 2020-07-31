@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -23,6 +24,7 @@ import javax.inject.Singleton
 class BankRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val accountRepository: AccountRepository,
+   private val companyRepository: CompanyRepository,
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankRepository::class.java)
@@ -31,6 +33,8 @@ class BankRepository @Inject constructor(
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
+         ), company AS (
+            ${companyRepository.companyBaseQuery()}
          )
          SELECT
             bank.id                                   AS bank_id,
@@ -45,6 +49,19 @@ class BankRepository @Inject constructor(
             comp.client_id                            AS comp_client_id,
             comp.dataset_code                         AS comp_dataset_code,
             comp.federal_id_number                    AS comp_federal_id_number,
+            comp.address_id                           AS comp_address_id,
+            comp.address_name                         AS address_name,
+            comp.address_address1                     AS address_address1,
+            comp.address_address2                     AS address_address2,
+            comp.address_city                         AS address_city,
+            comp.address_state                        AS address_state,
+            comp.address_postal_code                  AS address_postal_code,
+            comp.address_latitude                     AS address_latitude,
+            comp.address_longitude                    AS address_longitude,
+            comp.address_country                      AS address_country,
+            comp.address_county                       AS address_county,
+            comp.address_phone                        AS address_phone,
+            comp.address_fax                          AS address_fax,
             account.*,
             glProfitCenter.id                         AS glProfitCenter_id,
             glProfitCenter.number                     AS glProfitCenter_number,

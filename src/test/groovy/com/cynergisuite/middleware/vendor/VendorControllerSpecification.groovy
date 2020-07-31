@@ -7,7 +7,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.address.AddressTestDataLoader
-import com.cynergisuite.middleware.address.AddressValueObject
+import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
@@ -67,7 +67,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id == vendor.id
          name == vendor.name
-         new AddressValueObject(address) == new AddressValueObject(vendor.address)
+         new AddressDTO(address) == new AddressDTO(vendor.address)
          ourAccountNumber == vendor.ourAccountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendor.freightOnboardType)
          paymentTerm.id == vendor.paymentTerm.id
@@ -112,7 +112,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id == vendor.id
          name == vendor.name
-         new AddressValueObject(address) == new AddressValueObject(vendor.address)
+         new AddressDTO(address) == new AddressDTO(vendor.address)
          ourAccountNumber == vendor.ourAccountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendor.freightOnboardType)
          paymentTerm.id == vendor.paymentTerm.id
@@ -464,7 +464,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final newVendorAddress = AddressTestDataLoader.single().with { new AddressValueObject(it) }
+      final newVendorAddress = AddressTestDataLoader.single().with { new AddressDTO(it) }
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
       when: "All properties are updated including address"
@@ -490,7 +490,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      final newVendorAddress = AddressTestDataLoader.single().with { new AddressValueObject(it) }
+      final newVendorAddress = AddressTestDataLoader.single().with { new AddressDTO(it) }
 
       when: "None of the properties except those on vendor.address are changed"
       newVendorAddress.id = vendor.address.id
@@ -609,7 +609,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressDTO(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -703,7 +703,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       with(result.elements[0]) {
          id == vendorOne.id
          name == vendorOne.name
-         new AddressValueObject(address) == new AddressValueObject(vendorOne.address)
+         new AddressDTO(address) == new AddressDTO(vendorOne.address)
          ourAccountNumber == vendorOne.ourAccountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendorOne.freightOnboardType)
          paymentTerm.id == vendorOne.paymentTerm.id
@@ -751,7 +751,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       with(result.elements[0]) {
          id == targetVendor.id
          name == targetVendor.name
-         new AddressValueObject(address) == new AddressValueObject(targetVendor.address)
+         new AddressDTO(address) == new AddressDTO(targetVendor.address)
          ourAccountNumber == targetVendor.ourAccountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(targetVendor.freightOnboardType)
          paymentTerm.id == targetVendor.paymentTerm.id
@@ -791,7 +791,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressDTO(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -827,7 +827,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressValueObject(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressDTO(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]

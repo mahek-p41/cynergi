@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceType
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -24,12 +25,16 @@ import javax.inject.Singleton
 
 @Singleton
 class AccountRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: NamedParameterJdbcTemplate,
+   private val companyRepository: CompanyRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountRepository::class.java)
 
    fun selectBaseQuery(): String {
       return """
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         )
          SELECT
             account.id                                   AS account_id,
             account.name                                 AS account_name,
@@ -45,6 +50,19 @@ class AccountRepository @Inject constructor(
             comp.client_id                               AS comp_client_id,
             comp.dataset_code                            AS comp_dataset_code,
             comp.federal_id_number                       AS comp_federal_id_number,
+            comp.address_id                              AS comp_address_id,
+            comp.address_name                            AS address_name,
+            comp.address_address1                        AS address_address1,
+            comp.address_address2                        AS address_address2,
+            comp.address_city                            AS address_city,
+            comp.address_state                           AS address_state,
+            comp.address_postal_code                     AS address_postal_code,
+            comp.address_latitude                        AS address_latitude,
+            comp.address_longitude                       AS address_longitude,
+            comp.address_country                         AS address_country,
+            comp.address_county                          AS address_county,
+            comp.address_phone                           AS address_phone,
+            comp.address_fax                             AS address_fax,
             type.id                                      AS type_id,
             type.value                                   AS type_value,
             type.description                             AS type_description,

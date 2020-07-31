@@ -10,7 +10,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Address", title = "An entity containing address information", description = "An entity containing address information.")
-data class AddressValueObject(
+data class AddressDTO(
 
    @field:Positive
    var id: Long? = null,

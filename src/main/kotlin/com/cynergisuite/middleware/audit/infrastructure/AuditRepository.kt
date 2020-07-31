@@ -45,6 +45,9 @@ class AuditRepository @Inject constructor(
       """
       WITH employees AS (
          ${employeeRepository.employeeBaseQuery()}
+      ),
+      company AS (
+         ${companyRepository.companyBaseQuery()}
       )
       SELECT
          a.id                                                          AS a_id,
@@ -108,7 +111,20 @@ class AuditRepository @Inject constructor(
          comp.client_code                                              AS comp_client_code,
          comp.client_id                                                AS comp_client_id,
          comp.dataset_code                                             AS comp_dataset_code,
-         comp.federal_id_number                                        AS comp_federal_id_number
+         comp.federal_id_number                                        AS comp_federal_id_number,
+         comp.address_id                                               AS address_id,
+         comp.address_name                                             AS address_name,
+         comp.address_address1                                         AS address_address1,
+         comp.address_address2                                         AS address_address2,
+         comp.address_city                                             AS address_city,
+         comp.address_state                                            AS address_state,
+         comp.address_postal_code                                      AS address_postal_code,
+         comp.address_latitude                                         AS address_latitude,
+         comp.address_longitude                                        AS address_longitude,
+         comp.address_country                                          AS address_country,
+         comp.address_county                                           AS address_county,
+         comp.address_phone                                            AS address_phone,
+         comp.address_fax                                              AS address_fax
       FROM audit a
            JOIN company comp ON a.company_id = comp.id
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
@@ -121,6 +137,8 @@ class AuditRepository @Inject constructor(
       """
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
+         ), company AS (
+            ${companyRepository.companyBaseQuery()}
          ), audits AS (
             WITH status AS (
                SELECT
@@ -221,6 +239,19 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            comp.address_id                                     AS address_id,
+            comp.address_name                                   AS address_name,
+            comp.address_address1                               AS address_address1,
+            comp.address_address2                               AS address_address2,
+            comp.address_city                                   AS address_city,
+            comp.address_state                                  AS address_state,
+            comp.address_postal_code                            AS address_postal_code,
+            comp.address_latitude                               AS address_latitude,
+            comp.address_longitude                              AS address_longitude,
+            comp.address_country                                AS address_country,
+            comp.address_county                                 AS address_county,
+            comp.address_phone                                  AS address_phone,
+            comp.address_fax                                    AS address_fax,
             total_elements                                      AS total_elements
          FROM audits a
               JOIN company comp ON a.company_id = comp.id
@@ -349,7 +380,9 @@ class AuditRepository @Inject constructor(
 
       val sql =
          """
-         WITH maxStatus AS (
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         ), maxStatus AS (
             SELECT MAX(id) AS current_status_id, audit_id
             FROM audit_action
             GROUP BY audit_id
@@ -393,6 +426,19 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            comp.address_id                                     AS address_id,
+            comp.address_name                                   AS address_name,
+            comp.address_address1                               AS address_address1,
+            comp.address_address2                               AS address_address2,
+            comp.address_city                                   AS address_city,
+            comp.address_state                                  AS address_state,
+            comp.address_postal_code                            AS address_postal_code,
+            comp.address_latitude                               AS address_latitude,
+            comp.address_longitude                              AS address_longitude,
+            comp.address_country                                AS address_country,
+            comp.address_county                                 AS address_county,
+            comp.address_phone                                  AS address_phone,
+            comp.address_fax                                    AS address_fax,
             count(*) OVER() AS total_elements
          FROM audit a
                JOIN company comp ON a.company_id = comp.id

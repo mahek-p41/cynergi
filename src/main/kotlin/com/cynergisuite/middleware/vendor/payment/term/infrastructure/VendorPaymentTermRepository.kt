@@ -7,6 +7,7 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
@@ -30,6 +31,9 @@ class VendorPaymentTermRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermRepository::class.java)
    private fun findOneQuery() =
       """
+      WITH company AS (
+         ${companyRepository.companyBaseQuery()}
+      )
       SELECT
          vpt.id                     AS vpt_id,
          vpt.uu_row_id              AS vpt_uu_row_id,
@@ -52,6 +56,19 @@ class VendorPaymentTermRepository @Inject constructor(
          comp.client_id             AS comp_client_id,
          comp.dataset_code          AS comp_dataset_code,
          comp.federal_id_number     AS comp_federal_id_number,
+         comp.address_id            AS address_id,
+         comp.address_name          AS address_name,
+         comp.address_address1      AS address_address1,
+         comp.address_address2      AS address_address2,
+         comp.address_city          AS address_city,
+         comp.address_state         AS address_state,
+         comp.address_postal_code   AS address_postal_code,
+         comp.address_latitude      AS address_latitude,
+         comp.address_longitude     AS address_longitude,
+         comp.address_country       AS address_country,
+         comp.address_county        AS address_county,
+         comp.address_phone         AS address_phone,
+         comp.address_fax           AS address_fax,
          vpts.id                    AS vpts_id,
          vpts.uu_row_id             AS vpts_uu_row_id,
          vpts.time_created          AS vpts_time_created,
@@ -94,28 +111,44 @@ class VendorPaymentTermRepository @Inject constructor(
       val sql =
          """
          WITH paged AS (
+            WITH company AS (
+               ${companyRepository.companyBaseQuery()}
+            )
             SELECT
-         vpt.id                     AS vpt_id,
-         vpt.uu_row_id              AS vpt_uu_row_id,
-         vpt.time_created           AS vpt_time_created,
-         vpt.time_updated           AS vpt_time_updated,
-         vpt.company_id             AS vpt_company_id,
-         vpt.description            AS vpt_description,
-         vpt.number                 AS vpt_number,
-         vpt.number_of_payments     AS vpt_number_of_payments,
-         vpt.discount_month         AS vpt_discount_month,
-         vpt.discount_days          AS vpt_discount_days,
-         vpt.discount_percent       AS vpt_discount_percent,
-         comp.id                    AS comp_id,
-         comp.uu_row_id             AS comp_uu_row_id,
-         comp.time_created          AS comp_time_created,
-         comp.time_updated          AS comp_time_updated,
-         comp.name                  AS comp_name,
-         comp.doing_business_as     AS comp_doing_business_as,
-         comp.client_code           AS comp_client_code,
-         comp.client_id             AS comp_client_id,
-         comp.dataset_code          AS comp_dataset_code,
-         comp.federal_id_number     AS comp_federal_id_number,
+               vpt.id                     AS vpt_id,
+               vpt.uu_row_id              AS vpt_uu_row_id,
+               vpt.time_created           AS vpt_time_created,
+               vpt.time_updated           AS vpt_time_updated,
+               vpt.company_id             AS vpt_company_id,
+               vpt.description            AS vpt_description,
+               vpt.number                 AS vpt_number,
+               vpt.number_of_payments     AS vpt_number_of_payments,
+               vpt.discount_month         AS vpt_discount_month,
+               vpt.discount_days          AS vpt_discount_days,
+               vpt.discount_percent       AS vpt_discount_percent,
+               comp.id                    AS comp_id,
+               comp.uu_row_id             AS comp_uu_row_id,
+               comp.time_created          AS comp_time_created,
+               comp.time_updated          AS comp_time_updated,
+               comp.name                  AS comp_name,
+               comp.doing_business_as     AS comp_doing_business_as,
+               comp.client_code           AS comp_client_code,
+               comp.client_id             AS comp_client_id,
+               comp.dataset_code          AS comp_dataset_code,
+               comp.federal_id_number     AS comp_federal_id_number,
+               comp.address_id            AS address_id,
+               comp.address_name          AS address_name,
+               comp.address_address1      AS address_address1,
+               comp.address_address2      AS address_address2,
+               comp.address_city          AS address_city,
+               comp.address_state         AS address_state,
+               comp.address_postal_code   AS address_postal_code,
+               comp.address_latitude      AS address_latitude,
+               comp.address_longitude     AS address_longitude,
+               comp.address_country       AS address_country,
+               comp.address_county        AS address_county,
+               comp.address_phone         AS address_phone,
+               comp.address_fax           AS address_fax,
                count(*) OVER () AS total_elements
             FROM vendor_payment_term vpt
                JOIN company comp ON vpt.company_id = comp.id
@@ -248,7 +281,7 @@ class VendorPaymentTermRepository @Inject constructor(
    private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
          id = rs.getLong("vpt_id"),
-         company = companyRepository.mapRow(rs, "comp_"),
+         company = companyRepository.mapRow(rs,  "comp_"),
          description = rs.getString("vpt_description"),
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
          discountDays = rs.getIntOrNull("vpt_discount_days"),

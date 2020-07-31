@@ -18,7 +18,7 @@ data class AddressEntity(
    val fax: String?
 ) : Identifiable {
 
-   constructor(address: AddressValueObject) :
+   constructor(address: AddressDTO) :
       this (
          id = address.id,
          name = address.name!!,

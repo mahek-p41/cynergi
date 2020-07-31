@@ -13,6 +13,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
@@ -33,12 +34,16 @@ import javax.inject.Singleton
 @Singleton
 class VendorRepository @Inject constructor(
    private val addressRepository: AddressRepository,
+   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate,
    private val vendorGroupRepository: VendorGroupRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
    fun baseSelectQuery() =
       """
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         )
          SELECT
             v.id                                  AS v_id,
             v.uu_row_id                           AS v_uu_row_id,
@@ -89,6 +94,19 @@ class VendorRepository @Inject constructor(
             comp.client_id                        AS comp_client_id,
             comp.dataset_code                     AS comp_dataset_code,
             comp.federal_id_number                AS comp_federal_id_number,
+            comp.address_id                       AS comp_address_id,
+            comp.address_name                     AS comp_address_name,
+            comp.address_address1                 AS comp_address_address1,
+            comp.address_address2                 AS comp_address_address2,
+            comp.address_city                     AS comp_address_city,
+            comp.address_state                    AS comp_address_state,
+            comp.address_postal_code              AS comp_address_postal_code,
+            comp.address_latitude                 AS comp_address_latitude,
+            comp.address_longitude                AS comp_address_longitude,
+            comp.address_country                  AS comp_address_country,
+            comp.address_county                   AS comp_address_county,
+            comp.address_phone                    AS comp_address_phone,
+            comp.address_fax                      AS comp_address_fax,
             onboard.id                            AS onboard_id,
             onboard.value                         AS onboard_value,
             onboard.description                   AS onboard_description,
