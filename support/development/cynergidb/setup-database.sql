@@ -21,21 +21,6 @@ DECLARE
    argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
    r RECORD;
    sqlToExec VARCHAR;
-   unionAll VARCHAR;
-BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW company_vw AS';
-   unionAll := '';
-
-   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
-      DROP VIEW company_vw CASCADE;
-   END IF;
-END $$;
-
-DO $$
-DECLARE
-   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
-   r RECORD;
-   sqlToExec VARCHAR;
    unionStr VARCHAR;
 BEGIN
    sqlToExec := 'CREATE OR REPLACE VIEW department_vw AS';
@@ -308,7 +293,9 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW operator_vw AS';
+   sqlToExec := 'CREATE OR REPLACE VIEW operator_vw AS
+                 SELECT *
+                 FROM (';
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'operator_vw') THEN
@@ -340,7 +327,81 @@ BEGIN
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY name, id DESC';
+   sqlToExec := sqlToExec || ' ) operator ORDER BY name, id DESC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW furncol_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'furncol_vw') THEN
+      DROP VIEW furncol_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            furncol.id                               AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            furncol.created_at AT TIME ZONE ''UTC''  AS time_created,
+            furncol.updated_at AT TIME ZONE ''UTC''  AS time_updated,
+            furncol.furn_col_code                   AS number,
+            furncol.furn_col_description             AS description
+         FROM ' || r.schema_name || '.level1_furn_cols furncol
+         WHERE furn_col_rec_type = ''1''
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW furnfab_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'furnfab_vw') THEN
+      DROP VIEW furncol_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            furnfab.id                               AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            furnfab.created_at AT TIME ZONE ''UTC''  AS time_created,
+            furnfab.updated_at AT TIME ZONE ''UTC''  AS time_updated,
+            furnfab.furn_fab_code                   AS number,
+            furnfab.furn_fab_description             AS description
+         FROM ' || r.schema_name || '.level1_furn_cols furnfab
+         WHERE furn_col_rec_type = ''2''
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
 
    EXECUTE sqlToExec;
 END $$;
@@ -460,6 +521,24 @@ CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
     file_maintenance_security INTEGER,
     bank_reconciliation_security INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.furncol_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    number INTEGER,
+    description VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'furncol_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.furnfab_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    number INTEGER,
+    description VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'furnfab_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;

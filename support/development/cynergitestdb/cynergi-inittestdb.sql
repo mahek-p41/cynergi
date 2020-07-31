@@ -318,3 +318,34 @@ COPY fastinfo_prod_import.operator_vw(
     file_maintenance_security,
     bank_reconciliation_security
 ) FROM '/tmp/fastinfo/test-operator.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.furncol_vw(
+    id                             BIGSERIAL                             NOT NULL PRIMARY KEY,
+    dataset                        VARCHAR(6)                            NOT NULL,
+    time_created                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    number                         INTEGER                               NOT NULL,
+    description                    VARCHAR                               NOT NULL
+);
+
+COPY fastinfo_prod_import.furncol_vw(
+    dataset,
+    number,
+    description
+) FROM '/tmp/fastinfo/test-furncol.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.furnfab_vw(
+    id                             BIGSERIAL                             NOT NULL PRIMARY KEY,
+    dataset                        VARCHAR(6)                            NOT NULL,
+    time_created                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    number                         INTEGER                               NOT NULL,
+    description                    VARCHAR                               NOT NULL
+);
+
+
+COPY fastinfo_prod_import.furnfab_vw(
+    dataset,
+    number,
+    description
+) FROM '/tmp/fastinfo/test-furnfab.csv' DELIMITER ',' CSV HEADER;
