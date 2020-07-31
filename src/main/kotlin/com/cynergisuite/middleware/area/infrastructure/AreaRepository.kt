@@ -49,7 +49,7 @@ class AreaRepository @Inject constructor(
             LEFT OUTER JOIN menu_type_domain menus ON areas.id = menus.area_type_id
             LEFT OUTER JOIN module_type_domain modules ON menus.id = modules.menu_type_id
             LEFT OUTER JOIN area areas_configs ON areas.id = areas_configs.area_type_id AND areas_configs.company_id = :comp_id
-            LEFT OUTER JOIN module module_configs ON modules.id = module_configs.module_type_id
+            LEFT OUTER JOIN module module_configs ON modules.id = module_configs.module_type_id AND module_configs.company_id = :comp_id
          ORDER BY areas.id, menus.id, modules.id
          """.trimIndent(),
          mapOf("comp_id" to company.myId())

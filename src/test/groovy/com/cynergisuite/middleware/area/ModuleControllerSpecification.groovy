@@ -50,17 +50,17 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
 
    void "create level for a non-existing module" () {
       given:
-      def module = moduleDataLoaderService.singleDTO(99, 9)
+      def module = moduleDataLoaderService.singleDTO(999, 9)
 
       when:
-      post( "/module/99", module)
+      post( "/module/999", module)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].message == '99 was unable to be found'
+      response[0].message == '999 was unable to be found'
       response[0].path == 'id'
    }
 
@@ -88,17 +88,17 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
 
    void "update a module level for non-existing module" () {
       given:
-      def module = moduleDataLoaderService.singleDTO(99, 9)
+      def module = moduleDataLoaderService.singleDTO(999, 9)
 
       when:
-      put( "/module/99", module)
+      put( "/module/999", module)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 2
-      response[0].message == '99 was unable to be found'
+      response[0].message == '999 was unable to be found'
       response[0].path == 'id'
    }
 

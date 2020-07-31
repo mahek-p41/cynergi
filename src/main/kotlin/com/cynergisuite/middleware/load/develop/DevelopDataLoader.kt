@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.load.develop
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.area.AreaDataLoaderService
+import com.cynergisuite.middleware.area.ModuleDataLoaderService
 import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
@@ -44,7 +45,8 @@ class DevelopDataLoader @Inject constructor(
    private val storeFactoryService: StoreFactoryService,
    private val accountDataLoaderService: AccountDataLoaderService,
    private val bankFactoryService: BankFactoryService,
-   private val areaDataLoaderService: AreaDataLoaderService
+   private val areaDataLoaderService: AreaDataLoaderService,
+   private val moduleDataLoaderService: ModuleDataLoaderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -165,6 +167,15 @@ class DevelopDataLoader @Inject constructor(
       areaDataLoaderService.enableArea(1, companies[0])
       areaDataLoaderService.enableArea(5, companies[0])
       areaDataLoaderService.enableArea(5, companies[1])
+
+      moduleDataLoaderService.configureLevel(40, 90, companies[0])
+      moduleDataLoaderService.configureLevel(41, 80, companies[0])
+      moduleDataLoaderService.configureLevel(43, 20, companies[0])
+      moduleDataLoaderService.configureLevel(44, 10, companies[0])
+      moduleDataLoaderService.configureLevel(40, 80, companies[1])
+      moduleDataLoaderService.configureLevel(41, 70, companies[1])
+      moduleDataLoaderService.configureLevel(43, 50, companies[1])
+      moduleDataLoaderService.configureLevel(44, 40, companies[1])
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())

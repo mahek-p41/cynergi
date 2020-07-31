@@ -23,12 +23,12 @@ class ModuleValidator @Inject constructor(
    fun validateCreate(company: Company, @Valid moduleDTO: ModuleDTO): ModuleType {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
-      val isConfigExist = moduleRepository.isConfigExists(moduleTypeId)
+      val configExists = moduleRepository.configExists(moduleTypeId, company)
       logger.trace("Validating ModuleTypeId {}", moduleTypeId)
 
       doValidation { errors ->
          moduleEntity ?: errors.add(ValidationError("id", NotFound(moduleTypeId)))
-         if (isConfigExist) errors.add(ValidationError("id", ConfigAlreadyExist("Config for module $moduleTypeId")))
+         if (configExists) errors.add(ValidationError("id", ConfigAlreadyExist("Config for module $moduleTypeId")))
       }
       return moduleEntity!!.copy(level = moduleDTO.level)
    }
@@ -37,12 +37,12 @@ class ModuleValidator @Inject constructor(
    fun validateUpdate(company: Company, @Valid moduleDTO: ModuleDTO): ModuleType {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
-      val isConfigExists = moduleRepository.isConfigExists(moduleTypeId)
+      val configExists = moduleRepository.configExists(moduleTypeId, company)
       logger.trace("Validating ModuleTypeId {}", moduleTypeId)
 
       doValidation { errors ->
          moduleEntity ?: errors.add(ValidationError("id", NotFound(moduleTypeId)))
-         if (!isConfigExists) errors.add(ValidationError("id", NotFound("Config for module $moduleTypeId")))
+         if (!configExists) errors.add(ValidationError("id", NotFound("Config for module $moduleTypeId")))
       }
       return moduleEntity!!.copy(level = moduleDTO.level)
    }
