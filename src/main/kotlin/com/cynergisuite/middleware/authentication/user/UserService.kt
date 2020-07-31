@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.authentication.user
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.infrastructure.AuthenticatedUserJwtClaimSetGenerator
 import com.cynergisuite.middleware.authentication.user.infrastructure.AuthenticationRepository
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.security.authentication.Authentication
@@ -28,4 +29,7 @@ class UserService(
 
    fun fetchAllPermissions(): Set<String> =
       authenticationRepository.findAllPermissions()
+
+   fun fetchSecurityLevels(user: User, company: Company): UserSecurityLevels? =
+      authenticationRepository.findUserSecurityLevels(user, company)
 }

@@ -55,9 +55,11 @@ class AuthenticatedController @Inject constructor(
             }
          }
 
+         val securityLevels = userService.fetchSecurityLevels(user, company)
+
          logger.info("User is authenticated {}", user)
 
-         HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber))
+         HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber, securityLevels))
       } else {
          logger.info("User was not authenticated")
 

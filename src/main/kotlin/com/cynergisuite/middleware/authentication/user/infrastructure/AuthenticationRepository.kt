@@ -1,8 +1,13 @@
 package com.cynergisuite.middleware.authentication.user.infrastructure
 
+import com.cynergisuite.extensions.findFirst
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.UserSecurityLevels
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -19,7 +24,9 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -233,6 +240,30 @@ class AuthenticationRepository @Inject constructor(
       """.trimIndent(), emptyMap())
    }
 
+   fun findUserSecurityLevels(user: User, company: Company): UserSecurityLevels? {
+      logger.debug("Get user security levels")
+
+      val params = mutableMapOf<String, Any?>("emp_number" to user.myEmployeeNumber(), "dataset_code" to company.myDataset())
+      val sql = """
+         SELECT
+            opr.account_payable_security        AS emp_account_payable_security,
+            opr.purchase_order_security         AS emp_purchase_order_security,
+            opr.general_ledger_security         AS emp_general_ledger_security,
+            opr.system_administration_security  AS emp_system_administration_security,
+            opr.file_maintenance_security       AS emp_file_maintenance_security,
+            opr.bank_reconciliation_security    AS emp_bank_reconciliation_security
+         FROM
+            fastinfo_prod_import.operator_vw opr
+         WHERE
+            opr.number = :emp_number AND opr.dataset = :dataset_code
+      """.trimIndent()
+
+      return jdbc.findFirstOrNull(sql, params, RowMapper { rs, _ ->
+            mapUserSecurityLevels(rs)
+         }
+      ) ?: UserSecurityLevels(user.isCynergiAdmin())
+   }
+
    private fun processPermissionValues(sql: String, params: Map<String, Any?>): Set<String> {
       logger.debug("Get permission {}\n{}", params, sql)
 
@@ -270,4 +301,14 @@ class AuthenticationRepository @Inject constructor(
          null
       }
    }
+
+   private fun mapUserSecurityLevels(rs: ResultSet, columnPrefix: String? = "emp_") : UserSecurityLevels =
+      UserSecurityLevels(
+         accountPayableLevel = rs.getIntOrNull("${columnPrefix}account_payable_security"),
+         purchaseOrderLevel = rs.getIntOrNull("${columnPrefix}purchase_order_security"),
+         generalLedgerLevel = rs.getIntOrNull("${columnPrefix}general_ledger_security"),
+         systemAdministrationLevel = rs.getIntOrNull("${columnPrefix}system_administration_security"),
+         fileMaintenanceLevel = rs.getIntOrNull("${columnPrefix}file_maintenance_security"),
+         bankReconciliationLevel = rs.getIntOrNull("${columnPrefix}bank_reconciliation_security")
+      )
 }
