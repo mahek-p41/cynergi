@@ -116,6 +116,8 @@ CREATE TABLE purchase_order_detail
     received_quantity                      INTEGER                                                                     NOT NULL,
     cost                                   NUMERIC(11, 3)                                                              NOT NULL,
     message                                TEXT,
+    color_id_sfk                           INTEGER, -- This is a softkey and will hold the value associated with furncol view.
+    fabric_id_sfk                          INTEGER, -- This is a softkey and will hold the value associated with furnfab view.
     cancelled_quantity                     INTEGER,
     cancelled_temp_quantity                INTEGER,
     ship_to_id_sfk                         INTEGER CHECK ( ship_to_id_sfk > 0 )                                        NOT NULL,
