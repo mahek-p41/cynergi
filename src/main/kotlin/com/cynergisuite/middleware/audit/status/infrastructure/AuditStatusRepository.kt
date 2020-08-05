@@ -43,7 +43,8 @@ class AuditStatusRepository @Inject constructor(
       val existingStatuses = mutableMapOf<Long, AuditStatus>()
       val whereClause = if (params.keys.first() == "id") "WHERE astd.id = :id" else "WHERE astd.value = UPPER(:value)"
 
-      jdbc.query("""
+      jdbc.query(
+         """
          WITH RECURSIVE transition(depth, id, value, description, color, localization_code, frm, nxt) AS (
             SELECT
                1 AS depth,
@@ -89,7 +90,7 @@ class AuditStatusRepository @Inject constructor(
             frm
          FROM transition
          ORDER BY depth, id, frm, nxt
-      """.trimIndent(),
+         """.trimIndent(),
          params
       ) { rs: ResultSet ->
          if (root == null) {
@@ -105,7 +106,7 @@ class AuditStatusRepository @Inject constructor(
             val fromId: Long = rs.getLong("frm")
             val from: AuditStatus = existingStatuses[fromId]!!
 
-            if ( existingStatuses.containsKey(audit.id) ) {
+            if (existingStatuses.containsKey(audit.id)) {
                audit = existingStatuses[audit.id]!!
             }
 
@@ -113,7 +114,6 @@ class AuditStatusRepository @Inject constructor(
             existingStatuses[audit.id] = audit
          }
       }
-
 
       return root
    }

@@ -9,7 +9,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "PrintCurrencyIndicator", title = "Print currency indicator", description = "Print currency indicator type")
-data class PrintCurrencyIndicatorTypeDTO (
+data class PrintCurrencyIndicatorTypeDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)

@@ -37,7 +37,7 @@ data class RegionDTO(
    @field:Schema(name = "regionalManager", description = "Regional manager id")
    var regionalManager: SimpleIdentifiableDTO? = null
 
-): Identifiable {
+) : Identifiable {
    override fun myId() = id
 
    constructor(entity: RegionEntity) :

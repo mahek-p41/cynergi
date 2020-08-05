@@ -59,10 +59,10 @@ class BankFactoryService @Inject constructor(
    }
 
    fun single(company: Company, store: Store, account: AccountEntity): BankEntity {
-      return stream(1, company, store, account).findFirst().orElseThrow { Exception("Unable to create Bank")}
+      return stream(1, company, store, account).findFirst().orElseThrow { Exception("Unable to create Bank") }
    }
 
    fun singleDTO(store: Store, account: AccountEntity): BankDTO {
-      return BankFactory.streamDTO(1,  store, account).findFirst().orElseThrow { Exception("Unable to create Bank")}
+      return BankFactory.streamDTO(1, store, account).findFirst().orElseThrow { Exception("Unable to create Bank") }
    }
 }

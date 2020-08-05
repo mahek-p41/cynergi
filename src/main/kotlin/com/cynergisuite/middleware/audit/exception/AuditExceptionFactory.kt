@@ -46,7 +46,7 @@ object AuditExceptionFactory {
          AuditExceptionEntity(
             scanArea = scanArea,
             barcode = lorem.characters(10).toUpperCase(),
-            productCode = if(random.nextBoolean()) lorem.characters(2, 3).toUpperCase() else null,
+            productCode = if (random.nextBoolean()) lorem.characters(2, 3).toUpperCase() else null,
             altId = if (random.nextBoolean()) lorem.characters(5, 10).toUpperCase() else null,
             serialNumber = if (random.nextBoolean()) lorem.characters(10, 15).toUpperCase() else null,
             inventoryBrand = lorem.characters(3),
@@ -90,6 +90,6 @@ class AuditExceptionFactoryService @Inject constructor(
    }
 
    fun generate(numberIn: Int, audit: AuditEntity, scannedBy: EmployeeEntity) {
-      return stream(numberIn = numberIn, audit = audit, scannedBy = scannedBy).forEach {  }
+      return stream(numberIn = numberIn, audit = audit, scannedBy = scannedBy).forEach { }
    }
 }

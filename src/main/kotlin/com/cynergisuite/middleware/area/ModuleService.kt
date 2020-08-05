@@ -20,5 +20,4 @@ class ModuleService @Inject constructor(
       val toUpdate = validator.validateUpdate(company, moduleDTO)
       return repository.updateConfig(toUpdate, company)
    }
-
 }

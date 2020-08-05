@@ -62,7 +62,9 @@ class BankRepository @Inject constructor(
    fun findOne(id: Long, company: Company): BankEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.id = :id AND comp.id = :comp_id"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
             mapRow(rs, company, "bank_")
          }
       )
@@ -74,7 +76,8 @@ class BankRepository @Inject constructor(
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<BankEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
-      val query = """
+      val query =
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE comp.id = :comp_id
@@ -115,7 +118,8 @@ class BankRepository @Inject constructor(
    fun insert(bank: BankEntity): BankEntity {
       logger.debug("Inserting bank {}", bank)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO bank(company_id, name, general_ledger_profit_center_sfk, general_ledger_account_id)
 	      VALUES (:company_id, :name, :general_ledger_profit_center_sfk, :general_ledger_account_id)
          RETURNING
@@ -137,7 +141,8 @@ class BankRepository @Inject constructor(
    fun update(bank: BankEntity): BankEntity {
       logger.debug("Updating bank {}", bank)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE bank
          SET
             company_id = :company_id,

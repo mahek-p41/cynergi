@@ -25,7 +25,7 @@ object VerificationReferenceTestDataLoader {
             hasHomePhone = bool.bool(),
             known = num.numberBetween(1, 20),
             leaveMessage = bool.bool(),
-            rating =  lorem.fixedString(3),
+            rating = lorem.fixedString(3),
             relationship = bool.bool(),
             reliable = bool.bool(),
             timeFrame = num.numberBetween(1, 20),

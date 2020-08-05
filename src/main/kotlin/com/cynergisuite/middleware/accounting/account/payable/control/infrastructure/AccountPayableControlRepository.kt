@@ -73,12 +73,15 @@ class AccountPayableControlRepository @Inject constructor(
    fun findOne(company: Company): AccountPayableControlEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE accountPayableControl.company_id = :comp_id"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
             val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.mapRow(rs, "printCurrencyIndType_")
             val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.mapRow(rs, "poNumReqIndType_")
 
             mapRow(
-               rs, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType,"accountPayableControl_")
+               rs, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType, "accountPayableControl_"
+            )
          }
       )
 
@@ -91,7 +94,8 @@ class AccountPayableControlRepository @Inject constructor(
    fun insert(entity: AccountPayableControlEntity, company: Company): AccountPayableControlEntity {
       logger.debug("Inserting account_payable_control {}", company)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO account_payable_control(
             company_id,
             pay_after_discount_date,
@@ -127,7 +131,8 @@ class AccountPayableControlRepository @Inject constructor(
          ),
          RowMapper { rs, _ ->
             mapRow(
-               rs, entity.printCurrencyIndicatorType, entity.purchaseOrderNumberRequiredIndicatorType)
+               rs, entity.printCurrencyIndicatorType, entity.purchaseOrderNumberRequiredIndicatorType
+            )
          }
       )
    }
@@ -136,7 +141,8 @@ class AccountPayableControlRepository @Inject constructor(
    fun update(entity: AccountPayableControlEntity, company: Company): AccountPayableControlEntity {
       logger.debug("Updating account_payable_control {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE account_payable_control
          SET
             company_id = :company_id,

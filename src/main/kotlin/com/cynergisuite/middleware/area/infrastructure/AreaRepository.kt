@@ -28,7 +28,8 @@ class AreaRepository @Inject constructor(
       var currentArea: AreaType? = null
       var currentMenu: MenuType? = null
 
-      jdbc.query("""
+      jdbc.query(
+         """
          SELECT
             areas.id AS area_id,
             areas.value AS area_value,
@@ -50,7 +51,9 @@ class AreaRepository @Inject constructor(
             LEFT OUTER JOIN area areas_configs ON areas.id = areas_configs.area_type_id AND areas_configs.company_id = :comp_id
             LEFT OUTER JOIN module module_configs ON modules.id = module_configs.module_type_id
          ORDER BY areas.id, menus.id, modules.id
-      """.trimIndent(), mapOf("comp_id" to company.myId())) { rs, _ ->
+         """.trimIndent(),
+         mapOf("comp_id" to company.myId())
+      ) { rs, _ ->
          do {
             val tempArea = if (currentArea?.id != rs.getLong("area_id")) {
                val localArea = mapArea(rs)
@@ -83,7 +86,8 @@ class AreaRepository @Inject constructor(
    fun enable(company: Company, areaTypeId: Long) {
       logger.debug("Enable area {} for company {}", areaTypeId, company.myDataset())
 
-      jdbc.update("""
+      jdbc.update(
+         """
          INSERT INTO area(company_id, area_type_id)
          VALUES (:company_id, :area_type_id)
          """,
@@ -98,7 +102,8 @@ class AreaRepository @Inject constructor(
    fun disable(company: Company, areaTypeId: Long) {
       logger.debug("Disable area {} for company {}", areaTypeId, company.myDataset())
 
-      jdbc.update("""
+      jdbc.update(
+         """
          DELETE FROM area
          WHERE company_id = :company_id AND area_type_id = :area_type_id
          """,
@@ -110,7 +115,8 @@ class AreaRepository @Inject constructor(
    fun insert(company: Company, areaType: AreaType): AreaType {
       logger.debug("Inserting area {}", areaType)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO area(company_id, area_type_id)
          VALUES (:company_id, :area_type_id)
          RETURNING
@@ -125,10 +131,12 @@ class AreaRepository @Inject constructor(
    }
 
    fun exists(areaTypeId: Long): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)
          """,
-         mapOf("area_type_id" to areaTypeId), Boolean::class.java)!!
+         mapOf("area_type_id" to areaTypeId), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Area exists {}")
 

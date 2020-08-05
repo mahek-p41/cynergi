@@ -46,9 +46,9 @@ data class CompanyValueObject(
    companion object Factory {
       fun create(company: Company): CompanyValueObject? {
          return when (company) {
-             is CompanyValueObject -> CompanyValueObject(company)
-             is CompanyEntity -> CompanyValueObject(company)
-             else -> null
+            is CompanyValueObject -> CompanyValueObject(company)
+            is CompanyEntity -> CompanyValueObject(company)
+            else -> null
          }
       }
    }
@@ -111,6 +111,4 @@ data class CompanyValueObject(
          compareToBuilder.toComparison()
       }
    }
-
 }
-

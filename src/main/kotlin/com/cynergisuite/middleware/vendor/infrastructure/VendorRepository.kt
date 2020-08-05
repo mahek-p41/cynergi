@@ -37,7 +37,8 @@ class VendorRepository @Inject constructor(
    private val vendorGroupRepository: VendorGroupRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
-   fun baseSelectQuery() = """
+   fun baseSelectQuery() =
+      """
          SELECT
             v.id                                  AS v_id,
             v.uu_row_id                           AS v_uu_row_id,
@@ -166,12 +167,13 @@ class VendorRepository @Inject constructor(
    }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorEntity, PageRequest> {
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
       ${baseSelectQuery()}
       WHERE comp.id = :comp_id
       ORDER BY v.${page.snakeSortBy()} ${page.sortDirection()}
       LIMIT :limit OFFSET :offset
-      """.trimIndent(),
+         """.trimIndent(),
          mapOf(
             "comp_id" to company.myId(),
             "limit" to page.size(),
@@ -202,7 +204,8 @@ class VendorRepository @Inject constructor(
          EMPTY
       }
 
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          ${baseSelectQuery()}
          $where
          $sortBy
@@ -238,7 +241,8 @@ class VendorRepository @Inject constructor(
 
       val address = addressRepository.insert(entity.address)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO vendor(
             company_id,
             name,
@@ -360,7 +364,8 @@ class VendorRepository @Inject constructor(
 
       val address = addressRepository.upsert(entity.address)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE vendor
          SET
             company_id = :companyId,
@@ -489,7 +494,7 @@ class VendorRepository @Inject constructor(
          id = rs.getLong("id"),
          company = company,
          name = rs.getString("name"),
-         address = address, //This needs to have the newly inserted address passed in
+         address = address, // This needs to have the newly inserted address passed in
          ourAccountNumber = rs.getInt("our_account_number"),
          payTo = if (payToId != null) SimpleIdentifiableEntity(payToId) else null,
          freightOnboardType = freightOnboardType,

@@ -39,13 +39,16 @@ class StoreController @Inject constructor(
    @AccessControl("store-fetchOne", StoreAccessControlProvider::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id")
+      id: Long,
       authentication: Authentication
    ): StoreDTO {
       logger.info("Fetching Store by id {}", id)
@@ -62,13 +65,16 @@ class StoreController @Inject constructor(
    @AccessControl("store-fetchAll", StoreAccessControlProvider::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["StoreEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Stores", operationId = "store-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The the result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<StoreDTO> {
       logger.info("Fetching all stores {}", pageRequest)

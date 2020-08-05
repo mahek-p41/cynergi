@@ -30,7 +30,8 @@ class NotificationRepository @Inject constructor(
    private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
 
    @Language("PostgreSQL")
-   private val baseFindQuery = """
+   private val baseFindQuery =
+      """
       SELECT
          n.id AS n_id,
          n.uu_row_id AS n_uu_row_id,
@@ -57,7 +58,7 @@ class NotificationRepository @Inject constructor(
            ON n.notification_type_id = ntd.id
          LEFT OUTER JOIN notification_recipient nr
            ON n.id = nr.notification_id
-   """.trimIndent()
+      """.trimIndent()
 
    fun findOne(id: Long): Notification? {
       val found: Notification? = jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs ->
@@ -82,7 +83,8 @@ class NotificationRepository @Inject constructor(
    }
 
    fun findAllByCompany(companyId: String, type: String): List<Notification> {
-      return jdbc.queryFullList("""
+      return jdbc.queryFullList(
+         """
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
@@ -92,12 +94,14 @@ class NotificationRepository @Inject constructor(
          mapOf(
             "company_id" to companyId,
             "notification_type" to type
-         ), this::mapNotifications
+         ),
+         this::mapNotifications
       )
    }
 
    fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> {
-      return jdbc.queryFullList<Notification>("""
+      return jdbc.queryFullList<Notification>(
+         """
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND ntd.value = :notification_type
@@ -116,7 +120,8 @@ class NotificationRepository @Inject constructor(
       notificationTypeDomainRepository.findAll()
 
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
-      jdbc.queryFullList("""
+      jdbc.queryFullList(
+         """
          $baseFindQuery
          WHERE n.company_id = :company_id
                AND n.sending_employee = :sending_employee
@@ -132,7 +137,8 @@ class NotificationRepository @Inject constructor(
    fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
-      val inserted = jdbc.insertReturning("""
+      val inserted = jdbc.insertReturning(
+         """
          INSERT INTO notification(company_id, start_date, expiration_date, message, sending_employee, notification_type_id)
          VALUES (:company_id, :start_date, :expiration_date, :message, :sending_employee, :notification_type_id)
          RETURNING
@@ -163,7 +169,8 @@ class NotificationRepository @Inject constructor(
 
       val existing = findOne(id = entity.id!!)!!
 
-      val updated = jdbc.updateReturning("""
+      val updated = jdbc.updateReturning(
+         """
          UPDATE notification
          SET
             company_id = :company_id,
@@ -225,7 +232,7 @@ class NotificationRepository @Inject constructor(
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
 
-   private fun mapNotifications(rs: ResultSet, notifications: MutableList<Notification>): Unit {
+   private fun mapNotifications(rs: ResultSet, notifications: MutableList<Notification>) {
       var currentId: Long = -1
       var currentParentEntity: Notification? = null
 

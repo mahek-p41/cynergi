@@ -29,12 +29,12 @@ data class Verification(
          company = company
       ) {
 
-      this.auto = copyAutoDtoToEntity(dto = dto, parent = this)
-      this.employment = copyEmploymentDtoToEntity(dto = dto, parent = this)
-      this.landlord = copyLandlordDtoToEntity(dto = dto, parent = this)
+         this.auto = copyAutoDtoToEntity(dto = dto, parent = this)
+         this.employment = copyEmploymentDtoToEntity(dto = dto, parent = this)
+         this.landlord = copyLandlordDtoToEntity(dto = dto, parent = this)
 
-      dto.references.asSequence().map { VerificationReference(it, this) }.forEach { this.references.add(it) }
-   }
+         dto.references.asSequence().map { VerificationReference(it, this) }.forEach { this.references.add(it) }
+      }
 
    override fun myId(): Long? = id
 

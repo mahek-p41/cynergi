@@ -29,9 +29,11 @@ class UpdatePurchaseOrderCostTypeController @Inject constructor(
 
    @Get
    @Operation(tags = ["UpdatePurchaseOrderCostTypeEndpoints"], summary = "Fetch a list of update purchase order cost types", description = "Fetch a listing of update purchase order cost types", operationId = "updatePurchaseOrderCostType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = UpdatePurchaseOrderCostTypeValueObject::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = UpdatePurchaseOrderCostTypeValueObject::class))])
+      ]
+   )
    fun fetchAll(httpRequest: HttpRequest<*>): List<UpdatePurchaseOrderCostTypeValueObject> {
       val locale = httpRequest.findLocaleWithDefault()
 

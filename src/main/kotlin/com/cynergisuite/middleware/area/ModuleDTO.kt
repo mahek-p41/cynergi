@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Module", title = "ModuleDTO", description = "A data transfer object containing a module information")
-data class ModuleDTO (
+data class ModuleDTO(
 
    @field:NotNull
    @field:Positive

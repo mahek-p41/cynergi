@@ -29,9 +29,11 @@ class AccountStatusTypeController @Inject constructor(
 
    @Get
    @Operation(tags = ["AccountStatusTypeEndpoints"], summary = "Fetch a list of account statuses", description = "Fetch a listing of account statuses", operationId = "accountStatusType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountStatusTypeValueObject::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountStatusTypeValueObject::class))])
+      ]
+   )
    fun fetchAll(
       httpRequest: HttpRequest<*>
    ): List<AccountStatusTypeValueObject> {

@@ -29,9 +29,11 @@ class FreightCalcMethodTypeController @Inject constructor(
 
    @Get
    @Operation(tags = ["FreightCalcMethodTypeEndpoints"], summary = "Fetch a list of Vendor freight calc method types", description = "Fetch a listing of Vendor freight method types", operationId = "freightMethodType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = FreightCalcMethodTypeDTO::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = FreightCalcMethodTypeDTO::class))])
+      ]
+   )
    fun fetchAll(
       httpRequest: HttpRequest<*>
    ): List<FreightCalcMethodTypeDTO> {

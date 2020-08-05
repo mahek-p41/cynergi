@@ -61,7 +61,8 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
    fun update(entity: VendorPaymentTermScheduleEntity, vendorPaymentTerm: VendorPaymentTermEntity): VendorPaymentTermScheduleEntity {
       logger.debug("Updating VendorPaymentTermSchedule {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE vendor_payment_term_schedule
          SET
             payment_term_id = :payment_term_id,
@@ -89,7 +90,8 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
    fun deleteNotIn(vpt: VendorPaymentTermEntity, scheduleRecords: List<VendorPaymentTermScheduleEntity>): List<VendorPaymentTermScheduleEntity> {
       val result = mutableListOf<VendorPaymentTermScheduleEntity>()
 
-      jdbc.query("""
+      jdbc.query(
+         """
          DELETE FROM vendor_payment_term_schedule
          WHERE payment_term_id = :payment_term_id
                AND id NOT IN(:ids)

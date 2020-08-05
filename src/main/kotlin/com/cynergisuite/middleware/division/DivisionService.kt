@@ -15,7 +15,6 @@ class DivisionService @Inject constructor(
    private val divisionValidator: DivisionValidator
 ) {
 
-
    fun fetchById(id: Long, company: Company): DivisionDTO? =
       divisionRepository.findOne(id, company)?.let { DivisionDTO(it) }
 

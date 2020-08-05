@@ -117,7 +117,7 @@ class AuditScheduleService @Inject constructor(
    override fun shouldProcess(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): Boolean = true // always process as we have possible notifications to send out for past due audits
 
    @Throws(ScheduleProcessingException::class)
-   override fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek) : AuditScheduleResult {
+   override fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): AuditScheduleResult {
       val company = schedule.company
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()

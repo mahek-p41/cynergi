@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
-data class Notification (
+data class Notification(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
@@ -39,10 +39,10 @@ data class Notification (
          notificationDomainType = notificationDomainType
       ) {
 
-      dto.recipients.asSequence()
-         .map { NotificationRecipient(it, this) }
-         .forEach { this.recipients.add(it) }
-   }
+         dto.recipients.asSequence()
+            .map { NotificationRecipient(it, this) }
+            .forEach { this.recipients.add(it) }
+      }
 
    override fun myId(): Long? = id
 }

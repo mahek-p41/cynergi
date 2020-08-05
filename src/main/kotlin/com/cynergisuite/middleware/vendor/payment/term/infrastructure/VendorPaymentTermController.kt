@@ -44,12 +44,14 @@ class VendorPaymentTermController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a single VendorPaymentTerm", description = "Fetch a single VendorPaymentTerm by it's system generated primary key", operationId = "vendorPaymentTerm-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested VendorPaymentTerm was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested VendorPaymentTerm was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       @QueryValue("id") id: Long,
       authentication: Authentication,
@@ -68,21 +70,24 @@ class VendorPaymentTermController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a listing of VendorPaymentTerms", description = "Fetch a paginated listing of VendorPaymentTerms including associated schedule records", operationId = "vendorPaymentTerm-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Vendor Payment Term was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Vendor Payment Term was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<VendorPaymentTermDTO> {
       logger.info("Fetching all vendor payment terms {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page =  vendorPaymentTermService.fetchAll(user.myCompany(), pageRequest)
+      val page = vendorPaymentTermService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -95,13 +100,15 @@ class VendorPaymentTermController @Inject constructor(
    @AccessControl("vendorPaymentTerm-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Create a single VendorPaymentTerm", description = "Create a single VendorPaymentTerm. The logged in Employee is used for the scannedBy property", operationId = "vendorPaymentTerm-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If the request body is invalid"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The vendor payment term was unable to be found or the scanArea was unknown"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The vendor payment term was unable to be found or the scanArea was unknown"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun create(
       @Body vo: VendorPaymentTermDTO,
       authentication: Authentication,
@@ -122,15 +129,18 @@ class VendorPaymentTermController @Inject constructor(
    @AccessControl("vendorPaymentTerm-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Update a single VendorPaymentTerm", description = "Update a single VendorPaymentTerm where the update is the addition of a note", operationId = "vendorPaymentTerm-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If request body is invalid"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested VendorPaymentTerm was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorPaymentTermDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested VendorPaymentTerm was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
-      @Parameter(name = "id", `in` = PATH, description = "The id for the vendor payment term being updated") @QueryValue("id") id: Long,
+      @Parameter(name = "id", `in` = PATH, description = "The id for the vendor payment term being updated") @QueryValue("id")
+      id: Long,
       @Body vo: VendorPaymentTermDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>

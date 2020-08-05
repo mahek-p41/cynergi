@@ -8,7 +8,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountType", title = "Account type", description = "Account type")
-data class AccountTypeValueObject (
+data class AccountTypeValueObject(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)

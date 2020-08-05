@@ -44,11 +44,13 @@ class DivisionController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["DivisionEndpoints"], summary = "Fetch a single Division", description = "Fetch a single Division by ID", operationId = "division-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Division was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Division was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       @QueryValue("id") id: Long,
       authentication: Authentication,
@@ -66,12 +68,15 @@ class DivisionController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["DivisionEndpoints"], summary = "Fetch a list of divisions", description = "Fetch a list of divisions", operationId = "division-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ]
+   )
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<DivisionDTO> {
@@ -91,11 +96,13 @@ class DivisionController @Inject constructor(
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["DivisionEndpoints"], summary = "Create a single division", description = "Create a single division.", operationId = "division-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Division", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Division", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun save(
       @Body divisionDTO: DivisionDTO,
       authentication: Authentication,
@@ -111,16 +118,18 @@ class DivisionController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}" ,processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["DivisionEndpoints"], summary = "Update a single division", description = "Update a single division.", operationId = "division-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Division", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Division was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Division", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested Division was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @QueryValue("id") id: Long,
       @Body divisionDTO: DivisionDTO,
@@ -140,14 +149,17 @@ class DivisionController @Inject constructor(
    @Delete(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["DivisionEndpoints"], summary = "Delete a single Division", description = "Delete a single Division by it's system generated primary key", operationId = "division-delete")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Division was able to be deleted", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Division was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Division was able to be deleted", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = DivisionDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Division was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun delete(
-      @Parameter(description = "Primary Key to delete the Division with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to delete the Division with", `in` = ParameterIn.PATH) @QueryValue("id")
+      id: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): DivisionDTO {

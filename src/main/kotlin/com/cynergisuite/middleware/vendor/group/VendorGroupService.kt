@@ -16,7 +16,7 @@ class VendorGroupService @Inject constructor(
 ) {
 
    fun fetchById(id: Long, company: Company): VendorGroupDTO? =
-      vendorGroupRepository.findOne(id, company)?.let{ VendorGroupDTO(entity = it) }
+      vendorGroupRepository.findOne(id, company)?.let { VendorGroupDTO(entity = it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorGroupDTO> {
       val found = vendorGroupRepository.findAll(pageRequest, company)

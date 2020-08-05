@@ -42,7 +42,7 @@ class UpdatePurchaseOrderCostTypeRepository @Inject constructor(
       val query = "SELECT * FROM update_purchase_order_cost_type_domain WHERE UPPER(value) = :value"
       logger.trace("Searching for UpdatePurchaseOrderCostTypeDomain {}: \nQuery {}", params, query)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs)} )
+      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
 
       logger.trace("Searching for UpdatePurchaseOrderCostTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
@@ -59,5 +59,4 @@ class UpdatePurchaseOrderCostTypeRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
-
 }

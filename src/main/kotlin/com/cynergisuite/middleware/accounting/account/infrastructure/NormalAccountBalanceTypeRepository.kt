@@ -46,7 +46,6 @@ class NormalAccountBalanceTypeRepository @Inject constructor(
 
    fun findAll(): List<NormalAccountBalanceType> =
       jdbc.query("SELECT * FROM normal_account_balance_type_domain ORDER BY id", simpleNormalAccountBalanceCodeTypeRowMapper)
-
 }
 
 private class NormalAccountBalanceCodeTypeRowMapper(

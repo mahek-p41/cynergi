@@ -88,8 +88,8 @@ class AuditDetailFactoryService @Inject constructor(
    }
 
    fun single(audit: AuditEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
-         return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
-            .map { auditDetailRepository.insert(it) }
-            .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
+      return AuditDetailFactory.stream(audit = audit, scannedByIn = scannedByIn)
+         .map { auditDetailRepository.insert(it) }
+         .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
    }
 }

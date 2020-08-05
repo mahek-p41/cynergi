@@ -43,7 +43,8 @@ class VerificationLandlordRepository(
    fun insert(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Inserting verification_landlord {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO verification_landlord(address, alt_phone, lease_type, leave_message, length, name, paid_rent, phone, reliable, rent, verification_id)
          VALUES(:address, :alt_phone, :lease_type, :leave_message, :length, :name, :paid_rent, :phone, :reliable, :rent, :verification_id)
          RETURNING
@@ -70,7 +71,8 @@ class VerificationLandlordRepository(
    fun update(entity: VerificationLandlord): VerificationLandlord {
       logger.trace("Updating verification_landlord {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE verification_landlord
          SET
             address = :address,

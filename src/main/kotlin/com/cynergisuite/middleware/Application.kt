@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
 
 @OpenAPIDefinition(
-   info = Info (
+   info = Info(
       title = "Cynergi Middleware",
       description = "Cynergi Middleware API"
    ),

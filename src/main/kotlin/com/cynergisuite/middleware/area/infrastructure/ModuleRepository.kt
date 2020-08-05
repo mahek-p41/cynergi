@@ -46,7 +46,8 @@ class ModuleRepository @Inject constructor(
    fun insertConfig(moduleType: ModuleType, company: Company): ModuleType {
       logger.debug("Inserting module level {}", moduleType)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          INSERT INTO module(company_id, module_type_id, level)
          VALUES (:company_id, :module_type_id, :level)
          """,
@@ -64,7 +65,8 @@ class ModuleRepository @Inject constructor(
    fun updateConfig(moduleType: ModuleType, company: Company): ModuleType {
       logger.debug("Updating module level {}", moduleType)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          UPDATE module
          SET
             level = :level
@@ -81,9 +83,11 @@ class ModuleRepository @Inject constructor(
    }
 
    fun findOne(moduleTypeId: Long, company: Company): ModuleType? {
-      val found = jdbc.findFirstOrNull("${selectBaseQuery()} WHERE module.id = :type_id",
+      val found = jdbc.findFirstOrNull(
+         "${selectBaseQuery()} WHERE module.id = :type_id",
          mapOf("type_id" to moduleTypeId),
-         RowMapper { rs, _ -> mapSimpleModule(rs, company, "module_") })
+         RowMapper { rs, _ -> mapSimpleModule(rs, company, "module_") }
+      )
 
       logger.trace("Searching for ModuleTypeDomain: {} resulted in {}", moduleTypeId, found)
 
@@ -91,10 +95,12 @@ class ModuleRepository @Inject constructor(
    }
 
    fun isConfigExists(moduleTypeId: Long): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT EXISTS (SELECT * FROM module WHERE module_type_id = :module_type_id)
          """,
-         mapOf("module_type_id" to moduleTypeId), Boolean::class.java)!!
+         mapOf("module_type_id" to moduleTypeId), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Module config exists {}")
 
@@ -109,5 +115,4 @@ class ModuleRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
-
 }

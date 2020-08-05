@@ -12,7 +12,7 @@ import javax.inject.Singleton
 @Singleton
 class AuditAccessControlProvider @Inject constructor(
    private val auditPermissionRepository: AuditPermissionRepository
-): AccessControlProvider {
+) : AccessControlProvider {
 
    override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       val auditPermission = auditPermissionRepository.permissionDepartmentByAsset(asset, user.myCompany())

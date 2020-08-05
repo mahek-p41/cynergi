@@ -10,7 +10,7 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Account", title = "A data transfer object containing account information", description = "An data transfer object containing a account information.")
-data class AccountDTO (
+data class AccountDTO(
 
    @field:Positive
    var id: Long? = null,
@@ -42,7 +42,7 @@ data class AccountDTO (
    @field:Schema(name = "corporate account indicator", required = true, description = "Corporate account indicator")
    var corporateAccountIndicator: Boolean? = null
 
-   ) : Identifiable {
+) : Identifiable {
    constructor(accountEntity: AccountEntity) :
       this(
          id = accountEntity.id,
@@ -54,10 +54,12 @@ data class AccountDTO (
          corporateAccountIndicator = accountEntity.corporateAccountIndicator
       )
 
-   constructor(accountEntity: AccountEntity,
-               type: AccountTypeValueObject,
-               normalAccountBalance: NormalAccountBalanceTypeValueObject,
-               status: AccountStatusTypeValueObject) :
+   constructor(
+      accountEntity: AccountEntity,
+      type: AccountTypeValueObject,
+      normalAccountBalance: NormalAccountBalanceTypeValueObject,
+      status: AccountStatusTypeValueObject
+   ) :
       this(
          id = accountEntity.id,
          name = accountEntity.name,

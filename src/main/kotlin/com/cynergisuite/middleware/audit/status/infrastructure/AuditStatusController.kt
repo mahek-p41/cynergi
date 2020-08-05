@@ -33,9 +33,11 @@ class AuditStatusController @Inject constructor(
 
    @Get(processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditStatusEndpoints"], summary = "Fetch a list of valid audit statuses", description = "Fetch a listing of supported audit statuses", operationId = "auditStatus-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "Successfully loaded a listing of possible Audit Statuses", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusValueObject>::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "Successfully loaded a listing of possible Audit Statuses", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusValueObject>::class))])
+      ]
+   )
    fun fetchAll(httpRequest: HttpRequest<*>): List<AuditStatusValueObject> {
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -51,7 +53,8 @@ class AuditStatusController @Inject constructor(
    @Get("/{value}", processes = [APPLICATION_JSON])
    @Operation(tags = ["AuditStatusEndpoints"], summary = "Fetch a list of valid audit statuses", description = "Fetch a listing of supported audit statuses", operationId = "auditStatus-fetchNext")
    fun fetchNext(
-      @Parameter(description = "Value of the parent status that is used to load the children from", `in` = PATH) @QueryValue("value") value: String,
+      @Parameter(description = "Value of the parent status that is used to load the children from", `in` = PATH) @QueryValue("value")
+      value: String,
       httpRequest: HttpRequest<*>
    ): List<AuditStatusValueObject> {
       val locale = httpRequest.findLocaleWithDefault()

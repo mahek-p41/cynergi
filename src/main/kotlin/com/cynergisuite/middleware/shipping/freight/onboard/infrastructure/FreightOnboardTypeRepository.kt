@@ -46,7 +46,6 @@ class FreightOnboardTypeRepository @Inject constructor(
 
    fun findAll(): List<FreightOnboardType> =
       jdbc.query("SELECT * FROM freight_on_board_type_domain ORDER BY id", simpleFreightOnboardTypeRowMapper)
-
 }
 
 private class FreightOnboardTypeRowMapper(

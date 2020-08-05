@@ -35,13 +35,16 @@ class EmployeeController @Inject constructor(
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["EmployeeEndpoints"], summary = "Fetch a listing of Employees", description = "Fetch a paginated listing of Employee's associated with a User's company", operationId = "employee-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The the result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: EmployeePageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: EmployeePageRequest,
       authentication: Authentication
    ): Page<EmployeeValueObject> {
       logger.info("Fetching all employees {}", pageRequest)

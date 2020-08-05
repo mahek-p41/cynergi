@@ -33,7 +33,7 @@ class InventoryPageRequest(
 
 ) : PageRequestBase<InventoryPageRequest>(page, size, sortBy, sortDirection) {
 
-   constructor(pageRequest: InventoryPageRequest, storeNumber: Int):
+   constructor(pageRequest: InventoryPageRequest, storeNumber: Int) :
       this(
          page = pageRequest.page(),
          size = pageRequest.size(),

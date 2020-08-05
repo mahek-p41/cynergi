@@ -32,7 +32,8 @@ class AuditPermissionRepository @Inject constructor(
    fun findById(id: Long, company: Company): AuditPermissionEntity? {
       logger.debug("Searching for AuditPermission with id {}/{}", id, company)
 
-      val found = jdbc.findFirstOrNull("""
+      val found = jdbc.findFirstOrNull(
+         """
          SELECT
             ap.id                   AS ap_id,
             ap.uu_row_id            AS ap_uu_row_id,
@@ -76,7 +77,8 @@ class AuditPermissionRepository @Inject constructor(
    fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<AuditPermissionEntity, PageRequest> {
       logger.debug("Finding all Audit Permissions using {} and dataset: {}", pageRequest, company)
 
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          SELECT
             ap.id                   AS ap_id,
             ap.uu_row_id            AS ap_uu_row_id,
@@ -122,7 +124,8 @@ class AuditPermissionRepository @Inject constructor(
    fun findAllByType(pageRequest: PageRequest, company: Company, typeId: Long): RepositoryPage<AuditPermissionEntity, PageRequest> {
       logger.debug("Finding all Audit Permissions of a typeId {} using {} and company: {}", typeId, pageRequest, company)
 
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          SELECT
             ap.id                   AS ap_id,
             ap.uu_row_id            AS ap_uu_row_id,
@@ -178,7 +181,8 @@ class AuditPermissionRepository @Inject constructor(
       logger.debug("Searching for AuditPermission with asset {}/{}", asset, company)
       val departments = Sets.mutable.empty<Department>()
 
-      jdbc.query("""
+      jdbc.query(
+         """
          SELECT
             dept.id                 AS dept_id,
             dept.code               AS dept_code,
@@ -192,7 +196,7 @@ class AuditPermissionRepository @Inject constructor(
                AND comp.id = :comp_id""",
          mapOf("asset" to asset, "comp_id" to company.myId())
       ) { rs ->
-          val dept = departmentRepository.mapRow(rs, company, "dept_")
+         val dept = departmentRepository.mapRow(rs, company, "dept_")
 
          departments.add(dept)
       }
@@ -218,7 +222,8 @@ class AuditPermissionRepository @Inject constructor(
    fun findAllPermissionTypes(pageRequest: PageRequest): RepositoryPage<AuditPermissionType, PageRequest> {
       logger.debug("Finding audit permissions using page {}", pageRequest)
 
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          SELECT
             id,
             value,
@@ -252,7 +257,8 @@ class AuditPermissionRepository @Inject constructor(
    fun insert(auditPermission: AuditPermissionEntity): AuditPermissionEntity {
       logger.debug("Inserting AuditPermission {}", auditPermission)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO audit_permission(department, type_id, company_id)
          VALUES (:department, :type_id, :company_id)
          RETURNING
@@ -276,7 +282,8 @@ class AuditPermissionRepository @Inject constructor(
    fun update(auditPermission: AuditPermissionEntity, company: Company): AuditPermissionEntity {
       logger.debug("Updating AuditPermission {}", auditPermission)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE audit_permission
          SET
             department = :department,
@@ -308,7 +315,8 @@ class AuditPermissionRepository @Inject constructor(
       val existingPermission = findById(id, company)
 
       return if (existingPermission != null) {
-         jdbc.deleteReturning("""
+         jdbc.deleteReturning(
+            """
             DELETE FROM audit_permission
             WHERE id = :id
             RETURNING

@@ -63,7 +63,7 @@ class AuditDetailValidator @Inject constructor (
    }
 
    private fun validateScanArea(scanAreaValue: String, errors: MutableSet<ValidationError>) {
-      if ( !auditScanAreaRepository.exists(scanAreaValue) ) {
+      if (!auditScanAreaRepository.exists(scanAreaValue)) {
          errors.add(
             ValidationError("scanArea", AuditScanAreaNotFound(scanAreaValue))
          )

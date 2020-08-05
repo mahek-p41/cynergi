@@ -69,12 +69,15 @@ class DivisionRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): DivisionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
-      val query = """${selectBaseQuery()} WHERE div.id = :id
+      val query =
+         """${selectBaseQuery()} WHERE div.id = :id
                                                 AND div.company_id = :comp_id
                                                 AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
       logger.trace("Searching for Division params {}: \nQuery {}", params, query)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
             mapRow(rs, company, "div_")
          }
       )
@@ -86,7 +89,8 @@ class DivisionRepository @Inject constructor(
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<DivisionEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
-      val query = """
+      val query =
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE div.company_id = :comp_id AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
@@ -142,7 +146,8 @@ class DivisionRepository @Inject constructor(
    fun update(id: Long, entity: DivisionEntity): DivisionEntity {
       logger.debug("Updating division {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE division
          SET
             company_id = :company_id,
@@ -160,7 +165,8 @@ class DivisionRepository @Inject constructor(
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number
          ),
-         RowMapper { rs, _ -> mapRow(rs, entity)
+         RowMapper { rs, _ ->
+            mapRow(rs, entity)
          }
       )
    }
@@ -176,7 +182,8 @@ class DivisionRepository @Inject constructor(
          deleteRegionToStore(division)
          deleteRegions(division)
 
-         jdbc.deleteReturning("""
+         jdbc.deleteReturning(
+            """
             DELETE FROM division
             WHERE id = :id
             RETURNING
@@ -193,7 +200,8 @@ class DivisionRepository @Inject constructor(
    fun deleteRegionToStore(division: DivisionEntity) {
       logger.debug("Deleting Region To Store belong to Division {}", division)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          DELETE FROM region_to_store
          WHERE region_id IN (
             SELECT id
@@ -209,7 +217,8 @@ class DivisionRepository @Inject constructor(
    fun deleteRegions(division: DivisionEntity) {
       logger.debug("Deleting Regions belong to Division {}", division)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          DELETE FROM region
          WHERE division_id = :division_id
          """,
@@ -220,7 +229,7 @@ class DivisionRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         company = CompanyEntity.create(company)!!,   // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
+         company = CompanyEntity.create(company)!!, // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),

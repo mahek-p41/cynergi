@@ -110,6 +110,5 @@ data class PurchaseOrderControlDTO(
          approvalRequiredFlagType = approvalRequiredFlagType
       )
 
-
    override fun myId(): Long? = id
 }

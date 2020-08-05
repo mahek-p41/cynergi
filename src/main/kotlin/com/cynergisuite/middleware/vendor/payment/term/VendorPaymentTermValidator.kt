@@ -26,8 +26,8 @@ class VendorPaymentTermValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermValidator::class.java)
 
-   //TODO Eventually it will be possible to delete a Vendor Payment Term. At that time, a VPT cannot
-   //TODO be deleted if it is the paymentTerms on a Vendor record.
+   // TODO Eventually it will be possible to delete a Vendor Payment Term. At that time, a VPT cannot
+   // TODO be deleted if it is the paymentTerms on a Vendor record.
 
    @Throws(ValidationException::class)
    fun validateCreate(vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
@@ -55,7 +55,7 @@ class VendorPaymentTermValidator @Inject constructor(
       } else if (vo.discountDays == null && vo.discountMonth == null && vo.discountPercent != null) {
          errors.add(ValidationError("discountPercent", NotUpdatable(vo.discountPercent)))
       } else if ((vo.discountDays != null || vo.discountMonth != null) && (vo.discountPercent!! > ONE)) {
-            errors.add(ValidationError("discountPercent", MustBeInRangeOf("(0, 1]")))
+         errors.add(ValidationError("discountPercent", MustBeInRangeOf("(0, 1]")))
       }
 
       val entity = VendorPaymentTermEntity(vo = vo, company = company)

@@ -46,11 +46,11 @@ class VerificationLandlordDataLoaderService @Inject constructor(
    private val verificationDataLoaderService: VerificationDataLoaderService
 ) {
 
-   fun stream(numberIn: Int = 1): Stream<VerificationLandlord>  {
+   fun stream(numberIn: Int = 1): Stream<VerificationLandlord> {
       return stream(numberIn, null)
    }
 
-   fun stream(numberIn: Int = 1, verificationIn: Verification? = null): Stream<VerificationLandlord>  {
+   fun stream(numberIn: Int = 1, verificationIn: Verification? = null): Stream<VerificationLandlord> {
       val verification = verificationIn ?: verificationDataLoaderService.stream(1).findFirst().orElseThrow { Exception("Unable to create Verification") }
 
       return VerificationLandlordTestDataLoader.stream(numberIn, verification)

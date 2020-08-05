@@ -5,8 +5,8 @@ import java.time.DayOfWeek
 interface DailySchedule {
 
    @Throws(ScheduleProcessingException::class)
-   fun shouldProcess(schedule: ScheduleEntity, dayOfWeek: DayOfWeek) : Boolean
+   fun shouldProcess(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): Boolean
 
    @Throws(ScheduleProcessingException::class)
-   fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek) : ScheduleResult
+   fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): ScheduleResult
 }

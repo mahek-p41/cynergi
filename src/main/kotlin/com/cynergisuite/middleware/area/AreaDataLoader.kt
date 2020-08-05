@@ -41,7 +41,6 @@ object AreaDataLoader {
 
    @JvmStatic
    fun areaTypes(): List<AreaType> = areaTypes
-
 }
 
 @Singleton

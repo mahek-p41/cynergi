@@ -8,7 +8,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "FreightCalcMethodType", title = "Freight Method Type", description = "Freight Method Type")
-data class FreightCalcMethodTypeDTO (
+data class FreightCalcMethodTypeDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 15)
@@ -16,7 +16,7 @@ data class FreightCalcMethodTypeDTO (
    var value: String? = null,
 
    @field:Size(min = 3, max = 50)
-   @field:Schema(name="description", description = "Freight Method Description")
+   @field:Schema(name = "description", description = "Freight Method Description")
    var description: String? = null
 
 ) {

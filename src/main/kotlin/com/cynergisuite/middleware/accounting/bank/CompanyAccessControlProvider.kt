@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class CompanyAccessControlProvider @Inject constructor(
    private val companyRepository: CompanyRepository
-): AccessControlProvider {
+) : AccessControlProvider {
 
    override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       return when {

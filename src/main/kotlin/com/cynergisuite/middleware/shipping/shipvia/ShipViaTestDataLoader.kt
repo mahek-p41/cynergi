@@ -44,6 +44,6 @@ class ShipViaTestDataLoaderService @Inject constructor(
    }
 
    fun single(company: Company): ShipViaEntity {
-      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create ShipVia")}
+      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create ShipVia") }
    }
 }

@@ -10,7 +10,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Address", title = "An entity containing address information", description = "An entity containing address information.")
-data class AddressValueObject (
+data class AddressValueObject(
 
    @field:Positive
    var id: Long? = null,
@@ -67,7 +67,7 @@ data class AddressValueObject (
    @field:Schema(name = "county", description = "Fax of a address.")
    var fax: String? = null
 
-   ) : Identifiable {
+) : Identifiable {
 
    constructor(address: AddressEntity) : this(
       id = address.id,

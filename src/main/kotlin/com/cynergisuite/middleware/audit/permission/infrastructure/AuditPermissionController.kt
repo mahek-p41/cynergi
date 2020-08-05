@@ -48,14 +48,17 @@ class AuditPermissionController @Inject constructor(
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a single Audit Permission by it's system generated primary key", operationId = "auditPermission-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit Permission was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit Permission was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id")
+      id: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
@@ -71,14 +74,17 @@ class AuditPermissionController @Inject constructor(
    @Get("{?pageRequest*}", processes = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a listing of Audit Permissions", operationId = "auditPermission-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): Page<AuditPermissionValueObject> {
@@ -99,15 +105,19 @@ class AuditPermissionController @Inject constructor(
    @Get(uri = "/type/{typeId:[0-9]+}{?pageRequest*}", processes = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions of a certain Type", description = "Fetch a listing of Audit Permissions of a certain Type", operationId = "auditPermission-fetchAllByType")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllByType(
-      @Parameter(description = "Type Id to filter the audits", `in` = PATH) @QueryValue("typeId") typeId: Long,
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(description = "Type Id to filter the audits", `in` = PATH) @QueryValue("typeId")
+      typeId: Long,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): Page<AuditPermissionValueObject> {
@@ -128,14 +138,17 @@ class AuditPermissionController @Inject constructor(
    @Get(uri = "/type{?pageRequest*}", processes = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a listing of all Audit Permissions Types", description = "Fetch a listing of Audit Permissions", operationId = "auditPermissionType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If there are Audit Permissions that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Audit was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllPermissionTypes(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       httpRequest: HttpRequest<*>
    ): Page<AuditPermissionTypeValueObject> {
       logger.debug("Fetching all audit permissions {}", pageRequest)
@@ -154,12 +167,14 @@ class AuditPermissionController @Inject constructor(
    @Throws(ValidationException::class)
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Create a single audit permission", description = "Create a single audit permission associated with a department and permission type.", operationId = "auditPermission-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Audit Permission", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun create(
       @Body permission: AuditPermissionCreateDataTransferObject,
       httpRequest: HttpRequest<*>,
@@ -176,14 +191,17 @@ class AuditPermissionController @Inject constructor(
    @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Delete a single Audit Permission", description = "Delete a single Audit Permission by it's system generated primary key", operationId = "auditPermission-delete")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested Audit Permission was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Audit Permission was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditPermissionValueObject::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit Permission was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun delete(
-      @Parameter(description = "Primary Key to delete the Audit Permission with", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to delete the Audit Permission with", `in` = PATH) @QueryValue("id")
+      id: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {

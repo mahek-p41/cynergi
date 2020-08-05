@@ -17,7 +17,8 @@ class AuditPermissionTypeRepository(
    fun findOne(id: Long): AuditPermissionType? {
       logger.debug("Searching for AuditPermissionType by ID {}", id)
 
-      return jdbc.findFirstOrNull("""
+      return jdbc.findFirstOrNull(
+         """
          SELECT
             id,
             value,

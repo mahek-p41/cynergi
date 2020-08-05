@@ -241,7 +241,6 @@ object MenuTypeDataLoader {
 
    @JvmStatic
    fun menuTypes(): List<MenuType> = menuTypes
-
 }
 
 @Singleton

@@ -23,7 +23,8 @@ class ShipViaRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
-   private fun baseSelectQuery() = """
+   private fun baseSelectQuery() =
+      """
       SELECT
          shipVia.id             AS id,
          shipVia.uu_row_id      AS uu_row_id,
@@ -55,7 +56,8 @@ class ShipViaRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<ShipViaEntity, PageRequest> {
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          ${baseSelectQuery()}
          WHERE comp.id = :comp_id
          ORDER BY shipVia.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
@@ -70,7 +72,7 @@ class ShipViaRepository @Inject constructor(
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs))
-         } while(rs.next())
+         } while (rs.next())
       }
    }
 
@@ -123,7 +125,8 @@ class ShipViaRepository @Inject constructor(
    fun update(entity: ShipViaEntity): ShipViaEntity {
       logger.debug("Updating shipVia {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE ship_via
          SET
             description = :description
@@ -164,4 +167,3 @@ class ShipViaRepository @Inject constructor(
       )
    }
 }
-

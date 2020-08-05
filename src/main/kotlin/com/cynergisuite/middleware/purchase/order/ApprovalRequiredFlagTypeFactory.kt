@@ -42,13 +42,11 @@ object ApprovalRequiredFlagTypeFactory {
    fun predefined(): List<ApprovalRequiredFlagType> {
       return approvalRequiredFlagType
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class ApprovalRequiredFlagTypeFactoryService(
-) {
+class ApprovalRequiredFlagTypeFactoryService() {
    fun random() = ApprovalRequiredFlagTypeFactory.random()
    fun predefined() = ApprovalRequiredFlagTypeFactory.predefined()
 }

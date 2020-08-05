@@ -7,7 +7,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle.SIMPLE_STYLE
 import java.time.OffsetDateTime
 
-data class NotificationRecipient (
+data class NotificationRecipient(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
@@ -43,7 +43,7 @@ data class NotificationRecipient (
          .toHashCode()
 
    override fun equals(other: Any?): Boolean {
-      return when(other) {
+      return when (other) {
          this === other -> true
          is NotificationRecipient ->
             EqualsBuilder()
@@ -56,11 +56,11 @@ data class NotificationRecipient (
       }
    }
 
-  override fun toString(): String =
-     ToStringBuilder(this, SIMPLE_STYLE)
-        .append(id)
-        .append(description)
-        .append(recipient)
-        .append(notification.myId())
-        .build()
+   override fun toString(): String =
+      ToStringBuilder(this, SIMPLE_STYLE)
+         .append(id)
+         .append(description)
+         .append(recipient)
+         .append(notification.myId())
+         .build()
 }

@@ -24,18 +24,20 @@ import javax.inject.Inject
 class PrintCurrencyIndicatorTypeController @Inject constructor(
    private val printCurrencyIndicatorTypeService: PrintCurrencyIndicatorTypeService,
    private val localizationService: LocalizationService
-){
+) {
    private val logger: Logger = LoggerFactory.getLogger(PrintCurrencyIndicatorTypeController::class.java)
 
    @Get
    @Operation(tags = ["PrintCurrencyIndicatorTypeEndpoints"], summary = "Fetch a list of print currency indicator types", description = "Fetch a listing of print currency indicator types", operationId = "printCurrencyIndicatorType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = PrintCurrencyIndicatorTypeDTO::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = PrintCurrencyIndicatorTypeDTO::class))])
+      ]
+   )
    fun fetchAll(httpRequest: HttpRequest<*>): List<PrintCurrencyIndicatorTypeDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
-      val types = printCurrencyIndicatorTypeService.fetchAll().map{
+      val types = printCurrencyIndicatorTypeService.fetchAll().map {
          PrintCurrencyIndicatorTypeDTO(it, it.localizeMyDescription(locale, localizationService))
       }
 

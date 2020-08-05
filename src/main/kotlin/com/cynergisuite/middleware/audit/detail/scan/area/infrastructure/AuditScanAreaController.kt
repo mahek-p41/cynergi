@@ -19,7 +19,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-@Secured(SecurityRule.IS_AUTHENTICATED) // require access to this controller to at the very least be authenticated
+@Secured(SecurityRule.IS_AUTHENTICATED)
+// require access to this controller to at the very least be authenticated
 @Controller("/api/audit/detail/scan-area")
 class AuditScanAreaController @Inject constructor(
    private val auditScanAreaService: AuditScanAreaService,
@@ -29,9 +30,11 @@ class AuditScanAreaController @Inject constructor(
 
    @Get
    @Operation(tags = ["AuditScanAreaEndpoints"], summary = "Fetch a list of valid audit detail scan areas", description = "Fetch a listing of supported audit detail scan areas", operationId = "auditDetailScanArea-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AuditScanAreaValueObject::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AuditScanAreaValueObject::class))])
+      ]
+   )
    fun fetchAll(
       httpRequest: HttpRequest<*>
    ): List<AuditScanAreaValueObject> {

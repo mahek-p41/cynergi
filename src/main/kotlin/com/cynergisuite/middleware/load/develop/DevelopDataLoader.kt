@@ -128,7 +128,7 @@ class DevelopDataLoader @Inject constructor(
       auditExceptionFactoryService.stream(26, openStore3Audit, corrtoStore3StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore3StoreManager).forEach {}
       }
-      val auditException =  auditExceptionFactoryService.single(openStore3Audit, corrtoStore3StoreManager, true)
+      val auditException = auditExceptionFactoryService.single(openStore3Audit, corrtoStore3StoreManager, true)
       auditExceptionNoteFactoryService.stream(Random.nextInt(2), auditException, corrtoStore3StoreManager).forEach { }
 
       // setup store one canceled audit

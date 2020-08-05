@@ -18,7 +18,8 @@ class ScheduleArgumentRepository @Inject constructor(
 
    @Transactional
    fun insert(parent: ScheduleEntity, entity: ScheduleArgumentEntity): ScheduleArgumentEntity {
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO schedule_arg(value, description, schedule_id)
          VALUES (:value, :description, :schedule_id)
          RETURNING
@@ -37,7 +38,8 @@ class ScheduleArgumentRepository @Inject constructor(
 
    @Transactional
    fun update(entity: ScheduleArgumentEntity): ScheduleArgumentEntity {
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE schedule_arg
          SET value = :value,
              description = :description
@@ -64,7 +66,8 @@ class ScheduleArgumentRepository @Inject constructor(
    fun deleteNotIn(schedule: ScheduleEntity, arguments: Set<ScheduleArgumentEntity>): Set<ScheduleArgumentEntity> {
       val result = mutableSetOf<ScheduleArgumentEntity>()
 
-      jdbc.query("""
+      jdbc.query(
+         """
          DELETE FROM schedule_arg
          WHERE schedule_id = :schedule_id
                AND id NOT IN(:ids)

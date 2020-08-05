@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Employee", title = "Employee/User",  description = "Describes an employee and user within the system")
+@Schema(name = "Employee", title = "Employee/User", description = "Describes an employee and user within the system")
 data class EmployeeValueObject(
 
    @field:JsonIgnore

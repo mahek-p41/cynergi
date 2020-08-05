@@ -24,7 +24,8 @@ class VendorGroupRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupRepository::class.java)
-   private fun baseSelectQuery() = """
+   private fun baseSelectQuery() =
+      """
       SELECT
          vgrp.id                     AS vgrp_id,
          vgrp.uu_row_id              AS vgrp_uu_row_id,
@@ -74,7 +75,8 @@ class VendorGroupRepository @Inject constructor(
    }
 
    fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<VendorGroupEntity, PageRequest> {
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          ${baseSelectQuery()}
          WHERE comp.id = :comp_id
          ORDER BY vgrp.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
@@ -89,7 +91,7 @@ class VendorGroupRepository @Inject constructor(
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs))
-         } while(rs.next())
+         } while (rs.next())
       }
    }
 
@@ -121,7 +123,8 @@ class VendorGroupRepository @Inject constructor(
    fun update(entity: VendorGroupEntity): VendorGroupEntity {
       logger.debug("Updating VendorPaymentTerm {}", entity)
 
-      val updated = jdbc.updateReturning("""
+      val updated = jdbc.updateReturning(
+         """
          UPDATE vendor_group
          SET
             company_id = :companyId,

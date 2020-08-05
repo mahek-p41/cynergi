@@ -43,11 +43,13 @@ class BankController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["BankEndpoints"], summary = "Fetch a single Bank", description = "Fetch a single Bank by ID", operationId = "bank-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Bank was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Bank was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       @QueryValue("id") id: Long,
       authentication: Authentication,
@@ -65,12 +67,15 @@ class BankController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Fetch a list of banks", description = "Fetch a listing of banks", operationId = "bank-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ]
+   )
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<BankDTO> {
       val user = userService.findUser(authentication)
@@ -88,11 +93,13 @@ class BankController @Inject constructor(
    @Post(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Bank", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Bank", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun save(
       @Body bankDTO: BankDTO,
       authentication: Authentication
@@ -107,15 +114,17 @@ class BankController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id}" ,processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id}", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Bank", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Bank was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Bank", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested Bank was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @QueryValue("id") id: Long,
       @Body bankDTO: BankDTO,

@@ -29,9 +29,11 @@ class NormalAccountBalanceTypeController @Inject constructor(
 
    @Get
    @Operation(tags = ["NormalAccountBalanceTypeEndpoints"], summary = "Fetch a list of account statuses", description = "Fetch a listing of normal account balances", operationId = "normalAccountBalanceType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = NormalAccountBalanceTypeValueObject::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = NormalAccountBalanceTypeValueObject::class))])
+      ]
+   )
    fun fetchAll(
       httpRequest: HttpRequest<*>
    ): List<NormalAccountBalanceTypeValueObject> {

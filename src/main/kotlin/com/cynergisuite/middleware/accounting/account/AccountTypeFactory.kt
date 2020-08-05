@@ -48,13 +48,11 @@ object AccountTypeFactory {
    fun predefined(): List<AccountType> {
       return accountType
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class AccountTypeFactoryService(
-) {
+class AccountTypeFactoryService() {
    fun random() = AccountTypeFactory.random()
    fun predefined() = AccountTypeFactory.predefined()
 }

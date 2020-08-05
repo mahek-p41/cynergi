@@ -29,9 +29,11 @@ class PurchaseOrderTypeController @Inject constructor(
 
    @Get
    @Operation(tags = ["PurchaseOrderTypeEndpoints"], summary = "Fetch a list of purchase order types", description = "Fetch a listing of purchase order types", operationId = "purchaseOrderType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderTypeValueObject::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderTypeValueObject::class))])
+      ]
+   )
    fun fetchAll(httpRequest: HttpRequest<*>): List<PurchaseOrderTypeValueObject> {
       val locale = httpRequest.findLocaleWithDefault()
 

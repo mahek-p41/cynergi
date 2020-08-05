@@ -26,11 +26,10 @@ import javax.inject.Singleton
 class RSAOAEPEncryptionConfiguration @Inject constructor(
    resourceResolver: ResourceResolver,
    @Value("\${cynergi.security.jwt.pem.path}") pemPath: String
-): RSAEncryptionConfiguration {
+) : RSAEncryptionConfiguration {
    private companion object {
       val logger: Logger = LoggerFactory.getLogger(RSAOAEPEncryptionConfiguration::class.java)
    }
-
    private val jweAlgorithm = JWEAlgorithm.RSA_OAEP_256
    private val encryptionMethod = EncryptionMethod.A128GCM
    private val rsaPrivateKey: RSAPrivateKey
@@ -61,7 +60,7 @@ class RSAOAEPEncryptionConfiguration @Inject constructor(
          rsaPublicKey = keyPair.public as RSAPublicKey
 
          pemParser.close()
-      } catch(e: Throwable) {
+      } catch (e: Throwable) {
          logger.error("Error occurred trying to initialize RSA encryption provider", e)
          throw e
       }
@@ -72,4 +71,3 @@ class RSAOAEPEncryptionConfiguration @Inject constructor(
    override fun getEncryptionMethod(): EncryptionMethod = encryptionMethod
    override fun getJweAlgorithm(): JWEAlgorithm = jweAlgorithm
 }
-

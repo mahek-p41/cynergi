@@ -7,6 +7,6 @@ import com.cynergisuite.middleware.schedule.ScheduleResult
 data class AuditScheduleResult(
    val audits: List<AuditValueObject>,
    val notifications: List<NotificationValueObject>
-   ) : ScheduleResult {
+) : ScheduleResult {
    override fun scheduleName(): String = "AuditSchedule"
 }

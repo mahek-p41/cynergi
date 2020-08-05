@@ -42,14 +42,17 @@ class InventoryController(
    @Throws(AccessException::class)
    @Get(uri = "/all{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "403", description = "If authentication fails"),
-      ApiResponse(responseCode = "204", description = "The the result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "403", description = "If authentication fails"),
+         ApiResponse(responseCode = "204", description = "The the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: InventoryPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<InventoryDTO> {
@@ -73,14 +76,17 @@ class InventoryController(
    @Throws(AccessException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "403", description = "If authentication fails"),
-      ApiResponse(responseCode = "204", description = "The the result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "403", description = "If authentication fails"),
+         ApiResponse(responseCode = "204", description = "The the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAllInventoryApp(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") pageRequest: InventoryPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<InventoryDTO> {
@@ -90,14 +96,17 @@ class InventoryController(
    @Throws(AccessException::class, NotFoundException::class)
    @Get(uri = "/{lookupKey}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookupKey", description = "Fetch an Inventory item by lookupKey", operationId = "inventory-fetchByLookupKey")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
-      ApiResponse(responseCode = "403", description = "If authentication fails"),
-      ApiResponse(responseCode = "404", description = "If the barcode was unable to be located"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
+         ApiResponse(responseCode = "403", description = "If authentication fails"),
+         ApiResponse(responseCode = "404", description = "If the barcode was unable to be located"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchByBarcode(
-      @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey") lookupKey: String,
+      @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey")
+      lookupKey: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): InventoryDTO {

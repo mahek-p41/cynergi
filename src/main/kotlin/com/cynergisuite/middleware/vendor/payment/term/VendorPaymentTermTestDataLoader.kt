@@ -38,7 +38,7 @@ object VendorPaymentTermTestDataLoader {
    }
 
    @JvmStatic
-   fun singleWithVendorPaymentTermSchedule(company: Company, vendorPaymentTermSchedules: MutableList<VendorPaymentTermScheduleEntity>): VendorPaymentTermEntity{
+   fun singleWithVendorPaymentTermSchedule(company: Company, vendorPaymentTermSchedules: MutableList<VendorPaymentTermScheduleEntity>): VendorPaymentTermEntity {
       val lorem = Faker().lorem()
 
       return VendorPaymentTermEntity(
@@ -76,7 +76,7 @@ class VendorPaymentTermTestDataLoaderService @Inject constructor(
    }
 
    fun single(company: Company): VendorPaymentTermEntity =
-      stream(1, company).findFirst().orElseThrow { Exception("Unable to create VendorPaymentTerm")}
+      stream(1, company).findFirst().orElseThrow { Exception("Unable to create VendorPaymentTerm") }
 
    fun singleWithSingle90DaysPayment(company: Company): VendorPaymentTermEntity =
       vendorPaymentTermRepository.insert(VendorPaymentTermTestDataLoader.singleWithSingle90DaysPayment(company))

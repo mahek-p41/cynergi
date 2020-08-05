@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.authentication.user
 
-import com.cynergisuite.extensions.getIntOrNull
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(name = "UserSecurityLevels", description = "Defines the security levels a user has for the various modules")

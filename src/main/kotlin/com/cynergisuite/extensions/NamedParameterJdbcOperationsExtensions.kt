@@ -32,12 +32,12 @@ fun <ENTITY> NamedParameterJdbcOperations.findFirst(query: String, params: Map<S
    return mineListForFirstElement(query, resultList, params)!!
 }
 
-fun <ENTITY: Identifiable> NamedParameterJdbcOperations.queryFullList(sql: String, params: Map<String, *>, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): List<ENTITY> {
-   return this.query(sql, params, SimpleResultSetExtractor<ENTITY>(mapper))!!
+fun <ENTITY : Identifiable> NamedParameterJdbcOperations.queryFullList(sql: String, params: Map<String, *>, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): List<ENTITY> {
+   return this.query(sql, params, SimpleResultSetExtractor(mapper))!!
 }
 
-fun <ENTITY: Identifiable, REQUESTED: PageRequest> NamedParameterJdbcOperations.queryPaged(sql: String, params: Map<String, *>, pageRequest: REQUESTED, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY, REQUESTED> {
-   return this.query(sql, params, PagedResultSetExtractor<ENTITY, REQUESTED>(pageRequest, mapper))!!
+fun <ENTITY : Identifiable, REQUESTED : PageRequest> NamedParameterJdbcOperations.queryPaged(sql: String, params: Map<String, *>, pageRequest: REQUESTED, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY, REQUESTED> {
+   return this.query(sql, params, PagedResultSetExtractor(pageRequest, mapper))!!
 }
 
 fun <ENTITY> NamedParameterJdbcOperations.insertReturning(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {

@@ -28,7 +28,8 @@ class VendorPaymentTermRepository @Inject constructor(
    private val vendorPaymentTermScheduleRepository: VendorPaymentTermScheduleRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermRepository::class.java)
-   private fun findOneQuery() = """
+   private fun findOneQuery() =
+      """
       SELECT
          vpt.id                     AS vpt_id,
          vpt.uu_row_id              AS vpt_uu_row_id,
@@ -77,7 +78,7 @@ class VendorPaymentTermRepository @Inject constructor(
 
          do {
             mapRowVendorPaymentTermSchedule(rs)?.also { vendorPaymentTerm.scheduleRecords.add(it) }
-         } while(rs.next())
+         } while (rs.next())
 
          vendorPaymentTerm
       }
@@ -90,7 +91,8 @@ class VendorPaymentTermRepository @Inject constructor(
    fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorPaymentTermEntity, PageRequest> {
       val comp_id = company.myId()
       val params = mutableMapOf<String, Any?>("comp_id" to comp_id, "limit" to page.size(), "offset" to page.offset())
-      val sql = """
+      val sql =
+         """
          WITH paged AS (
             SELECT
          vpt.id                     AS vpt_id,
@@ -187,8 +189,8 @@ class VendorPaymentTermRepository @Inject constructor(
          RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
       )
 
-      //The below will loop through each schedule record to first insert it into vendor_payment_term_schedule,
-      //and then add each to the mutable list on VendorPaymentTermEntity.
+      // The below will loop through each schedule record to first insert it into vendor_payment_term_schedule,
+      // and then add each to the mutable list on VendorPaymentTermEntity.
       entity.scheduleRecords
          .map { vendorPaymentTermScheduleRepository.upsert(it, inserted) }
          .forEach { inserted.scheduleRecords.add(it) }
@@ -206,7 +208,8 @@ class VendorPaymentTermRepository @Inject constructor(
 
       vendorPaymentTermScheduleRepository.deleteNotIn(existing!!, entity.scheduleRecords)
 
-      val updated = jdbc.updateReturning("""
+      val updated = jdbc.updateReturning(
+         """
          UPDATE vendor_payment_term
          SET
             company_id = :companyId,
@@ -231,8 +234,8 @@ class VendorPaymentTermRepository @Inject constructor(
          RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
       )
 
-      //The below will loop through each schedule record to first update or delete it in vendor_payment_term_schedule,
-      //and then add each to the mutable list on VendorPaymentTermEntity.
+      // The below will loop through each schedule record to first update or delete it in vendor_payment_term_schedule,
+      // and then add each to the mutable list on VendorPaymentTermEntity.
       entity.scheduleRecords
          .map { vendorPaymentTermScheduleRepository.upsert(it, updated) }
          .forEach { updated.scheduleRecords.add(it) }

@@ -43,9 +43,12 @@ class AddressRepository @Inject constructor(
    fun findOne(id: Long): AddressEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()} WHERE address.id = :id"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-         mapAddress(rs, "address_")
-      })
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
+            mapAddress(rs, "address_")
+         }
+      )
 
       logger.trace("Searching for AuditDetail: {} resulted in {}", id, found)
 
@@ -64,7 +67,8 @@ class AddressRepository @Inject constructor(
    fun insert(address: AddressEntity): AddressEntity {
       logger.debug("Inserting address {}", address)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO address(name, address1, address2, city, state, postal_code, latitude, longitude, country, county, phone, fax)
 	      VALUES (:name, :address1, :address2, :city, :state, :postal_code, :latitude, :longitude, :country, :county, :phone, :fax)
          RETURNING
@@ -94,7 +98,8 @@ class AddressRepository @Inject constructor(
    fun update(address: AddressEntity): AddressEntity {
       logger.debug("Updating address {}", address)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE address
          SET
             name=:name,

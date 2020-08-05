@@ -91,7 +91,9 @@ class AuditDetailRepository @Inject constructor(
    fun findOne(id: Long, company: Company): AuditDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE auditDetail.id = :id AND comp.id = :comp_id"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
             val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
 
@@ -106,7 +108,8 @@ class AuditDetailRepository @Inject constructor(
 
    fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to company.myId())
-      val query = """
+      val query =
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE comp.id = :comp_id
@@ -144,7 +147,8 @@ class AuditDetailRepository @Inject constructor(
    fun insert(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Inserting audit_detail {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO audit_detail(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, audit_id)
          VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :audit_id)
          RETURNING
@@ -171,7 +175,8 @@ class AuditDetailRepository @Inject constructor(
    fun update(entity: AuditDetailEntity): AuditDetailEntity {
       logger.debug("Updating audit_detail {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE audit_detail
          SET
             scan_area_id = :scan_area_id,

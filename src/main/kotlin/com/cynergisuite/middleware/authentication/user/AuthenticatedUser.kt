@@ -15,7 +15,7 @@ data class AuthenticatedUser(
    val alternativeStoreIndicator: String,
    val alternativeArea: Long,
    val cynergiSystemAdmin: Boolean
-): User, UserDetails(number.toString(), mutableListOf()) {
+) : User, UserDetails(number.toString(), mutableListOf()) {
 
    constructor(employee: AuthenticatedEmployee) :
       this(

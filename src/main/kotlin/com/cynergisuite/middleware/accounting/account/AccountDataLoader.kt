@@ -21,11 +21,11 @@ object AccountDataLoader {
       return IntStream.range(0, number).mapToObj {
          AccountEntity(
             company = company,
-            name = name ?: lorem.sentence(5,3),
+            name = name ?: lorem.sentence(5, 3),
             type = AccountTypeFactory.random(),
             normalAccountBalance = NormalAccountBalanceFactory.random(),
             status = AccountStatusFactory.random(),
-            form1099Field = Random.nextInt(1,20),
+            form1099Field = Random.nextInt(1, 20),
             corporateAccountIndicator = Random.nextBoolean()
          )
       }
@@ -39,7 +39,7 @@ object AccountDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          AccountDTO(
-            name = lorem.sentence(5,3),
+            name = lorem.sentence(5, 3),
             type = AccountTypeValueObject(AccountTypeFactory.random()),
             normalAccountBalance = NormalAccountBalanceTypeValueObject(NormalAccountBalanceFactory.random()),
             status = AccountStatusTypeValueObject(AccountStatusFactory.random()),
@@ -63,7 +63,7 @@ class AccountDataLoaderService @Inject constructor(
    }
 
    fun single(company: Company): AccountEntity {
-      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create Account")}
+      return stream(1, company).findFirst().orElseThrow { Exception("Unable to create Account") }
    }
 
    fun single(company: Company, name: String? = null): AccountEntity {
@@ -73,6 +73,6 @@ class AccountDataLoaderService @Inject constructor(
    }
 
    fun singleValueObject(company: Company): AccountDTO {
-      return AccountDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create Account")}
+      return AccountDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create Account") }
    }
 }

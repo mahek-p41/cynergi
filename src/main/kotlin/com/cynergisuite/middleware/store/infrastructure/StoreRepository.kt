@@ -67,7 +67,8 @@ class StoreRepository @Inject constructor(
     * but won't get the store of region belong to another company
     * which have the same store number
     **/
-   private val subQuery = """
+   private val subQuery =
+      """
       (r2s.region_id IS null
          OR r2s.region_id NOT IN (
                SELECT region.id
@@ -78,7 +79,8 @@ class StoreRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = """
+      val query =
+         """
          ${selectBaseQuery()}
          WHERE store.id = :id
                AND comp.id = :comp_id
@@ -96,7 +98,8 @@ class StoreRepository @Inject constructor(
 
    fun findOne(number: Int, company: Company): StoreEntity? {
       val params = mutableMapOf("number" to number, "comp_id" to company.myId())
-      val query = """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
+      val query =
+         """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
                                                 AND $subQuery
       """.trimMargin()
 
@@ -116,7 +119,7 @@ class StoreRepository @Inject constructor(
       val elements = mutableListOf<StoreEntity>()
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
 
-      when(user.myAlternativeStoreIndicator()) {
+      when (user.myAlternativeStoreIndicator()) {
          "N" -> {
             pagedQuery.append(" AND store.number = :store_number ")
             params["store_number"] = user.myLocation().myNumber()
@@ -134,7 +137,8 @@ class StoreRepository @Inject constructor(
          }
       }
 
-      val query = """
+      val query =
+         """
          WITH paged AS (
             $pagedQuery
          )
@@ -164,7 +168,8 @@ class StoreRepository @Inject constructor(
    }
 
    override fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
@@ -173,7 +178,9 @@ class StoreRepository @Inject constructor(
 			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
          WHERE store.id = :store_id
                AND $subQuery
-      """.trimIndent(), mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
+      """.trimIndent(),
+         mapOf("store_id" to id, "comp_id" to company.myId()), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", id, exists)
 
@@ -185,7 +192,8 @@ class StoreRepository @Inject constructor(
     * which have the same store number
     **/
    fun exists(number: Int, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
@@ -195,7 +203,9 @@ class StoreRepository @Inject constructor(
          WHERE store.number = :store_number
                   AND comp.id = :comp_id
                   AND $subQuery
-      """.trimIndent(), mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java)!!
+      """.trimIndent(),
+         mapOf("store_number" to number, "comp_id" to company.myId()), Boolean::class.java
+      )!!
 
       logger.trace("Checking if Store: {} exists resulted in {}", number, exists)
 
@@ -208,7 +218,8 @@ class StoreRepository @Inject constructor(
    fun assignToRegion(store: Location, region: RegionEntity, companyId: Long): Pair<RegionEntity, Location> {
       logger.trace("Assigning Store {} to Region {}", store, region)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          INSERT INTO region_to_store (region_id, store_number, company_id)
          VALUES (:region_id, :store_number, :company_id)
          """.trimIndent(),
@@ -232,14 +243,13 @@ class StoreRepository @Inject constructor(
       )
 
    fun mapRowWithRegion(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
-         StoreEntity(
-            id = rs.getLong("${columnPrefix}id"),
-            number = rs.getInt("${columnPrefix}number"),
-            name = rs.getString("${columnPrefix}name"),
-            region = regionRepository.mapRowOrNull(rs, company, "reg_"),
-            company = company
-         )
-
+      StoreEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         number = rs.getInt("${columnPrefix}number"),
+         name = rs.getString("${columnPrefix}name"),
+         region = regionRepository.mapRowOrNull(rs, company, "reg_"),
+         company = company
+      )
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
       if (rs.getString("${columnPrefix}id") != null) {

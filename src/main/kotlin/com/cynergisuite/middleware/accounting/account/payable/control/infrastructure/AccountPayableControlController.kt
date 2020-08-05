@@ -30,11 +30,13 @@ class AccountPayableControlController @Inject constructor(
 
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableControlEndpoints"], summary = "Fetch a single AccountPayableControlDTO", description = "Fetch a single AccountPayableControlDTO that is associated with the logged-in user's company", operationId = "accountPayableControl-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableControlDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested AccountPayableControl was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableControlDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested AccountPayableControl was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       authentication: Authentication
    ): AccountPayableControlDTO {
@@ -52,11 +54,13 @@ class AccountPayableControlController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableControlEndpoints"], summary = "Create an AccountPayableControlEntity", description = "Create an AccountPayableControlEntity", operationId = "accountPayableControl-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableControlDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableControlDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    @AccessControl
    fun create(
       @Body dto: AccountPayableControlDTO,
@@ -76,12 +80,14 @@ class AccountPayableControlController @Inject constructor(
    @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableControlEndpoints"], summary = "Update an AccountPayableControlEntity", description = "Update an AccountPayableControlEntity from a body of AccountPayableControlDTO", operationId = "accountPayableControl-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update AccountPayableControl", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableControlDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested AccountPayableControl was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update AccountPayableControl", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableControlDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested AccountPayableControl was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    @AccessControl
    fun update(
       @QueryValue("id") id: Long,

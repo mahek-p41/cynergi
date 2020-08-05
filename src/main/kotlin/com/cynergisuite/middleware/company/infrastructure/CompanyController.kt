@@ -41,11 +41,13 @@ class CompanyController @Inject constructor(
    @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
    @Throws(NotFoundException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Fetch a single company", description = "Fetch a single company by ID", operationId = "company-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
-      ApiResponse(responseCode = "404", description = "The requested company was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
+         ApiResponse(responseCode = "404", description = "The requested company was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       @QueryValue("id") id: Long,
       authentication: Authentication,
@@ -63,13 +65,16 @@ class CompanyController @Inject constructor(
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Fetch a listing of companies", description = "Fetch a paginated listing of companies", operationId = "company-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequestIn: StandardPageRequest
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      pageRequestIn: StandardPageRequest
    ): Page<CompanyValueObject> {
       logger.info("Fetching all companies {}", pageRequestIn)
 
@@ -87,11 +92,13 @@ class CompanyController @Inject constructor(
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Create a single company", description = "Create a single company.", operationId = "company-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Company", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Company", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun save(
       @Body companyVO: CompanyValueObject,
       authentication: Authentication,
@@ -106,16 +113,18 @@ class CompanyController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id}" ,processes = [APPLICATION_JSON])
+   @Put(uri = "/{id}", processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["CompanyEndpoints"], summary = "Create a single company", description = "Create a single company.", operationId = "company-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Company", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Company was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Company", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = CompanyValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested Company was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @QueryValue("id") id: Long,
       @Body companyVO: CompanyValueObject,

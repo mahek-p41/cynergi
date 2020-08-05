@@ -40,7 +40,8 @@ class EmployeeRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
-   fun employeeBaseQuery() = """
+   fun employeeBaseQuery() =
+      """
       SELECT * FROM (
          SELECT * FROM (
             SELECT
@@ -159,7 +160,8 @@ class EmployeeRepository @Inject constructor(
    fun findOne(user: AuthenticatedUser): EmployeeEntity? {
       logger.debug("Searching for Employee using {}", user)
 
-      val found = jdbc.findFirstOrNull("""
+      val found = jdbc.findFirstOrNull(
+         """
          ${employeeBaseQuery()}
          WHERE emp_id = :id
                AND emp_type = :employee_type
@@ -178,7 +180,8 @@ class EmployeeRepository @Inject constructor(
       val firstNameMi = pageRequest.firstNameMi
       val lastName = pageRequest.lastName
       val searchString = pageRequest.search
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(),
+      val params = mutableMapOf<String, Any?>(
+         "comp_id" to company.myId(),
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),
          "firstNameMi" to firstNameMi,
@@ -190,7 +193,6 @@ class EmployeeRepository @Inject constructor(
       val where = StringBuilder(" WHERE comp_id = :comp_id AND emp_cynergi_system_admin = false ")
       val and = " AND "
       var sortBy = " emp_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}  "
-
 
       if (!firstNameMi.isNullOrEmpty()) {
          where.append(and).append(" emp_first_name_mi = :firstNameMi ")
@@ -209,7 +211,8 @@ class EmployeeRepository @Inject constructor(
 
       val pagedQuery = StringBuilder("${employeeBaseQuery()} $where ")
 
-      val query = """
+      val query =
+         """
          WITH paged AS (
             $pagedQuery
          )
@@ -241,7 +244,8 @@ class EmployeeRepository @Inject constructor(
       exists(user.myId(), user.myEmployeeType(), user.myCompany())
 
    fun exists(id: Long, employeeType: String, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(emp_id) = 1 FROM (
             SELECT emp_id, emp_type, comp_id FROM (
                SELECT
@@ -277,7 +281,8 @@ class EmployeeRepository @Inject constructor(
    }
 
    fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT count(emp_id) = 1 FROM (
             SELECT emp_id, comp_id FROM (
                SELECT
@@ -317,7 +322,8 @@ class EmployeeRepository @Inject constructor(
    fun insert(entity: EmployeeEntity): EmployeeEntity {
       logger.debug("Inserting employee {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id, alternative_store_indicator, alternative_area)
          VALUES (:number, :last_name, :first_name_mi, :pass_code, :store_number, :active, :department, :cynergi_system_admin, :company_id, :alternative_store_indicator, :alternative_area)
          RETURNING
@@ -351,7 +357,7 @@ class EmployeeRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number"),
          company = company,
          lastName = rs.getString("${columnPrefix}last_name"),
-         firstNameMi = rs.getString("${columnPrefix}first_name_mi"),  // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
+         firstNameMi = rs.getString("${columnPrefix}first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
          store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
@@ -362,14 +368,14 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity?  =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {
          null
       }
 
-   private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: Store?) : EmployeeEntity =
+   private fun mapDDLRow(rs: ResultSet, company: Company, department: Department?, store: Store?): EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
          type = "eli",

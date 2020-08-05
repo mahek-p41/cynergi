@@ -9,7 +9,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "PurchaseOrderType", title = "Purchase order type", description = "Purchase order type")
-data class PurchaseOrderTypeValueObject (
+data class PurchaseOrderTypeValueObject(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)

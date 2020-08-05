@@ -208,7 +208,9 @@ class PurchaseOrderControlRepository @Inject constructor(
    fun findOne(company: Company): PurchaseOrderControlEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE purchaseOrderControl.company_id = :comp_id"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
             val defaultStatusType = purchaseOrderStatusTypeRepository.mapRow(rs, "statusType_")
             val defaultVendor = vendorRepository.mapRow(rs, company, "defVen_")
             val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
@@ -216,7 +218,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             val defaultApprover = employeeRepository.mapRow(rs, "defApp_")
             val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
 
-            mapRow(rs, defaultStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_" )
+            mapRow(rs, defaultStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
          }
       )
 
@@ -245,7 +247,8 @@ class PurchaseOrderControlRepository @Inject constructor(
    fun insert(entity: PurchaseOrderControlEntity, company: Company): PurchaseOrderControlEntity {
       logger.debug("Inserting purchase_order_control {}", company)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO purchase_order_control(
             company_id,
             drop_five_characters_on_model_number,
@@ -321,7 +324,8 @@ class PurchaseOrderControlRepository @Inject constructor(
    fun update(entity: PurchaseOrderControlEntity, company: Company): PurchaseOrderControlEntity {
       logger.debug("Updating purchase_order_control {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE purchase_order_control
          SET
             company_id = :company_id,

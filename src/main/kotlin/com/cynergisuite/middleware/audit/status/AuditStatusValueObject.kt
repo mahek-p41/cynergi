@@ -9,7 +9,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditStatus", title = "Status definition associated", description = "Status definition associated with an audit action")
-data class AuditStatusValueObject (
+data class AuditStatusValueObject(
 
    @field:Positive
    @field:Schema(name = "id", description = "This is a database driven primary key value defining the id of the status")
@@ -25,7 +25,7 @@ data class AuditStatusValueObject (
    var description: String? = null,
 
    @field:Size(min = 6, max = 6)
-   @field:Schema(name= "color", description = "A hex color code describing what color to be used when displaying this status")
+   @field:Schema(name = "color", description = "A hex color code describing what color to be used when displaying this status")
    var color: String? = null
 
 ) {

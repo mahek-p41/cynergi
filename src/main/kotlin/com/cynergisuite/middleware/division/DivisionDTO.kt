@@ -31,7 +31,7 @@ data class DivisionDTO(
    @field:Schema(name = "divisionalManager", description = "Divisional manager id")
    var divisionalManager: SimpleIdentifiableDTO? = null
 
-): Identifiable {
+) : Identifiable {
    override fun myId() = id
 
    constructor(entity: DivisionEntity) :

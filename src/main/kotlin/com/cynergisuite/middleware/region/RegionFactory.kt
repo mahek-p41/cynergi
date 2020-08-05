@@ -72,5 +72,4 @@ class RegionFactoryService @Inject constructor(
 
    fun singleDTO(divisionIn: DivisionEntity, regionalManager: EmployeeEntity): RegionDTO =
       RegionFactory.streamDTO(1, divisionIn = divisionIn, regionalManager = regionalManager).findFirst().orElseThrow { Exception("Unable to create RegionEntity") }
-
 }

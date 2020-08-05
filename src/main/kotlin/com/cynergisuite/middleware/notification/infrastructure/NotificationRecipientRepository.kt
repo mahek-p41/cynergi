@@ -44,7 +44,8 @@ class NotificationRecipientRepository @Inject constructor(
    fun insert(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Inserting notification_recipient {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO notification_recipient(description, recipient, notification_id)
          VALUES (:description, :recipient, :notification_id)
          RETURNING
@@ -63,7 +64,8 @@ class NotificationRecipientRepository @Inject constructor(
    fun update(entity: NotificationRecipient): NotificationRecipient {
       logger.debug("Updating notification_recipient {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE notification_recipient
          SET
             description = :description,

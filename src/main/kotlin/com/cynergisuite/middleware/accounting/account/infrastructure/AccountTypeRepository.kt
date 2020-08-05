@@ -44,7 +44,6 @@ class AccountTypeRepository @Inject constructor(
 
    fun findAll(): List<AccountType> =
       jdbc.query("SELECT * FROM account_type_domain ORDER BY id", simpleAccountCodeTypeRowMapper)
-
 }
 
 private class AccountCodeTypeRowMapper(

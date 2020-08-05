@@ -19,7 +19,6 @@ class RegionService @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
 
-
    fun fetchById(id: Long, company: Company): RegionDTO? =
       regionRepository.findOne(id, company)?.let { RegionDTO(it) }
 

@@ -41,5 +41,5 @@ data class AuditEntity(
          .map { it.status }
          .last()
 
-   fun printLocation() : String = "${store.myNumber()}  ${store.myName()}"
+   fun printLocation(): String = "${store.myNumber()}  ${store.myName()}"
 }

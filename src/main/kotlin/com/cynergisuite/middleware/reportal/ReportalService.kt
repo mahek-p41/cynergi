@@ -48,7 +48,7 @@ class ReportalService @Inject constructor(
             reportalOutputStream.flush()
          }
 
-         val reportalFile = storeDirectory.resolve("$reportName-${LocalDateTime.now().format(reportalDateFormat)}.${extension}")
+         val reportalFile = storeDirectory.resolve("$reportName-${LocalDateTime.now().format(reportalDateFormat)}.$extension")
 
          logger.debug("Moving file {} to {}", tempPath, reportalFile)
          val destPath = Files.move(tempPath, reportalFile)

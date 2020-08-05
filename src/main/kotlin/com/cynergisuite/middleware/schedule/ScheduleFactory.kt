@@ -36,8 +36,8 @@ object ScheduleFactory {
    }
 
    @JvmStatic
-   fun single(scheduleTypeIn: ScheduleType? = null, company: Company) : ScheduleEntity {
-      return stream(1, scheduleTypeIn, company = company).findFirst().orElseThrow{ Exception("Unable to create Schedule") }
+   fun single(scheduleTypeIn: ScheduleType? = null, company: Company): ScheduleEntity {
+      return stream(1, scheduleTypeIn, company = company).findFirst().orElseThrow { Exception("Unable to create Schedule") }
    }
 }
 

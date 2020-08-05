@@ -23,7 +23,7 @@ data class VendorGroupDTO(
    @field:Schema(name = "description", minimum = "2", maximum = "50", description = "Describes the vendor group")
    var description: String? = null
 
-): Identifiable {
+) : Identifiable {
    constructor(entity: VendorGroupEntity) :
       this(
          id = entity.id,

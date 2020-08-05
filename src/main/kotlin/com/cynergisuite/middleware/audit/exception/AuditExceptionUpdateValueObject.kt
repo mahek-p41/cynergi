@@ -28,6 +28,6 @@ data class AuditExceptionUpdateValueObject(
    @field:Schema(name = "approved", description = "AuditException boolean for approved")
    var approved: Boolean? = null
 
-)  : Identifiable {
+) : Identifiable {
    override fun myId(): Long? = id
 }

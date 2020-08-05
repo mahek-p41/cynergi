@@ -59,7 +59,8 @@ class VerificationReferenceRepository @Inject constructor(
    fun insert(entity: VerificationReference): VerificationReference {
       logger.trace("Inserting verification_reference {}", entity)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO verification_reference(address, has_home_phone, known, leave_message, rating, relationship, reliable, time_frame, verify_phone, verification_id)
          VALUES (:address, :has_home_phone, :known, :leave_message, :rating, :relationship, :reliable, :time_frame, :verify_phone, :verification_id)
          RETURNING
@@ -85,7 +86,8 @@ class VerificationReferenceRepository @Inject constructor(
    fun update(entity: VerificationReference): VerificationReference {
       logger.trace("Updating verification_reference {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE verification_reference
          SET
             address = :address,

@@ -14,8 +14,13 @@ data class AccountEntity(
    val corporateAccountIndicator: Boolean
 ) : Identifiable {
 
-   constructor(accountDTO: AccountDTO, company: Company, accountType: AccountType,
-               normalAccountBalanceType: NormalAccountBalanceType, accountStatusType: AccountStatusType) :
+   constructor(
+      accountDTO: AccountDTO,
+      company: Company,
+      accountType: AccountType,
+      normalAccountBalanceType: NormalAccountBalanceType,
+      accountStatusType: AccountStatusType
+   ) :
       this(
          id = accountDTO.id,
          company = company,

@@ -24,18 +24,20 @@ import javax.inject.Inject
 class ApprovalRequiredFlagTypeController @Inject constructor(
    private val approvalRequiredFlagTypeService: ApprovalRequiredFlagTypeService,
    private val localizationService: LocalizationService
-){
+) {
    private val logger: Logger = LoggerFactory.getLogger(ApprovalRequiredFlagTypeController::class.java)
 
    @Get
    @Operation(tags = ["ApprovalRequiredFlagTypeEndpoints"], summary = "Fetch a list of approval required flag types", description = "Fetch a listing of approval required flag types", operationId = "approvalRequiredFlagType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ApprovalRequiredFlagDTO::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ApprovalRequiredFlagDTO::class))])
+      ]
+   )
    fun fetchAll(httpRequest: HttpRequest<*>): List<ApprovalRequiredFlagDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
-      val types = approvalRequiredFlagTypeService.fetchAll().map{
+      val types = approvalRequiredFlagTypeService.fetchAll().map {
          ApprovalRequiredFlagDTO(it, it.localizeMyDescription(locale, localizationService))
       }
 

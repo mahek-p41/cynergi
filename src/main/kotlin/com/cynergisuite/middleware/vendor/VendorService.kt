@@ -17,7 +17,7 @@ class VendorService @Inject constructor(
 ) {
 
    fun fetchById(id: Long, company: Company): VendorDTO? =
-      vendorRepository.findOne(id, company)?.let{ VendorDTO(entity = it) }
+      vendorRepository.findOne(id, company)?.let { VendorDTO(entity = it) }
 
    @Validated
    fun create(@Valid vo: VendorDTO, company: Company): VendorDTO {

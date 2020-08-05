@@ -44,11 +44,13 @@ class AccountController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountEndpoints"], summary = "Fetch a single Account", description = "Fetch a single Account by ID", operationId = "account-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Account was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Account was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       @QueryValue("id") id: Long,
       authentication: Authentication,
@@ -66,12 +68,15 @@ class AccountController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["AccountEndpoints"], summary = "Fetch a list of accounts", description = "Fetch a listing of accounts", operationId = "account-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ]
+   )
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountDTO> {
@@ -90,14 +95,17 @@ class AccountController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/search{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountEndpoints"], summary = "Search for a list of accounts", description = "search of a paginated listing of accounts based on a query", operationId = "account-search")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Account was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun search(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: SearchPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: SearchPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountDTO> {
@@ -116,11 +124,13 @@ class AccountController @Inject constructor(
    @Post(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountEndpoints"], summary = "Create a single account", description = "Create a single account.", operationId = "account-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Account", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Account", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun save(
       @Body accountDTO: AccountDTO,
       authentication: Authentication,
@@ -136,15 +146,17 @@ class AccountController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id}" ,processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id}", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountEndpoints"], summary = "Create a single account", description = "Create a single account.", operationId = "account-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Account", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Account was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Account", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested Account was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @QueryValue("id") id: Long,
       @Body accountDTO: AccountDTO,

@@ -29,9 +29,11 @@ class FreightOnboardTypeController @Inject constructor(
 
    @Get
    @Operation(tags = ["FreightOnboardTypeEndpoints"], summary = "Fetch a list of Vendor freight onboard types", description = "Fetch a listing of Vendor freight onboard types", operationId = "freightOnboardType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = FreightOnboardTypeDTO::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = FreightOnboardTypeDTO::class))])
+      ]
+   )
    fun fetchAll(
       httpRequest: HttpRequest<*>
    ): List<FreightOnboardTypeDTO> {

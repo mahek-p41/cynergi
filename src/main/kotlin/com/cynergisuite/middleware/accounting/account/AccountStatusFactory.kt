@@ -30,13 +30,11 @@ object AccountStatusFactory {
    fun predefined(): List<AccountStatusType> {
       return accountStatus
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class AccountStatusFactoryService(
-) {
+class AccountStatusFactoryService() {
    fun random() = AccountStatusFactory.random()
    fun predefined() = AccountStatusFactory.predefined()
 }

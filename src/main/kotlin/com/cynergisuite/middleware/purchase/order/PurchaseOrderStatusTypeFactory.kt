@@ -60,13 +60,11 @@ object PurchaseOrderStatusTypeFactory {
    fun predefined(): List<PurchaseOrderStatusType> {
       return purchaseOrderStatusType
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class PurchaseOrderStatusTypeFactoryService(
-) {
+class PurchaseOrderStatusTypeFactoryService() {
    fun random() = PurchaseOrderStatusTypeFactory.random()
    fun predefined() = PurchaseOrderStatusTypeFactory.predefined()
 }

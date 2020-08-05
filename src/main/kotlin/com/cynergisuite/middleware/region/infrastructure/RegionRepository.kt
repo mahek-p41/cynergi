@@ -79,13 +79,16 @@ class RegionRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): RegionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
-      val query = """${selectBaseQuery()} WHERE reg.id = :id
+      val query =
+         """${selectBaseQuery()} WHERE reg.id = :id
                                                 AND div.company_id = :comp_id
                                                 AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
 
       logger.trace("Searching for Region params {}: \nQuery {}", params, query)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
             mapRow(rs, company, "reg_")
          }
       )
@@ -97,7 +100,8 @@ class RegionRepository @Inject constructor(
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<RegionEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
-      val query = """
+      val query =
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE div.company_id = :comp_id
@@ -132,7 +136,8 @@ class RegionRepository @Inject constructor(
    fun insert(region: RegionEntity): RegionEntity {
       logger.debug("Inserting region {}", region)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
             INSERT INTO region(division_id, name, description, manager_number)
             VALUES (:division_id, :name, :description, :manager_number)
             RETURNING *
@@ -150,7 +155,8 @@ class RegionRepository @Inject constructor(
    fun update(id: Long, entity: RegionEntity): RegionEntity {
       logger.debug("Updating region {}", entity)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE region
          SET
             division_id = :division_id,
@@ -184,7 +190,8 @@ class RegionRepository @Inject constructor(
          // Can not inject DivisionRepository since it causes circular dependency issue
          deleteRegionToStore(region)
 
-         jdbc.deleteReturning("""
+         jdbc.deleteReturning(
+            """
             DELETE FROM region
             WHERE id = :id
             RETURNING
@@ -201,7 +208,8 @@ class RegionRepository @Inject constructor(
    private fun deleteRegionToStore(region: RegionEntity) {
       logger.debug("Deleting Region To Store belong to region {}", region)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          DELETE FROM region_to_store
          WHERE region_id = :region_id
          """,
@@ -213,7 +221,8 @@ class RegionRepository @Inject constructor(
    fun unassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
       logger.debug("Deleting Region To Store region id {}, store number {}", region, store)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          DELETE FROM region_to_store
          WHERE region_id = :region_id AND store_number = :store_number
          """,
@@ -227,7 +236,8 @@ class RegionRepository @Inject constructor(
    fun assignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
       logger.trace("Assigning Store {} to Region {}", region, store)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          INSERT INTO region_to_store (region_id, store_number, company_id)
          VALUES (:region_id, :store_number, :company_id)
          """.trimIndent(),
@@ -242,7 +252,8 @@ class RegionRepository @Inject constructor(
    fun reassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
       logger.trace("Re-assigning Store {} to Region {}", region, store)
 
-      jdbc.update("""
+      jdbc.update(
+         """
          UPDATE region_to_store
          SET
             region_id = :region_id
@@ -252,14 +263,17 @@ class RegionRepository @Inject constructor(
             "region_id" to region.myId(),
             "store_number" to store.myNumber(),
             "company_id" to company.myId()
-         ))
+         )
+      )
    }
 
    fun isStoreAssignedToRegion(store: Store, company: Company): Boolean {
-      val exists = jdbc.queryForObject("""
+      val exists = jdbc.queryForObject(
+         """
          SELECT EXISTS (SELECT * FROM region_to_store WHERE store_number = :store_number AND company_id = :company_id)
          """,
-         mapOf("store_number" to store.myNumber(), "company_id" to company.myId()), Boolean::class.java)!!
+         mapOf("store_number" to store.myNumber(), "company_id" to company.myId()), Boolean::class.java
+      )!!
 
       logger.trace("Checking if a store is assigned to a region")
 
@@ -276,7 +290,7 @@ class RegionRepository @Inject constructor(
          regionalManager = simpleEmployeeRepository.mapRowOrNull(rs)
       )
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "reg_", companyPrefix: String = "comp_", departmentPrefix: String = "dept_", storePrefix: String = "store_"): RegionEntity?  =
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "reg_", companyPrefix: String = "comp_", departmentPrefix: String = "dept_", storePrefix: String = "store_"): RegionEntity? =
       try {
          if (rs.getString("${columnPrefix}id") != null) {
             mapRow(rs, company)

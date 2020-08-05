@@ -16,7 +16,8 @@ data class VendorPaymentTermEntity(
 ) : Identifiable {
 
    constructor(id: Long? = null, vo: VendorPaymentTermDTO, company: Company) :
-      this(id = id ?: vo.id,
+      this(
+         id = id ?: vo.id,
          company = company,
          description = vo.description!!,
          discountMonth = vo.discountMonth,

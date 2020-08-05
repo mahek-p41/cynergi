@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder
 data class ErrorDataTransferObject(
    var message: String,
    var path: String? = null
-): Comparable<ErrorDataTransferObject> {
+) : Comparable<ErrorDataTransferObject> {
    override fun compareTo(other: ErrorDataTransferObject): Int =
       CompareToBuilder()
          .append(this.message, other.message)

@@ -42,7 +42,7 @@ class NotificationValidator @Inject constructor(
 
       if (id == null) {
          errors.add(element = ValidationError("id", NotNull("id")))
-      } else if ( !notificationService.exists(id = id) ) {
+      } else if (!notificationService.exists(id = id)) {
          errors.add(element = ValidationError("id", NotFound(id)))
       }
 

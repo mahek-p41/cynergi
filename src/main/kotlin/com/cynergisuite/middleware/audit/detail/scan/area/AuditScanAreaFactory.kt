@@ -77,5 +77,4 @@ class AuditScanAreaFactoryService @Inject constructor(
       AuditScanAreaFactory
          .findByValue(AuditScanAreaFactory.random().value)
          .let { auditScanAreaTypeDomainRepository.findOne(it.value)!! }
-
 }

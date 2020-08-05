@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.authentication.user.infrastructure
 
-import com.cynergisuite.extensions.findFirst
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
@@ -49,7 +48,8 @@ class AuthenticationRepository @Inject constructor(
    fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int?): Maybe<AuthenticatedEmployee> {
       logger.trace("Checking authentication for {} {} {}", employeeNumber, dataset, storeNumber)
 
-      val query = """
+      val query =
+         """
          SELECT * FROM (
             SELECT * FROM (
                SELECT
@@ -88,7 +88,7 @@ class AuthenticationRepository @Inject constructor(
                   JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if(storeNumber != null) " = $3" else "IS NULL"}
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if (storeNumber != null) " = $3" else "IS NULL"}
                   JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
                UNION
                SELECT
@@ -127,7 +127,7 @@ class AuthenticationRepository @Inject constructor(
                   JOIN employee emp ON comp.id = emp.company_id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if(storeNumber != null) " = $3" else "IS NULL"}
+                  LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if (storeNumber != null) " = $3" else "IS NULL"}
                   JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
             ) AS inner_users
             WHERE emp_active = true
@@ -135,8 +135,8 @@ class AuthenticationRepository @Inject constructor(
          ) AS users
       WHERE comp_dataset_code = $1
          AND emp_number = $2
-      """.trimIndent()
-      val params = if(storeNumber != null) {
+         """.trimIndent()
+      val params = if (storeNumber != null) {
          Tuple.of(dataset, employeeNumber, storeNumber)
       } else {
          Tuple.of(dataset, employeeNumber)
@@ -153,8 +153,8 @@ class AuthenticationRepository @Inject constructor(
             val company = mapCompany(row)
             val department = mapDepartment(row, company)
             val fallbackLocation = mapLocation(row, company, "fallbackloc_")!! // make sure fallbackLoc is all lower case, the reactive pg row isn't as smart as the JDBC driver
-            val employeeLocation = mapLocation(row, company, "assignedloc_")  // make sure assignedloc is all lower case, the reactive pg row isn't as smart as the JDBC driver
-            val chosenLocation = mapLocation(row, company, "chosenloc_")  // make sure chosenloc is all lower case, the reactive pg row isn't as smart as the JDBC driver
+            val employeeLocation = mapLocation(row, company, "assignedloc_") // make sure assignedloc is all lower case, the reactive pg row isn't as smart as the JDBC driver
+            val chosenLocation = mapLocation(row, company, "chosenloc_") // make sure chosenloc is all lower case, the reactive pg row isn't as smart as the JDBC driver
 
             AuthenticatedEmployee(
                id = row.getLong("emp_id"),
@@ -218,7 +218,8 @@ class AuthenticationRepository @Inject constructor(
 
    fun findPermissions(department: Department): Set<String> {
       val params = mapOf("dept_code" to department.myCode(), "comp_id" to department.myCompany().myId())
-      val sql = """
+      val sql =
+         """
          SELECT aptd.value AS value
          FROM audit_permission_type_domain aptd
               JOIN audit_permission ap ON ap.type_id = aptd.id
@@ -227,24 +228,28 @@ class AuthenticationRepository @Inject constructor(
          SELECT aptd.value AS value
          FROM audit_permission_type_domain aptd
          WHERE aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
-      """.trimIndent()
+         """.trimIndent()
 
       return processPermissionValues(sql, params)
    }
 
    fun findAllPermissions(): Set<String> { // TODO look into solving cynergi_system_admin privileges some other way
-      return processPermissionValues("""
+      return processPermissionValues(
+         """
          SELECT value from audit_permission_type_domain
          UNION
          SELECT 'cynergi-system-admin' AS value
-      """.trimIndent(), emptyMap())
+         """.trimIndent(),
+         emptyMap()
+      )
    }
 
    fun findUserSecurityLevels(user: User, company: Company): UserSecurityLevels? {
       logger.debug("Get user security levels")
 
       val params = mutableMapOf<String, Any?>("emp_number" to user.myEmployeeNumber(), "dataset_code" to company.myDataset())
-      val sql = """
+      val sql =
+         """
          SELECT
             opr.account_payable_security        AS emp_account_payable_security,
             opr.purchase_order_security         AS emp_purchase_order_security,
@@ -256,9 +261,11 @@ class AuthenticationRepository @Inject constructor(
             fastinfo_prod_import.operator_vw opr
          WHERE
             opr.number = :emp_number AND opr.dataset = :dataset_code
-      """.trimIndent()
+         """.trimIndent()
 
-      return jdbc.findFirstOrNull(sql, params, RowMapper { rs, _ ->
+      return jdbc.findFirstOrNull(
+         sql, params,
+         RowMapper { rs, _ ->
             mapUserSecurityLevels(rs)
          }
       ) ?: UserSecurityLevels(user.isCynergiAdmin())
@@ -270,7 +277,8 @@ class AuthenticationRepository @Inject constructor(
       val resultSet = mutableSetOf<String>()
 
       jdbc.query(sql, params) {
-         rs -> resultSet.add(rs.getString("value"))
+         rs ->
+         resultSet.add(rs.getString("value"))
       }
 
       return resultSet
@@ -302,7 +310,7 @@ class AuthenticationRepository @Inject constructor(
       }
    }
 
-   private fun mapUserSecurityLevels(rs: ResultSet, columnPrefix: String? = "emp_") : UserSecurityLevels =
+   private fun mapUserSecurityLevels(rs: ResultSet, columnPrefix: String? = "emp_"): UserSecurityLevels =
       UserSecurityLevels(
          accountPayableLevel = rs.getIntOrNull("${columnPrefix}account_payable_security"),
          purchaseOrderLevel = rs.getIntOrNull("${columnPrefix}purchase_order_security"),

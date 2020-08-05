@@ -26,7 +26,9 @@ import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreEntity
 import com.lowagie.text.Document
 import com.lowagie.text.Element
+import com.lowagie.text.Element.ALIGN_CENTER
 import com.lowagie.text.Element.ALIGN_LEFT
+import com.lowagie.text.Element.ALIGN_RIGHT
 import com.lowagie.text.Element.ALIGN_TOP
 import com.lowagie.text.Font
 import com.lowagie.text.Font.BOLD
@@ -180,7 +182,6 @@ class AuditService @Inject constructor(
       }
    }
 
-
    @Validated
    fun approveAllExceptions(@Valid audit: SimpleIdentifiableDTO, user: User): AuditApproveAllExceptionsDataTransferObject {
       val toApprove = auditValidator.validateApproveAll(audit, user.myCompany())
@@ -228,30 +229,30 @@ class AuditService @Inject constructor(
       header.widthPercentage = 100f
 
       header.makeCell("DATE: $currentDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(companyName, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(companyName, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("IDLE INVENTORY AUDIT EXCEPTION REPORT", ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Location: ${audit.printLocation()}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("(By Product)", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(if (onDemand) "(On-Demand)" else "(Final-Reprint)", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("(By Product)", ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(if (onDemand) "(On-Demand)" else "(Final-Reprint)", ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       val beginDateHeader = if (beginAction.status == CREATED) "Created " else "Started "
 
-      header.makeCell("${beginDateHeader}: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("$beginDateHeader: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Completed: ${endDate ?: "N/A"}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Employee: $endEmployee", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Audit #: ${audit.number}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.addCell(Phrase(EMPTY, headerFont))
@@ -297,31 +298,31 @@ class AuditService @Inject constructor(
       header.defaultCell.border = 0
       header.setWidthPercentage(100f)
 
-      header.makeCell("DATE: ${currentDate}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(companyName, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("DATE: $currentDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(companyName, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("PAGE ${document.pageNumber}", ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("TIME: ${timeFormatter.format(LocalDateTime.now())}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("UNSCANNED IDLE INVENTORY REPORT", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("UNSCANNED IDLE INVENTORY REPORT", ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Location: ${audit.printLocation()}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("(By Product)", ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell("${if (onDemand) "(On-Demand)" else "(Final-Reprint)"}", ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("(By Product)", ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("${if (onDemand) "(On-Demand)" else "(Final-Reprint)"}", ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       val beginDateHeader = if (beginAction.status == CREATED) "Created " else "Started "
 
-      header.makeCell("${beginDateHeader}: ${beginDate}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("$beginDateHeader: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Completed: ${endDate ?: "N/A"}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      header.makeCell("Employee: ${endEmployee}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
-      header.makeCell(EMPTY, ALIGN_TOP, Element.ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell("Employee: $endEmployee", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
+      header.makeCell(EMPTY, ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
       header.makeCell("Audit #: ${audit.number}", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.addCell(Phrase(EMPTY, headerFont))
@@ -362,14 +363,14 @@ class AuditService @Inject constructor(
 
       val widthPercentage: Float = (pageWidth - 10) / 8
       val widths = floatArrayOf(widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage, widthPercentage)
-      widths[0] = 75f //Scan Area
-      widths[1] = 115f //Model
-      widths[2] = 75f //Bar Code
-      widths[3] = 75f //Alt ID
-      widths[4] = 75f //Serial#
-      widths[5] = 135f //Employee
-      widths[6] = 135f //Scanned
-      widths[7] = 200f //Exception
+      widths[0] = 75f // Scan Area
+      widths[1] = 115f // Model
+      widths[2] = 75f // Bar Code
+      widths[3] = 75f // Alt ID
+      widths[4] = 75f // Serial#
+      widths[5] = 135f // Employee
+      widths[6] = 135f // Scanned
+      widths[7] = 200f // Exception
       table.setWidths(widths)
 
       table.makeCell("Scan Area", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)

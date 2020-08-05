@@ -10,7 +10,7 @@ data class VendorGroupEntity(
    val description: String
 ) : Identifiable {
 
-   constructor(dto: VendorGroupDTO, company: Company):
+   constructor(dto: VendorGroupDTO, company: Company) :
       this(
          id = dto.id,
          company = company,

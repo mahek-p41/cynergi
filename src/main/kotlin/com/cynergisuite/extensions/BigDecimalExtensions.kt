@@ -6,7 +6,7 @@ import java.math.RoundingMode.HALF_EVEN
 import java.text.DecimalFormat
 
 fun BigDecimal.toFixed(maxFractionDigits: Int, minFractionDigits: Int = 0, roundingMode: RoundingMode = HALF_EVEN): String {
-   val format = DecimalFormat();
+   val format = DecimalFormat()
    val copy = this.setScale(maxFractionDigits, roundingMode)
 
    format.maximumFractionDigits = maxFractionDigits

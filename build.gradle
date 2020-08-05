@@ -11,6 +11,7 @@ plugins {
    id "groovy"
    id "org.flywaydb.flyway" version "5.2.4"
    id "org.openapi.generator" version "4.3.0"
+   id "org.jmailen.kotlinter" version "2.4.1"
 }
 
 version "${releaseVersion}"
@@ -35,6 +36,10 @@ kapt {
    arguments {
       arg("micronaut.processing.incremental", true)
    }
+}
+
+kotlinter {
+   experimentalRules = true
 }
 
 sourceSets {

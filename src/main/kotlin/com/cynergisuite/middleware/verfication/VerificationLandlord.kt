@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
 import java.time.OffsetDateTime
 
-data class VerificationLandlord (
+data class VerificationLandlord(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,

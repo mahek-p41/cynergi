@@ -21,7 +21,7 @@ class InventoryService(
    fun fetchAll(@Valid pageRequest: InventoryPageRequest, company: Company, locale: Locale): Page<InventoryDTO> {
       val inventory = inventoryRepository.findAll(pageRequest, company)
 
-      return inventory.toPage  { item ->
+      return inventory.toPage { item ->
          InventoryDTO(
             item,
             InventoryLocationTypeValueObject(item.locationType, item.locationType.localizeMyDescription(locale, localizationService))
@@ -33,7 +33,7 @@ class InventoryService(
       return inventoryRepository.findByLookupKey(lookupKey, company)?.let { map(it, locale) }
    }
 
-   private fun map(inventory: InventoryEntity, locale: Locale) : InventoryDTO =
+   private fun map(inventory: InventoryEntity, locale: Locale): InventoryDTO =
       InventoryDTO(
          inventory,
          InventoryLocationTypeValueObject(inventory.locationType, inventory.locationType.localizeMyDescription(locale, localizationService))

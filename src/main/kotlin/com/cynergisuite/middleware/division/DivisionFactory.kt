@@ -63,6 +63,6 @@ class DivisionFactoryService @Inject constructor(
       stream(companyIn = companyIn, divisionalManagerIn = divisionalManagerIn).findFirst().orElseThrow { Exception("Unable to create DivisionEntity") }
 
    fun singleDTO(company: CompanyEntity, divisionalManagerIn: EmployeeEntity): DivisionDTO {
-      return DivisionFactory.streamDTO(1, divisionalManagerIn).findFirst().orElseThrow { Exception("Unable to create DivisionDTO")}
+      return DivisionFactory.streamDTO(1, divisionalManagerIn).findFirst().orElseThrow { Exception("Unable to create DivisionDTO") }
    }
 }

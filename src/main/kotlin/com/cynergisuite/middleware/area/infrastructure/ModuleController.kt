@@ -32,16 +32,17 @@ class ModuleController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ModuleController::class.java)
 
-
-   @Post(uri = "/{id:[0-9]+}" ,processes = [MediaType.APPLICATION_JSON])
+   @Post(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ModuleEndpoints"], description = "Create module level for company.", operationId = "create-level-module")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully create module level for company"),
-      ApiResponse(responseCode = "400", description = "If the module level was unable to be create"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully create module level for company"),
+         ApiResponse(responseCode = "400", description = "If the module level was unable to be create"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun createLevelConfig(
       @QueryValue("id") id: Long,
       @Body moduleDTO: ModuleDTO,
@@ -55,15 +56,17 @@ class ModuleController @Inject constructor(
       return moduleService.createLevelConfig(company, moduleDTO)
    }
 
-   @Put(uri = "/{id:[0-9]+}" ,processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ModuleEndpoints"], description = "Update module level for company.", operationId = "update-level-module")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully update module level for company"),
-      ApiResponse(responseCode = "400", description = "If the module level was unable to be updated"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully update module level for company"),
+         ApiResponse(responseCode = "400", description = "If the module level was unable to be updated"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun updateLevelConfig(
       @QueryValue("id") id: Long,
       @Body moduleDTO: ModuleDTO,
@@ -76,5 +79,4 @@ class ModuleController @Inject constructor(
 
       return moduleService.updateLevelConfig(company, moduleDTO)
    }
-
 }

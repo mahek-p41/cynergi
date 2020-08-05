@@ -237,7 +237,7 @@ class ErrorHandlerController @Inject constructor(
          HttpResponse
             .status<ErrorDataTransferObject>(UNAUTHORIZED)
             .body(ErrorDataTransferObject(message))
-      } else if ( !authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
+      } else if (!authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
          val message = localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
 
          HttpResponse
@@ -274,7 +274,7 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = AccessException::class)
-   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException) : HttpResponse<ErrorDataTransferObject> {
+   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException): HttpResponse<ErrorDataTransferObject> {
       logger.warn("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
@@ -287,13 +287,13 @@ class ErrorHandlerController @Inject constructor(
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()
          .filter {
-            it.name != "save"
-               && it.name != "create"
-               && it.name != "update"
-               && it.name != "dto"
-               && it.name != "vo"
-               && it.name != "fetchAll"
-               && !it.name.startsWith("arg")
+            it.name != "save" &&
+               it.name != "create" &&
+               it.name != "update" &&
+               it.name != "dto" &&
+               it.name != "vo" &&
+               it.name != "fetchAll" &&
+               !it.name.startsWith("arg")
          }
          .joinToString(".")
 }

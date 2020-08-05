@@ -36,13 +36,11 @@ object PrintCurrencyIndicatorTypeDataLoader {
    fun predefined(): List<PrintCurrencyIndicatorType> {
       return printCurrencyIndicatorType
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class PrintCurrencyIndicatorTypeDataLoaderService(
-) {
+class PrintCurrencyIndicatorTypeDataLoaderService() {
    fun random() = PrintCurrencyIndicatorTypeDataLoader.random()
    fun predefined() = PrintCurrencyIndicatorTypeDataLoader.predefined()
 }

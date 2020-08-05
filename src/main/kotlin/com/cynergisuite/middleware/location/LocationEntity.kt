@@ -7,7 +7,7 @@ data class LocationEntity(
    val number: Int,
    val name: String,
    val company: Company
-): Location {
+) : Location {
    override fun myId(): Long = id
    override fun myNumber(): Int = number
    override fun myName(): String = name

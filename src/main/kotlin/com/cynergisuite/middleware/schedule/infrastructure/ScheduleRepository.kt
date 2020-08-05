@@ -21,7 +21,6 @@ import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class ScheduleRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
@@ -37,7 +36,8 @@ class ScheduleRepository @Inject constructor(
 
       var found: ScheduleEntity? = null
 
-      jdbc.query("""
+      jdbc.query(
+         """
          SELECT
             sched.id                    AS sched_id,
             sched.uu_row_id             AS sched_uu_row_id,
@@ -119,7 +119,8 @@ class ScheduleRepository @Inject constructor(
          params["schedType_value"] = type.value
       }
 
-      val sql = """
+      val sql =
+         """
          WITH schedules AS (
             SELECT
                sched.id                                                        AS sched_id,
@@ -231,7 +232,8 @@ class ScheduleRepository @Inject constructor(
    fun insert(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Inserting Schedule {}", entity)
 
-      val inserted = jdbc.insertReturning("""
+      val inserted = jdbc.insertReturning(
+         """
          INSERT INTO schedule(title, description, schedule, command_id, enabled, type_id, company_id)
          VALUES(:title, :description, :schedule, :command_id, :enabled, :type_id, :company_id)
          RETURNING
@@ -262,7 +264,8 @@ class ScheduleRepository @Inject constructor(
    fun update(entity: ScheduleEntity): ScheduleEntity {
       logger.debug("Updating Schedule {}", entity)
 
-      val updated = jdbc.updateReturning("""
+      val updated = jdbc.updateReturning(
+         """
          UPDATE schedule
          SET
             title = :title,

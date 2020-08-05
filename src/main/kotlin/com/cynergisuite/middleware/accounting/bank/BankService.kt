@@ -39,4 +39,3 @@ class BankService @Inject constructor(
       return BankDTO(bankRepository.update(toUpdate))
    }
 }
-

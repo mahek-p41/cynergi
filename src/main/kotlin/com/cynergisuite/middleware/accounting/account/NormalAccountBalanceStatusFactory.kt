@@ -30,13 +30,11 @@ object NormalAccountBalanceFactory {
    fun predefined(): List<NormalAccountBalanceType> {
       return normalAccountBalances
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class NormalAccountBalanceFactoryService(
-) {
+class NormalAccountBalanceFactoryService() {
    fun random() = NormalAccountBalanceFactory.random()
    fun predefined() = NormalAccountBalanceFactory.predefined()
 }

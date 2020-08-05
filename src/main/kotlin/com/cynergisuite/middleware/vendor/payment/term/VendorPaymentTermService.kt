@@ -16,7 +16,7 @@ class VendorPaymentTermService @Inject constructor(
 ) {
 
    fun fetchById(id: Long, company: Company): VendorPaymentTermDTO? =
-      vendorPaymentTermRepository.findOne(id, company)?.let{ VendorPaymentTermDTO(entity = it) }
+      vendorPaymentTermRepository.findOne(id, company)?.let { VendorPaymentTermDTO(entity = it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorPaymentTermDTO> {
       val found = vendorPaymentTermRepository.findAll(company, pageRequest)

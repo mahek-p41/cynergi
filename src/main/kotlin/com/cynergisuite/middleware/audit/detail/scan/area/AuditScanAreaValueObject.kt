@@ -8,7 +8,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditScanArea", title = "Area where an item was scanned", description = "Possible location within a store where an item was scanned as part of an audit")
-data class AuditScanAreaValueObject (
+data class AuditScanAreaValueObject(
 
    @field:NotNull
    @field:Size(min = 3, max = 15)

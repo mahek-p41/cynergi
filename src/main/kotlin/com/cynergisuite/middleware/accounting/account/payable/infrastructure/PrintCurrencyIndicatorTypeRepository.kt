@@ -59,5 +59,4 @@ class PrintCurrencyIndicatorTypeRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
-
 }

@@ -36,7 +36,7 @@ data class EmployeeEntity(
          alternativeArea = vo.alternativeArea!!
       )
 
-   fun getEmpName() : String = "$firstNameMi $lastName"
+   fun getEmpName(): String = "$firstNameMi $lastName"
    fun displayName(): String = "$number - $lastName"
 
    override fun myId(): Long? = id

@@ -13,7 +13,7 @@ data class AccountPayableControlEntity(
    val printCurrencyIndicatorType: PrintCurrencyIndicatorType,
    val lockInventoryIndicator: Boolean,
    val purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType
-   ) : Identifiable {
+) : Identifiable {
 
    constructor(dto: AccountPayableControlDTO, printCurrencyIndicatorType: PrintCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType) :
       this(

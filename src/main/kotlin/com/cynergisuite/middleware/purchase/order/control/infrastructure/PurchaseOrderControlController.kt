@@ -35,11 +35,13 @@ class PurchaseOrderControlController @Inject constructor(
 
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Fetch a single PurchaseOrderControlDTO", description = "Fetch a single PurchaseOrderControlDTO that is associated with the logged-in user's company", operationId = "purchaseOrderControl-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
-      ApiResponse(responseCode = "404", description = "The requested PurchaseOrderControl was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
+         ApiResponse(responseCode = "404", description = "The requested PurchaseOrderControl was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       authentication: Authentication
    ): PurchaseOrderControlDTO {
@@ -57,11 +59,13 @@ class PurchaseOrderControlController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoint"], summary = "Create a PurchaseOrderControlEntity", description = "Create a PurchaseOrderControlEntity", operationId = "purchaseOrderControl-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    @AccessControl("POCTLUP")
    fun create(
       @Body dto: PurchaseOrderControlDTO,
@@ -81,12 +85,14 @@ class PurchaseOrderControlController @Inject constructor(
    @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Update a PurchaseOrderControlEntity", description = "Update a PurchaseOrderControlEntity from a body of PurchaseOrderControlDTO", operationId = "purchaseOrderControl-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update PurchaseOrderControl", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested PurchaseOrderControl was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update PurchaseOrderControl", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderControlDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested PurchaseOrderControl was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    @AccessControl("POCTLUP")
    fun update(
       @QueryValue("id") id: Long,

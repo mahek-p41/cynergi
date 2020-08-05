@@ -18,7 +18,8 @@ class ScheduleCommandTypeRepository(
    fun findByValue(value: String): ScheduleCommandTypeEntity {
       logger.debug("Searching for schedule command by {}", value)
 
-      val found = jdbc.findFirst("""
+      val found = jdbc.findFirst(
+         """
          SELECT
             id AS sctd_id,
             value AS sctd_value,
@@ -28,7 +29,7 @@ class ScheduleCommandTypeRepository(
          WHERE UPPER(value) = UPPER(:value)
          """.trimIndent(),
          mapOf("value" to value),
-         RowMapper { rs, _ ->  mapRow(rs) }
+         RowMapper { rs, _ -> mapRow(rs) }
       )
 
       logger.debug("Searching for schedule command by {} resulted in {}", value, found)

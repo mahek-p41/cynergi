@@ -43,5 +43,4 @@ data class AuthenticatedUserInformation(
          permissions = permissions,
          securityLevels = securityLevels
       )
-
 }

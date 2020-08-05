@@ -24,18 +24,20 @@ import javax.inject.Inject
 class PurchaseOrderNumberRequiredIndicatorTypeController @Inject constructor(
    private val purchaseOrderNumberRequiredIndicatorTypeService: PurchaseOrderNumberRequiredIndicatorTypeService,
    private val localizationService: LocalizationService
-){
+) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderNumberRequiredIndicatorTypeController::class.java)
 
    @Get
    @Operation(tags = ["PurchaseOrderNumberRequiredIndicatorTypeEndpoints"], summary = "Fetch a list of purchase order number required indicator types", description = "Fetch a listing of purchase order number required indicator types", operationId = "purchaseOrderNumberRequiredIndicatorType-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderNumberRequiredIndicatorTypeDTO::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = PurchaseOrderNumberRequiredIndicatorTypeDTO::class))])
+      ]
+   )
    fun fetchAll(httpRequest: HttpRequest<*>): List<PurchaseOrderNumberRequiredIndicatorTypeDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
-      val types = purchaseOrderNumberRequiredIndicatorTypeService.fetchAll().map{
+      val types = purchaseOrderNumberRequiredIndicatorTypeService.fetchAll().map {
          PurchaseOrderNumberRequiredIndicatorTypeDTO(it, it.localizeMyDescription(locale, localizationService))
       }
 

@@ -36,13 +36,11 @@ object PurchaseOrderNumberRequiredIndicatorTypeDataLoader {
    fun predefined(): List<PurchaseOrderNumberRequiredIndicatorType> {
       return purchaseOrderNumberRequiredIndicatorType
    }
-
 }
 
 @Singleton
 @Requires(env = ["develop", "test"])
-class PurchaseOrderNumberRequiredIndicatorTypeDataLoaderService(
-) {
+class PurchaseOrderNumberRequiredIndicatorTypeDataLoaderService() {
    fun random() = PurchaseOrderNumberRequiredIndicatorTypeDataLoader.random()
    fun predefined() = PurchaseOrderNumberRequiredIndicatorTypeDataLoader.predefined()
 }

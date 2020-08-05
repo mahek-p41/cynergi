@@ -10,7 +10,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "VerificationReference", title = "Reference Verification for a customer", description = "Reference verification for a single customer associated with a Verification")
-data class VerificationReferenceValueObject (
+data class VerificationReferenceValueObject(
 
    @field:Positive
    var id: Long? = null,
@@ -61,4 +61,3 @@ data class VerificationReferenceValueObject (
 
    override fun myId(): Long? = id
 }
-

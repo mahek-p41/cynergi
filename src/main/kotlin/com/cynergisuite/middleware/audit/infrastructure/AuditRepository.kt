@@ -42,7 +42,7 @@ class AuditRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
    private fun selectByIdBaseQuery(): String =
-   """
+      """
       WITH employees AS (
          ${employeeRepository.employeeBaseQuery()}
       )
@@ -117,7 +117,8 @@ class AuditRepository @Inject constructor(
            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
    """
 
-   private fun selectAllBaseQuery(whereClause: String): String ="""
+   private fun selectAllBaseQuery(whereClause: String): String =
+      """
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
          ), audits AS (
@@ -240,7 +241,8 @@ class AuditRepository @Inject constructor(
     * but won't get the store of region belong to another company
     * which have the same store number
     **/
-   private val subQuery = """
+   private val subQuery =
+      """
                            (rts.region_id IS null
                               OR rts.region_id NOT IN (
                                     SELECT region.id
@@ -263,9 +265,10 @@ class AuditRepository @Inject constructor(
 
    fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
       val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(CREATED.value, IN_PROGRESS.value))
-      val whereClause = """ WHERE a.store_number = :store_number
+      val whereClause =
+         """ WHERE a.store_number = :store_number
                                                 AND current_status IN (:current_status)
-      """.trimIndent()
+         """.trimIndent()
       val query = selectAllBaseQuery(whereClause)
 
       logger.debug("Searching for one audit in either CREATED or IN_PROGRESS for store {} \n Params {} \n Query {}", store, params, query)
@@ -281,17 +284,16 @@ class AuditRepository @Inject constructor(
          var currentParentEntity: AuditEntity? = null
 
          do {
-               val tempId = rs.getLong("a_id")
-               val tempParentEntity: AuditEntity = if (tempId != currentId) {
-                  currentId = tempId
-                  currentParentEntity = mapRow(rs)
-                  elements.add(currentParentEntity)
-                  currentParentEntity
-               } else {
-                  currentParentEntity!!
-               }
-               tempParentEntity.actions.add(mapAuditAction(rs))
-
+            val tempId = rs.getLong("a_id")
+            val tempParentEntity: AuditEntity = if (tempId != currentId) {
+               currentId = tempId
+               currentParentEntity = mapRow(rs)
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
+            }
+            tempParentEntity.actions.add(mapAuditAction(rs))
          } while (rs.next())
       }
 
@@ -304,7 +306,7 @@ class AuditRepository @Inject constructor(
 
          do {
             audit.actions.add(mapAuditAction(rs))
-         } while(rs.next())
+         } while (rs.next())
 
          audit
       }
@@ -345,7 +347,8 @@ class AuditRepository @Inject constructor(
 
       whereClause.append(" AND $subQuery ")
 
-      val sql = """
+      val sql =
+         """
          WITH maxStatus AS (
             SELECT MAX(id) AS current_status_id, audit_id
             FROM audit_action
@@ -404,7 +407,7 @@ class AuditRepository @Inject constructor(
          $whereClause
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
-      """.trimIndent()
+         """.trimIndent()
 
       logger.trace("Finding all audits using {}\n{}", params, sql)
 
@@ -415,7 +418,7 @@ class AuditRepository @Inject constructor(
             elements.add(audit)
 
             auditIds.add(audit.id!!)
-         } while(rs.next())
+         } while (rs.next())
       }
 
       val actions = auditActionRepository.findAll(auditIds)
@@ -466,7 +469,8 @@ class AuditRepository @Inject constructor(
 
       whereClause.append(" AND $subQuery ")
 
-      val sql = """
+      val sql =
+         """
          WITH status AS (
             SELECT
                csastd.id AS current_status_id,
@@ -523,7 +527,8 @@ class AuditRepository @Inject constructor(
    }
 
    fun countAuditsNotCompletedOrCanceled(storeNumber: Int, company: Company): Int =
-      jdbc.queryForObject("""
+      jdbc.queryForObject(
+         """
          SELECT COUNT (*)
          FROM (
             SELECT *
@@ -611,7 +616,7 @@ class AuditRepository @Inject constructor(
    }
 
    private fun processAlternativeStoreIndicator(whereClause: StringBuilder, params: MutableMap<String, Any?>, user: User) {
-      when(user.myAlternativeStoreIndicator()) {
+      when (user.myAlternativeStoreIndicator()) {
          "N" -> {
             whereClause.append(" AND a.store_number = :store_number ")
             params["store_number"] = user.myLocation().myNumber()

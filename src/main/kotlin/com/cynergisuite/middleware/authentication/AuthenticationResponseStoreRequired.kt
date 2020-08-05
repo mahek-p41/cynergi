@@ -5,6 +5,6 @@ import java.util.Optional
 
 class AuthenticationResponseStoreRequired(
    private val employeeNumber: Int
-): AuthenticationFailed() {
+) : AuthenticationFailed() {
    override fun getMessage(): Optional<String> = Optional.of(employeeNumber.toString())
 }

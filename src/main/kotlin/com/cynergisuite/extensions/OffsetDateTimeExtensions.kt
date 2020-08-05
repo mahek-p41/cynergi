@@ -18,7 +18,6 @@ fun OffsetDateTime.endOfWeek(): OffsetDateTime =
       .plusDays(7)
       .minusNanos(1)
 
-
 fun OffsetDateTime.beginningOfDay(): OffsetDateTime {
    return this
       .withHour(0)

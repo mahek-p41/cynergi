@@ -18,5 +18,4 @@ data class StoreEntity(
    override fun myName(): String = name
    override fun myRegion(): RegionEntity? = region
    override fun myCompany(): Company = region?.division?.company ?: company
-
 }

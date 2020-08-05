@@ -11,7 +11,7 @@ import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Bank", title = "An entity containing a bank information", description = "An entity containing a bank information.")
-data class BankDTO (
+data class BankDTO(
 
    @field:Positive
    var id: Long? = null,
@@ -29,7 +29,7 @@ data class BankDTO (
    @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
    var generalLedgerAccount: SimpleIdentifiableDTO? = null
 
-   ) : Identifiable {
+) : Identifiable {
    constructor(bankEntity: BankEntity) :
       this(
          id = bankEntity.id,

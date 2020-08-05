@@ -20,7 +20,8 @@ class ScheduleTypeRepository(
    fun findOne(id: Long): ScheduleTypeEntity {
       logger.debug("Searching for schedule type by id {}", id)
 
-      val found = jdbc.findFirst("""
+      val found = jdbc.findFirst(
+         """
          SELECT
             id AS std_id,
             value AS std_value,
@@ -30,7 +31,8 @@ class ScheduleTypeRepository(
          WHERE id = :id
          """.trimIndent(),
          mapOf("id" to id),
-         RowMapper { rs, _ -> mapRow(rs) })
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for schedule type by id {} resulted in {}", id, found)
 
@@ -40,7 +42,8 @@ class ScheduleTypeRepository(
    fun findByValue(value: String): ScheduleTypeEntity {
       logger.debug("Search for schedule type by value {}", value)
 
-      val found = jdbc.findFirst("""
+      val found = jdbc.findFirst(
+         """
          SELECT
             id AS std_id,
             value AS std_value,
@@ -50,7 +53,8 @@ class ScheduleTypeRepository(
          WHERE value = :value
          """.trimIndent(),
          mapOf("value" to value),
-         RowMapper { rs, _ -> mapRow(rs) })
+         RowMapper { rs, _ -> mapRow(rs) }
+      )
 
       logger.trace("Searching for schedule type by value {} resulted in {}", value, found)
 
@@ -61,7 +65,8 @@ class ScheduleTypeRepository(
       var totalElements: Long? = null
       val elements = mutableListOf<ScheduleTypeEntity>()
 
-      jdbc.query("""
+      jdbc.query(
+         """
          SELECT
             id AS std_id,
             value AS std_value,
@@ -72,7 +77,8 @@ class ScheduleTypeRepository(
          ORDER BY std_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
                LIMIT ${pageRequest.size()}
                OFFSET ${pageRequest.offset()}
-         """.trimIndent()) { rs ->
+         """.trimIndent()
+      ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }

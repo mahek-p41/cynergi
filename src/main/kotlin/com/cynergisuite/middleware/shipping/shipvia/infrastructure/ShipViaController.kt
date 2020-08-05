@@ -43,13 +43,16 @@ class ShipViaController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get("/{id}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a single Ship Via", description = "Fetch a single Ship Via by it's system generated primary key", operationId = "shipvia-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If the Ship Via was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
-      ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Ship Via was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+         ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Ship Via with", `in` = PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Ship Via with", `in` = PATH) @QueryValue("id")
+      id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ShipViaValueObject {
@@ -66,18 +69,21 @@ class ShipViaController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(value = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a listing of Ship Vias", description = "Fetch a paginated listing of Ship Vias", operationId = "shipvia-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If there are Ship Vias that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested Ship Via was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If there are Ship Vias that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Ship Via was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @Valid @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<ShipViaValueObject> {
       val user = userService.findUser(authentication)
-      val page =  shipViaService.fetchAll(pageRequest, user.myCompany())
+      val page = shipViaService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -89,12 +95,14 @@ class ShipViaController @Inject constructor(
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to save Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to save Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun save(
       @Body vo: ShipViaValueObject,
       authentication: Authentication,
@@ -113,12 +121,14 @@ class ShipViaController @Inject constructor(
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully able to update Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
-      ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
-      ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
       @Body vo: ShipViaValueObject,
       authentication: Authentication

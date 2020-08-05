@@ -8,7 +8,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "FreightOnboardType", title = "Freight Onboard Type", description = "Freight Onboard Type")
-data class FreightOnboardTypeDTO (
+data class FreightOnboardTypeDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 15)

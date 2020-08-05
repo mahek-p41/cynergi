@@ -43,12 +43,14 @@ class VendorGroupController @Inject constructor(
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Fetch a single VendorGroup", description = "Fetch a single VendorGroup by it's system generated primary key", operationId = "vendorGroup-fetchOne")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested VendorGroup was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested VendorGroup was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchOne(
       @QueryValue("id") id: Long,
       authentication: Authentication,
@@ -67,21 +69,24 @@ class VendorGroupController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Fetch a listing of VendorGroups", description = "Fetch a paginated listing of VendorGroups including associated schedule records", operationId = "vendorGroup-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-      ApiResponse(responseCode = "204", description = "The requested VendorGroup was unable to be found, or the result is empty"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested VendorGroup was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") pageRequest: StandardPageRequest,
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<VendorGroupDTO> {
       logger.info("Fetching all VendorGroups {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page =  vendorGroupService.fetchAll(user.myCompany(), pageRequest)
+      val page = vendorGroupService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -94,13 +99,15 @@ class VendorGroupController @Inject constructor(
    @AccessControl("vendorGroup-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Create a single VendorGroup", description = "Create a single VendorGroup. The logged in Employee is used for the scannedBy property", operationId = "vendorGroup-create")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If the request body is invalid"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The VendorGroup was unable to be found or the scanArea was unknown"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The VendorGroup was unable to be found or the scanArea was unknown"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun create(
       @Body vo: VendorGroupDTO,
       authentication: Authentication,
@@ -120,15 +127,18 @@ class VendorGroupController @Inject constructor(
    @AccessControl("vendorGroup-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Update a single VendorGroup", description = "Update a single VendorGroup where the update is the addition of a note", operationId = "vendorGroup-update")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
-      ApiResponse(responseCode = "400", description = "If request body is invalid"),
-      ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-      ApiResponse(responseCode = "404", description = "The requested VendorGroup was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorGroupDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested VendorGroup was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun update(
-      @Parameter(name = "id", `in` = PATH, description = "The id for the VendorGroup being updated") @QueryValue("id") id: Long,
+      @Parameter(name = "id", `in` = PATH, description = "The id for the VendorGroup being updated") @QueryValue("id")
+      id: Long,
       @Body vo: VendorGroupDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>

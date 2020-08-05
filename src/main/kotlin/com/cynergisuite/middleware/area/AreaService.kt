@@ -37,14 +37,15 @@ class AreaService @Inject constructor(
                   .map {
                      ModuleDTO(
                         type = it,
-                        localizedDescription = it.localizeMyDescription(locale, localizationService))
+                        localizedDescription = it.localizeMyDescription(locale, localizationService)
+                     )
                   }
 
                MenuDTO(
                   type = menuType,
                   localizedDescription = menuType.localizeMyDescription(locale, localizationService),
-                  modules = moduleTypes)
+                  modules = moduleTypes
+               )
             }
       )
-
 }

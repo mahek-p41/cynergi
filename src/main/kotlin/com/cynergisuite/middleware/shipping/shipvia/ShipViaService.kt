@@ -17,7 +17,7 @@ class ShipViaService @Inject constructor(
 ) {
 
    fun fetchById(id: Long, company: Company): ShipViaValueObject? =
-      shipViaRepository.findOne(id, company)?.let{ ShipViaValueObject(entity = it) }
+      shipViaRepository.findOne(id, company)?.let { ShipViaValueObject(entity = it) }
 
    @Validated
    fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<ShipViaValueObject> {

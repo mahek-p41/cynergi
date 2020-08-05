@@ -9,7 +9,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "ApprovalRequiredFlag", title = "Approval required flag", description = "Approval required flag type")
-data class ApprovalRequiredFlagDTO (
+data class ApprovalRequiredFlagDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)

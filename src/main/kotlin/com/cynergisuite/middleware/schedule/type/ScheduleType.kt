@@ -31,6 +31,6 @@ data class ScheduleTypeEntity(
    override val localizationCode: String
 ) : ScheduleType(id, value, description, localizationCode)
 
-object Weekly: ScheduleType(1, "WEEKLY", "Weekly", "schedule.weekly")
+object Weekly : ScheduleType(1, "WEEKLY", "Weekly", "schedule.weekly")
 
 typealias WEEKLY = Weekly

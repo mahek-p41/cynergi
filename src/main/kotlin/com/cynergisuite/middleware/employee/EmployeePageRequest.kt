@@ -58,5 +58,4 @@ class EmployeePageRequest(
          "lastName" to lastName,
          "search" to search
       )
-
 }

@@ -72,8 +72,10 @@ class AccountRepository @Inject constructor(
    fun findOne(id: Long, company: Company): AccountEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id"
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ ->
-         mapRow(rs, company, "account_")
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
+            mapRow(rs, company, "account_")
          }
       )
 
@@ -86,7 +88,8 @@ class AccountRepository @Inject constructor(
       var totalElements: Long? = null
       val resultList: MutableList<AccountEntity> = mutableListOf()
 
-      jdbc.query("""
+      jdbc.query(
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE comp.id = :comp_id
@@ -134,7 +137,8 @@ class AccountRepository @Inject constructor(
          EMPTY
       }
 
-      return jdbc.queryPaged("""
+      return jdbc.queryPaged(
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             $where
@@ -164,7 +168,8 @@ class AccountRepository @Inject constructor(
    fun insert(account: AccountEntity): AccountEntity {
       logger.debug("Inserting bank {}", account)
 
-      return jdbc.insertReturning("""
+      return jdbc.insertReturning(
+         """
          INSERT INTO account(company_id, name, type_id, normal_account_balance_type_id, status_type_id, form_1099_field, corporate_account_indicator)
 	      VALUES (:company_id, :name, :type_id, :normal_account_balance_type_id, :status_type_id, :form_1099_field, :corporate_account_indicator)
          RETURNING
@@ -189,7 +194,8 @@ class AccountRepository @Inject constructor(
    fun update(account: AccountEntity): AccountEntity {
       logger.debug("Updating account {}", account)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE account
          SET
             company_id = :company_id,

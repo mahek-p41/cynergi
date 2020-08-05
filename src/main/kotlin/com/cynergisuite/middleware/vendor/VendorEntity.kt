@@ -13,7 +13,7 @@ import java.math.BigDecimal
 data class VendorEntity(
    val id: Long? = null,
    val company: Company,
-   val name: String, //30 max
+   val name: String, // 30 max
    val address: AddressEntity,
    val ourAccountNumber: Int,
    val payTo: Identifiable?, // another vendor
@@ -29,9 +29,9 @@ data class VendorEntity(
    val freeShipQuantity: Int?,
    val freeShipAmount: BigDecimal?,
    val vendor1099: Boolean = false,
-   val federalIdNumber: String?, //12 max
-   val salesRepresentativeName: String?, //20 max
-   val salesRepresentativeFax: String?, //20 max
+   val federalIdNumber: String?, // 12 max
+   val salesRepresentativeName: String?, // 20 max
+   val salesRepresentativeFax: String?, // 20 max
    val separateCheck: Boolean = false,
    val bumpPercent: BigDecimal?,
    val freightCalcMethodType: FreightCalcMethodType,
@@ -42,7 +42,7 @@ data class VendorEntity(
    val chargeInventoryTax3: Boolean = false,
    val chargeInventoryTax4: Boolean = false,
    val federalIdNumberVerification: Boolean = false,
-   val emailAddress: String?, //New Field 320 max
+   val emailAddress: String?, // New Field 320 max
    val purchaseOrderSubmitEmailAddress: String?,
    val allowDropShipToCustomer: Boolean = false,
    val autoSubmitPurchaseOrder: Boolean = false

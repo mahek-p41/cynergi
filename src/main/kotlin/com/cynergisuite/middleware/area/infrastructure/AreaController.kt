@@ -37,9 +37,11 @@ class AreaController @Inject constructor(
 
    @Get
    @Operation(tags = ["AreaEndpoints"], description = "Fetch the canonical structure of areas - menus - modules", operationId = "area-fetchAll")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaDTO::class))])
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaDTO::class))])
+      ]
+   )
    fun fetchAll(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
@@ -58,11 +60,13 @@ class AreaController @Inject constructor(
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], description = "Enable area for company.", operationId = "enable-area")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully enable area for company"),
-      ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully enable area for company"),
+         ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun enableArea(
       @Body areaIdDTO: SimpleIdentifiableDTO,
       authentication: Authentication,
@@ -79,11 +83,13 @@ class AreaController @Inject constructor(
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], description = "Disable area for company.", operationId = "disable-area")
-   @ApiResponses(value = [
-      ApiResponse(responseCode = "200", description = "If successfully disable area for company"),
-      ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
-      ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-   ])
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully disable area for company"),
+         ApiResponse(responseCode = "400", description = "If the area was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
    fun disableArea(
       @Body areaIdDTO: SimpleIdentifiableDTO,
       authentication: Authentication,
@@ -95,5 +101,4 @@ class AreaController @Inject constructor(
 
       areaService.disableArea(company, areaIdDTO.id!!)
    }
-
 }
