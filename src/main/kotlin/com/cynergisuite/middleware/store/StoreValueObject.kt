@@ -22,8 +22,8 @@ data class StoreValueObject(
    @field:Positive
    @field:NotNull
    @field:JsonProperty("storeNumber")
-   @field:Schema(name = "number", minimum = "1", required = true, nullable = false, description = "Store number")
-   var number: Int? = null,
+   @field:Schema(name = "storeNumber", minimum = "1", required = true, nullable = false, description = "Store number")
+   var storeNumber: Int? = null,
 
    @field:NotNull
    @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a store")
@@ -39,7 +39,7 @@ data class StoreValueObject(
    constructor(entity: StoreEntity) :
       this(
          id = entity.id,
-         number = entity.number,
+         storeNumber = entity.number,
          name = entity.name,
          region = entity.region?.toValueObject()
       )
@@ -47,7 +47,7 @@ data class StoreValueObject(
    constructor(location: Location) :
       this(
          id = location.myId(),
-         number = location.myNumber(),
+         storeNumber = location.myNumber(),
          name = location.myName()
       )
 

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.lang.StringBuilder
 import java.sql.ResultSet
+import java.sql.SQLException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -224,9 +225,13 @@ class StoreRepository @Inject constructor(
       )
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
-      if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, company, columnPrefix)
-      } else {
+      try {
+         if (rs.getString("${columnPrefix}id") != null) {
+            mapRow(rs, company, columnPrefix)
+         } else {
+            null
+         }
+      } catch (e: SQLException) {
          null
       }
 }

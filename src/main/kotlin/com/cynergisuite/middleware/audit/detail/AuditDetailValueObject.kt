@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -16,59 +16,59 @@ import javax.validation.constraints.Size
 @Schema(name = "AuditDetail", title = "Single item associated with an Audit", description = "Single line item that has been successfully found during the audit process")
 data class AuditDetailValueObject(
 
-   @field:Positive
+        @field:Positive
    var id: Long? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:Schema(required = true)
-   var scanArea: AuditScanAreaValueObject? = null,
+   var scanArea: AuditScanAreaDTO? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:NotBlank
    @field:Size(min = 1, max = 200)
    var barcode: String? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var serialNumber: String? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var productCode: String? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var altId: String? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var inventoryBrand: String? = null,
 
-   @field:NotNull
+        @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var inventoryModel: String? = null,
 
-   @field:NotNull
+        @field:NotNull
    var scannedBy: EmployeeValueObject? = null,
 
-   @field:NotNull
+        @field:NotNull
    var audit: Identifiable? = null
 
 ) : Identifiable {
 
-   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaDTO) :
       this(
          entity = entity,
          audit = SimpleIdentifiableValueObject(entity.audit),
          auditScanArea = auditScanArea
       )
 
-   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaDTO) :
       this(
          id = entity.id,
          scanArea = auditScanArea,

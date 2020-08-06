@@ -5,7 +5,8 @@ CREATE TABLE audit_scan_area (
    time_updated            TIMESTAMPTZ DEFAULT clock_timestamp()              NOT NULL,
    name                    VARCHAR(50)                                        NOT NULL,
    store_number_sfk        BIGINT                                             NOT NULL,
-   company_id              BIGINT REFERENCES company(id)                      NOT NULL
+   company_id              BIGINT REFERENCES company(id)                      NOT NULL,
+   UNIQUE (name, store_number_sfk, company_id)
 );
 
 CREATE TRIGGER update_audit_scan_area_trg BEFORE
@@ -36,13 +37,11 @@ audit_scan_area area
    JOIN audit_scan_area_type_domain t ON	area.name = t.description
 WHERE d.audit_id = a.id AND t.id = d.scan_area_id;
 
---ALTER TABLE audit_detail
---DROP COLUMN scan_area_id;
---
---ALTER TABLE audit_detail
---RENAME COLUMN scan_area_id_2 TO scan_area_id;
+ALTER TABLE audit_detail
+DROP COLUMN scan_area_id;
 
--- Migrate audit_exception table
+ALTER TABLE audit_detail
+RENAME COLUMN scan_area_id_2 TO scan_area_id;
 
 ALTER TABLE audit_exception
 ADD COLUMN scan_area_id_2 BIGINT REFERENCES audit_scan_area(id);
@@ -55,8 +54,10 @@ audit_scan_area area
    JOIN audit_scan_area_type_domain t ON	area.name = t.description
 WHERE d.audit_id = a.id AND t.id = d.scan_area_id;
 
---ALTER TABLE audit_exception
---DROP COLUMN scan_area_id;
---
---ALTER TABLE audit_exception
---RENAME COLUMN scan_area_id_2 TO scan_area_id;
+ALTER TABLE audit_exception
+DROP COLUMN scan_area_id;
+
+ALTER TABLE audit_exception
+RENAME COLUMN scan_area_id_2 TO scan_area_id;
+
+DROP TABLE audit_scan_area_type_domain;

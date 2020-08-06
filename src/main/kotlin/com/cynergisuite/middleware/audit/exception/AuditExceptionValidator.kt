@@ -1,15 +1,17 @@
 package com.cynergisuite.middleware.audit.exception
 
+import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
@@ -62,15 +64,7 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (scanArea != null) {
-            val scanAreaValue = scanArea.value
-
-            if (scanAreaValue != null && scanAreaRepository.doesNotExist(scanAreaValue)) {
-               errors.add(
-                  ValidationError("audit.scanArea", AuditScanAreaNotFound(scanAreaValue))
-               )
-            }
-         }
+         if (!scanAreaRepository.exists(scanArea!!.id!!)) errors.add(ValidationError("audit.scanArea.id", NotFound(scanArea.id!!)))
 
          if (employeeRepository.doesNotExist(enteredBy)) {
             errors.add(
@@ -79,27 +73,24 @@ class AuditExceptionValidator @Inject constructor (
          }
       }
 
+      val scanArea = auditScanAreaRepository.findOne(auditException.scanArea?.id!!, enteredBy.myCompany())
       val inventoryId = auditException.inventory?.id
       val barcode = auditException.barcode
-      val scanArea = auditException.scanArea
 
-      return createAuditException(auditId, enteredBy, auditException.exceptionCode!!, inventoryId, barcode, scanArea)
+      return createAuditException(auditId, enteredBy, scanArea!!, auditException.exceptionCode!!, inventoryId, barcode)
    }
 
-   private fun createAuditException(auditId: Long, enteredBy: User, exceptionCode: String, inventoryId: Long?, barcode: String?, scanArea: AuditScanAreaValueObject?): AuditExceptionEntity {
+   private fun createAuditException(auditId: Long, enteredBy: User, scanArea: AuditScanAreaEntity, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {
       val employeeUser = employeeRepository.findOne(enteredBy)!!
 
       return if (inventoryId != null) {
          val inventory = inventoryRepository.findOne(inventoryId, enteredBy.myCompany())!!
 
-         AuditExceptionEntity(auditId, inventory, createScanArea(scanArea), employeeUser, exceptionCode)
+         AuditExceptionEntity(auditId, inventory, scanArea, employeeUser, exceptionCode)
       } else {
-         AuditExceptionEntity(auditId, barcode!!, createScanArea(scanArea), employeeUser, exceptionCode)
+         AuditExceptionEntity(auditId, barcode!!, scanArea, employeeUser, exceptionCode)
       }
    }
-
-   private fun createScanArea(scanArea: AuditScanAreaValueObject?): AuditScanArea? =
-      scanArea?.let { auditScanAreaRepository.findOne(it.value!!) }
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {

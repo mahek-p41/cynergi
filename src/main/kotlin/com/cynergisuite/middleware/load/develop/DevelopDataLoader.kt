@@ -95,31 +95,34 @@ class DevelopDataLoader @Inject constructor(
       // end setting up corptp stores and employees
 
       // audit store holding areas
-      val warehouse = auditScanAreaFactoryService.warehouse()
-      val showroom = auditScanAreaFactoryService.showroom()
-      val storeroom = auditScanAreaFactoryService.storeroom()
+      val store1Warehouse = auditScanAreaFactoryService.warehouse(corrtoStore1, corptp)
+      val store1Showroom = auditScanAreaFactoryService.showroom(corrtoStore1, corptp)
+      val store1Storeroom = auditScanAreaFactoryService.storeroom(corrtoStore1, corptp)
+      val store3Warehouse = auditScanAreaFactoryService.warehouse(corrtoStore1, corptp)
+      val store3Showroom = auditScanAreaFactoryService.showroom(corrtoStore1, corptp)
+      val store3Storeroom = auditScanAreaFactoryService.storeroom(corrtoStore1, corptp)
 
       // setup store one completed audit
       val completedStore1Audit = auditFactoryService.single(corrtoStore1StoreManager, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
       // Audit detail count 21
-      auditDetailFactoryService.generate(11, completedStore1Audit, corrtoStore1StoreManager, warehouse)
-      auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, showroom)
-      auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, storeroom)
+      auditDetailFactoryService.generate(11, completedStore1Audit, corrtoStore1StoreManager, store1Warehouse)
+      auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, store1Showroom)
+      auditDetailFactoryService.generate(5, completedStore1Audit, corrtoStore1StoreManager, store1Storeroom)
       // create random [0..2] notes for each audit exception
-      auditExceptionFactoryService.stream(25, completedStore1Audit, corrtoStore1StoreManager).forEach {
+      auditExceptionFactoryService.stream(25, completedStore1Audit, store1Warehouse, corrtoStore1StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore1StoreManager).forEach { }
       }
 
       // setup store three open audit
       val openStore3Audit = auditFactoryService.single(corrtoStore3StoreManager.store!!)
-      auditDetailFactoryService.generate(9, openStore3Audit, corrtoStore3StoreManager, warehouse)
-      auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, showroom)
-      auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, storeroom)
+      auditDetailFactoryService.generate(9, openStore3Audit, corrtoStore3StoreManager, store3Warehouse)
+      auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, store3Showroom)
+      auditDetailFactoryService.generate(5, openStore3Audit, corrtoStore3StoreManager, store3Storeroom)
       // create random [0..2] notes for each audit exception
-      auditExceptionFactoryService.stream(26, openStore3Audit, corrtoStore3StoreManager).forEach {
+      auditExceptionFactoryService.stream(26, openStore3Audit, store3Showroom, corrtoStore3StoreManager).forEach {
          auditExceptionNoteFactoryService.stream(Random.nextInt(2), it, corrtoStore3StoreManager).forEach {}
       }
-      val auditException = auditExceptionFactoryService.single(openStore3Audit, corrtoStore3StoreManager, true)
+      val auditException = auditExceptionFactoryService.single(openStore3Audit, store3Showroom, corrtoStore3StoreManager, true)
       auditExceptionNoteFactoryService.stream(Random.nextInt(2), auditException, corrtoStore3StoreManager).forEach { }
 
       // setup store one canceled audit

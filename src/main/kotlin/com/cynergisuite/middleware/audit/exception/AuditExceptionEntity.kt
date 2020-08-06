@@ -9,23 +9,23 @@ import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
 
 data class AuditExceptionEntity(
-   val id: Long? = null,
-   val timeCreated: OffsetDateTime = OffsetDateTime.now(),
-   val timeUpdated: OffsetDateTime = timeCreated,
-   val scanArea: AuditScanAreaEntity?,
-   val barcode: String,
-   val productCode: String?,
-   val altId: String?,
-   val serialNumber: String?,
-   val inventoryBrand: String?,
-   val inventoryModel: String?,
-   val scannedBy: EmployeeEntity, // FIXME convert to Employee
-   val exceptionCode: String,
-   val approved: Boolean = false,
-   val approvedBy: EmployeeEntity? = null,
-   val lookupKey: String?,
-   val notes: MutableList<AuditExceptionNote> = mutableListOf(),
-   val audit: Identifiable
+        val id: Long? = null,
+        val timeCreated: OffsetDateTime = OffsetDateTime.now(),
+        val timeUpdated: OffsetDateTime = timeCreated,
+        val scanArea: AuditScanAreaEntity?,
+        val barcode: String,
+        val productCode: String?,
+        val altId: String?,
+        val serialNumber: String?,
+        val inventoryBrand: String?,
+        val inventoryModel: String?,
+        val scannedBy: EmployeeEntity, // FIXME convert to Employee
+        val exceptionCode: String,
+        val approved: Boolean = false,
+        val approvedBy: EmployeeEntity? = null,
+        val lookupKey: String?,
+        val notes: MutableList<AuditExceptionNote> = mutableListOf(),
+        val audit: Identifiable
 ) : Identifiable {
 
    constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
