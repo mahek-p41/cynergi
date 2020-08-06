@@ -38,6 +38,8 @@ CREATE TABLE account_payable_control
     print_currency_indicator_type_id                 BIGINT REFERENCES print_currency_indicator_type_domain (id)                 NOT NULL,
     lock_inventory_indicator                         BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
     purchase_order_number_required_indicator_type_id BIGINT REFERENCES purchase_order_number_required_indicator_type_domain (id) NOT NULL,
+    general_ledger_inventory_clearing_account_id     BIGINT REFERENCES account(id)                                               NOT NULL,
+    general_ledger_inventory_account_id              BIGINT REFERENCES account(id)                                               NOT NULL,
     UNIQUE (company_id)
 );
 CREATE TRIGGER account_payable_control_trg
@@ -51,3 +53,9 @@ CREATE INDEX account_payable_ctl_print_currency_indicator_type_id_idx
     ON account_payable_control (print_currency_indicator_type_id);
 CREATE INDEX account_payable_ctl_po_nbr_required_indicator_type_id_idx
     ON account_payable_control (purchase_order_number_required_indicator_type_id);
+CREATE INDEX account_payable_ctl_clearing_account_idx
+    ON account_payable_control (general_ledger_inventory_clearing_account_id);
+CREATE INDEX account_payable_ctl_inventory_account_idx
+    ON account_payable_control (general_ledger_inventory_account_id);
+
+
