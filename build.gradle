@@ -143,7 +143,7 @@ compileTestKotlin {
    }
 }
 
-task flywayMigrateCynegiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+task flywayMigrateCynergiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:6432/cynergidb"
    user = "postgres"
    password = "password"

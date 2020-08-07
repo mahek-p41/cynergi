@@ -9,6 +9,6 @@ if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | gr
 else
   echo "Migrating cynergidb"
   cd ../../
-  ./gradlew flywayMigrateCynegiDb
+  ./gradlew flywayMigrateCynergiDb
   exit $?
 fi
