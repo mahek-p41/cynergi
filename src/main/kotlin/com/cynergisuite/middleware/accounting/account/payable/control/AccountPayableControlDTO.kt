@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -43,10 +44,22 @@ data class AccountPayableControlDTO(
 
    @field:NotNull
    @field:Schema(description = "Purchase order number required indicator type")
-   var purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorTypeDTO? = null
+   var purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorTypeDTO? = null,
+
+   @field:NotNull
+   @field:Schema(description = "General ledger inventory clearing account")
+   var generalLedgerInventoryClearingAccount: SimpleIdentifiableDTO? = null,
+
+   @field:NotNull
+   @field:Schema(description = "General ledger inventory account")
+   var generalLedgerInventoryAccount: SimpleIdentifiableDTO? = null
 
 ) : Identifiable {
-   constructor(entity: AccountPayableControlEntity, printCurrencyIndicatorType: PrintCurrencyIndicatorTypeDTO, purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorTypeDTO) :
+   constructor(
+      entity: AccountPayableControlEntity,
+      printCurrencyIndicatorType: PrintCurrencyIndicatorTypeDTO,
+      purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorTypeDTO
+   ) :
       this(
          id = entity.id,
          payAfterDiscountDate = entity.payAfterDiscountDate,
@@ -55,7 +68,9 @@ data class AccountPayableControlDTO(
          tradeCompanyIndicator = entity.tradeCompanyIndicator,
          printCurrencyIndicatorType = printCurrencyIndicatorType,
          lockInventoryIndicator = entity.lockInventoryIndicator,
-         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType
+         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType,
+         generalLedgerInventoryClearingAccount = entity.generalLedgerInventoryClearingAccount.let { SimpleIdentifiableDTO(it) },
+         generalLedgerInventoryAccount = entity.generalLedgerInventoryAccount.let { SimpleIdentifiableDTO(it) }
       )
 
    override fun myId(): Long? = id

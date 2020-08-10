@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.control
 
+import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
@@ -16,7 +18,7 @@ import kotlin.random.Random
 object AccountPayableControlDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1): Stream<AccountPayableControlEntity> {
+   fun stream(numberIn: Int = 1, generalLedgerInventoryClearingAccount: AccountEntity, generalLedgerInventoryAccount: AccountEntity): Stream<AccountPayableControlEntity> {
       val number = if (numberIn > 0) numberIn else 1
 
       return IntStream.range(0, number).mapToObj {
@@ -28,13 +30,15 @@ object AccountPayableControlDataLoader {
             tradeCompanyIndicator = Random.nextBoolean(),
             printCurrencyIndicatorType = PrintCurrencyIndicatorTypeDataLoader.random(),
             lockInventoryIndicator = Random.nextBoolean(),
-            purchaseOrderNumberRequiredIndicatorType = PurchaseOrderNumberRequiredIndicatorTypeDataLoader.random()
+            purchaseOrderNumberRequiredIndicatorType = PurchaseOrderNumberRequiredIndicatorTypeDataLoader.random(),
+            generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount,
+            generalLedgerInventoryAccount = generalLedgerInventoryAccount
          )
       }
    }
 
    @JvmStatic
-   fun streamDTO(numberIn: Int = 1): Stream<AccountPayableControlDTO> {
+   fun streamDTO(numberIn: Int = 1, generalLedgerInventoryClearingAccount: SimpleIdentifiableDTO, generalLedgerInventoryAccount: SimpleIdentifiableDTO): Stream<AccountPayableControlDTO> {
       val number = if (numberIn > 0) numberIn else 1
 
       return IntStream.range(0, number).mapToObj {
@@ -45,7 +49,9 @@ object AccountPayableControlDataLoader {
             tradeCompanyIndicator = Random.nextBoolean(),
             printCurrencyIndicatorType = PrintCurrencyIndicatorTypeDTO(PrintCurrencyIndicatorTypeDataLoader.random()),
             lockInventoryIndicator = Random.nextBoolean(),
-            purchaseOrderNumberRequiredIndicatorType = PurchaseOrderNumberRequiredIndicatorTypeDTO(PurchaseOrderNumberRequiredIndicatorTypeDataLoader.random())
+            purchaseOrderNumberRequiredIndicatorType = PurchaseOrderNumberRequiredIndicatorTypeDTO(PurchaseOrderNumberRequiredIndicatorTypeDataLoader.random()),
+            generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount,
+            generalLedgerInventoryAccount = generalLedgerInventoryAccount
          )
       }
    }
@@ -55,18 +61,18 @@ object AccountPayableControlDataLoader {
    class AccountPayableControlDataLoaderService @Inject constructor(
       private val accountPayableControlRepository: AccountPayableControlRepository
    ) {
-      fun stream(numberIn: Int = 1, company: Company): Stream<AccountPayableControlEntity> {
-         return AccountPayableControlDataLoader.stream(numberIn).map {
+      fun stream(numberIn: Int = 1, company: Company, generalLedgerInventoryClearingAccount: AccountEntity, generalLedgerInventoryAccount: AccountEntity): Stream<AccountPayableControlEntity> {
+         return AccountPayableControlDataLoader.stream(numberIn, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount).map {
             accountPayableControlRepository.insert(it, company)
          }
       }
 
-      fun single(company: Company): AccountPayableControlEntity {
-         return stream(1, company).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
+      fun single(company: Company, generalLedgerInventoryClearingAccount: AccountEntity, generalLedgerInventoryAccount: AccountEntity): AccountPayableControlEntity {
+         return stream(1, company, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
       }
 
-      fun singleDTO(): AccountPayableControlDTO {
-         return AccountPayableControlDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
+      fun singleDTO(generalLedgerInventoryClearingAccount: SimpleIdentifiableDTO, generalLedgerInventoryAccount: SimpleIdentifiableDTO): AccountPayableControlDTO {
+         return AccountPayableControlDataLoader.streamDTO(1, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
       }
    }
 }
