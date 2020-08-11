@@ -49,6 +49,10 @@ class UserAuthenticationProvider @Inject constructor(
                   logger.info("Employee {} is cynergi admin", authenticationRequest?.identity)
 
                   credentialsAssociatedWithAdmin(employee, fallbackStore)
+               } else if (employeeAssignedStore != chosenStore && employee.alternativeStoreIndicator == "A") {
+                  logger.info("Employee {} has alternative store indicator set to A and chose store {}", employee, chosenStore)
+
+                  credentialsMatched(chosenStore, employee)
                } else if (employeeAssignedStore != null) {
                   if (employeeAssignedStore == chosenStore) {
                      logger.info("Employee {} assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
