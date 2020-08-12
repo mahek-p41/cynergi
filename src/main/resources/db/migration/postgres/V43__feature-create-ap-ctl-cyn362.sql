@@ -11,6 +11,20 @@ VALUES (1, 'B', 'Bank', 'bank'),
        (2, 'N', 'No', 'no'),
        (3, 'V', 'Vendor', 'vendor');
 
+CREATE TABLE account_payable_check_form_type_domain
+(
+    id                INTEGER                                                        NOT NULL PRIMARY KEY,
+    value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
+    description       VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
+    localization_code VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
+    UNIQUE (value)
+);
+INSERT INTO account_payable_check_form_type_domain(id, value, description, localization_code)
+VALUES (1, 'L2', 'Laser 2', 'laser.2'),
+       (2, 'L3', 'Laser 3', 'laser.3'),
+       (3, 'T', 'Tractor', 'tractor');
+
+
 CREATE TABLE purchase_order_number_required_indicator_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
@@ -31,6 +45,7 @@ CREATE TABLE account_payable_control
     time_created                                     TIMESTAMPTZ DEFAULT clock_timestamp()                                       NOT NULL,
     time_updated                                     TIMESTAMPTZ DEFAULT clock_timestamp()                                       NOT NULL,
     company_id                                       BIGINT REFERENCES company (id)                                              NOT NULL,
+    account_payable_check_form_type_id               BIGINT REFERENCES account_payable_check_form_type_domain (id)               NOT NULL,
     pay_after_discount_date                          BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
     reset_expense                                    BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
     use_rebates_indicator                            BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
