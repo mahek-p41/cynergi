@@ -45,7 +45,7 @@ CREATE TABLE account_payable_control
     time_created                                     TIMESTAMPTZ DEFAULT clock_timestamp()                                       NOT NULL,
     time_updated                                     TIMESTAMPTZ DEFAULT clock_timestamp()                                       NOT NULL,
     company_id                                       BIGINT REFERENCES company (id)                                              NOT NULL,
-    account_payable_check_form_type_id               BIGINT REFERENCES account_payable_check_form_type_domain (id)               NOT NULL,
+    check_form_type_id                               BIGINT REFERENCES account_payable_check_form_type_domain (id)               NOT NULL,
     pay_after_discount_date                          BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
     reset_expense                                    BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
     use_rebates_indicator                            BOOLEAN     DEFAULT FALSE                                                   NOT NULL,
@@ -72,5 +72,8 @@ CREATE INDEX account_payable_ctl_clearing_account_idx
     ON account_payable_control (general_ledger_inventory_clearing_account_id);
 CREATE INDEX account_payable_ctl_inventory_account_idx
     ON account_payable_control (general_ledger_inventory_account_id);
+CREATE INDEX account_payable_ctl_check_form_idx
+    ON account_payable_control (check_form_type_id);
+
 
 
