@@ -97,7 +97,7 @@ class StoreRepository @Inject constructor(
 
    fun findAll(pageRequest: PageRequest, user: User): RepositoryPage<StoreEntity, PageRequest> {
       val company = user.myCompany()
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+      val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id ")
