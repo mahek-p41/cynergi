@@ -397,4 +397,56 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       e.response.bodyAsJson().message == 'You are not logged in'
       e.status == UNAUTHORIZED
    }
+
+   void "logic with user who has a different store than they chose, but also has the alternative store indicator set to A" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final userAssignedStore = storeFactoryService.store(3, company)
+      final otherStore = storeFactoryService.store(1, company)
+      final employee = employeeFactoryService.single(userAssignedStore, "A")
+
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, otherStore.myNumber(), employee.company.myDataset())),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         )
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      def response = httpClient.toBlocking()
+         .exchange(
+            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response.employeeNumber == employee.number.toString()
+      response.storeNumber == 1
+      response.company.with {
+         clientCode = company.clientCode
+         clientId = company.clientId
+         datasetCode = company.datasetCode
+         id = company.id
+         name = company.name
+         federalTaxNumber = null
+      }
+   }
 }

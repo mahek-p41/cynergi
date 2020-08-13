@@ -79,6 +79,10 @@ class EmployeeFactoryService @Inject constructor(
       return stream(storeIn = storeIn).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
 
+   fun single(storeIn: Store, alternativeStoreIndicator: String): EmployeeEntity {
+      return stream(storeIn = storeIn, alternativeStoreIndicator = alternativeStoreIndicator).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
+   }
+
    fun single(departmentIn: Department): EmployeeEntity {
       return stream(departmentIn = departmentIn, companyIn = departmentIn.myCompany()).findFirst().orElseThrow { Exception("Unable to create EmployeeEntity") }
    }
