@@ -343,9 +343,23 @@ CREATE TABLE fastinfo_prod_import.furnfab_vw(
     description                    VARCHAR                               NOT NULL
 );
 
-
 COPY fastinfo_prod_import.furnfab_vw(
     dataset,
     number,
     description
 ) FROM '/tmp/fastinfo/test-furnfab.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.location_vw (
+   id           BIGSERIAL                                             NOT NULL PRIMARY KEY,
+   number       INTEGER,
+   name         VARCHAR(27),
+   dataset      VARCHAR(6)                                            NOT NULL,
+   time_created TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL,
+   time_updated TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL
+);
+
+COPY fastinfo_prod_import.location_vw(
+    dataset,
+    number,
+    name
+) FROM '/tmp/fastinfo/test-location.csv' DELIMITER ',' CSV HEADER;

@@ -130,6 +130,13 @@ CREATE FOREIGN TABLE fastinfo_prod_import.furnfab_vw (
     description VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'furnfab_vw', SCHEMA_NAME 'public');
 
+CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    number INTEGER,
+    name VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'location_vw', SCHEMA_NAME 'public');
+
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
 -- END cynergidevelopdb SETUP
