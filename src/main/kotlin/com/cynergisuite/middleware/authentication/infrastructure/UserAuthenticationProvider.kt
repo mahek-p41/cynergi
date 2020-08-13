@@ -63,7 +63,7 @@ class UserAuthenticationProvider @Inject constructor(
 
                      credentialsProvidedDidNotMatch()
                   } else {
-                     logger.info("Employee {} required choosing a store and did not choose one", authenticationRequest?.identity)
+                     logger.info("Employee {} required choosing a store and they chose {} and are assigned {}", authenticationRequest?.identity, chosenStore, employeeAssignedStore)
 
                      credentialsRequireStore(userNumber)
                   }
