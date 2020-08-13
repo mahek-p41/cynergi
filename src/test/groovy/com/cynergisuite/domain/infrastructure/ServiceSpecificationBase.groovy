@@ -59,6 +59,8 @@ abstract class ServiceSpecificationBase extends Specification {
 
       moduleDataLoaderService.configureLevel(1, 10, tstds1)
       moduleDataLoaderService.configureLevel(2, 15, tstds1)
+      moduleDataLoaderService.configureLevel(1, 20, tstds2)
+      moduleDataLoaderService.configureLevel(2, 25, tstds2)
 
    }
 }

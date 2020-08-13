@@ -94,12 +94,12 @@ class ModuleRepository @Inject constructor(
       return found
    }
 
-   fun isConfigExists(moduleTypeId: Long): Boolean {
+   fun configExists(moduleTypeId: Long, company: Company): Boolean {
       val exists = jdbc.queryForObject(
          """
-         SELECT EXISTS (SELECT * FROM module WHERE module_type_id = :module_type_id)
+         SELECT EXISTS (SELECT * FROM module WHERE module_type_id = :module_type_id AND company_id = :company_id)
          """,
-         mapOf("module_type_id" to moduleTypeId), Boolean::class.java
+         mapOf("module_type_id" to moduleTypeId, "company_id" to company.myId()), Boolean::class.java
       )!!
 
       logger.trace("Checking if Module config exists {}")
@@ -115,4 +115,5 @@ class ModuleRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
+
 }

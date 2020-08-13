@@ -236,6 +236,20 @@ object MenuTypeDataLoader {
          description = "Financial Statement",
          localizationCode = "financial.statement",
          areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 41,
+         value = "RECURRING INVOICE MAINTENANCE",
+         description = "Recurring Invoice Maintenance",
+         localizationCode = "recurring.invoice.maintenance",
+         areaType = AreaDataLoader.areaTypes().forId(1)
+      ),
+      MenuType(
+         id = 42,
+         value = "MONTH END",
+         description = "Account Payable Month End",
+         localizationCode = "account.payable.month.end",
+         areaType = AreaDataLoader.areaTypes().forId(1)
       )
    )
 

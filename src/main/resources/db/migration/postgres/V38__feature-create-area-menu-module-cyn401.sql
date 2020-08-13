@@ -53,7 +53,7 @@ VALUES (1,'ACCOUNTS PAYABLE', 'Account Payable', 'account.payable', 1,0),
        (23,'DIVISION', 'Division Maintenance', 'division', 5,9),
        (24,'PO CONTROL', 'PO Control', 'po.control', 5,13),
        (25,'VENDOR', 'Vendor Maintenance', 'vendor.maintenance', 5,7),
-       (26,'SHIP VIA', 'Ship Via Maintenance', 'ship.via.maintenance', 5,6),
+       (26,'SHIPVIA', 'Ship Via Maintenance', 'ship.via.maintenance', 5,6),
        (27,'VENDOR TERM CODE', 'Vendor Term Code', 'vendor.term.code', 5,8),
        (28,'AP CONTROL', 'AP Control', 'account.payable.control', 5,11),
        (29,'CHART OF ACCOUNT', 'Chart of Account', 'chart.of.account', 5,2),
@@ -72,7 +72,6 @@ VALUES (1,'ACCOUNTS PAYABLE', 'Account Payable', 'account.payable', 1,0),
        (42,'MONTH END', 'Account Payable Month End', 'account.payable.month.end', 1,5),
        (43,'DISTRIBUTION TEMPLATE MAINTENANCE', 'Distribution Template Maintenance', 'distribution.template.maintenance', 5,3),
        (44,'SEND STORE DEPOSIT TO BANK REC', 'Send Store Deposit to Bank Rec', 'send.store.deposit.to.bank.rec', 2,2);
-
 
 CREATE TABLE module_type_domain
 (
@@ -94,10 +93,10 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', 5),
        (5, 'APCHKRPT', 'Check Report', 'check.report','APCHKRPT', 6),
        (6, 'APCLEAR', 'Clear Checks', 'clear.checks', 'APCLEAR', 6),
        (7, 'APDEL', 'Delete Invoices', 'delete.invoices', 'APDEL', 5),
-       (8, 'APGLRPT', 'G/L Analysis', 'gl.analysis', 'APGLRPT', 17),
-       (9, 'APLST', 'Vendor Invoices', 'vendor.invoices', 'APRPT', 26),
+       (8, 'APGLRPT', 'G/L Analysis', 'gl.analysis', 'APGLRPT', 16),
+       (9, 'APLST', 'Vendor Invoices', 'vendor.invoices', 'APRPT', 25),
        (10, 'APPREVUE', 'Check Preview Rpt', 'check.preview.rpt', 'APPREVUE', 6),
-       (11, 'APPURGE', 'Purge AP Records','purge.ap.records', 'APPURGE', 29),
+       (11, 'APPURGE', 'Purge AP Records','purge.ap.records', 'APPURGE', 28),
        (12, 'APRPT', 'AP Report','ap.report', 'APRPT', 7),
        (13, 'APSEL', 'Select Invoices', 'select.invoices', 'APSEL', 6),
        (14, 'APSHO','Show Invoices', 'show.invoices', 'APSHO', 5),
@@ -188,7 +187,13 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', 5),
        (100, 'SETSYS', 'Modify Company Areas', 'modify.company.areas', 'SETSYS',21),
        (101, 'APPARAMS', 'AP Control', 'ap.control','APPARAMS', 28),
        (102, 'GLPARAMS', 'GL Control', 'gl.control','GLPARAMS', 31),
-       (103, 'POPARAMS', 'PO Control', 'po.control','POPARAMS', 24);
+       (103, 'POPARAMS', 'PO Control', 'po.control','POPARAMS', 24),
+       (104, 'SVCADD', 'Add a Ship Via Code', 'add.svc', 'SVCADD', 26),
+       (105, 'SVCCHG', 'Change a Ship Via Code', 'change.svc', 'SVCCHG', 26),
+       (106, 'SVCDEL', 'Delete a Ship Via Code', 'delete.svc', 'SVCDEL', 26),
+       (107, 'SVCPRT', 'Print Ship Via Code', 'print.report.svc', 'SVCPRT', 26),
+       (108, 'SVCSHW', 'Show a Ship Via List', 'show.svc', 'SVCSHW', 26);
+
 
 CREATE TABLE area
 (

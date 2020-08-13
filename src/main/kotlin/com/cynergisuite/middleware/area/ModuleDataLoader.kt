@@ -124,9 +124,9 @@ object ModuleDataLoader {
          id = 15,
          value = "APSTATUS",
          program = "APSTATUS",
-         description = "Vendor Status",
-         localizationCode = "vendor.status",
-         menuType = MenuTypeDataLoader.menuTypes().forId(5)
+         description = "Vendor Statistics",
+         localizationCode = "vendor.statistics",
+         menuType = MenuTypeDataLoader.menuTypes().forId(8)
       ),
       ModuleType(
          id = 17,
@@ -144,22 +144,6 @@ object ModuleDataLoader {
          localizationCode = "cash.requirements",
          menuType = MenuTypeDataLoader.menuTypes().forId(7)
       ),
-//      ModuleType(
-//         id = 19,
-//         value = "CHKPURGE",
-//         program = "APPURGE",
-//         description = "Purge Checks",
-//         localizationCode = "purge.checks",
-//         menuType = MenuTypeDataLoader.menuTypes().forId(8)
-//      ),
-//      ModuleType(
-//         id = 21,
-//         value = "ITMQUOTE",
-//         program = "ITMQUOTE",
-//         description = "Item Quotes",
-//         localizationCode = "item.quotes",
-//         menuType = MenuTypeDataLoader.menuTypes().forId(8)
-//      ),
       ModuleType(
          id = 19,
          value = "POADD",
@@ -321,12 +305,52 @@ object ModuleDataLoader {
          menuType = MenuTypeDataLoader.menuTypes().forId(8)
       ),
       ModuleType(
-         id = 43,
+         id = 39,
          value = "POCOPY",
          program = "POCOPY",
          description = "Copy a PO",
          localizationCode = "copy.a.po",
+         menuType = MenuTypeDataLoader.menuTypes().forId(27)
+      ),
+      ModuleType(
+         id = 40,
+         value = "SVCADD",
+         program = "SVCADD",
+         description = "Add a Ship Via Code",
+         localizationCode = "add.svc",
+         menuType = MenuTypeDataLoader.menuTypes().forId(27)
+      ),
+      ModuleType(
+         id = 41,
+         value = "SVCCHG",
+         program = "SVCCHG",
+         description = "Change a Ship Via Code",
+         localizationCode = "change.svc",
          menuType = MenuTypeDataLoader.menuTypes().forId(8)
+      ),
+      ModuleType(
+         id = 42,
+         value = "SVCDEL",
+         program = "SVCDEL",
+         description = "Delete a Ship Via Code",
+         localizationCode = "delete.svc",
+         menuType = MenuTypeDataLoader.menuTypes().forId(27)
+      ),
+      ModuleType(
+         id = 43,
+         value = "SVCPRT",
+         program = "SVCPRT",
+         description = "Print Ship Via Code",
+         localizationCode = "print.report.svc",
+         menuType = MenuTypeDataLoader.menuTypes().forId(27)
+      ),
+      ModuleType(
+         id = 44,
+         value = "SVCSHW",
+         program = "SVCSHW",
+         description = "Show a Ship Via Code",
+         localizationCode = "show.svc",
+         menuType = MenuTypeDataLoader.menuTypes().forId(27)
       )
    )
 
