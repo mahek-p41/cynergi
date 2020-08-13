@@ -225,14 +225,14 @@ class AccountRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, apCtrlPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = company,
          name = rs.getString("${columnPrefix}name"),
-         type = mapAccountType(rs, "type_"),
-         normalAccountBalance = mapNormalAccountBalanceType(rs, "balance_type_"),
-         status = mapAccountStatusType(rs, "status_"),
+         type = mapAccountType(rs, "${apCtrlPrefix}type_"),
+         normalAccountBalance = mapNormalAccountBalanceType(rs, "${apCtrlPrefix}balance_type_"),
+         status = mapAccountStatusType(rs, "${apCtrlPrefix}status_"),
          form1099Field = rs.getInt("${columnPrefix}form_1099_field"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )

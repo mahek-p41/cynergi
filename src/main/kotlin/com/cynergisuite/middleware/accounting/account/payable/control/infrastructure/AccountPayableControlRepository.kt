@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.accounting.account.payable.control.infrastru
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlEntity
@@ -22,6 +24,7 @@ import javax.inject.Singleton
 @Singleton
 class AccountPayableControlRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
+   private val accountRepository: AccountRepository,
    private val printCurrencyIndicatorTypeRepository: PrintCurrencyIndicatorTypeRepository,
    private val purchaseOrderNumberRequiredIndicatorTypeRepository: PurchaseOrderNumberRequiredIndicatorTypeRepository
 ) {
@@ -29,6 +32,9 @@ class AccountPayableControlRepository @Inject constructor(
 
    private fun selectBaseQuery(): String {
       return """
+         WITH account AS (
+            ${accountRepository.selectBaseQuery()}
+         )
          SELECT
             accountPayableControl.id                                 AS accountPayableControl_id,
             accountPayableControl.uu_row_id                          AS accountPayableControl_uu_row_id,
@@ -47,10 +53,64 @@ class AccountPayableControlRepository @Inject constructor(
             poNumReqIndType.id                                       AS poNumReqIndType_id,
             poNumReqIndType.value                                    AS poNumReqIndType_value,
             poNumReqIndType.description                              AS poNumReqIndType_description,
-            poNumReqIndType.localization_code                        AS poNumReqIndType_localization_code
+            poNumReqIndType.localization_code                        AS poNumReqIndType_localization_code,
+            glInvCleAcct.account_id                                  AS glInvCleAcct_id,
+            glInvCleAcct.account_name                                AS glInvCleAcct_name,
+            glInvCleAcct.account_form_1099_field                     AS glInvCleAcct_form_1099_field,
+            glInvCleAcct.account_corporate_account_indicator         AS glInvCleAcct_corporate_account_indicator,
+            glInvCleAcct.comp_id                                     AS glInvCleAcct_comp_id,
+            glInvCleAcct.comp_uu_row_id                              AS glInvCleAcct_comp_uu_row_id,
+            glInvCleAcct.comp_time_created                           AS glInvCleAcct_comp_time_created,
+            glInvCleAcct.comp_time_updated                           AS glInvCleAcct_comp_time_updated,
+            glInvCleAcct.comp_name                                   AS glInvCleAcct_comp_name,
+            glInvCleAcct.comp_doing_business_as                      AS glInvCleAcct_comp_doing_business_as,
+            glInvCleAcct.comp_client_code                            AS glInvCleAcct_comp_client_code,
+            glInvCleAcct.comp_client_id                              AS glInvCleAcct_comp_client_id,
+            glInvCleAcct.comp_dataset_code                           AS glInvCleAcct_comp_dataset_code,
+            glInvCleAcct.comp_federal_id_number                      AS glInvCleAcct_comp_federal_id_number,
+            glInvCleAcct.type_id                                     AS glInvCleAcct_type_id,
+            glInvCleAcct.type_value                                  AS glInvCleAcct_type_value,
+            glInvCleAcct.type_description                            AS glInvCleAcct_type_description,
+            glInvCleAcct.type_localization_code                      AS glInvCleAcct_type_localization_code,
+            glInvCleAcct.balance_type_id                             AS glInvCleAcct_balance_type_id,
+            glInvCleAcct.balance_type_value                          AS glInvCleAcct_balance_type_value,
+            glInvCleAcct.balance_type_description                    AS glInvCleAcct_balance_type_description,
+            glInvCleAcct.balance_type_localization_code              AS glInvCleAcct_balance_type_localization_code,
+            glInvCleAcct.status_id                                   AS glInvCleAcct_status_id,
+            glInvCleAcct.status_value                                AS glInvCleAcct_status_value,
+            glInvCleAcct.status_description                          AS glInvCleAcct_status_description,
+            glInvCleAcct.status_localization_code                    AS glInvCleAcct_status_localization_code,
+            glInvAcct.account_id                                     AS glInvAcct_id,
+            glInvAcct.account_name                                   AS glInvAcct_name,
+            glInvAcct.account_form_1099_field                        AS glInvAcct_form_1099_field,
+            glInvAcct.account_corporate_account_indicator            AS glInvAcct_corporate_account_indicator,
+            glInvAcct.comp_id                                        AS glInvAcct_comp_id,
+            glInvAcct.comp_uu_row_id                                 AS glInvAcct_comp_uu_row_id,
+            glInvAcct.comp_time_created                              AS glInvAcct_comp_time_created,
+            glInvAcct.comp_time_updated                              AS glInvAcct_comp_time_updated,
+            glInvAcct.comp_name                                      AS glInvAcct_comp_name,
+            glInvAcct.comp_doing_business_as                         AS glInvAcct_comp_doing_business_as,
+            glInvAcct.comp_client_code                               AS glInvAcct_comp_client_code,
+            glInvAcct.comp_client_id                                 AS glInvAcct_comp_client_id,
+            glInvAcct.comp_dataset_code                              AS glInvAcct_comp_dataset_code,
+            glInvAcct.comp_federal_id_number                         AS glInvAcct_comp_federal_id_number,
+            glInvAcct.type_id                                        AS glInvAcct_type_id,
+            glInvAcct.type_value                                     AS glInvAcct_type_value,
+            glInvAcct.type_description                               AS glInvAcct_type_description,
+            glInvAcct.type_localization_code                         AS glInvAcct_type_localization_code,
+            glInvAcct.balance_type_id                                AS glInvAcct_balance_type_id,
+            glInvAcct.balance_type_value                             AS glInvAcct_balance_type_value,
+            glInvAcct.balance_type_description                       AS glInvAcct_balance_type_description,
+            glInvAcct.balance_type_localization_code                 AS glInvAcct_balance_type_localization_code,
+            glInvAcct.status_id                                      AS glInvAcct_status_id,
+            glInvAcct.status_value                                   AS glInvAcct_status_value,
+            glInvAcct.status_description                             AS glInvAcct_status_description,
+            glInvAcct.status_localization_code                       AS glInvAcct_status_localization_code
          FROM account_payable_control accountPayableControl
             JOIN print_currency_indicator_type_domain printCurrencyIndType ON accountPayableControl.print_currency_indicator_type_id = printCurrencyIndType.id
             JOIN purchase_order_number_required_indicator_type_domain poNumReqIndType ON accountPayableControl.purchase_order_number_required_indicator_type_id = poNumReqIndType.id
+            JOIN account glInvCleAcct ON accountPayableControl.general_ledger_inventory_clearing_account_id = glInvCleAcct.account_id
+            JOIN account glInvAcct ON accountPayableControl.general_ledger_inventory_account_id = glInvAcct.account_id
       """
    }
 
@@ -78,9 +138,11 @@ class AccountPayableControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.mapRow(rs, "printCurrencyIndType_")
             val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.mapRow(rs, "poNumReqIndType_")
+            val generalLedgerInventoryClearingAccount = accountRepository.mapRow(rs, company, "glInvCleAcct_", "glInvCleAcct_")
+            val generalLedgerInventoryAccount = accountRepository.mapRow(rs, company, "glInvAcct_", "glInvCleAcct_")
 
             mapRow(
-               rs, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType, "accountPayableControl_"
+               rs, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount, "accountPayableControl_"
             )
          }
       )
@@ -104,7 +166,9 @@ class AccountPayableControlRepository @Inject constructor(
             trade_company_indicator,
             print_currency_indicator_type_id,
             lock_inventory_indicator,
-            purchase_order_number_required_indicator_type_id
+            purchase_order_number_required_indicator_type_id,
+            general_ledger_inventory_clearing_account_id,
+            general_ledger_inventory_account_id
          )
          VALUES (
             :company_id,
@@ -114,7 +178,9 @@ class AccountPayableControlRepository @Inject constructor(
             :trade_company_indicator,
             :print_currency_indicator_type_id,
             :lock_inventory_indicator,
-            :purchase_order_number_required_indicator_type_id
+            :purchase_order_number_required_indicator_type_id,
+            :general_ledger_inventory_clearing_account_id,
+            :general_ledger_inventory_account_id
          )
          RETURNING
             *
@@ -127,11 +193,17 @@ class AccountPayableControlRepository @Inject constructor(
             "trade_company_indicator" to entity.tradeCompanyIndicator,
             "print_currency_indicator_type_id" to entity.printCurrencyIndicatorType.id,
             "lock_inventory_indicator" to entity.lockInventoryIndicator,
-            "purchase_order_number_required_indicator_type_id" to entity.purchaseOrderNumberRequiredIndicatorType.id
+            "purchase_order_number_required_indicator_type_id" to entity.purchaseOrderNumberRequiredIndicatorType.id,
+            "general_ledger_inventory_clearing_account_id" to entity.generalLedgerInventoryClearingAccount.id,
+            "general_ledger_inventory_account_id" to entity.generalLedgerInventoryAccount.id
          ),
          RowMapper { rs, _ ->
             mapRow(
-               rs, entity.printCurrencyIndicatorType, entity.purchaseOrderNumberRequiredIndicatorType
+               rs,
+               entity.printCurrencyIndicatorType,
+               entity.purchaseOrderNumberRequiredIndicatorType,
+               entity.generalLedgerInventoryClearingAccount,
+               entity.generalLedgerInventoryAccount
             )
          }
       )
@@ -152,7 +224,9 @@ class AccountPayableControlRepository @Inject constructor(
             trade_company_indicator = :trade_company_indicator,
             print_currency_indicator_type_id = :print_currency_indicator_type_id,
             lock_inventory_indicator = :lock_inventory_indicator,
-            purchase_order_number_required_indicator_type_id = :purchase_order_number_required_indicator_type_id
+            purchase_order_number_required_indicator_type_id = :purchase_order_number_required_indicator_type_id,
+            general_ledger_inventory_clearing_account_id = :general_ledger_inventory_clearing_account_id,
+            general_ledger_inventory_account_id = :general_ledger_inventory_account_id
          WHERE id = :id
          RETURNING
             *
@@ -166,13 +240,17 @@ class AccountPayableControlRepository @Inject constructor(
             "trade_company_indicator" to entity.tradeCompanyIndicator,
             "print_currency_indicator_type_id" to entity.printCurrencyIndicatorType.id,
             "lock_inventory_indicator" to entity.lockInventoryIndicator,
-            "purchase_order_number_required_indicator_type_id" to entity.purchaseOrderNumberRequiredIndicatorType.id
+            "purchase_order_number_required_indicator_type_id" to entity.purchaseOrderNumberRequiredIndicatorType.id,
+            "general_ledger_inventory_clearing_account_id" to entity.generalLedgerInventoryClearingAccount.id,
+            "general_ledger_inventory_account_id" to entity.generalLedgerInventoryAccount.id
          ),
          RowMapper { rs, _ ->
             mapRow(
                rs,
                entity.printCurrencyIndicatorType,
-               entity.purchaseOrderNumberRequiredIndicatorType
+               entity.purchaseOrderNumberRequiredIndicatorType,
+               entity.generalLedgerInventoryClearingAccount,
+               entity.generalLedgerInventoryAccount
             )
          }
       )
@@ -182,6 +260,8 @@ class AccountPayableControlRepository @Inject constructor(
       rs: ResultSet,
       printCurrencyIndicatorType: PrintCurrencyIndicatorType,
       purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType,
+      generalLedgerInventoryClearingAccount: AccountEntity,
+      generalLedgerInventoryAccount: AccountEntity,
       columnPrefix: String = StringUtils.EMPTY
    ): AccountPayableControlEntity {
       return AccountPayableControlEntity(
@@ -192,7 +272,9 @@ class AccountPayableControlRepository @Inject constructor(
          tradeCompanyIndicator = rs.getBoolean("${columnPrefix}trade_company_indicator"),
          printCurrencyIndicatorType = printCurrencyIndicatorType,
          lockInventoryIndicator = rs.getBoolean("${columnPrefix}lock_inventory_indicator"),
-         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType
+         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType,
+         generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount,
+         generalLedgerInventoryAccount = generalLedgerInventoryAccount
       )
    }
 }

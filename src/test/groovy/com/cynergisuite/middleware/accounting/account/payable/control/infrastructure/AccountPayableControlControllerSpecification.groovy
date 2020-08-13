@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.payable.control.infrastructure
 
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoader.AccountPayableControlDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -17,12 +19,15 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
    private static String path = '/accounting/account/payable/control'
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
+   @Inject AccountDataLoaderService accountDataLoaderService
    @Inject AccountPayableControlDataLoaderService accountPayableControlDataLoaderService
 
    void "fetch one account payable control by company" () {
       given:
       final company = nineNineEightEmployee.company
-      final def accountPayableControl = accountPayableControlDataLoaderService.single(company)
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
 
       when:
       def result = get("$path/")
@@ -48,6 +53,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
             value == accountPayableControl.purchaseOrderNumberRequiredIndicatorType.value
             description == accountPayableControl.purchaseOrderNumberRequiredIndicatorType.description
          }
+
+         generalLedgerInventoryClearingAccount.id == accountPayableControl.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryAccount.id == accountPayableControl.generalLedgerInventoryAccount.id
       }
    }
 
@@ -66,7 +74,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create valid account payable control" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       final def jsonAPControl = jsonOutput.toJson(accountPayableControl)
 
       when:
@@ -93,13 +104,18 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
             value == accountPayableControl.purchaseOrderNumberRequiredIndicatorType.value
             description == accountPayableControl.purchaseOrderNumberRequiredIndicatorType.description
          }
+
+         generalLedgerInventoryClearingAccount.id == accountPayableControl.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryAccount.id == accountPayableControl.generalLedgerInventoryAccount.id
       }
    }
 
    void "create invalid account payable control for company with existing record" () {
       given:
       final company = nineNineEightEmployee.company
-      final def accountPayableControl = accountPayableControlDataLoaderService.single(company)
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
 
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
 
@@ -117,7 +133,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without pay after discount date" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("payAfterDiscountDate")
@@ -136,7 +155,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without reset expense" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("resetExpense")
@@ -155,7 +177,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without use rebates indicator" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("useRebatesIndicator")
@@ -174,7 +199,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without trade company indicator" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("tradeCompanyIndicator")
@@ -193,7 +221,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without print currency indicator type" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("printCurrencyIndicatorType")
@@ -212,7 +243,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without lock inventory indicator" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("lockInventoryIndicator")
@@ -231,7 +265,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control without purchase order number required indicator type" () {
       given:
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO()
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       //Make invalid json
       def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
       jsonAPControl.remove("purchaseOrderNumberRequiredIndicatorType")
@@ -248,11 +285,101 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response[0].message == "Is required"
    }
 
+   void "create invalid account payable control without general ledger inventory clearing account" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      //Make invalid json
+      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
+      jsonAPControl.remove("generalLedgerInventoryClearingAccount")
+
+      when:
+      post("$path/", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "generalLedgerInventoryClearingAccount"
+      response[0].message == "Is required"
+   }
+
+   void "create invalid account payable control with non-existing general ledger inventory clearing account id" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      //Make invalid json
+      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
+      jsonAPControl.generalLedgerInventoryClearingAccount.id = '0'
+
+      when:
+      post("$path/", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "generalLedgerInventoryClearingAccount.id"
+      response[0].message == "0 was unable to be found"
+   }
+
+   void "create invalid account payable control without general ledger inventory account" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      //Make invalid json
+      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
+      jsonAPControl.remove("generalLedgerInventoryAccount")
+
+      when:
+      post("$path/", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "generalLedgerInventoryAccount"
+      response[0].message == "Is required"
+   }
+
+   void "create invalid account payable control with non-existing general ledger inventory account id" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      //Make invalid json
+      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
+      jsonAPControl.generalLedgerInventoryAccount.id = '0'
+
+      when:
+      post("$path/", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "generalLedgerInventoryAccount.id"
+      response[0].message == "0 was unable to be found"
+   }
+
    void "update valid account payable control by id" () {
       given: "update existingAPControl in db with all new data in jsonAPControl"
       final company = nineNineEightEmployee.company
-      final def existingAPControl = accountPayableControlDataLoaderService.single(company)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO()
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
       jsonAPControl.id = existingAPControl.id
 
@@ -280,14 +407,19 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
             value == updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType.value
             description == updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType.description
          }
+
+         generalLedgerInventoryClearingAccount.id == updatedAPControlDTO.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryAccount.id == updatedAPControlDTO.generalLedgerInventoryAccount.id
       }
    }
 
    void "update invalid account payable control with id 0" () {
       given:
       final company = nineNineEightEmployee.company
-      final def existingAPControl = accountPayableControlDataLoaderService.single(company)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO()
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
       jsonAPControl.id = '0'
 
@@ -306,8 +438,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
    void "update invalid account payable control with non-existing id" () {
       given:
       final company = nineNineEightEmployee.company
-      accountPayableControlDataLoaderService.single(company)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO()
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
 
       when:
@@ -320,5 +454,93 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "id"
       response[0].message == "99 was unable to be found"
+   }
+
+   void "update invalid account payable control by removing print currency indicator type" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
+      jsonAPControl.remove("printCurrencyIndicatorType")
+
+      when:
+      put("$path/$existingAPControl.id", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "printCurrencyIndicatorType"
+      response[0].message == "Is required"
+   }
+
+   void "update invalid account payable control by removing purchase order number required indicator type"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
+      jsonAPControl.remove("purchaseOrderNumberRequiredIndicatorType")
+
+      when:
+      put("$path/$existingAPControl.id", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "purchaseOrderNumberRequiredIndicatorType"
+      response[0].message == "Is required"
+   }
+
+   void "update invalid account payable control by removing general ledger inventory clearing account" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
+      jsonAPControl.remove("generalLedgerInventoryClearingAccount")
+
+      when:
+      put("$path/$existingAPControl.id", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "generalLedgerInventoryClearingAccount"
+      response[0].message == "Is required"
+   }
+
+   void "update invalid account payable control by removing general ledger inventory account" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
+      jsonAPControl.remove("generalLedgerInventoryAccount")
+
+      when:
+      put("$path/$existingAPControl.id", jsonAPControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "generalLedgerInventoryAccount"
+      response[0].message == "Is required"
    }
 }

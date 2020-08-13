@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorType
 
@@ -12,10 +13,18 @@ data class AccountPayableControlEntity(
    val tradeCompanyIndicator: Boolean,
    val printCurrencyIndicatorType: PrintCurrencyIndicatorType,
    val lockInventoryIndicator: Boolean,
-   val purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType
+   val purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType,
+   val generalLedgerInventoryClearingAccount: AccountEntity,
+   val generalLedgerInventoryAccount: AccountEntity
 ) : Identifiable {
 
-   constructor(dto: AccountPayableControlDTO, printCurrencyIndicatorType: PrintCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType) :
+   constructor(
+      dto: AccountPayableControlDTO,
+      printCurrencyIndicatorType: PrintCurrencyIndicatorType,
+      purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType,
+      generalLedgerInventoryClearingAccount: AccountEntity,
+      generalLedgerInventoryAccount: AccountEntity
+   ) :
       this(
          id = dto.id,
          payAfterDiscountDate = dto.payAfterDiscountDate!!,
@@ -24,7 +33,9 @@ data class AccountPayableControlEntity(
          tradeCompanyIndicator = dto.tradeCompanyIndicator!!,
          printCurrencyIndicatorType = printCurrencyIndicatorType,
          lockInventoryIndicator = dto.lockInventoryIndicator!!,
-         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType
+         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType,
+         generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount,
+         generalLedgerInventoryAccount = generalLedgerInventoryAccount
       )
 
    override fun myId(): Long? = id
