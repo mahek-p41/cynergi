@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.company
 
+import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -58,7 +59,8 @@ object CompanyFactory {
             clientCode = lorem.characters(3, 3).toUpperCase(),
             clientId = random.nextInt(1000, 10000),
             datasetCode = lorem.characters(6, 6, false),
-            federalIdNumber = numbers.valid()
+            federalIdNumber = numbers.valid(),
+            address = AddressTestDataLoader.single()
          )
       }
    }

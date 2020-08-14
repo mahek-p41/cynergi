@@ -10,6 +10,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -24,6 +25,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditPermissionRepository @Inject constructor(
+   private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -34,29 +36,45 @@ class AuditPermissionRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(
          """
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         )
          SELECT
-            ap.id                   AS ap_id,
-            ap.uu_row_id            AS ap_uu_row_id,
-            ap.time_created         AS ap_time_created,
-            ap.time_updated         AS ap_time_updated,
-            aptd.id                 AS aptd_id,
-            aptd.value              AS aptd_value,
-            aptd.description        AS aptd_description,
-            aptd.localization_code  AS aptd_localization_code,
-            comp.id                 AS comp_id,
-            comp.uu_row_id          AS comp_uu_row_id,
-            comp.time_created       AS comp_time_created,
-            comp.time_updated       AS comp_time_updated,
-            comp.name               AS comp_name,
-            comp.doing_business_as  AS comp_doing_business_as,
-            comp.client_code        AS comp_client_code,
-            comp.client_id          AS comp_client_id,
-            comp.dataset_code       AS comp_dataset_code,
-            comp.federal_id_number  AS comp_federal_id_number,
-            dept.id                 AS dept_id,
-            dept.code               AS dept_code,
-            dept.description        AS dept_description,
-            dept.dataset            AS dept_dataset
+            ap.id                      AS ap_id,
+            ap.uu_row_id               AS ap_uu_row_id,
+            ap.time_created            AS ap_time_created,
+            ap.time_updated            AS ap_time_updated,
+            aptd.id                    AS aptd_id,
+            aptd.value                 AS aptd_value,
+            aptd.description           AS aptd_description,
+            aptd.localization_code     AS aptd_localization_code,
+            comp.id                    AS comp_id,
+            comp.uu_row_id             AS comp_uu_row_id,
+            comp.time_created          AS comp_time_created,
+            comp.time_updated          AS comp_time_updated,
+            comp.name                  AS comp_name,
+            comp.doing_business_as     AS comp_doing_business_as,
+            comp.client_code           AS comp_client_code,
+            comp.client_id             AS comp_client_id,
+            comp.dataset_code          AS comp_dataset_code,
+            comp.federal_id_number     AS comp_federal_id_number,
+            comp.address_id            AS address_id,
+            comp.address_name          AS address_name,
+            comp.address_address1      AS address_address1,
+            comp.address_address2      AS address_address2,
+            comp.address_city          AS address_city,
+            comp.address_state         AS address_state,
+            comp.address_postal_code   AS address_postal_code,
+            comp.address_latitude      AS address_latitude,
+            comp.address_longitude     AS address_longitude,
+            comp.address_country       AS address_country,
+            comp.address_county        AS address_county,
+            comp.address_phone         AS address_phone,
+            comp.address_fax           AS address_fax,
+            dept.id                    AS dept_id,
+            dept.code                  AS dept_code,
+            dept.description           AS dept_description,
+            dept.dataset               AS dept_dataset
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
@@ -79,29 +97,45 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.queryPaged(
          """
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         )
          SELECT
-            ap.id                   AS ap_id,
-            ap.uu_row_id            AS ap_uu_row_id,
-            ap.time_created         AS ap_time_created,
-            ap.time_updated         AS ap_time_updated,
-            aptd.id                 AS aptd_id,
-            aptd.value              AS aptd_value,
-            aptd.description        AS aptd_description,
-            aptd.localization_code  AS aptd_localization_code,
-            comp.id                 AS comp_id,
-            comp.uu_row_id          AS comp_uu_row_id,
-            comp.time_created       AS comp_time_created,
-            comp.time_updated       AS comp_time_updated,
-            comp.name               AS comp_name,
-            comp.doing_business_as  AS comp_doing_business_as,
-            comp.client_code        AS comp_client_code,
-            comp.client_id          AS comp_client_id,
-            comp.dataset_code       AS comp_dataset_code,
-            comp.federal_id_number  AS comp_federal_id_number,
-            dept.id                 AS dept_id,
-            dept.code               AS dept_code,
-            dept.description        AS dept_description,
-            dept.dataset            AS dept_dataset,
+            ap.id                         AS ap_id,
+            ap.uu_row_id                  AS ap_uu_row_id,
+            ap.time_created               AS ap_time_created,
+            ap.time_updated               AS ap_time_updated,
+            aptd.id                       AS aptd_id,
+            aptd.value                    AS aptd_value,
+            aptd.description              AS aptd_description,
+            aptd.localization_code        AS aptd_localization_code,
+            comp.id                       AS comp_id,
+            comp.uu_row_id                AS comp_uu_row_id,
+            comp.time_created             AS comp_time_created,
+            comp.time_updated             AS comp_time_updated,
+            comp.name                     AS comp_name,
+            comp.doing_business_as        AS comp_doing_business_as,
+            comp.client_code              AS comp_client_code,
+            comp.client_id                AS comp_client_id,
+            comp.dataset_code             AS comp_dataset_code,
+            comp.federal_id_number        AS comp_federal_id_number,
+            comp.address_id               AS comp_address_id,
+            comp.address_name             AS address_name,
+            comp.address_address1         AS address_address1,
+            comp.address_address2         AS address_address2,
+            comp.address_city             AS address_city,
+            comp.address_state            AS address_state,
+            comp.address_postal_code      AS address_postal_code,
+            comp.address_latitude         AS address_latitude,
+            comp.address_longitude        AS address_longitude,
+            comp.address_country          AS address_country,
+            comp.address_county           AS address_county,
+            comp.address_phone            AS address_phone,
+            comp.address_fax              AS address_fax,
+            dept.id                       AS dept_id,
+            dept.code                     AS dept_code,
+            dept.description              AS dept_description,
+            dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
               JOIN company comp ON ap.company_id = comp.id
@@ -126,29 +160,45 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.queryPaged(
          """
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         )
          SELECT
-            ap.id                   AS ap_id,
-            ap.uu_row_id            AS ap_uu_row_id,
-            ap.time_created         AS ap_time_created,
-            ap.time_updated         AS ap_time_updated,
-            aptd.id                 AS aptd_id,
-            aptd.value              AS aptd_value,
-            aptd.description        AS aptd_description,
-            aptd.localization_code  AS aptd_localization_code,
-            comp.id                 AS comp_id,
-            comp.uu_row_id          AS comp_uu_row_id,
-            comp.time_created       AS comp_time_created,
-            comp.time_updated       AS comp_time_updated,
-            comp.name               AS comp_name,
-            comp.doing_business_as  AS comp_doing_business_as,
-            comp.client_code        AS comp_client_code,
-            comp.client_id          AS comp_client_id,
-            comp.dataset_code       AS comp_dataset_code,
-            comp.federal_id_number  AS comp_federal_id_number,
-            dept.id                 AS dept_id,
-            dept.code               AS dept_code,
-            dept.description        AS dept_description,
-            dept.dataset            AS dept_dataset,
+            ap.id                         AS ap_id,
+            ap.uu_row_id                  AS ap_uu_row_id,
+            ap.time_created               AS ap_time_created,
+            ap.time_updated               AS ap_time_updated,
+            aptd.id                       AS aptd_id,
+            aptd.value                    AS aptd_value,
+            aptd.description              AS aptd_description,
+            aptd.localization_code        AS aptd_localization_code,
+            comp.id                       AS comp_id,
+            comp.uu_row_id                AS comp_uu_row_id,
+            comp.time_created             AS comp_time_created,
+            comp.time_updated             AS comp_time_updated,
+            comp.name                     AS comp_name,
+            comp.doing_business_as        AS comp_doing_business_as,
+            comp.client_code              AS comp_client_code,
+            comp.client_id                AS comp_client_id,
+            comp.dataset_code             AS comp_dataset_code,
+            comp.federal_id_number        AS comp_federal_id_number,
+            comp.address_id               AS comp_address_id,
+            comp.address_name             AS address_name,
+            comp.address_address1         AS address_address1,
+            comp.address_address2         AS address_address2,
+            comp.address_city             AS address_city,
+            comp.address_state            AS address_state,
+            comp.address_postal_code      AS address_postal_code,
+            comp.address_latitude         AS address_latitude,
+            comp.address_longitude        AS address_longitude,
+            comp.address_country          AS address_country,
+            comp.address_county           AS address_county,
+            comp.address_phone            AS address_phone,
+            comp.address_fax              AS address_fax,
+            dept.id                       AS dept_id,
+            dept.code                     AS dept_code,
+            dept.description              AS dept_description,
+            dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
             JOIN company comp ON ap.company_id = comp.id

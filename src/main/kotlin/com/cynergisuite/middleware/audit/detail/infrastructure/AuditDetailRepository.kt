@@ -73,6 +73,19 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.comp_client_id                  AS comp_client_id,
             scannedBy.comp_dataset_code               AS comp_dataset_code,
             scannedBy.comp_federal_id_number          AS comp_federal_id_number,
+            scannedBy.address_id                      AS address_id,
+            scannedBy.address_name                    AS address_name,
+            scannedBy.address_address1                AS address_address1,
+            scannedBy.address_address2                AS address_address2,
+            scannedBy.address_city                    AS address_city,
+            scannedBy.address_state                   AS address_state,
+            scannedBy.address_postal_code             AS address_postal_code,
+            scannedBy.address_latitude                AS address_latitude,
+            scannedBy.address_longitude               AS address_longitude,
+            scannedBy.address_country                 AS address_country,
+            scannedBy.address_county                  AS address_county,
+            scannedBy.address_phone                   AS address_phone,
+            scannedBy.address_fax                     AS address_fax,
             scannedBy.dept_id                         AS dept_id,
             scannedBy.dept_code                       AS dept_code,
             scannedBy.dept_description                AS dept_description,
@@ -112,7 +125,7 @@ class AuditDetailRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id
+            WHERE scannedBy.comp_id = :comp_id
          )
          SELECT
             p.*,

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.AuthenticatedUserInformation
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.company.CompanyValueObject
+import com.cynergisuite.middleware.company.CompanyDTO
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -44,7 +44,7 @@ class AuthenticatedController @Inject constructor(
          val user = userService.findUser(authentication)
          val company = user.myCompany()
          val department = user.myDepartment()
-         val companyWithNullFederalIdNumber = CompanyValueObject(company = company)
+         val companyWithNullFederalIdNumber = CompanyDTO(company = company)
          val permissions = when {
             user.isCynergiAdmin() -> {
                userService.fetchAllPermissions()

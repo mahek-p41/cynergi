@@ -5,6 +5,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import io.micronaut.spring.tx.annotation.Transactional
@@ -22,6 +23,7 @@ import javax.inject.Singleton
 @Singleton
 class AuditActionRepository @Inject constructor(
    private val auditStatusRepository: AuditStatusRepository,
+   private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
@@ -35,43 +37,58 @@ class AuditActionRepository @Inject constructor(
             """
          WITH employees AS (
             ${employeeRepository.employeeBaseQuery()}
+         ), company AS (
+            ${companyRepository.companyBaseQuery()}
          )
          SELECT
-         auditActions.id                                     AS auditAction_id,
-         auditActions.time_updated                           AS auditAction_time_created,
-         auditActions.time_updated                           AS auditAction_time_updated,
-         auditActionEmployee.emp_id                          AS auditActionEmployee_id,
-         auditActionEmployee.emp_number                      AS auditActionEmployee_number,
-         auditActionEmployee.emp_last_name                   AS auditActionEmployee_last_name,
-         auditActionEmployee.emp_first_name_mi               AS auditActionEmployee_first_name_mi,
-         auditActionEmployee.emp_pass_code                   AS auditActionEmployee_pass_code,
-         auditActionEmployee.emp_active                      AS auditActionEmployee_active,
-         auditActionEmployee.emp_type                        AS auditActionEmployee_type,
-         auditActionEmployee.emp_cynergi_system_admin        AS auditActionEmployee_cynergi_system_admin,
-         auditActionEmployee.emp_alternative_store_indicator AS auditActionEmployee_alternative_store_indicator,
-         auditActionEmployee.emp_alternative_area            AS auditActionEmployee_alternative_area,
-         auditActionEmployee.dept_id                         AS auditActionEmployeeDept_id,
-         auditActionEmployee.dept_code                       AS auditActionEmployeeDept_code,
-         auditActionEmployee.dept_description                AS auditActionEmployeeDept_description,
-         auditActionEmployee.store_id                        AS auditActionEmployee_store_id,
-         auditActionEmployee.store_number                    AS auditActionEmployee_store_number,
-         auditActionEmployee.store_name                      AS auditActionEmployee_store_name,
-         astd.id                                             AS astd_id,
-         astd.value                                          AS astd_value,
-         astd.description                                    AS astd_description,
-         astd.color                                          AS astd_color,
-         astd.localization_code                              AS astd_localization_code,
-         comp.id                                             AS comp_id,
-         comp.uu_row_id                                      AS comp_uu_row_id,
-         comp.time_created                                   AS comp_time_created,
-         comp.time_updated                                   AS comp_time_updated,
-         comp.name                                           AS comp_name,
-         comp.doing_business_as                              AS comp_doing_business_as,
-         comp.client_code                                    AS comp_client_code,
-         comp.client_id                                      AS comp_client_id,
-         comp.dataset_code                                   AS comp_dataset_code,
-         comp.federal_id_number                              AS comp_federal_id_number,
-         audits.id                                           AS audit_id
+            auditActions.id                                     AS auditAction_id,
+            auditActions.time_updated                           AS auditAction_time_created,
+            auditActions.time_updated                           AS auditAction_time_updated,
+            auditActionEmployee.emp_id                          AS auditActionEmployee_id,
+            auditActionEmployee.emp_number                      AS auditActionEmployee_number,
+            auditActionEmployee.emp_last_name                   AS auditActionEmployee_last_name,
+            auditActionEmployee.emp_first_name_mi               AS auditActionEmployee_first_name_mi,
+            auditActionEmployee.emp_pass_code                   AS auditActionEmployee_pass_code,
+            auditActionEmployee.emp_active                      AS auditActionEmployee_active,
+            auditActionEmployee.emp_type                        AS auditActionEmployee_type,
+            auditActionEmployee.emp_cynergi_system_admin        AS auditActionEmployee_cynergi_system_admin,
+            auditActionEmployee.emp_alternative_store_indicator AS auditActionEmployee_alternative_store_indicator,
+            auditActionEmployee.emp_alternative_area            AS auditActionEmployee_alternative_area,
+            auditActionEmployee.dept_id                         AS auditActionEmployeeDept_id,
+            auditActionEmployee.dept_code                       AS auditActionEmployeeDept_code,
+            auditActionEmployee.dept_description                AS auditActionEmployeeDept_description,
+            auditActionEmployee.store_id                        AS auditActionEmployee_store_id,
+            auditActionEmployee.store_number                    AS auditActionEmployee_store_number,
+            auditActionEmployee.store_name                      AS auditActionEmployee_store_name,
+            astd.id                                             AS astd_id,
+            astd.value                                          AS astd_value,
+            astd.description                                    AS astd_description,
+            astd.color                                          AS astd_color,
+            astd.localization_code                              AS astd_localization_code,
+            comp.id                                             AS comp_id,
+            comp.uu_row_id                                      AS comp_uu_row_id,
+            comp.time_created                                   AS comp_time_created,
+            comp.time_updated                                   AS comp_time_updated,
+            comp.name                                           AS comp_name,
+            comp.doing_business_as                              AS comp_doing_business_as,
+            comp.client_code                                    AS comp_client_code,
+            comp.client_id                                      AS comp_client_id,
+            comp.dataset_code                                   AS comp_dataset_code,
+            comp.federal_id_number                              AS comp_federal_id_number,
+            comp.address_id                                     AS address_id,
+            comp.address_name                                   AS address_name,
+            comp.address_address1                               AS address_address1,
+            comp.address_address2                               AS address_address2,
+            comp.address_city                                   AS address_city,
+            comp.address_state                                  AS address_state,
+            comp.address_postal_code                            AS address_postal_code,
+            comp.address_latitude                               AS address_latitude,
+            comp.address_longitude                              AS address_longitude,
+            comp.address_country                                AS address_country,
+            comp.address_county                                 AS address_county,
+            comp.address_phone                                  AS address_phone,
+            comp.address_fax                                    AS address_fax,
+            audits.id                                           AS audit_id
       FROM audit_action auditActions
            JOIN audit audits ON auditActions.audit_id = audits.id
            JOIN company comp ON audits.company_id = comp.id

@@ -72,6 +72,19 @@ class AuthenticationRepository @Inject constructor(
                   comp.client_id                  AS comp_client_id,
                   comp.dataset_code               AS comp_dataset_code,
                   comp.federal_id_number          AS comp_federal_id_number,
+                  address.id                      AS address_id,
+                  address.name                    AS address_name,
+                  address.address1                AS address_address1,
+                  address.address2                AS address_address2,
+                  address.city                    AS address_city,
+                  address.state                   AS address_state,
+                  address.postal_code             AS address_postal_code,
+                  address.latitude                AS address_latitude,
+                  address.longitude               AS address_longitude,
+                  address.country                 AS address_country,
+                  address.county                  AS address_county,
+                  address.phone                   AS address_phone,
+                  address.fax                     AS address_fax,
                   dept.id                         AS dept_id,
                   dept.code                       AS dept_code,
                   dept.description                AS dept_description,
@@ -86,6 +99,7 @@ class AuthenticationRepository @Inject constructor(
                   fallbackLoc.name                AS fallbackLoc_name
                FROM company comp
                   JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+                  LEFT JOIN address ON comp.address_id = address.id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if (storeNumber != null) " = $3" else "IS NULL"}
@@ -111,6 +125,19 @@ class AuthenticationRepository @Inject constructor(
                   comp.client_id                  AS comp_client_id,
                   comp.dataset_code               AS comp_dataset_code,
                   comp.federal_id_number          AS comp_federal_id_number,
+                  address.id                      AS address_id,
+                  address.name                    AS address_name,
+                  address.address1                AS address_address1,
+                  address.address2                AS address_address2,
+                  address.city                    AS address_city,
+                  address.state                   AS address_state,
+                  address.postal_code             AS address_postal_code,
+                  address.latitude                AS address_latitude,
+                  address.longitude               AS address_longitude,
+                  address.country                 AS address_country,
+                  address.county                  AS address_county,
+                  address.phone                   AS address_phone,
+                  address.fax                     AS address_fax,
                   dept.id                         AS dept_id,
                   dept.code                       AS dept_code,
                   dept.description                AS dept_description,
@@ -125,6 +152,7 @@ class AuthenticationRepository @Inject constructor(
                   fallbackLoc.name                AS fallbackLoc_name
                FROM company comp
                   JOIN employee emp ON comp.id = emp.company_id
+                  LEFT JOIN address ON comp.address_id = address.id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND emp.store_number = assignedLoc.number
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number ${if (storeNumber != null) " = $3" else "IS NULL"}

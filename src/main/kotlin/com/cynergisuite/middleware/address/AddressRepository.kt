@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.address
 
+import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getDoubleOrNull
 import com.cynergisuite.extensions.insertReturning
@@ -146,6 +147,42 @@ class AddressRepository @Inject constructor(
          insert(address)
       }
 
+   fun delete(id: Long): AddressEntity? {
+      logger.debug("Deleting AuditPermission using {}", id)
+
+      val existingAddress = findOne(id)
+
+      return if (existingAddress != null) {
+         jdbc.deleteReturning(
+            """p
+            DELETE FROM address
+            WHERE id = :id
+            RETURNING
+               *""",
+            mapOf("id" to id),
+            RowMapper { rs, _ ->
+               AddressEntity(
+                  id = rs.getLong("id"),
+                  name = existingAddress.name,
+                  address1 = existingAddress.address1,
+                  address2 = existingAddress.address2,
+                  city = existingAddress.city,
+                  state = existingAddress.state,
+                  postalCode = existingAddress.postalCode,
+                  latitude = existingAddress.latitude,
+                  longitude = existingAddress.longitude,
+                  country = existingAddress.country,
+                  county = existingAddress.county,
+                  phone = existingAddress.phone,
+                  fax = existingAddress.fax
+               )
+            }
+         )
+      } else {
+         null
+      }
+   }
+
    fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
          id = rs.getLong("${columnPrefix}id"),
@@ -162,4 +199,25 @@ class AddressRepository @Inject constructor(
          phone = rs.getString("${columnPrefix}phone"),
          fax = rs.getString("${columnPrefix}fax")
       )
+
+   fun mapAddressOrNull(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         AddressEntity(
+            id = rs.getLong("${columnPrefix}id"),
+            name = rs.getString("${columnPrefix}name"),
+            address1 = rs.getString("${columnPrefix}address1"),
+            address2 = rs.getString("${columnPrefix}address2"),
+            city = rs.getString("${columnPrefix}city"),
+            state = rs.getString("${columnPrefix}state"),
+            postalCode = rs.getString("${columnPrefix}postal_code"),
+            latitude = rs.getDoubleOrNull("${columnPrefix}latitude"),
+            longitude = rs.getDoubleOrNull("${columnPrefix}longitude"),
+            country = rs.getString("${columnPrefix}country"),
+            county = rs.getString("${columnPrefix}county"),
+            phone = rs.getString("${columnPrefix}phone"),
+            fax = rs.getString("${columnPrefix}fax")
+         )
+      } else {
+         null
+      }
 }

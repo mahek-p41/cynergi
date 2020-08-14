@@ -6,8 +6,10 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.slf4j.Logger
@@ -20,27 +22,45 @@ import javax.inject.Singleton
 
 @Singleton
 class ShipViaRepository @Inject constructor(
+   private val addressRepository: AddressRepository,
+   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
    private fun baseSelectQuery() =
       """
+      WITH company AS (
+         ${companyRepository.companyBaseQuery()}
+      )
       SELECT
-         shipVia.id             AS id,
-         shipVia.uu_row_id      AS uu_row_id,
-         shipVia.time_created   AS time_created,
-         shipVia.time_updated   AS time_updated,
-         shipVia.description    AS description,
-         shipVia.number         AS number,
-         comp.id                AS comp_id,
-         comp.uu_row_id         AS comp_uu_row_id,
-         comp.name              AS comp_name,
-         comp.doing_business_as AS comp_doing_business_as,
-         comp.client_code       AS comp_client_code,
-         comp.client_id         AS comp_client_id,
-         comp.dataset_code      AS comp_dataset_code,
-         comp.federal_id_number AS comp_federal_id_number,
-         count(*) OVER()        AS total_elements
+         shipVia.id                    AS id,
+         shipVia.uu_row_id             AS uu_row_id,
+         shipVia.time_created          AS time_created,
+         shipVia.time_updated          AS time_updated,
+         shipVia.description           AS description,
+         shipVia.number                AS number,
+         comp.id                       AS comp_id,
+         comp.uu_row_id                AS comp_uu_row_id,
+         comp.name                     AS comp_name,
+         comp.doing_business_as        AS comp_doing_business_as,
+         comp.client_code              AS comp_client_code,
+         comp.client_id                AS comp_client_id,
+         comp.dataset_code             AS comp_dataset_code,
+         comp.federal_id_number        AS comp_federal_id_number,
+         comp.address_id               AS address_id,
+         comp.address_name             AS address_name,
+         comp.address_address1         AS address_address1,
+         comp.address_address2         AS address_address2,
+         comp.address_city             AS address_city,
+         comp.address_state            AS address_state,
+         comp.address_postal_code      AS address_postal_code,
+         comp.address_latitude         AS address_latitude,
+         comp.address_longitude        AS address_longitude,
+         comp.address_country          AS address_country,
+         comp.address_county           AS address_county,
+         comp.address_phone            AS address_phone,
+         comp.address_fax              AS address_fax,
+         count(*) OVER()               AS total_elements
       FROM ship_via shipVia
            JOIN company comp ON shipVia.company_id = comp.id
    """
@@ -162,7 +182,8 @@ class ShipViaRepository @Inject constructor(
             clientCode = rs.getString("comp_client_code"),
             clientId = rs.getInt("comp_client_id"),
             datasetCode = rs.getString("comp_dataset_code"),
-            federalIdNumber = rs.getString("comp_federal_id_number")
+            federalIdNumber = rs.getString("comp_federal_id_number"),
+            address = addressRepository.mapAddressOrNull(rs, "address_")
          )
       )
    }

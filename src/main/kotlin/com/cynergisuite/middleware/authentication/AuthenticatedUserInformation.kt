@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.authentication
 
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.user.UserSecurityLevels
-import com.cynergisuite.middleware.company.CompanyValueObject
+import com.cynergisuite.middleware.company.CompanyDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -18,7 +18,7 @@ data class AuthenticatedUserInformation(
    val storeNumber: Int? = null,
 
    @field:Schema(name = "company", title = "Company currently connected to", description = "Company that data is being loaded from", required = true)
-   val company: CompanyValueObject? = null,
+   val company: CompanyDTO? = null,
 
    @field:Schema(name = "alternativeStoreIndicator", title = "Alternate Store Indicator", description = "Indicates which other stores an employee may access", required = true, allowableValues = ["A N R D"])
    val alternativeStoreIndicator: String? = null,
@@ -33,7 +33,7 @@ data class AuthenticatedUserInformation(
    val securityLevels: UserSecurityLevels? = null
 
 ) {
-   constructor(user: User, permissions: Set<String>, companyOverride: CompanyValueObject, securityLevels: UserSecurityLevels? = null) :
+   constructor(user: User, permissions: Set<String>, companyOverride: CompanyDTO, securityLevels: UserSecurityLevels? = null) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
          storeNumber = user.myLocation().myNumber(),

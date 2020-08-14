@@ -14,26 +14,26 @@ class CompanyService @Inject constructor(
    private val companyValidator: CompanyValidator
 ) {
 
-   fun fetchById(id: Long): CompanyValueObject? =
-      companyRepository.findOne(id)?.let { CompanyValueObject(it) }
+   fun fetchById(id: Long): CompanyDTO? =
+      companyRepository.findOne(id)?.let { CompanyDTO(it) }
 
-   fun fetchAll(pageRequest: PageRequest): Page<CompanyValueObject> {
+   fun fetchAll(pageRequest: PageRequest): Page<CompanyDTO> {
       val companies = companyRepository.findAll(pageRequest)
 
-      return companies.toPage { CompanyValueObject(it) }
+      return companies.toPage { CompanyDTO(it) }
    }
 
    @Validated
-   fun create(@Valid companyVO: CompanyValueObject): CompanyValueObject {
-      val toCreate = companyValidator.validateCreate(companyVO)
+   fun create(@Valid companyDTO: CompanyDTO): CompanyDTO {
+      val toCreate = companyValidator.validateCreate(companyDTO)
 
-      return CompanyValueObject(companyRepository.insert(toCreate))
+      return CompanyDTO(companyRepository.insert(toCreate))
    }
 
    @Validated
-   fun update(id: Long, @Valid companyVO: CompanyValueObject): CompanyValueObject {
-      val toUpdate = companyValidator.validateUpdate(id, companyVO)
+   fun update(id: Long, @Valid companyDTO: CompanyDTO): CompanyDTO {
+      val toUpdate = companyValidator.validateUpdate(id, companyDTO)
 
-      return CompanyValueObject(companyRepository.update(toUpdate))
+      return CompanyDTO(companyRepository.update(toUpdate))
    }
 }

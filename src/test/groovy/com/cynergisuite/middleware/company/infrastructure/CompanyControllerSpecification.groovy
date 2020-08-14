@@ -2,11 +2,14 @@ package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
+
+import javax.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
@@ -18,6 +21,7 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 class CompanyControllerSpecification extends ControllerSpecificationBase {
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
+   @Inject AddressTestDataLoaderService addressTestDataLoaderService
 
    private static String path = '/company'
 
@@ -39,6 +43,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientId == company.clientId
          datasetCode == company.datasetCode
          federalTaxNumber == company.federalIdNumber
+         address == company.address
       }
    }
 
@@ -66,6 +71,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].clientId == companies[0].clientId
       pageOneResult.elements[0].datasetCode == companies[0].datasetCode
       pageOneResult.elements[0].federalTaxNumber == companies[0].federalIdNumber
+      pageOneResult.elements[0].address == companies[0].address
       pageOneResult.elements[1].id == companies[1].id
       pageOneResult.elements[1].name == companies[1].name
       pageOneResult.elements[1].doingBusinessAs == companies[1].doingBusinessAs
@@ -73,6 +79,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[1].clientId == companies[1].clientId
       pageOneResult.elements[1].datasetCode == companies[1].datasetCode
       pageOneResult.elements[1].federalTaxNumber == companies[1].federalIdNumber
+      pageOneResult.elements[1].address == companies[1].address
 
       when:
       httpClient.toBlocking().exchange(GET("$path$pageTwo"),
@@ -106,6 +113,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].clientId == companies[0].clientId
       pageOneResult.elements[0].datasetCode == companies[0].datasetCode
       pageOneResult.elements[0].federalTaxNumber == companies[0].federalIdNumber
+      pageOneResult.elements[0].address == companies[0].address
       pageOneResult.elements[1].id == companies[1].id
       pageOneResult.elements[1].name == companies[1].name
       pageOneResult.elements[1].doingBusinessAs == companies[1].doingBusinessAs
@@ -113,6 +121,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[1].clientId == companies[1].clientId
       pageOneResult.elements[1].datasetCode == companies[1].datasetCode
       pageOneResult.elements[1].federalTaxNumber == companies[1].federalIdNumber
+      pageOneResult.elements[1].address == companies[1].address
 
       when:
       get("$path$pageTwo")
@@ -122,7 +131,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       exception.status == NO_CONTENT
    }
 
-   void "create a valid company"() {
+   void "create a valid company" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -146,10 +155,40 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientId == clientId
          datasetCode == 'tstds3'
          federalTaxNumber == null
+         address == jsonCompany.address
       }
    }
 
-   void "create an invalid company without clientId"() {
+   void "create a valid company without address" () {
+      given:
+      final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      jsonCompany.remove('id')
+      jsonCompany.name = 'HTI'
+      def clientId = new Random().nextInt(1000)
+      def datasetCode = 'tstds3'
+      jsonCompany.clientId = clientId
+      jsonCompany.datasetCode = datasetCode
+      jsonCompany.address = null
+
+      when:
+      def result = post("$path", jsonCompany)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         name == 'HTI'
+         doingBusinessAs == jsonCompany.doingBusinessAs
+         clientCode == jsonCompany.clientCode
+         clientId == clientId
+         datasetCode == 'tstds3'
+         federalTaxNumber == null
+         address == null
+      }
+   }
+
+   void "create an invalid company without clientId" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -164,11 +203,11 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'companyVO.clientId'
+      response[0].path == 'companyDTO.clientId'
       response[0].message == 'Is required'
    }
 
-   void "create an invalid company with clientId < 0"() {
+   void "create an invalid company with clientId < 0" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -183,11 +222,11 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'companyVO.clientId'
-      response[0].message == 'companyVO.clientId must be greater than zero'
+      response[0].path == 'companyDTO.clientId'
+      response[0].message == 'companyDTO.clientId must be greater than zero'
    }
 
-   void "create an invalid company with duplicate clientId"() {
+   void "create an invalid company with duplicate clientId" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -206,7 +245,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response[0].message == '1234 already exists'
    }
 
-   void "create an invalid company with duplicate datasetCode"() {
+   void "create an invalid company with duplicate datasetCode" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -226,7 +265,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response[0].message == 'tstds2 already exists'
    }
 
-   void "create an invalid company with invalid datasetCode"() {
+   void "create an invalid company with invalid datasetCode" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -243,10 +282,10 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].message == 'Size of provided value InvalidCode is invalid'
-      response[0].path == 'companyVO.datasetCode'
+      response[0].path == 'companyDTO.datasetCode'
    }
 
-   void "create an invalid company with duplicate clientId & datasetCode"() {
+   void "create an invalid company with duplicate clientId & datasetCode" () {
       given:
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
@@ -266,8 +305,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response[1].message == 'tstds1 already exists'
    }
 
-
-   void "create a company without login"() {
+   void "create a company without login" () {
       given:
       final def company = companyFactoryService.forDatasetCode('tstds1')
       final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(company))
@@ -292,7 +330,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.message == 'Required argument authentication not specified'
    }
 
-   void "update a valid company"() {
+   void "update a valid company" () {
       given: 'Update existingCompany in DB with all new data in jsonCompany'
       def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.tap {
@@ -302,6 +340,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientId = 1234
          datasetCode = 'tstds3'
          federalTaxNumber = '654321'
+         address = null
       }
 
       when:
@@ -318,10 +357,11 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientId == 1234
          datasetCode == 'tstds3'
          federalTaxNumber == '654321'
+         address == null
       }
    }
 
-   void "update an invalid company with duplicate clientId"() {
+   void "update an invalid company with duplicate clientId" () {
       given: 'Update existingCompany in DB with all new data in jsonCompany'
       def tstds2 = companyFactoryService.forDatasetCode('tstds2')
       def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
@@ -332,6 +372,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientCode = '1234'
          datasetCode = 'tstds3'
          federalTaxNumber = '654321'
+         address = null
       }
 
       when:
@@ -346,7 +387,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response[0].message == '4321 already exists'
    }
 
-   void "update an invalid company with duplicate datasetCode"() {
+   void "update an invalid company with duplicate datasetCode" () {
       given: 'Update existingCompany in DB with all new data in jsonCompany'
       def tstds2 = companyFactoryService.forDatasetCode('tstds2')
       def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
@@ -356,6 +397,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientCode = '1234'
          datasetCode = tstds2.datasetCode
          federalTaxNumber = '654321'
+         address = null
       }
 
       when:
@@ -370,7 +412,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response[0].message == 'tstds2 already exists'
    }
 
-   void "update a company without login"() {
+   void "update a company without login" () {
       given: 'Update existingCompany in DB with all new data in jsonCompany'
       def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.tap {
@@ -380,6 +422,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          clientId = 1234
          datasetCode = 'tstds3'
          federalTaxNumber = '654321'
+         address = null
       }
 
       when:
@@ -396,4 +439,172 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.message == 'You are not logged in'
    }
 
+   void "update a valid company by removing address" () {
+      given: 'Update existingCompany in DB by removing address'
+      def address = addressTestDataLoaderService.single()
+      def jsonAddress = jsonSlurper.parseText(jsonOutput.toJson(address))
+      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      jsonAddress.remove(address)
+      jsonCompany.tap {
+         name = 'HTI'
+         doingBusinessAs = 'Sale'
+         clientCode = '1234'
+         clientId = 1234
+         datasetCode = 'tstds3'
+         federalTaxNumber = '654321'
+         address = jsonAddress
+      }
+
+      when:
+      def result = put("$path/$tstds1.id", jsonCompany)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id == jsonCompany.id
+         name == 'HTI'
+         doingBusinessAs == 'Sale'
+         clientCode == '1234'
+         clientId == 1234
+         datasetCode == 'tstds3'
+         federalTaxNumber == '654321'
+         with(address) {
+            id == jsonAddress.id
+            name == jsonAddress.name
+            address1 == jsonAddress.address1
+            address2 == jsonAddress.address2
+            city == jsonAddress.city
+            state == jsonAddress.state
+            postalCode == jsonAddress.postalCode
+            latitude == jsonAddress.latitude
+            longitude == jsonAddress.longitude
+            country == jsonAddress.country
+            county == jsonAddress.county
+            phone == jsonAddress.phone
+            fax == jsonAddress.fax
+         }
+      }
+   }
+
+   void "update a valid company by updating address" () {
+      given: 'Update existingCompany in DB by updating address'
+      def address = addressTestDataLoaderService.single()
+      def jsonAddress = jsonSlurper.parseText(jsonOutput.toJson(address))
+      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      jsonAddress.tap {
+         name = 'Test Name'
+         address1 = '123 Test St'
+         address2 = null
+         city = 'Test City'
+         state = 'KS'
+         postalCode = '12345'
+         latitude = '-100.10244'
+         longitude = '-34.54896'
+         country = 'US'
+         county = 'I7'
+         phone = '555-555-5555'
+         fax = '(555) 555-6789'
+      }
+      jsonCompany.tap {
+         name = 'HTI'
+         doingBusinessAs = 'Sale'
+         clientCode = '1234'
+         clientId = 1234
+         datasetCode = 'tstds3'
+         federalTaxNumber = '654321'
+         address = jsonAddress
+      }
+
+      when:
+      def result = put("$path/$tstds1.id", jsonCompany)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id == jsonCompany.id
+         name == 'HTI'
+         doingBusinessAs == 'Sale'
+         clientCode == '1234'
+         clientId == 1234
+         datasetCode == 'tstds3'
+         federalTaxNumber == '654321'
+         with(address) {
+            id == jsonAddress.id
+            name == jsonAddress.name
+            address1 == jsonAddress.address1
+            address2 == jsonAddress.address2
+            city == jsonAddress.city
+            state == jsonAddress.state
+            postalCode == jsonAddress.postalCode
+            latitude == jsonAddress.latitude
+            longitude == jsonAddress.longitude
+            country == jsonAddress.country
+            county == jsonAddress.county
+            phone == jsonAddress.phone
+            fax == jsonAddress.fax
+         }
+      }
+   }
+
+   void "update a valid company with an address" () {
+      given:
+      def address = addressTestDataLoaderService.single()
+      def jsonAddress = jsonSlurper.parseText(jsonOutput.toJson(address))
+      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      jsonCompany.remove(address)
+      jsonCompany.address = jsonAddress
+
+      when:
+      def result = put("$path/$tstds1.id", jsonCompany)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id == jsonCompany.id
+         name == jsonCompany.name
+         doingBusinessAs == jsonCompany.doingBusinessAs
+         clientCode == jsonCompany.clientCode
+         clientId == jsonCompany.clientId
+         datasetCode == jsonCompany.datasetCode
+         federalTaxNumber == jsonCompany.federalTaxNumber
+         with(address) {
+            id == jsonAddress.id
+            name == jsonAddress.name
+            address1 == jsonAddress.address1
+            address2 == jsonAddress.address2
+            city == jsonAddress.city
+            state == jsonAddress.state
+            postalCode == jsonAddress.postalCode
+            latitude == jsonAddress.latitude
+            longitude == jsonAddress.longitude
+            country == jsonAddress.country
+            county == jsonAddress.county
+            phone == jsonAddress.phone
+            fax == jsonAddress.fax
+         }
+      }
+   }
+
+   void "update an invalid company with a null address id" () {
+      given:
+      def address = addressTestDataLoaderService.single()
+      def jsonAddress = jsonSlurper.parseText(jsonOutput.toJson(address))
+      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      jsonCompany.address = jsonAddress
+      jsonAddress.id = null
+
+      when:
+      put("$path/$tstds1.id", jsonCompany)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "address"
+      response[0].message == "Provide id or update address"
+   }
 }

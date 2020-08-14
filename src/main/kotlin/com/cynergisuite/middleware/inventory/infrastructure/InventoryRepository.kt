@@ -31,55 +31,72 @@ class InventoryRepository(
 
    private val selectBase =
       """
+      WITH company AS (
+         ${companyRepository.companyBaseQuery()}
+      )
       SELECT
-         i.id AS id,
-         i.serial_number AS serial_number,
-         i.lookup_key AS lookup_key,
-         i.lookup_key_type AS lookup_key_type,
-         i.barcode AS barcode,
-         i.alt_id AS alt_id,
-         i.brand AS brand,
-         i.model_number AS model_number,
-         i.product_code AS product_code,
-         i.description AS description,
-         i.received_date AS received_date,
-         i.original_cost AS original_cost,
-         i.actual_cost AS actual_cost,
-         i.model_category AS model_category,
-         i.times_rented AS times_rented,
-         i.total_revenue AS total_revenue,
-         i.remaining_value AS remaining_value,
-         i.sell_price AS sell_price,
-         i.assigned_value AS assigned_value,
-         i.idle_days AS idle_days,
-         i.condition AS condition,
-         i.returned_date AS returned_date,
-         i.status AS status,
-         i.dataset AS dataset,
-         comp.id AS comp_id,
-         comp.uu_row_id AS comp_uu_row_id,
-         comp.time_created AS comp_time_created,
-         comp.time_updated AS comp_time_updated,
-         comp.name AS comp_name,
-         comp.doing_business_as AS comp_doing_business_as,
-         comp.client_code AS comp_client_code,
-         comp.client_id AS comp_client_id,
-         comp.dataset_code AS comp_dataset_code,
-         comp.federal_id_number AS comp_federal_id_number,
-         primaryStore.id AS primary_store_id,
-         primaryStore.number AS primary_store_number,
-         primaryStore.name AS primary_store_name,
-         primaryStore.dataset AS primary_store_dataset,
-         currentStore.id AS current_store_id,
-         currentStore.number AS current_store_number,
-         currentStore.name AS current_store_name,
-         currentStore.dataset AS current_store_dataset,
-         iltd.id AS location_type_id,
-         iltd.value AS location_type_value,
-         iltd.description AS location_type_description,
-         iltd.localization_code AS location_type_localization_code
+         i.id                          AS id,
+         i.serial_number               AS serial_number,
+         i.lookup_key                  AS lookup_key,
+         i.lookup_key_type             AS lookup_key_type,
+         i.barcode                     AS barcode,
+         i.alt_id                      AS alt_id,
+         i.brand                       AS brand,
+         i.model_number                AS model_number,
+         i.product_code                AS product_code,
+         i.description                 AS description,
+         i.received_date               AS received_date,
+         i.original_cost               AS original_cost,
+         i.actual_cost                 AS actual_cost,
+         i.model_category              AS model_category,
+         i.times_rented                AS times_rented,
+         i.total_revenue               AS total_revenue,
+         i.remaining_value             AS remaining_value,
+         i.sell_price                  AS sell_price,
+         i.assigned_value              AS assigned_value,
+         i.idle_days                   AS idle_days,
+         i.condition                   AS condition,
+         i.returned_date               AS returned_date,
+         i.status                      AS status,
+         i.dataset                     AS dataset,
+         comp.id                       AS comp_id,
+         comp.uu_row_id                AS comp_uu_row_id,
+         comp.time_created             AS comp_time_created,
+         comp.time_updated             AS comp_time_updated,
+         comp.name                     AS comp_name,
+         comp.doing_business_as        AS comp_doing_business_as,
+         comp.client_code              AS comp_client_code,
+         comp.client_id                AS comp_client_id,
+         comp.dataset_code             AS comp_dataset_code,
+         comp.federal_id_number        AS comp_federal_id_number,
+         comp.address_id               AS address_id,
+         comp.address_name             AS address_name,
+         comp.address_address1         AS address_address1,
+         comp.address_address2         AS address_address2,
+         comp.address_city             AS address_city,
+         comp.address_state            AS address_state,
+         comp.address_postal_code      AS address_postal_code,
+         comp.address_latitude         AS address_latitude,
+         comp.address_longitude        AS address_longitude,
+         comp.address_country          AS address_country,
+         comp.address_county           AS address_county,
+         comp.address_phone            AS address_phone,
+         comp.address_fax              AS address_fax,
+         primaryStore.id               AS primary_store_id,
+         primaryStore.number           AS primary_store_number,
+         primaryStore.name             AS primary_store_name,
+         primaryStore.dataset          AS primary_store_dataset,
+         currentStore.id               AS current_store_id,
+         currentStore.number           AS current_store_number,
+         currentStore.name             AS current_store_name,
+         currentStore.dataset          AS current_store_dataset,
+         iltd.id                       AS location_type_id,
+         iltd.value                    AS location_type_value,
+         iltd.description              AS location_type_description,
+         iltd.localization_code        AS location_type_localization_code
       FROM company comp
            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+           LEFT JOIN address ON comp.address_id = address.id
            JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
            LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
@@ -150,7 +167,7 @@ class InventoryRepository(
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
-      val params = mutableMapOf<String, Any>(
+      val params = mutableMapOf(
          "location" to pageRequest.storeNumber!!,
          "comp_id" to company.myId()!!,
          "limit" to pageRequest.size(),
@@ -202,7 +219,7 @@ class InventoryRepository(
 
    fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
       var pageResult = findUnscannedIdleInventory(audit, StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC"))
-      var inventories: MutableList<InventoryEntity> = mutableListOf()
+      val inventories: MutableList<InventoryEntity> = mutableListOf()
       while (pageResult.elements.isNotEmpty()) {
          inventories.addAll(pageResult.elements)
          pageResult = findUnscannedIdleInventory(audit, pageResult.requested.nextPage())
@@ -212,9 +229,9 @@ class InventoryRepository(
 
    fun findUnscannedIdleInventory(audit: AuditEntity, pageRequest: PageRequest): RepositoryPage<InventoryEntity, PageRequest> {
       var totalElements: Long? = null
-      var company = audit.store.myCompany()
+      val company = audit.store.myCompany()
       val elements = mutableListOf<InventoryEntity>()
-      val params = mutableMapOf<String, Any?>(
+      val params = mutableMapOf(
          "audit_id" to audit.id,
          "comp_id" to company.myId(),
          "limit" to pageRequest.size(),

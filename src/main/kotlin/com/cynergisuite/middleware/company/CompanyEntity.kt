@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.company
 
+import com.cynergisuite.middleware.address.AddressEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -11,40 +12,43 @@ data class CompanyEntity(
    val clientCode: String,
    val clientId: Int,
    val datasetCode: String,
-   val federalIdNumber: String? = null
+   val federalIdNumber: String? = null,
+   val address: AddressEntity? = null
 ) : Company {
 
    // Factory object to create CompanyEntity from a Company
    companion object Factory {
       fun create(company: Company): CompanyEntity? {
          return when (company) {
-            is CompanyValueObject -> CompanyEntity(company)
+            is CompanyDTO -> CompanyEntity(company)
             is CompanyEntity -> CompanyEntity(company)
             else -> null
          }
       }
    }
 
-   constructor(companyVO: CompanyEntity) :
+   constructor(companyDTO: CompanyEntity) :
       this (
-         id = companyVO.id,
-         name = companyVO.name,
-         doingBusinessAs = companyVO.doingBusinessAs,
-         clientCode = companyVO.clientCode,
-         clientId = companyVO.clientId,
-         datasetCode = companyVO.datasetCode,
-         federalIdNumber = companyVO.federalIdNumber
+         id = companyDTO.id,
+         name = companyDTO.name,
+         doingBusinessAs = companyDTO.doingBusinessAs,
+         clientCode = companyDTO.clientCode,
+         clientId = companyDTO.clientId,
+         datasetCode = companyDTO.datasetCode,
+         federalIdNumber = companyDTO.federalIdNumber,
+         address = companyDTO.address
       )
 
-   constructor(companyVO: CompanyValueObject) :
+   constructor(companyDTO: CompanyDTO) :
       this (
-         id = companyVO.id,
-         name = companyVO.name!!,
-         doingBusinessAs = companyVO.doingBusinessAs,
-         clientCode = companyVO.clientCode!!,
-         clientId = companyVO.clientId!!,
-         datasetCode = companyVO.datasetCode!!,
-         federalIdNumber = companyVO.federalTaxNumber
+         id = companyDTO.id,
+         name = companyDTO.name!!,
+         doingBusinessAs = companyDTO.doingBusinessAs,
+         clientCode = companyDTO.clientCode!!,
+         clientId = companyDTO.clientId!!,
+         datasetCode = companyDTO.datasetCode!!,
+         federalIdNumber = companyDTO.federalTaxNumber,
+         address = companyDTO.address
       )
 
    override fun myId(): Long? = id
@@ -61,6 +65,7 @@ data class CompanyEntity(
          .append(this.clientId)
          .append(this.datasetCode)
          .append(this.federalIdNumber)
+         .append(this.address)
          .toHashCode()
 
    override fun equals(other: Any?): Boolean =
@@ -73,6 +78,7 @@ data class CompanyEntity(
             .append(this.clientId, other.clientId)
             .append(this.datasetCode, other.datasetCode)
             .append(this.federalIdNumber, other.federalIdNumber)
+            .append(this.address, other.address)
             .isEquals
       } else {
          false
@@ -90,21 +96,23 @@ data class CompanyEntity(
             .append(this.name, other.name)
             .append(this.doingBusinessAs, other.doingBusinessAs)
             .append(this.federalIdNumber, other.federalIdNumber)
+            .append(this.address, other.address)
             .toComparison()
       } else {
          compareToBuilder.toComparison()
       }
    }
 
-   fun toValueObject(): CompanyValueObject {
-      return CompanyValueObject(
+   fun toValueObject(): CompanyDTO {
+      return CompanyDTO(
          id = this.id,
          name = this.name,
          doingBusinessAs = this.doingBusinessAs,
          clientCode = this.clientCode,
          clientId = this.clientId,
          datasetCode = this.datasetCode,
-         federalTaxNumber = this.federalIdNumber
+         federalTaxNumber = this.federalIdNumber,
+         address = this.address
       )
    }
 }

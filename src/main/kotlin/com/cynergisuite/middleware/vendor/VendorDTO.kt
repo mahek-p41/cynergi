@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.address.AddressValueObject
+import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -34,7 +34,7 @@ data class VendorDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "address", description = "Bank Address.")
-   var address: AddressValueObject? = null,
+   var address: AddressDTO? = null,
 
    @field:NotNull
    @field:Positive
@@ -170,7 +170,7 @@ data class VendorDTO(
       this (
          id = entity.id,
          name = entity.name,
-         address = AddressValueObject(entity.address),
+         address = AddressDTO(entity.address),
          ourAccountNumber = entity.ourAccountNumber,
          payTo = if (entity.payTo != null) SimpleIdentifiableDTO(entity.payTo) else null,
          freightOnboardType = FreightOnboardTypeDTO(entity.freightOnboardType),

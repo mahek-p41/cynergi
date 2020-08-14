@@ -26,6 +26,9 @@ class VendorGroupRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupRepository::class.java)
    private fun baseSelectQuery() =
       """
+      WITH company AS (
+         ${companyRepository.companyBaseQuery()}
+      )
       SELECT
          vgrp.id                     AS vgrp_id,
          vgrp.uu_row_id              AS vgrp_uu_row_id,
@@ -44,6 +47,19 @@ class VendorGroupRepository @Inject constructor(
          comp.client_id              AS comp_client_id,
          comp.dataset_code           AS comp_dataset_code,
          comp.federal_id_number      AS comp_federal_id_number,
+         comp.address_id             AS address_id,
+         comp.address_name           AS address_name,
+         comp.address_address1       AS address_address1,
+         comp.address_address2       AS address_address2,
+         comp.address_city           AS address_city,
+         comp.address_state          AS address_state,
+         comp.address_postal_code    AS address_postal_code,
+         comp.address_latitude       AS address_latitude,
+         comp.address_longitude      AS address_longitude,
+         comp.address_country        AS address_country,
+         comp.address_county         AS address_county,
+         comp.address_phone          AS address_phone,
+         comp.address_fax            AS address_fax,
          count(*) OVER()             AS total_elements
       FROM vendor_group vgrp
            JOIN company comp ON vgrp.company_id = comp.id
