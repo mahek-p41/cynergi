@@ -5,7 +5,6 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.address.AddressEntity
-import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
@@ -40,7 +39,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
 
-   @Inject AddressRepository addressRepository
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
    @Inject FreightCalcMethodTypeRepository freightCalcMethodTypeRepository
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
@@ -345,6 +343,74 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       new VendorDTO(result) == vendor
    }
 
+   void "create valid vendor with allow drop ship to customer and auto submit purchase order set to true" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
+      companies.each {
+         vendorGroups.addAll(vendorGroupTestDataLoaderService.stream(it).collect())
+      }
+      vendor.vendorGroup = new SimpleIdentifiableDTO(vendorGroups[0].id)
+
+      vendor.allowDropShipToCustomer = true
+      vendor.autoSubmitPurchaseOrder = true
+
+      when:
+      def result = post(path, vendor)
+      vendor.id = result.id
+      vendor.address.id = result.address?.id
+      vendor.vendorGroup = result.vendorGroup
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id > 0
+      result.address.id != null
+      result.address.id > 0
+      result.vendorGroup != null
+      result.allowDropShipToCustomer == true
+      result.autoSubmitPurchaseOrder == true
+      new VendorDTO(result) == vendor
+   }
+
+   void "create valid vendor with allow drop ship to customer and auto submit purchase order set to false" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
+      companies.each {
+         vendorGroups.addAll(vendorGroupTestDataLoaderService.stream(it).collect())
+      }
+      vendor.vendorGroup = new SimpleIdentifiableDTO(vendorGroups[0].id)
+
+      vendor.allowDropShipToCustomer = false
+      vendor.autoSubmitPurchaseOrder = false
+
+      when:
+      def result = post(path, vendor)
+      vendor.id = result.id
+      vendor.address.id = result.address?.id
+      vendor.vendorGroup = result.vendorGroup
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id > 0
+      result.address.id != null
+      result.address.id > 0
+      result.vendorGroup != null
+      result.allowDropShipToCustomer == false
+      result.autoSubmitPurchaseOrder == false
+      new VendorDTO(result) == vendor
+   }
+
    void "create invalid vendor with non-existing vendor group" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -456,6 +522,48 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "purchaseOrderSubmitEmailAddress"
       response[0].message == "invalidEmail is an invalid email address"
+   }
+
+   void "create invalid vendor with null allow drop ship to customer" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      jsonVendor.remove('allowDropShipToCustomer')
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "allowDropShipToCustomer"
+      response[0].message == "Is required"
+   }
+
+   void "create invalid vendor with null auto submit purchase order" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
+      jsonVendor.remove('autoSubmitPurchaseOrder')
+
+      when:
+      post(path, jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "autoSubmitPurchaseOrder"
+      response[0].message == "Is required"
    }
 
    void "update one" () {
@@ -603,6 +711,85 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "purchaseOrderSubmitEmailAddress"
       response[0].message == "invalidEmail is an invalid email address"
+   }
+
+   void "update vendor and toggle allow drop ship to customer and auto submit purchase order fields" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final newVendorAddress = AddressTestDataLoader.single().with { new AddressDTO(it) }
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+
+      final existingAllowDropShipToCustomer = vendorUpdate.allowDropShipToCustomer
+      final existingAutoSubmitPurchaseOrder = vendorUpdate.autoSubmitPurchaseOrder
+      vendorUpdate.allowDropShipToCustomer = !existingAllowDropShipToCustomer
+      vendorUpdate.autoSubmitPurchaseOrder = !existingAutoSubmitPurchaseOrder
+
+      when:
+      vendorUpdate.id = vendor.id
+      vendorUpdate.address = newVendorAddress
+      def result = put("$path/${vendor.id}", vendorUpdate)
+      vendorUpdate.address.id = result.address?.id
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id == vendor.id
+      result.address.id != null
+      result.address.id > 0
+      result.address.id != vendor.address.id
+      result.allowDropShipToCustomer == !existingAllowDropShipToCustomer
+      result.autoSubmitPurchaseOrder == !existingAutoSubmitPurchaseOrder
+      new VendorDTO(result) == vendorUpdate
+   }
+
+   void "update invalid vendor with null allow drop ship to customer field" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.remove('allowDropShipToCustomer')
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "allowDropShipToCustomer"
+      response[0].message == "Is required"
+   }
+
+   void "update invalid vendor with null auto submit purchase order field" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.remove('autoSubmitPurchaseOrder')
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "autoSubmitPurchaseOrder"
+      response[0].message == "Is required"
    }
 
    void "search vendors" () {

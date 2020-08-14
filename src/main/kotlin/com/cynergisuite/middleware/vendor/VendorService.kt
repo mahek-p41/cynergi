@@ -20,8 +20,8 @@ class VendorService @Inject constructor(
       vendorRepository.findOne(id, company)?.let { VendorDTO(entity = it) }
 
    @Validated
-   fun create(@Valid vo: VendorDTO, company: Company): VendorDTO {
-      val toCreate = vendorValidator.validateCreate(vo, company)
+   fun create(@Valid dto: VendorDTO, company: Company): VendorDTO {
+      val toCreate = vendorValidator.validateCreate(dto, company)
 
       return VendorDTO(
          entity = vendorRepository.insert(entity = toCreate)
@@ -47,8 +47,8 @@ class VendorService @Inject constructor(
    }
 
    @Validated
-   fun update(id: Long, @Valid vo: VendorDTO, company: Company): VendorDTO {
-      val toUpdate = vendorValidator.validateUpdate(id, vo, company)
+   fun update(id: Long, @Valid dto: VendorDTO, company: Company): VendorDTO {
+      val toUpdate = vendorValidator.validateUpdate(id, dto, company)
 
       return VendorDTO(
          entity = vendorRepository.update(entity = toUpdate)

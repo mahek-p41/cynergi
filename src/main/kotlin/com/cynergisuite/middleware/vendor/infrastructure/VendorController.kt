@@ -138,16 +138,16 @@ class VendorController @Inject constructor(
       ]
    )
    fun create(
-      @Body vo: VendorDTO,
+      @Body dto: VendorDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorDTO {
-      logger.debug("Requested Create Vendor {}", vo)
+      logger.debug("Requested Create Vendor {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = vendorService.create(vo, user.myCompany())
+      val response = vendorService.create(dto, user.myCompany())
 
-      logger.debug("Requested Create Vendor {} resulted in {}", vo, response)
+      logger.debug("Requested Create Vendor {} resulted in {}", dto, response)
 
       return response
    }
@@ -168,16 +168,16 @@ class VendorController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the vendor being updated") @QueryValue("id")
       id: Long,
-      @Body vo: VendorDTO,
+      @Body dto: VendorDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorDTO {
-      logger.info("Requested Update Vendor {}", vo)
+      logger.info("Requested Update Vendor {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = vendorService.update(id, vo, user.myCompany())
+      val response = vendorService.update(id, dto, user.myCompany())
 
-      logger.debug("Requested Update Vendor {} resulted in {}", vo, response)
+      logger.debug("Requested Update Vendor {} resulted in {}", dto, response)
 
       return response
    }
