@@ -7,7 +7,6 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
@@ -281,7 +280,7 @@ class VendorPaymentTermRepository @Inject constructor(
    private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
          id = rs.getLong("vpt_id"),
-         company = companyRepository.mapRow(rs,  "comp_"),
+         company = companyRepository.mapRow(rs, "comp_"),
          description = rs.getString("vpt_description"),
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
          discountDays = rs.getIntOrNull("vpt_discount_days"),

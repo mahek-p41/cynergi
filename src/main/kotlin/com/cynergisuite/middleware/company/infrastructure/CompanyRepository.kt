@@ -263,10 +263,11 @@ class CompanyRepository @Inject constructor(
       )
    }
 
-   fun removeAddressFromCompany (id: Long): CompanyEntity? {
+   fun removeAddressFromCompany(id: Long): CompanyEntity? {
       logger.debug("Updating company {}", id)
 
-      return jdbc.updateReturning("""
+      return jdbc.updateReturning(
+         """
          UPDATE company
          SET
             address_id = NULL

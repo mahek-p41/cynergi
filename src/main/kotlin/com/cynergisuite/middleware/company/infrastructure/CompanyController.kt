@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.company.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
-import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.company.CompanyDTO
+import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -99,9 +99,9 @@ class CompanyController @Inject constructor(
       ]
    )
    fun save(
-           @Body companyDTO: CompanyDTO,
-           authentication: Authentication,
-           httpRequest: HttpRequest<*>
+      @Body companyDTO: CompanyDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): CompanyDTO {
       logger.info("Requested Save Company {}", companyDTO)
 
@@ -125,10 +125,10 @@ class CompanyController @Inject constructor(
       ]
    )
    fun update(
-           @QueryValue("id") id: Long,
-           @Body companyDTO: CompanyDTO,
-           authentication: Authentication,
-           httpRequest: HttpRequest<*>
+      @QueryValue("id") id: Long,
+      @Body companyDTO: CompanyDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): CompanyDTO {
       logger.info("Requested Update Company {}", companyDTO)
 

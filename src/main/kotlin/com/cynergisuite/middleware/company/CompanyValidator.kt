@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AddressNeedsUpdated
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.NotImplemented
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -43,12 +42,10 @@ class CompanyValidator @Inject constructor(
 
          // address validation
          if (companyDTO.address?.id == null && companyEntity?.address != null) {
-
             companyRepository.removeAddressFromCompany(companyDTO.myId()!!)
 
             val addressIdToDelete = companyEntity.address.myId()
             addressRepository.delete(addressIdToDelete!!)
-
          } else if (companyDTO.address?.id != null) {
             if (companyDTO.address?.name != companyEntity?.address?.name) {
                addressRepository.update(companyDTO.address!!)

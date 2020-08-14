@@ -9,7 +9,6 @@ import java.util.stream.Stream
 import javax.inject.Singleton
 
 object CompanyFactory {
-   private val addressTestDataLoader = AddressTestDataLoader
 
    @JvmStatic
    private val companies: List<CompanyEntity> = listOf(
@@ -61,7 +60,7 @@ object CompanyFactory {
             clientId = random.nextInt(1000, 10000),
             datasetCode = lorem.characters(6, 6, false),
             federalIdNumber = numbers.valid(),
-            address = addressTestDataLoader.single()
+            address = AddressTestDataLoader.single()
          )
       }
    }

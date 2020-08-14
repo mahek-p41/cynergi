@@ -37,8 +37,8 @@ class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cyn
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
-class InvalidCompany(company: Company): Cynergi("cynergi.validation.invalid.company", arrayOf(company.myDataset()))
-class MustMatchPathVariable(value: Any?): Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
+class InvalidCompany(company: Company) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.myDataset()))
+class MustMatchPathVariable(value: Any?) : Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
 class AddressNeedsUpdated(address: AddressEntity) : Cynergi("cynergi.validation.address.needs.updated", arrayOf(address))
 

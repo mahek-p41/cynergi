@@ -5,7 +5,6 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getDoubleOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -154,7 +153,8 @@ class AddressRepository @Inject constructor(
       val existingAddress = findOne(id)
 
       return if (existingAddress != null) {
-         jdbc.deleteReturning("""p
+         jdbc.deleteReturning(
+            """p
             DELETE FROM address
             WHERE id = :id
             RETURNING

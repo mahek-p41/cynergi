@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.authentication.user.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.authentication.PasswordEncoderService
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
@@ -32,7 +31,6 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthenticationRepository @Inject constructor(
-   private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val locationRepository: LocationRepository,
