@@ -19,7 +19,7 @@ object ShipViaTestDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
-            description = lorem.word(),
+            description = lorem.characters(3, 30),
             company = company
          )
       }
@@ -32,7 +32,7 @@ object ShipViaTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["develop", "demo", "test"])
+@Requires(env = ["demo", "test"])
 class ShipViaTestDataLoaderService @Inject constructor(
    private val shipViaRepository: ShipViaRepository
 ) {

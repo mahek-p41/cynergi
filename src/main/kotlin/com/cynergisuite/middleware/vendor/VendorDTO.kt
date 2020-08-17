@@ -162,11 +162,7 @@ data class VendorDTO(
 
    @field:NotNull
    @field:Schema(name = "autoSubmitPurchaseOrder", description = "Indicator on if the vendor supports automatically submitting a purchase order.", required = true)
-   var autoSubmitPurchaseOrder: Boolean? = null,
-
-   @field:Positive
-   @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor numbe")
-   var number: Int? = null
+   var autoSubmitPurchaseOrder: Boolean? = null
 
 ) : Identifiable {
 
@@ -205,8 +201,7 @@ data class VendorDTO(
          emailAddress = entity.emailAddress,
          purchaseOrderSubmitEmailAddress = entity.purchaseOrderSubmitEmailAddress,
          allowDropShipToCustomer = entity.allowDropShipToCustomer,
-         autoSubmitPurchaseOrder = entity.autoSubmitPurchaseOrder,
-         number = entity.number
+         autoSubmitPurchaseOrder = entity.autoSubmitPurchaseOrder
       )
 
    override fun myId(): Long? = id

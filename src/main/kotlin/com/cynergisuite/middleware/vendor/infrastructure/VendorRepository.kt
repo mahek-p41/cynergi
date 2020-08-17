@@ -501,8 +501,7 @@ class VendorRepository @Inject constructor(
          emailAddress = rs.getString("${columnPrefix}email_address"),
          purchaseOrderSubmitEmailAddress = rs.getString("${columnPrefix}purchase_order_submit_email_address"),
          allowDropShipToCustomer = rs.getBoolean("${columnPrefix}allow_drop_ship_to_customer"),
-         autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order"),
-         number = rs.getInt("${columnPrefix}number")
+         autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order")
       )
    }
 
@@ -544,8 +543,7 @@ class VendorRepository @Inject constructor(
          emailAddress = rs.getString("email_address"),
          purchaseOrderSubmitEmailAddress = rs.getString("purchase_order_submit_email_address"),
          allowDropShipToCustomer = rs.getBoolean("allow_drop_ship_to_customer"),
-         autoSubmitPurchaseOrder = rs.getBoolean("auto_submit_purchase_order"),
-         number = rs.getInt("number")
+         autoSubmitPurchaseOrder = rs.getBoolean("auto_submit_purchase_order")
       )
    }
 

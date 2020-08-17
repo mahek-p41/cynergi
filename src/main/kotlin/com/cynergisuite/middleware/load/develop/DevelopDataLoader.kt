@@ -18,10 +18,7 @@ import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.division.DivisionFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.region.RegionFactoryService
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.store.StoreFactoryService
-import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
-import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.context.annotation.Requires
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -49,10 +46,7 @@ class DevelopDataLoader @Inject constructor(
    private val accountDataLoaderService: AccountDataLoaderService,
    private val bankFactoryService: BankFactoryService,
    private val areaDataLoaderService: AreaDataLoaderService,
-   private val moduleDataLoaderService: ModuleDataLoaderService,
-   private val shipViaDataLoaderService: ShipViaTestDataLoaderService,
-   private val vendorPaymentTermDataLoaderService: VendorPaymentTermTestDataLoaderService,
-   private val vendorDataLoaderService: VendorTestDataLoaderService
+   private val moduleDataLoaderService: ModuleDataLoaderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -182,10 +176,6 @@ class DevelopDataLoader @Inject constructor(
       moduleDataLoaderService.configureLevel(41, 70, companies[1])
       moduleDataLoaderService.configureLevel(43, 50, companies[1])
       moduleDataLoaderService.configureLevel(44, 40, companies[1])
-
-      val shipVia = shipViaDataLoaderService.single(corrto)
-      val vendorPaymentTerm = vendorPaymentTermDataLoaderService.singleWithSingle90DaysPayment(corrto)
-      vendorDataLoaderService.stream(3, corrto, vendorPaymentTerm, shipVia).forEach {}
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())
