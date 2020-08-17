@@ -5,251 +5,351 @@ import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
 
 object MenuTypeDataLoader {
+   // TODO write groovy support script to build these from the DB
    private val menuTypes = listOf(
       MenuType(
          id = 1,
-         value = "ACCOUNTS PAYABLE",
+         value = "ACCOUNTS_PAYABLE",
          description = "Account Payable",
-         localizationCode = "account.payable.menu",
+         localizationCode = "account.payable",
+         orderNumber = 0,
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 2,
-         value = "BANK RECONCILIATION",
-         description = "Bank Reconciliation",
-         localizationCode = "bank.reconciliation.menu",
-         areaType = AreaDataLoader.areaTypes().forId(2)
+         value = "INVOICE_MAINTENANCE",
+         description = "AP Invoice Maintenance",
+         localizationCode = "account.payable.invoice.maintenance",
+         orderNumber = 1,
+         areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 3,
-         value = "GENERAL LEDGER",
-         description = "General Ledger",
-         localizationCode = "general.ledger.menu",
-         areaType = AreaDataLoader.areaTypes().forId(3)
+         value = "RECURRING_INVOICE_MAINTENANCE",
+         description = "Recurring Invoice Maintenance",
+         localizationCode = "recurring.invoice.maintenance",
+         orderNumber = 2,
+         areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 4,
-         value = "PURCHASE ORDER",
-         description = "Purchase Order",
-         localizationCode = "purchase.order.menu",
-         areaType = AreaDataLoader.areaTypes().forId(4)
+         value = "CHECK_MAINTENANCE",
+         description = "AP Check Maintenance",
+         localizationCode = "account.payable.check.maintenance",
+         orderNumber = 3,
+         areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 5,
-         value = "INVOICE MAINTENANCE",
-         description = "AP Invoice Maintenance",
-         localizationCode = "account.payable.invoice.maintenance",
+         value = "AP_REPORTS",
+         description = "AP Reports",
+         localizationCode = "account.payable.reports",
+         orderNumber = 4,
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 6,
-         value = "CHECK MAINTENANCE",
-         description = "AP Check Maintenance",
-         localizationCode = "account.payable.check.maintenance",
+         value = "MONTH_END",
+         description = "Account Payable Month End",
+         localizationCode = "account.payable.month.end",
+         orderNumber = 5,
          areaType = AreaDataLoader.areaTypes().forId(1)
       ),
       MenuType(
          id = 7,
-         value = "REPORTS MENU",
-         description = "AP Reports",
-         localizationCode = "account.payable.reports.menu",
-         areaType = AreaDataLoader.areaTypes().forId(1)
+         value = "BANK_RECONCILIATION",
+         description = "Bank Reconciliation",
+         localizationCode = "bank.reconciliation",
+         orderNumber = 0,
+         areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 8,
-         value = "PO MAINTENANCE",
-         description = "PO Maintenance",
-         localizationCode = "purchase.order.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(4)
+         value = "STORE_DEPOSIT_MAINTENANCE",
+         description = "Store Deposit Maintenance",
+         localizationCode = "store.deposit.maintenance",
+         orderNumber = 1,
+         areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 9,
-         value = "PO REPORTS",
-         description = "PO Reports",
-         localizationCode = "purchase.order.reports",
-         areaType = AreaDataLoader.areaTypes().forId(4)
+         value = "SEND_STORE_DEPOSIT_TO_BANK_REC",
+         description = "Send Store Deposit to Bank Rec",
+         localizationCode = "send.store.deposit.to.bank.rec",
+         orderNumber = 2,
+         areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 10,
-         value = "MASTER CONTROL FILE MAINTENANCE",
-         description = "Master Control File Maintenance",
-         localizationCode = "master.control.file.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(5)
+         value = "CLEAR_OUTSTANDING_ITEMS",
+         description = "Outstanding Items Maintenance",
+         localizationCode = "outstanding.items.maintenance",
+         orderNumber = 3,
+         areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 11,
-         value = "STORE DEPOSIT MAINTENANCEv",
-         description = "Store Deposit Maintenance",
-         localizationCode = "store.deposit.maintenance",
+         value = "RECONCILE_BANK_ACCOUNT",
+         description = "Reconcile Bank Account",
+         localizationCode = "reconcile.bank.account",
+         orderNumber = 4,
          areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 12,
-         value = "SEND STORE DEPOSIT TO BANK REC",
-         description = "Complete Store Deposit Process With Bank",
-         localizationCode = "complete.store.deposit.process.with.bank",
+         value = "BANK_TRANSACTIONS_MAINTENANCE",
+         description = "Bank Transactions Maintenance",
+         localizationCode = "bank.transactions.maintenance",
+         orderNumber = 5,
          areaType = AreaDataLoader.areaTypes().forId(2)
       ),
       MenuType(
          id = 13,
-         value = "CLEAR OUTSTANDING ITEMS",
-         description = "Outstanding Items Maintenance",
-         localizationCode = "outstanding.items.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(2)
+         value = "GENERAL_LEDGER",
+         description = "General Ledger",
+         localizationCode = "general.ledger",
+         orderNumber = 0,
+         areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 14,
-         value = "BANK TRANSACTIONS MAINTENANCE",
-         description = "Bank Transactions Maintenance",
-         localizationCode = "bank.transactions.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(2)
+         value = "ACCOUNT_INQUIRY_ANALYSIS",
+         description = "GL Inquiry/Analysis",
+         localizationCode = "general.ledger.inquiry.analysis",
+         orderNumber = 1,
+         areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 15,
-         value = "RECONCILE BANK ACCOUNT",
-         description = "Reconcile Bank Account",
-         localizationCode = "reconcile.bank.account",
-         areaType = AreaDataLoader.areaTypes().forId(2)
+         value = "JOURNAL_ENTRY PROCESSING",
+         description = "Journal Entry Processing",
+         localizationCode = "journal.entry.processing",
+         orderNumber = 2,
+         areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 16,
-         value = "BANK MAINTENANCE",
-         description = "Bank Maintenance",
-         localizationCode = "bank.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(2)
+         value = "GL_REPORTS",
+         description = "GL Reports",
+         localizationCode = "general.ledger.reports",
+         orderNumber = 3,
+         areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 17,
-         value = "ACCOUNT INQUIRY/ANALYSIS",
-         description = "General Ledger Inquiry/Analysis",
-         localizationCode = "general.ledger.inquiry.analysis",
+         value = "MONTH_END_PROCESSING",
+         description = "GL End of Month Processing",
+         localizationCode = "general.ledger.end.of.month.processing",
+         orderNumber = 4,
          areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 18,
-         value = "JOURNAL ENTRY PROCESSING",
-         description = "Journal Entry Processing",
-         localizationCode = "journal.entry.processing",
+         value = "UTILITIES",
+         description = "GL Utilities",
+         localizationCode = "general.ledger.utilities",
+         orderNumber = 5,
          areaType = AreaDataLoader.areaTypes().forId(3)
       ),
       MenuType(
          id = 19,
-         value = "GL REPORTS",
-         description = "General Ledger Reports",
-         localizationCode = "general.ledger.reports",
-         areaType = AreaDataLoader.areaTypes().forId(3)
+         value = "PURCHASE_ORDER",
+         description = "Purchase Order",
+         localizationCode = "purchase.order",
+         orderNumber = 0,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 20,
-         value = "MONTH END PROCESSING",
-         description = "General Ledger End of Month Processing",
-         localizationCode = "general.ledger.end.of.month.processing",
-         areaType = AreaDataLoader.areaTypes().forId(3)
+         value = "PO_MAINTENANCE",
+         description = "PO Maintenance",
+         localizationCode = "purchase.order.maintenance",
+         orderNumber = 1,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 21,
-         value = "UTILITIES",
-         description = "Allows Changes To Existing Purchase Orders",
-         localizationCode = "allows.changes.to.existing.purchase.orders",
+         value = "PO_REPORTS",
+         description = "PO Reports",
+         localizationCode = "purchase.order.reports",
+         orderNumber = 2,
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 22,
-         value = "COMPANY",
-         description = "Company Maintenance Menu",
-         localizationCode = "company.maintenance.menu",
-         areaType = AreaDataLoader.areaTypes().forId(5)
+         value = "PO_REPORT_EXPORT",
+         description = "PO Report (w/Export)",
+         localizationCode = "po.report.(w/Export)",
+         orderNumber = 3,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 23,
-         value = "REGION",
-         description = "Region Menu",
-         localizationCode = "region.menu",
-         areaType = AreaDataLoader.areaTypes().forId(5)
+         value = "STOCK_REORDER",
+         description = "STOCK REORDER REPORT",
+         localizationCode = "stock.reorder.report",
+         orderNumber = 4,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 24,
-         value = "DIVISION",
-         description = "Division Menu",
-         localizationCode = "division.menu",
-         areaType = AreaDataLoader.areaTypes().forId(5)
+         value = "RECEIVER_REPORT",
+         description = "RECEIVER REPORT",
+         localizationCode = "receiver.report",
+         orderNumber = 5,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 25,
-         value = "PO CONTROL",
-         description = "PO Control",
-         localizationCode = "po.control.menu",
-         areaType = AreaDataLoader.areaTypes().forId(5)
+         value = "RECEIVING_WORKSHEET",
+         description = "RECEIVING WORKSHEET",
+         localizationCode = "receiving.worksheet",
+         orderNumber = 6,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 26,
-         value = "VENDOR",
-         description = "Vendor Maintenance",
-         localizationCode = "vendor.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(5)
+         value = "SPECIAL_ORDERS",
+         description = "SPECIAL ORDERS",
+         localizationCode = "special.orders",
+         orderNumber = 7,
+         areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 27,
-         value = "SHIP VIA",
-         description = "Ship Via Maintenance",
-         localizationCode = "ship.via.maintenance",
+         value = "MASTER_CONTROL_FILE_MAINTENANCE",
+         description = "MCF Maintenance",
+         localizationCode = "master.control.file.maintenance",
+         orderNumber = 0,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 28,
-         value = "VENDOR TERM CODE",
-         description = "Vendor Term Code",
-         localizationCode = "vendor.term.code",
+         value = "HOME_OFFICE",
+         description = "HOME OFFICE",
+         localizationCode = "home.office",
+         orderNumber = 0,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 29,
-         value = "AP CONTROL",
-         description = "Account Payable Control",
-         localizationCode = "account.payable.control",
+         value = "BANK",
+         description = "Bank Maintenance",
+         localizationCode = "bank.maintenance",
+         orderNumber = 1,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 30,
-         value = "CHART OF ACCOUNT",
-         description = "Chart of Account'",
+         value = "CHART_OF_ACCOUNT",
+         description = "Chart of Account",
          localizationCode = "chart.of.account",
+         orderNumber = 2,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 31,
-         value = "BANK",
-         description = "Bank Maintenance",
-         localizationCode = "bank.maintenance",
+         value = "DISTRIBUTION_TEMPLATE_MAINTENANCE",
+         description = "Distribution Template Maintenance",
+         localizationCode = "distribution.template.maintenance",
+         orderNumber = 3,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 32,
-         value = "GL CONTROL",
-         description = "General Ledger Control",
-         localizationCode = "general.ledger.control",
+         value = "FINANCIAL_STATEMENT",
+         description = "Financial Statement",
+         localizationCode = "financial.statement",
+         orderNumber = 4,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 33,
-         value = "FINANCIAL STATEMENT",
-         description = "Financial Statement",
-         localizationCode = "financial.statement",
+         value = "GL_SOURCE_CODE",
+         description = "GL SOURCE CODE",
+         localizationCode = "gl.source.code",
+         orderNumber = 5,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 34,
+         value = "SHIPVIA",
+         description = "Ship Via Maintenance",
+         localizationCode = "ship.via.maintenance",
+         orderNumber = 6,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 35,
+         value = "VENDOR",
+         description = "Vendor Maintenance",
+         localizationCode = "vendor.maintenance",
+         orderNumber = 7,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 36,
+         value = "RESTRICTED_MASTER_CONTROL_FILES",
+         description = "RESTRICTED MASTER CONTROL FILES",
+         localizationCode = "restricted.master.control.files",
+         orderNumber = 8,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 37,
+         value = "COMPANY",
+         description = "Company Maintenance",
+         localizationCode = "company.maintenance",
+         orderNumber = 9,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 38,
+         value = "DIVISION",
+         description = "Division Maintenance",
+         localizationCode = "division",
+         orderNumber = 10,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 39,
+         value = "VENDOR_TERM_CODE",
+         description = "Vendor Term Code",
+         localizationCode = "vendor.term.code",
+         orderNumber = 11,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 40,
+         value = "REGION",
+         description = "Region Maintenance",
+         localizationCode = "region",
+         orderNumber = 12,
          areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 41,
-         value = "RECURRING INVOICE MAINTENANCE",
-         description = "Recurring Invoice Maintenance",
-         localizationCode = "recurring.invoice.maintenance",
-         areaType = AreaDataLoader.areaTypes().forId(1)
+         value = "AP_CONTROL",
+         description = "AP Control",
+         localizationCode = "account.payable.control",
+         orderNumber = 13,
+         areaType = AreaDataLoader.areaTypes().forId(5)
       ),
       MenuType(
          id = 42,
-         value = "MONTH END",
-         description = "Account Payable Month End",
-         localizationCode = "account.payable.month.end",
-         areaType = AreaDataLoader.areaTypes().forId(1)
+         value = "PO_CONTROL",
+         description = "PO Control",
+         localizationCode = "po.control",
+         orderNumber = 14,
+         areaType = AreaDataLoader.areaTypes().forId(5)
+      ),
+      MenuType(
+         id = 43,
+         value = "GL_CONTROL",
+         description = "GL Control",
+         localizationCode = "general.ledger.control",
+         orderNumber = 15,
+         areaType = AreaDataLoader.areaTypes().forId(5)
       )
    )
 

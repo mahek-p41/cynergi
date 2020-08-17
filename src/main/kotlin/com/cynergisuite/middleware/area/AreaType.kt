@@ -10,7 +10,6 @@ data class AreaType(
    val enabled: Boolean = false,
    val menus: MutableList<MenuType> = mutableListOf()
 ) : TypeDomainEntity<AreaType> {
-
    override fun myId(): Long = id
    override fun myValue(): String = value
    override fun myDescription(): String = description

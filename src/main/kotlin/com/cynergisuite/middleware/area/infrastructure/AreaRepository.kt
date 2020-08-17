@@ -40,6 +40,7 @@ class AreaRepository @Inject constructor(
             menus.value AS menu_value,
             menus.description AS menu_description,
             menus.localization_code AS menu_localization_code,
+            menus.order_number AS menu_order_number,
             modules.id AS module_id,
             modules.value AS module_value,
             modules.description AS module_description,
@@ -159,6 +160,7 @@ class AreaRepository @Inject constructor(
          id = rs.getLong("menu_id"),
          value = rs.getString("menu_value"),
          description = rs.getString("menu_description"),
+         orderNumber = rs.getInt("menu_order_number"),
          localizationCode = rs.getString("menu_localization_code"),
          modules = mutableListOf()
       )

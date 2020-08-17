@@ -12,10 +12,10 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
 
    void "create a module level" () {
       given:
-      def module = moduleDataLoaderService.singleDTO(4, 9)
+      def module = moduleDataLoaderService.singleDTO(3, 9)
 
       when:
-      def response = post( "/module/4", module)
+      def response = post( "/module/3", module)
 
       then:
       notThrown(HttpClientResponseException)
@@ -27,7 +27,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      def moduleWithId4 = response2[0].menus[1].modules[1]
+      def moduleWithId4 = response2[0].menus[1].modules[2]
       moduleWithId4.id == module.id
       moduleWithId4.level == module.level
    }
