@@ -29,7 +29,7 @@ postgresDown() {
 source /opt/cyn/ht.cyn_base_vars.sh
 IS_READY_PARMS="--username=postgres --quiet"
 
-[ $1 ] && MAX=$1 || MAX=10
+[ $1 ] && MAX=$1 || MAX=150    # Wait 5 minutes before sending emails
 [ $2 ] && SLEEP=$2 || SLEEP=2
 
 
