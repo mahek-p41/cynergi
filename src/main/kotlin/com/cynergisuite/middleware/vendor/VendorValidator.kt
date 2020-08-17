@@ -31,10 +31,10 @@ class VendorValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid vo: VendorDTO, company: Company): VendorEntity {
-      logger.trace("Validating Save Vendor {}", vo)
+   fun validateCreate(@Valid dto: VendorDTO, company: Company): VendorEntity {
+      logger.trace("Validating Save Vendor {}", dto)
 
-      return doValidation(dto = vo, company = company)
+      return doValidation(dto = dto, company = company)
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
