@@ -143,7 +143,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       def searchTwo = new EmployeePageRequest([search: 'store%20manager'])
       def searchThree = new EmployeePageRequest([search: 'Emp'])
       def searchFour = new EmployeePageRequest([search: 'Karager'])
-      def searchFive = new EmployeePageRequest([search: 'St%20Man'])
+      def searchFive = new EmployeePageRequest([search: 'St%20Manag'])
 
       when: 'search for STORE MANAGER with paging request params'
       def searchOneResult = get("$path${searchOne}")

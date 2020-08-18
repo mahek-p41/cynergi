@@ -164,11 +164,13 @@ class DevelopDataLoader @Inject constructor(
       auditScheduleScheduleFactoryService.single(THURSDAY, listOf(corrtoStore3), AuthenticatedEmployee(corrtoStore3StoreManager.id!!, corrtoStore3StoreManager, corrtoStore3), corrto)
 
       // setup account & bank
-      val accountCorrto = accountDataLoaderService.single(corrto)
-      bankFactoryService.single(corrto, corrtoStore1, accountCorrto)
+      val corrtoAccount = accountDataLoaderService.single(corrto)
+      bankFactoryService.stream(3, corrto, corrtoStore1, corrtoAccount).forEach { }
+      bankFactoryService.stream(3, corrto, corrtoStore3, corrtoAccount).forEach { }
 
-      val accountCorptp = accountDataLoaderService.single(corptp)
-      bankFactoryService.single(corptp, corptpStore1, accountCorptp)
+      val corptpAccount = accountDataLoaderService.single(corptp)
+      bankFactoryService.stream(3, corptp, corptpStore1, corptpAccount).forEach { }
+      bankFactoryService.stream(3, corptp, corptpStore2, corptpAccount).forEach { }
 
       areaDataLoaderService.enableArea(1, companies[0])
       areaDataLoaderService.enableArea(5, companies[0])

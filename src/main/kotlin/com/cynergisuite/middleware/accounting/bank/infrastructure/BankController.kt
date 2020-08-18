@@ -41,7 +41,7 @@ class BankController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(BankController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["BankEndpoints"], summary = "Fetch a single Bank", description = "Fetch a single Bank by ID", operationId = "bank-fetchOne")
    @ApiResponses(
       value = [
@@ -60,7 +60,7 @@ class BankController @Inject constructor(
       val user = userService.findUser(authentication)
       val response = bankService.fetchById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching AuditDetail by {} resulted in", id, response)
+      logger.debug("Fetching Bank by {} resulted in", id, response)
 
       return response
    }
@@ -114,7 +114,7 @@ class BankController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id}", processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-update")
    @ApiResponses(
