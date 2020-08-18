@@ -17,7 +17,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       given:
       def predefinedAreas = AreaDataLoader.areaTypes()
       def area1Menus = menuDataLoaderService.predefined().findAll { it.areaType.id == 1 }.collect { new MenuDTO(it) }
-      def menu2Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 5 }.collect { new ModuleDTO(it) }
+      def menu2Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 2 }.collect { new ModuleDTO(it) }
 
       when:
       def response = get( "/area")
@@ -27,38 +27,38 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response.size() == 5
       with(response[0]) {
          def predefinedArea = predefinedAreas[0]
-         it.id == predefinedArea.id
-         it.value == predefinedArea.value
-         it.description == predefinedArea.description
-         it.enabled == true
+         id == predefinedArea.id
+         value == predefinedArea.value
+         description == predefinedArea.description
+         enabled == true
 
-         it.menus.size() == area1Menus.size()
+         menus.size() == area1Menus.size()
 
-         with(it.menus[0]) {
-            it.id == area1Menus[0].id
-            it.value == area1Menus[0].value
-            it.description == area1Menus[0].description
+         with(menus[0]) {
+            id == area1Menus[0].id
+            value == area1Menus[0].value
+            description == area1Menus[0].description
 
-            it.modules.size() == 0
+            modules.size() == 0
          }
 
-         with(it.menus[1]) {
-            it.id == area1Menus[1].id
-            it.value == area1Menus[1].value
-            it.description == area1Menus[1].description
+         with(menus[1]) {
+            id == area1Menus[1].id
+            value == area1Menus[1].value
+            description == area1Menus[1].description
 
-            it.modules.size() == menu2Modules.size()
-            with(it.modules[0]) {
-               it.id == menu2Modules[0].id
-               it.value == menu2Modules[0].value
-               it.description == menu2Modules[0].description
-               it.level == 10
+            modules.size() == menu2Modules.size()
+            with(modules[0]) {
+               id == menu2Modules[0].id
+               value == menu2Modules[0].value
+               description == menu2Modules[0].description
+               level == 10
             }
-            with(it.modules[1]) {
-               it.id == menu2Modules[1].id
-               it.value == menu2Modules[1].value
-               it.description == menu2Modules[1].description
-               it.level == null
+            with(modules[1]) {
+               id == menu2Modules[1].id
+               value == menu2Modules[1].value
+               description == menu2Modules[1].description
+               level == 15
             }
          }
       }

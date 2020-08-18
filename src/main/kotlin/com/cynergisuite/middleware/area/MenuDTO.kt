@@ -19,9 +19,15 @@ data class MenuDTO(
    @field:Schema(description = "Menu value")
    var value: String? = null,
 
+   @field:NotNull
    @field:Size(min = 1, max = 100)
    @field:Schema(description = "A localized description for menu")
    var description: String? = null,
+
+   @field:NotNull
+   @field:Positive
+   @field:Schema(description = "Display order relative to the other Menus in the same Area")
+   val orderNumber: Int? = null,
 
    @field:Schema(description = "List of modules under a menu")
    var modules: MutableList<ModuleDTO>
@@ -32,6 +38,7 @@ data class MenuDTO(
          id = type.id,
          value = type.value,
          description = type.description,
+         orderNumber = type.orderNumber,
          modules = type.modules.map { ModuleDTO(it) } as MutableList<ModuleDTO>
       )
 
@@ -40,6 +47,7 @@ data class MenuDTO(
          id = type.id,
          value = type.value,
          description = localizedDescription,
+         orderNumber = type.orderNumber,
          modules = (modules ?: type.modules.map { ModuleDTO(it) }) as MutableList<ModuleDTO>
       )
 }

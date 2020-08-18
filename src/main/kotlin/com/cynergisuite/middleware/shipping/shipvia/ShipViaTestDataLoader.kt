@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.shipping.shipvia
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
 import com.github.javafaker.Faker
+import com.github.javafaker.Lorem
 import io.micronaut.context.annotation.Requires
-import org.apache.commons.lang3.StringUtils
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -17,13 +17,26 @@ object ShipViaTestDataLoader {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
+      val words = mutableSetOf<String>()
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
-            description = StringUtils.join(lorem.words(2), " ").capitalize(),
+            description = findWordThatHaveNotFoundYet(words, lorem),
             company = company
          )
       }
+   }
+
+   private fun findWordThatHaveNotFoundYet(words: MutableSet<String>, lorem: Lorem): String {
+      var word: String = lorem.word().capitalize()
+
+      while (words.contains(word) || word.length < 2) {
+         word = lorem.word().capitalize()
+      }
+
+      words.add(word)
+
+      return word
    }
 
    @JvmStatic
