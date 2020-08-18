@@ -17,6 +17,7 @@ import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Row
 import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -173,7 +174,8 @@ class AuthenticationRepository @Inject constructor(
             } else {
                logger.trace("Checking sysz employee with plain text password {}", employee)
 
-               employee.passCode == passCode // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
+               // existing cynergi login process lets the user type in as many characters as they want and only compares the first 6 characters to the stored password
+               employee.passCode == StringUtils.substring(passCode, 0, 6) // FIXME remove this when all users are loaded out of cynergidb and are encoded by BCrypt
             }
          }
    }

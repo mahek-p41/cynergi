@@ -80,7 +80,7 @@ INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, 
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (11, 103, 1, 'tstds1', 'GERICKE', 'J KEITH', 'pass', 'DE', true);
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (12, 104, 1, 'tstds1', 'CARRILLO', 'DIANA', 'pass', 'AM', true);
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (13, 105, 1, 'tstds1', 'SPRAGUE', 'JOHN', 'pass', 'AM', true);
-INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (14, 106, 3, 'tstds1', 'ROBB', 'DAKOTA', 'pass', 'DE', true);
+INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (14, 106, 3, 'tstds1', 'ROBB', 'DAKOTA', 'passwo', 'DE', true);
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (15, 107, 1, 'tstds1', 'CANTU', 'ENRIQUE', 'pass', 'SA', true);
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (16, 108, 1, 'tstds1', 'THOMAS', 'BRIAN', 'pass', 'SA', true);
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (17, 109, 1, 'tstds1', 'MACIAS', 'FERNANDO', 'pass', 'DE', true);

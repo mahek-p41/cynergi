@@ -402,7 +402,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       e.status == UNAUTHORIZED
    }
 
-   void "logic with user who has a different store than they chose, but also has the alternative store indicator set to A" () {
+   void "login with user who has a different store than they chose, but also has the alternative store indicator set to A" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final userAssignedStore = storeFactoryService.store(3, company)
@@ -452,5 +452,62 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
          name = company.name
          federalTaxNumber = null
       }
+   }
+
+   void "login with sysz user who provides pass_code with 8 characters that is 2 over the max length" () {
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("106", "password", 3, "tstds1")),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+   }
+
+   void "login with sysz user who provides pass_code with exact pass_code of 6" () {
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("106", "passwo", 3, "tstds1")),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+   }
+
+   void "login with sysz user who provides pass_code with exact pass_code of 4" () {
+      when:
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("105", "pass", 1, "tstds1")),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+   }
+
+   void "login with sysz user who provides pass_code with 8 characters and uses the wrong passcode that is only 4 characters" () {
+      when:
+      httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("106", "pass", 3, "tstds1")),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      final e = thrown(HttpClientResponseException)
+      e.response.bodyAsJson().message == 'Access denied for 106 credentials do not match'
+      e.status == UNAUTHORIZED
    }
 }
