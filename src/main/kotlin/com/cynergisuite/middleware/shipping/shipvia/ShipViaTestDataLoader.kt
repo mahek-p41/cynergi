@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import org.apache.commons.lang3.StringUtils
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -19,7 +20,7 @@ object ShipViaTestDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          ShipViaEntity(
-            description = lorem.word(),
+            description = StringUtils.join(lorem.words(2), " ").capitalize(),
             company = company
          )
       }
