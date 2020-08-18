@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.InvalidPayToVendor
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
@@ -47,6 +48,7 @@ class VendorValidator @Inject constructor(
    }
 
    private fun doValidation(existingVendor: VendorEntity? = null, dto: VendorDTO, company: Company): VendorEntity {
+      val vendorId = dto.id
       val vendorGroupId = dto.vendorGroup?.id
       val vendorGroup = if (vendorGroupId != null) vendorGroupRepository.findOne(vendorGroupId, company) else null
       val shipViaId = dto.shipVia!!.id!!
@@ -72,6 +74,10 @@ class VendorValidator @Inject constructor(
 
          if (payToId != null && payTo == null) {
             errors.add(ValidationError("payTo.id", NotFound(payToId)))
+         }
+
+         if (payToId != null && payToId == vendorId) {
+            errors.add(ValidationError("payTo.id", InvalidPayToVendor(payToId)))
          }
 
          if (shipVia == null) {
