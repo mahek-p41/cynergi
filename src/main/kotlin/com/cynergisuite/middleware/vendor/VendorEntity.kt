@@ -45,7 +45,8 @@ data class VendorEntity(
    val emailAddress: String?, // New Field 320 max
    val purchaseOrderSubmitEmailAddress: String?,
    val allowDropShipToCustomer: Boolean = false,
-   val autoSubmitPurchaseOrder: Boolean = false
+   val autoSubmitPurchaseOrder: Boolean = false,
+   val number: Int? = null
 ) : Identifiable {
 
    constructor(id: Long? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
