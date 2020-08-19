@@ -30,7 +30,7 @@ object ShipViaTestDataLoader {
    private fun findWordThatHaveNotFoundYet(words: MutableSet<String>, lorem: Lorem): String {
       var word: String = lorem.word().capitalize()
 
-      while (words.contains(word) || word.length < 2) {
+      while (words.contains(word) || word.length < 3) {
          word = lorem.word().capitalize()
       }
 
@@ -46,7 +46,7 @@ object ShipViaTestDataLoader {
 }
 
 @Singleton
-@Requires(env = ["develop", "demo", "test"])
+@Requires(env = ["develop", "test"])
 class ShipViaTestDataLoaderService @Inject constructor(
    private val shipViaRepository: ShipViaRepository
 ) {
