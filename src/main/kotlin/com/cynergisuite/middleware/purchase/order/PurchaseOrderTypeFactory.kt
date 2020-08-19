@@ -18,6 +18,12 @@ object PurchaseOrderTypeFactory {
          value = "R",
          description = "Requisition",
          localizationCode = "prequisition"
+      ),
+      PurchaseOrderType(
+         id = 3,
+         value = "D",
+         description = "Deletes",
+         localizationCode = "deletes"
       )
    )
 
