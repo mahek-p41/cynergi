@@ -25,7 +25,8 @@ CREATE TABLE purchase_order_type_domain
 );
 INSERT INTO purchase_order_type_domain (id, value, description, localization_code)
 VALUES (1, 'P', 'Purchase Order', 'purchase.order'),
-       (2, 'R', 'Requisition', 'requisition');
+       (2, 'R', 'Requisition', 'requisition'),
+       (3, 'D', 'Deletes', 'deletes');
 
 CREATE TABLE update_purchase_order_cost_type_domain
 (
@@ -54,7 +55,6 @@ VALUES (1, 'B', 'Both Purchase Order and Requisition', 'both.purchase.order.and.
        (2, 'N', 'No Approval', 'no.approval'),
        (3, 'P', 'Purchase Order Only', 'purchase.order.only'),
        (4, 'R', 'Requisition Only', 'requisition.only');
-
 
 CREATE TABLE purchase_order_control
 (

@@ -21,6 +21,7 @@ data class CompanyDTO(
    @field:Schema(name = "name", required = false, nullable = false, description = "Human readable name for a company")
    var name: String? = null,
 
+   @field:Size(min = 1, max = 100)
    @field:Schema(name = "doingBusinessAs", required = false, nullable = true, description = "Doing business as")
    var doingBusinessAs: String? = null,
 
