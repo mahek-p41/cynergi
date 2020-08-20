@@ -32,8 +32,8 @@ class CompanyService @Inject constructor(
 
    @Validated
    fun update(id: Long, @Valid companyDTO: CompanyDTO): CompanyDTO {
-      val toUpdate = companyValidator.validateUpdate(id, companyDTO)
+      val (existing, toUpdate) = companyValidator.validateUpdate(id, companyDTO)
 
-      return CompanyDTO(companyRepository.update(toUpdate))
+      return CompanyDTO(companyRepository.update(existing, toUpdate))
    }
 }

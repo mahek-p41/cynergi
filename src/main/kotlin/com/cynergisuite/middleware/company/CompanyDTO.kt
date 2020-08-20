@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.middleware.address.AddressEntity
+import com.cynergisuite.middleware.address.AddressDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -44,7 +44,7 @@ data class CompanyDTO(
    var federalTaxNumber: String? = null,
 
    @field:Schema(name = "address", required = false, nullable = true, description = "Address id")
-   var address: AddressEntity? = null
+   var address: AddressDTO? = null
 
 ) : Company {
    // Factory object to create CompanyDTO from a Company
@@ -79,7 +79,7 @@ data class CompanyDTO(
          clientId = company.clientId,
          datasetCode = company.datasetCode,
          federalTaxNumber = company.federalIdNumber,
-         address = company.address
+         address = company.address?.let { AddressDTO(it) }
       )
 
    constructor(company: Company, federalTaxNumberOverride: String? = null) :
@@ -91,7 +91,7 @@ data class CompanyDTO(
          clientId = company.myClientId(),
          datasetCode = company.myDataset(),
          federalTaxNumber = federalTaxNumberOverride,
-         address = if (company is CompanyEntity) company.address else null
+         address = if (company is CompanyEntity && company.address != null) AddressDTO(company.address) else null
       )
 
    override fun myClientCode(): String = clientCode!!

@@ -1,13 +1,12 @@
 package com.cynergisuite.middleware.company
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AddressNeedsUpdated
 import com.cynergisuite.middleware.localization.Duplicate
-import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -16,7 +15,6 @@ import javax.validation.Valid
 
 @Singleton
 class CompanyValidator @Inject constructor(
-   private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(CompanyValidator::class.java)
@@ -33,33 +31,22 @@ class CompanyValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, companyDTO: CompanyDTO): CompanyEntity {
+   fun validateUpdate(id: Long, companyDTO: CompanyDTO): Pair<CompanyEntity, CompanyEntity> {
       logger.trace("Validating Update Company {}", companyDTO)
-      val companyEntity = companyRepository.findOne(id = id)
+      val existingEntity = companyRepository.findOne(id = id) ?: throw NotFoundException(id)
 
       doValidation { errors ->
-         companyEntity ?: errors.add(ValidationError("id", NotFound(id)))
 
-         // address validation
-         if (companyDTO.address?.id == null && companyEntity?.address != null) {
-            companyRepository.removeAddressFromCompany(companyDTO.myId()!!)
-
-            val addressIdToDelete = companyEntity.address.myId()
-            addressRepository.delete(addressIdToDelete!!)
-         } else if (companyDTO.address?.id != null) {
-            if (companyDTO.address?.name != companyEntity?.address?.name) {
-               addressRepository.update(companyDTO.address!!)
+         if (existingEntity.address?.id != null) { // have existing address
+            if (companyDTO.address?.id == null && !companyDTO.address?.name.isNullOrBlank()) { // just update existing address rather than create new one
+               errors.add(ValidationError("address.id", AddressNeedsUpdated()))
             }
-         }
-
-         if (companyDTO.address?.id == null && companyDTO.address?.name != null) {
-            errors.add(ValidationError("address", AddressNeedsUpdated(companyDTO.address!!)))
          }
 
          doSharedValidation(errors, companyDTO, id)
       }
 
-      return CompanyEntity(companyDTO)
+      return Pair(existingEntity, CompanyEntity(companyDTO))
    }
 
    private fun doSharedValidation(errors: MutableSet<ValidationError>, companyDTO: CompanyDTO, id: Long? = null) {

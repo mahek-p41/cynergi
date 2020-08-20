@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.company
 
+import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
@@ -48,7 +49,7 @@ data class CompanyEntity(
          clientId = companyDTO.clientId!!,
          datasetCode = companyDTO.datasetCode!!,
          federalIdNumber = companyDTO.federalTaxNumber,
-         address = companyDTO.address
+         address = companyDTO.address?.let { AddressEntity(it) }
       )
 
    override fun myId(): Long? = id
@@ -112,7 +113,7 @@ data class CompanyEntity(
          clientId = this.clientId,
          datasetCode = this.datasetCode,
          federalTaxNumber = this.federalIdNumber,
-         address = this.address
+         address = this.address?.let { AddressDTO(it) }
       )
    }
 }

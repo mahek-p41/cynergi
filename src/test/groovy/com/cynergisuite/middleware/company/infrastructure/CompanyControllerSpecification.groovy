@@ -2,7 +2,11 @@ package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.address.AddressDTO
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyDTO
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
@@ -22,6 +26,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
+   @Inject AddressRepository addressRepository
 
    private static String path = '/company'
 
@@ -590,21 +595,72 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "update an invalid company with a null address id" () {
       given:
-      def address = addressTestDataLoaderService.single()
-      def jsonAddress = jsonSlurper.parseText(jsonOutput.toJson(address))
-      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
-      jsonCompany.address = jsonAddress
-      jsonAddress.id = null
+      final address = addressTestDataLoaderService.single()
+      final company = new CompanyDTO(companyFactoryService.single(address))
+      company.address.id = null
 
       when:
-      put("$path/$tstds1.id", jsonCompany)
+      put("$path/${company.id}", company)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "address"
+      response[0].path == "address.id"
       response[0].message == "Provide id or update address"
+   }
+
+   void "update a company without an address and not adding an address" () {
+      given:
+      final company = new CompanyDTO(companyFactoryService.single())
+      company.name = "Test update name"
+
+      when:
+      def result = put("$path/${company.id}", company)
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         id == company.id
+         name == "Test update name"
+      }
+   }
+
+   void "update a company and remove it's address" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = new CompanyDTO(companyFactoryService.single(address))
+      company.address = null
+
+      when:
+      def result = put("$path/${company.id}", company)
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         it.id == company.id
+         it.address == null
+      }
+      addressRepository.findOne(address.id) == null
+   }
+
+   void "update a company's address name" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = new CompanyDTO(companyFactoryService.single(address))
+      company.address.name = "Test update name"
+
+      when:
+      def result = put("$path/${company.id}", company)
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         it.id == company.id
+         it.address.id == address.id
+         it.address.name == "Test update name"
+      }
+      addressRepository.findOne(address.id).name == "Test update name"
    }
 }

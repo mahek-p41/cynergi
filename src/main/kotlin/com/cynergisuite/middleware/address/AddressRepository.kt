@@ -153,12 +153,12 @@ class AddressRepository @Inject constructor(
       val existingAddress = findOne(id)
 
       return if (existingAddress != null) {
-         jdbc.deleteReturning(
-            """p
+         jdbc.deleteReturning("""
             DELETE FROM address
             WHERE id = :id
             RETURNING
-               *""",
+               *
+            """,
             mapOf("id" to id),
             RowMapper { rs, _ ->
                AddressEntity(
