@@ -12,14 +12,14 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import io.micronaut.cache.annotation.Cacheable
-import io.reactiverse.reactivex.pgclient.PgPool
-import io.reactiverse.reactivex.pgclient.Row
-import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Maybe
+import io.vertx.reactivex.pgclient.PgPool
+import io.vertx.reactivex.sqlclient.Row
+import io.vertx.reactivex.sqlclient.Tuple
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -139,7 +139,8 @@ class AuthenticationRepository @Inject constructor(
 
       logger.trace("Checking authentication for {} {} {} using {}", employeeNumber, dataset, storeNumber, params)
 
-      return postgresClient.rxPreparedQuery(query, params)
+      return postgresClient.preparedQuery(query)
+         .rxExecute(params)
          .filter { rs -> rs.size() > 0 }
          .map { rs ->
             val iterator = rs.iterator()

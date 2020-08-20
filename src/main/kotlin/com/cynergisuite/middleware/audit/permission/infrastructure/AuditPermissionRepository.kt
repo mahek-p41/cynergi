@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
-import io.micronaut.spring.tx.annotation.Transactional
 import org.eclipse.collections.impl.factory.Sets
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,6 +20,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditPermissionRepository @Inject constructor(

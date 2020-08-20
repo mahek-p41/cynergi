@@ -54,15 +54,6 @@ class ErrorHandlerController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
 
-   @Error(global = true, exception = Throwable::class)
-   fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorDataTransferObject> {
-      logger.error("Unknown Error", throwable)
-
-      val locale = httpRequest.findLocaleWithDefault()
-
-      return serverError(ErrorDataTransferObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
-   }
-
    @Error(global = true, exception = JsonParseException::class)
    fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDataTransferObject> {
       logger.warn("Unable to parse request body", exception)
@@ -74,18 +65,6 @@ class ErrorHandlerController @Inject constructor(
             message = localizationService.localize(localizationCode = UnableToParseJson(exception.localizedMessage), locale = locale)
          )
       )
-   }
-
-   @Error(global = true, exception = IOException::class)
-   fun inputOutputExceptionHandler(httpRequest: HttpRequest<*>, exception: IOException) {
-      logger.trace("InputOutput Exception", exception)
-
-      when (exception.message?.trim()?.toLowerCase()) {
-         "an existing connection was forcibly closed by the remote host", "connection reset by peer" ->
-            logger.warn("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
-         else ->
-            logger.error("Unknown IOException occurred during request processing", exception)
-      }
    }
 
    @Error(global = true, exception = NotImplementedError::class)
@@ -273,6 +252,27 @@ class ErrorHandlerController @Inject constructor(
          .body(ErrorDataTransferObject(localizationService.localize(localizationCode = accessException.error, locale = locale)))
    }
 
+   @Error(global = true, exception = IOException::class)
+   fun inputOutputExceptionHandler(httpRequest: HttpRequest<*>, exception: IOException) {
+      logger.trace("InputOutput Exception", exception)
+
+      when (exception.message?.trim()?.toLowerCase()) {
+         "an existing connection was forcibly closed by the remote host", "connection reset by peer" ->
+            logger.warn("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
+         else ->
+            logger.error("Unknown IOException occurred during request processing", exception)
+      }
+   }
+
+   @Error(global = true, exception = Throwable::class)
+   fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorDataTransferObject> {
+      logger.error("Unknown Error", throwable)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return serverError(ErrorDataTransferObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
+   }
+
    private fun buildPropertyPath(rootPath: Path): String =
       rootPath.asSequence()
          .filter {
@@ -282,6 +282,7 @@ class ErrorHandlerController @Inject constructor(
                it.name != "dto" &&
                it.name != "vo" &&
                it.name != "fetchAll" &&
+               it.name != "completeOrCancel" &&
                !it.name.startsWith("arg")
          }
          .joinToString(".")
