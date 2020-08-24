@@ -41,6 +41,7 @@ class InvalidCompany(company: Company) : Cynergi("cynergi.validation.invalid.com
 class MustMatchPathVariable(value: Any?) : Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
 class AddressNeedsUpdated() : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
+class InvalidPayToVendor(id: Long?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

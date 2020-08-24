@@ -626,6 +626,29 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       new VendorDTO(result) == vendor
    }
 
+   void "update invalid vendor that assigns itself as pay to vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
+      jsonVendor.payTo = new SimpleIdentifiableDTO(vendor.id)
+
+      when:
+      jsonVendor.id = vendor.id
+      put("$path/${vendor.id}", jsonVendor)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "payTo.id"
+      response[0].message == "Invalid Pay To Vendor ${vendor.id}"
+   }
+
    void "update vendor with null email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
