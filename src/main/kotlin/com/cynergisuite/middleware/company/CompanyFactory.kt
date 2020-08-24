@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.middleware.address.AddressTestDataLoader
+import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -43,7 +43,7 @@ object CompanyFactory {
       .toList()
 
    @JvmStatic
-   fun stream(numberIn: Int = 1): Stream<CompanyEntity> {
+   fun stream(numberIn: Int = 1, addressIn: AddressEntity? = null): Stream<CompanyEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val company = faker.company()
@@ -56,11 +56,11 @@ object CompanyFactory {
             id = null,
             name = company.name(),
             doingBusinessAs = company.buzzword(),
-            clientCode = lorem.characters(3, 3).toUpperCase(),
+            clientCode = lorem.characters(3).toUpperCase(),
             clientId = random.nextInt(1000, 10000),
-            datasetCode = lorem.characters(6, 6, false),
+            datasetCode = lorem.characters(6, false),
             federalIdNumber = numbers.valid(),
-            address = AddressTestDataLoader.single()
+            address = addressIn
          )
       }
    }
@@ -97,9 +97,15 @@ class CompanyFactoryService(
       CompanyFactory.predefined().stream()
          .map { companyRepository.insert(it) }
 
-   fun stream(numberIn: Int = 1): Stream<CompanyEntity> =
-      CompanyFactory.stream(numberIn)
+   fun stream(numberIn: Int = 1, addressIn: AddressEntity? = null): Stream<CompanyEntity> =
+      CompanyFactory.stream(numberIn, addressIn)
          .map { companyRepository.insert(it) }
+
+   fun single(): CompanyEntity =
+      single(addressIn = null)
+
+   fun single(addressIn: AddressEntity? = null): CompanyEntity =
+      stream(numberIn = 1, addressIn = addressIn).findFirst().orElseThrow { Exception("Unable to create CompanyEntity") }
 
    fun forDatasetCode(datasetCode: String): CompanyEntity {
       return companyRepository.findByDataset(datasetCode) ?: throw Exception("Unable to find CompanyEntity")

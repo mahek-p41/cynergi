@@ -23,8 +23,8 @@ import javax.inject.Singleton
 
 @Singleton
 class CompanyRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
-   private val addressRepository: AddressRepository
+   private val addressRepository: AddressRepository,
+   private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(CompanyRepository::class.java)
 
@@ -229,10 +229,21 @@ class CompanyRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(company: CompanyEntity): CompanyEntity {
-      logger.debug("Updating company {}", company)
+   fun update(existing: CompanyEntity, toUpdate: CompanyEntity): CompanyEntity {
+      logger.debug("Updating company {}", toUpdate)
+      var addressToDelete: AddressEntity? = null
 
-      return jdbc.updateReturning(
+      val companyAddress = if (existing.address?.id != null && toUpdate.address == null) {
+         addressToDelete = existing.address
+
+         null
+      } else if (toUpdate.address != null) {
+         addressRepository.upsert(toUpdate.address)
+      } else {
+         null
+      }
+
+      val updatedCompany = jdbc.updateReturning(
          """
          UPDATE company
          SET
@@ -248,40 +259,23 @@ class CompanyRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "id" to company.id,
-            "name" to company.name,
-            "doing_business_as" to company.doingBusinessAs,
-            "client_code" to company.clientCode,
-            "client_id" to company.clientId,
-            "dataset_code" to company.datasetCode,
-            "federal_id_number" to company.federalIdNumber,
-            "address_id" to company.address?.id
+            "id" to toUpdate.id,
+            "name" to toUpdate.name,
+            "doing_business_as" to toUpdate.doingBusinessAs,
+            "client_code" to toUpdate.clientCode,
+            "client_id" to toUpdate.clientId,
+            "dataset_code" to toUpdate.datasetCode,
+            "federal_id_number" to toUpdate.federalIdNumber,
+            "address_id" to companyAddress?.id
          ),
          RowMapper { rs, _ ->
-            mapRow(rs, company.address)
+            mapRow(rs, companyAddress)
          }
       )
-   }
 
-   fun removeAddressFromCompany(id: Long): CompanyEntity? {
-      logger.debug("Updating company {}", id)
+      addressToDelete?.id?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
-      return jdbc.updateReturning(
-         """
-         UPDATE company
-         SET
-            address_id = NULL
-         WHERE id = :id
-         RETURNING
-            *
-         """.trimIndent(),
-         mapOf(
-            "id" to id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs)
-         }
-      )
+      return updatedCompany
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): CompanyEntity =
