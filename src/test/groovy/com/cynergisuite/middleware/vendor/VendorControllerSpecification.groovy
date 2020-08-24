@@ -632,13 +632,12 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.payTo = new SimpleIdentifiableDTO(vendor.id)
+      final vendorUpdate = new VendorDTO(VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia))
+      vendorUpdate.payTo = new SimpleIdentifiableDTO(vendor.id)
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)
