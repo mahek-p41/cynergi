@@ -25,4 +25,3 @@ class PrintCurrencyIndicatorTypeControllerSpecification extends ControllerSpecif
       response.collect { new PrintCurrencyIndicatorTypeDTO(it.value, it.description) } == predefinedPrintCurrencyIndicatorType
    }
 }
-Vendor

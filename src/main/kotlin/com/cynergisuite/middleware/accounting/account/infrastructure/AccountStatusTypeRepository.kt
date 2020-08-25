@@ -18,7 +18,7 @@ class AccountStatusTypeRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountStatusTypeRepository::class.java)
 
    fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM status_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM account_status_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
 
       logger.trace("Checking if AccountStatusCode: {} exists resulted in {}", value, exists)
 
@@ -29,7 +29,7 @@ class AccountStatusTypeRepository @Inject constructor(
 
    fun findOne(id: Long): AccountStatusType? {
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "SELECT * FROM status_type_domain WHERE id = :id"
+      val query = "SELECT * FROM account_status_type_domain WHERE id = :id"
       logger.trace("Searching for AccountStatusCodeTypeDomain {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
@@ -41,7 +41,7 @@ class AccountStatusTypeRepository @Inject constructor(
 
    fun findOne(value: String): AccountStatusType? {
       val params = mutableMapOf<String, Any?>("value" to value.toUpperCase())
-      val query = "SELECT * FROM status_type_domain WHERE UPPER(value) = :value"
+      val query = "SELECT * FROM account_status_type_domain WHERE UPPER(value) = :value"
       logger.trace("Searching for AccountStatusCodeTypeDomain {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
@@ -52,7 +52,7 @@ class AccountStatusTypeRepository @Inject constructor(
    }
 
    fun findAll(): List<AccountStatusType> =
-      jdbc.query("SELECT * FROM status_type_domain ORDER BY id") { rs, _ -> mapRow(rs) }
+      jdbc.query("SELECT * FROM account_status_type_domain ORDER BY id") { rs, _ -> mapRow(rs) }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): AccountStatusType =
       AccountStatusType(

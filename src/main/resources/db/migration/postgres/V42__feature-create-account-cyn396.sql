@@ -1,4 +1,4 @@
-CREATE TABLE status_type_domain
+CREATE TABLE account_status_type_domain
 (
     id                integer                                                        NOT NULL PRIMARY KEY,
     value             varchar(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE status_type_domain
     UNIQUE (value)
 );
 
-INSERT INTO status_type_domain(id, value, description, localization_code)
+INSERT INTO account_status_type_domain(id, value, description, localization_code)
 VALUES (1, 'A', 'Active', 'active'),
        (2, 'I', 'Inactive', 'inactive');
 
@@ -53,7 +53,7 @@ CREATE TABLE account
     name                           VARCHAR(100) CHECK ( char_length(trim(name)) > 1)             NOT NULL,
     type_id                        BIGINT REFERENCES account_type_domain (id)                    NOT NULL,
     normal_account_balance_type_id BIGINT REFERENCES normal_account_balance_type_domain (id)     NOT NULL,
-    status_type_id                 BIGINT REFERENCES status_type_domain (id)                     NOT NULL,
+    status_type_id                 BIGINT REFERENCES account_status_type_domain (id)                     NOT NULL,
     form_1099_field                INTEGER, -- field # on the 1099 form for this account
     corporate_account_indicator    BOOLEAN                     DEFAULT FALSE                     NOT NULL,
     search_vector                  TSVECTOR                                                      NOT NULL,

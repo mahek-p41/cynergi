@@ -19,7 +19,7 @@ CREATE TABLE rebate
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     vendor_id BIGINT REFERENCES vendor(id)                                      NOT NULL,
-    status_type_id BIGINT REFERENCES status_type_domain(id)                     NOT NULL,
+    status_type_id BIGINT REFERENCES account_status_type_domain(id)                     NOT NULL,
     description character varying(40) CHECK (char_length(trim(description)) > 1)   NOT NULL,
     rebate_type_id BIGINT REFERENCES rebate_type_domain (id)                    NOT NULL, -- equates to REBATE-PERCENT-UNIT-IND CNRG DD
     percent Numeric(8,7),
@@ -31,20 +31,11 @@ CREATE TABLE rebate
 
 CREATE UNIQUE INDEX rebate_id_desc_uq ON rebate USING btree (vendor_id, (UPPER(description)));
 
-CREATE INDEX rebate_vendor_id_idx
-ON rebate(vendor_id);
-
-CREATE INDEX rebate_status_type_id_idx
-ON status_type_domain(id);
-
-CREATE INDEX rebate_type_id_idx
-ON rebate(rebate_type_id);
-
-CREATE INDEX rebate_gl_debit_account_id_idx
-ON rebate(general_ledger_debit_account_id);
-
-CREATE INDEX rebate_gl_credit_account_id_idx
-ON rebate(general_ledger_credit_account_id);
+CREATE INDEX rebate_vendor_id_idx ON rebate(vendor_id);
+CREATE INDEX rebate_status_type_id_idx ON rebate(status_type_id);
+CREATE INDEX rebate_type_id_idx ON rebate(rebate_type_id);
+CREATE INDEX rebate_gl_debit_account_id_idx ON rebate(general_ledger_debit_account_id);
+CREATE INDEX rebate_gl_credit_account_id_idx ON rebate(general_ledger_credit_account_id);
 
 CREATE TRIGGER update_rebate_trg
    BEFORE UPDATE

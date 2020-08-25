@@ -82,7 +82,7 @@ class AccountRepository @Inject constructor(
                      ON type.id = account.type_id
                JOIN normal_account_balance_type_domain balance_type
                      ON balance_type.id = account.normal_account_balance_type_id
-               JOIN status_type_domain status
+               JOIN account_status_type_domain status
                      ON status.id = account.status_type_id
       """
    }
