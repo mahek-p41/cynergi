@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.localization
 
-import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.builder.ToStringBuilder
