@@ -103,36 +103,36 @@ CREATE INDEX purchase_order_header_customer_acct_nbr_idx ON purchase_order_heade
 -- Begin purchase_order_detail
 CREATE TABLE purchase_order_detail
 (
-    id                                     BIGSERIAL                                                                   NOT NULL PRIMARY KEY,
-    uu_row_id                              UUID                        DEFAULT uuid_generate_v1()                      NOT NULL,
-    time_created                           TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
-    time_updated                           TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
-    number                                 BIGINT CHECK ( number > 0 ) DEFAULT currval('purchase_order_detail_id_seq') NOT NULL,
-    purchase_order_header_id               BIGINT REFERENCES purchase_order_header (id)                                NOT NULL,
-    company_id                             BIGINT REFERENCES company (id)                                              NOT NULL,
-    sequence                               INTEGER                                                                     NOT NULL,
-    itemfile_number_sfk                    CHARACTER VARYING(18) CHECK (char_length(trim(itemfile_number_sfk)) > 1)    NOT NULL,
-    order_quantity                         INTEGER                                                                     NOT NULL,
-    received_quantity                      INTEGER                                                                     NOT NULL,
-    cost                                   NUMERIC(11, 3)                                                              NOT NULL,
-    message                                TEXT,
-    color_id_sfk                           INTEGER, -- This is a softkey and will hold the value associated with furncol view.
-    fabric_id_sfk                          INTEGER, -- This is a softkey and will hold the value associated with furnfab view.
-    cancelled_quantity                     INTEGER,
-    cancelled_temp_quantity                INTEGER,
-    ship_to_id_sfk                         INTEGER CHECK ( ship_to_id_sfk > 0 )                                        NOT NULL,
-    required_date                          DATE,
-    date_ordered                           DATE,
-    freight_per_item                       NUMERIC(11, 2),
-    temp_quantity_to_receive               INTEGER,
-    vendor_id                              BIGINT REFERENCES vendor (id)                                               NOT NULL,
-    last_received_date                     DATE,
-    landed_cost                            NUMERIC(11, 3),
-    status_type_id                         BIGINT REFERENCES purchase_order_status_type_domain (id)                    NOT NULL,
-    purchase_order_requisition_ind_type_id BIGINT REFERENCES purchase_order_requisition_indicator_type_domain (id)            NOT NULL,
-    exception_ind_type_id                  BIGINT REFERENCES exception_ind_type_domain (id)                            NOT NULL,
-    converted_purchase_order_number        INTEGER                     DEFAULT 0                                       NOT NULL,
-    approved_ind                           BOOLEAN                     DEFAULT FALSE                                   NOT NULL,
+    id                                           BIGSERIAL                                                                   NOT NULL PRIMARY KEY,
+    uu_row_id                                    UUID                        DEFAULT uuid_generate_v1()                      NOT NULL,
+    time_created                                 TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
+    time_updated                                 TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
+    number                                       BIGINT CHECK ( number > 0 ) DEFAULT currval('purchase_order_detail_id_seq') NOT NULL,
+    purchase_order_header_id                     BIGINT REFERENCES purchase_order_header (id)                                NOT NULL,
+    company_id                                   BIGINT REFERENCES company (id)                                              NOT NULL,
+    sequence                                     INTEGER                                                                     NOT NULL,
+    itemfile_number_sfk                          CHARACTER VARYING(18) CHECK (char_length(trim(itemfile_number_sfk)) > 1)    NOT NULL,
+    order_quantity                               INTEGER                                                                     NOT NULL,
+    received_quantity                            INTEGER                                                                     NOT NULL,
+    cost                                         NUMERIC(11, 3)                                                              NOT NULL,
+    message                                      TEXT,
+    color_id_sfk                                 INTEGER, -- This is a softkey and will hold the value associated with furncol view.
+    fabric_id_sfk                                INTEGER, -- This is a softkey and will hold the value associated with furnfab view.
+    cancelled_quantity                           INTEGER,
+    cancelled_temp_quantity                      INTEGER,
+    ship_to_id_sfk                               INTEGER CHECK ( ship_to_id_sfk > 0 )                                        NOT NULL,
+    required_date                                DATE,
+    date_ordered                                 DATE,
+    freight_per_item                             NUMERIC(11, 2),
+    temp_quantity_to_receive                     INTEGER,
+    vendor_id                                    BIGINT REFERENCES vendor (id)                                               NOT NULL,
+    last_received_date                           DATE,
+    landed_cost                                  NUMERIC(11, 3),
+    status_type_id                               BIGINT REFERENCES purchase_order_status_type_domain (id)                    NOT NULL,
+    purchase_order_requisition_indicator_type_id BIGINT REFERENCES purchase_order_requisition_indicator_type_domain (id)     NOT NULL,
+    exception_ind_type_id                        BIGINT REFERENCES exception_ind_type_domain (id)                            NOT NULL,
+    converted_purchase_order_number              INTEGER                     DEFAULT 0                                       NOT NULL,
+    approved_ind                                 BOOLEAN                     DEFAULT FALSE                                   NOT NULL,
     UNIQUE (purchase_order_header_id, sequence)
 );
 CREATE TRIGGER update_purchase_order_detail_trg
@@ -144,7 +144,7 @@ CREATE INDEX purchase_order_detail_number_id_idx ON purchase_order_detail (purch
 CREATE INDEX purchase_order_detail_company_id_idx ON purchase_order_detail (company_id);
 CREATE INDEX purchase_order_detail_vendor_id_idx ON purchase_order_detail (vendor_id);
 CREATE INDEX purchase_order_detail_status_type_id_idx ON purchase_order_detail (status_type_id);
-CREATE INDEX purchase_order_detail_po_requisition_ind_type_id_idx ON purchase_order_detail (purchase_order_requisition_ind_type_id);
+CREATE INDEX purchase_order_detail_po_requisition_ind_type_id_idx ON purchase_order_detail (purchase_order_requisition_indicator_type_id);
 CREATE INDEX purchase_order_detail_exception_ind_type_id_idx ON purchase_order_detail (exception_ind_type_id);
 
 --- Begin purchase_order_detail.sequence generator
@@ -157,7 +157,9 @@ DECLARE
 BEGIN
     PERFORM pg_advisory_xact_lock(purchaseOrderHeader);
 
-    maxPurchaseOrderDetailSequence := (SELECT COALESCE(MAX(sequence), 0) + 1 FROM purchase_order_detail WHERE purchase_order_header_id = purchaseOrderHeader);
+    maxPurchaseOrderDetailSequence := (SELECT COALESCE(MAX(sequence), 0) + 1
+                                       FROM purchase_order_detail
+                                       WHERE purchase_order_header_id = purchaseOrderHeader);
 
     new.sequence := maxPurchaseOrderDetailSequence;
 
