@@ -4,8 +4,6 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoader.AccountPayableControlDataLoaderService
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -17,8 +15,6 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 @MicronautTest(transactional = false)
 class AccountPayableControlControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account/payable/control'
-   private JsonOutput jsonOutput = new JsonOutput()
-   private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AccountDataLoaderService accountDataLoaderService
    @Inject AccountPayableControlDataLoaderService accountPayableControlDataLoaderService
 
@@ -37,6 +33,12 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
       with(result) {
          id == accountPayableControl.id
+
+         with(checkFormType) {
+            value == accountPayableControl.checkFormType.value
+            description == accountPayableControl.checkFormType.description
+         }
+
          payAfterDiscountDate == accountPayableControl.payAfterDiscountDate
          resetExpense == accountPayableControl.resetExpense
          useRebatesIndicator == accountPayableControl.useRebatesIndicator
@@ -78,16 +80,21 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonOutput.toJson(accountPayableControl)
 
       when:
-      def result = post("$path/", jsonAPControl)
+      def result = post("$path/", accountPayableControl)
 
       then:
       notThrown(HttpClientResponseException)
 
       with(result) {
          id > 0
+
+         with(checkFormType) {
+            value == accountPayableControl.checkFormType.value
+            description == accountPayableControl.checkFormType.description
+         }
+
          payAfterDiscountDate == accountPayableControl.payAfterDiscountDate
          resetExpense == accountPayableControl.resetExpense
          useRebatesIndicator == accountPayableControl.useRebatesIndicator
@@ -117,10 +124,8 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
 
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -131,18 +136,36 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response[0].message == "Account payable control for user's company " + company.myDataset() + " already exists"
    }
 
+   void "create invalid account payable control without check form type" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      accountPayableControl.checkFormType = null
+
+      when:
+      post("$path/", accountPayableControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "checkFormType"
+      response[0].message == "Is required"
+   }
+
    void "create invalid account payable control without pay after discount date" () {
       given:
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("payAfterDiscountDate")
+      accountPayableControl.payAfterDiscountDate = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -159,12 +182,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("resetExpense")
+      accountPayableControl.resetExpense = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -181,12 +202,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("useRebatesIndicator")
+      accountPayableControl.useRebatesIndicator = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -203,12 +222,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("tradeCompanyIndicator")
+      accountPayableControl.tradeCompanyIndicator = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -225,12 +242,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("printCurrencyIndicatorType")
+      accountPayableControl.printCurrencyIndicatorType = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -247,12 +262,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("lockInventoryIndicator")
+      accountPayableControl.lockInventoryIndicator = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -269,12 +282,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("purchaseOrderNumberRequiredIndicatorType")
+      accountPayableControl.purchaseOrderNumberRequiredIndicatorType = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -291,12 +302,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("generalLedgerInventoryClearingAccount")
+      accountPayableControl.generalLedgerInventoryClearingAccount = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -313,12 +322,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.generalLedgerInventoryClearingAccount.id = '0'
+      accountPayableControl.generalLedgerInventoryClearingAccount.id = 0
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -335,12 +342,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.remove("generalLedgerInventoryAccount")
+      accountPayableControl.generalLedgerInventoryAccount = null
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -357,12 +362,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      //Make invalid json
-      def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
-      jsonAPControl.generalLedgerInventoryAccount.id = '0'
+      accountPayableControl.generalLedgerInventoryAccount.id = 0
 
       when:
-      post("$path/", jsonAPControl)
+      post("$path/", accountPayableControl)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -380,17 +383,22 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
-      jsonAPControl.id = existingAPControl.id
+      updatedAPControlDTO.id = existingAPControl.id
 
       when:
-      def result = put("$path/$existingAPControl.id", jsonAPControl)
+      def result = put("$path/$existingAPControl.id", updatedAPControlDTO)
 
       then:
       notThrown(HttpClientResponseException)
 
       with(result) {
          id == existingAPControl.id
+
+         with(checkFormType) {
+            value == updatedAPControlDTO.checkFormType.value
+            description == updatedAPControlDTO.checkFormType.description
+         }
+
          payAfterDiscountDate == updatedAPControlDTO.payAfterDiscountDate
          resetExpense == updatedAPControlDTO.resetExpense
          useRebatesIndicator == updatedAPControlDTO.useRebatesIndicator
@@ -420,11 +428,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
-      jsonAPControl.id = '0'
+      updatedAPControlDTO.id = 0
 
       when:
-      put("$path/$existingAPControl.id", jsonAPControl)
+      put("$path/$existingAPControl.id", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -442,10 +449,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
 
       when:
-      put("$path/99", jsonAPControl)
+      put("$path/99", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -456,6 +462,27 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response[0].message == "99 was unable to be found"
    }
 
+   void "update invalid account payable control by removing check form type" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      updatedAPControlDTO.checkFormType = null
+
+      when:
+      put("$path/$existingAPControl.id", updatedAPControlDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "checkFormType"
+      response[0].message == "Is required"
+   }
+
    void "update invalid account payable control by removing print currency indicator type" () {
       given:
       final company = nineNineEightEmployee.company
@@ -463,11 +490,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
-      jsonAPControl.remove("printCurrencyIndicatorType")
+      updatedAPControlDTO.printCurrencyIndicatorType = null
 
       when:
-      put("$path/$existingAPControl.id", jsonAPControl)
+      put("$path/$existingAPControl.id", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -485,11 +511,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
-      jsonAPControl.remove("purchaseOrderNumberRequiredIndicatorType")
+      updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType = null
 
       when:
-      put("$path/$existingAPControl.id", jsonAPControl)
+      put("$path/$existingAPControl.id", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -507,11 +532,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
-      jsonAPControl.remove("generalLedgerInventoryClearingAccount")
+      updatedAPControlDTO.generalLedgerInventoryClearingAccount = null
 
       when:
-      put("$path/$existingAPControl.id", jsonAPControl)
+      put("$path/$existingAPControl.id", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -529,11 +553,10 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      final def jsonAPControl = jsonSlurper.parseText(jsonOutput.toJson(updatedAPControlDTO))
-      jsonAPControl.remove("generalLedgerInventoryAccount")
+      updatedAPControlDTO.generalLedgerInventoryAccount = null
 
       when:
-      put("$path/$existingAPControl.id", jsonAPControl)
+      put("$path/$existingAPControl.id", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)

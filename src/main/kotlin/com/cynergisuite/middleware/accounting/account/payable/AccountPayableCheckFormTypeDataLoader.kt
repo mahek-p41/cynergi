@@ -20,7 +20,7 @@ object AccountPayableCheckFormTypeDataLoader {
          localizationCode = "laser.3"
       ),
       AccountPayableCheckFormType(
-         id = 1,
+         id = 3,
          value = "T",
          description = "Tractor",
          localizationCode = "tractor"

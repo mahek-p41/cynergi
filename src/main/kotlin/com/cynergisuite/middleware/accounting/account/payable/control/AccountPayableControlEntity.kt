@@ -2,11 +2,13 @@ package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormType
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorType
 
 data class AccountPayableControlEntity(
    val id: Long? = null,
+   val checkFormType: AccountPayableCheckFormType,
    val payAfterDiscountDate: Boolean,
    val resetExpense: Boolean,
    val useRebatesIndicator: Boolean,
@@ -20,6 +22,7 @@ data class AccountPayableControlEntity(
 
    constructor(
       dto: AccountPayableControlDTO,
+      checkFormType: AccountPayableCheckFormType,
       printCurrencyIndicatorType: PrintCurrencyIndicatorType,
       purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType,
       generalLedgerInventoryClearingAccount: AccountEntity,
@@ -27,6 +30,7 @@ data class AccountPayableControlEntity(
    ) :
       this(
          id = dto.id,
+         checkFormType = checkFormType,
          payAfterDiscountDate = dto.payAfterDiscountDate!!,
          resetExpense = dto.resetExpense!!,
          useRebatesIndicator = dto.useRebatesIndicator!!,
