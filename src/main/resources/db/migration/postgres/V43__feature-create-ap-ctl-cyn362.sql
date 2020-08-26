@@ -20,9 +20,9 @@ CREATE TABLE account_payable_check_form_type_domain
     UNIQUE (value)
 );
 INSERT INTO account_payable_check_form_type_domain(id, value, description, localization_code)
-VALUES (1, 'L2', 'Laser 2', 'laser.two'),
-       (2, 'L3', 'Laser 3', 'laser.two'),
-       (3, 'T', 'Tractor', 'tractor');
+VALUES (1, '2', 'Laser 2', 'laser.two'),
+       (2, '3', 'Laser 3', 'laser.three'),
+       (3, 'L', 'Laser', 'laser');
 
 
 CREATE TABLE purchase_order_number_required_indicator_type_domain

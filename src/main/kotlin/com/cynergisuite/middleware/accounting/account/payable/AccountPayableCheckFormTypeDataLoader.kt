@@ -9,21 +9,21 @@ object AccountPayableCheckFormTypeDataLoader {
    private val accountPayableCheckFormType = listOf(
       AccountPayableCheckFormType(
          id = 1,
-         value = "L2",
+         value = "2",
          description = "Laser 2",
-         localizationCode = "laser.2"
+         localizationCode = "laser.two"
       ),
       AccountPayableCheckFormType(
          id = 2,
-         value = "L3",
+         value = "3",
          description = "Laser 3",
-         localizationCode = "laser.3"
+         localizationCode = "laser.three"
       ),
       AccountPayableCheckFormType(
          id = 3,
-         value = "T",
-         description = "Tractor",
-         localizationCode = "tractor"
+         value = "L",
+         description = "Laser",
+         localizationCode = "laser"
       )
    )
 
