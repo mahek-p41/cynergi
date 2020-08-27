@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/account/payable/type/print-currency-indicator")
+@Controller("/api/accounting/account/payable/type/print-currency-indicator")
 class PrintCurrencyIndicatorTypeController @Inject constructor(
    private val printCurrencyIndicatorTypeService: PrintCurrencyIndicatorTypeService,
    private val localizationService: LocalizationService

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.control
 
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.infrastructure.AccountPayableControlRepository
@@ -35,6 +36,7 @@ class AccountPayableControlService @Inject constructor(
    private fun transformEntity(accountPayableControl: AccountPayableControlEntity): AccountPayableControlDTO {
       return AccountPayableControlDTO(
          entity = accountPayableControl,
+         checkFormType = AccountPayableCheckFormTypeDTO(accountPayableControl.checkFormType),
          printCurrencyIndicatorType = PrintCurrencyIndicatorTypeDTO(accountPayableControl.printCurrencyIndicatorType),
          purchaseOrderNumberRequiredIndicatorType = PurchaseOrderNumberRequiredIndicatorTypeDTO(accountPayableControl.purchaseOrderNumberRequiredIndicatorType)
       )

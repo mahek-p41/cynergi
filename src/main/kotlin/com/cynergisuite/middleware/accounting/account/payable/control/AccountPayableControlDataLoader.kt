@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
@@ -24,6 +26,7 @@ object AccountPayableControlDataLoader {
       return IntStream.range(0, number).mapToObj {
          AccountPayableControlEntity(
             id = Random.nextLong(),
+            checkFormType = AccountPayableCheckFormTypeDataLoader.random(),
             payAfterDiscountDate = Random.nextBoolean(),
             resetExpense = Random.nextBoolean(),
             useRebatesIndicator = Random.nextBoolean(),
@@ -43,6 +46,7 @@ object AccountPayableControlDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          AccountPayableControlDTO(
+            checkFormType = AccountPayableCheckFormTypeDTO(AccountPayableCheckFormTypeDataLoader.random()),
             payAfterDiscountDate = Random.nextBoolean(),
             resetExpense = Random.nextBoolean(),
             useRebatesIndicator = Random.nextBoolean(),

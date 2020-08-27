@@ -5,14 +5,16 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormType
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlEntity
+import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableCheckFormTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PrintCurrencyIndicatorTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PurchaseOrderNumberRequiredIndicatorTypeRepository
 import com.cynergisuite.middleware.company.Company
 import io.micronaut.spring.tx.annotation.Transactional
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -25,6 +27,7 @@ import javax.inject.Singleton
 class AccountPayableControlRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val accountRepository: AccountRepository,
+   private val accountPayableCheckFormTypeRepository: AccountPayableCheckFormTypeRepository,
    private val printCurrencyIndicatorTypeRepository: PrintCurrencyIndicatorTypeRepository,
    private val purchaseOrderNumberRequiredIndicatorTypeRepository: PurchaseOrderNumberRequiredIndicatorTypeRepository
 ) {
@@ -46,6 +49,10 @@ class AccountPayableControlRepository @Inject constructor(
             accountPayableControl.use_rebates_indicator              AS accountPayableControl_use_rebates_indicator,
             accountPayableControl.trade_company_indicator            AS accountPayableControl_trade_company_indicator,
             accountPayableControl.lock_inventory_indicator           AS accountPayableControl_lock_inventory_indicator,
+            checkFormType.id                                         AS checkFormType_id,
+            checkFormType.value                                      AS checkFormType_value,
+            checkFormType.description                                AS checkFormType_description,
+            checkFormType.localization_code                          AS checkFormType_localization_code,
             printCurrencyIndType.id                                  AS printCurrencyIndType_id,
             printCurrencyIndType.value                               AS printCurrencyIndType_value,
             printCurrencyIndType.description                         AS printCurrencyIndType_description,
@@ -107,6 +114,7 @@ class AccountPayableControlRepository @Inject constructor(
             glInvAcct.status_description                             AS glInvAcct_status_description,
             glInvAcct.status_localization_code                       AS glInvAcct_status_localization_code
          FROM account_payable_control accountPayableControl
+            JOIN account_payable_check_form_type_domain checkFormType ON accountPayableControl.check_form_type_id = checkFormType.id
             JOIN print_currency_indicator_type_domain printCurrencyIndType ON accountPayableControl.print_currency_indicator_type_id = printCurrencyIndType.id
             JOIN purchase_order_number_required_indicator_type_domain poNumReqIndType ON accountPayableControl.purchase_order_number_required_indicator_type_id = poNumReqIndType.id
             JOIN account glInvCleAcct ON accountPayableControl.general_ledger_inventory_clearing_account_id = glInvCleAcct.account_id
@@ -136,13 +144,20 @@ class AccountPayableControlRepository @Inject constructor(
       val found = jdbc.findFirstOrNull(
          query, params,
          RowMapper { rs, _ ->
+            val checkFormType = accountPayableCheckFormTypeRepository.mapRow(rs, "checkFormType_")
             val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.mapRow(rs, "printCurrencyIndType_")
             val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.mapRow(rs, "poNumReqIndType_")
             val generalLedgerInventoryClearingAccount = accountRepository.mapRow(rs, company, "glInvCleAcct_", "glInvCleAcct_")
             val generalLedgerInventoryAccount = accountRepository.mapRow(rs, company, "glInvAcct_", "glInvCleAcct_")
 
             mapRow(
-               rs, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount, "accountPayableControl_"
+               rs,
+               checkFormType,
+               printCurrencyIndicatorType,
+               purchaseOrderNumberRequiredIndicatorType,
+               generalLedgerInventoryClearingAccount,
+               generalLedgerInventoryAccount,
+               "accountPayableControl_"
             )
          }
       )
@@ -160,6 +175,7 @@ class AccountPayableControlRepository @Inject constructor(
          """
          INSERT INTO account_payable_control(
             company_id,
+            check_form_type_id,
             pay_after_discount_date,
             reset_expense,
             use_rebates_indicator,
@@ -172,6 +188,7 @@ class AccountPayableControlRepository @Inject constructor(
          )
          VALUES (
             :company_id,
+            :check_form_type_id,
             :pay_after_discount_date,
             :reset_expense,
             :use_rebates_indicator,
@@ -187,6 +204,7 @@ class AccountPayableControlRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "company_id" to company.myId(),
+            "check_form_type_id" to entity.checkFormType.id,
             "pay_after_discount_date" to entity.payAfterDiscountDate,
             "reset_expense" to entity.resetExpense,
             "use_rebates_indicator" to entity.useRebatesIndicator,
@@ -200,6 +218,7 @@ class AccountPayableControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(
                rs,
+               entity.checkFormType,
                entity.printCurrencyIndicatorType,
                entity.purchaseOrderNumberRequiredIndicatorType,
                entity.generalLedgerInventoryClearingAccount,
@@ -218,6 +237,7 @@ class AccountPayableControlRepository @Inject constructor(
          UPDATE account_payable_control
          SET
             company_id = :company_id,
+            check_form_type_id = :check_form_type_id,
             pay_after_discount_date = :pay_after_discount_date,
             reset_expense = :reset_expense,
             use_rebates_indicator = :use_rebates_indicator,
@@ -234,6 +254,7 @@ class AccountPayableControlRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "company_id" to company.myId(),
+            "check_form_type_id" to entity.checkFormType.id,
             "pay_after_discount_date" to entity.payAfterDiscountDate,
             "reset_expense" to entity.resetExpense,
             "use_rebates_indicator" to entity.useRebatesIndicator,
@@ -247,6 +268,7 @@ class AccountPayableControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(
                rs,
+               entity.checkFormType,
                entity.printCurrencyIndicatorType,
                entity.purchaseOrderNumberRequiredIndicatorType,
                entity.generalLedgerInventoryClearingAccount,
@@ -258,14 +280,16 @@ class AccountPayableControlRepository @Inject constructor(
 
    private fun mapRow(
       rs: ResultSet,
+      checkFormType: AccountPayableCheckFormType,
       printCurrencyIndicatorType: PrintCurrencyIndicatorType,
       purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType,
       generalLedgerInventoryClearingAccount: AccountEntity,
       generalLedgerInventoryAccount: AccountEntity,
-      columnPrefix: String = StringUtils.EMPTY
+      columnPrefix: String = EMPTY
    ): AccountPayableControlEntity {
       return AccountPayableControlEntity(
          id = rs.getLong("${columnPrefix}id"),
+         checkFormType = checkFormType,
          payAfterDiscountDate = rs.getBoolean("${columnPrefix}pay_after_discount_date"),
          resetExpense = rs.getBoolean("${columnPrefix}reset_expense"),
          useRebatesIndicator = rs.getBoolean("${columnPrefix}use_rebates_indicator"),

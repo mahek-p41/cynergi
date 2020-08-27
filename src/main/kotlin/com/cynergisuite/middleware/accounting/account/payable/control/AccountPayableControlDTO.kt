@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -17,6 +18,10 @@ data class AccountPayableControlDTO(
    @field:Positive
    @field:Schema(description = "Account payable control id")
    var id: Long? = null,
+
+   @field:NotNull
+   @field:Schema(description = "Account payable check form type")
+   var checkFormType: AccountPayableCheckFormTypeDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "Pay after discount date")
@@ -57,11 +62,13 @@ data class AccountPayableControlDTO(
 ) : Identifiable {
    constructor(
       entity: AccountPayableControlEntity,
+      checkFormType: AccountPayableCheckFormTypeDTO,
       printCurrencyIndicatorType: PrintCurrencyIndicatorTypeDTO,
       purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorTypeDTO
    ) :
       this(
          id = entity.id,
+         checkFormType = checkFormType,
          payAfterDiscountDate = entity.payAfterDiscountDate,
          resetExpense = entity.resetExpense,
          useRebatesIndicator = entity.useRebatesIndicator,
