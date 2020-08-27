@@ -167,7 +167,7 @@ task flywayMigrateCynergiDevelopDb(type: org.flywaydb.gradle.task.FlywayMigrateT
 }
 
 task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = "jdbc:postgresql://localhost:7432/cynergitestdb"
+   url = "jdbc:postgresql://cynergideploynet:7433/cynergitestdb"
    user = "postgres"
    password = "password"
    locations = ["filesystem:src/main/resources/db/migration/postgres"]

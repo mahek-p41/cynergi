@@ -6,8 +6,8 @@ VER_BUILD=$(java -version 2>&1 | awk '/build/ {gsub("\)","") ; print $NF}' | hea
 
 mkdir -p /opt/cyn/v01/cynmid/logs/
 mkdir -p /opt/cyn/v01/cynmid/java/openj9/"${VER_BUILD}"/jitcache
-export POSTGRES_REACTIVE_CLIENT_PORT=5432
-export POSTGRES_REACTIVE_CLIENT_HOST=cynergitestdeploydb
+export VERTX_PG_CLIENT_PORT=5432
+export VERTX_PG_CLIENT_HOST=cynergitestdeploydb
 cd /home/jenkins/cynergi-middleware
 ./gradlew --no-daemon --stacktrace clean test jacocoTestReport buildApiDocs shadowJar
 
