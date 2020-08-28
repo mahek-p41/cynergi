@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -37,7 +37,7 @@ data class AuditExceptionValueObject(
    @field:NotNull
    @field:Valid
    @field:Schema(name = "scanArea", description = "The optional location where the exception was encountered")
-   var scanArea: AuditScanAreaValueObject? = null,
+   var scanArea: AuditScanAreaDTO? = null,
 
    @field:NotNull
    @field:NotBlank
@@ -98,7 +98,7 @@ data class AuditExceptionValueObject(
    var audit: Identifiable? = null
 
 ) : Identifiable {
-   constructor(entity: AuditExceptionEntity, scanArea: AuditScanAreaValueObject?) :
+   constructor(entity: AuditExceptionEntity, scanArea: AuditScanAreaDTO?) :
       this(
          id = entity.id,
          timeCreated = entity.timeCreated,

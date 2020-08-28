@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.sql.SQLException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +37,7 @@ class RegionRepository @Inject constructor(
             "name" to region.name,
             "description" to region.description
          ),
-         RowMapper { rs, _ -> mapRowSimple(rs, region) }
+         RowMapper { rs, _ -> mapRow(rs, region) }
       )
    }
 
@@ -49,11 +50,22 @@ class RegionRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description")
       )
 
-   fun mapRowSimple(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "reg_", companyPrefix: String = "comp_", departmentPrefix: String = "dept_", storePrefix: String = "store_"): RegionEntity? =
+      try {
+         if (rs.getString("${columnPrefix}id") != null) {
+            mapRow(rs, company, "reg_")
+         } else {
+            null
+         }
+      } catch (e: SQLException) {
+         null
+      }
+
+   fun mapRow(rs: ResultSet, region: RegionEntity, columnPrefix: String = StringUtils.EMPTY): RegionEntity =
       RegionEntity(
          id = rs.getLong("${columnPrefix}id"),
-         division = region.division,
          number = rs.getInt("${columnPrefix}number"),
+         division = region.division,
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description")
       )

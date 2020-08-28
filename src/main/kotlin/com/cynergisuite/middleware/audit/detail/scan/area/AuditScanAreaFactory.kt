@@ -1,52 +1,33 @@
 package com.cynergisuite.middleware.audit.detail.scan.area
 
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
+import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
+import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import org.apache.commons.lang3.RandomUtils
+import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 object AuditScanAreaFactory {
-   private val scanAreas = listOf(
-      AuditScanArea(1, "SHOWROOM", "Showroom", "audit.scan.area.showroom"),
-      AuditScanArea(2, "STOREROOM", "Storeroom", "audit.scan.area.storeroom"),
-      AuditScanArea(3, "WAREHOUSE", "Warehouse", "audit.scan.area.warehouse")
-   )
 
    @JvmStatic
-   fun values(): List<AuditScanArea> {
-      return scanAreas
-   }
+   fun stream(numberIn: Int = 1, nameIn: String?, store: Store, company: Company): Stream<AuditScanAreaEntity> {
+      val number = if (numberIn > 0) numberIn else 1
+      val faker = Faker()
+      val lorem = faker.lorem()
 
-   @JvmStatic
-   fun random(): AuditScanArea {
-      return scanAreas[RandomUtils.nextInt(0, scanAreas.size)]
-   }
-
-   @JvmStatic
-   fun showroom(): AuditScanArea = findByValue("SHOWROOM")
-
-   @JvmStatic
-   fun storeroom(): AuditScanArea = findByValue("STOREROOM")
-
-   @JvmStatic
-   fun warehouse(): AuditScanArea = findByValue("WAREHOUSE")
-
-   @JvmStatic
-   fun findByValue(value: String): AuditScanArea =
-      scanAreas.first { it.value == value }
-
-   @JvmStatic
-   fun stream(numberIn: Int = 1): Stream<AuditScanArea> {
-      val number = if (numberIn > 0 || numberIn <= scanAreas.size) numberIn else 1
-
-      return scanAreas.stream().limit(number.toLong())
-   }
-
-   @JvmStatic
-   fun single(): AuditScanArea {
-      return stream(1).findFirst().orElseThrow { Exception("Unable to find AuditScanAreaTypeDomain") }
+      return IntStream.range(0, number).mapToObj {
+         val name = nameIn ?: lorem.word().capitalize()
+         AuditScanAreaEntity(
+            name = name,
+            store = store as StoreEntity,
+            company = company as CompanyEntity
+         )
+      }
    }
 }
 
@@ -56,25 +37,20 @@ class AuditScanAreaFactoryService @Inject constructor(
    private val auditScanAreaTypeDomainRepository: AuditScanAreaRepository
 ) {
 
-   fun stream(numberIn: Int = 1): Stream<AuditScanArea> {
-      return AuditScanAreaFactory.stream(numberIn)
-         .map { auditScanAreaTypeDomainRepository.findOne(it.value)!! }
+   fun stream(numberIn: Int = 1, name: String?, store: Store, company: Company): Stream<AuditScanAreaEntity> {
+      return AuditScanAreaFactory.stream(numberIn, name, store, company)
+         .map { auditScanAreaTypeDomainRepository.insert(it) }
    }
 
-   fun single(): AuditScanArea =
-      stream(1).findFirst().orElseThrow { Exception("Unable to find AuditScanAreaTypeDomain") }
+   fun single(name: String, store: Store, company: Company): AuditScanAreaEntity =
+      stream(1, name, store, company).findFirst().orElseThrow { Exception("Unable to find AuditScanAreaTypeDomain") }
 
-   fun showroom(): AuditScanArea =
-      AuditScanAreaFactory.showroom()
+   fun showroom(store: Store, company: Company): AuditScanAreaEntity =
+      single("Showroom", store, company)
 
-   fun warehouse(): AuditScanArea =
-      AuditScanAreaFactory.warehouse()
+   fun warehouse(store: Store, company: Company): AuditScanAreaEntity =
+      single("Warehouse", store, company)
 
-   fun storeroom(): AuditScanArea =
-      AuditScanAreaFactory.storeroom()
-
-   fun random(): AuditScanArea =
-      AuditScanAreaFactory
-         .findByValue(AuditScanAreaFactory.random().value)
-         .let { auditScanAreaTypeDomainRepository.findOne(it.value)!! }
+   fun storeroom(store: Store, company: Company): AuditScanAreaEntity =
+      single("Storeroom", store, company)
 }

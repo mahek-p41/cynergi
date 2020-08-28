@@ -68,7 +68,7 @@ class AuditValidator @Inject constructor(
       logger.debug("Validating Create Audit {}", audit)
 
       doValidation { errors ->
-         val storeNumber = audit.store?.number
+         val storeNumber = audit.store?.storeNumber
 
          if (storeNumber != null && !storeRepository.exists(number = storeNumber, company = user.myCompany())) {
             errors.add(ValidationError("storeNumber", NotFound(storeNumber)))
@@ -84,7 +84,7 @@ class AuditValidator @Inject constructor(
       }
 
       return AuditEntity(
-         store = storeRepository.findOne(number = audit.store!!.number!!, company = user.myCompany())!!,
+         store = storeRepository.findOne(number = audit.store!!.storeNumber!!, company = user.myCompany())!!,
          number = 0,
          totalDetails = 0,
          totalExceptions = 0,

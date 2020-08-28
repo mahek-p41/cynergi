@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.detail
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
@@ -15,7 +14,6 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDetails
-import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,7 +22,6 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditDetailValidator @Inject constructor (
-   private val auditDetailRepository: AuditDetailRepository,
    private val auditRepository: AuditRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,
@@ -40,7 +37,8 @@ class AuditDetailValidator @Inject constructor (
          val inventoryId = dto.inventory!!.id!!
 
          validateAudit(auditId, scannedBy.myCompany(), errors)
-         validateScanArea(dto.scanArea!!.value!!, errors)
+
+         if (!auditScanAreaRepository.exists(dto.scanArea!!.id!!)) errors.add(ValidationError("audit.scanArea.id", NotFound(dto.scanArea!!.id!!)))
 
          if (inventoryRepository.doesNotExist(inventoryId, scannedBy.myCompany())) {
             errors.add(
@@ -53,7 +51,7 @@ class AuditDetailValidator @Inject constructor (
          }
       }
 
-      val scanArea = auditScanAreaRepository.findOne(dto.scanArea!!.value!!)!!
+      val scanArea = auditScanAreaRepository.findOne(dto.scanArea!!.id!!, scannedBy.myCompany())!!
       val inventory = inventoryRepository.findOne(dto.inventory!!.id!!, scannedBy.myCompany())!!
 
       return AuditDetailEntity(
@@ -62,14 +60,6 @@ class AuditDetailValidator @Inject constructor (
          scannedBy = employeeRepository.findOne(scannedBy)!!,
          audit = SimpleIdentifiableEntity(auditId)
       )
-   }
-
-   private fun validateScanArea(scanAreaValue: String, errors: MutableSet<ValidationError>) {
-      if (!auditScanAreaRepository.exists(scanAreaValue)) {
-         errors.add(
-            ValidationError("scanArea", AuditScanAreaNotFound(scanAreaValue))
-         )
-      }
    }
 
    private fun validateAudit(auditId: Long, company: Company, errors: MutableSet<ValidationError>) {
