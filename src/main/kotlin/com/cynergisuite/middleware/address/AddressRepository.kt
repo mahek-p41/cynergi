@@ -147,8 +147,9 @@ class AddressRepository @Inject constructor(
          insert(address)
       }
 
+   @Transactional
    fun delete(id: Long): AddressEntity? {
-      logger.debug("Deleting AuditPermission using {}", id)
+      logger.debug("Deleting Address using {}", id)
 
       val existingAddress = findOne(id)
 

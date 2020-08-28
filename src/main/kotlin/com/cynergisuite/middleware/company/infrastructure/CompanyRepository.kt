@@ -208,6 +208,12 @@ class CompanyRepository @Inject constructor(
    fun insert(company: CompanyEntity): CompanyEntity {
       logger.debug("Inserting company {}", company)
 
+      val addressCreated = if (company.address != null) {
+         addressRepository.insert(company.address)
+      } else {
+         null
+      }
+
       return jdbc.insertReturning(
          """
          INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number, address_id)
@@ -222,9 +228,9 @@ class CompanyRepository @Inject constructor(
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
             "federal_id_number" to company.federalIdNumber,
-            "address_id" to company.address?.id
+            "address_id" to addressCreated?.id
          ),
-         RowMapper { rs, _ -> mapRow(rs, company.address) }
+         RowMapper { rs, _ -> mapRow(rs, addressCreated) }
       )
    }
 

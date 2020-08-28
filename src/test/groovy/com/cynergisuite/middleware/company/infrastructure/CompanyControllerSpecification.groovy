@@ -4,9 +4,12 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressRepository
+import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyDTO
+import com.cynergisuite.middleware.company.CompanyFactory
+import com.github.javafaker.Address
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
@@ -136,31 +139,29 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       exception.status == NO_CONTENT
    }
 
-   void "create a valid company" () {
+   void "create a valid company with address" () {
       given:
-      final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
-      jsonCompany.remove('id')
-      jsonCompany.name = 'HTI'
-      def clientId = new Random().nextInt(1000)
-      def datasetCode = 'tstds3'
-      jsonCompany.clientId = clientId
-      jsonCompany.datasetCode = datasetCode
+      final address = AddressTestDataLoader.single()
+      final company = CompanyFactory.stream(1, address).findFirst().orElseThrow { new Exception("Unable to create company") }
 
       when:
-      def result = post("$path", jsonCompany)
+      def result = post("$path", new CompanyDTO(company))
 
       then:
       notThrown(HttpClientResponseException)
 
       with(result) {
          id > 0
-         name == 'HTI'
-         doingBusinessAs == jsonCompany.doingBusinessAs
-         clientCode == jsonCompany.clientCode
-         clientId == clientId
-         datasetCode == 'tstds3'
-         federalTaxNumber == null
-         address == jsonCompany.address
+         name == company.name
+         doingBusinessAs == company.doingBusinessAs
+         clientCode == company.clientCode
+         clientId == company.clientId
+         datasetCode == company.datasetCode
+         federalTaxNumber == company.federalIdNumber
+         it.address.id != null
+         it.address.id > 0
+         it.address.name == address.name
+         it.address.address1 == address.address1
       }
    }
 
@@ -629,8 +630,9 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "update a company and remove it's address" () {
       given:
-      final address = addressTestDataLoaderService.single()
+      final address = AddressTestDataLoader.single() // create address without id because the companyFactoryService.single bellow will insert it
       final company = new CompanyDTO(companyFactoryService.single(address))
+      final addressId = company.address.id
       company.address = null
 
       when:
@@ -642,13 +644,14 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          it.id == company.id
          it.address == null
       }
-      addressRepository.findOne(address.id) == null
+      addressRepository.findOne(addressId) == null
    }
 
    void "update a company's address name" () {
       given:
-      final address = addressTestDataLoaderService.single()
+      final address = AddressTestDataLoader.single() // create address without id because the companyFactoryService.single bellow will insert it
       final company = new CompanyDTO(companyFactoryService.single(address))
+      final addressId = company.address.id
       company.address.name = "Test update name"
 
       when:
@@ -658,9 +661,9 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       with(result) {
          it.id == company.id
-         it.address.id == address.id
+         it.address.id == addressId
          it.address.name == "Test update name"
       }
-      addressRepository.findOne(address.id).name == "Test update name"
+      addressRepository.findOne(addressId).name == "Test update name"
    }
 }
