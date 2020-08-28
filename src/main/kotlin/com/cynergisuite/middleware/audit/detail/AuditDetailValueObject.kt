@@ -16,47 +16,47 @@ import javax.validation.constraints.Size
 @Schema(name = "AuditDetail", title = "Single item associated with an Audit", description = "Single line item that has been successfully found during the audit process")
 data class AuditDetailValueObject(
 
-        @field:Positive
+   @field:Positive
    var id: Long? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:Schema(required = true)
    var scanArea: AuditScanAreaDTO? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:NotBlank
    @field:Size(min = 1, max = 200)
    var barcode: String? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var serialNumber: String? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var productCode: String? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var altId: String? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var inventoryBrand: String? = null,
 
-        @field:NotNull
+   @field:NotNull
    @field:NotBlank
    @field:Size(min = 3, max = 100)
    var inventoryModel: String? = null,
 
-        @field:NotNull
+   @field:NotNull
    var scannedBy: EmployeeValueObject? = null,
 
-        @field:NotNull
+   @field:NotNull
    var audit: Identifiable? = null
 
 ) : Identifiable {

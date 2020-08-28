@@ -20,10 +20,10 @@ data class AuditScanAreaDTOV1(
    @field:Size(min = 3, max = 50)
    @field:Schema(description = "A localized description suitable for showing the user")
    var description: String? = null
-   ) {
+) {
    constructor(entity: AuditScanAreaEntity) :
       this(
          value = entity.name,
          description = entity.name?.toUpperCase()
       )
-   }
+}

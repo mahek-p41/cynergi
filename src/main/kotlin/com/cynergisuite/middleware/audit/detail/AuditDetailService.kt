@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject

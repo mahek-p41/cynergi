@@ -65,8 +65,8 @@ class AuditScanAreaRepository @Inject constructor(
                      AND company_id = :comp_id
                )
             """,
-            mapOf("name" to name, "comp_id" to store.myCompany().myId(), "store_number" to store.myNumber()),
-            Boolean::class.java
+         mapOf("name" to name, "comp_id" to store.myCompany().myId(), "store_number" to store.myNumber()),
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
@@ -75,11 +75,14 @@ class AuditScanAreaRepository @Inject constructor(
    }
 
    fun findOne(id: Long, company: Company): AuditScanAreaEntity? =
-      jdbc.findFirstOrNull("${selectBaseQuery()} WHERE area.id = :id", mapOf("id" to id),
-         RowMapper { rs, _ -> mapRow(rs, company) })
+      jdbc.findFirstOrNull(
+         "${selectBaseQuery()} WHERE area.id = :id", mapOf("id" to id),
+         RowMapper { rs, _ -> mapRow(rs, company) }
+      )
 
    fun findAll(user: User): List<AuditScanAreaEntity> =
-      jdbc.query("""${selectBaseQuery()}
+      jdbc.query(
+         """${selectBaseQuery()}
                     WHERE company_id = :comp_id AND store_number_sfk = :store_number
                     ORDER BY name""",
          mapOf("comp_id" to user.myCompany().myId(), "store_number" to user.myLocation().myNumber())
@@ -88,7 +91,8 @@ class AuditScanAreaRepository @Inject constructor(
    fun findAll(company: Company, storeId: Long, pageRequest: PageRequest): RepositoryPage<AuditScanAreaEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<AuditScanAreaEntity>()
-      jdbc.query("""
+      jdbc.query(
+         """
          WITH paged AS (
             ${selectBaseQuery()}
             WHERE store.id = :store_id

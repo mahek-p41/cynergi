@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableValueObject
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank

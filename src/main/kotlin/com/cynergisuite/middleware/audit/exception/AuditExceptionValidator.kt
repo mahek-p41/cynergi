@@ -1,17 +1,14 @@
 package com.cynergisuite.middleware.audit.exception
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.status.APPROVED
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
@@ -21,7 +18,6 @@ import com.cynergisuite.middleware.localization.AuditExceptionHasNotBeenApproved
 import com.cynergisuite.middleware.localization.AuditExceptionMustHaveInventoryOrBarcode
 import com.cynergisuite.middleware.localization.AuditHasBeenApprovedNoNewNotesAllowed
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
-import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
 import com.cynergisuite.middleware.localization.AuditUpdateRequiresApprovedOrNote
 import com.cynergisuite.middleware.localization.NotFound
 import javax.inject.Inject

@@ -53,7 +53,8 @@ class AuditScanAreaController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @Parameter(description = "Primary Key to lookup the Scan Area with", `in` = ParameterIn.PATH) @QueryValue("id") id: Long,
+      @Parameter(description = "Primary Key to lookup the Scan Area with", `in` = ParameterIn.PATH) @QueryValue("id")
+      id: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditScanAreaDTO {
@@ -130,7 +131,8 @@ class AuditScanAreaController @Inject constructor(
       ]
    )
    fun save(
-      @Body @Valid auditScanAreaDTO: AuditScanAreaDTO,
+      @Body @Valid
+      auditScanAreaDTO: AuditScanAreaDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditScanAreaDTO {
@@ -157,7 +159,8 @@ class AuditScanAreaController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body @Valid auditScanAreaDTO: AuditScanAreaDTO,
+      @Body @Valid
+      auditScanAreaDTO: AuditScanAreaDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditScanAreaDTO {

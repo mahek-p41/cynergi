@@ -14,7 +14,6 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDetails
-import com.cynergisuite.middleware.localization.AuditScanAreaNotFound
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
