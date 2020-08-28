@@ -29,7 +29,7 @@ class ShipViaValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, vo: ShipViaValueObject, company: Company): ShipViaEntity {
+   fun validateUpdate(id: Long, @Valid vo: ShipViaValueObject, company: Company): ShipViaEntity {
       logger.trace("Validating Update ShipVia {}", vo)
 
       val existing = shipViaRepository.findOne(id, company) ?: throw NotFoundException(id)

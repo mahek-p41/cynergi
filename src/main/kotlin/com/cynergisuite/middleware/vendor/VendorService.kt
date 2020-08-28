@@ -48,10 +48,10 @@ class VendorService @Inject constructor(
 
    @Validated
    fun update(id: Long, @Valid dto: VendorDTO, company: Company): VendorDTO {
-      val toUpdate = vendorValidator.validateUpdate(id, dto, company)
+      val (existing, toUpdate) = vendorValidator.validateUpdate(id, dto, company)
 
       return VendorDTO(
-         entity = vendorRepository.update(entity = toUpdate)
+         entity = vendorRepository.update(existing, toUpdate)
       )
    }
 }

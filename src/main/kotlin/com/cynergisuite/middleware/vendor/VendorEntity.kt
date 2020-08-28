@@ -14,8 +14,8 @@ data class VendorEntity(
    val id: Long? = null,
    val company: Company,
    val name: String, // 30 max
-   val address: AddressEntity,
-   val ourAccountNumber: Int,
+   val address: AddressEntity?,
+   val ourAccountNumber: Int?,
    val payTo: Identifiable?, // another vendor
    val freightOnboardType: FreightOnboardType,
    val paymentTerm: VendorPaymentTermEntity,
@@ -54,8 +54,8 @@ data class VendorEntity(
          id = id ?: dto.id,
          company = company,
          name = dto.name!!,
-         address = AddressEntity(dto.address!!),
-         ourAccountNumber = dto.ourAccountNumber!!,
+         address = dto.address?.let { AddressEntity(it) },
+         ourAccountNumber = dto.ourAccountNumber,
          payTo = payTo,
          freightOnboardType = freightOnboardType,
          paymentTerm = vendorPaymentTerm,

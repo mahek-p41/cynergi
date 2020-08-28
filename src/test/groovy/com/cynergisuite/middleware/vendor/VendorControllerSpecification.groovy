@@ -7,6 +7,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
+import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.error.ErrorDataTransferObject
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
@@ -22,8 +23,6 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -36,9 +35,8 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 @MicronautTest(transactional = false)
 class VendorControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor"
-   private JsonOutput jsonOutput = new JsonOutput()
-   private JsonSlurper jsonSlurper = new JsonSlurper()
 
+   @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
    @Inject FreightCalcMethodTypeRepository freightCalcMethodTypeRepository
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
@@ -218,10 +216,9 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final ex = thrown(HttpClientResponseException)
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
-      response.size() == 18
+      response.size() == 16
       response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
          new ErrorDataTransferObject("Cannot be blank", "name"),
-         new ErrorDataTransferObject("Is required", "address"),
          new ErrorDataTransferObject("Is required", "allowDropShipToCustomer"),
          new ErrorDataTransferObject("Is required", "autoSubmitPurchaseOrder"),
          new ErrorDataTransferObject("Is required", "chargeInventoryTax1"),
@@ -232,7 +229,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          new ErrorDataTransferObject("Is required", "freightCalcMethodType"),
          new ErrorDataTransferObject("Is required", "freightOnboardType"),
          new ErrorDataTransferObject("Is required", "name"),
-         new ErrorDataTransferObject("Is required", "ourAccountNumber"),
          new ErrorDataTransferObject("Is required", "paymentTerm"),
          new ErrorDataTransferObject("Is required", "returnPolicy"),
          new ErrorDataTransferObject("Is required", "separateCheck"),
@@ -349,6 +345,29 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       new VendorDTO(result) == vendor
    }
 
+   void "create valid vendor without address and our account number" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      vendor.address = null
+      vendor.ourAccountNumber = null
+
+      when:
+      def result = post(path, vendor)
+      vendor.id = result.id
+      vendor.number = result.number
+
+      then:
+      notThrown(Exception)
+      result.id > 0
+      result.address == null
+      result.ourAccountNumber == null
+
+      new VendorDTO(result) == vendor
+   }
+
    void "create valid vendor with allow drop ship to customer and auto submit purchase order set to true" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -425,15 +444,14 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
       List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
       companies.each {
          vendorGroups.addAll(vendorGroupTestDataLoaderService.stream(it).collect())
       }
-      jsonVendor.vendorGroup = new SimpleIdentifiableDTO(vendorGroups[3].id)
+      vendor.vendorGroup = new SimpleIdentifiableDTO(vendorGroups[3].id)
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -450,12 +468,11 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.remove('emailAddress')
+      vendor.autoSubmitPurchaseOrder = true
+      vendor.emailAddress = null
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -472,12 +489,11 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.emailAddress = "invalidEmail"
+      vendor.autoSubmitPurchaseOrder = true
+      vendor.emailAddress = "invalidEmail"
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -494,12 +510,11 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.remove('purchaseOrderSubmitEmailAddress')
+      vendor.autoSubmitPurchaseOrder = true
+      vendor.purchaseOrderSubmitEmailAddress = null
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -516,12 +531,11 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.purchaseOrderSubmitEmailAddress = "invalidEmail"
+      vendor.autoSubmitPurchaseOrder = true
+      vendor.purchaseOrderSubmitEmailAddress = "invalidEmail"
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -538,11 +552,10 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
-      jsonVendor.remove('allowDropShipToCustomer')
+      vendor.allowDropShipToCustomer = null
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -559,11 +572,10 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendor))
-      jsonVendor.remove('autoSubmitPurchaseOrder')
+      vendor.autoSubmitPurchaseOrder = null
 
       when:
-      post(path, jsonVendor)
+      post(path, vendor)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -577,27 +589,25 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
+      final address = addressTestDataLoaderService.single()
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final newVendorAddress = AddressTestDataLoader.single().with { new AddressDTO(it) }
-      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+      final vendor = vendorTestDataLoaderService.single(company, address, vendorPaymentTerm, shipVia)
+      final newVendorAddress = AddressTestDataLoader.single()
+      final vendorUpdate = vendorTestDataLoaderService.single(company, newVendorAddress, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
       when: "All properties are updated including address"
       vendorUpdate.id = vendor.id
-      vendorUpdate.address = newVendorAddress
+      vendorUpdate.address.id = vendor.address.myId()
       vendorUpdate.number = vendor.number
       def result = put("$path/${vendor.id}", vendorUpdate)
-      vendorUpdate.address.id = result.address?.id
 
       then: "Everything should be different except the vendor.id"
       notThrown(Exception)
       result != null
       result.id != null
       result.id == vendor.id
-      result.address.id != null
-      result.address.id > 0
-      result.address.id != vendor.address.id
+      result.address.id == vendor.address.id
       new VendorDTO(result) == vendorUpdate
    }
 
@@ -637,6 +647,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       when:
       vendorUpdate.id = vendor.id
+      vendorUpdate.address.id = vendor.getAddress().myId()
       put("$path/${vendor.id}", vendorUpdate)
 
       then:
@@ -655,13 +666,13 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.remove('emailAddress')
+      vendorUpdate.emailAddress = null
+      vendorUpdate.autoSubmitPurchaseOrder = true
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      vendorUpdate.address.id = vendor.getAddress().myId()
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -679,13 +690,13 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.emailAddress = "invalidEmail"
+      vendorUpdate.autoSubmitPurchaseOrder = true
+      vendorUpdate.emailAddress = "invalidEmail"
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      vendorUpdate.address.id = vendor.address.myId()
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -703,13 +714,13 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.remove('purchaseOrderSubmitEmailAddress')
+      vendorUpdate.autoSubmitPurchaseOrder = true
+      vendorUpdate.purchaseOrderSubmitEmailAddress = null
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      vendorUpdate.address.id = vendor.address.myId()
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -727,13 +738,13 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.autoSubmitPurchaseOrder = true
-      jsonVendor.purchaseOrderSubmitEmailAddress = "invalidEmail"
+      vendorUpdate.autoSubmitPurchaseOrder = true
+      vendorUpdate.purchaseOrderSubmitEmailAddress = "invalidEmail"
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      vendorUpdate.address.id = vendor.address.myId()
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -760,19 +771,17 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       when:
       vendorUpdate.id = vendor.id
+      newVendorAddress.id = vendor.getAddress().myId()
       vendorUpdate.address = newVendorAddress
       vendorUpdate.number = vendor.number
       def result = put("$path/${vendor.id}", vendorUpdate)
-      vendorUpdate.address.id = result.address?.id
 
       then:
       notThrown(Exception)
       result != null
       result.id != null
       result.id == vendor.id
-      result.address.id != null
-      result.address.id > 0
-      result.address.id != vendor.address.id
+      result.address.id == vendor.address.id
       result.allowDropShipToCustomer == !existingAllowDropShipToCustomer
       result.autoSubmitPurchaseOrder == !existingAutoSubmitPurchaseOrder
       new VendorDTO(result) == vendorUpdate
@@ -785,12 +794,12 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.remove('allowDropShipToCustomer')
+      vendorUpdate.allowDropShipToCustomer = null
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      vendorUpdate.id = vendor.getAddress().myId()
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -808,12 +817,12 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      def jsonVendor = jsonSlurper.parseText(jsonOutput.toJson(vendorUpdate))
-      jsonVendor.remove('autoSubmitPurchaseOrder')
+      vendorUpdate.autoSubmitPurchaseOrder = null
 
       when:
-      jsonVendor.id = vendor.id
-      put("$path/${vendor.id}", jsonVendor)
+      vendorUpdate.id = vendor.id
+      vendorUpdate.id = vendor.getAddress().myId()
+      put("$path/${vendor.id}", vendorUpdate)
 
       then:
       final exception = thrown(HttpClientResponseException)

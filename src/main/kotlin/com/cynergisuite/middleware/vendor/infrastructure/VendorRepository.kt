@@ -161,9 +161,9 @@ class VendorRepository @Inject constructor(
             JOIN company comp                            ON v.company_id = comp.id
             JOIN freight_on_board_type_domain onboard    ON onboard.id = v.freight_on_board_type_id
             JOIN freight_calc_method_type_domain method  ON method.id = v.freight_calc_method_type_id
-            JOIN address                                 ON address.id = v.address_id
             JOIN vendor_payment_term vpt                 ON vpt.id = v.payment_terms_id
             JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id
+            LEFT OUTER JOIN address                      ON address.id = v.address_id
             LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.group_id
       """
 
@@ -257,7 +257,7 @@ class VendorRepository @Inject constructor(
    fun insert(entity: VendorEntity): VendorEntity {
       logger.debug("Inserting vendor {}", entity)
 
-      val address = addressRepository.insert(entity.address)
+      val address = entity.address?.let { addressRepository.insert(it) }
 
       return jdbc.insertReturning(
          """
@@ -339,7 +339,7 @@ class VendorRepository @Inject constructor(
          mapOf(
             "company_id" to entity.company.myId(),
             "name" to entity.name,
-            "address_id" to address.id,
+            "address_id" to address?.id,
             "our_account_number" to entity.ourAccountNumber,
             "pay_to_id" to entity.payTo?.myId(),
             "freight_on_board_type_id" to entity.freightOnboardType.id,
@@ -377,17 +377,27 @@ class VendorRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: VendorEntity): VendorEntity {
-      logger.debug("Updating Vendor {}", entity)
+   fun update(existingVendor: VendorEntity, toUpdate: VendorEntity): VendorEntity {
+      logger.debug("Updating Vendor {}", toUpdate)
+      var addressToDelete: AddressEntity? = null
 
-      val address = addressRepository.upsert(entity.address)
+      val vendorAddress = if (existingVendor.address?.id != null && toUpdate.address == null) {
+         addressToDelete = existingVendor.address
 
-      return jdbc.updateReturning(
+         null
+      } else if (toUpdate.address != null) {
+         addressRepository.upsert(toUpdate.address)
+      } else {
+         null
+      }
+
+      val updatedVendor = jdbc.updateReturning(
          """
          UPDATE vendor
          SET
             company_id = :companyId,
             name = :name,
+            address_id = :addressId,
             our_account_number = :ourAccountNumber,
             pay_to_id = :payTo,
             freight_on_board_type_id = :freightOnboardType,
@@ -424,43 +434,48 @@ class VendorRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "id" to entity.id,
-            "companyId" to entity.company.myId(),
-            "name" to entity.name,
-            "ourAccountNumber" to entity.ourAccountNumber,
-            "payTo" to entity.payTo?.myId(),
-            "freightOnboardType" to entity.freightOnboardType.id,
-            "paymentTerm" to entity.paymentTerm.id,
-            "floatDays" to entity.floatDays,
-            "normalDays" to entity.normalDays,
-            "returnPolicy" to entity.returnPolicy,
-            "shipVia" to entity.shipVia.id,
-            "vendorGroup" to entity.vendorGroup?.id,
-            "minimumQuantity" to entity.minimumQuantity,
-            "minimumAmount" to entity.minimumAmount,
-            "freeShipQuantity" to entity.freeShipQuantity,
-            "freeShipAmount" to entity.freeShipAmount,
-            "vendor1099" to entity.vendor1099,
-            "federalIdNumber" to entity.federalIdNumber,
-            "salesRepName" to entity.salesRepresentativeName,
-            "salesRepFax" to entity.salesRepresentativeFax,
-            "separateCheck" to entity.separateCheck,
-            "bumpPercent" to entity.bumpPercent,
-            "freightMethodType" to entity.freightCalcMethodType.id,
-            "freightPercent" to entity.freightPercent,
-            "freightAmount" to entity.freightAmount,
-            "chargeInvTax1" to entity.chargeInventoryTax1,
-            "chargeInvTax2" to entity.chargeInventoryTax2,
-            "chargeInvTax3" to entity.chargeInventoryTax3,
-            "chargeInvTax4" to entity.chargeInventoryTax4,
-            "federalIdNumberVerification" to entity.federalIdNumberVerification,
-            "emailAddress" to entity.emailAddress,
-            "purchase_order_submit_email_address" to entity.purchaseOrderSubmitEmailAddress,
-            "allow_drop_ship_to_customer" to entity.allowDropShipToCustomer,
-            "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder
+            "id" to toUpdate.id,
+            "companyId" to toUpdate.company.myId(),
+            "name" to toUpdate.name,
+            "addressId" to vendorAddress?.id,
+            "ourAccountNumber" to toUpdate.ourAccountNumber,
+            "payTo" to toUpdate.payTo?.myId(),
+            "freightOnboardType" to toUpdate.freightOnboardType.id,
+            "paymentTerm" to toUpdate.paymentTerm.id,
+            "floatDays" to toUpdate.floatDays,
+            "normalDays" to toUpdate.normalDays,
+            "returnPolicy" to toUpdate.returnPolicy,
+            "shipVia" to toUpdate.shipVia.id,
+            "vendorGroup" to toUpdate.vendorGroup?.id,
+            "minimumQuantity" to toUpdate.minimumQuantity,
+            "minimumAmount" to toUpdate.minimumAmount,
+            "freeShipQuantity" to toUpdate.freeShipQuantity,
+            "freeShipAmount" to toUpdate.freeShipAmount,
+            "vendor1099" to toUpdate.vendor1099,
+            "federalIdNumber" to toUpdate.federalIdNumber,
+            "salesRepName" to toUpdate.salesRepresentativeName,
+            "salesRepFax" to toUpdate.salesRepresentativeFax,
+            "separateCheck" to toUpdate.separateCheck,
+            "bumpPercent" to toUpdate.bumpPercent,
+            "freightMethodType" to toUpdate.freightCalcMethodType.id,
+            "freightPercent" to toUpdate.freightPercent,
+            "freightAmount" to toUpdate.freightAmount,
+            "chargeInvTax1" to toUpdate.chargeInventoryTax1,
+            "chargeInvTax2" to toUpdate.chargeInventoryTax2,
+            "chargeInvTax3" to toUpdate.chargeInventoryTax3,
+            "chargeInvTax4" to toUpdate.chargeInventoryTax4,
+            "federalIdNumberVerification" to toUpdate.federalIdNumberVerification,
+            "emailAddress" to toUpdate.emailAddress,
+            "purchase_order_submit_email_address" to toUpdate.purchaseOrderSubmitEmailAddress,
+            "allow_drop_ship_to_customer" to toUpdate.allowDropShipToCustomer,
+            "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder
          ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity.company, address, entity.freightOnboardType, entity.paymentTerm, entity.shipVia, entity.vendorGroup, entity.freightCalcMethodType) }
+         RowMapper { rs, _ -> mapRowUpsert(rs, toUpdate.company, vendorAddress, toUpdate.freightOnboardType, toUpdate.paymentTerm, toUpdate.shipVia, toUpdate.vendorGroup, toUpdate.freightCalcMethodType) }
       )
+
+      addressToDelete?.id?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
+
+      return updatedVendor
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String? = "v_"): VendorEntity {
@@ -470,7 +485,7 @@ class VendorRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          company = company,
          name = rs.getString("${columnPrefix}name"),
-         address = addressRepository.mapAddress(rs, "address_"),
+         address = addressRepository.mapAddressOrNull(rs, "address_"),
          ourAccountNumber = rs.getInt("${columnPrefix}our_account_number"),
          payTo = if (payToId != null) SimpleIdentifiableEntity(payToId) else null,
          freightOnboardType = mapOnboard(rs, "onboard_"),
@@ -506,7 +521,7 @@ class VendorRepository @Inject constructor(
       )
    }
 
-   private fun mapRowUpsert(rs: ResultSet, company: Company, address: AddressEntity, freightOnboardType: FreightOnboardType, paymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, freightCalcMethodType: FreightCalcMethodType): VendorEntity {
+   private fun mapRowUpsert(rs: ResultSet, company: Company, address: AddressEntity?, freightOnboardType: FreightOnboardType, paymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, freightCalcMethodType: FreightCalcMethodType): VendorEntity {
       val payToId = rs.getLongOrNull("pay_to_id")
 
       return VendorEntity(
@@ -514,7 +529,7 @@ class VendorRepository @Inject constructor(
          company = company,
          name = rs.getString("name"),
          address = address, // This needs to have the newly inserted address passed in
-         ourAccountNumber = rs.getInt("our_account_number"),
+         ourAccountNumber = rs.getIntOrNull("our_account_number"),
          payTo = if (payToId != null) SimpleIdentifiableEntity(payToId) else null,
          freightOnboardType = freightOnboardType,
          paymentTerm = paymentTerm,
