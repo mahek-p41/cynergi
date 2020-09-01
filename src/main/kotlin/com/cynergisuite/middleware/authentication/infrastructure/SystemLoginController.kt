@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType.APPLICATION_JSON
+import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Consumes
 import io.micronaut.http.annotation.Controller
@@ -47,7 +47,7 @@ class SystemLoginController(
       @Valid @Body
       loginCredentials: LoginCredentials,
       request: HttpRequest<*>
-   ): Single<HttpResponse<*>> {
+   ): Single<MutableHttpResponse<*>> {
       logger.debug("Store login attempted with {}", loginCredentials)
 
       return loginController.login(loginCredentials, request)

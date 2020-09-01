@@ -34,6 +34,7 @@ object Application {
 
       val logger: Logger = LoggerFactory.getLogger(Application::class.java)
       val mn = Micronaut.build()
+         .eagerInitSingletons(true)
          .args(*args)
          .packages("com.cynergisuite.middleware")
          .mainClass(Application.javaClass)

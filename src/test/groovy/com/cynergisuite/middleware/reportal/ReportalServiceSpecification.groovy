@@ -5,22 +5,19 @@ import com.cynergisuite.middleware.store.StoreFactory
 import com.cynergisuite.middleware.threading.CynergiExecutor
 import kotlin.Unit
 import kotlin.jvm.functions.Function0
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
 
 class ReportalServiceSpecification extends Specification {
-   @Rule TemporaryFolder temporaryFolder
 
    void "store reportal doc generation" () {
       setup:
       final company = CompanyFactory.tstds1()
       final store = StoreFactory.store(3, company)
       final syncLatch = new CountDownLatch(1)
-      final reportalDir = temporaryFolder.newFolder()
-      final storeDir = new File(reportalDir, "store${store.number}")
+      final reportalDir = File.createTempDir()
+      final storeDir = new File(reportalDir.getAbsolutePath(), "store${store.number}")
       final cynergiExecutor = new CynergiExecutor(1)
       final executor = Spy(cynergiExecutor)
       executor.execute(_) >> { Function0<Unit> job ->

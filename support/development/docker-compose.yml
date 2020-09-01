@@ -112,4 +112,4 @@ services:
          - ../../build/libs:/tmp/cynergi-middleware
       stdin_open: true
       tty: true
-      command: ["java", "-Dmicronaut.environments=integration", "-Dpostgres.reactive.client.host=cynergitestdb", "-jar", "/tmp/cynergi-middleware/cynergi-middleware-r4-all.jar"]
+      command: ["java", "-Dmicronaut.environments=integration", "-Dvertx.pg.client.host=cynergitestdb", "-jar", "/tmp/cynergi-middleware/cynergi-middleware-r4-all.jar"]
