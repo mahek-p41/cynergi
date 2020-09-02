@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
@@ -23,13 +23,13 @@ class AuditExceptionService @Inject constructor(
    private val localizationService: LocalizationService
 ) {
    fun fetchById(id: Long, company: Company, locale: Locale): AuditExceptionValueObject? =
-      auditExceptionRepository.findOne(id = id, company = company)?.let { transformEntity(it, locale) }
+      auditExceptionRepository.findOne(id = id, company = company)?.let { transformEntity(it) }
 
    fun fetchAll(auditId: Long, company: Company, pageRequest: PageRequest, locale: Locale): Page<AuditExceptionValueObject> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
       val found = auditExceptionRepository.findAll(audit, company, pageRequest)
 
-      return found.toPage { transformEntity(it, locale) }
+      return found.toPage { transformEntity(it) }
    }
 
    fun exists(id: Long): Boolean =
@@ -39,22 +39,17 @@ class AuditExceptionService @Inject constructor(
    fun create(auditId: Long, @Valid vo: AuditExceptionCreateValueObject, scannedBy: User, locale: Locale): AuditExceptionValueObject {
       val auditException = auditExceptionValidator.validateCreate(auditId, vo, scannedBy)
 
-      return transformEntity(auditExceptionRepository.insert(auditException), locale)
+      return transformEntity(auditExceptionRepository.insert(auditException))
    }
 
    @Validated
    fun update(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid enteredBy: User, locale: Locale): AuditExceptionValueObject {
       val auditException = auditExceptionValidator.validateUpdate(auditId, vo, enteredBy)
 
-      return transformEntity(
-         auditExceptionRepository.update(auditException),
-         locale
-      )
+      return transformEntity(auditExceptionRepository.update(auditException))
    }
 
-   private fun transformEntity(auditException: AuditExceptionEntity, locale: Locale): AuditExceptionValueObject {
-      val scanArea = auditException.scanArea?.localizeMyDescription(locale, localizationService)?.let { AuditScanAreaValueObject(auditException.scanArea, it) }
-
-      return AuditExceptionValueObject(auditException, scanArea)
+   private fun transformEntity(auditException: AuditExceptionEntity): AuditExceptionValueObject {
+      return AuditExceptionValueObject(auditException, AuditScanAreaDTO(auditException.scanArea!!))
    }
 }

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -21,7 +21,7 @@ data class AuditDetailValueObject(
 
    @field:NotNull
    @field:Schema(required = true)
-   var scanArea: AuditScanAreaValueObject? = null,
+   var scanArea: AuditScanAreaDTO? = null,
 
    @field:NotNull
    @field:NotBlank
@@ -61,14 +61,14 @@ data class AuditDetailValueObject(
 
 ) : Identifiable {
 
-   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, auditScanArea: AuditScanAreaDTO) :
       this(
          entity = entity,
          audit = SimpleIdentifiableDTO(entity.audit),
          auditScanArea = auditScanArea
       )
 
-   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaValueObject) :
+   constructor(entity: AuditDetailEntity, audit: Identifiable? = null, auditScanArea: AuditScanAreaDTO) :
       this(
          id = entity.id,
          scanArea = auditScanArea,

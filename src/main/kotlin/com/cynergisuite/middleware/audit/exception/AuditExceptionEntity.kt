@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
@@ -12,7 +12,7 @@ data class AuditExceptionEntity(
    val id: Long? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
-   val scanArea: AuditScanArea?,
+   val scanArea: AuditScanAreaEntity?,
    val barcode: String,
    val productCode: String?,
    val altId: String?,
@@ -28,7 +28,7 @@ data class AuditExceptionEntity(
    val audit: Identifiable
 ) : Identifiable {
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -43,7 +43,7 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, barcode: String, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: Long, barcode: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = barcode,

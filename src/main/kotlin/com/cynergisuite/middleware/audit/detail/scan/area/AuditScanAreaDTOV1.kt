@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AuditScanArea", title = "Area where an item was scanned", description = "Possible location within a store where an item was scanned as part of an audit")
-data class AuditScanAreaValueObject(
+@Schema(name = "AuditScanAreaV1", title = "Area where an item was scanned", description = "Possible location within a store where an item was scanned as part of an audit")
+data class AuditScanAreaDTOV1(
 
    @field:NotNull
    @field:Size(min = 3, max = 15)
@@ -18,18 +18,10 @@ data class AuditScanAreaValueObject(
    @field:Size(min = 3, max = 50)
    @field:Schema(name = "description", description = "A localized description suitable for showing the user")
    var description: String? = null
-
 ) {
-
-   constructor(entity: AuditScanArea) :
+   constructor(entity: AuditScanAreaEntity) :
       this(
-         entity = entity,
-         localizedDescription = entity.description
-      )
-
-   constructor(entity: AuditScanArea, localizedDescription: String) :
-      this(
-         value = entity.value,
-         description = localizedDescription
+         value = entity.name,
+         description = entity.name?.toUpperCase()
       )
 }

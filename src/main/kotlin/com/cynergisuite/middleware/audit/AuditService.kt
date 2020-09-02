@@ -385,7 +385,7 @@ class AuditService @Inject constructor(
       auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity, even: Boolean ->
          table.defaultCell.backgroundColor = if (even) evenColor else oddColor
 
-         table.addCell(Phrase(exception.scanArea?.myDescription() ?: EMPTY, rowFont))
+         table.addCell(Phrase(exception.scanArea?.name ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.inventoryModel ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.barcode, rowFont))
          table.addCell(Phrase(exception.altId ?: EMPTY, rowFont))

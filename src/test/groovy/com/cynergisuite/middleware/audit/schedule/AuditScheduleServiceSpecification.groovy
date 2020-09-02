@@ -45,7 +45,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.audits[0].actions.size() == 1
       result.audits[0].auditNumber > 0
       result.audits[0].currentStatus.value == "CREATED"
-      result.audits[0].store.number == store.number
+      result.audits[0].store.storeNumber == store.number
    }
 
    void "two store test"() {
@@ -69,7 +69,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.audits[0].actions.size() == 1
       result.audits[0].auditNumber > 0
       result.audits[0].currentStatus.value == "CREATED"
-      result.audits[0].store.number == store1.number
+      result.audits[0].store.storeNumber == store1.number
 
       result.notifications[1].message == schedule.description
       result.notifications[1].sendingEmployee == employee.number.toString()
@@ -77,7 +77,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.audits[1].actions.size() == 1
       result.audits[1].auditNumber > 0
       result.audits[1].currentStatus.value == "CREATED"
-      result.audits[1].store.number == store3.number
+      result.audits[1].store.storeNumber == store3.number
    }
 
    void "one store with already CREATED audit" () {

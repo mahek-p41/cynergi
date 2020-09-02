@@ -13,7 +13,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
@@ -27,7 +27,7 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import io.micronaut.spring.tx.annotation.Transactional
+import com.cynergisuite.middleware.store.StoreEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,6 +36,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditExceptionRepository @Inject constructor(
@@ -73,9 +74,10 @@ class AuditExceptionRepository @Inject constructor(
          auditException.approved_by                                 AS auditException_approved_by,
          auditException.lookup_key                                  AS auditException_lookup_key,
          auditScanArea.id                                           AS auditScanArea_id,
-         auditScanArea.value                                        AS auditScanArea_value,
-         auditScanArea.description                                  AS auditScanArea_description,
-         auditScanArea.localization_code                            AS auditScanArea_localization_code,
+         auditScanArea.name                                         AS auditScanArea_name,
+         store.id                                                   AS store_id,
+         store.number                                               AS store_number,
+         store.name                                                 AS store_name,
          comp.id                                                    AS comp_id,
          comp.uu_row_id                                             AS comp_uu_row_id,
          comp.time_created                                          AS comp_time_created,
@@ -153,10 +155,11 @@ class AuditExceptionRepository @Inject constructor(
          auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
          auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
       FROM audit_exception auditException
-           JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+           JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
            JOIN audit a ON auditException.audit_id = a.id
            JOIN company comp ON a.company_id = comp.id
            JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+           JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
            LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
            LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
@@ -172,7 +175,7 @@ class AuditExceptionRepository @Inject constructor(
          val address = addressRepository.mapAddressOrNull(rs, "address_")
          val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
          val approvedBy = mapEmployee(rs, address, "approvedBy_")
-         val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "auditScanArea_")
+         val scanArea = auditScanAreaRepository.mapRow(rs, company, "auditScanArea_")
          val exception = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
 
          do {
@@ -227,9 +230,10 @@ class AuditExceptionRepository @Inject constructor(
                auditException.approved_by                  AS auditException_approved_by,
                auditException.lookup_key                   AS auditException_lookup_key,
                auditScanArea.id                            AS auditScanArea_id,
-               auditScanArea.value                         AS auditScanArea_value,
-               auditScanArea.description                   AS auditScanArea_description,
-               auditScanArea.localization_code             AS auditScanArea_localization_code,
+               auditScanArea.name                          AS auditScanArea_name,
+               store.id                                    AS store_id,
+               store.number                                AS store_number,
+               store.name                                  AS store_name,
                comp.id                                     AS comp_id,
                comp.uu_row_id                              AS comp_uu_row_id,
                comp.time_created                           AS comp_time_created,
@@ -287,10 +291,11 @@ class AuditExceptionRepository @Inject constructor(
                approvedBy.store_name                       AS approvedBy_store_name,
                count(*) OVER () AS total_elements
             FROM audit_exception auditException
-               JOIN audit_scan_area_type_domain AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+               JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
                JOIN audit a ON auditException.audit_id = a.id
                JOIN company comp ON a.company_id = comp.id
                JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+               JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
                LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
             WHERE auditException.audit_id = :audit_id AND comp.id = :comp_id
             ORDER BY auditException_${page.snakeSortBy()} ${page.sortDirection()}
@@ -337,7 +342,7 @@ class AuditExceptionRepository @Inject constructor(
             val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
                val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
                val approvedBy = mapEmployee(rs, address, "approvedBy_")
-               val scanArea = auditScanAreaRepository.mapPrefixedRowOrNull(rs, "auditScanArea_")
+               val scanArea = auditScanAreaRepository.mapRow(rs, company, "auditScanArea_")
 
                currentId = tempId
                currentParentEntity = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
@@ -463,7 +468,7 @@ class AuditExceptionRepository @Inject constructor(
       return entity.copy(notes = notes)
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea?, scannedBy: EmployeeEntity, approvedBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String): AuditExceptionEntity =
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, approvedBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String): AuditExceptionEntity =
       AuditExceptionEntity(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

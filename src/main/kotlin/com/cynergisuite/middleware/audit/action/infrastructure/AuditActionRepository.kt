@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusReposi
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import io.micronaut.spring.tx.annotation.Transactional
 import org.eclipse.collections.api.multimap.Multimap
 import org.eclipse.collections.impl.factory.Multimaps
 import org.slf4j.Logger
@@ -19,6 +18,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditActionRepository @Inject constructor(

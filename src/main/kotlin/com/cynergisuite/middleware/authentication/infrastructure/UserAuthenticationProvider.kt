@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.location.Location
+import io.micronaut.http.HttpRequest
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
 import io.micronaut.security.authentication.AuthenticationProvider
@@ -25,7 +26,7 @@ class UserAuthenticationProvider @Inject constructor(
 ) : AuthenticationProvider {
    private val logger: Logger = LoggerFactory.getLogger(UserAuthenticationProvider::class.java)
 
-   override fun authenticate(authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
+   override fun authenticate(httpRequest: HttpRequest<*>?, authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
       logger.info("Authentication requested for user {}", authenticationRequest?.identity)
 
       val userNumber = (authenticationRequest?.identity as String?)?.toInt()

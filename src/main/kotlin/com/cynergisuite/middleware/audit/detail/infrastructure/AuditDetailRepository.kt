@@ -10,12 +10,11 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanArea
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,6 +23,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditDetailRepository @Inject constructor(
@@ -89,15 +89,17 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.dept_id                         AS dept_id,
             scannedBy.dept_code                       AS dept_code,
             scannedBy.dept_description                AS dept_description,
-            asatd.id                                  AS asatd_id,
-            asatd.value                               AS asatd_value,
-            asatd.description                         AS asatd_description,
-            asatd.localization_code                   AS asatd_localization_code
+            scanArea.id                               AS scanArea_id,
+            scanArea.name                             AS scanArea_name,
+            store.id                                  AS scanAreaStore_id,
+            store.number                              AS scanAreaStore_number,
+            store.name                                AS scanAreaStore_name
          FROM audit_detail auditDetail
               JOIN audit a ON auditDetail.audit_id = a.id
               JOIN company comp ON a.company_id = comp.id
               JOIN employees scannedBy ON auditDetail.scanned_by = scannedBy.emp_number AND scannedBy.comp_id = comp.id
-              JOIN audit_scan_area_type_domain asatd ON auditDetail.scan_area_id = asatd.id
+              JOIN audit_scan_area scanArea ON auditDetail.scan_area_id = scanArea.id
+              JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND scanArea.store_number_sfk = store.number
       """
    }
 
@@ -108,7 +110,7 @@ class AuditDetailRepository @Inject constructor(
          query, params,
          RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
-            val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
+            val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
             mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_")
          }
@@ -140,7 +142,7 @@ class AuditDetailRepository @Inject constructor(
 
       jdbc.query(query, params) { rs ->
          val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
-         val auditScanArea = auditScanAreaRepository.mapPrefixedRow(rs, "asatd_")
+         val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
          resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_"))
 
@@ -221,7 +223,7 @@ class AuditDetailRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanArea, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
+   private fun mapRow(rs: ResultSet, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
       return AuditDetailEntity(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

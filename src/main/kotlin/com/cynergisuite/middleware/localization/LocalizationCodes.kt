@@ -26,6 +26,11 @@ open class LocalizationCodeImpl(
 
 abstract class Validation(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
 class NotNull(notNullProperty: String) : Validation("javax.validation.constraints.NotNull.message", arrayOf(notNullProperty))
+class Size : Validation("javax.validation.constraints.Size.message", emptyArray())
+class Positive : Validation("javax.validation.constraints.Positive.message", emptyArray())
+class Min : Validation("javax.validation.constraints.Min.message", emptyArray())
+class Max : Validation("javax.validation.constraints.Max.message", emptyArray())
+class Pattern : Validation("javax.validation.constraints.Pattern.message", emptyArray())
 
 abstract class Cynergi(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
 class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", arrayOf(duplicateValue))
@@ -71,3 +76,4 @@ class AccessDeniedCredentialsDoNotMatch(user: String) : SystemCode("system.acces
 class AccessDeniedStore(user: String) : SystemCode("system.access.denied.store", arrayOf(user))
 class Unknown : SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String) : SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
+class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?) : SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))

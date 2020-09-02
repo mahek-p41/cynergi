@@ -13,7 +13,7 @@ import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
@@ -119,7 +119,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
-      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit).toList()
+      final storeroom = auditScanAreaFactoryService.storeroom(store, company)
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, storeroom).toList()
 
       when:
       def result = get("$path/${savedAudit.id}")
@@ -153,8 +154,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final scanningEmployee = employeeFactoryService.single(store)
       final savedAudit = auditFactoryService.single(store)
-      final exceptionsWithoutNotes = auditExceptionFactoryService.stream(19, savedAudit).toList()
-      final exceptionWithNotes = auditExceptionFactoryService.single(savedAudit, scanningEmployee, false)
+      final storeroom = auditScanAreaFactoryService.storeroom(store, company)
+      final exceptionsWithoutNotes = auditExceptionFactoryService.stream(19, savedAudit, storeroom).toList()
+      final exceptionWithNotes = auditExceptionFactoryService.single(savedAudit, storeroom, scanningEmployee, false)
       final exceptionNotes = auditExceptionNoteFactoryService.stream(2, exceptionWithNotes, scanningEmployee).toList()
 
       when:
@@ -186,7 +188,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final savedAudit = auditFactoryService.single(store)
-      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit).toList()
+      final storeroom = auditScanAreaFactoryService.storeroom(store, company)
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom).toList()
 
       when:
       def result = get("$path/${savedAudit.id}")
@@ -206,8 +209,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final savedAudit = auditFactoryService.single(store)
-      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit).toList()
-      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit).toList()
+      final storeroom = auditScanAreaFactoryService.storeroom(store, company)
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom).toList()
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, storeroom).toList()
 
       when:
       def result = get("$path/${savedAudit.id}")
@@ -515,7 +519,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeNumbers = [storeOne.myId()]
       final scannedBy = employeeFactoryService.single(storeOne)
       final singleAudit = auditFactoryService.single(storeOne, scannedBy)
-      final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, scannedBy, false)
+      final warehouse = auditScanAreaFactoryService.warehouse(storeOne, company)
+      final singleAuditExceptionWithNote = auditExceptionFactoryService.single(singleAudit, warehouse, scannedBy, false)
       final singleNote = auditExceptionNoteFactoryService.single(singleAuditExceptionWithNote, scannedBy)
       final fiveAuditsStoreOne = auditFactoryService.stream(5, storeOne).collect { new AuditValueObject(it, locale, localizationService) }
 
@@ -623,23 +628,26 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.store(3, company)
       final storeOneEmployee = employeeFactoryService.single(storeOne)
       final storeThreeEmployee = employeeFactoryService.single(storeThree)
-      final warehouse = auditScanAreaFactoryService.warehouse()
-      final showroom = auditScanAreaFactoryService.showroom()
-      final storeroom = auditScanAreaFactoryService.storeroom()
+      final storeOneWarehouse = auditScanAreaFactoryService.warehouse(storeOne, company)
+      final storeOneShowroom = auditScanAreaFactoryService.showroom(storeOne, company)
+      final storeOneStoreroom = auditScanAreaFactoryService.storeroom(storeOne, company)
+      final storeThreeWarehouse = auditScanAreaFactoryService.warehouse(storeThree, company)
+      final storeThreeShowroom = auditScanAreaFactoryService.showroom(storeThree, company)
+      final storeThreeStoreroom = auditScanAreaFactoryService.storeroom(storeThree, company)
 
       // setup store one open audit
       final openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee)
-      auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, warehouse)
-      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, showroom)
-      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeroom)
-      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneEmployee)
+      auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, storeOneWarehouse)
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeOneStoreroom)
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeOneShowroom)
+      auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneWarehouse, storeOneEmployee)
 
       // setup store three open audit
       final openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
-      auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, warehouse)
-      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, showroom)
-      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeroom)
-      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeEmployee)
+      auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, storeThreeWarehouse)
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeThreeShowroom)
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeThreeStoreroom)
+      auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeShowroom, storeThreeEmployee)
 
       // setup store one canceled audit
       auditFactoryService.single(storeOne, storeOneEmployee, [AuditStatusFactory.created(), AuditStatusFactory.canceled()] as Set)
@@ -847,10 +855,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audits and verify audit numbers are sequential" () {
       when:
-      def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 3])]))
-      post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 1])]))
+      def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 3])]))
+      post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 1])]))
       put(path, new AuditUpdateValueObject([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
-      def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 3])]))
+      def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 3])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -906,7 +914,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "create new audit with invalid store" () {
       when:
-      post(path, new AuditCreateValueObject([store:  new StoreDTO([number: 13])]))
+      post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 13])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -1086,7 +1094,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "completeOrCancel.audit.id"
+      response[0].path == "id"
       response[0].message == "Is required"
    }
 
@@ -1129,7 +1137,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "process audit from CREATED to IN-PROGRESS finally to COMPLETED" () {
       when:
-      def openedResult = post(path, new AuditCreateValueObject([store: new StoreDTO(number: 3)]))
+      def openedResult = post(path, new AuditCreateValueObject([store: new StoreDTO(storeNumber: 3)]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1243,7 +1251,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final storeThreeStoreroom = auditScanAreaFactoryService.storeroom(store, company)
+      final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, storeThreeStoreroom, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
       def result = put("$path/approve", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'APPROVED'])]))
@@ -1320,7 +1329,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(company)
       final store = storeFactoryService.store(1, company)
       final auditOne = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaValueObject(it.scanArea)) }.toList()
+      final storeStoreroom = auditScanAreaFactoryService.storeroom(store, company)
+      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, storeStoreroom, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
       put("$path/approve", new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "APPROVED"])]))
@@ -1343,7 +1353,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, false).toList()
+      final storeStoreroom = auditScanAreaFactoryService.storeroom(store, company)
+      final auditExceptions = auditExceptionFactoryService.stream(9, audit, storeStoreroom, employee, false).toList()
 
       when:
       def result = put("$path/approve/exceptions", new SimpleIdentifiableDTO(audit.myId()))
@@ -1360,7 +1371,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
-      final auditExceptions = auditExceptionFactoryService.stream(9, audit, employee, true).toList()
+      final storeStoreroom = auditScanAreaFactoryService.storeroom(store, company)
+      final auditExceptions = auditExceptionFactoryService.stream(9, audit, storeStoreroom, employee, true).toList()
 
       when:
       def result = put("$path/approve/exceptions", new SimpleIdentifiableDTO(audit.myId()))
