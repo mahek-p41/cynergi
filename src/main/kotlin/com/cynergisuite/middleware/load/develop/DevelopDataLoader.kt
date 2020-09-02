@@ -115,9 +115,9 @@ class DevelopDataLoader @Inject constructor(
       val store1Warehouse = auditScanAreaFactoryService.warehouse(corrtoStore1, corptp)
       val store1Showroom = auditScanAreaFactoryService.showroom(corrtoStore1, corptp)
       val store1Storeroom = auditScanAreaFactoryService.storeroom(corrtoStore1, corptp)
-      val store3Warehouse = auditScanAreaFactoryService.warehouse(corrtoStore1, corptp)
-      val store3Showroom = auditScanAreaFactoryService.showroom(corrtoStore1, corptp)
-      val store3Storeroom = auditScanAreaFactoryService.storeroom(corrtoStore1, corptp)
+      val store3Warehouse = auditScanAreaFactoryService.warehouse(corrtoStore3, corptp)
+      val store3Showroom = auditScanAreaFactoryService.showroom(corrtoStore3, corptp)
+      val store3Storeroom = auditScanAreaFactoryService.storeroom(corrtoStore3, corptp)
 
       // setup store one completed audit
       val completedStore1Audit = auditFactoryService.single(corrtoStore1StoreManager, statusesIn = setOf(AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()))
