@@ -13,7 +13,6 @@ import com.cynergisuite.middleware.localization.AccessDenied
 import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
 import com.cynergisuite.middleware.localization.AccessDeniedStore
 import com.cynergisuite.middleware.localization.ConversionError
-import com.cynergisuite.middleware.localization.DataAccessError
 import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
@@ -43,7 +42,6 @@ import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.dao.DataAccessException
 import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject

@@ -15,7 +15,6 @@ import com.cynergisuite.middleware.department.infrastructure.DepartmentRepositor
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.store.Store
-import javax.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -24,6 +23,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 /**
  * The reason to have this is to fic the circular dependency issue

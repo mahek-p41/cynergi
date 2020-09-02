@@ -5,7 +5,6 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getDoubleOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import javax.transaction.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AddressRepository @Inject constructor(

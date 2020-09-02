@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.area.AreaType
 import com.cynergisuite.middleware.area.MenuType
 import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.Company
-import javax.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -14,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AreaRepository @Inject constructor(
