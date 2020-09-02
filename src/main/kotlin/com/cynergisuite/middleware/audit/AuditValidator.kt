@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
@@ -147,7 +147,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateApproved(audit: SimpleIdentifiableDataTransferObject, company: Company, user: User, locale: Locale): AuditEntity {
+   fun validateApproved(audit: SimpleIdentifiableDTO, company: Company, user: User, locale: Locale): AuditEntity {
       val existingAudit = auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
 
       doValidation { errors ->
@@ -171,7 +171,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   fun validateApproveAll(audit: SimpleIdentifiableDataTransferObject, company: Company): AuditEntity {
+   fun validateApproveAll(audit: SimpleIdentifiableDTO, company: Company): AuditEntity {
       return auditRepository.findOne(audit.myId()!!, company) ?: throw NotFoundException(audit.myId()!!)
    }
 }

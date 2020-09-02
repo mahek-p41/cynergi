@@ -11,7 +11,6 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import io.micronaut.spring.tx.annotation.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
@@ -21,6 +20,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditScanAreaRepository @Inject constructor(
@@ -120,6 +120,7 @@ class AuditScanAreaRepository @Inject constructor(
       )
    }
 
+   @Transactional
    fun insert(entity: AuditScanAreaEntity): AuditScanAreaEntity {
       logger.debug("Inserting audit scan area {}", entity)
       return jdbc.insertReturning(

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -92,7 +91,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 20
-      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect {
+      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}.collect {
          new AuditDetailValueObject(it)
       } == firstFiveDetails
 
@@ -104,7 +103,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.each {it['audit'] = new SimpleIdentifiableValueObject(it.audit.id)}.collect {
+      pageTwoResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}.collect {
          new AuditDetailValueObject(it)
       } == secondFiveDetails
 
@@ -140,7 +139,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements != null
       result.elements.size() == 10
       result.totalElements == 12
-      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
+      result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
    }
 
    //Passes
@@ -168,7 +167,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == 10
       result.totalElements == 21
       result.totalPages == 3
-      result.elements.each{ it['audit'] = new SimpleIdentifiableValueObject(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
+      result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
    }
 
    //Passes
@@ -198,7 +197,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new SimpleIdentifiableDataTransferObject(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -225,8 +224,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final detail = new AuditDetailCreateDataTransferObject(null, null)
-      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: null]), new SimpleIdentifiableDataTransferObject([id: null]))
-      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject([id: 800000]), new SimpleIdentifiableDataTransferObject(scanArea))
+      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDTO([id: null]))
+      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -288,7 +287,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableValueObject(inventoryItem.id), new SimpleIdentifiableDataTransferObject(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)

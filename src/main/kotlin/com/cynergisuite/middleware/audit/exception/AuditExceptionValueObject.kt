@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -94,7 +94,7 @@ data class AuditExceptionValueObject(
    var notes: MutableList<AuditExceptionNoteValueObject> = mutableListOf(),
 
    @field:Valid
-   @field:Schema(name = "audit", description = "The Audit this exception is associated with", implementation = SimpleIdentifiableValueObject::class)
+   @field:Schema(name = "audit", description = "The Audit this exception is associated with", implementation = SimpleIdentifiableDTO::class)
    var audit: Identifiable? = null
 
 ) : Identifiable {
@@ -116,7 +116,7 @@ data class AuditExceptionValueObject(
          approvedBy = entity.approvedBy?.let { EmployeeValueObject(it) },
          lookupKey = entity.lookupKey,
          notes = entity.notes.asSequence().map { AuditExceptionNoteValueObject(it) }.toMutableList(),
-         audit = SimpleIdentifiableValueObject(entity.audit)
+         audit = SimpleIdentifiableDTO(entity.audit)
       )
 
    override fun myId(): Long? = id

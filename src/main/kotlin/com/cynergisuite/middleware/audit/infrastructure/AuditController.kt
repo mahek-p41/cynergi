@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
@@ -200,7 +200,7 @@ class AuditController @Inject constructor(
       ]
    )
    fun approve(
-      @Body audit: SimpleIdentifiableDataTransferObject,
+      @Body audit: SimpleIdentifiableDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
@@ -288,7 +288,7 @@ class AuditController @Inject constructor(
       ]
    )
    fun approveAllExceptions(
-      @Body audit: SimpleIdentifiableDataTransferObject,
+      @Body audit: SimpleIdentifiableDTO,
       authentication: Authentication
    ): AuditApproveAllExceptionsDataTransferObject {
       logger.info("Requested approval on all audit exceptions associated with audit {}", audit)

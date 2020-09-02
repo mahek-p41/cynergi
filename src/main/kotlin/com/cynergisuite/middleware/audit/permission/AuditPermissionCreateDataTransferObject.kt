@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.permission
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -14,16 +14,16 @@ data class AuditPermissionCreateDataTransferObject(
 
    @field:Valid
    @field:NotNull
-   val permissionType: SimpleIdentifiableDataTransferObject? = null,
+   val permissionType: SimpleIdentifiableDTO? = null,
 
    @field:Valid
    @field:NotNull
-   val department: SimpleIdentifiableDataTransferObject? = null
+   val department: SimpleIdentifiableDTO? = null
 ) {
 
    constructor(permission: AuditPermissionType, department: DepartmentEntity) :
       this(
-         permissionType = SimpleIdentifiableDataTransferObject(permission),
-         department = SimpleIdentifiableDataTransferObject(department)
+         permissionType = SimpleIdentifiableDTO(permission),
+         department = SimpleIdentifiableDTO(department)
       )
 }
