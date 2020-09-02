@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.extensions.truncate
+import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeTestDataLoader
@@ -20,7 +21,7 @@ import javax.inject.Singleton
 object VendorTestDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, vendorGroupIn: VendorGroupEntity? = null, nameIn: String? = null): Stream<VendorEntity> {
+   fun stream(numberIn: Int = 1, companyIn: Company, addressIn: AddressEntity?, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, vendorGroupIn: VendorGroupEntity? = null, nameIn: String? = null): Stream<VendorEntity> {
       val faker = Faker()
       val random = faker.random()
       val number = if (numberIn < 0) 1 else numberIn
@@ -35,7 +36,7 @@ object VendorTestDataLoader {
             id = null,
             company = companyIn,
             name = nameIn ?: companyFaker.name().truncate(30) ?: "Test",
-            address = AddressTestDataLoader.single(),
+            address = addressIn ?: AddressTestDataLoader.single(),
             ourAccountNumber = numbers.numberBetween(1, 1_000_000),
             payTo = null,
             freightOnboardType = FreightOnboardTypeTestDataLoader.random(),
@@ -73,7 +74,7 @@ object VendorTestDataLoader {
 
    @JvmStatic
    fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): VendorEntity =
-      stream(numberIn = 1, companyIn = companyIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+      stream(numberIn = 1, companyIn = companyIn, addressIn = null, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
 }
 
 @Singleton
@@ -82,21 +83,39 @@ class VendorTestDataLoaderService(
    private val vendorRepository: VendorRepository
 ) {
 
-   fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): Stream<VendorEntity> {
-      return VendorTestDataLoader.stream(numberIn, companyIn, paymentTermIn, shipViaIn, nameIn = null)
+   fun stream(numberIn: Int = 1, companyIn: Company, addressIn: AddressEntity? = null, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): Stream<VendorEntity> {
+      return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, nameIn = null)
          .map { vendorRepository.insert(it) }
    }
 
    fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String? = null): Stream<VendorEntity> {
-      return VendorTestDataLoader.stream(numberIn, companyIn, paymentTermIn, shipViaIn, nameIn = nameIn)
+      return VendorTestDataLoader.stream(numberIn, companyIn, null, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn, nameIn = nameIn)
+         .map { vendorRepository.insert(it) }
+   }
+
+   fun stream(numberIn: Int = 1, companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): Stream<VendorEntity> {
+      return VendorTestDataLoader.stream(numberIn, companyIn, null, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn)
+         .map { vendorRepository.insert(it) }
+   }
+
+   fun stream(numberIn: Int = 1, companyIn: Company, addressIn: AddressEntity, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String? = null): Stream<VendorEntity> {
+      return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, nameIn = nameIn)
          .map { vendorRepository.insert(it) }
    }
 
    fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): VendorEntity {
-      return stream(companyIn = companyIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+      return stream(companyIn = companyIn, addressIn = null, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
    }
 
    fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String): VendorEntity {
       return stream(companyIn = companyIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn, nameIn = nameIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+   }
+
+   fun single(companyIn: Company, addressIn: AddressEntity, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String): VendorEntity {
+      return stream(companyIn = companyIn, addressIn = addressIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn, nameIn = nameIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+   }
+
+   fun single(companyIn: Company, addressIn: AddressEntity, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): VendorEntity {
+      return stream(companyIn = companyIn, addressIn = addressIn, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
    }
 }

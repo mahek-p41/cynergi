@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -32,13 +33,12 @@ data class VendorDTO(
    var name: String? = null,
 
    @field:Valid
-   @field:NotNull
-   @field:Schema(name = "address", description = "Bank Address.")
+   @field:Schema(name = "address", description = "Vendor Address")
    var address: AddressDTO? = null,
 
-   @field:NotNull
+   @JsonInclude(NON_DEFAULT)
    @field:Positive
-   @field:Schema(name = "ourAccountNumber", description = "The vendor account number", minimum = "0", required = false)
+   @field:Schema(name = "ourAccountNumber", description = "The vendor account number", minimum = "1", required = false)
    var ourAccountNumber: Int? = null,
 
    @field:Valid
@@ -174,7 +174,7 @@ data class VendorDTO(
       this (
          id = entity.id,
          name = entity.name,
-         address = AddressDTO(entity.address),
+         address = entity.address?.let { AddressDTO(it) },
          ourAccountNumber = entity.ourAccountNumber,
          payTo = if (entity.payTo != null) SimpleIdentifiableDTO(entity.payTo) else null,
          freightOnboardType = FreightOnboardTypeDTO(entity.freightOnboardType),

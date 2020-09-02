@@ -2,11 +2,9 @@ package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.github.javafaker.Address
