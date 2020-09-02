@@ -23,10 +23,10 @@ class AuditScanAreaValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateCreate(dto: AuditScanAreaDTO, company: Company): AuditScanAreaEntity {
       logger.trace("Validating Save AuditScanArea {}", dto)
-      val storeEntity = storeRepository.findOne(dto.store!!.id, company)
+      val storeEntity = storeRepository.findOne(dto.store!!.id!!, company)
 
       doValidation { errors ->
-         storeEntity ?: errors.add(ValidationError("dto.store.id", NotFound(dto.store!!.id)))
+         storeEntity ?: errors.add(ValidationError("dto.store.id", NotFound(dto.store!!.id!!)))
 
          if (auditScanAreaRepository.exists(dto.name!!, storeEntity!!)) {
             errors.add(ValidationError("dto.name", Duplicate(dto.name)))
@@ -39,14 +39,14 @@ class AuditScanAreaValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateUpdate(id: Long, dto: AuditScanAreaDTO, company: Company): AuditScanAreaEntity {
       logger.trace("Validating Update AuditScanArea {}", dto)
-      val storeEntity = storeRepository.findOne(dto.store!!.id, company)
+      val storeEntity = storeRepository.findOne(dto.store!!.id!!, company)
 
       doValidation { errors ->
          if (id != dto.id) errors.add(ValidationError("dto.id", MustMatchPathVariable("Id")))
 
          if (!auditScanAreaRepository.exists(id)) errors.add(ValidationError("dto.id", NotFound(dto.id!!)))
 
-         storeEntity ?: errors.add(ValidationError("dto.store.id", NotFound(dto.store!!.id)))
+         storeEntity ?: errors.add(ValidationError("dto.store.id", NotFound(dto.store!!.id!!)))
 
          if (auditScanAreaRepository.exists(dto.name!!, storeEntity!!)) {
             errors.add(ValidationError("dto.name", Duplicate(dto.name)))

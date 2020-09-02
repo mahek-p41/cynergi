@@ -18,7 +18,7 @@ import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderTy
 import com.cynergisuite.middleware.purchase.order.infrastructure.UpdatePurchaseOrderCostTypeRepository
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
-import io.micronaut.spring.tx.annotation.Transactional
+import javax.transaction.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

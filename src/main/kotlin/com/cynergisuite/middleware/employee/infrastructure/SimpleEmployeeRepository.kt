@@ -15,7 +15,7 @@ import com.cynergisuite.middleware.department.infrastructure.DepartmentRepositor
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.store.Store
-import io.micronaut.spring.tx.annotation.Transactional
+import javax.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper

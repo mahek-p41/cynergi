@@ -5,7 +5,7 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getDoubleOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
-import io.micronaut.spring.tx.annotation.Transactional
+import javax.transaction.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

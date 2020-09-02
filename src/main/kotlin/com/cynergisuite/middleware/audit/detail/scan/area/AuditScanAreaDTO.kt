@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.detail.scan.area
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -22,7 +22,7 @@ data class AuditScanAreaDTO(
 
    @field:NotNull
    @field:Schema(description = "A store that scan area belong to")
-   var store: StoreValueObject? = null
+   var store: StoreDTO? = null
 
 ) : Identifiable {
    override fun myId(): Long? = this.id
@@ -31,6 +31,6 @@ data class AuditScanAreaDTO(
       this(
          id = entity.myId(),
          name = entity.name,
-         store = entity.store?.let { StoreValueObject(it) }
+         store = entity.store?.let { StoreDTO(it) }
       )
 }

@@ -183,7 +183,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'divisionDTO.name'
+      response[0].path == 'name'
       response[0].message == 'Is required'
    }
 
@@ -202,7 +202,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'divisionDTO.description'
+      response[0].path == 'description'
       response[0].message == 'Is required'
    }
 
@@ -319,7 +319,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
 
-      response[0].path == 'divisionDTO.description'
+      response[0].path == 'description'
       response[0].message == 'Is required'
    }
 

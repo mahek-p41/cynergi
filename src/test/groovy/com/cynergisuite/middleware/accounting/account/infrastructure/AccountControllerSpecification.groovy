@@ -299,7 +299,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.path[0] == 'accountDTO.name'
+      response.path[0] == 'name'
       response.message[0] == 'Is required'
    }
 
@@ -318,7 +318,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.path[0] == 'accountDTO.type'
+      response.path[0] == 'type'
       response.message[0] == 'Is required'
    }
 
@@ -393,7 +393,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.path[0] == 'accountVO.name'
+      response.path[0] == 'name'
       response.message[0] == 'Is required' // Maybe a more general message would be better
    }
 

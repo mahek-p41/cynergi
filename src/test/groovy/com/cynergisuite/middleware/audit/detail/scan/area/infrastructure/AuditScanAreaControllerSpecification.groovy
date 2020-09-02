@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.store.StoreValueObject
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
@@ -23,8 +23,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
    private static String path = "/audit/detail/scan-area"
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "fetch all audit detail scan areas v1" () {
       given:
@@ -116,7 +114,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeThree = storeFactoryService.store(3, company)
-      final area = new AuditScanAreaDTO([name: 'Custom Area', store: new StoreValueObject(storeThree)])
+      final area = new AuditScanAreaDTO([name: 'Custom Area', store: new StoreDTO(storeThree)])
 
       when:
       def result = post(path, area)
@@ -138,7 +136,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeThree = storeFactoryService.store(3, company)
-      final area = new AuditScanAreaDTO([store: new StoreValueObject(storeThree)])
+      final area = new AuditScanAreaDTO([store: new StoreDTO(storeThree)])
 
       when:
       post(path, area)
@@ -179,7 +177,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       final warehouse = auditScanAreaFactoryService.warehouse(storeOne, company)
-      final area = new AuditScanAreaDTO([id: warehouse.myId(), name: 'Custom Area', store: new StoreValueObject(storeOne)])
+      final area = new AuditScanAreaDTO([id: warehouse.myId(), name: 'Custom Area', store: new StoreDTO(storeOne)])
 
       when:
       def result = put("$path/${warehouse.myId()}", area)
@@ -208,7 +206,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       final warehouse = auditScanAreaFactoryService.warehouse(storeOne, company)
-      final area = new AuditScanAreaDTO([id: warehouse.myId(), store: new StoreValueObject(storeOne)])
+      final area = new AuditScanAreaDTO([id: warehouse.myId(), store: new StoreDTO(storeOne)])
 
       when:
       put("$path/${warehouse.myId()}", area)

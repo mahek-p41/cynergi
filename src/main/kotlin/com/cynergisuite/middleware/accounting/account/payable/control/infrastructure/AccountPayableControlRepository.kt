@@ -13,7 +13,7 @@ import com.cynergisuite.middleware.accounting.account.payable.infrastructure.Acc
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PrintCurrencyIndicatorTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PurchaseOrderNumberRequiredIndicatorTypeRepository
 import com.cynergisuite.middleware.company.Company
-import io.micronaut.spring.tx.annotation.Transactional
+import javax.transaction.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

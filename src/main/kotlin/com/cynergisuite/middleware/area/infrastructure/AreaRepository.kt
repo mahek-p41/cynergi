@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.area.AreaType
 import com.cynergisuite.middleware.area.MenuType
 import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.Company
-import io.micronaut.spring.tx.annotation.Transactional
+import javax.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -127,7 +127,7 @@ class AreaRepository @Inject constructor(
             "company_id" to company.myId(),
             "area_type_id" to areaType.myId()
          ),
-         RowMapper { rs, _ -> areaType }
+         RowMapper { _, _ -> areaType }
       )
    }
 

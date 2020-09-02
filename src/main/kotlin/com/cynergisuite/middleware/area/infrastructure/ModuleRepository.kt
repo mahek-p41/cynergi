@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.area.infrastructure
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.Company
-import io.micronaut.spring.tx.annotation.Transactional
+import javax.transaction.Transactional
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

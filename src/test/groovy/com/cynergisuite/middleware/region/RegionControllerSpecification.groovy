@@ -231,7 +231,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'regionDTO.name'
+      response[0].path == 'name'
       response[0].message == 'Is required'
    }
 
@@ -250,7 +250,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'regionDTO.description'
+      response[0].path == 'description'
       response[0].message == 'Is required'
    }
 
@@ -373,7 +373,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
 
-      response[0].path == 'regionDTO.description'
+      response[0].path == 'description'
       response[0].message == 'Is required'
    }
 

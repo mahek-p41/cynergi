@@ -260,7 +260,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
 
-      response[0].path == 'bankDTO.name'
+      response[0].path == 'name'
       response[0].message == 'Is required'
    }
 

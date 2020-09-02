@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.exception
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
-import com.cynergisuite.domain.SimpleIdentifiableValueObject
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -18,7 +17,7 @@ data class AuditExceptionCreateValueObject(
    @field:NotNull
    @field:Valid
    @field:Schema(name = "scanArea", description = "The optional location where the exception was encountered")
-   var scanArea: SimpleIdentifiableDataTransferObject? = null,
+   var scanArea: SimpleIdentifiableDTO? = null,
 
    @field:Size(min = 2, max = 100)
    @field:Schema(name = "barcode", description = "If the inventory field is provided inventory must be null.  Holds the scanned barcode that an Inventory item did not exist for.")

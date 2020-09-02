@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.detail.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDataTransferObject
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -193,7 +192,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDataTransferObject(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -220,8 +219,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final detail = new AuditDetailCreateDataTransferObject(null, null)
-      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDataTransferObject([id: null]))
-      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDataTransferObject(scanArea))
+      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDTO([id: null]))
+      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -283,7 +282,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDataTransferObject(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)
