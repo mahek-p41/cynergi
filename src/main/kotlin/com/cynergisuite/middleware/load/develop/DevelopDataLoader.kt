@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.load.develop
 
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.area.AreaDataLoaderService
 import com.cynergisuite.middleware.area.ModuleDataLoaderService
@@ -52,7 +53,8 @@ class DevelopDataLoader @Inject constructor(
    private val moduleDataLoaderService: ModuleDataLoaderService,
    private val shipViaDataLoaderService: ShipViaTestDataLoaderService,
    private val vendorPaymentTermDataLoaderService: VendorPaymentTermTestDataLoaderService,
-   private val vendorDataLoaderService: VendorTestDataLoaderService
+   private val vendorDataLoaderService: VendorTestDataLoaderService,
+   private val accountPayableControlDataLoaderService: AccountPayableControlDataLoaderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -168,6 +170,7 @@ class DevelopDataLoader @Inject constructor(
 
       // setup account & bank
       val corrtoAccount = accountDataLoaderService.single(corrto)
+      accountDataLoaderService.stream(2, corrto).forEach { }
       bankFactoryService.stream(3, corrto, corrtoStore1, corrtoAccount).forEach { }
       bankFactoryService.stream(3, corrto, corrtoStore3, corrtoAccount).forEach { }
 
@@ -191,6 +194,8 @@ class DevelopDataLoader @Inject constructor(
       val shipVia = shipViaDataLoaderService.single(corrto)
       val vendorPaymentTerm = vendorPaymentTermDataLoaderService.singleWithSingle90DaysPayment(corrto)
       vendorDataLoaderService.stream(3, corrto, vendorPaymentTerm, shipVia).forEach {}
+
+      accountPayableControlDataLoaderService.single(corrto, corrtoAccount, corrtoAccount)
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())
