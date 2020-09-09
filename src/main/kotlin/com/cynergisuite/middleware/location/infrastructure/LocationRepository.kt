@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.location.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -97,8 +96,7 @@ class LocationRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, user: User): RepositoryPage<LocationEntity, PageRequest> {
-      val company = user.myCompany()
+   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<LocationEntity, PageRequest> {
       val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<LocationEntity>()
@@ -166,8 +164,6 @@ class LocationRepository @Inject constructor(
 
       return exists
    }
-
-   fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
    fun maybeMapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY) =
       if (rs.getString("${columnPrefix}id") != null) {

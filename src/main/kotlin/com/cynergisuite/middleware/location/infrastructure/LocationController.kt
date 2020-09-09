@@ -77,7 +77,7 @@ class LocationController @Inject constructor(
       logger.info("Fetching all locations {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = locationService.fetchAll(pageRequest, user)
+      val page = locationService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest)
