@@ -4,17 +4,17 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusType
+import com.cynergisuite.middleware.accounting.account.payable.infrastructure.DefaultAccountPayableStatusTypeRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagType
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusType
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderType
+import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderType
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostType
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlEntity
 import com.cynergisuite.middleware.purchase.order.infrastructure.ApprovalRequiredFlagTypeRepository
-import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderStatusTypeRepository
-import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderTypeRepository
+import com.cynergisuite.middleware.purchase.order.infrastructure.DefaultPurchaseOrderTypeRepository
 import com.cynergisuite.middleware.purchase.order.infrastructure.UpdatePurchaseOrderCostTypeRepository
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -31,10 +31,10 @@ import javax.transaction.Transactional
 @Singleton
 class PurchaseOrderControlRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val purchaseOrderStatusTypeRepository: PurchaseOrderStatusTypeRepository,
+   private val defaultAccountPayableStatusTypeRepository: DefaultAccountPayableStatusTypeRepository,
    private val vendorRepository: VendorRepository,
    private val updatePurchaseOrderCostTypeRepository: UpdatePurchaseOrderCostTypeRepository,
-   private val purchaseOrderTypeRepository: PurchaseOrderTypeRepository,
+   private val defaultPurchaseOrderTypeRepository: DefaultPurchaseOrderTypeRepository,
    private val employeeRepository: EmployeeRepository,
    private val approvalRequiredFlagTypeRepository: ApprovalRequiredFlagTypeRepository
 ) {
@@ -63,11 +63,10 @@ class PurchaseOrderControlRepository @Inject constructor(
             purchaseOrderControl.sort_by_ship_to_on_print                        AS purchaseOrderControl_sort_by_ship_to_on_print,
             purchaseOrderControl.invoice_by_location                             AS purchaseOrderControl_invoice_by_location,
             purchaseOrderControl.validate_inventory                              AS purchaseOrderControl_validate_inventory,
-            statusType.id                                                        AS statusType_id,
-            statusType.value                                                     AS statusType_value,
-            statusType.description                                               AS statusType_description,
-            statusType.localization_code                                         AS statusType_localization_code,
-            statusType.possible_default                                          AS statusType_possible_default,
+            defaultAPStatusType.id                                               AS defaultAPStatusType_id,
+            defaultAPStatusType.value                                            AS defaultAPStatusType_value,
+            defaultAPStatusType.description                                      AS defaultAPStatusType_description,
+            defaultAPStatusType.localization_code                                AS defaultAPStatusType_localization_code,
             defVen.v_id                                                          AS defVen_id,
             defVen.v_uu_row_id                                                   AS defVen_uu_row_id,
             defVen.v_time_created                                                AS defVen_time_created,
@@ -209,10 +208,10 @@ class PurchaseOrderControlRepository @Inject constructor(
             appReqFlagType.description                                           AS appReqFlagType_description,
             appReqFlagType.localization_code                                     AS appReqFlagType_localization_code
          FROM purchase_order_control purchaseOrderControl
-            JOIN purchase_order_status_type_domain statusType ON purchaseOrderControl.default_status_type_id = statusType.id
+            JOIN default_account_payable_status_type_domain defaultAPStatusType ON purchaseOrderControl.default_account_payable_status_type_id = defaultAPStatusType.id
             JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.v_id
             JOIN update_purchase_order_cost_type_domain updatePOCostType ON purchaseOrderControl.update_purchase_order_cost_type_id = updatePOCostType.id
-            JOIN purchase_order_type_domain defaultPOType ON purchaseOrderControl.default_purchase_order_type_id = defaultPOType.id
+            JOIN default_purchase_order_type_domain defaultPOType ON purchaseOrderControl.default_purchase_order_type_id = defaultPOType.id
             JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_id AND defApp.emp_type = 'eli'
             JOIN approval_required_flag_type_domain appReqFlagType ON purchaseOrderControl.approval_required_flag_type_id = appReqFlagType.id
       """
@@ -224,14 +223,14 @@ class PurchaseOrderControlRepository @Inject constructor(
       val found = jdbc.findFirstOrNull(
          query, params,
          RowMapper { rs, _ ->
-            val defaultStatusType = purchaseOrderStatusTypeRepository.mapRow(rs, "statusType_")
+            val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.mapRow(rs, "defaultAPStatusType_")
             val defaultVendor = vendorRepository.mapRow(rs, company, "defVen_")
             val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
-            val defaultPurchaseOrderType = purchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
+            val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
             val defaultApprover = employeeRepository.mapRow(rs, "defApp_")
             val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
 
-            mapRow(rs, defaultStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
+            mapRow(rs, defaultAccountPayableStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
          }
       )
 
@@ -267,7 +266,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             drop_five_characters_on_model_number,
             update_account_payable,
             print_second_description,
-            default_status_type_id,
+            default_account_payable_status_type_id,
             print_vendor_comments,
             include_freight_in_cost,
             update_cost_on_model,
@@ -285,7 +284,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             :drop_five_characters_on_model_number,
             :update_account_payable,
             :print_second_description,
-            :default_status_type_id,
+            :default_account_payable_status_type_id,
             :print_vendor_comments,
             :include_freight_in_cost,
             :update_cost_on_model,
@@ -306,7 +305,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             "drop_five_characters_on_model_number" to entity.dropFiveCharactersOnModelNumber,
             "update_account_payable" to entity.updateAccountPayable,
             "print_second_description" to entity.printSecondDescription,
-            "default_status_type_id" to entity.defaultStatusType.id,
+            "default_account_payable_status_type_id" to entity.defaultAccountPayableStatusType.id,
             "print_vendor_comments" to entity.printVendorComments,
             "include_freight_in_cost" to entity.includeFreightInCost,
             "update_cost_on_model" to entity.updateCostOnModel,
@@ -322,7 +321,7 @@ class PurchaseOrderControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(
                rs,
-               entity.defaultStatusType,
+               entity.defaultAccountPayableStatusType,
                entity.defaultVendor,
                entity.updatePurchaseOrderCost,
                entity.defaultPurchaseOrderType,
@@ -345,7 +344,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             drop_five_characters_on_model_number = :drop_five_characters_on_model_number,
             update_account_payable = :update_account_payable,
             print_second_description = :print_second_description,
-            default_status_type_id = :default_status_type_id,
+            default_account_payable_status_type_id = :default_account_payable_status_type_id,
             print_vendor_comments = :print_vendor_comments,
             include_freight_in_cost = :include_freight_in_cost,
             update_cost_on_model = :update_cost_on_model,
@@ -367,7 +366,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             "drop_five_characters_on_model_number" to entity.dropFiveCharactersOnModelNumber,
             "update_account_payable" to entity.updateAccountPayable,
             "print_second_description" to entity.printSecondDescription,
-            "default_status_type_id" to entity.defaultStatusType.id,
+            "default_account_payable_status_type_id" to entity.defaultAccountPayableStatusType.id,
             "print_vendor_comments" to entity.printVendorComments,
             "include_freight_in_cost" to entity.includeFreightInCost,
             "update_cost_on_model" to entity.updateCostOnModel,
@@ -383,7 +382,7 @@ class PurchaseOrderControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(
                rs,
-               entity.defaultStatusType,
+               entity.defaultAccountPayableStatusType,
                entity.defaultVendor,
                entity.updatePurchaseOrderCost,
                entity.defaultPurchaseOrderType,
@@ -396,10 +395,10 @@ class PurchaseOrderControlRepository @Inject constructor(
 
    private fun mapRow(
       rs: ResultSet,
-      defaultStatusType: PurchaseOrderStatusType,
+      defaultAccountPayableStatusType: DefaultAccountPayableStatusType,
       defaultVendor: VendorEntity?,
       updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
-      defaultPurchaseOrderType: PurchaseOrderType,
+      defaultPurchaseOrderType: DefaultPurchaseOrderType,
       defaultApprover: EmployeeEntity?,
       approvalRequiredFlagType: ApprovalRequiredFlagType,
       columnPrefix: String = EMPTY
@@ -411,7 +410,7 @@ class PurchaseOrderControlRepository @Inject constructor(
          dropFiveCharactersOnModelNumber = rs.getBoolean("${columnPrefix}drop_five_characters_on_model_number"),
          updateAccountPayable = rs.getBoolean("${columnPrefix}update_account_payable"),
          printSecondDescription = rs.getBoolean("${columnPrefix}print_second_description"),
-         defaultStatusType = defaultStatusType,
+         defaultAccountPayableStatusType = defaultAccountPayableStatusType,
          printVendorComments = rs.getBoolean("${columnPrefix}print_vendor_comments"),
          includeFreightInCost = rs.getBoolean("${columnPrefix}include_freight_in_cost"),
          updateCostOnModel = rs.getBoolean("${columnPrefix}update_cost_on_model"),

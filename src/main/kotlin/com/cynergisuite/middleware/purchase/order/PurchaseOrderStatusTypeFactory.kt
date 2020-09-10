@@ -11,43 +11,37 @@ object PurchaseOrderStatusTypeFactory {
          id = 1,
          value = "B",
          description = "Backorder",
-         localizationCode = "backorder",
-         possibleDefault = false
+         localizationCode = "backorder"
       ),
       PurchaseOrderStatusType(
          id = 2,
          value = "C",
          description = "Cancelled",
-         localizationCode = "cancelled",
-         possibleDefault = false
+         localizationCode = "cancelled"
       ),
       PurchaseOrderStatusType(
          id = 3,
          value = "H",
          description = "Hold",
-         localizationCode = "hold",
-         possibleDefault = true
+         localizationCode = "hold"
       ),
       PurchaseOrderStatusType(
          id = 4,
          value = "O",
          description = "Open",
-         localizationCode = "open",
-         possibleDefault = true
+         localizationCode = "open"
       ),
       PurchaseOrderStatusType(
          id = 5,
          value = "P",
          description = "Paid",
-         localizationCode = "paid",
-         possibleDefault = false
+         localizationCode = "paid"
       ),
       PurchaseOrderStatusType(
          id = 6,
          value = "R",
          description = "Received",
-         localizationCode = "received",
-         possibleDefault = false
+         localizationCode = "received"
       )
    )
 

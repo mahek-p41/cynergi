@@ -22,6 +22,6 @@ class PurchaseOrderStatusTypeControllerSpecification extends ControllerSpecifica
 
       then:
       notThrown(HttpClientResponseException)
-      response.collect { new PurchaseOrderStatusTypeValueObject(it.value, it.description, it.possibleDefault) } == predefinedPurchaseOrderStatusType
+      response.collect { new PurchaseOrderStatusTypeValueObject(it.value, it.description) } == predefinedPurchaseOrderStatusType
    }
 }

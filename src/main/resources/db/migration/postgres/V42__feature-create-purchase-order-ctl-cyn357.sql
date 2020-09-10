@@ -26,7 +26,7 @@ CREATE TABLE purchase_order_type_domain
 );
 INSERT INTO purchase_order_type_domain (id, value, description, localization_code)
 VALUES (1, 'P', 'Purchase Order', 'purchase.order'),
-       (2, 'R', 'Requisition', 'requisition')
+       (2, 'R', 'Requisition', 'requisition'),
        (3, 'D', 'Deletes', 'deletes');
 
 
@@ -79,7 +79,7 @@ CREATE TABLE default_purchase_order_type_domain
     UNIQUE (value)
 );
 
-NSERT INTO default_purchase_order_type_domain (id, value, description, localization_code)
+INSERT INTO default_purchase_order_type_domain (id, value, description, localization_code)
 VALUES (1, 'P', 'Purchase Order', 'purchase.order'),
        (2, 'R', 'Requisition', 'requisition');
 

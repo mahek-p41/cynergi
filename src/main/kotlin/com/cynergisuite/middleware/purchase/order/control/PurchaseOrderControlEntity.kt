@@ -1,10 +1,10 @@
 package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusType
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagType
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusType
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderType
+import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderType
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostType
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.time.OffsetDateTime
@@ -16,13 +16,13 @@ data class PurchaseOrderControlEntity(
    val dropFiveCharactersOnModelNumber: Boolean,
    val updateAccountPayable: Boolean,
    val printSecondDescription: Boolean,
-   val defaultStatusType: PurchaseOrderStatusType,
+   val defaultAccountPayableStatusType: DefaultAccountPayableStatusType,
    val printVendorComments: Boolean,
    val includeFreightInCost: Boolean,
    val updateCostOnModel: Boolean,
    val defaultVendor: VendorEntity? = null,
    val updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
-   val defaultPurchaseOrderType: PurchaseOrderType,
+   val defaultPurchaseOrderType: DefaultPurchaseOrderType,
    val sortByShipToOnPrint: Boolean,
    val invoiceByLocation: Boolean,
    val validateInventory: Boolean,
@@ -32,10 +32,10 @@ data class PurchaseOrderControlEntity(
 
    constructor(
       dto: PurchaseOrderControlDTO,
-      defaultStatusType: PurchaseOrderStatusType,
+      defaultAccountPayableStatusType: DefaultAccountPayableStatusType,
       defaultVendor: VendorEntity?,
       updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
-      defaultPurchaseOrderType: PurchaseOrderType,
+      defaultPurchaseOrderType: DefaultPurchaseOrderType,
       defaultApprover: EmployeeEntity?,
       approvalRequiredFlagType: ApprovalRequiredFlagType
    ) :
@@ -44,7 +44,7 @@ data class PurchaseOrderControlEntity(
          dropFiveCharactersOnModelNumber = dto.dropFiveCharactersOnModelNumber!!,
          updateAccountPayable = dto.updateAccountPayable!!,
          printSecondDescription = dto.printSecondDescription!!,
-         defaultStatusType = defaultStatusType,
+         defaultAccountPayableStatusType = defaultAccountPayableStatusType,
          printVendorComments = dto.printVendorComments!!,
          includeFreightInCost = dto.includeFreightInCost!!,
          updateCostOnModel = dto.updateCostOnModel!!,

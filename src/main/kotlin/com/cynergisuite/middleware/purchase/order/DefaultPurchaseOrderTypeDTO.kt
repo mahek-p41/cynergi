@@ -8,28 +8,28 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "PurchaseOrderStatus", title = "Purchase order status", description = "Purchase order status type")
-data class PurchaseOrderStatusTypeValueObject(
+@Schema(name = "DefaultPurchaseOrderType", title = "Default purchase order type", description = "Default purchase order type")
+data class DefaultPurchaseOrderTypeDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)
-   @field:Schema(description = "Purchase order status code")
+   @field:Schema(description = "Default purchase order code")
    var value: String,
 
    @field:Nullable
    @field:Size(min = 1, max = 100)
-   @field:Schema(description = "A localized description for purchase order status")
+   @field:Schema(description = "A localized description for default purchase order")
    var description: String? = null
 
 ) {
 
-   constructor(type: PurchaseOrderStatusType) :
+   constructor(type: DefaultPurchaseOrderType) :
       this(
          value = type.value,
          description = type.description
       )
 
-   constructor(type: PurchaseOrderStatusType, localizedDescription: String) :
+   constructor(type: DefaultPurchaseOrderType, localizedDescription: String) :
       this(
          value = type.value,
          description = localizedDescription

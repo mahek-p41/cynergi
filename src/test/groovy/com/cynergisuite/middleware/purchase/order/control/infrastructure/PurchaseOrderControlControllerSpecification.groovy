@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusTypeFactory
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusTypeValueObject
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDataLoader.PurchaseOrderControlDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -49,10 +47,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          updateAccountPayable == purchaseOrderControl.updateAccountPayable
          printSecondDescription == purchaseOrderControl.printSecondDescription
 
-         with(defaultStatusType) {
-            value == purchaseOrderControl.defaultStatusType.value
-            description == purchaseOrderControl.defaultStatusType.description
-            possibleDefault == purchaseOrderControl.defaultStatusType.possibleDefault
+         with(defaultAccountPayableStatusType) {
+            value == purchaseOrderControl.defaultAccountPayableStatusType.value
+            description == purchaseOrderControl.defaultAccountPayableStatusType.description
          }
 
          printVendorComments == purchaseOrderControl.printVendorComments
@@ -116,10 +113,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          updateAccountPayable == purchaseOrderControl.updateAccountPayable
          printSecondDescription == purchaseOrderControl.printSecondDescription
 
-         with(defaultStatusType) {
-            value == purchaseOrderControl.defaultStatusType.value
-            description == purchaseOrderControl.defaultStatusType.description
-            possibleDefault == purchaseOrderControl.defaultStatusType.possibleDefault
+         with(defaultAccountPayableStatusType) {
+            value == purchaseOrderControl.defaultAccountPayableStatusType.value
+            description == purchaseOrderControl.defaultAccountPayableStatusType.description
          }
 
          printVendorComments == purchaseOrderControl.printVendorComments
@@ -173,10 +169,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          updateAccountPayable == purchaseOrderControl.updateAccountPayable
          printSecondDescription == purchaseOrderControl.printSecondDescription
 
-         with(defaultStatusType) {
-            value == purchaseOrderControl.defaultStatusType.value
-            description == purchaseOrderControl.defaultStatusType.description
-            possibleDefault == purchaseOrderControl.defaultStatusType.possibleDefault
+         with(defaultAccountPayableStatusType) {
+            value == purchaseOrderControl.defaultAccountPayableStatusType.value
+            description == purchaseOrderControl.defaultAccountPayableStatusType.description
          }
 
          printVendorComments == purchaseOrderControl.printVendorComments
@@ -229,10 +224,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          updateAccountPayable == purchaseOrderControl.updateAccountPayable
          printSecondDescription == purchaseOrderControl.printSecondDescription
 
-         with(defaultStatusType) {
-            value == purchaseOrderControl.defaultStatusType.value
-            description == purchaseOrderControl.defaultStatusType.description
-            possibleDefault == purchaseOrderControl.defaultStatusType.possibleDefault
+         with(defaultAccountPayableStatusType) {
+            value == purchaseOrderControl.defaultAccountPayableStatusType.value
+            description == purchaseOrderControl.defaultAccountPayableStatusType.description
          }
 
          printVendorComments == purchaseOrderControl.printVendorComments
@@ -357,7 +351,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response[0].message == 'Is required'
    }
 
-   void "create invalid purchase order control without default status type" () {
+   void "create invalid purchase order control without default account payable status type" () {
       given: 'get json PO control and make it invalid'
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
@@ -367,7 +361,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
-      jsonPOControl.remove('defaultStatusType')
+      jsonPOControl.remove('defaultAccountPayableStatusType')
 
       when:
       post("$path/", jsonPOControl)
@@ -377,30 +371,8 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'defaultStatusType'
+      response[0].path == 'defaultAccountPayableStatusType'
       response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control with false possibleDefault" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()), new PurchaseOrderStatusTypeValueObject(PurchaseOrderStatusTypeFactory.predefined().find { !it.possibleDefault }))
-      def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
-
-      when:
-      post("$path/", jsonPOControl)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'defaultStatusType.possibleDefault'
-      response[0].message == 'false was unable to be found'
    }
 
    void "create invalid purchase order control without print vendor comments" () {
@@ -691,10 +663,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          updateAccountPayable == updatedPOControlDTO.updateAccountPayable
          printSecondDescription == updatedPOControlDTO.printSecondDescription
 
-         with(defaultStatusType) {
-            value == updatedPOControlDTO.defaultStatusType.value
-            description == updatedPOControlDTO.defaultStatusType.description
-            possibleDefault == updatedPOControlDTO.defaultStatusType.possibleDefault
+         with(defaultAccountPayableStatusType) {
+            value == updatedPOControlDTO.defaultAccountPayableStatusType.value
+            description == updatedPOControlDTO.defaultAccountPayableStatusType.description
          }
 
          printVendorComments == updatedPOControlDTO.printVendorComments
