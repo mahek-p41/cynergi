@@ -40,12 +40,12 @@ class PurchaseOrderControlValidator @Inject constructor(
    @Throws(ValidationException::class)
    fun validateCreate(@Valid dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlEntity {
       logger.debug("Validating Create PurchaseOrderControl {}", dto)
-      val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.findOne(dto.defaultAccountPayableStatusType!!.value)!!
+      val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.findOne(dto.defaultAccountPayableStatusType!!.value)
       val defaultVendor = dto.defaultVendor?.id?.let { vendorRepository.findOne(it, company) }
-      val updatePurchaseOrderCost = updatePurchaseOrderCostTypeRepository.findOne(dto.updatePurchaseOrderCost!!.value)!!
-      val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.findOne(dto.defaultPurchaseOrderType!!.value)!!
+      val updatePurchaseOrderCost = updatePurchaseOrderCostTypeRepository.findOne(dto.updatePurchaseOrderCost!!.value)
+      val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.findOne(dto.defaultPurchaseOrderType!!.value)
       val defaultApprover = dto.defaultApprover?.id?.let { employeeRepository.findOne(it, company) }
-      val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.findOne(dto.approvalRequiredFlagType!!.value)!!
+      val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.findOne(dto.approvalRequiredFlagType!!.value)
 
       doValidation { errors ->
          if (purchaseOrderControlRepository.exists(company)) {
@@ -57,12 +57,12 @@ class PurchaseOrderControlValidator @Inject constructor(
 
       return PurchaseOrderControlEntity(
          dto,
-         defaultAccountPayableStatusType = defaultAccountPayableStatusType,
+         defaultAccountPayableStatusType = defaultAccountPayableStatusType!!,
          defaultVendor = defaultVendor,
-         updatePurchaseOrderCost = updatePurchaseOrderCost,
-         defaultPurchaseOrderType = defaultPurchaseOrderType,
+         updatePurchaseOrderCost = updatePurchaseOrderCost!!,
+         defaultPurchaseOrderType = defaultPurchaseOrderType!!,
          defaultApprover = defaultApprover,
-         approvalRequiredFlagType = approvalRequiredFlagType
+         approvalRequiredFlagType = approvalRequiredFlagType!!
       )
    }
 

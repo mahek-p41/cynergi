@@ -44,13 +44,8 @@ class BankValidator @Inject constructor(
       val generalLedgerAccount = accountRepository.findOne(bankDTO.generalLedgerAccount!!.id!!, company)
 
       doValidation { errors ->
-         if (generalProfitCenter == null) {
-            errors.add(ValidationError("generalLedgerProfitCenter.id", NotFound(bankDTO.generalLedgerProfitCenter!!.id!!)))
-         }
-
-         if (generalLedgerAccount == null) {
-            errors.add(ValidationError("generalLedgerAccount.id", NotFound(bankDTO.generalLedgerAccount!!.id!!)))
-         }
+         generalProfitCenter ?: errors.add(ValidationError("generalLedgerProfitCenter.id", NotFound(bankDTO.generalLedgerProfitCenter!!.id!!)))
+         generalLedgerAccount ?: errors.add(ValidationError("generalLedgerAccount.id", NotFound(bankDTO.generalLedgerAccount!!.id!!)))
       }
 
       return if (existingBank != null) {

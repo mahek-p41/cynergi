@@ -3,7 +3,11 @@ package com.cynergisuite.middleware.accounting.account.payable.control.infrastru
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -15,6 +19,9 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 @MicronautTest(transactional = false)
 class AccountPayableControlControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account/payable/control'
+   private jsonOutput = new JsonOutput()
+   private jsonSlurper = new JsonSlurper()
+
    @Inject AccountDataLoaderService accountDataLoaderService
    @Inject AccountPayableControlDataLoaderService accountPayableControlDataLoaderService
 
@@ -154,6 +161,48 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "checkFormType"
       response[0].message == "Is required"
+   }
+
+   void "create invalid account payable control with non-existing check form type value" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      accountPayableControl.checkFormType = new AccountPayableCheckFormTypeDTO(AccountPayableCheckFormTypeDataLoader.random())
+      accountPayableControl.checkFormType.value = "nonexisting"
+
+      when:
+      post("$path/", accountPayableControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "checkFormType.value"
+      response[0].message == "nonexisting was unable to be found"
+   }
+
+   void "create invalid account payable control with null value of check form type" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControlJson = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
+      accountPayableControlJson.checkFormType.value = null
+
+      when:
+      post("$path/", accountPayableControlJson)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 2
+      response.path == "checkFormType.value"
+      response.message == "Failed to convert argument [dto] for value [null]"
    }
 
    void "create invalid account payable control without pay after discount date" () {

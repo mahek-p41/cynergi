@@ -35,9 +35,9 @@ class AccountPayableControlValidator @Inject constructor(
    fun validateCreate(@Valid dto: AccountPayableControlDTO, company: Company): AccountPayableControlEntity {
       logger.debug("Validating Create AccountPayableControl {}", dto)
 
-      val checkFormType = accountPayableCheckFormTypeRepository.findOne(dto.checkFormType!!.value)!!
-      val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.findOne(dto.printCurrencyIndicatorType!!.value)!!
-      val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.findOne(dto.purchaseOrderNumberRequiredIndicatorType!!.value)!!
+      val checkFormType = accountPayableCheckFormTypeRepository.findOne(dto.checkFormType!!.value)
+      val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.findOne(dto.printCurrencyIndicatorType!!.value)
+      val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.findOne(dto.purchaseOrderNumberRequiredIndicatorType!!.value)
       val generalLedgerInventoryClearingAccount = accountRepository.findOne(dto.generalLedgerInventoryClearingAccount!!.id!!, company)
       val generalLedgerInventoryAccount = accountRepository.findOne(dto.generalLedgerInventoryAccount!!.id!!, company)
 
@@ -51,9 +51,9 @@ class AccountPayableControlValidator @Inject constructor(
 
       return AccountPayableControlEntity(
          dto,
-         checkFormType = checkFormType,
-         printCurrencyIndicatorType = printCurrencyIndicatorType,
-         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType,
+         checkFormType = checkFormType!!,
+         printCurrencyIndicatorType = printCurrencyIndicatorType!!,
+         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType!!,
          generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount!!,
          generalLedgerInventoryAccount = generalLedgerInventoryAccount!!
       )
