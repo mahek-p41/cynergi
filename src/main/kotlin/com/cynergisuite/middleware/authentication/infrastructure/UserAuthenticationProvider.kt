@@ -50,17 +50,9 @@ class UserAuthenticationProvider @Inject constructor(
                   logger.info("Employee {} is cynergi admin", authenticationRequest?.identity)
 
                   credentialsAssociatedWithAdmin(employee, fallbackStore)
-               } else if (employeeAssignedStore != chosenStore && employee.alternativeStoreIndicator == "A") {
-                  logger.info("Employee {} has alternative store indicator set to A and chose store {}", employee, chosenStore)
-
-                  credentialsMatched(chosenStore, employee)
-               } else if (employeeAssignedStore != null) {
-                  if (employeeAssignedStore == chosenStore) {
-                     logger.info("Employee {} assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
-
-                     credentialsMatched(employeeAssignedStore, employee)
-                  } else if (storeNumber != null && chosenStore == null) {
-                     logger.info("Employee {} cannot login into chosen store {}", authenticationRequest?.identity, chosenStore)
+               } else if (chosenStore == null) {
+                  if (storeNumber != null) {
+                     logger.info("Employee {} did not provide matching credentials or invalid chosen store", authenticationRequest?.identity)
 
                      credentialsProvidedDidNotMatch()
                   } else {
@@ -68,14 +60,18 @@ class UserAuthenticationProvider @Inject constructor(
 
                      credentialsRequireStore(userNumber)
                   }
-               } else if (chosenStore != null) {
-                  logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
-
-                  credentialsMatched(employeeAssignedStore, employee)
                } else {
-                  logger.info("Employee {} did not provide matching credentials", authenticationRequest?.identity)
+                  // cases when chosenStore != null
 
-                  credentialsProvidedDidNotMatch()
+                  if (employeeAssignedStore == chosenStore || employee.alternativeStoreIndicator == "A") {
+                        logger.info("Employee {} has alternative store indicator set to A and chose store {}", employee, chosenStore)
+
+                        credentialsMatched(chosenStore, employee)
+                  } else {
+                     logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
+
+                     credentialsMatched(employeeAssignedStore, employee)
+                  }
                }
             }
             .defaultIfEmpty(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))

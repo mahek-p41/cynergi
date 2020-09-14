@@ -310,12 +310,7 @@ class AuditRepository @Inject constructor(
       val from = pageRequest.from?.beginningOfDay()
       val thru = pageRequest.thru?.endOfDay()
 
-      processAlternativeStoreIndicator(whereClause, params, user)
-
-      if (!storeNumbers.isNullOrEmpty() && user.myAlternativeStoreIndicator() != "N") {
-         params["store_numbers"] = storeNumbers
-         whereClause.append(" AND a.store_number IN (:store_numbers) ")
-      }
+      processAlternativeStoreIndicator(whereClause, params, user, storeNumbers)
 
       if (from != null && thru != null) {
          params["from"] = from
@@ -431,7 +426,7 @@ class AuditRepository @Inject constructor(
       val from = pageRequest.from?.beginningOfDay()
       val thru = pageRequest.thru?.endOfDay()
 
-      processAlternativeStoreIndicator(whereClause, params, user)
+      processAlternativeStoreIndicator(whereClause, params, user, storeNumbers)
 
       if (from != null && thru != null) {
          params["from"] = from
@@ -444,10 +439,6 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (:statuses) ")
       }
 
-      if (!storeNumbers.isNullOrEmpty()) {
-         params["store_numbers"] = storeNumbers
-         whereClause.append(" AND a.store_number IN (:store_numbers) ")
-      }
 
       val sql =
          """
@@ -595,7 +586,12 @@ class AuditRepository @Inject constructor(
       return entity.copy(actions = actions)
    }
 
-   private fun processAlternativeStoreIndicator(whereClause: StringBuilder, params: MutableMap<String, Any?>, user: User) {
+   private fun processAlternativeStoreIndicator(whereClause: StringBuilder, params: MutableMap<String, Any?>, user: User, storeNumbers: Set<Int>?) {
+      if (!storeNumbers.isNullOrEmpty() && user.myAlternativeStoreIndicator() != "N") {
+         params["store_numbers"] = storeNumbers
+         whereClause.append(" AND a.store_number IN (:store_numbers) ")
+      }
+
       when (user.myAlternativeStoreIndicator()) {
          "N" -> {
             whereClause.append(" AND a.store_number = :store_number ")
