@@ -49,10 +49,4 @@ services:
          - cynergideploynet
       links:
          - cynergitestdeploydb
-      deploy:
-      #   resources:
-      #      limits:
-      #         cpus: '2.0'
-      #         memory: 2048m
       command: ["/home/jenkins/cynergi-middleware/support/deployment/cynmid/build-cynmid.sh"]
-      #command: ["/bin/bash"]
