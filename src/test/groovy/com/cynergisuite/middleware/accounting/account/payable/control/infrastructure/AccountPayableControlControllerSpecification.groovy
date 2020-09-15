@@ -140,7 +140,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "company"
-      response[0].message == "Account payable control for user's company " + company.myDataset() + " already exists"
+      response[0].message == "${company.myDataset()} already exists"
    }
 
    void "create invalid account payable control without check form type" () {
@@ -493,22 +493,20 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "update invalid account payable control with non-existing id" () {
       given:
-      final company = nineNineEightEmployee.company
-      final glInvCleAcct = accountDataLoaderService.single(company)
-      final glInvAcct = accountDataLoaderService.single(company)
-      accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final company2 = companyFactoryService.forDatasetCode('tstds2') // load the company that isn't logged in to create the control record
+      final glInvCleAcct = accountDataLoaderService.single(company2)
+      final glInvAcct = accountDataLoaderService.single(company2)
+      accountPayableControlDataLoaderService.single(company2, glInvCleAcct, glInvAcct)
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
 
       when:
       put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
+      exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "id"
-      response[0].message == "99 was unable to be found"
+      response.message == "${nineNineEightEmployee.company.myId()} was unable to be found"
    }
 
    void "update invalid account payable control by removing check form type" () {
