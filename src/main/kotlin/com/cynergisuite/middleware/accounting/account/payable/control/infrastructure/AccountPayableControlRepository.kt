@@ -122,14 +122,6 @@ class AccountPayableControlRepository @Inject constructor(
       """
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM account_payable_control WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
-
-      logger.trace("Checking if AccountPayableControl: {} exists resulted in {}", id, exists)
-
-      return exists
-   }
-
    fun exists(company: Company): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM account_payable_control WHERE company_id = :company_id)", mapOf("company_id" to company.myId()), Boolean::class.java)!!
 

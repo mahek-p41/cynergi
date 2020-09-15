@@ -435,7 +435,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.id = existingAPControl.id
 
       when:
-      def result = put("$path/$existingAPControl.id", updatedAPControlDTO)
+      def result = put("$path", updatedAPControlDTO)
 
       then:
       notThrown(HttpClientResponseException)
@@ -480,7 +480,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.id = 0
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -500,7 +500,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
 
       when:
-      put("$path/99", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -521,7 +521,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.checkFormType = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -542,7 +542,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.printCurrencyIndicatorType = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -563,7 +563,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -584,7 +584,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.generalLedgerInventoryClearingAccount = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -605,7 +605,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.generalLedgerInventoryAccount = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)

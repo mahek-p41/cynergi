@@ -27,8 +27,8 @@ class AccountPayableControlService @Inject constructor(
    }
 
    @Validated
-   fun update(id: Long, @Valid dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
-      val toUpdate = accountPayableControlValidator.validateUpdate(id, dto, company)
+   fun update(@Valid dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
+      val toUpdate = accountPayableControlValidator.validateUpdate(dto, company)
 
       return transformEntity(accountPayableControlRepository.update(toUpdate, company))
    }

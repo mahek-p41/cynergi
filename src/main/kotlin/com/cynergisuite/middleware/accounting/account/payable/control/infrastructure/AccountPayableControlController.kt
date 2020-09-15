@@ -66,7 +66,6 @@ class AccountPayableControlController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   @AccessControl
    fun create(
       @Body dto: AccountPayableControlDTO,
       authentication: Authentication
@@ -82,7 +81,7 @@ class AccountPayableControlController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableControlEndpoints"], summary = "Update an AccountPayableControlEntity", description = "Update an AccountPayableControlEntity from a body of AccountPayableControlDTO", operationId = "accountPayableControl-update")
    @ApiResponses(
@@ -93,9 +92,7 @@ class AccountPayableControlController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   @AccessControl
    fun update(
-      @QueryValue("id") id: Long,
       @Body dto: AccountPayableControlDTO,
       authentication: Authentication
    ): AccountPayableControlDTO {
@@ -103,7 +100,7 @@ class AccountPayableControlController @Inject constructor(
       val userCompany = user.myCompany()
       logger.info("Requested Update AccountPayableControl {}", dto)
 
-      val response = accountPayableControlService.update(id, dto, userCompany)
+      val response = accountPayableControlService.update(dto, userCompany)
 
       logger.debug("Requested Update AccountPayableControl {} resulted in {}", dto, response)
 
