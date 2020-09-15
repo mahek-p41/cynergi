@@ -8,11 +8,14 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Menu", title = "MenuDTO", description = "A data transfer object containing a menu information")
+@Schema(title = "MenuDTO", description = "A data transfer object containing a menu information")
 data class MenuDTO(
 
    @field:Positive
    var id: Long? = null,
+
+   @field:Schema(description = "List of sub-menus")
+   var menus: MutableList<MenuDTO>? = null,
 
    @field:NotNull
    @field:Size(min = 1, max = 10)
@@ -42,9 +45,10 @@ data class MenuDTO(
          modules = type.modules.map { ModuleDTO(it) } as MutableList<ModuleDTO>
       )
 
-   constructor(type: MenuType, localizedDescription: String, modules: List<ModuleDTO>? = null) :
+   constructor(type: MenuType, localizedDescription: String, menus: List<MenuDTO>? = null, modules: List<ModuleDTO>? = null) :
       this(
          id = type.id,
+         menus = (menus ?: type.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>,
          value = type.value,
          description = localizedDescription,
          orderNumber = type.orderNumber,
