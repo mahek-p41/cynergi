@@ -503,7 +503,6 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (:statuses) ")
       }
 
-
       whereClause.append(" AND $subQuery ")
 
       val sql =

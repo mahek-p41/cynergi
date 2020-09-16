@@ -64,9 +64,9 @@ class UserAuthenticationProvider @Inject constructor(
                   // cases when chosenStore != null
 
                   if (employeeAssignedStore == chosenStore || employee.alternativeStoreIndicator == "A") {
-                        logger.info("Employee {} has alternative store indicator set to A and chose store {}", employee, chosenStore)
+                     logger.info("Employee {} has alternative store indicator set to A and chose store {}", employee, chosenStore)
 
-                        credentialsMatched(chosenStore, employee)
+                     credentialsMatched(chosenStore, employee)
                   } else {
                      logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
 

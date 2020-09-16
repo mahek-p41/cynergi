@@ -31,7 +31,7 @@ import javax.inject.Inject
 class LocationController @Inject constructor(
    private val locationService: LocationService,
    private val userService: UserService
-){
+) {
    private val logger: Logger = LoggerFactory.getLogger(LocationController::class.java)
 
    @Throws(NotFoundException::class)
