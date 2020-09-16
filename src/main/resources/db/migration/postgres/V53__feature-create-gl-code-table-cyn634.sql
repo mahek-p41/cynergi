@@ -7,7 +7,7 @@ CREATE TABLE general_ledger_source_codes
     company_id                                       BIGINT REFERENCES company (id)                                              NOT NULL,
     value                                            varchar(3)                                               NOT NULL,
     description                                      varchar(30)                                              NOT NULL,
-    UNIQUE (company_id)
+    UNIQUE (company_id, value)
 );
 CREATE TRIGGER general_ledger_source_codes_trg
     BEFORE UPDATE

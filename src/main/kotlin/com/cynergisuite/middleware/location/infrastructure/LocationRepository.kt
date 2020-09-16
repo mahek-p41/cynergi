@@ -85,7 +85,7 @@ class LocationRepository @Inject constructor(
             ${selectBaseQuery()}
             WHERE location.number = :location_number
                AND comp.id = :comp_id
-      """.trimIndent()
+         """.trimIndent()
 
       logger.debug("Searching for Location by number {}/{}", query, params)
 
@@ -139,7 +139,7 @@ class LocationRepository @Inject constructor(
             FROM fastinfo_prod_import.location_vw location
                JOIN company comp ON comp.dataset_code = location.dataset
             WHERE location.id = :location_id
-      """.trimIndent(),
+         """.trimIndent(),
          mapOf("location_id" to id, "comp_id" to company.myId()), Boolean::class.java
       )!!
 
@@ -156,7 +156,7 @@ class LocationRepository @Inject constructor(
                JOIN company comp ON comp.dataset_code = location.dataset
             WHERE location.number = :location_number
                AND comp.id = :comp_id
-      """.trimIndent(),
+         """.trimIndent(),
          mapOf("location_number" to number, "comp_id" to company.myId()), Boolean::class.java
       )!!
 
