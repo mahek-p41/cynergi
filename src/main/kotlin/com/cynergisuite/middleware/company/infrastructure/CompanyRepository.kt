@@ -284,7 +284,7 @@ class CompanyRepository @Inject constructor(
       return updatedCompany
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): CompanyEntity =
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY, addressPrefix: String = "address_"): CompanyEntity =
       CompanyEntity(
          id = rs.getLong("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
@@ -293,7 +293,7 @@ class CompanyRepository @Inject constructor(
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
          federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
-         address = addressRepository.mapAddressOrNull(rs, "address_")
+         address = addressRepository.mapAddressOrNull(rs, addressPrefix)
       )
 
    fun mapRow(rs: ResultSet, address: AddressEntity?, columnPrefix: String = EMPTY): CompanyEntity =

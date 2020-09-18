@@ -197,44 +197,70 @@ class PurchaseOrderControlRepository @Inject constructor(
             defApp.emp_cynergi_system_admin                                      AS defApp_cynergi_system_admin,
             defApp.emp_alternative_store_indicator                               AS defApp_alternative_store_indicator,
             defApp.emp_alternative_area                                          AS defApp_alternative_area,
-            defApp.store_id                                                      AS store_id,
-            defApp.store_number                                                  AS store_number,
-            defApp.store_name                                                    AS store_name,
-            defApp.dept_id                                                       AS dept_id,
-            defApp.dept_code                                                     AS dept_code,
-            defApp.dept_description                                              AS dept_description,
+            defApp.store_id                                                      AS defApp_store_id,
+            defApp.store_number                                                  AS defApp_store_number,
+            defApp.store_name                                                    AS defApp_store_name,
+            defApp.dept_id                                                       AS defApp_dept_id,
+            defApp.dept_code                                                     AS defApp_dept_code,
+            defApp.dept_description                                              AS defApp_dept_description,
+            defApp.comp_id                                                       AS defApp_comp_id,
+            defApp.comp_uu_row_id                                                AS defApp_comp_uu_row_id,
+            defApp.comp_time_created                                             AS defApp_comp_time_created,
+            defApp.comp_time_updated                                             AS defApp_comp_time_updated,
+            defApp.comp_name                                                     AS defApp_comp_name,
+            defApp.comp_doing_business_as                                        AS defApp_comp_doing_business_as,
+            defApp.comp_client_code                                              AS defApp_comp_client_code,
+            defApp.comp_client_id                                                AS defApp_comp_client_id,
+            defApp.comp_dataset_code                                             AS defApp_comp_dataset_code,
+            defApp.comp_federal_id_number                                        AS defApp_comp_federal_id_number,
+            defApp.address_id                                                    AS defApp_comp_address_id,
+            defApp.address_name                                                  AS defApp_comp_address_name,
+            defApp.address_address1                                              AS defApp_comp_address_address1,
+            defApp.address_address2                                              AS defApp_comp_address_address2,
+            defApp.address_city                                                  AS defApp_comp_address_city,
+            defApp.address_state                                                 AS defApp_comp_address_state,
+            defApp.address_postal_code                                           AS defApp_comp_address_postal_code,
+            defApp.address_latitude                                              AS defApp_comp_address_latitude,
+            defApp.address_longitude                                             AS defApp_comp_address_longitude,
+            defApp.address_country                                               AS defApp_comp_address_country,
+            defApp.address_county                                                AS defApp_comp_address_county,
+            defApp.address_phone                                                 AS defApp_comp_address_phone,
+            defApp.address_fax                                                   AS defApp_comp_address_fax,
             appReqFlagType.id                                                    AS appReqFlagType_id,
             appReqFlagType.value                                                 AS appReqFlagType_value,
             appReqFlagType.description                                           AS appReqFlagType_description,
             appReqFlagType.localization_code                                     AS appReqFlagType_localization_code
          FROM purchase_order_control purchaseOrderControl
             JOIN default_account_payable_status_type_domain defaultAPStatusType ON purchaseOrderControl.default_account_payable_status_type_id = defaultAPStatusType.id
-            JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.v_id
             JOIN update_purchase_order_cost_type_domain updatePOCostType ON purchaseOrderControl.update_purchase_order_cost_type_id = updatePOCostType.id
             JOIN default_purchase_order_type_domain defaultPOType ON purchaseOrderControl.default_purchase_order_type_id = defaultPOType.id
-            JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_id AND defApp.emp_type = 'eli'
             JOIN approval_required_flag_type_domain appReqFlagType ON purchaseOrderControl.approval_required_flag_type_id = appReqFlagType.id
+            LEFT JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.v_id
+            LEFT JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_id AND defApp.emp_type = 'eli'
       """
    }
 
    fun findOne(company: Company): PurchaseOrderControlEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE purchaseOrderControl.company_id = :comp_id"
+
+      logger.trace("Searching for PurchaseOrderControl:\n{}\nParams:{}", query, company)
+
       val found = jdbc.findFirstOrNull(
          query, params,
          RowMapper { rs, _ ->
             val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.mapRow(rs, "defaultAPStatusType_")
-            val defaultVendor = vendorRepository.mapRow(rs, company, "defVen_")
+            val defaultVendor = vendorRepository.mapRowOrNull(rs, company, "defVen_")
             val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
             val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
-            val defaultApprover = employeeRepository.mapRow(rs, "defApp_")
+            val defaultApprover = employeeRepository.mapRowOrNull(rs, "defApp_", "defApp_comp_", "defApp_comp_address_", "defApp_dept_","defApp_store_")
             val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
 
             mapRow(rs, defaultAccountPayableStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
          }
       )
 
-      logger.trace("Searching for PurchaseOrderControl: {} resulted in {}", company, found)
+      logger.trace("Searching for PurchaseOrderControl resulted in {}", found)
 
       return found
    }

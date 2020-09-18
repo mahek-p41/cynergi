@@ -136,29 +136,32 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          sortByShipToOnPrint == purchaseOrderControl.sortByShipToOnPrint
          invoiceByLocation == purchaseOrderControl.invoiceByLocation
          validateInventory == purchaseOrderControl.validateInventory
-         defaultApprover.id == purchaseOrderControl.defaultApprover.id
+         defaultVendor.id == purchaseOrderControl.defaultVendor.id
+         defaultApprover.id == employee.id
 
          with(approvalRequiredFlagType) {
             value == purchaseOrderControl.approvalRequiredFlagType.value
             description == purchaseOrderControl.approvalRequiredFlagType.description
          }
       }
+
+      when:
+      def result2 = get("$path/")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result2 != null
    }
 
    void "create valid purchase order control without default vendor" () {
       given:
       final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
 
-      def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControl))
-      jsonPOControl.remove('defaultVendor')
+      final employee = employeeFactoryService.single(company)
+      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(employee.myId()))
 
       when:
-      def result = post("$path/", jsonPOControl)
+      def result = post("$path/", purchaseOrderControl)
 
       then:
       notThrown(HttpClientResponseException)
@@ -191,13 +194,21 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          sortByShipToOnPrint == purchaseOrderControl.sortByShipToOnPrint
          invoiceByLocation == purchaseOrderControl.invoiceByLocation
          validateInventory == purchaseOrderControl.validateInventory
-         defaultApprover.id == purchaseOrderControl.defaultApprover.id
+         defaultVendor == null
+         defaultApprover.id == employee.id
 
          with(approvalRequiredFlagType) {
             value == purchaseOrderControl.approvalRequiredFlagType.value
             description == purchaseOrderControl.approvalRequiredFlagType.description
          }
       }
+
+      when:
+      def result2 = get("$path/")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result2 != null
    }
 
    void "create valid purchase order control without default approver" () {
@@ -206,14 +217,10 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
-
-      def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControl))
-      jsonPOControl.remove('defaultApprover')
+      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), null)
 
       when:
-      def result = post("$path/", jsonPOControl)
+      def result = post("$path/", purchaseOrderControl)
 
       then:
       notThrown(HttpClientResponseException)
@@ -232,7 +239,6 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          printVendorComments == purchaseOrderControl.printVendorComments
          includeFreightInCost == purchaseOrderControl.includeFreightInCost
          updateCostOnModel == purchaseOrderControl.updateCostOnModel
-         defaultVendor.id == purchaseOrderControl.defaultVendor.id
 
          with(updatePurchaseOrderCost) {
             value == purchaseOrderControl.updatePurchaseOrderCost.value
@@ -247,12 +253,21 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          sortByShipToOnPrint == purchaseOrderControl.sortByShipToOnPrint
          invoiceByLocation == purchaseOrderControl.invoiceByLocation
          validateInventory == purchaseOrderControl.validateInventory
+         defaultVendor.id == purchaseOrderControl.defaultVendor.id
+         defaultApprover == null
 
          with(approvalRequiredFlagType) {
             value == purchaseOrderControl.approvalRequiredFlagType.value
             description == purchaseOrderControl.approvalRequiredFlagType.description
          }
       }
+
+      when:
+      def result2 = get("$path/")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result2 != null
    }
 
    void "create invalid purchase order control for company with existing record" () {

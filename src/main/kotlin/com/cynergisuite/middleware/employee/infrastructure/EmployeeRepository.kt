@@ -376,8 +376,8 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity {
-      val company = companyRepository.mapRow(rs, companyColumnPrefix)
+   fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", companyAddressColumnPrefix: String = "address_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity {
+      val company = companyRepository.mapRow(rs, companyColumnPrefix, companyAddressColumnPrefix)
 
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
@@ -396,9 +396,9 @@ class EmployeeRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity? =
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", companyAddressColumnPrefix: String = "comp_address_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, columnPrefix, companyColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
+         mapRow(rs, columnPrefix, companyColumnPrefix, companyAddressColumnPrefix, departmentColumnPrefix, storeColumnPrefix)
       } else {
          null
       }
