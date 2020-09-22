@@ -1,13 +1,13 @@
-package com.cynergisuite.middleware.purchase.order
+package com.cynergisuite.middleware.accounting.account.payable
 
 import com.cynergisuite.domain.TypeDomainEntity
 
-data class PurchaseOrderStatusType(
+data class DefaultAccountPayableStatusType(
    val id: Long,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<PurchaseOrderStatusType> {
+) : TypeDomainEntity<DefaultAccountPayableStatusType> {
 
    override fun myId(): Long = id
    override fun myValue(): String = value

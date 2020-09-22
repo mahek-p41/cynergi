@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.purchase.order.control
 
+import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusTypeValueObject
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderTypeValueObject
+import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
 import com.cynergisuite.middleware.purchase.order.control.infrastructure.PurchaseOrderControlRepository
 import io.micronaut.validation.Validated
@@ -37,9 +37,9 @@ class PurchaseOrderControlService @Inject constructor(
    private fun transformEntity(purchaseOrderControl: PurchaseOrderControlEntity): PurchaseOrderControlDTO {
       return PurchaseOrderControlDTO(
          entity = purchaseOrderControl,
-         defaultStatusType = PurchaseOrderStatusTypeValueObject(purchaseOrderControl.defaultStatusType),
+         defaultAccountPayableStatusType = DefaultAccountPayableStatusTypeDTO(purchaseOrderControl.defaultAccountPayableStatusType),
          updatePurchaseOrderCost = UpdatePurchaseOrderCostTypeValueObject(purchaseOrderControl.updatePurchaseOrderCost),
-         defaultPurchaseOrderType = PurchaseOrderTypeValueObject(purchaseOrderControl.defaultPurchaseOrderType),
+         defaultPurchaseOrderType = DefaultPurchaseOrderTypeDTO(purchaseOrderControl.defaultPurchaseOrderType),
          approvalRequiredFlagType = ApprovalRequiredFlagDTO(purchaseOrderControl.approvalRequiredFlagType)
       )
    }

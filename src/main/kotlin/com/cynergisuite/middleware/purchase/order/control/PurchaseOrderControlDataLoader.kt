@@ -1,14 +1,14 @@
 package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDataLoader
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagTypeFactory
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusTypeFactory
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusTypeValueObject
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderTypeFactory
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderTypeValueObject
+import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
+import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDataLoader
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeFactory
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
 import com.cynergisuite.middleware.purchase.order.control.infrastructure.PurchaseOrderControlRepository
@@ -32,13 +32,13 @@ object PurchaseOrderControlDataLoader {
             dropFiveCharactersOnModelNumber = Random.nextBoolean(),
             updateAccountPayable = Random.nextBoolean(),
             printSecondDescription = Random.nextBoolean(),
-            defaultStatusType = PurchaseOrderStatusTypeFactory.predefined().first { it.possibleDefault },
+            defaultAccountPayableStatusType = DefaultAccountPayableStatusTypeDataLoader.random(),
             printVendorComments = Random.nextBoolean(),
             includeFreightInCost = Random.nextBoolean(),
             updateCostOnModel = Random.nextBoolean(),
             defaultVendor = defaultVendor,
             updatePurchaseOrderCost = UpdatePurchaseOrderCostTypeFactory.random(),
-            defaultPurchaseOrderType = PurchaseOrderTypeFactory.random(),
+            defaultPurchaseOrderType = DefaultPurchaseOrderTypeDataLoader.random(),
             sortByShipToOnPrint = Random.nextBoolean(),
             invoiceByLocation = Random.nextBoolean(),
             validateInventory = Random.nextBoolean(),
@@ -52,8 +52,7 @@ object PurchaseOrderControlDataLoader {
    fun streamDTO(
       numberIn: Int = 1,
       defaultVendor: SimpleIdentifiableDTO,
-      defaultApprover: SimpleIdentifiableDTO,
-      defaultStatusType: PurchaseOrderStatusTypeValueObject = PurchaseOrderStatusTypeValueObject(PurchaseOrderStatusTypeFactory.predefined().first { it.possibleDefault })
+      defaultApprover: SimpleIdentifiableDTO
    ): Stream<PurchaseOrderControlDTO> {
       val number = if (numberIn > 0) numberIn else 1
 
@@ -62,13 +61,13 @@ object PurchaseOrderControlDataLoader {
             dropFiveCharactersOnModelNumber = Random.nextBoolean(),
             updateAccountPayable = Random.nextBoolean(),
             printSecondDescription = Random.nextBoolean(),
-            defaultStatusType = defaultStatusType,
+            defaultAccountPayableStatusType = DefaultAccountPayableStatusTypeDTO(DefaultAccountPayableStatusTypeDataLoader.random()),
             printVendorComments = Random.nextBoolean(),
             includeFreightInCost = Random.nextBoolean(),
             updateCostOnModel = Random.nextBoolean(),
             defaultVendor = defaultVendor,
             updatePurchaseOrderCost = UpdatePurchaseOrderCostTypeValueObject(UpdatePurchaseOrderCostTypeFactory.random()),
-            defaultPurchaseOrderType = PurchaseOrderTypeValueObject(PurchaseOrderTypeFactory.random()),
+            defaultPurchaseOrderType = DefaultPurchaseOrderTypeDTO(DefaultPurchaseOrderTypeDataLoader.random()),
             sortByShipToOnPrint = Random.nextBoolean(),
             invoiceByLocation = Random.nextBoolean(),
             validateInventory = Random.nextBoolean(),
@@ -95,10 +94,6 @@ object PurchaseOrderControlDataLoader {
 
       fun singleDTO(defaultVendor: SimpleIdentifiableDTO, defaultApprover: SimpleIdentifiableDTO): PurchaseOrderControlDTO {
          return PurchaseOrderControlDataLoader.streamDTO(1, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
-      }
-
-      fun singleDTO(defaultVendor: SimpleIdentifiableDTO, defaultApprover: SimpleIdentifiableDTO, defaultStatusType: PurchaseOrderStatusTypeValueObject): PurchaseOrderControlDTO {
-         return PurchaseOrderControlDataLoader.streamDTO(1, defaultVendor, defaultApprover, defaultStatusType).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
       }
    }
 }

@@ -17,7 +17,7 @@ object PurchaseOrderTypeFactory {
          id = 2,
          value = "R",
          description = "Requisition",
-         localizationCode = "prequisition"
+         localizationCode = "requisition"
       ),
       PurchaseOrderType(
          id = 3,

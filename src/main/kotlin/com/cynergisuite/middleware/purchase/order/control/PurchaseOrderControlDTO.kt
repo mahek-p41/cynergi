@@ -2,9 +2,9 @@ package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderStatusTypeValueObject
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderTypeValueObject
+import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -35,8 +35,8 @@ data class PurchaseOrderControlDTO(
 
    @field:NotNull
    @field:Valid
-   @field:Schema(description = "Default status type")
-   var defaultStatusType: PurchaseOrderStatusTypeValueObject? = null,
+   @field:Schema(description = "Default account payable status type")
+   var defaultAccountPayableStatusType: DefaultAccountPayableStatusTypeDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "Print vendor comments")
@@ -61,7 +61,7 @@ data class PurchaseOrderControlDTO(
    @field:NotNull
    @field:Valid
    @field:Schema(description = "Default purchase order type")
-   var defaultPurchaseOrderType: PurchaseOrderTypeValueObject? = null,
+   var defaultPurchaseOrderType: DefaultPurchaseOrderTypeDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "Sort by ship to on print")
@@ -86,9 +86,9 @@ data class PurchaseOrderControlDTO(
 
    constructor(
       entity: PurchaseOrderControlEntity,
-      defaultStatusType: PurchaseOrderStatusTypeValueObject,
+      defaultAccountPayableStatusType: DefaultAccountPayableStatusTypeDTO,
       updatePurchaseOrderCost: UpdatePurchaseOrderCostTypeValueObject,
-      defaultPurchaseOrderType: PurchaseOrderTypeValueObject,
+      defaultPurchaseOrderType: DefaultPurchaseOrderTypeDTO,
       approvalRequiredFlagType: ApprovalRequiredFlagDTO
    ) :
       this(
@@ -96,7 +96,7 @@ data class PurchaseOrderControlDTO(
          dropFiveCharactersOnModelNumber = entity.dropFiveCharactersOnModelNumber,
          updateAccountPayable = entity.updateAccountPayable,
          printSecondDescription = entity.printSecondDescription,
-         defaultStatusType = defaultStatusType,
+         defaultAccountPayableStatusType = defaultAccountPayableStatusType,
          printVendorComments = entity.printVendorComments,
          includeFreightInCost = entity.includeFreightInCost,
          updateCostOnModel = entity.updateCostOnModel,

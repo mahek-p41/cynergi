@@ -57,7 +57,6 @@ class PurchaseOrderStatusTypeRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
-         localizationCode = rs.getString("${columnPrefix}localization_code"),
-         possibleDefault = rs.getBoolean("${columnPrefix}possible_default")
+         localizationCode = rs.getString("${columnPrefix}localization_code")
       )
 }
