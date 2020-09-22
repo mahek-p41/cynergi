@@ -89,6 +89,8 @@ CREATE TABLE vendor
     allow_drop_ship_to_customer         BOOLEAN                     DEFAULT FALSE                    NOT NULL,
     auto_submit_purchase_order          BOOLEAN                     DEFAULT FALSE                    NOT NULL,
     search_vector                       TSVECTOR                                                     NOT NULL,
+    note                                TEXT,
+    phone_number                        VARCHAR CHECK (phone_number NOT LIKE '%[^0-9+-.]%'),
     UNIQUE (company_id, number)
 );
 CREATE TRIGGER update_vendor_trg
@@ -140,3 +142,4 @@ CREATE INDEX vendor_name_trgm_idx
 
 CREATE INDEX vendor_vector_idx
     ON vendor USING gin(search_vector);
+
