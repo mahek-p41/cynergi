@@ -51,8 +51,8 @@ object PurchaseOrderControlDataLoader {
    @JvmStatic
    fun streamDTO(
       numberIn: Int = 1,
-      defaultVendor: SimpleIdentifiableDTO,
-      defaultApprover: SimpleIdentifiableDTO
+      defaultVendor: SimpleIdentifiableDTO?,
+      defaultApprover: SimpleIdentifiableDTO?
    ): Stream<PurchaseOrderControlDTO> {
       val number = if (numberIn > 0) numberIn else 1
 
@@ -92,7 +92,7 @@ object PurchaseOrderControlDataLoader {
          return stream(1, company, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
       }
 
-      fun singleDTO(defaultVendor: SimpleIdentifiableDTO, defaultApprover: SimpleIdentifiableDTO): PurchaseOrderControlDTO {
+      fun singleDTO(defaultVendor: SimpleIdentifiableDTO?, defaultApprover: SimpleIdentifiableDTO?): PurchaseOrderControlDTO {
          return PurchaseOrderControlDataLoader.streamDTO(1, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
       }
    }

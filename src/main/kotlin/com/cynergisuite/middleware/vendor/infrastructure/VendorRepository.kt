@@ -14,6 +14,7 @@ import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
@@ -520,6 +521,13 @@ class VendorRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number")
       )
    }
+
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String? = "v_"): VendorEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, company, columnPrefix)
+      } else {
+         null
+      }
 
    private fun mapRowUpsert(rs: ResultSet, company: Company, address: AddressEntity?, freightOnboardType: FreightOnboardType, paymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, freightCalcMethodType: FreightCalcMethodType): VendorEntity {
       val payToId = rs.getLongOrNull("pay_to_id")
