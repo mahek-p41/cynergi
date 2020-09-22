@@ -18,7 +18,7 @@ class AccountPayableInvoiceStatusTypeControllerSpecification extends ControllerS
       def predefinedAccountPayableInvoiceStatusType = dataLoaderService.predefined().collect { new AccountPayableInvoiceStatusTypeDTO(it) }
 
       when:
-      def response = get( "/accounting/account/payable/type/account-payable-invoice-status")
+      def response = get( "/accounting/account/payable/type/invoice-status")
 
       then:
       notThrown(HttpClientResponseException)
