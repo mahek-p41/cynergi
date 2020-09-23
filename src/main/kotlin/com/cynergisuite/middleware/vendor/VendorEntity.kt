@@ -46,7 +46,9 @@ data class VendorEntity(
    val purchaseOrderSubmitEmailAddress: String?,
    val allowDropShipToCustomer: Boolean = false,
    val autoSubmitPurchaseOrder: Boolean = false,
-   val number: Int? = null
+   val number: Int? = null,
+   val note: String?,
+   val phone: String?
 ) : Identifiable {
 
    constructor(id: Long? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
@@ -85,7 +87,9 @@ data class VendorEntity(
          emailAddress = dto.emailAddress,
          purchaseOrderSubmitEmailAddress = dto.purchaseOrderSubmitEmailAddress,
          allowDropShipToCustomer = dto.allowDropShipToCustomer!!,
-         autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder!!
+         autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder!!,
+         note = dto.note,
+         phone = dto.phone
       )
 
    constructor(existingVendor: VendorEntity, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, dto: VendorDTO, vendorGroup: VendorGroupEntity?, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :

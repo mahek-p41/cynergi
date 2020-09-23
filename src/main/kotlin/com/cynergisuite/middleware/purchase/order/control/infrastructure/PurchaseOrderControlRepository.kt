@@ -106,6 +106,8 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_purchase_order_submit_email_address                         AS defVen_purchase_order_submit_email_address,
             defVen.v_allow_drop_ship_to_customer                                 AS defVen_allow_drop_ship_to_customer,
             defVen.v_auto_submit_purchase_order                                  AS defVen_auto_submit_purchase_order,
+            defVen.v_note                                                        AS defVen_note,
+            defVen.v_phone_number                                                AS defVen_phone_number,
             defVen.comp_id                                                       AS comp_id,
             defVen.comp_uu_row_id                                                AS comp_uu_row_id,
             defVen.comp_time_created                                             AS comp_time_created,
