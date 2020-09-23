@@ -3,7 +3,11 @@ package com.cynergisuite.middleware.accounting.account.payable.control.infrastru
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
-import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoader.AccountPayableControlDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
+import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -15,6 +19,9 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 @MicronautTest(transactional = false)
 class AccountPayableControlControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account/payable/control'
+   private jsonOutput = new JsonOutput()
+   private jsonSlurper = new JsonSlurper()
+
    @Inject AccountDataLoaderService accountDataLoaderService
    @Inject AccountPayableControlDataLoaderService accountPayableControlDataLoaderService
 
@@ -133,7 +140,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "company"
-      response[0].message == "Account payable control for user's company " + company.myDataset() + " already exists"
+      response[0].message == "${company.myDataset()} already exists"
    }
 
    void "create invalid account payable control without check form type" () {
@@ -154,6 +161,48 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "checkFormType"
       response[0].message == "Is required"
+   }
+
+   void "create invalid account payable control with non-existing check form type value" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      accountPayableControl.checkFormType = new AccountPayableCheckFormTypeDTO(AccountPayableCheckFormTypeDataLoader.random())
+      accountPayableControl.checkFormType.value = "nonexisting"
+
+      when:
+      post("$path/", accountPayableControl)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "checkFormType.value"
+      response[0].message == "nonexisting was unable to be found"
+   }
+
+   void "create invalid account payable control with null value of check form type" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glInvCleAcct = accountDataLoaderService.single(company)
+      final glInvAcct = accountDataLoaderService.single(company)
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControlJson = jsonSlurper.parseText(jsonOutput.toJson(accountPayableControl))
+      accountPayableControlJson.checkFormType.value = null
+
+      when:
+      post("$path/", accountPayableControlJson)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 2
+      response.path == "checkFormType.value"
+      response.message == "Failed to convert argument [dto] for value [null]"
    }
 
    void "create invalid account payable control without pay after discount date" () {
@@ -386,7 +435,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.id = existingAPControl.id
 
       when:
-      def result = put("$path/$existingAPControl.id", updatedAPControlDTO)
+      def result = put("$path", updatedAPControlDTO)
 
       then:
       notThrown(HttpClientResponseException)
@@ -431,7 +480,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.id = 0
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -444,22 +493,20 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "update invalid account payable control with non-existing id" () {
       given:
-      final company = nineNineEightEmployee.company
-      final glInvCleAcct = accountDataLoaderService.single(company)
-      final glInvAcct = accountDataLoaderService.single(company)
-      accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final company2 = companyFactoryService.forDatasetCode('tstds2') // load the company that isn't logged in to create the control record
+      final glInvCleAcct = accountDataLoaderService.single(company2)
+      final glInvAcct = accountDataLoaderService.single(company2)
+      accountPayableControlDataLoaderService.single(company2, glInvCleAcct, glInvAcct)
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
 
       when:
-      put("$path/99", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
+      exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "id"
-      response[0].message == "99 was unable to be found"
+      response.message == "${nineNineEightEmployee.company.myId()} was unable to be found"
    }
 
    void "update invalid account payable control by removing check form type" () {
@@ -472,7 +519,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.checkFormType = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -493,7 +540,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.printCurrencyIndicatorType = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -514,7 +561,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -535,7 +582,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.generalLedgerInventoryClearingAccount = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -556,7 +603,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       updatedAPControlDTO.generalLedgerInventoryAccount = null
 
       when:
-      put("$path/$existingAPControl.id", updatedAPControlDTO)
+      put("$path", updatedAPControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)

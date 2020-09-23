@@ -11,8 +11,10 @@ import com.cynergisuite.middleware.accounting.account.payable.infrastructure.Acc
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PrintCurrencyIndicatorTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PurchaseOrderNumberRequiredIndicatorTypeRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
@@ -35,33 +37,23 @@ class AccountPayableControlValidator @Inject constructor(
    fun validateCreate(@Valid dto: AccountPayableControlDTO, company: Company): AccountPayableControlEntity {
       logger.debug("Validating Create AccountPayableControl {}", dto)
 
-      val checkFormType = accountPayableCheckFormTypeRepository.findOne(dto.checkFormType!!.value)!!
-      val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.findOne(dto.printCurrencyIndicatorType!!.value)!!
-      val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.findOne(dto.purchaseOrderNumberRequiredIndicatorType!!.value)!!
-      val generalLedgerInventoryClearingAccount = accountRepository.findOne(dto.generalLedgerInventoryClearingAccount!!.id!!, company)
-      val generalLedgerInventoryAccount = accountRepository.findOne(dto.generalLedgerInventoryAccount!!.id!!, company)
-
-      doValidation { errors ->
-         if (accountPayableControlRepository.exists(company)) {
-            errors.add(ValidationError("company", Duplicate("Account payable control for user's company " + company.myDataset())))
-         }
-
-         doSharedValidation(errors, dto, checkFormType, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount)
-      }
-
-      return AccountPayableControlEntity(
-         dto,
-         checkFormType = checkFormType,
-         printCurrencyIndicatorType = printCurrencyIndicatorType,
-         purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType,
-         generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount!!,
-         generalLedgerInventoryAccount = generalLedgerInventoryAccount!!
-      )
+      return doSharedValidation(dto, company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, dto: AccountPayableControlDTO, company: Company): AccountPayableControlEntity {
+   fun validateUpdate(dto: AccountPayableControlDTO, company: Company): AccountPayableControlEntity {
       logger.debug("Validating Update AccountPayableControl {}", dto)
+
+      val accountPayableControlEntity = accountPayableControlRepository.findOne(company) ?: throw NotFoundException(company.myId()!!)
+
+      return doSharedValidation(dto, company, accountPayableControlEntity)
+   }
+
+   private fun doSharedValidation(
+      dto: AccountPayableControlDTO,
+      company: Company,
+      entity: AccountPayableControlEntity? = null
+   ): AccountPayableControlEntity {
 
       val checkFormType = accountPayableCheckFormTypeRepository.findOne(dto.checkFormType!!.value)
       val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.findOne(dto.printCurrencyIndicatorType!!.value)
@@ -70,11 +62,23 @@ class AccountPayableControlValidator @Inject constructor(
       val generalLedgerInventoryAccount = accountRepository.findOne(dto.generalLedgerInventoryAccount!!.id!!, company)
 
       doValidation { errors ->
-         if (!accountPayableControlRepository.exists(id)) {
-            errors.add(ValidationError("id", NotFound(id)))
+         if (accountPayableControlRepository.exists(company) && entity == null) { // tried to create an Account Payable Control record, but one already existed, basically they did a post when they should have done a put.
+            errors.add(ValidationError("company", ConfigAlreadyExist(company.myDataset())))
          }
+         checkFormType
+            ?: errors.add(ValidationError("checkFormType.value", NotFound(dto.checkFormType!!.value)))
 
-         doSharedValidation(errors, dto, checkFormType, printCurrencyIndicatorType, purchaseOrderNumberRequiredIndicatorType, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount)
+         printCurrencyIndicatorType
+            ?: errors.add(ValidationError("printCurrencyIndicatorType.value", NotFound(dto.printCurrencyIndicatorType!!.value)))
+
+         purchaseOrderNumberRequiredIndicatorType
+            ?: errors.add(ValidationError("purchaseOrderNumberRequiredIndicatorType.value", NotFound(dto.purchaseOrderNumberRequiredIndicatorType!!.value)))
+
+         generalLedgerInventoryClearingAccount
+            ?: errors.add(ValidationError("generalLedgerInventoryClearingAccount.id", NotFound(dto.generalLedgerInventoryClearingAccount!!.id!!)))
+
+         generalLedgerInventoryAccount
+            ?: errors.add(ValidationError("generalLedgerInventoryAccount.id", NotFound(dto.generalLedgerInventoryAccount!!.id!!)))
       }
 
       return AccountPayableControlEntity(
@@ -85,30 +89,5 @@ class AccountPayableControlValidator @Inject constructor(
          generalLedgerInventoryClearingAccount = generalLedgerInventoryClearingAccount!!,
          generalLedgerInventoryAccount = generalLedgerInventoryAccount!!
       )
-   }
-
-   private fun doSharedValidation(
-      errors: MutableSet<ValidationError>,
-      dto: AccountPayableControlDTO,
-      checkFormType: AccountPayableCheckFormType?,
-      printCurrencyIndicatorType: PrintCurrencyIndicatorType?,
-      purchaseOrderNumberRequiredIndicatorType: PurchaseOrderNumberRequiredIndicatorType?,
-      generalLedgerInventoryClearingAccount: AccountEntity?,
-      generalLedgerInventoryAccount: AccountEntity?
-   ) {
-      checkFormType
-         ?: errors.add(ValidationError("checkFormType.value", NotFound(dto.checkFormType!!.value)))
-
-      printCurrencyIndicatorType
-         ?: errors.add(ValidationError("printCurrencyIndicatorType.value", NotFound(dto.printCurrencyIndicatorType!!.value)))
-
-      purchaseOrderNumberRequiredIndicatorType
-         ?: errors.add(ValidationError("purchaseOrderNumberRequiredIndicatorType.value", NotFound(dto.purchaseOrderNumberRequiredIndicatorType!!.value)))
-
-      generalLedgerInventoryClearingAccount
-         ?: errors.add(ValidationError("generalLedgerInventoryClearingAccount.id", NotFound(dto.generalLedgerInventoryClearingAccount!!.id!!)))
-
-      generalLedgerInventoryAccount
-         ?: errors.add(ValidationError("generalLedgerInventoryAccount.id", NotFound(dto.generalLedgerInventoryAccount!!.id!!)))
    }
 }

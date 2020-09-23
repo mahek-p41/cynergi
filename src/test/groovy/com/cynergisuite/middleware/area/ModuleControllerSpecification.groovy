@@ -44,7 +44,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].message == 'Config for module 1 is already exist'
+      response[0].message == 'Config for module 1 already exists'
       response[0].path == 'id'
    }
 
