@@ -166,7 +166,15 @@ data class VendorDTO(
 
    @field:Positive
    @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor numbe")
-   var number: Int? = null
+   var number: Int? = null,
+
+   @field:Size(min = 4, max = 200)
+   @field:Schema(name = "note", description = "Vendor note")
+   var note: String? = null,
+
+   @field:Size(min = 3, max = 21)
+   @field:Schema(name = "phone", description = "Vendor phone number")
+   var phone: String? = null
 
 ) : Identifiable {
 
@@ -206,7 +214,9 @@ data class VendorDTO(
          purchaseOrderSubmitEmailAddress = entity.purchaseOrderSubmitEmailAddress,
          allowDropShipToCustomer = entity.allowDropShipToCustomer,
          autoSubmitPurchaseOrder = entity.autoSubmitPurchaseOrder,
-         number = entity.number
+         number = entity.number,
+         note = entity.note,
+         phone = entity.phone
       )
 
    override fun myId(): Long? = id

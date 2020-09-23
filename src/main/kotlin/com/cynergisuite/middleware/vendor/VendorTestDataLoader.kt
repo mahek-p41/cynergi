@@ -67,7 +67,9 @@ object VendorTestDataLoader {
             emailAddress = email.emailAddress(),
             purchaseOrderSubmitEmailAddress = email.safeEmailAddress(),
             allowDropShipToCustomer = random.nextBoolean(),
-            autoSubmitPurchaseOrder = random.nextBoolean()
+            autoSubmitPurchaseOrder = random.nextBoolean(),
+            note = faker.lorem().sentence(),
+            phone = phone.phoneNumber()
          )
       }
    }

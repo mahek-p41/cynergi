@@ -85,6 +85,8 @@ class VendorRepository @Inject constructor(
             v.purchase_order_submit_email_address AS v_purchase_order_submit_email_address,
             v.allow_drop_ship_to_customer         AS v_allow_drop_ship_to_customer,
             v.auto_submit_purchase_order          AS v_auto_submit_purchase_order,
+            v.note                                AS v_note,
+            v.phone_number                        AS v_phone_number,
             comp.id                               AS comp_id,
             comp.uu_row_id                        AS comp_uu_row_id,
             comp.time_created                     AS comp_time_created,
@@ -296,7 +298,9 @@ class VendorRepository @Inject constructor(
             email_address,
             purchase_order_submit_email_address,
             allow_drop_ship_to_customer,
-            auto_submit_purchase_order
+            auto_submit_purchase_order,
+            note,
+            phone_number
          )
          VALUES (
             :company_id,
@@ -332,7 +336,9 @@ class VendorRepository @Inject constructor(
             :email_address,
             :purchase_order_submit_email_address,
             :allow_drop_ship_to_customer,
-            :auto_submit_purchase_order
+            :auto_submit_purchase_order,
+            :note,
+            :phone_number
          )
          RETURNING
             *
@@ -371,7 +377,9 @@ class VendorRepository @Inject constructor(
             "email_address" to entity.emailAddress,
             "purchase_order_submit_email_address" to entity.purchaseOrderSubmitEmailAddress,
             "allow_drop_ship_to_customer" to entity.allowDropShipToCustomer,
-            "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder
+            "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder,
+            "note" to entity.note,
+            "phone_number" to entity.phone
          ),
          RowMapper { rs, _ -> mapRowUpsert(rs, entity.company, address, entity.freightOnboardType, entity.paymentTerm, entity.shipVia, entity.vendorGroup, entity.freightCalcMethodType) }
       )
@@ -429,7 +437,9 @@ class VendorRepository @Inject constructor(
             email_address = :emailAddress,
             purchase_order_submit_email_address = :purchase_order_submit_email_address,
             allow_drop_ship_to_customer = :allow_drop_ship_to_customer,
-            auto_submit_purchase_order = :auto_submit_purchase_order
+            auto_submit_purchase_order = :auto_submit_purchase_order,
+            note = :note,
+            phone_number = :phone_number
          WHERE id = :id
          RETURNING
             *
@@ -469,7 +479,9 @@ class VendorRepository @Inject constructor(
             "emailAddress" to toUpdate.emailAddress,
             "purchase_order_submit_email_address" to toUpdate.purchaseOrderSubmitEmailAddress,
             "allow_drop_ship_to_customer" to toUpdate.allowDropShipToCustomer,
-            "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder
+            "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder,
+            "note" to toUpdate.note,
+            "phone_number" to toUpdate.phone
          ),
          RowMapper { rs, _ -> mapRowUpsert(rs, toUpdate.company, vendorAddress, toUpdate.freightOnboardType, toUpdate.paymentTerm, toUpdate.shipVia, toUpdate.vendorGroup, toUpdate.freightCalcMethodType) }
       )
@@ -518,7 +530,9 @@ class VendorRepository @Inject constructor(
          purchaseOrderSubmitEmailAddress = rs.getString("${columnPrefix}purchase_order_submit_email_address"),
          allowDropShipToCustomer = rs.getBoolean("${columnPrefix}allow_drop_ship_to_customer"),
          autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order"),
-         number = rs.getInt("${columnPrefix}number")
+         number = rs.getInt("${columnPrefix}number"),
+         note =  rs.getString("${columnPrefix}note"),
+         phone =  rs.getString("${columnPrefix}phone_number")
       )
    }
 
@@ -568,7 +582,9 @@ class VendorRepository @Inject constructor(
          purchaseOrderSubmitEmailAddress = rs.getString("purchase_order_submit_email_address"),
          allowDropShipToCustomer = rs.getBoolean("allow_drop_ship_to_customer"),
          autoSubmitPurchaseOrder = rs.getBoolean("auto_submit_purchase_order"),
-         number = rs.getInt("number")
+         number = rs.getInt("number"),
+         note =  rs.getString("note"),
+         phone =  rs.getString("phone_number")
       )
    }
 
