@@ -56,7 +56,8 @@ CREATE TABLE account_payable_invoice
     entry_date                    DATE                        DEFAULT current_date                            NOT NULL,
     expense_date                  DATE                        DEFAULT current_date                            NOT NULL,
     discount_date                 DATE,
-    employee_number_sfk           INTEGER                                                                     NOT NULL,
+    employee_number_id_sfk        INTEGER                                                                     NOT NULL,
+    original_invoice_amount       NUMERIC(11,2)                                                               NOT NULL,
     message                       TEXT,
     selected_id                   BIGINT REFERENCES account_payable_invoice_selected_type_domain (id)         NOT NULL,
     multiple_payment_indicator    BOOLEAN   DEFAULT FALSE                                                     NOT NULL,
@@ -64,6 +65,7 @@ CREATE TABLE account_payable_invoice
     selected_amount               NUMERIC(12,2),
     type_id                       BIGINT REFERENCES account_payable_invoice_type_domain (id)                  NOT NULL,
     status_id                     BIGINT REFERENCES account_payable_invoice_status_type_domain (id)           NOT NULL,
+    due_date                      DATE,
     pay_to_id                     BIGINT REFERENCES vendor (id)                                               NOT NULL,
     separate_check_indicator      BOOLEAN                                                                     NOT NULL,  -- The default for this is based upon the setting in the vendor record.
     use_tax_indicator             BOOLEAN DEFAULT FALSE                                                       NOT NULL,
@@ -91,8 +93,8 @@ CREATE TABLE account_payable_invoice_distribution
     time_created                  TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
     time_updated                  TIMESTAMPTZ                 DEFAULT clock_timestamp()                       NOT NULL,
     invoice_id                    BIGINT REFERENCES account_payable_invoice(id)                               NOT NULL,
-    distribution_account          BIGINT REFERENCES account (id)                                              NOT NULL,
-    distribution_profit_center_sfk INTEGER                                                                    NOT NULL,
+    distribution_account_id       BIGINT REFERENCES account (id)                                              NOT NULL,
+    distribution_profit_center_id_sfk INTEGER                                                                 NOT NULL,
     distribution_amount            NUMERIC(11,2)                                                              NOT NULL
 );
 CREATE TRIGGER update_account_payable_invoice_distribution_trg
@@ -102,4 +104,14 @@ CREATE TRIGGER update_account_payable_invoice_distribution_trg
 EXECUTE PROCEDURE last_updated_column_fn();
 
 CREATE INDEX account_payable_invoice_distribution_idx ON account_payable_invoice_distribution (invoice_id);
+CREATE INDEX account_payable_invoice_distribution_account_idx ON account_payable_invoice_distribution (distribution_account_id);
 
+COMMENT ON COLUMN account_payable_invoice.employee_number_id_sfk IS 'Employee ID number if zero system generated record';
+COMMENT ON COLUMN account_payable_invoice_distribution.distribution_profit_center_id_sfk IS 'Soft foreign key which will use Fastinfo store view until store is no longer shared';
+COMMENT ON COLUMN account_payable_invoice.location_id_sfk IS 'Soft foreign key which will use Fastinfo store view until store is no longer shared';
+
+COMMENT ON TABLE  account_payable_invoice IS 'Table holds the account payable invoices.';
+COMMENT ON TABLE  account_payable_invoice_distribution IS 'Table holds the account distributions associated with the account payable invoice table, joins use the invoice_id column one invoice with many distributions.';
+COMMENT ON TABLE  account_payable_invoice_type_domain IS 'Domain table which holds the types of invoices that can be selected when creating an account payable invoice.';
+COMMENT ON TABLE  account_payable_invoice_status_type_domain IS 'Domain table which holds the status of invoices that an invoice can be in.';
+COMMENT ON TABLE  account_payable_invoice_selected_type_domain IS 'Domain table which holds the selection values that can be used to flag the individual invoices.';
