@@ -46,7 +46,7 @@ CREATE TABLE account_payable_invoice
     company_id                    BIGINT REFERENCES company (id)                                              NOT NULL,
     vendor_id                     BIGINT REFERENCES vendor (id)                                               NOT NULL,
     invoice                       VARCHAR(20)                                                                 NOT NULL,
-    purchase_order_id             BIGINT REFERENCES purchase_order_header (id)                                NOT NULL,
+    purchase_order_id             BIGINT REFERENCES purchase_order_header (id),
     invoice_date                  DATE                        DEFAULT current_date                            NOT NULL,
     invoice_amount                NUMERIC(11, 2)                                                              NOT NULL,
     discount_amount               NUMERIC(11, 2),
@@ -70,7 +70,7 @@ CREATE TABLE account_payable_invoice
     separate_check_indicator      BOOLEAN                                                                     NOT NULL,  -- The default for this is based upon the setting in the vendor record.
     use_tax_indicator             BOOLEAN DEFAULT FALSE                                                       NOT NULL,
     receive_date                  DATE,
-    location_id_sfk               INTEGER                                                                     NOT NULL
+    location_id_sfk               INTEGER
 );
 CREATE TRIGGER update_account_payable_invoice_trg
     BEFORE UPDATE
