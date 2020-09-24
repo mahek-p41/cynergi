@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.purchase.order.control
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
@@ -76,7 +77,7 @@ data class PurchaseOrderControlDTO(
    var validateInventory: Boolean? = null,
 
    @field:Schema(description = "Default approver")
-   var defaultApprover: SimpleIdentifiableDTO?,
+   var defaultApprover: EmployeeValueObject?,
 
    @field:NotNull
    @field:Schema(description = "Approval required flag type")
@@ -106,7 +107,7 @@ data class PurchaseOrderControlDTO(
          sortByShipToOnPrint = entity.sortByShipToOnPrint,
          invoiceByLocation = entity.invoiceByLocation,
          validateInventory = entity.validateInventory,
-         defaultApprover = entity.defaultApprover?.let { SimpleIdentifiableDTO(it) },
+         defaultApprover = entity.defaultApprover?.let { EmployeeValueObject(it) },
          approvalRequiredFlagType = approvalRequiredFlagType
       )
 

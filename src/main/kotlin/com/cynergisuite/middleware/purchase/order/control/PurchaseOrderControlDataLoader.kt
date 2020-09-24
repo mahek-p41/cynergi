@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPaya
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDataLoader
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagTypeFactory
 import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
@@ -52,7 +53,7 @@ object PurchaseOrderControlDataLoader {
    fun streamDTO(
       numberIn: Int = 1,
       defaultVendor: SimpleIdentifiableDTO?,
-      defaultApprover: SimpleIdentifiableDTO?
+      defaultApprover: EmployeeEntity?
    ): Stream<PurchaseOrderControlDTO> {
       val number = if (numberIn > 0) numberIn else 1
 
@@ -71,7 +72,7 @@ object PurchaseOrderControlDataLoader {
             sortByShipToOnPrint = Random.nextBoolean(),
             invoiceByLocation = Random.nextBoolean(),
             validateInventory = Random.nextBoolean(),
-            defaultApprover = defaultApprover,
+            defaultApprover = EmployeeValueObject(defaultApprover?.myId()),
             approvalRequiredFlagType = ApprovalRequiredFlagDTO(ApprovalRequiredFlagTypeFactory.random())
          )
       }
@@ -92,7 +93,7 @@ object PurchaseOrderControlDataLoader {
          return stream(1, company, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
       }
 
-      fun singleDTO(defaultVendor: SimpleIdentifiableDTO?, defaultApprover: SimpleIdentifiableDTO?): PurchaseOrderControlDTO {
+      fun singleDTO(defaultVendor: SimpleIdentifiableDTO?, defaultApprover: EmployeeEntity?): PurchaseOrderControlDTO {
          return PurchaseOrderControlDataLoader.streamDTO(1, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
       }
    }

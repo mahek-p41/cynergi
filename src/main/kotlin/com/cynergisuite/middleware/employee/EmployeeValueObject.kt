@@ -15,9 +15,8 @@ import javax.validation.constraints.Size
 @Schema(name = "Employee", title = "Employee/User", description = "Describes an employee and user within the system")
 data class EmployeeValueObject(
 
-   @field:JsonIgnore
    @field:Positive
-   @field:Schema(name = "id", description = "System generated ID for the Employee/User", hidden = true)
+   @field:Schema(name = "id", description = "System generated ID for the Employee/User")
    var id: Long? = null,
 
    @field:JsonIgnore
@@ -66,9 +65,9 @@ data class EmployeeValueObject(
 
 ) : Identifiable {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long) :
+   constructor(id: Long, type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long) :
       this(
-         id = null,
+         id = id,
          type = type,
          number = number,
          lastName = lastName,
