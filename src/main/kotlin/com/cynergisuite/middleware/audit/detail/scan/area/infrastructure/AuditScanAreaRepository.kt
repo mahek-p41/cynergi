@@ -95,7 +95,7 @@ class AuditScanAreaRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE store.id = :store_id
+            WHERE company_id = :comp_id AND store.id = :store_id
             ORDER BY name
          )
          SELECT
@@ -105,7 +105,7 @@ class AuditScanAreaRepository @Inject constructor(
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """,
-         mapOf("store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+         mapOf("comp_id" to company.myId(), "store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
