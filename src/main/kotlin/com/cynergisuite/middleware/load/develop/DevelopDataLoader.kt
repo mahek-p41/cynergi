@@ -179,6 +179,7 @@ class DevelopDataLoader @Inject constructor(
       bankFactoryService.stream(3, corptp, corptpStore2, corptpAccount).forEach { }
 
       areaDataLoaderService.enableArea(1, companies[0])
+      areaDataLoaderService.enableArea(4, companies[0])
       areaDataLoaderService.enableArea(5, companies[0])
       areaDataLoaderService.enableArea(5, companies[1])
 

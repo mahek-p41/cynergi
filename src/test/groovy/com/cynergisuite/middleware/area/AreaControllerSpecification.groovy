@@ -62,6 +62,50 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
             }
          }
       }
+
+      and: 'assert nested menus'
+      def purchaseOrderArea = response[3]
+      def purchaseOrderMenus = menuDataLoaderService.predefined().findAll { it.areaType.id == 4 }.collect { new MenuDTO(it) }
+      def poMaintenanceMenu = purchaseOrderMenus[1]
+      def poReportMenu = purchaseOrderMenus[2]
+      def stockReorderMenu = purchaseOrderMenus[4]
+
+      with(purchaseOrderArea) {
+         def predefinedArea = predefinedAreas[3]
+         id == predefinedArea.id
+         value == predefinedArea.value
+         description == 'Purchase Order'
+         enabled == true
+
+         menus.size() == 2
+
+         with(menus[0]) {
+            id == poMaintenanceMenu.id
+            value == poMaintenanceMenu.value
+            description == poMaintenanceMenu.description
+
+            menus.size() == 0
+            modules.size() == 23
+         }
+
+         with(menus[1]) {
+            id == poReportMenu.id
+            value == poReportMenu.value
+            description == poReportMenu.description
+
+            menus.size() == 5
+            modules.size() == 11
+
+            with(menus[1]) {
+               id == stockReorderMenu.id
+               value == stockReorderMenu.value
+               description == stockReorderMenu.description
+
+               menus.size() == 0
+               modules.size() == 1
+            }
+         }
+      }
    }
 
    void "enable/disable an area" () {

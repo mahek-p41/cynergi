@@ -31,21 +31,27 @@ class AreaService @Inject constructor(
       AreaDTO(
          type = areaType,
          localizedDescription = areaType.localizeMyDescription(locale, localizationService),
-         menus = areaType.menus
-            .map { menuType ->
-               val moduleTypes = menuType.modules
-                  .map {
-                     ModuleDTO(
-                        type = it,
-                        localizedDescription = it.localizeMyDescription(locale, localizationService)
-                     )
-                  }
+         menus = convertMenus(areaType.menus, locale)
+      )
 
-               MenuDTO(
-                  type = menuType,
-                  localizedDescription = menuType.localizeMyDescription(locale, localizationService),
-                  modules = moduleTypes
+   private fun convertMenus(menuTypes: List<MenuType>, locale: Locale): List<MenuDTO> {
+      return menuTypes.map { menuType ->
+         val subMenus = if (menuType.menus.isNotEmpty()) convertMenus(menuType.menus, locale) else null
+
+         val moduleTypes = menuType.modules
+            .map {
+               ModuleDTO(
+                  type = it,
+                  localizedDescription = it.localizeMyDescription(locale, localizationService)
                )
             }
-      )
+
+         MenuDTO(
+            type = menuType,
+            localizedDescription = menuType.localizeMyDescription(locale, localizationService),
+            menus = subMenus,
+            modules = moduleTypes
+         )
+      }
+   }
 }

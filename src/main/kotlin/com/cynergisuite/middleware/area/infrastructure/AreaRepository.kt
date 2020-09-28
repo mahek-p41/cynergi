@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.area.AreaType
 import com.cynergisuite.middleware.area.MenuType
@@ -37,6 +38,7 @@ class AreaRepository @Inject constructor(
             areas.localization_code AS area_localization_code,
             (areas_configs.area_type_id IS NOT NULL) AS area_enabled,
             menus.id AS menu_id,
+            menus.parent_id AS menu_parent_id,
             menus.value AS menu_value,
             menus.description AS menu_description,
             menus.localization_code AS menu_localization_code,
@@ -51,7 +53,7 @@ class AreaRepository @Inject constructor(
             LEFT OUTER JOIN module_type_domain modules ON menus.id = modules.menu_type_id
             LEFT OUTER JOIN area areas_configs ON areas.id = areas_configs.area_type_id AND areas_configs.company_id = :comp_id
             LEFT OUTER JOIN module module_configs ON modules.id = module_configs.module_type_id AND module_configs.company_id = :comp_id
-         ORDER BY areas.id, menus.id, modules.id
+         ORDER BY areas.id, menus.id, menus.parent_id, modules.id
          """.trimIndent(),
          mapOf("comp_id" to company.myId())
       ) { rs, _ ->
@@ -80,7 +82,7 @@ class AreaRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return areas
+      return groupingMenus(areas)
    }
 
    @Transactional
@@ -144,6 +146,23 @@ class AreaRepository @Inject constructor(
       return exists
    }
 
+   private fun groupingMenus(areas: List<AreaType>): List<AreaType> {
+      return areas.map { area ->
+         val subMenu = area.menus
+            .filter { it.parent_id != null && it.parent_id > 0 }
+            .groupBy { it.parent_id }
+
+         val menus: List<MenuType> = area.menus
+            .filter { it.parent_id == null }
+            .map { menu ->
+               subMenu[menu.id]?.let { menu.menus.addAll(it) }
+               menu
+            }
+
+         area.copy(menus = menus as MutableList<MenuType>)
+      }
+   }
+
    private fun mapArea(rs: ResultSet): AreaType {
       return AreaType(
          id = rs.getLong("area_id"),
@@ -158,6 +177,7 @@ class AreaRepository @Inject constructor(
    private fun mapMenu(rs: ResultSet): MenuType {
       return MenuType(
          id = rs.getLong("menu_id"),
+         parent_id = rs.getLongOrNull("menu_parent_id"),
          value = rs.getString("menu_value"),
          description = rs.getString("menu_description"),
          orderNumber = rs.getInt("menu_order_number"),

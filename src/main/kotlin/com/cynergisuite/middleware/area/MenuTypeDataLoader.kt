@@ -177,6 +177,7 @@ object MenuTypeDataLoader {
       ),
       MenuType(
          id = 22,
+         parent_id = 21,
          value = "PO_REPORT_EXPORT",
          description = "PO Report (w/Export)",
          localizationCode = "po.report.(w/Export)",
@@ -185,32 +186,36 @@ object MenuTypeDataLoader {
       ),
       MenuType(
          id = 23,
+         parent_id = 21,
          value = "STOCK_REORDER",
-         description = "STOCK REORDER REPORT",
+         description = "Stock Reorder Report",
          localizationCode = "stock.reorder.report",
          orderNumber = 4,
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 24,
+         parent_id = 21,
          value = "RECEIVER_REPORT",
-         description = "RECEIVER REPORT",
+         description = "Receiver Report",
          localizationCode = "receiver.report",
          orderNumber = 5,
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 25,
+         parent_id = 21,
          value = "RECEIVING_WORKSHEET",
-         description = "RECEIVING WORKSHEET",
+         description = "Receiving Worksheet",
          localizationCode = "receiving.worksheet",
          orderNumber = 6,
          areaType = AreaDataLoader.areaTypes().forId(4)
       ),
       MenuType(
          id = 26,
+         parent_id = 21,
          value = "SPECIAL_ORDERS",
-         description = "SPECIAL ORDERS",
+         description = "Special Orders",
          localizationCode = "special.orders",
          orderNumber = 7,
          areaType = AreaDataLoader.areaTypes().forId(4)
@@ -266,7 +271,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 33,
          value = "GL_SOURCE_CODE",
-         description = "GL SOURCE CODE",
+         description = "GL Source Code",
          localizationCode = "gl.source.code",
          orderNumber = 5,
          areaType = AreaDataLoader.areaTypes().forId(5)
