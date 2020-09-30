@@ -38,8 +38,8 @@ data class VendorDTO(
 
    @JsonInclude(NON_DEFAULT)
    @field:Positive
-   @field:Schema(name = "ourAccountNumber", description = "The vendor account number", minimum = "1", required = false)
-   var ourAccountNumber: Int? = null,
+   @field:Schema(name = "accountNumber", description = "The vendor account number", minimum = "1", required = false)
+   var accountNumber: String? = null,
 
    @field:Valid
    @field:Schema(name = "payTo", description = "Pay to vendor.  Provide the ID of a valid vendor for the company that the user is logged in under. Use GET /api/vendor/search{?pageRequest*}", minimum = "1", required = false)
@@ -54,9 +54,6 @@ data class VendorDTO(
    @field:NotNull
    @field:Schema(name = "paymentTerm", description = "Vendor Payment Term")
    var paymentTerm: SimpleIdentifiableDTO? = null,
-
-   @field:Schema(name = "floatDays", description = "The vendor float days", minimum = "0", required = false)
-   var floatDays: Int? = null,
 
    @field:Schema(name = "normalDays", description = "The vendor normal days", minimum = "0", required = false)
    var normalDays: Int? = null,
@@ -183,11 +180,10 @@ data class VendorDTO(
          id = entity.id,
          name = entity.name,
          address = entity.address?.let { AddressDTO(it) },
-         ourAccountNumber = entity.ourAccountNumber,
+         accountNumber = entity.accountNumber,
          payTo = if (entity.payTo != null) SimpleIdentifiableDTO(entity.payTo) else null,
          freightOnboardType = FreightOnboardTypeDTO(entity.freightOnboardType),
          paymentTerm = SimpleIdentifiableDTO(entity.paymentTerm),
-         floatDays = entity.floatDays,
          normalDays = entity.normalDays,
          returnPolicy = entity.returnPolicy,
          shipVia = SimpleIdentifiableDTO(entity.shipVia),

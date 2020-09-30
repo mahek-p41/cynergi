@@ -64,7 +64,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          id == vendor.id
          name == vendor.name
          new AddressDTO(address) == new AddressDTO(vendor.address)
-         ourAccountNumber == vendor.ourAccountNumber
+         accountNumber == vendor.accountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendor.freightOnboardType)
          paymentTerm.id == vendor.paymentTerm.id
          returnPolicy == vendor.returnPolicy
@@ -112,7 +112,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          id == vendor.id
          name == vendor.name
          new AddressDTO(address) == new AddressDTO(vendor.address)
-         ourAccountNumber == vendor.ourAccountNumber
+         accountNumber == vendor.accountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendor.freightOnboardType)
          paymentTerm.id == vendor.paymentTerm.id
          returnPolicy == vendor.returnPolicy
@@ -356,7 +356,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.address = null
-      vendor.ourAccountNumber = null
+      vendor.accountNumber = null
 
       when:
       def result = post(path, vendor)
@@ -367,7 +367,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result.id > 0
       result.address == null
-      result.ourAccountNumber == null
+      result.accountNumber == null
 
       new VendorDTO(result) == vendor
    }
@@ -856,15 +856,15 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)
 
-      final vendorEntity1 = new VendorEntity(null, company, "Vendor 1", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
+      final vendorEntity1 = new VendorEntity(null, company, "Vendor 1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
       vendorRepository.insert(vendorEntity1).with { new VendorDTO(it) }
-      final vendorEntity2 = new VendorEntity(null, company, "Vendor 2", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null)
+      final vendorEntity2 = new VendorEntity(null, company, "Vendor 2", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null)
       vendorRepository.insert(vendorEntity2).with { new VendorDTO(it) }
-      final vendorEntity3 = new VendorEntity(null, company, "Vendor 3", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, "316317318")
+      final vendorEntity3 = new VendorEntity(null, company, "Vendor 3", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, "316317318")
       vendorRepository.insert(vendorEntity3).with { new VendorDTO(it) }
-      final vendorEntity4 = new VendorEntity(null, company, "Out of search result 1", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Other note", "316123456")
+      final vendorEntity4 = new VendorEntity(null, company, "Out of search result 1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Other note", "316123456")
       vendorRepository.insert(vendorEntity4).with { new VendorDTO(it) }
-      final vendorEntity5 = new VendorEntity(null, company, "Out of search result 2", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
+      final vendorEntity5 = new VendorEntity(null, company, "Out of search result 2", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
       vendorRepository.insert(vendorEntity5).with { new VendorDTO(it) }
       def searchOne = new SearchPageRequest([query:"Vandor%202"])
       def searchFivePageOne = new SearchPageRequest([page:1, size:5, query:"Vandor%202"])
@@ -936,7 +936,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          id == vendorOne.id
          name == vendorOne.name
          new AddressDTO(address) == new AddressDTO(vendorOne.address)
-         ourAccountNumber == vendorOne.ourAccountNumber
+         accountNumber == vendorOne.accountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendorOne.freightOnboardType)
          paymentTerm.id == vendorOne.paymentTerm.id
          returnPolicy == vendorOne.returnPolicy
@@ -987,7 +987,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          id == targetVendor.id
          name == targetVendor.name
          new AddressDTO(address) == new AddressDTO(targetVendor.address)
-         ourAccountNumber == targetVendor.ourAccountNumber
+         accountNumber == targetVendor.accountNumber
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(targetVendor.freightOnboardType)
          paymentTerm.id == targetVendor.paymentTerm.id
          returnPolicy == targetVendor.returnPolicy
@@ -1025,7 +1025,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.response.status == NO_CONTENT
    }
 
-   void "Try creating vendor with a negative ourAccountNumber" () {
+   void "Try creating vendor with a negative accountNumber" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
 
@@ -1044,11 +1044,11 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)
 
-      final vendorEntity = new VendorEntity(null, company, "test1", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
+      final vendorEntity = new VendorEntity(null, company, "test1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
       final vendor = vendorRepository.insert(vendorEntity).with { new VendorDTO(it) }
 
       when:
-      vendor.ourAccountNumber = -1
+      vendor.accountNumber = -1
       post(path, vendor)
 
       then:
@@ -1057,7 +1057,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("ourAccountNumber must be greater than zero", "ourAccountNumber")
+         new ErrorDataTransferObject("accountNumber must be greater than zero", "accountNumber")
       ]
    }
 
@@ -1080,7 +1080,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)
 
-      final vendorEntity = new VendorEntity(null, company, "test1", addressEntity, 1234, null, onboard, vendorPaymentTerm, 0, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null)
+      final vendorEntity = new VendorEntity(null, company, "test1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null)
       final vendor = vendorRepository.insert(vendorEntity).with { new VendorDTO(it) }
 
       when:
