@@ -3,39 +3,37 @@ package com.cynergisuite.middleware.general.ledger.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDTO
+import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDataLoader
 import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDataLoaderService
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/general/ledger"
-   private jsonOutput = new JsonOutput()
-   private jsonSlurper = new JsonSlurper()
+   private static final String path = "/general/ledger/source-code"
 
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
 
    void "fetch one" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.stream(tstds1).collect()
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
 
       when:
-      def result = get("$path/${glSourceCode[0].id}")
+      def result = get("$path/${glSourceCode.id}")
 
       then:
       notThrown(Exception)
       result != null
       with(result) {
-         id == glSourceCode[0].id
-         value == glSourceCode[0].value
-         description == glSourceCode[0].description
+         id == glSourceCode.id
+         value == glSourceCode.value
+         description == glSourceCode.description
       }
    }
 
@@ -43,9 +41,10 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final glSourceCodes = generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()
-      generalLedgerSourceCodeDataLoaderService.stream(tstds2).toList()
+      final glSourceCodes1 = generalLedgerSourceCodeDataLoaderService.stream(2, tstds1).toList()
+      generalLedgerSourceCodeDataLoaderService.stream(1, tstds2).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
 
       when:
       def result = get("$path$pageOne")
@@ -58,14 +57,22 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
          totalPages == 1
          first == true
          last == true
-         new GeneralLedgerSourceCodeDTO(elements[0]) == new GeneralLedgerSourceCodeDTO(glSourceCodes[0])
-         new GeneralLedgerSourceCodeDTO(elements[1]) == new GeneralLedgerSourceCodeDTO(glSourceCodes[1])
+         new GeneralLedgerSourceCodeDTO(elements[0]) == new GeneralLedgerSourceCodeDTO(glSourceCodes1[0])
+         new GeneralLedgerSourceCodeDTO(elements[1]) == new GeneralLedgerSourceCodeDTO(glSourceCodes1[1])
       }
+
+      when:
+      get("$path$pageTwo")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
    }
 
    void "create one" () {
       given:
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.predefined().first()
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.single(tstds1)
 
       when:
       def result = post(path, glSourceCode)
@@ -80,12 +87,12 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
    void "create invalid source code with null value" () {
       given:
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.predefined().first()
-      def jsonGLSourceCode = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonGLSourceCode.remove("value")
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode.value = null
 
       when:
-      post(path, jsonGLSourceCode)
+      post(path, glSourceCode)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -98,12 +105,12 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
    void "create invalid source code with null description" () {
       given:
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.predefined().first()
-      def jsonGLSourceCode = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonGLSourceCode.remove("description")
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode.description = null
 
       when:
-      post(path, jsonGLSourceCode)
+      post(path, glSourceCode)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -117,13 +124,12 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "create invalid source code with duplicate value from same company" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.predefined().first()
-      def jsonGLSourceCode = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonGLSourceCode.value = "DEF"
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode2.value = glSourceCode1.value
 
       when:
-      post(path, jsonGLSourceCode)
+      post(path, glSourceCode2)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -136,56 +142,51 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
    void "create valid source code with duplicate value from different company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()
-      generalLedgerSourceCodeDataLoaderService.stream(tstds2).toList()
-      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.predefined().find { it.company.myDataset() == tstds1.myDataset() }
-      final glSourceCode2 = generalLedgerSourceCodeDataLoaderService.predefined().find { it.company.myDataset() == tstds2.myDataset() }
-      def jsonGLSourceCode = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode1))
-      jsonGLSourceCode.value = glSourceCode2.value
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+      final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode2.value = glSourceCode1.value
 
       when:
-      def result = post(path, jsonGLSourceCode)
+      def result = post(path, glSourceCode2)
 
       then:
       notThrown(Exception)
       result != null
       result.id > 0
-      result.value == jsonGLSourceCode.value
-      result.description == jsonGLSourceCode.description
+      result.value == glSourceCode2.value
+      result.description == glSourceCode2.description
    }
 
    void "update one" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()[0]
-      def jsonUpdatedGLSC = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonUpdatedGLSC.value = "NEW"
-      jsonUpdatedGLSC.description = "New description"
+      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = existingGLSourceCode.id
 
       when:
-      jsonUpdatedGLSC.id = glSourceCode.id
-      def result = put("$path/${glSourceCode.id}", jsonUpdatedGLSC)
+      def result = put("$path/${existingGLSourceCode.id}", updatedGLSourceCode)
 
       then:
       notThrown(Exception)
       result != null
       result.id > 0
-      result.value == "NEW"
-      result.description == "New description"
+      result.value == updatedGLSourceCode.value
+      result.description == updatedGLSourceCode.description
    }
 
    void "update source code with null value" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()[0]
-      def jsonUpdatedGLSC = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonUpdatedGLSC.remove("value")
+      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      updatedGLSourceCode.value = null
 
       when:
-      jsonUpdatedGLSC.id = glSourceCode.id
-      put("$path/${glSourceCode.id}", jsonUpdatedGLSC)
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      put("$path/${existingGLSourceCode.id}", updatedGLSourceCode)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -199,13 +200,14 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "update source code with null description" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()[0]
-      def jsonUpdatedGLSC = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonUpdatedGLSC.remove("description")
+      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      updatedGLSourceCode.description = null
 
       when:
-      jsonUpdatedGLSC.id = glSourceCode.id
-      put("$path/${glSourceCode.id}", jsonUpdatedGLSC)
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      put("$path/${existingGLSourceCode.id}", updatedGLSourceCode)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -219,13 +221,13 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "update source code with duplicate value from same company" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()[0]
-      def jsonUpdatedGLSC = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode))
-      jsonUpdatedGLSC.value = "DEF"
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode2.value = glSourceCode1.value
 
       when:
-      jsonUpdatedGLSC.id = glSourceCode.id
-      put("$path/${glSourceCode.id}", jsonUpdatedGLSC)
+      glSourceCode2.id = glSourceCode1.id
+      put("$path/${glSourceCode1.id}", glSourceCode2)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -240,20 +242,20 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.stream(tstds1).toList()[0]
-      final glSourceCode2 = generalLedgerSourceCodeDataLoaderService.stream(tstds2).toList()[0]
-      def jsonUpdatedGLSC = jsonSlurper.parseText(jsonOutput.toJson(glSourceCode1))
-      jsonUpdatedGLSC.value = glSourceCode2.value
+      final def glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def glSourceCode2 = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = glSourceCode1.id
+      updatedGLSourceCode.value = glSourceCode2.value
 
       when:
-      jsonUpdatedGLSC.id = glSourceCode1.id
-      def result = put("$path/${glSourceCode1.id}", jsonUpdatedGLSC)
+      def result = put("$path/${glSourceCode1.id}", updatedGLSourceCode)
 
       then:
       notThrown(Exception)
       result != null
       result.id > 0
-      result.value == jsonUpdatedGLSC.value
-      result.description == jsonUpdatedGLSC.description
+      result.value == updatedGLSourceCode.value
+      result.description == updatedGLSourceCode.description
    }
 }

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/general/ledger")
+@Controller("/api/general/ledger/source-code")
 class GeneralLedgerSourceCodeController @Inject constructor(
    private val generalLedgerSourceCodeService: GeneralLedgerSourceCodeService,
    private val userService: UserService

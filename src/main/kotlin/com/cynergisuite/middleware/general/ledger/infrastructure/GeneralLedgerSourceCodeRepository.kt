@@ -131,7 +131,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             "value" to entity.value,
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
+         RowMapper { rs, _ -> mapDdlRow(rs, company) }
       )
    }
 

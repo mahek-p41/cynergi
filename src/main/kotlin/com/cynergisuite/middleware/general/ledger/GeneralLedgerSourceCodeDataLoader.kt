@@ -1,13 +1,8 @@
 package com.cynergisuite.middleware.general.ledger
 
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactory
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
-import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -21,16 +16,41 @@ object GeneralLedgerSourceCodeDataLoader {
    fun stream(numberIn: Int = 1, company: Company): Stream<GeneralLedgerSourceCodeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
-      val lorem = faker.lorem()
 
       return IntStream.range(0, number).mapToObj {
+         val description = faker.lorem().word()
+         val value = description.substring(0,2).toUpperCase()
          GeneralLedgerSourceCodeEntity(
-            company = company as CompanyEntity,
-            value = ,
+            company = company,
+            value = value,
             description = description
          )
       }
    }
+
+   @JvmStatic
+   fun single(company: Company): GeneralLedgerSourceCodeEntity =
+      stream(1, company).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerSourceCodeEntity") }
+
+   @JvmStatic
+   fun streamDTO(numberIn: Int = 1): Stream<GeneralLedgerSourceCodeDTO> {
+      val number = if (numberIn > 0) numberIn else 1
+      val faker = Faker()
+      val description = faker.lorem().word()
+      val value = description.substring(0,2).toUpperCase()
+
+      return IntStream.range(0, number).mapToObj {
+         GeneralLedgerSourceCodeDTO(
+            value = value,
+            description = description
+         )
+      }
+   }
+
+   @JvmStatic
+   fun singleDTO(): GeneralLedgerSourceCodeDTO =
+      GeneralLedgerSourceCodeDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
+
 }
 
 @Singleton
