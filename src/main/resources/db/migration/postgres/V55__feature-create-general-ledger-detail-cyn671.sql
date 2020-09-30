@@ -6,7 +6,7 @@ CREATE TABLE general_ledger_detail
     time_updated                                    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
     company_id                                      BIGINT REFERENCES company (id)         NOT NULL,
     account_id                                      BIGINT REFERENCES account (id)         NOT NULL,
-    profit_center_id_sfk                            INTEGER                                NOT NULL, --this is typically the home office location will be foreign key to store/home office
+    profit_center_id_sfk                            INTEGER                                NOT NULL, --foreign key to store/primary location
     date                                            DATE                                   NOT NULL,
     source_id                                       BIGINT REFERENCES general_ledger_source_codes (id)  NOT NULL,
     amount                                          NUMERIC(13,2)                                       NOT NULL,
