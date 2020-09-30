@@ -33,7 +33,6 @@ import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.ValidationException
 
-@Version("2")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 // require access to this controller to at the very least be authenticated
 @Controller("/api/audit/detail/scan-area")
@@ -89,6 +88,7 @@ class AuditScanAreaController @Inject constructor(
       return areas
    }
 
+   @Version("2")
    @Get(uri = "{?pageRequest*,storeId:[0-9]+}")
    @Operation(tags = ["AuditScanAreaEndpoints"], description = "Fetch a paginated listing of supported audit detail Scan Areas", operationId = "auditDetailScanArea-fetchAll")
    @ApiResponses(

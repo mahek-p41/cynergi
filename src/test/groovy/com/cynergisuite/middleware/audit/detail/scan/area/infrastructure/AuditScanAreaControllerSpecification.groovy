@@ -60,6 +60,24 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
             storeThreeWarehouse
          ].collect {new AuditScanAreaDTOV1(it) }
       )
+
+      when:
+      def response2 = client.exchange(
+         GET(path)
+            .headers(["Authorization": "Bearer $regionalManagerEmployeeAuth"]),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      response2.collect { new AuditScanAreaDTOV1(it) } == (
+         [
+            storeThreeShowroom,
+            storeThreeStoreroom,
+            storeThreeWarehouse
+         ].collect {new AuditScanAreaDTOV1(it) }
+      )
    }
 
    void "fetch all audit detail scan areas v2" () {
