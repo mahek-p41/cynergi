@@ -1,0 +1,261 @@
+package com.cynergisuite.middleware.general.ledger.infrastructure
+
+import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDTO
+import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDataLoader
+import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import io.micronaut.http.client.exceptions.HttpClientResponseException
+import io.micronaut.test.annotation.MicronautTest
+
+import javax.inject.Inject
+
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+
+@MicronautTest(transactional = false)
+class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecificationBase {
+   private static final String path = "/general/ledger/source-code"
+
+   @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
+
+   void "fetch one" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+
+      when:
+      def result = get("$path/${glSourceCode.id}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      with(result) {
+         id == glSourceCode.id
+         value == glSourceCode.value
+         description == glSourceCode.description
+      }
+   }
+
+   void "fetch all" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final glSourceCodes1 = generalLedgerSourceCodeDataLoaderService.stream(2, tstds1).toList()
+      generalLedgerSourceCodeDataLoaderService.stream(1, tstds2).toList()
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+
+      when:
+      def result = get("$path$pageOne")
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         requested.with { new StandardPageRequest(it) } == pageOne
+         totalElements == 2
+         totalPages == 1
+         first == true
+         last == true
+         new GeneralLedgerSourceCodeDTO(elements[0]) == new GeneralLedgerSourceCodeDTO(glSourceCodes1[0])
+         new GeneralLedgerSourceCodeDTO(elements[1]) == new GeneralLedgerSourceCodeDTO(glSourceCodes1[1])
+      }
+
+      when:
+      get("$path$pageTwo")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "create one" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.single(tstds1)
+
+      when:
+      def result = post(path, glSourceCode)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id > 0
+      result.value == glSourceCode.value
+      result.description == glSourceCode.description
+   }
+
+   void "create invalid source code with null value" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode.value = null
+
+      when:
+      post(path, glSourceCode)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "value"
+      response[0].message == "Is required"
+   }
+
+   void "create invalid source code with null description" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode.description = null
+
+      when:
+      post(path, glSourceCode)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "description"
+      response[0].message == "Is required"
+   }
+
+   void "create invalid source code with duplicate value from same company" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode2.value = glSourceCode1.value
+
+      when:
+      post(path, glSourceCode2)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "value"
+      response[0].message == "value already exists"
+   }
+
+   void "create valid source code with duplicate value from different company" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+      final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode2.value = glSourceCode1.value
+
+      when:
+      def result = post(path, glSourceCode2)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id > 0
+      result.value == glSourceCode2.value
+      result.description == glSourceCode2.description
+   }
+
+   void "update one" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = existingGLSourceCode.id
+
+      when:
+      def result = put("$path/${existingGLSourceCode.id}", updatedGLSourceCode)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id > 0
+      result.value == updatedGLSourceCode.value
+      result.description == updatedGLSourceCode.description
+   }
+
+   void "update source code with null value" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      updatedGLSourceCode.value = null
+
+      when:
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      put("$path/${existingGLSourceCode.id}", updatedGLSourceCode)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "value"
+      response[0].message == "Is required"
+   }
+
+   void "update source code with null description" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      updatedGLSourceCode.description = null
+
+      when:
+      updatedGLSourceCode.id = existingGLSourceCode.id
+      put("$path/${existingGLSourceCode.id}", updatedGLSourceCode)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "description"
+      response[0].message == "Is required"
+   }
+
+   void "update source code with duplicate value from same company" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      glSourceCode2.value = glSourceCode1.value
+
+      when:
+      glSourceCode2.id = glSourceCode1.id
+      put("$path/${glSourceCode1.id}", glSourceCode2)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "value"
+      response[0].message == "value already exists"
+   }
+
+   void "update source code with duplicate value from different company" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final def glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final def glSourceCode2 = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = glSourceCode1.id
+      updatedGLSourceCode.value = glSourceCode2.value
+
+      when:
+      def result = put("$path/${glSourceCode1.id}", updatedGLSourceCode)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id > 0
+      result.value == updatedGLSourceCode.value
+      result.description == updatedGLSourceCode.description
+   }
+}
