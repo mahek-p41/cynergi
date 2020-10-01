@@ -80,17 +80,25 @@ class AuditScanAreaRepository @Inject constructor(
          RowMapper { rs, _ -> mapRow(rs, company) }
       )
 
-   fun findAll(user: User): List<AuditScanAreaEntity> =
+   fun findAll(user: User): List<AuditScanAreaEntity> {
+      val elements = mutableListOf<AuditScanAreaEntity>()
+      var params = mapOf("comp_id" to user.myCompany().myId(), "store_number" to user.myLocation().myNumber())
       jdbc.query(
          """${selectBaseQuery()}
                     WHERE company_id = :comp_id AND store_number_sfk = :store_number
                     ORDER BY name""",
-         mapOf("comp_id" to user.myCompany().myId(), "store_number" to user.myLocation().myNumber())
-      ) { rs, _ -> mapRow(rs, user.myCompany()) }
+         params
+      ) { rs, _ -> elements.add(mapRow(rs, user.myCompany())) }
+
+      logger.trace("Find all scan-areas with params {} \nResulted in {}", params, elements)
+
+      return elements
+   }
 
    fun findAll(company: Company, storeId: Long, pageRequest: PageRequest): RepositoryPage<AuditScanAreaEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<AuditScanAreaEntity>()
+      var params = mapOf("comp_id" to company.myId(), "store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       jdbc.query(
          """
          WITH paged AS (
@@ -105,13 +113,15 @@ class AuditScanAreaRepository @Inject constructor(
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """,
-         mapOf("comp_id" to company.myId(), "store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+         params
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
          elements.add(mapRow(rs, company))
       }
+
+      logger.trace("Find all scan-areas with params {} \nResulted in {}", params, elements)
 
       return RepositoryPage(
          requested = pageRequest,

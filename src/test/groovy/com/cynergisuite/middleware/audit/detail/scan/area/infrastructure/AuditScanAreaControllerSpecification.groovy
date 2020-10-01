@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.detail.scan.area.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTOV1
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -46,38 +45,21 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       when:
       def response = client.exchange(
             GET(path)
-            .headers(["Authorization": "Bearer $regionalManagerEmployeeAuth", "Accept-Version": "1"]),
+            .headers(["Authorization": "Bearer $regionalManagerEmployeeAuth"]),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
 
       then:
       notThrown(HttpClientResponseException)
-      response.collect { new AuditScanAreaDTOV1(it) } == (
+      response.collect { new AuditScanAreaDTO(it) } == (
          [
             storeThreeShowroom,
             storeThreeStoreroom,
             storeThreeWarehouse
-         ].collect {new AuditScanAreaDTOV1(it) }
+         ].collect {new AuditScanAreaDTO(it) }
       )
 
-      when:
-      def response2 = client.exchange(
-         GET(path)
-            .headers(["Authorization": "Bearer $regionalManagerEmployeeAuth"]),
-         Argument.of(String),
-         Argument.of(String)
-      ).bodyAsJson()
-
-      then:
-      notThrown(HttpClientResponseException)
-      response2.collect { new AuditScanAreaDTOV1(it) } == (
-         [
-            storeThreeShowroom,
-            storeThreeStoreroom,
-            storeThreeWarehouse
-         ].collect {new AuditScanAreaDTOV1(it) }
-      )
    }
 
    void "fetch all audit detail scan areas v2" () {
