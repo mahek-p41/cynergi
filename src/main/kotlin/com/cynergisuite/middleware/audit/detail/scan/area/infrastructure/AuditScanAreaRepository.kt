@@ -49,7 +49,7 @@ class AuditScanAreaRepository @Inject constructor(
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM audit_scan_area WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if Scan Area: {} exists resulted in {}", id, exists)
+      logger.info("Checking if Scan Area: {} exists resulted in {}", id, exists)
 
       return exists
    }
@@ -69,7 +69,7 @@ class AuditScanAreaRepository @Inject constructor(
          Boolean::class.java
       )!!
 
-      logger.trace("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
+      logger.info("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
 
       return exists
    }
@@ -90,7 +90,7 @@ class AuditScanAreaRepository @Inject constructor(
          params
       ) { rs, _ -> elements.add(mapRow(rs, user.myCompany())) }
 
-      logger.trace("Find all scan-areas with params {} \nResulted in {}", params, elements)
+      logger.info("Find all scan-areas with params {} \nResulted in {}", params, elements)
 
       return elements
    }
@@ -121,7 +121,7 @@ class AuditScanAreaRepository @Inject constructor(
          elements.add(mapRow(rs, company))
       }
 
-      logger.trace("Find all scan-areas with params {} \nResulted in {}", params, elements)
+      logger.info("Find all scan-areas with params {} \nResulted in {}", params, elements)
 
       return RepositoryPage(
          requested = pageRequest,
