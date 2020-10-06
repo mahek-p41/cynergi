@@ -475,7 +475,7 @@ class AuditService @Inject constructor(
          table.addCell(Phrase(it.modelNumber, rowFont))
          table.addCell(Phrase(it.productCode, rowFont))
          table.addCell(Phrase(it.description, rowFont))
-         table.addCell(Phrase(dateTimeFormatter.format(it.receivedDate), rowFont))
+         table.addCell(Phrase(it.receivedDate?.let { dateTimeFormatter.format(it) }, rowFont))
          table.addCell(Phrase(it.idleDays.toString(), rowFont))
          table.addCell(Phrase(it.condition, rowFont))
          table.addCell(Phrase(it.status, rowFont))
