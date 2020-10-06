@@ -65,7 +65,7 @@ CREATE TABLE account_payable_invoice
     selected_amount               NUMERIC(12,2),
     type_id                       BIGINT REFERENCES account_payable_invoice_type_domain (id)                  NOT NULL,
     status_id                     BIGINT REFERENCES account_payable_invoice_status_type_domain (id)           NOT NULL,
-    due_date                      DATE,
+    due_date                      DATE                                                                        NOT NULL,
     pay_to_id                     BIGINT REFERENCES vendor (id)                                               NOT NULL,
     separate_check_indicator      BOOLEAN                                                                     NOT NULL,  -- The default for this is based upon the setting in the vendor record.
     use_tax_indicator             BOOLEAN DEFAULT FALSE                                                       NOT NULL,
