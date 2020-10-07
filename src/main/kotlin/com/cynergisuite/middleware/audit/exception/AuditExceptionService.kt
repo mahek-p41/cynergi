@@ -50,6 +50,6 @@ class AuditExceptionService @Inject constructor(
    }
 
    private fun transformEntity(auditException: AuditExceptionEntity): AuditExceptionValueObject {
-      return AuditExceptionValueObject(auditException, AuditScanAreaDTO(auditException.scanArea!!))
+      return AuditExceptionValueObject(auditException, auditException.scanArea?.let { AuditScanAreaDTO(it) })
    }
 }
