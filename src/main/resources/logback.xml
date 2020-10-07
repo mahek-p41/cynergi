@@ -10,7 +10,7 @@
     <logger name="com.zaxxer" level="ERROR" />
     <logger name="io.netty" level="ERROR" />
     <logger name="io.micronaut" level="INFO" />
-    <logger name="com.hightouchinc" level="INFO" />
+    <logger name="com.hightouchinc" level="TRACE" />
     <logger name="org.flywaydb" level="INFO" />
 
     <root level="TRACE">
