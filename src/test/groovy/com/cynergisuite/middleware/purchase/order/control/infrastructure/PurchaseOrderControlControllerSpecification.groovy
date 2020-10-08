@@ -98,7 +98,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       final def jsonPOControl = jsonOutput.toJson(purchaseOrderControl)
 
       when:
@@ -158,7 +158,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final company = nineNineEightEmployee.company
 
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(null, employee)
 
       when:
       def result = post("$path/", purchaseOrderControl)
@@ -301,7 +301,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('dropFiveCharactersOnModelNumber')
@@ -325,7 +325,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('updateAccountPayable')
@@ -349,7 +349,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('printSecondDescription')
@@ -373,7 +373,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('defaultAccountPayableStatusType')
@@ -397,7 +397,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('printVendorComments')
@@ -421,7 +421,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('includeFreightInCost')
@@ -445,7 +445,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('updateCostOnModel')
@@ -469,7 +469,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.defaultVendor.id = '99'
@@ -493,7 +493,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('updatePurchaseOrderCost')
@@ -517,7 +517,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('defaultPurchaseOrderType')
@@ -541,7 +541,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('sortByShipToOnPrint')
@@ -565,7 +565,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('invoiceByLocation')
@@ -589,7 +589,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('validateInventory')
@@ -613,7 +613,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.defaultApprover.id = '0'
@@ -637,7 +637,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       //Make invalid json
       def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(purchaseOrderControlDTO))
       jsonPOControl.remove('approvalRequiredFlagType')
@@ -662,7 +662,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       final def existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       final def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(updatedPOControlDTO))
       jsonPOControl.id = existingPOControl.id
 
@@ -718,7 +718,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       final def existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       final def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(updatedPOControlDTO))
       jsonPOControl.id = '0'
 
@@ -742,7 +742,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), new SimpleIdentifiableDTO(employee.myId()))
+      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       final def jsonPOControl = jsonSlurper.parseText(jsonOutput.toJson(updatedPOControlDTO))
 
       when:
