@@ -571,7 +571,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[0].message == "id must be greater than zero"
    }
 
-   void "update invalid general ledger control with non-existing id" () {
+   void "update invalid general ledger control with non-existing company" () {
       given:
       final tstds2 = companyFactoryService.forDatasetCode('tstds2') // load the company that isn't logged in to create the control record
       final defAPAcct = accountDataLoaderService.single(tstds2)
@@ -582,6 +582,19 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(tstds2)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(tstds2)
       final defAcctFreightAcct = accountDataLoaderService.single(tstds2)
+      final def existingGLControl = generalLedgerControlDataLoaderService.single(
+         tstds2,
+         null,
+         null,
+         defAPAcct,
+         defAPDiscAcct,
+         defARAcct,
+         defARDiscAcct,
+         defAcctMiscInvAcct,
+         defAcctSerializedInvAcct,
+         defAcctUnbilledInvAcct,
+         defAcctFreightAcct
+      )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
          null,
          null,
@@ -594,15 +607,23 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
          new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
       )
+      updatedGLControlDTO.id = existingGLControl.id
 
       when:
       put("$path", updatedGLControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status() == NOT_FOUND
+      exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.message == "${nineNineEightEmployee.company.myId()} was unable to be found"
+      response.message[0] == "${defAPAcct.myId()} was unable to be found"
+      response.message[1] == "${defAPDiscAcct.myId()} was unable to be found"
+      response.message[2] == "${defARAcct.myId()} was unable to be found"
+      response.message[3] == "${defARDiscAcct.myId()} was unable to be found"
+      response.message[4] == "${defAcctMiscInvAcct.myId()} was unable to be found"
+      response.message[5] == "${defAcctSerializedInvAcct.myId()} was unable to be found"
+      response.message[6] == "${defAcctUnbilledInvAcct.myId()} was unable to be found"
+      response.message[7] == "${defAcctFreightAcct.myId()} was unable to be found"
    }
 
    void "update invalid general ledger control with periodTo before periodFrom" () {

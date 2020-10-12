@@ -31,10 +31,10 @@ class GeneralLedgerControlValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(dto: GeneralLedgerControlDTO, company: Company): GeneralLedgerControlEntity {
+   fun validateUpdate(@Valid dto: GeneralLedgerControlDTO, company: Company): GeneralLedgerControlEntity {
       logger.debug("Validating Update GeneralLedgerControl {}", dto)
 
-      val generalLedgerControlEntity = generalLedgerControlRepository.findOne(company) ?: throw NotFoundException(company.myId()!!)
+      val generalLedgerControlEntity = generalLedgerControlRepository.findOne(company)
 
       return doSharedValidation(dto, company, generalLedgerControlEntity)
    }
@@ -64,12 +64,6 @@ class GeneralLedgerControlValidator @Inject constructor(
          if (periodTo.isBefore(periodFrom)) {
             errors.add(ValidationError("periodTo", ToDateBeforeFrom(periodTo, periodFrom)))
          }
-
-         dto.periodFrom ?: errors.add(ValidationError("periodFrom", NotFound(periodFrom)))
-
-         dto.periodTo ?: errors.add(ValidationError("periodTo", NotFound(periodTo)))
-
-         dto.defaultProfitCenter ?: errors.add(ValidationError("defaultProfitCenter", NotFound(dto.defaultProfitCenter!!)))
 
          if (dto.defaultAccountPayableAccount?.id != null && defaultAccountPayableAccount == null) {
             errors.add(ValidationError("defaultAccountPayableAccount.id", NotFound(dto.defaultAccountPayableAccount!!.id!!)))
