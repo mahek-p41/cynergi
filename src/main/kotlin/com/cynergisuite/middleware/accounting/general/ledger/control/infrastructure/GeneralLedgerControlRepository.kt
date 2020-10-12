@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger.control.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.general.ledger.control.GeneralLedgerControlEntity
+import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

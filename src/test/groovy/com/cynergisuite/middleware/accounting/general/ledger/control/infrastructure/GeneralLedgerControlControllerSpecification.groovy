@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.general.ledger.control.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
-import com.cynergisuite.middleware.general.ledger.control.GeneralLedgerControlDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -17,7 +17,7 @@ import static java.time.Month.JANUARY
 
 @MicronautTest(transactional = false)
 class GeneralLedgerControlControllerSpecification extends ControllerSpecificationBase {
-   private static String path = '/general/ledger/control'
+   private static String path = '/general-ledger/control'
 
    @Inject AccountDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerControlDataLoaderService generalLedgerControlDataLoaderService

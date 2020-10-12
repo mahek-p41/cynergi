@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/accounting/account/payable/type/default-account-payable-status")
+@Controller("/api/accounting/account-payable/type/default-account-payable-status")
 class DefaultAccountPayableStatusTypeController @Inject constructor(
    private val defaultAccountPayableStatusTypeService: DefaultAccountPayableStatusTypeService,
    private val localizationService: LocalizationService

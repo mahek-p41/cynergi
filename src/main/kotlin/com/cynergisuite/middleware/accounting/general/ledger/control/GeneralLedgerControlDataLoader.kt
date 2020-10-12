@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.general.ledger.control
+package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.general.ledger.control.infrastructure.GeneralLedgerControlRepository
+import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.time.LocalDate

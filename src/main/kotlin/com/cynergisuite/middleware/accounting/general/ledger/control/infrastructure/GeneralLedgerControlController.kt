@@ -1,10 +1,10 @@
-package com.cynergisuite.middleware.general.ledger.control.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure
 
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.general.ledger.control.GeneralLedgerControlDTO
-import com.cynergisuite.middleware.general.ledger.control.GeneralLedgerControlService
+import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDTO
+import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlService
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/general/ledger/control")
+@Controller("/api/general-ledger/control")
 class GeneralLedgerControlController @Inject constructor(
    private val generalLedgerControlService: GeneralLedgerControlService,
    private val userService: UserService

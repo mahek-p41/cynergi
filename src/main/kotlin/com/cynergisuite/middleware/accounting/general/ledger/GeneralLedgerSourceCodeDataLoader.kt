@@ -1,8 +1,7 @@
-package com.cynergisuite.middleware.general.ledger
+package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -49,7 +48,7 @@ object GeneralLedgerSourceCodeDataLoader {
 
    @JvmStatic
    fun singleDTO(): GeneralLedgerSourceCodeDTO =
-      GeneralLedgerSourceCodeDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
+      streamDTO(1).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
 
 }
 

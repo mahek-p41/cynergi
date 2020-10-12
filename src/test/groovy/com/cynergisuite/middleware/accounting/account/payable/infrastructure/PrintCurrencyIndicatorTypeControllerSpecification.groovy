@@ -18,7 +18,7 @@ class PrintCurrencyIndicatorTypeControllerSpecification extends ControllerSpecif
       def predefinedPrintCurrencyIndicatorType = dataLoaderService.predefined().collect { new PrintCurrencyIndicatorTypeDTO(it) }
 
       when:
-      def response = get("/accounting/account/payable/type/print-currency-indicator")
+      def response = get("/accounting/account-payable/type/print-currency-indicator")
 
       then:
       notThrown(HttpClientResponseException)

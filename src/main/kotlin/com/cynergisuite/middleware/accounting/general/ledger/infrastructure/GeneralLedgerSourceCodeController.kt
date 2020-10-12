@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDTO
-import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/general/ledger/source-code")
+@Controller("/api/general-ledger/source-code")
 class GeneralLedgerSourceCodeController @Inject constructor(
    private val generalLedgerSourceCodeService: GeneralLedgerSourceCodeService,
    private val userService: UserService

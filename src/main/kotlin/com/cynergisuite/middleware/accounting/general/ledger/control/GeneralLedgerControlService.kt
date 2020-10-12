@@ -1,7 +1,7 @@
-package com.cynergisuite.middleware.general.ledger.control
+package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.general.ledger.control.infrastructure.GeneralLedgerControlRepository
+import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton

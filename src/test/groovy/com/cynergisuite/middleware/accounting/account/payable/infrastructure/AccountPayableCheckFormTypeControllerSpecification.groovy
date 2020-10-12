@@ -18,7 +18,7 @@ class AccountPayableCheckFormTypeControllerSpecification extends ControllerSpeci
       def predefinedAccountPayableCheckFormType = dataLoaderService.predefined().collect { new AccountPayableCheckFormTypeDTO(it) }
 
       when:
-      def response = get("/accounting/account/payable/type/check-form")
+      def response = get("/accounting/account-payable/type/check-form")
 
       then:
       notThrown(HttpClientResponseException)

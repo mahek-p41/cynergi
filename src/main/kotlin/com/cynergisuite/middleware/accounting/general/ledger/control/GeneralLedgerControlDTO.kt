@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger.control
+package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO

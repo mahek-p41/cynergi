@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger.control
+package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.general.ledger.control.infrastructure.GeneralLedgerControlRepository
+import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.ToDateBeforeFrom

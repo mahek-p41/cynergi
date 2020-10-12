@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/accounting/account/payable/control")
+@Controller("/api/accounting/account-payable/control")
 class AccountPayableControlController @Inject constructor(
    private val accountPayableControlService: AccountPayableControlService,
    private val userService: UserService
