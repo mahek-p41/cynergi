@@ -42,6 +42,8 @@ import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
 import io.micronaut.validation.Validated
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.awt.Color.BLACK
 import java.awt.Color.WHITE
@@ -65,6 +67,7 @@ class AuditService @Inject constructor(
    private val localizationService: LocalizationService,
    private val reportalService: ReportalService
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(AuditService::class.java)
 
    fun fetchById(id: Long, company: Company, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
@@ -116,8 +119,10 @@ class AuditService @Inject constructor(
       val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
 
       return if (createdOrInProgressAudit != null) {
+         logger.info("Exist a created or in progress audit: {}", createdOrInProgressAudit)
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
+         logger.info("Create a new audit for store {}", store)
          create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
       }
    }

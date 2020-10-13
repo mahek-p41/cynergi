@@ -25,6 +25,8 @@ import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.store.StoreValueObject
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.validation.Validated
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
@@ -45,6 +47,7 @@ class AuditScheduleService @Inject constructor(
    private val storeRepository: StoreRepository,
    private val notificationService: NotificationService
 ) : DailySchedule {
+   private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
    fun fetchById(id: Long, company: Company): AuditScheduleDataTransferObject? {
       val schedule = scheduleRepository.findOne(id)
@@ -152,12 +155,15 @@ class AuditScheduleService @Inject constructor(
             )
 
             val (audit, existing) = if (schedule.schedule == dayOfWeek.name) {
+               logger.info("Find or create an audit")
                auditService.findOrCreate(store, employeeUser, locale) to false
             } else {
+               logger.info("Find a created or in progress audit")
                auditService.findOneCreatedOrInProgress(store, employeeUser, locale) to true
             }
 
             if (audit != null) {
+               logger.info("Create notification for audit: {}", audit)
                val notificationDescription = if (existing) {
                   localizationService.localize(AuditPastDue(audit.auditNumber))
                } else {
