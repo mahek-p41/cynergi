@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
@@ -36,6 +37,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          id == account.id
+         number == account.number
          name == account.name
          form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
@@ -96,6 +98,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == firstPageAccount[index].id
+            number == firstPageAccount[index].number
             name == firstPageAccount[index].name
             form1099Field == firstPageAccount[index].form1099Field
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
@@ -197,7 +200,50 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
-   void "search accounts" () {
+   void "search accounts by number" () {
+      given: "A company and a random collection of 50 accounts with a specific account"
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account = accountFactoryService.single(company, "Bob's Credit Union")
+      final accounts = accountFactoryService.stream(50, company).collect()
+      final queryString = accounts[20].number
+      def pageOne = new SearchPageRequest([page:1, size:5, query:"${ queryString }"])
+
+      when: "strict querying for a number"
+      def result = get("$path/search?query=${account.number}&fuzzy=false")
+
+      then: "return single account"
+      notThrown(HttpClientException)
+      result != null
+      with(result) {
+         totalElements == 1
+         totalPages == 1
+         elements.size() == 1
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account)
+         ]
+      }
+
+      when: "fuzzy querying for a number"
+      def pageOneResult = get("$path/search${pageOne}")
+
+      then:
+      notThrown(HttpClientException)
+      pageOneResult.requested.with { new SearchPageRequest(it) } == pageOne
+      pageOneResult.totalElements == 3
+      pageOneResult.totalPages == 1
+      pageOneResult.first == true
+      pageOneResult.last == true
+      pageOneResult.elements.size() == 3
+
+      when: "Throw SQL Injection at it"
+      get("$path/search?query=%20or%201=1;drop%20table%20account;--")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == NO_CONTENT
+   }
+
+   void "search accounts by name" () {
       given: "A company and 3 accounts 2 of them with bank in the name"
       final company = companyFactoryService.forDatasetCode('tstds1')
       final account1 = accountFactoryService.single(company, "East Hill Bank")
@@ -219,20 +265,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          ]
       }
 
-      when: "strict querying for a number"
-      result = get("$path/search?query=${account3.id}&fuzzy=false")
-
-      then:
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 1
-         totalPages == 1
-         elements.size() == 1
-         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account3)
-         ]
-      }
-
       when: "fuzzy searching for band"
       result = get("$path/search?query=band")
 
@@ -247,6 +279,93 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             new AccountDTO(account2)
          ]
       }
+
+      when: "strict searching for bank"
+      result = get("$path/search?query=bank&fuzzy=false")
+
+      then:
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 2
+         totalPages == 1
+         elements.size() == 2
+         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account1),
+            new AccountDTO(account2)
+         ]
+      }
+
+      when: "strict searching for band"
+      get("$path/search?query=band&fuzzy=false")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == NO_CONTENT
+   }
+
+   void "search accounts by number and name" () {
+      given: "A company and 3 accounts 2 of them with bank in the name"
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1 = accountFactoryService.single(company, "East Hill Bank")
+      final account2 = accountFactoryService.single(company, "7 Hills Bank and Trust")
+      final account3 = accountFactoryService.single(company, "Bob's Credit Union")
+
+      when: "fuzzy querying for number and 'bank'"
+      def result = get("$path/search?query=${account1.id}_bank")
+
+      then: "both accounts with 'bank' are returned"
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 2
+         totalPages == 1
+         elements.size() == 2
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account1),
+            new AccountDTO(account2)
+         ]
+      }
+
+      when: "strict querying for number and 'bank'"
+      result = get("$path/search?query=${account1.id}_bank&fuzzy=false")
+
+      then: "only one account is returned"
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 1
+         totalPages == 1
+         elements.size() == 1
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account1)
+         ]
+      }
+
+      when: "fuzzy querying for number and 'bob'"
+      result = get("$path/search?query=${account3.id}_bob")
+
+      then: "only one account is returned"
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 1
+         totalPages == 1
+         elements.size() == 1
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account3)
+         ]
+      }
+
+      when: "strict querying for number and full account name"
+      result = get("$path/search?query=${account3.id}_Bob's_Credit_Union&fuzzy=false")
+
+      then: "only one account is returned"
+      notThrown(HttpClientException)
+      with(result) {
+         totalElements == 1
+         totalPages == 1
+         elements.size() == 1
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
+            new AccountDTO(account3)
+         ]
+      }
    }
 
    void "create a valid account"() {
@@ -259,6 +378,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
+
+      result.number != null
+      result.number > 0
 
       with(result) {
          id > 0
@@ -347,13 +469,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final def updatedAccountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
       def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(updatedAccountDTO))
       jsonAccount.id = existingAccount.id
-      //TODO jsonAccount.number = existingAccount.number
+      jsonAccount.number = existingAccount.number
 
       when:
       def result = put("$path/$existingAccount.id", jsonAccount)
 
       then:
       notThrown(HttpClientResponseException)
+
+      result.number != null
+      result.number > 0
 
       with(result) {
          id == existingAccount.id

@@ -15,6 +15,10 @@ data class AccountDTO(
    @field:Positive
    var id: Long? = null,
 
+   @field:Positive
+   @field:Schema(name = "number", minimum = "1", required = false, description = "Account number")
+   var number: Int? = null,
+
    @field:NotNull
    @field:Schema(name = "name", description = "Description for an account.")
    var name: String? = null,

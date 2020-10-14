@@ -7,6 +7,7 @@ data class AccountEntity(
    val id: Long? = null,
    val number: Long? = null,
    val company: Company,
+   val number: Int? = null,
    val name: String,
    val type: AccountType,
    val normalAccountBalance: NormalAccountBalanceType,
