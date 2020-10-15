@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger
+package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotNull
 import org.slf4j.Logger

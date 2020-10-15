@@ -18,7 +18,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class AccountPayableControlControllerSpecification extends ControllerSpecificationBase {
-   private static String path = '/accounting/account/payable/control'
+   private static String path = '/accounting/account-payable/control'
    private jsonOutput = new JsonOutput()
    private jsonSlurper = new JsonSlurper()
 

@@ -18,7 +18,7 @@ class PurchaseOrderNumberRequiredIndicatorTypeControllerSpecification extends Co
       def predefinedPurchaseOrderNumberRequiredIndicatorType = dataLoaderService.predefined().collect { new PurchaseOrderNumberRequiredIndicatorTypeDTO(it) }
 
       when:
-      def response = get("/accounting/account/payable/type/purchase-order-number-required-indicator")
+      def response = get("/accounting/account-payable/type/purchase-order-number-required-indicator")
 
       then:
       notThrown(HttpClientResponseException)

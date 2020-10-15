@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.general.ledger
+package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton

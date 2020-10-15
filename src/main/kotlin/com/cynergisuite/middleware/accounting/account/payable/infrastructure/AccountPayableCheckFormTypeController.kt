@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/accounting/account/payable/type/check-form")
+@Controller("/api/accounting/account-payable/type/check-form")
 class AccountPayableCheckFormTypeController @Inject constructor(
    private val accountPayableCheckFormTypeService: AccountPayableCheckFormTypeService,
    private val localizationService: LocalizationService

@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -8,7 +8,7 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeEntity
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper

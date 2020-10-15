@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.general.ledger
+package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company

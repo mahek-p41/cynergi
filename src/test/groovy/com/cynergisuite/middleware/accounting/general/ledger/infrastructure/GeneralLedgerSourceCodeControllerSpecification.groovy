@@ -1,10 +1,10 @@
-package com.cynergisuite.middleware.general.ledger.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDTO
-import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDataLoader
-import com.cynergisuite.middleware.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoader
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MicronautTest
 
@@ -15,7 +15,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/general/ledger/source-code"
+   private static final String path = "/general-ledger/source-code"
 
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
 
