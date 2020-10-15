@@ -25,7 +25,7 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
    fun validateCreate(dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeEntity {
       logger.trace("Validating Save GeneralLedgerSourceCode {}", dto)
 
-      doValidation { errors -> doSharedValidation(errors, dto, company) }
+      doValidation { errors -> doCreateValidation(errors, dto, company) }
 
       return GeneralLedgerSourceCodeEntity(dto = dto, company = company)
    }
@@ -36,12 +36,12 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
 
       val existing = generalLedgerSourceCodeRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-      doValidation { errors -> doSharedValidation(errors, dto, company) }
+      doValidation { errors -> doUpdateValidation(errors, dto, company) }
 
       return existing.copy(value = dto.value!!, description = dto.description!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: Company) {
+   private fun doUpdateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: Company) {
       if (dto.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }
@@ -49,6 +49,10 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
       if (dto.description == null) {
          errors.add(ValidationError("description", NotNull("description")))
       }
+   }
+
+   private fun doCreateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: Company) {
+      doUpdateValidation(errors, dto, company);
 
       if (generalLedgerSourceCodeRepository.exists(dto.value!!, company)) {
          errors.add(ValidationError("value", Duplicate("value")))
