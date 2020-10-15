@@ -227,15 +227,14 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
       when:
       glSourceCode2.id = glSourceCode1.id
-      put("$path/${glSourceCode1.id}", glSourceCode2)
+      def result = put("$path/${glSourceCode1.id}", glSourceCode2)
 
       then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "value"
-      response[0].message == "value already exists"
+      notThrown(Exception)
+      result != null
+      result.id > 0
+      result.value == glSourceCode2.value
+      result.description == glSourceCode2.description
    }
 
    void "update source code with duplicate value from different company" () {
