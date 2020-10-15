@@ -53,7 +53,11 @@ sourceSets {
 dependencies {
    implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
    implementation "io.micronaut.sql:micronaut-jdbc-hikari"
-   implementation "io.micronaut.flyway:micronaut-flyway"
+   implementation ("io.micronaut.flyway:micronaut-flyway") {
+      version {
+         strictly("2.0.1")
+      }
+   }
    implementation("org.flywaydb:flyway-core") {
       version {
          strictly("${flywayVersion}")
@@ -83,9 +87,10 @@ dependencies {
    implementation "org.springframework.security:spring-security-crypto:5.3.1.RELEASE"
    implementation "org.eclipse.collections:eclipse-collections:10.2.0"
    implementation "io.micronaut.data:micronaut-data-processor"
+   implementation("io.micronaut:micronaut-inject")
 
    kapt platform("io.micronaut:micronaut-bom:$micronautVersion")
-   kapt "io.micronaut.configuration:micronaut-openapi"
+   kapt "io.micronaut.openapi:micronaut-openapi"
    kapt "io.micronaut:micronaut-inject-java"
    kapt "io.micronaut:micronaut-validation"
 

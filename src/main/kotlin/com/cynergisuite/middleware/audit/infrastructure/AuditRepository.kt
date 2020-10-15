@@ -439,7 +439,6 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (:statuses) ")
       }
 
-
       val sql =
          """
          WITH status AS (

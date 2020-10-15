@@ -182,7 +182,6 @@ class AuditScheduleService @Inject constructor(
                )
 
                val notification = notificationService.create(oneNote)
-
                audits.add(audit)
                notifications.add(notification)
             }
