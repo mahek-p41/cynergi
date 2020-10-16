@@ -18,7 +18,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 2,
          value = "INVOICE_MAINTENANCE",
-         description = "AP Invoice Maintenance",
+         description = "AP Invoice",
          localizationCode = "account.payable.invoice.maintenance",
          orderNumber = 1,
          areaType = AreaDataLoader.areaTypes().forId(1)
@@ -26,7 +26,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 3,
          value = "RECURRING_INVOICE_MAINTENANCE",
-         description = "Recurring Invoice Maintenance",
+         description = "Recurring Invoice",
          localizationCode = "recurring.invoice.maintenance",
          orderNumber = 2,
          areaType = AreaDataLoader.areaTypes().forId(1)
@@ -34,7 +34,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 4,
          value = "CHECK_MAINTENANCE",
-         description = "AP Check Maintenance",
+         description = "AP Check",
          localizationCode = "account.payable.check.maintenance",
          orderNumber = 3,
          areaType = AreaDataLoader.areaTypes().forId(1)
@@ -66,7 +66,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 8,
          value = "STORE_DEPOSIT_MAINTENANCE",
-         description = "Store Deposit Maintenance",
+         description = "Store Deposit",
          localizationCode = "store.deposit.maintenance",
          orderNumber = 1,
          areaType = AreaDataLoader.areaTypes().forId(2)
@@ -82,7 +82,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 10,
          value = "CLEAR_OUTSTANDING_ITEMS",
-         description = "Outstanding Items Maintenance",
+         description = "Outstanding Items",
          localizationCode = "outstanding.items.maintenance",
          orderNumber = 3,
          areaType = AreaDataLoader.areaTypes().forId(2)
@@ -98,7 +98,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 12,
          value = "BANK_TRANSACTIONS_MAINTENANCE",
-         description = "Bank Transactions Maintenance",
+         description = "Bank Transactions",
          localizationCode = "bank.transactions.maintenance",
          orderNumber = 5,
          areaType = AreaDataLoader.areaTypes().forId(2)
@@ -162,7 +162,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 20,
          value = "PO_MAINTENANCE",
-         description = "PO Maintenance",
+         description = "PO",
          localizationCode = "purchase.order.maintenance",
          orderNumber = 1,
          areaType = AreaDataLoader.areaTypes().forId(4)
@@ -223,7 +223,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 27,
          value = "MASTER_CONTROL_FILE_MAINTENANCE",
-         description = "MCF Maintenance",
+         description = "MCF",
          localizationCode = "master.control.file.maintenance",
          orderNumber = 0,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -239,7 +239,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 29,
          value = "BANK",
-         description = "Bank Maintenance",
+         description = "Bank",
          localizationCode = "bank.maintenance",
          orderNumber = 1,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -255,7 +255,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 31,
          value = "DISTRIBUTION_TEMPLATE_MAINTENANCE",
-         description = "Distribution Template Maintenance",
+         description = "Distribution Template",
          localizationCode = "distribution.template.maintenance",
          orderNumber = 3,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -279,7 +279,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 34,
          value = "SHIPVIA",
-         description = "Ship Via Maintenance",
+         description = "Ship Via",
          localizationCode = "ship.via.maintenance",
          orderNumber = 6,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -287,7 +287,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 35,
          value = "VENDOR",
-         description = "Vendor Maintenance",
+         description = "Vendor",
          localizationCode = "vendor.maintenance",
          orderNumber = 7,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -303,7 +303,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 37,
          value = "COMPANY",
-         description = "Company Maintenance",
+         description = "Company",
          localizationCode = "company.maintenance",
          orderNumber = 9,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -311,7 +311,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 38,
          value = "DIVISION",
-         description = "Division Maintenance",
+         description = "Division",
          localizationCode = "division",
          orderNumber = 10,
          areaType = AreaDataLoader.areaTypes().forId(5)
@@ -327,7 +327,7 @@ object MenuTypeDataLoader {
       MenuType(
          id = 40,
          value = "REGION",
-         description = "Region Maintenance",
+         description = "Region",
          localizationCode = "region",
          orderNumber = 12,
          areaType = AreaDataLoader.areaTypes().forId(5)

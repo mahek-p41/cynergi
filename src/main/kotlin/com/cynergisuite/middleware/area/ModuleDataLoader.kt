@@ -276,7 +276,7 @@ object ModuleDataLoader {
          id = 34,
          value = "ITEMMNTS",
          program = "ITEMMNTS",
-         description = "Model Maintenance",
+         description = "Model",
          localizationCode = "model.maintenance",
          menuType = MenuTypeDataLoader.menuTypes().forId(20)
       ),
@@ -284,7 +284,7 @@ object ModuleDataLoader {
          id = 35,
          value = "VENDOR",
          program = "VENDOR",
-         description = "Vendor Maintenance",
+         description = "Vendor",
          localizationCode = "vendor.maintenance",
          menuType = MenuTypeDataLoader.menuTypes().forId(20)
       ),
@@ -396,7 +396,7 @@ object ModuleDataLoader {
          id = 49,
          value = "PARAMS",
          program = "PARAMS",
-         description = "Control File Maintenance",
+         description = "Control File",
          localizationCode = "control.file.maintenance",
          menuType = MenuTypeDataLoader.menuTypes().forId(27)
       ),
