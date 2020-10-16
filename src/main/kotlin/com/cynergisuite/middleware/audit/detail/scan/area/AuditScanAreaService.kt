@@ -17,8 +17,8 @@ class AuditScanAreaService @Inject constructor(
    fun fetchOne(company: Company, id: Long): AuditScanAreaDTO? =
       auditScanAreaRepository.findOne(id, company)?.let { AuditScanAreaDTO(it) }
 
-   fun fetchAll(user: User): List<AuditScanAreaDTOV1> =
-      auditScanAreaRepository.findAll(user).map(::AuditScanAreaDTOV1)
+   fun fetchAll(user: User): List<AuditScanAreaDTO> =
+      auditScanAreaRepository.findAll(user).map(::AuditScanAreaDTO)
 
    fun fetchAll(company: Company, storeId: Long, pageRequest: StandardPageRequest): Page<AuditScanAreaDTO> =
       auditScanAreaRepository.findAll(company, storeId, pageRequest).toPage { AuditScanAreaDTO(it) }

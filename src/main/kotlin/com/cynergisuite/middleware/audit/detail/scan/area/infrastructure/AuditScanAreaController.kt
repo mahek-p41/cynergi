@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.audit.detail.scan.area.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTOV1
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -33,7 +32,6 @@ import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.ValidationException
 
-@Version("2")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 // require access to this controller to at the very least be authenticated
 @Controller("/api/audit/detail/scan-area")
@@ -66,13 +64,12 @@ class AuditScanAreaController @Inject constructor(
       return found
    }
 
-   @Version("1")
    @Deprecated("This resource is used to support the mobile app’s existing expectations for the shape of the response.")
    @Get
    @Operation(tags = ["AuditScanAreaEndpoints"], description = "Fetch a listing of supported audit detail Scan Areas", operationId = "auditDetailScanArea-fetchAll")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AuditScanAreaDTOV1::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AuditScanAreaDTO::class))]),
          ApiResponse(responseCode = "204", description = "The the result is empty"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -80,7 +77,7 @@ class AuditScanAreaController @Inject constructor(
    fun fetchAllByUser(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
-   ): List<AuditScanAreaDTOV1> {
+   ): List<AuditScanAreaDTO> {
       val user = userService.findUser(authentication)
       val areas = auditScanAreaService.fetchAll(user)
 
@@ -89,6 +86,7 @@ class AuditScanAreaController @Inject constructor(
       return areas
    }
 
+   @Version("2")
    @Get(uri = "{?pageRequest*,storeId:[0-9]+}")
    @Operation(tags = ["AuditScanAreaEndpoints"], description = "Fetch a paginated listing of supported audit detail Scan Areas", operationId = "auditDetailScanArea-fetchAll")
    @ApiResponses(

@@ -42,7 +42,7 @@ class AuditExceptionValidator @Inject constructor (
          val barcode = auditException.barcode
          val audit: AuditEntity = auditRepository.findOne(auditId, enteredBy.myCompany())!!
          val auditStatus = audit.currentStatus()
-         val scanArea = auditException.scanArea
+         val scanArea = auditException.scanArea?.id?.let { auditScanAreaRepository.findOne(it, enteredBy.myCompany()) }
 
          if (inventoryId != null && inventoryRepository.doesNotExist(inventoryId, enteredBy.myCompany())) {
             errors.add(
@@ -60,7 +60,7 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (!scanAreaRepository.exists(scanArea!!.id!!)) errors.add(ValidationError("audit.scanArea.id", NotFound(scanArea.id!!)))
+         if (auditException.scanArea?.id != null && scanArea == null) errors.add(ValidationError("audit.scanArea.id", NotFound(auditException.scanArea?.id!!)))
 
          if (employeeRepository.doesNotExist(enteredBy)) {
             errors.add(
@@ -69,14 +69,14 @@ class AuditExceptionValidator @Inject constructor (
          }
       }
 
-      val scanArea = auditScanAreaRepository.findOne(auditException.scanArea?.id!!, enteredBy.myCompany())
+      val scanArea = auditException.scanArea?.id?.let { auditScanAreaRepository.findOne(it, enteredBy.myCompany()) }
       val inventoryId = auditException.inventory?.id
       val barcode = auditException.barcode
 
-      return createAuditException(auditId, enteredBy, scanArea!!, auditException.exceptionCode!!, inventoryId, barcode)
+      return createAuditException(auditId, enteredBy, scanArea, auditException.exceptionCode!!, inventoryId, barcode)
    }
 
-   private fun createAuditException(auditId: Long, enteredBy: User, scanArea: AuditScanAreaEntity, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {
+   private fun createAuditException(auditId: Long, enteredBy: User, scanArea: AuditScanAreaEntity?, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {
       val employeeUser = employeeRepository.findOne(enteredBy)!!
 
       return if (inventoryId != null) {

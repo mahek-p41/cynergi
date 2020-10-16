@@ -49,7 +49,7 @@ class AuditScanAreaRepository @Inject constructor(
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM audit_scan_area WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
-      logger.trace("Checking if Scan Area: {} exists resulted in {}", id, exists)
+      logger.info("Checking if Scan Area: {} exists resulted in {}", id, exists)
 
       return exists
    }
@@ -69,7 +69,7 @@ class AuditScanAreaRepository @Inject constructor(
          Boolean::class.java
       )!!
 
-      logger.trace("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
+      logger.info("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
 
       return exists
    }
@@ -80,17 +80,25 @@ class AuditScanAreaRepository @Inject constructor(
          RowMapper { rs, _ -> mapRow(rs, company) }
       )
 
-   fun findAll(user: User): List<AuditScanAreaEntity> =
+   fun findAll(user: User): List<AuditScanAreaEntity> {
+      val elements = mutableListOf<AuditScanAreaEntity>()
+      var params = mapOf("comp_id" to user.myCompany().myId(), "store_number" to user.myLocation().myNumber())
       jdbc.query(
          """${selectBaseQuery()}
                     WHERE company_id = :comp_id AND store_number_sfk = :store_number
                     ORDER BY name""",
-         mapOf("comp_id" to user.myCompany().myId(), "store_number" to user.myLocation().myNumber())
-      ) { rs, _ -> mapRow(rs, user.myCompany()) }
+         params
+      ) { rs, _ -> elements.add(mapRow(rs, user.myCompany())) }
+
+      logger.info("Find all scan-areas with params {} \nResulted in {}", params, elements)
+
+      return elements
+   }
 
    fun findAll(company: Company, storeId: Long, pageRequest: PageRequest): RepositoryPage<AuditScanAreaEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<AuditScanAreaEntity>()
+      var params = mapOf("comp_id" to company.myId(), "store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       jdbc.query(
          """
          WITH paged AS (
@@ -105,13 +113,15 @@ class AuditScanAreaRepository @Inject constructor(
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """,
-         mapOf("comp_id" to company.myId(), "store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+         params
       ) { rs ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
          elements.add(mapRow(rs, company))
       }
+
+      logger.info("Find all scan-areas with params {} \nResulted in {}", params, elements)
 
       return RepositoryPage(
          requested = pageRequest,

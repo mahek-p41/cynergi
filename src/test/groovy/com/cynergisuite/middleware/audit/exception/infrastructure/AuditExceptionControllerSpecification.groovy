@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.exception.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -425,7 +424,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.audit.id == audit.id
    }
 
-   void "create audit exception without scan area" () {
+   void "create valid audit exception without scan area" () {
       given:
       final locale = Locale.US
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -439,6 +438,41 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
 
       when:
+      def result = post("/audit/${audit.id}/exception", exception)
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.timeCreated != null
+      result.timeUpdated != null
+      result.scanArea == null
+      result.barcode == inventoryItem.barcode
+      result.productCode == inventoryItem.productCode
+      result.altId == inventoryItem.altId
+      result.serialNumber == inventoryItem.serialNumber
+      result.inventoryBrand == inventoryItem.brand
+      result.inventoryModel == inventoryItem.modelNumber
+      result.exceptionCode == exceptionCode
+      result.approved == false
+      result.notes.size() == 0
+      result.audit.id == audit.id
+   }
+
+   void "create invalid audit exception with non-exist scan area" () {
+      given:
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(999), exceptionCode: exceptionCode])
+
+      when:
       post("/audit/${audit.id}/exception", exception)
 
       then:
@@ -446,7 +480,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      new ErrorDataTransferObject(response[0].message, response[0].path) == new ErrorDataTransferObject("Is required", "scanArea")
+      new ErrorDataTransferObject(response[0].message, response[0].path) == new ErrorDataTransferObject("999 was unable to be found", "audit.scanArea.id")
    }
 
    void "create invalid audit exception" () {
@@ -465,9 +499,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final e = thrown(HttpClientResponseException)
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
-      response.size() == 3
+      response.size() == 2
       response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "scanArea"),
          new ErrorDataTransferObject("Cannot be blank", "exceptionCode"),
          new ErrorDataTransferObject("Is required", "exceptionCode"),
       ].sort { o1, o2 -> o1 <=> o2 }
@@ -509,9 +542,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 2
+      response.size() == 1
       response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "scanArea"),
          new ErrorDataTransferObject("Is required", "inventory.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
