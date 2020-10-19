@@ -19,6 +19,10 @@ data class AccountDTO(
    @field:Schema(name = "name", description = "Description for an account.")
    var name: String? = null,
 
+   @field:Positive
+   @field:Schema(name = "number", description = "Account number")
+   var number: Long? = null,
+
    @field:Valid
    @field:NotNull
    @field:Schema(name = "account type", description = "Account type")
@@ -46,6 +50,7 @@ data class AccountDTO(
    constructor(accountEntity: AccountEntity) :
       this(
          id = accountEntity.id,
+         number = accountEntity.number,
          name = accountEntity.name,
          type = AccountTypeValueObject(accountEntity.type),
          normalAccountBalance = NormalAccountBalanceTypeValueObject(accountEntity.normalAccountBalance),
@@ -62,6 +67,7 @@ data class AccountDTO(
    ) :
       this(
          id = accountEntity.id,
+         number = accountEntity.number,
          name = accountEntity.name,
          type = type,
          normalAccountBalance = normalAccountBalance,
