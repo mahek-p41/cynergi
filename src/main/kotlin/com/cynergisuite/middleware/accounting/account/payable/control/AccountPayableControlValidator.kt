@@ -1,11 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormType
-import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorType
-import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.control.infrastructure.AccountPayableControlRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableCheckFormTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PrintCurrencyIndicatorTypeRepository
@@ -15,7 +11,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
-import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,7 +49,6 @@ class AccountPayableControlValidator @Inject constructor(
       company: Company,
       entity: AccountPayableControlEntity? = null
    ): AccountPayableControlEntity {
-
       val checkFormType = accountPayableCheckFormTypeRepository.findOne(dto.checkFormType!!.value)
       val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.findOne(dto.printCurrencyIndicatorType!!.value)
       val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.findOne(dto.purchaseOrderNumberRequiredIndicatorType!!.value)

@@ -14,7 +14,6 @@ import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
@@ -524,8 +523,8 @@ class VendorRepository @Inject constructor(
          allowDropShipToCustomer = rs.getBoolean("${columnPrefix}allow_drop_ship_to_customer"),
          autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order"),
          number = rs.getInt("${columnPrefix}number"),
-         note =  rs.getString("${columnPrefix}note"),
-         phone =  rs.getString("${columnPrefix}phone_number")
+         note = rs.getString("${columnPrefix}note"),
+         phone = rs.getString("${columnPrefix}phone_number")
       )
    }
 
@@ -575,8 +574,8 @@ class VendorRepository @Inject constructor(
          allowDropShipToCustomer = rs.getBoolean("allow_drop_ship_to_customer"),
          autoSubmitPurchaseOrder = rs.getBoolean("auto_submit_purchase_order"),
          number = rs.getInt("number"),
-         note =  rs.getString("note"),
-         phone =  rs.getString("phone_number")
+         note = rs.getString("note"),
+         phone = rs.getString("phone_number")
       )
    }
 

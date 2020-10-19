@@ -20,16 +20,16 @@ object AccountPayableInvoiceStatusTypeDataLoader {
          localizationCode = "open"
       ),
       AccountPayableInvoiceStatusType(
-      id = 3,
-      value = "P",
-      description = "Paid",
-      localizationCode = "paid"
+         id = 3,
+         value = "P",
+         description = "Paid",
+         localizationCode = "paid"
       ),
       AccountPayableInvoiceStatusType(
-      id = 4,
-      value = "D",
-      description = "Deleted",
-      localizationCode = "deleted"
+         id = 4,
+         value = "D",
+         description = "Deleted",
+         localizationCode = "deleted"
       )
    )
 

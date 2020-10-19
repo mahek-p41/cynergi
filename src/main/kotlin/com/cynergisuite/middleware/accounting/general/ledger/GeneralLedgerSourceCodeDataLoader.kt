@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.company.Company
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
@@ -18,7 +18,7 @@ object GeneralLedgerSourceCodeDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          val description = faker.lorem().word()
-         val value = description.substring(0,2).toUpperCase()
+         val value = description.substring(0, 2).toUpperCase()
          GeneralLedgerSourceCodeEntity(
             company = company,
             value = value,
@@ -36,7 +36,7 @@ object GeneralLedgerSourceCodeDataLoader {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val description = faker.lorem().word()
-      val value = description.substring(0,2).toUpperCase()
+      val value = description.substring(0, 2).toUpperCase()
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerSourceCodeDTO(
@@ -49,7 +49,6 @@ object GeneralLedgerSourceCodeDataLoader {
    @JvmStatic
    fun singleDTO(): GeneralLedgerSourceCodeDTO =
       streamDTO(1).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
-
 }
 
 @Singleton

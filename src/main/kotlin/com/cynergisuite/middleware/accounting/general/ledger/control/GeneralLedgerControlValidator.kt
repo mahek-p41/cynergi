@@ -2,11 +2,10 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.ToDateBeforeFrom
@@ -44,7 +43,6 @@ class GeneralLedgerControlValidator @Inject constructor(
       company: Company,
       entity: GeneralLedgerControlEntity? = null
    ): GeneralLedgerControlEntity {
-
       val periodFrom = dto.periodFrom!!
       val periodTo = dto.periodTo!!
       val defaultAccountPayableAccount = dto.defaultAccountPayableAccount?.id?.let { accountRepository.findOne(it, company) }

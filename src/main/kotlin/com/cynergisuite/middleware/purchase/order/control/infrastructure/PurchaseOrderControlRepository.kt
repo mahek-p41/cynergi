@@ -254,7 +254,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             val defaultVendor = vendorRepository.mapRowOrNull(rs, company, "defVen_")
             val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
             val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
-            val defaultApprover = employeeRepository.mapRowOrNull(rs, "defApp_", "defApp_comp_", "defApp_comp_address_", "defApp_dept_","defApp_store_")
+            val defaultApprover = employeeRepository.mapRowOrNull(rs, "defApp_", "defApp_comp_", "defApp_comp_address_", "defApp_dept_", "defApp_store_")
             val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
 
             mapRow(rs, defaultAccountPayableStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
