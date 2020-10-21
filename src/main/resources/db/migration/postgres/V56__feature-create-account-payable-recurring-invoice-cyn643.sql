@@ -10,7 +10,7 @@ INSERT INTO account_payable_recurring_invoice_status_type_domain(id, value, desc
 VALUES (1, 'A', 'Active', 'active'),
        (2, 'I', 'Inactive', 'inactive');
 
- CREATE TABLE expense_month_creation_type_domain
+CREATE TABLE expense_month_creation_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
     value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
