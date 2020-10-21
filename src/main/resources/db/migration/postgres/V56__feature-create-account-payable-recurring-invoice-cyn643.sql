@@ -36,7 +36,7 @@ CREATE TABLE account_payable_recurring_invoice
     employee_number_id_sfk        INTEGER                                                                     NOT NULL,
     message                       TEXT,
     code_indicator                VARCHAR(3),    -- This was decided to be a free form field.
-    type                          VARCHAR (1)  CHECK (type <> 'E')                                            NOT NULL, -- this field can only contain an E for expense included for future possible use
+    type                          VARCHAR (1)  CHECK (type = 'E')                                             NOT NULL, -- this field can only contain an E for expense included for future possible use
     pay_to_id                     BIGINT REFERENCES vendor (id)                                               NOT NULL,
     last_transfer_to_create_invoice_date DATE,
     status_id                     BIGINT REFERENCES account_payable_recurring_invoice_status_type_domain (id)  NOT NULL,
