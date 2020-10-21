@@ -37,6 +37,7 @@ class AccountRepository @Inject constructor(
          )
          SELECT
             account.id                                   AS account_id,
+            account.number                               AS account_number,
             account.name                                 AS account_name,
             account.form_1099_field                      AS account_form_1099_field,
             account.corporate_account_indicator          AS account_corporate_account_indicator,
@@ -246,6 +247,7 @@ class AccountRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, apCtrlPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
+         number = rs.getLong("${columnPrefix}number"),
          company = company,
          name = rs.getString("${columnPrefix}name"),
          type = mapAccountType(rs, "${apCtrlPrefix}type_"),
@@ -259,6 +261,7 @@ class AccountRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, account: AccountEntity, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
+         number = rs.getLong("${columnPrefix}number"),
          company = account.company,
          name = rs.getString("${columnPrefix}name"),
          type = account.type,
