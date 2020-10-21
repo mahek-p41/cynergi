@@ -5,6 +5,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -148,7 +149,12 @@ class AccountRepository @Inject constructor(
             searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
             EMPTY
          } else {
-            val fieldToSearch = " account.name "
+            val splitedWords = searchQuery.split(" ")
+            val fieldToSearch = if (splitedWords.first().isNumber() && splitedWords.size == 1) {
+               " account.number::text "
+            } else {
+               "COALESCE(account.number::text, '') || ' ' || COALESCE(account.name, '')"
+            }
             where.append(" AND $fieldToSearch <-> :search_query < 0.9 ")
             " ORDER BY $fieldToSearch <-> :search_query "
          }
@@ -249,7 +255,6 @@ class AccountRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          company = company,
-         number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          type = mapAccountType(rs, "${apCtrlPrefix}type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "${apCtrlPrefix}balance_type_"),
@@ -264,7 +269,6 @@ class AccountRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          company = account.company,
-         number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          type = account.type,
          normalAccountBalance = account.normalAccountBalance,

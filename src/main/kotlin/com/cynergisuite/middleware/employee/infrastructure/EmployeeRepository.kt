@@ -208,7 +208,7 @@ class EmployeeRepository @Inject constructor(
       val firstNameMi = pageRequest.firstNameMi
       val lastName = pageRequest.lastName
       val searchString = pageRequest.search
-      val params = mutableMapOf<String, Any?>(
+      val params = mutableMapOf(
          "comp_id" to company.myId(),
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),

@@ -203,13 +203,12 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    void "search accounts by number" () {
       given: "A company and a random collection of 50 accounts with a specific account"
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final account = accountFactoryService.single(company, "Bob's Credit Union")
       final accounts = accountFactoryService.stream(50, company).collect()
       final queryString = accounts[20].number
       def pageOne = new SearchPageRequest([page:1, size:5, query:"${ queryString }"])
 
       when: "strict querying for a number"
-      def result = get("$path/search?query=${account.number}&fuzzy=false")
+      def result = get("$path/search?query=${accounts[19].number}&fuzzy=false")
 
       then: "return single account"
       notThrown(HttpClientException)
@@ -218,22 +217,23 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          totalElements == 1
          totalPages == 1
          elements.size() == 1
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account)
-         ]
+         new AccountDTO(elements[0]) == new AccountDTO(accounts[19])
       }
 
       when: "fuzzy querying for a number"
-      def pageOneResult = get("$path/search${pageOne}")
+      def pageOneResult = get("$path/search?query=${accounts[19].number}")
 
-      then:
+      then: 'the result for 20 should be [20, 29, 28, 27...21] according to Postgres algorithm for fuzzy search'
       notThrown(HttpClientException)
-      pageOneResult.requested.with { new SearchPageRequest(it) } == pageOne
-      pageOneResult.totalElements == 3
-      pageOneResult.totalPages == 1
       pageOneResult.first == true
-      pageOneResult.last == true
-      pageOneResult.elements.size() == 3
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 10
+
+      with(pageOneResult.elements[0]) {
+         id == accounts[19].id
+         name == accounts[19].name
+         number == accounts[19].number
+      }
 
       when: "Throw SQL Injection at it"
       get("$path/search?query=%20or%201=1;drop%20table%20account;--")
@@ -311,7 +311,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account3 = accountFactoryService.single(company, "Bob's Credit Union")
 
       when: "fuzzy querying for number and 'bank'"
-      def result = get("$path/search?query=${account1.id}_bank")
+      def result = get("$path/search?query=${account1.id}%20bank")
 
       then: "both accounts with 'bank' are returned"
       notThrown(HttpClientException)
