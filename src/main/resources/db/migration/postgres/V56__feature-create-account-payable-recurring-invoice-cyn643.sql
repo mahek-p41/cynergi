@@ -33,7 +33,6 @@ CREATE TABLE account_payable_recurring_invoice
     invoice                       VARCHAR(20)                                                                 NOT NULL,
     invoice_amount                NUMERIC(11, 2)                                                              NOT NULL,
     fixed_amount_indicator        BOOLEAN DEFAULT TRUE                                                        NOT NULL,
-    discount_taken                NUMERIC(12,2),
     employee_number_id_sfk        INTEGER                                                                     NOT NULL,
     message                       TEXT,
     code_indicator                VARCHAR(3),    -- This was decided to be a free form field.
