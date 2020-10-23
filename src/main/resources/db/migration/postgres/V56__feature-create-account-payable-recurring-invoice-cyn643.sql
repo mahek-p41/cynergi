@@ -10,7 +10,7 @@ INSERT INTO account_payable_recurring_invoice_status_type_domain(id, value, desc
 VALUES (1, 'A', 'Active', 'active'),
        (2, 'I', 'Inactive', 'inactive');
 
- CREATE TABLE expense_month_creation_type_domain
+CREATE TABLE expense_month_creation_type_domain
 (
     id                INTEGER                                                        NOT NULL PRIMARY KEY,
     value             VARCHAR(10) CHECK ( char_length(trim(value)) > 0)              NOT NULL,
@@ -33,11 +33,10 @@ CREATE TABLE account_payable_recurring_invoice
     invoice                       VARCHAR(20)                                                                 NOT NULL,
     invoice_amount                NUMERIC(11, 2)                                                              NOT NULL,
     fixed_amount_indicator        BOOLEAN DEFAULT TRUE                                                        NOT NULL,
-    discount_taken                NUMERIC(12,2),
     employee_number_id_sfk        INTEGER                                                                     NOT NULL,
     message                       TEXT,
     code_indicator                VARCHAR(3),    -- This was decided to be a free form field.
-    type                          VARCHAR (1)  CHECK (type <> 'E')                                            NOT NULL, -- this field can only contain an E for expense included for future possible use
+    type                          VARCHAR (1)  CHECK (type = 'E')                                             NOT NULL, -- this field can only contain an E for expense included for future possible use
     pay_to_id                     BIGINT REFERENCES vendor (id)                                               NOT NULL,
     last_transfer_to_create_invoice_date DATE,
     status_id                     BIGINT REFERENCES account_payable_recurring_invoice_status_type_domain (id)  NOT NULL,
