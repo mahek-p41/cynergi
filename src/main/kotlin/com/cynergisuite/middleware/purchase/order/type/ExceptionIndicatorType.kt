@@ -7,7 +7,7 @@ data class ExceptionIndicatorType(
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<ExceptionIndicatorType>{
+) : TypeDomainEntity<ExceptionIndicatorType> {
 
    override fun myId(): Long = id
    override fun myValue(): String = value

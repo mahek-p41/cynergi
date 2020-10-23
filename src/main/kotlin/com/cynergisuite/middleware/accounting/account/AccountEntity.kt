@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.company.Company
 
 data class AccountEntity(
    val id: Long? = null,
-   val number: Long? = null, 
+   val number: Long? = null,
    val company: Company,
    val name: String,
    val type: AccountType,
