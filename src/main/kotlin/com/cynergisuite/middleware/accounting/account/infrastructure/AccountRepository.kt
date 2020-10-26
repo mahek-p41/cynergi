@@ -155,7 +155,7 @@ class AccountRepository @Inject constructor(
             } else {
                "COALESCE(account.number::text, '') || ' ' || COALESCE(account.name, '')"
             }
-            where.append(" AND $fieldToSearch <-> :search_query < 0.9 ")
+            where.append(" AND $fieldToSearch <-> :search_query < 0.865 ")
             " ORDER BY $fieldToSearch <-> :search_query "
          }
       } else {

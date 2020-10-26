@@ -339,8 +339,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          ]
       }
 
-      when: "fuzzy querying for number and 'bob'"
-      result = get("$path/search?query=${account3.id}_bob")
+      when: "fuzzy querying for number and 'credit'"
+      result = get("$path/search?query=${account3.id}%20Credit")
 
       then: "only one account is returned"
       notThrown(HttpClientException)
