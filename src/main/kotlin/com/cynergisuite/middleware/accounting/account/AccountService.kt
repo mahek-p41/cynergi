@@ -65,4 +65,8 @@ class AccountService @Inject constructor(
          status = AccountStatusTypeValueObject(accountEntity.status, localizedStatusDescription)
       )
    }
+
+   fun delete(id: Long, company: Company) {
+      accountRepository.delete(id, company)
+   }
 }
