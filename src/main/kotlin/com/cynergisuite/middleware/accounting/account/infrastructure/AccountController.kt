@@ -6,6 +6,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountService
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -14,6 +15,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -146,7 +148,7 @@ class AccountController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id}", processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountEndpoints"], summary = "Create a single account", description = "Create a single account.", operationId = "account-update")
    @ApiResponses(
@@ -171,5 +173,27 @@ class AccountController @Inject constructor(
       logger.debug("Requested Update Account {} resulted in {}", accountDTO, response)
 
       return response
+   }
+
+   @Delete(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
+   @AccessControl
+   @Operation(tags = ["AccountEndpoints"], summary = "Delete an account", description = "Delete a single account", operationId = "account-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the account was able to be deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete account", authentication)
+
+      val user = userService.findUser(authentication)
+
+      return accountService.delete(id, user.myCompany())
    }
 }

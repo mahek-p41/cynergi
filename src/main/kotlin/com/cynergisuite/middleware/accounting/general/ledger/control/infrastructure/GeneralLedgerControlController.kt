@@ -56,7 +56,7 @@ class GeneralLedgerControlController @Inject constructor(
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerControlEndpoints"], summary = "Create an GeneralLedgerControlEntity", description = "Create an GeneralLedgerControlEntity", operationId = "GeneralLedgerControl-create")
+   @Operation(tags = ["GeneralLedgerControlEndpoints"], summary = "Create a GeneralLedgerControlEntity", description = "Create an GeneralLedgerControlEntity", operationId = "GeneralLedgerControl-create")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerControlDTO::class))]),
@@ -81,7 +81,7 @@ class GeneralLedgerControlController @Inject constructor(
 
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerControlEndpoints"], summary = "Update an GeneralLedgerControlEntity", description = "Update an GeneralLedgerControlEntity from a body of GeneralLedgerControlDTO", operationId = "GeneralLedgerControl-update")
+   @Operation(tags = ["GeneralLedgerControlEndpoints"], summary = "Update a GeneralLedgerControlEntity", description = "Update an GeneralLedgerControlEntity from a body of GeneralLedgerControlDTO", operationId = "GeneralLedgerControl-update")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If successfully able to update GeneralLedgerControl", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerControlDTO::class))]),

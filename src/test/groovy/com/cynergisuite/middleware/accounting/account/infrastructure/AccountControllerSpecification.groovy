@@ -339,8 +339,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          ]
       }
 
-      when: "fuzzy querying for number and 'bob'"
-      result = get("$path/search?query=${account3.id}_bob")
+      when: "fuzzy querying for number and 'credit'"
+      result = get("$path/search?query=${account3.id}%20Credit")
 
       then: "only one account is returned"
       notThrown(HttpClientException)
@@ -538,5 +538,45 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'vo.status.value'
       response[0].message == 'Z was unable to be found'
+   }
+
+
+   void "delete account" () {
+      given:
+      accountFactoryService.single(nineNineEightEmployee.company)
+      def account = accountFactoryService.single(nineNineEightEmployee.company)
+
+      when:
+      delete( "$path/$account.id", )
+
+      then: "account of for user's company is delete"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$account.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$account.id was unable to be found"
+   }
+
+   void "delete account from other company is not allowed" () {
+      given:
+      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      accountFactoryService.single(nineNineEightEmployee.company)
+      def account = accountFactoryService.single(tstds2)
+
+      when:
+      delete( "$path/$account.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$account.id was unable to be found"
    }
 }

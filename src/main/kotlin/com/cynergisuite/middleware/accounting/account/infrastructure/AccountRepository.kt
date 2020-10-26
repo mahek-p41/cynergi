@@ -14,6 +14,7 @@ import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceType
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -155,7 +156,7 @@ class AccountRepository @Inject constructor(
             } else {
                "COALESCE(account.number::text, '') || ' ' || COALESCE(account.name, '')"
             }
-            where.append(" AND $fieldToSearch <-> :search_query < 0.9 ")
+            where.append(" AND $fieldToSearch <-> :search_query < 0.865 ")
             " ORDER BY $fieldToSearch <-> :search_query "
          }
       } else {
@@ -248,6 +249,23 @@ class AccountRepository @Inject constructor(
             mapRow(rs, account)
          }
       )
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting account with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM account
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, apCtrlPrefix: String = EMPTY): AccountEntity {
