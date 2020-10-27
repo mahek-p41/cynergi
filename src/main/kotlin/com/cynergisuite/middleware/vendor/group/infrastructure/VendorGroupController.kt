@@ -123,7 +123,7 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
-   @Put(value = "/{id}", processes = [APPLICATION_JSON])
+   @Put(value = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
    @AccessControl("vendorGroup-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Update a single VendorGroup", description = "Update a single VendorGroup where the update is the addition of a note", operationId = "vendorGroup-update")

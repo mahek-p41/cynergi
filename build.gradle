@@ -34,7 +34,7 @@ configurations {
 
 kapt {
    arguments {
-      arg("micronaut.processing.incremental", true)
+      arg("micronaut.processing.incremental", false)
    }
 }
 
