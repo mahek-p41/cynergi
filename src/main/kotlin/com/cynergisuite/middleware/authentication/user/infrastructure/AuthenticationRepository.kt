@@ -209,7 +209,7 @@ class AuthenticationRepository @Inject constructor(
          clientCode = row.getString("comp_client_code"),
          clientId = row.getInteger("comp_client_id"),
          datasetCode = row.getString("comp_dataset_code"),
-         federalIdNumber = row.getString("comp_federal_tax_number")
+         federalIdNumber = row.getString("comp_federal_id_number")
       )
    }
 
