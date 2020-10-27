@@ -85,7 +85,24 @@ class VendorGroupRepository @Inject constructor(
          vendorGroup
       }
 
-      logger.trace("Searching for VendorGroup: {} resulted in {}", id, found)
+      logger.trace("Searching for VendorGroup: id={} resulted in {}", id, found)
+
+      return found
+   }
+
+   fun findOne(value: String, company: Company): VendorGroupEntity? {
+      val params = mutableMapOf("value" to value, "comp_id" to company.myId())
+      val query = "${baseSelectQuery()}\nWHERE vgrp.value = :value AND comp.id = :comp_id"
+
+      logger.debug("Searching for VendorGroup using {} {}", query, params)
+
+      val found = jdbc.findFirstOrNull(query, params) { rs ->
+         val vendorGroup = mapRow(rs)
+
+         vendorGroup
+      }
+
+      logger.trace("Searching for VendorGroup: value={} resulted in {}", value, found)
 
       return found
    }

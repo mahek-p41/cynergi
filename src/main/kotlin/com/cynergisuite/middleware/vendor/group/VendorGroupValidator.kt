@@ -36,21 +36,24 @@ class VendorGroupValidator @Inject constructor(
 
       val existing = vendorGroupRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-      doValidation { errors -> doSharedValidation(errors, vo, company) }
+      doValidation { errors -> doSharedValidation(errors, vo, company, existing) }
 
       return existing.copy(value = vo.value!!, description = vo.description!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorGroupDTO, company: Company) {
-      if (vo.value == null) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, dto: VendorGroupDTO, company: Company, existing: VendorGroupEntity? = null) {
+      if (dto.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }
 
-      if (vo.description == null) {
+      if (dto.description == null) {
          errors.add(ValidationError("description", NotNull("description")))
       }
 
-      if (vendorGroupRepository.exists(vo.value!!, company)) {
+      val vgByValue = vendorGroupRepository.findOne(dto.value!!, company)
+
+      if ((existing == null && vgByValue != null)
+            || (existing != null && existing.id != vgByValue?.id && dto.value == vgByValue?.value)) {
          errors.add(ValidationError("value", Duplicate("value")))
       }
    }

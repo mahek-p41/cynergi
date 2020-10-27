@@ -174,6 +174,23 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       result.description == "description1"
    }
 
+   // Front-end should avoid this case if possible
+   void "update vendor with no change" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final vendorGroup = new VendorGroupDTO(vendorGroupTestDataLoaderService.stream(tstds1).toList()[0])
+
+      when:
+      def result = put("$path/${vendorGroup.id}", vendorGroup)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id > 0
+      result.value == vendorGroup.value
+      result.description == vendorGroup.description
+   }
+
    void "update vendor with null value" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
