@@ -5,7 +5,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND

@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.department.DepartmentDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 

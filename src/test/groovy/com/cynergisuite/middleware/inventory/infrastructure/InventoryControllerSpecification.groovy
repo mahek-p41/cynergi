@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.inventory.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 @MicronautTest(transactional = false)
 class InventoryControllerSpecification extends ControllerSpecificationBase {

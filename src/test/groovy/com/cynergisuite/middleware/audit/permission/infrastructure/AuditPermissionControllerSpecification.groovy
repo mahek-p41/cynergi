@@ -11,7 +11,7 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 

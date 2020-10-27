@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.audit.status.Approved
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 @MicronautTest(transactional = false)
 class AuditStatusControllerSpecification extends ControllerSpecificationBase {
