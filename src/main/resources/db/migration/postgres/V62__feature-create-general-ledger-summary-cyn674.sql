@@ -25,18 +25,20 @@ CREATE TABLE general_ledger_summary
     account_id                                      BIGINT REFERENCES account (id)         NOT NULL,
     profit_center_id_sfk                            INTEGER                                NOT NULL, --foreign key to store/primary location
     overall_period_id                               BIGINT REFERENCES overall_period_type_domain (id) NOT NULL,
-    aggregate_balance_period_1                      NUMERIC(13,2),
-    aggregate_balance_period_2                      NUMERIC(13,2),
-    aggregate_balance_period_3                      NUMERIC(13,2),
-    aggregate_balance_period_4                      NUMERIC(13,2),
-    aggregate_balance_period_5                      NUMERIC(13,2),
-    aggregate_balance_period_6                      NUMERIC(13,2),
-    aggregate_balance_period_7                      NUMERIC(13,2),
-    aggregate_balance_period_8                      NUMERIC(13,2),
-    aggregate_balance_period_9                      NUMERIC(13,2),
-    aggregate_balance_period_10                     NUMERIC(13,2),
-    aggregate_balance_period_11                     NUMERIC(13,2),
-    aggregate_balance_period_12                     NUMERIC(13,2),
+    net_activity_period_1                           NUMERIC(13,2),
+    net_activity_period_2                           NUMERIC(13,2),
+    net_activity_period_3                           NUMERIC(13,2),
+    net_activity_period_4                           NUMERIC(13,2),
+    net_activity_period_5                           NUMERIC(13,2),
+    net_activity_period_6                           NUMERIC(13,2),
+    net_activity_period_7                           NUMERIC(13,2),
+    net_activity_period_8                           NUMERIC(13,2),
+    net_activity_period_9                           NUMERIC(13,2),
+    net_activity_period_10                          NUMERIC(13,2),
+    net_activity_period_11                          NUMERIC(13,2),
+    net_activity_period_12                          NUMERIC(13,2),
+    beginning_balance                               NUMERIC(13,2),
+    closing_balance                                 NUMERIC(13,2),
     UNIQUE (company_id, account_id, profit_center_id_sfk)
  );
 CREATE TRIGGER general_ledger_summary_trg
@@ -57,6 +59,6 @@ COMMENT ON COLUMN general_ledger_summary.overall_period_id IS 'Foreign key to th
 which row in the calendar table to reference current, last year , prior to last year';
 
 
-COMMENT ON TABLE  general_ledger_summary IS 'Aggregate Table holds the summary values for the general ledger entries for the different periods defined in
- the financial_calendar.';
+COMMENT ON TABLE  general_ledger_summary IS 'Aggregate Table holds the net activity values for the general ledger entries for the different periods defined in
+ the financial_calendar as well as beginning and closing balances.';
 
