@@ -1,4 +1,4 @@
-FROM postgres:9.3.25-alpine
+FROM postgres:10.15-alpine
 
 COPY pgpass /root/.pgpass
 RUN chmod 0600 /root/.pgpass
