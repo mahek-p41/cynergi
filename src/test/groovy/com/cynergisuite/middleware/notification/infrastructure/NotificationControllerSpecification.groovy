@@ -15,7 +15,7 @@ import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 import java.time.LocalDate

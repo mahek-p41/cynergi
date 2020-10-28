@@ -5,7 +5,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 @MicronautTest(transactional = false)
 class ScheduleTypeControllerSpecification extends ControllerSpecificationBase {

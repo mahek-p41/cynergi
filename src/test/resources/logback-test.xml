@@ -12,7 +12,6 @@
     <logger name="org.hibernate" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
     <logger name="org.jboss" level="ERROR"/>
-    <logger name="com.zaxxer.hikari" level="INFO"/>
     <logger name="org.springframework" level="ERROR"/>
     <logger name="org.springframework.jdbc.core" level="DEBUG"/>
     <logger name="org.flywaydb.core.internal.scanner.classpath" level="INFO"/>

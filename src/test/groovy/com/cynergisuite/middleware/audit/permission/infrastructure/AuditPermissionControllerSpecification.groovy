@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryServic
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 
