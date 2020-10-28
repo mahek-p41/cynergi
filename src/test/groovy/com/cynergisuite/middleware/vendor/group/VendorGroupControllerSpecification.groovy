@@ -5,7 +5,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 

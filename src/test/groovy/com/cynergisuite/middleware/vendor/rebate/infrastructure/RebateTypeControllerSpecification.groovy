@@ -4,7 +4,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.vendor.rebate.RebateTypeDTO
 import com.cynergisuite.middleware.vendor.rebate.RebateTypeDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 

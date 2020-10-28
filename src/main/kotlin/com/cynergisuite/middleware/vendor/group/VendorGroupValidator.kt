@@ -52,8 +52,9 @@ class VendorGroupValidator @Inject constructor(
 
       val vgByValue = vendorGroupRepository.findOne(dto.value!!, company)
 
-      if ((existing == null && vgByValue != null)
-            || (existing != null && existing.id != vgByValue?.id && dto.value == vgByValue?.value)) {
+      if ((existing == null && vgByValue != null) ||
+         (existing != null && existing.id != vgByValue?.id && dto.value == vgByValue?.value)
+      ) {
          errors.add(ValidationError("value", Duplicate("value")))
       }
    }

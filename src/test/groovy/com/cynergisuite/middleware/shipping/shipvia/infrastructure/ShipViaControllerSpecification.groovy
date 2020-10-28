@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 
