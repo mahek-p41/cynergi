@@ -8,6 +8,8 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,6 +23,7 @@ import javax.transaction.Transactional
 @Singleton
 class GeneralLedgerControlRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
+   private val storeRepository: StoreRepository,
    private val accountRepository: AccountRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerControlRepository::class.java)
@@ -39,6 +42,10 @@ class GeneralLedgerControlRepository @Inject constructor(
             glCtrl.period_from                                             AS glCtrl_period_from,
             glCtrl.period_to                                               AS glCtrl_period_to,
             glCtrl.default_profit_center_sfk                               AS glCtrl_default_profit_center_sfk,
+            profitCenter.id                                                AS profitCenter_id,
+            profitCenter.number                                            AS profitCenter_number,
+            profitCenter.name                                              AS profitCenter_name,
+            profitCenter.dataset                                           AS profitCenter_dataset,
             defAPAcct.account_id                                           AS defAPAcct_id,
             defAPAcct.account_number                                       AS defAPAcct_number,
             defAPAcct.account_name                                         AS defAPAcct_name,
@@ -256,14 +263,18 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctFreightAcct.status_description                          AS defAcctFreightAcct_status_description,
             defAcctFreightAcct.status_localization_code                    AS defAcctFreightAcct_status_localization_code
          FROM general_ledger_control glCtrl
-            JOIN account defAPAcct ON glCtrl.default_account_payable_account_id = defAPAcct.account_id
-            JOIN account defAPDiscAcct ON glCtrl.default_account_payable_discount_account_id = defAPDiscAcct.account_id
-            JOIN account defARAcct ON glCtrl.default_account_receivable_account_id = defARAcct.account_id
-            JOIN account defARDiscAcct ON glCtrl.default_account_receivable_discount_account_id = defARDiscAcct.account_id
-            JOIN account defAcctMiscInvAcct ON glCtrl.default_account_misc_inventory_account_id = defAcctMiscInvAcct.account_id
-            JOIN account defAcctSerializedInvAcct ON glCtrl.default_account_serialized_inventory_account_id = defAcctSerializedInvAcct.account_id
-            JOIN account defAcctUnbilledInvAcct ON glCtrl.default_account_unbilled_inventory_account_id = defAcctUnbilledInvAcct.account_id
-            JOIN account defAcctFreightAcct ON glCtrl.default_account_freight_account_id = defAcctFreightAcct.account_id
+            JOIN company comp ON glCtrl.company_id = comp.id
+            JOIN fastinfo_prod_import.store_vw profitCenter
+                    ON profitCenter.dataset = comp.dataset_code
+                       AND profitCenter.number = glCtrl.default_profit_center_sfk
+            LEFT JOIN account defAPAcct ON glCtrl.default_account_payable_account_id = defAPAcct.account_id
+            LEFT JOIN account defAPDiscAcct ON glCtrl.default_account_payable_discount_account_id = defAPDiscAcct.account_id
+            LEFT JOIN account defARAcct ON glCtrl.default_account_receivable_account_id = defARAcct.account_id
+            LEFT JOIN account defARDiscAcct ON glCtrl.default_account_receivable_discount_account_id = defARDiscAcct.account_id
+            LEFT JOIN account defAcctMiscInvAcct ON glCtrl.default_account_misc_inventory_account_id = defAcctMiscInvAcct.account_id
+            LEFT JOIN account defAcctSerializedInvAcct ON glCtrl.default_account_serialized_inventory_account_id = defAcctSerializedInvAcct.account_id
+            LEFT JOIN account defAcctUnbilledInvAcct ON glCtrl.default_account_unbilled_inventory_account_id = defAcctUnbilledInvAcct.account_id
+            LEFT JOIN account defAcctFreightAcct ON glCtrl.default_account_freight_account_id = defAcctFreightAcct.account_id
       """
    }
 
@@ -281,17 +292,19 @@ class GeneralLedgerControlRepository @Inject constructor(
       val found = jdbc.findFirstOrNull(
          query, params,
          RowMapper { rs, _ ->
-            val defaultAccountPayableAccount = accountRepository.mapRow(rs, company, "defAPAcct_", "defAPAcct_")
-            val defaultAccountPayableDiscountAccount = accountRepository.mapRow(rs, company, "defAPDiscAcct_", "defAPDiscAcct_")
-            val defaultAccountReceivableAccount = accountRepository.mapRow(rs, company, "defARAcct_", "defARAcct_")
-            val defaultAccountReceivableDiscountAccount = accountRepository.mapRow(rs, company, "defARDiscAcct_", "defARDiscAcct_")
-            val defaultAccountMiscInventoryAccount = accountRepository.mapRow(rs, company, "defAcctMiscInvAcct_", "defAcctMiscInvAcct_")
-            val defaultAccountSerializedInventoryAccount = accountRepository.mapRow(rs, company, "defAcctSerializedInvAcct_", "defAcctSerializedInvAcct_")
-            val defaultAccountUnbilledInventoryAccount = accountRepository.mapRow(rs, company, "defAcctUnbilledInvAcct_", "defAcctUnbilledInvAcct_")
-            val defaultAccountFreightAccount = accountRepository.mapRow(rs, company, "defAcctFreightAcct_", "defAcctFreightAcct_")
+            val defaultProfitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
+            val defaultAccountPayableAccount = accountRepository.mapRowOrNull(rs, company, "defAPAcct_", "defAPAcct_")
+            val defaultAccountPayableDiscountAccount = accountRepository.mapRowOrNull(rs, company, "defAPDiscAcct_", "defAPDiscAcct_")
+            val defaultAccountReceivableAccount = accountRepository.mapRowOrNull(rs, company, "defARAcct_", "defARAcct_")
+            val defaultAccountReceivableDiscountAccount = accountRepository.mapRowOrNull(rs, company, "defARDiscAcct_", "defARDiscAcct_")
+            val defaultAccountMiscInventoryAccount = accountRepository.mapRowOrNull(rs, company, "defAcctMiscInvAcct_", "defAcctMiscInvAcct_")
+            val defaultAccountSerializedInventoryAccount = accountRepository.mapRowOrNull(rs, company, "defAcctSerializedInvAcct_", "defAcctSerializedInvAcct_")
+            val defaultAccountUnbilledInventoryAccount = accountRepository.mapRowOrNull(rs, company, "defAcctUnbilledInvAcct_", "defAcctUnbilledInvAcct_")
+            val defaultAccountFreightAccount = accountRepository.mapRowOrNull(rs, company, "defAcctFreightAcct_", "defAcctFreightAcct_")
 
             mapRow(
                rs,
+               defaultProfitCenter,
                defaultAccountPayableAccount,
                defaultAccountPayableDiscountAccount,
                defaultAccountReceivableAccount,
@@ -351,7 +364,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             "company_id" to company.myId(),
             "period_from" to entity.periodFrom,
             "period_to" to entity.periodTo,
-            "default_profit_center_sfk" to entity.defaultProfitCenter,
+            "default_profit_center_sfk" to entity.defaultProfitCenter.myNumber(),
             "default_account_payable_account_id" to entity.defaultAccountPayableAccount?.id,
             "default_account_payable_discount_account_id" to entity.defaultAccountPayableDiscountAccount?.id,
             "default_account_receivable_account_id" to entity.defaultAccountReceivableAccount?.id,
@@ -364,6 +377,7 @@ class GeneralLedgerControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(
                rs,
+               entity.defaultProfitCenter,
                entity.defaultAccountPayableAccount,
                entity.defaultAccountPayableDiscountAccount,
                entity.defaultAccountReceivableAccount,
@@ -406,7 +420,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             "company_id" to company.myId(),
             "period_from" to entity.periodFrom,
             "period_to" to entity.periodTo,
-            "default_profit_center_sfk" to entity.defaultProfitCenter,
+            "default_profit_center_sfk" to entity.defaultProfitCenter.myNumber(),
             "default_account_payable_account_id" to entity.defaultAccountPayableAccount?.id,
             "default_account_payable_discount_account_id" to entity.defaultAccountPayableDiscountAccount?.id,
             "default_account_receivable_account_id" to entity.defaultAccountReceivableAccount?.id,
@@ -419,6 +433,7 @@ class GeneralLedgerControlRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(
                rs,
+               entity.defaultProfitCenter,
                entity.defaultAccountPayableAccount,
                entity.defaultAccountPayableDiscountAccount,
                entity.defaultAccountReceivableAccount,
@@ -434,6 +449,7 @@ class GeneralLedgerControlRepository @Inject constructor(
 
    private fun mapRow(
       rs: ResultSet,
+      defaultProfitCenter: Store,
       defaultAccountPayableAccount: AccountEntity?,
       defaultAccountPayableDiscountAccount: AccountEntity?,
       defaultAccountReceivableAccount: AccountEntity?,
@@ -448,7 +464,7 @@ class GeneralLedgerControlRepository @Inject constructor(
          id = rs.getLong("${columnPrefix}id"),
          periodFrom = rs.getLocalDate("${columnPrefix}period_from"),
          periodTo = rs.getLocalDate("${columnPrefix}period_to"),
-         defaultProfitCenter = rs.getInt("${columnPrefix}default_profit_center_sfk"),
+         defaultProfitCenter = defaultProfitCenter,
          defaultAccountPayableAccount = defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
          defaultAccountReceivableAccount = defaultAccountReceivableAccount,

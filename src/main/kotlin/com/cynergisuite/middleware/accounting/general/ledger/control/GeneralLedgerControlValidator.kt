@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.ToDateBeforeFrom
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -17,6 +18,7 @@ import javax.validation.Valid
 
 @Singleton
 class GeneralLedgerControlValidator @Inject constructor(
+   private val storeRepository: StoreRepository,
    private val accountRepository: AccountRepository,
    private val generalLedgerControlRepository: GeneralLedgerControlRepository
 ) : ValidatorBase() {
@@ -45,6 +47,7 @@ class GeneralLedgerControlValidator @Inject constructor(
    ): GeneralLedgerControlEntity {
       val periodFrom = dto.periodFrom!!
       val periodTo = dto.periodTo!!
+      val defaultProfitCenter = dto.defaultProfitCenter?.id?.let { storeRepository.findOne(it, company) }
       val defaultAccountPayableAccount = dto.defaultAccountPayableAccount?.id?.let { accountRepository.findOne(it, company) }
       val defaultAccountPayableDiscountAccount = dto.defaultAccountPayableDiscountAccount?.id?.let { accountRepository.findOne(it, company) }
       val defaultAccountReceivableAccount = dto.defaultAccountReceivableAccount?.id?.let { accountRepository.findOne(it, company) }
@@ -62,6 +65,9 @@ class GeneralLedgerControlValidator @Inject constructor(
          if (periodTo.isBefore(periodFrom)) {
             errors.add(ValidationError("periodTo", ToDateBeforeFrom(periodTo, periodFrom)))
          }
+
+         // defaultProfitCenter is not nullable
+         defaultProfitCenter ?: errors.add(ValidationError("defaultProfitCenter.id", NotFound(dto.defaultProfitCenter!!.id!!)))
 
          if (dto.defaultAccountPayableAccount?.id != null && defaultAccountPayableAccount == null) {
             errors.add(ValidationError("defaultAccountPayableAccount.id", NotFound(dto.defaultAccountPayableAccount!!.id!!)))
@@ -98,6 +104,7 @@ class GeneralLedgerControlValidator @Inject constructor(
 
       return GeneralLedgerControlEntity(
          dto,
+         defaultProfitCenter = defaultProfitCenter!!,
          defaultAccountPayableAccount = defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
          defaultAccountReceivableAccount = defaultAccountReceivableAccount,

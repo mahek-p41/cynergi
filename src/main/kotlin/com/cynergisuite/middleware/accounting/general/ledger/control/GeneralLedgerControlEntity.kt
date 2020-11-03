@@ -2,13 +2,14 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.store.Store
 import java.time.LocalDate
 
 data class GeneralLedgerControlEntity(
    val id: Long? = null,
    val periodFrom: LocalDate,
    val periodTo: LocalDate,
-   val defaultProfitCenter: Int,
+   val defaultProfitCenter: Store,
    val defaultAccountPayableAccount: AccountEntity? = null,
    val defaultAccountPayableDiscountAccount: AccountEntity? = null,
    val defaultAccountReceivableAccount: AccountEntity? = null,
@@ -21,6 +22,7 @@ data class GeneralLedgerControlEntity(
 
    constructor(
       dto: GeneralLedgerControlDTO,
+      defaultProfitCenter: Store,
       defaultAccountPayableAccount: AccountEntity?,
       defaultAccountPayableDiscountAccount: AccountEntity?,
       defaultAccountReceivableAccount: AccountEntity?,
@@ -34,7 +36,7 @@ data class GeneralLedgerControlEntity(
          id = dto.id,
          periodFrom = dto.periodFrom!!,
          periodTo = dto.periodTo!!,
-         defaultProfitCenter = dto.defaultProfitCenter!!,
+         defaultProfitCenter = defaultProfitCenter,
          defaultAccountPayableAccount = defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
          defaultAccountReceivableAccount = defaultAccountReceivableAccount,
