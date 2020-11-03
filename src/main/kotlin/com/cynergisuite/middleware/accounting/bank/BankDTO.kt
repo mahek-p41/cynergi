@@ -16,6 +16,9 @@ data class BankDTO(
    @field:Positive
    var id: Long? = null,
 
+   @field:Positive
+   var number: Long? = null,
+
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a bank.")
    var name: String? = null,
@@ -33,6 +36,7 @@ data class BankDTO(
    constructor(bankEntity: BankEntity) :
       this(
          id = bankEntity.id,
+         number = bankEntity.number,
          name = bankEntity.name,
          generalLedgerProfitCenter = SimpleIdentifiableDTO(bankEntity.generalLedgerProfitCenter.myId()),
          generalLedgerAccount = SimpleIdentifiableDTO(bankEntity.generalLedgerAccount.myId())

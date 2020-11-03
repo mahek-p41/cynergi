@@ -39,6 +39,7 @@ class BankRepository @Inject constructor(
          SELECT
             bank.id                                   AS bank_id,
             bank.name                                 AS bank_name,
+            bank.number                               AS bank_number,
             comp.id                                   AS comp_id,
             comp.uu_row_id                            AS comp_uu_row_id,
             comp.time_created                         AS comp_time_created,
@@ -186,6 +187,7 @@ class BankRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
+         number = rs.getLong("${columnPrefix}number"),
          company = company,
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "glProfitCenter_"),
@@ -196,6 +198,7 @@ class BankRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, bank: BankEntity, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
+         number = rs.getLong("${columnPrefix}number"),
          company = bank.company,
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = bank.generalLedgerProfitCenter,
