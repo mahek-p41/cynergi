@@ -27,7 +27,7 @@ data class GeneralLedgerControlDTO(
 
    @field:NotNull
    @field:Schema(description = "Default profit center")
-   var defaultProfitCenter: Int? = null,
+   var defaultProfitCenter: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account payable account")
    var defaultAccountPayableAccount: SimpleIdentifiableDTO?,
@@ -61,7 +61,7 @@ data class GeneralLedgerControlDTO(
          id = entity.id,
          periodFrom = entity.periodFrom,
          periodTo = entity.periodTo,
-         defaultProfitCenter = entity.defaultProfitCenter,
+         defaultProfitCenter = SimpleIdentifiableDTO(entity.defaultProfitCenter.myId()),
          defaultAccountPayableAccount = entity.defaultAccountPayableAccount?.let { SimpleIdentifiableDTO(it) },
          defaultAccountPayableDiscountAccount = entity.defaultAccountPayableDiscountAccount?.let { SimpleIdentifiableDTO(it) },
          defaultAccountReceivableAccount = entity.defaultAccountReceivableAccount?.let { SimpleIdentifiableDTO(it) },

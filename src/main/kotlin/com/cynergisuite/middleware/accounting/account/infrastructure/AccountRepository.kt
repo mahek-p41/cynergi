@@ -268,19 +268,26 @@ class AccountRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, apCtrlPrefix: String = EMPTY): AccountEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, typesPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          company = company,
          name = rs.getString("${columnPrefix}name"),
-         type = mapAccountType(rs, "${apCtrlPrefix}type_"),
-         normalAccountBalance = mapNormalAccountBalanceType(rs, "${apCtrlPrefix}balance_type_"),
-         status = mapAccountStatusType(rs, "${apCtrlPrefix}status_"),
+         type = mapAccountType(rs, "${typesPrefix}type_"),
+         normalAccountBalance = mapNormalAccountBalanceType(rs, "${typesPrefix}balance_type_"),
+         status = mapAccountStatusType(rs, "${typesPrefix}status_"),
          form1099Field = rs.getInt("${columnPrefix}form_1099_field"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }
+
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, typesPrefix: String = EMPTY): AccountEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, company, columnPrefix, typesPrefix)
+      } else {
+         null
+      }
 
    private fun mapRow(rs: ResultSet, account: AccountEntity, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(

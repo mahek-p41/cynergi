@@ -4,6 +4,8 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.time.LocalDate
@@ -23,6 +25,7 @@ object GeneralLedgerControlDataLoader {
       numberIn: Int = 1,
       periodFrom: LocalDate? = null,
       periodTo: LocalDate? = null,
+      defaultProfitCenter: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
       defaultAccountReceivableAccount: AccountEntity,
@@ -44,7 +47,7 @@ object GeneralLedgerControlDataLoader {
             id = Random.nextLong(),
             periodFrom = fromLocalDate,
             periodTo = toLocalDate,
-            defaultProfitCenter = Random.nextInt(),
+            defaultProfitCenter = StoreEntity(defaultProfitCenter.myId(), defaultProfitCenter.myNumber(), defaultProfitCenter.myName(), defaultProfitCenter.myRegion(), defaultProfitCenter.myCompany()),
             defaultAccountPayableAccount = defaultAccountPayableAccount,
             defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
             defaultAccountReceivableAccount = defaultAccountReceivableAccount,
@@ -62,6 +65,7 @@ object GeneralLedgerControlDataLoader {
       numberIn: Int = 1,
       periodFrom: LocalDate? = null,
       periodTo: LocalDate? = null,
+      defaultProfitCenter: SimpleIdentifiableDTO,
       defaultAccountPayableAccount: SimpleIdentifiableDTO,
       defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO,
       defaultAccountReceivableAccount: SimpleIdentifiableDTO,
@@ -82,7 +86,7 @@ object GeneralLedgerControlDataLoader {
          GeneralLedgerControlDTO(
             periodFrom = fromLocalDate,
             periodTo = toLocalDate,
-            defaultProfitCenter = Random.nextInt(),
+            defaultProfitCenter = defaultProfitCenter,
             defaultAccountPayableAccount = defaultAccountPayableAccount,
             defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
             defaultAccountReceivableAccount = defaultAccountReceivableAccount,
@@ -106,6 +110,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
       company: Company,
       periodFrom: LocalDate? = null,
       periodTo: LocalDate? = null,
+      store: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
       defaultAccountReceivableAccount: AccountEntity,
@@ -119,6 +124,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
          numberIn,
          periodFrom,
          periodTo,
+         store,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,
          defaultAccountReceivableAccount,
@@ -136,6 +142,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
       company: Company,
       periodFrom: LocalDate? = null,
       periodTo: LocalDate? = null,
+      store: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
       defaultAccountReceivableAccount: AccountEntity,
@@ -150,6 +157,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
          company,
          periodFrom,
          periodTo,
+         store,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,
          defaultAccountReceivableAccount,
@@ -164,6 +172,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    fun singleDTO(
       periodFrom: LocalDate? = null,
       periodTo: LocalDate? = null,
+      defaultProfitCenter: SimpleIdentifiableDTO,
       defaultAccountPayableAccount: SimpleIdentifiableDTO,
       defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO,
       defaultAccountReceivableAccount: SimpleIdentifiableDTO,
@@ -177,6 +186,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
          1,
          periodFrom,
          periodTo,
+         defaultProfitCenter,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,
          defaultAccountReceivableAccount,
