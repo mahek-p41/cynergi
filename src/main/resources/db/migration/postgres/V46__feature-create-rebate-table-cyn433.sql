@@ -18,6 +18,7 @@ CREATE TABLE rebate
     uu_row_id          UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
+    company_id         BIGINT REFERENCES company (id)                           NOT NULL,
     vendor_id BIGINT REFERENCES vendor(id)                                      NOT NULL,
     status_type_id BIGINT REFERENCES account_status_type_domain(id)                     NOT NULL,
     description character varying(40) CHECK (char_length(trim(description)) > 1)   NOT NULL,
