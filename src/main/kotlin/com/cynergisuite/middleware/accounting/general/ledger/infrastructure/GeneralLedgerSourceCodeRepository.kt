@@ -9,6 +9,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -31,9 +32,6 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       )
       SELECT
          glSrcCodes.id               AS glSrcCodes_id,
-         glSrcCodes.uu_row_id        AS glSrcCodes_uu_row_id,
-         glSrcCodes.time_created     AS glSrcCodes_time_created,
-         glSrcCodes.time_updated     AS glSrcCodes_time_updated,
          glSrcCodes.company_id       AS glSrcCodes_company_id,
          glSrcCodes.value            AS glSrcCodes_value,
          glSrcCodes.description      AS glSrcCodes_description,
@@ -173,12 +171,12 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       )
    }
 
-   private fun mapDdlRow(rs: ResultSet, company: Company): GeneralLedgerSourceCodeEntity {
+   fun mapDdlRow(rs: ResultSet, company: Company, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {
       return GeneralLedgerSourceCodeEntity(
-         id = rs.getLong("id"),
+         id = rs.getLong("${columnPrefix}id"),
          company = company,
-         value = rs.getString("value"),
-         description = rs.getString("description")
+         value = rs.getString("${columnPrefix}value"),
+         description = rs.getString("${columnPrefix}description")
       )
    }
 }
