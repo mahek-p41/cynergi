@@ -10,7 +10,7 @@ data class ShipViaEntity(
    val company: Company
 ) : Identifiable {
 
-   constructor(vo: ShipViaValueObject, company: Company) :
+   constructor(vo: ShipViaDTO, company: Company) :
       this(
          id = vo.id,
          description = vo.description!!,

@@ -30,7 +30,7 @@ class AuditDetailValidator @Inject constructor (
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(auditId: Long, scannedBy: User, dto: AuditDetailCreateDataTransferObject): AuditDetailEntity {
+   fun validateCreate(auditId: Long, scannedBy: User, dto: AuditDetailCreateDTO): AuditDetailEntity {
       logger.debug("Validating Create AuditDetail {}", dto)
 
       doValidation { errors ->

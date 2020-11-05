@@ -23,7 +23,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class PurchaseOrderControlValidator @Inject constructor(
@@ -38,7 +37,7 @@ class PurchaseOrderControlValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderControlValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlEntity {
+   fun validateCreate(dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlEntity {
       logger.debug("Validating Create PurchaseOrderControl {}", dto)
       val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.findOne(dto.defaultAccountPayableStatusType!!.value)
       val defaultVendor = dto.defaultVendor?.id?.let { vendorRepository.findOne(it, company) }

@@ -14,7 +14,6 @@ import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
-import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -34,7 +33,6 @@ import javax.validation.Valid
  * @param verificationValidator defines that the [VerificationValidator] instance should be injected by the container
  */
 @Secured(IS_ANONYMOUS)
-@Validated
 @Controller("/api/verifications/{companyId}/")
 class VerificationController @Inject constructor(
    private val verificationService: VerificationService,

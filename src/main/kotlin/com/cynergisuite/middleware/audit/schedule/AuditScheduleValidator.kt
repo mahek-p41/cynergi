@@ -22,7 +22,7 @@ class AuditScheduleValidator(
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
 
-   fun validateCreate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
+   fun validateCreate(dto: AuditScheduleCreateUpdateDTO, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
       doValidation { errors -> doSharedValidation(dto, user.myCompany(), errors) }
 
       val stores = mutableListOf<StoreEntity>()
@@ -75,7 +75,7 @@ class AuditScheduleValidator(
       )
    }
 
-   fun validateUpdate(dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
+   fun validateUpdate(dto: AuditScheduleCreateUpdateDTO, user: User, locale: Locale): Pair<ScheduleEntity, List<StoreEntity>> {
       doValidation { errors ->
          val scheduleId = dto.id
 
@@ -141,7 +141,7 @@ class AuditScheduleValidator(
       }
    }
 
-   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDataTransferObject, company: Company, errors: MutableSet<ValidationError>) {
+   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDTO, company: Company, errors: MutableSet<ValidationError>) {
       for ((i, store) in dto.stores.withIndex()) {
          if (storeRepository.doesNotExist(store.id!!, company)) {
             errors.add(ValidationError("store[$i].id", NotFound(store.id!!)))

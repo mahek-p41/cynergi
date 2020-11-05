@@ -12,7 +12,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class DivisionValidator @Inject constructor(
@@ -22,7 +21,7 @@ class DivisionValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(DivisionValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid divisionDTO: DivisionDTO, company: Company): DivisionEntity {
+   fun validateCreate(divisionDTO: DivisionDTO, company: Company): DivisionEntity {
       logger.trace("Validating Save Division {}", divisionDTO)
       val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, company)
 

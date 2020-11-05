@@ -3,10 +3,8 @@ package com.cynergisuite.middleware.company
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class CompanyService @Inject constructor(
@@ -23,15 +21,13 @@ class CompanyService @Inject constructor(
       return companies.toPage { CompanyDTO(it) }
    }
 
-   @Validated
-   fun create(@Valid companyDTO: CompanyDTO): CompanyDTO {
+   fun create(companyDTO: CompanyDTO): CompanyDTO {
       val toCreate = companyValidator.validateCreate(companyDTO)
 
       return CompanyDTO(companyRepository.insert(toCreate))
    }
 
-   @Validated
-   fun update(id: Long, @Valid companyDTO: CompanyDTO): CompanyDTO {
+   fun update(id: Long, companyDTO: CompanyDTO): CompanyDTO {
       val (existing, toUpdate) = companyValidator.validateUpdate(id, companyDTO)
 
       return CompanyDTO(companyRepository.update(existing, toUpdate))

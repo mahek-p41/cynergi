@@ -4,10 +4,8 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class VendorGroupService @Inject constructor(
@@ -26,18 +24,16 @@ class VendorGroupService @Inject constructor(
       }
    }
 
-   @Validated
-   fun create(@Valid vo: VendorGroupDTO, company: Company): VendorGroupDTO {
-      val toCreate = vendorGroupValidator.validateCreate(vo, company)
+   fun create(dto: VendorGroupDTO, company: Company): VendorGroupDTO {
+      val toCreate = vendorGroupValidator.validateCreate(dto, company)
 
       return VendorGroupDTO(
          entity = vendorGroupRepository.insert(toCreate, company)
       )
    }
 
-   @Validated
-   fun update(id: Long, @Valid vo: VendorGroupDTO, company: Company): VendorGroupDTO {
-      val toUpdate = vendorGroupValidator.validateUpdate(id, vo, company)
+   fun update(id: Long, dto: VendorGroupDTO, company: Company): VendorGroupDTO {
+      val toUpdate = vendorGroupValidator.validateUpdate(id, dto, company)
 
       return VendorGroupDTO(
          entity = vendorGroupRepository.update(entity = toUpdate)

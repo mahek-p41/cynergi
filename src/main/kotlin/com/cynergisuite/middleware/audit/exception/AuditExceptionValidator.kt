@@ -34,7 +34,7 @@ class AuditExceptionValidator @Inject constructor (
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject, enteredBy: User): AuditExceptionEntity {
+   fun validateCreate(auditId: Long, auditException: AuditExceptionCreateDTO, enteredBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 

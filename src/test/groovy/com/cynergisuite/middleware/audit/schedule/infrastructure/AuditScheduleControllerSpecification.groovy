@@ -6,7 +6,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDTO
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
@@ -194,7 +194,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.random(company)
 
       when:
-      def result = post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [store] as Set))
+      def result = post("/audit/schedule", new AuditScheduleCreateUpdateDTO("test schedule", "test schedule description", TUESDAY, [store] as Set))
 
       then:
       notThrown(HttpClientResponseException)
@@ -214,7 +214,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.random(company)
 
       when:
-      def result = post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [store] as Set, false))
+      def result = post("/audit/schedule", new AuditScheduleCreateUpdateDTO("test schedule", "test schedule description", TUESDAY, [store] as Set, false))
 
       then:
       notThrown(HttpClientResponseException)
@@ -230,7 +230,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule with invalid store" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleIdentifiableDTO(42L)] as Set, enabled: true]))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDTO([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleIdentifiableDTO(42L)] as Set, enabled: true]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -243,7 +243,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule with no stores" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [] as Set, true))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDTO("test schedule", "test schedule description", TUESDAY, [] as Set, true))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -263,7 +263,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne, storeThree] as Set))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne, storeThree] as Set))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
@@ -307,7 +307,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDTO(storeOne.id)] as Set, enabled: false]))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDTO(storeOne.id)] as Set, enabled: false]))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:
@@ -349,7 +349,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], employee, company)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO(schedule.id,"Updated title", "Updated description", TUESDAY, [storeOne] as Set))
 
       then:
       notThrown(HttpClientResponseException)
@@ -401,7 +401,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.random(company)
 
       when:
-      put("/audit/schedule", new AuditScheduleCreateUpdateDataTransferObject("test schedule", "test schedule description", TUESDAY, [store] as Set))
+      put("/audit/schedule", new AuditScheduleCreateUpdateDTO("test schedule", "test schedule description", TUESDAY, [store] as Set))
 
       then:
       final exception = thrown(HttpClientResponseException)

@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTransferObject
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDTO
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit/permission")
@@ -176,7 +177,8 @@ class AuditPermissionController @Inject constructor(
       ]
    )
    fun create(
-      @Body permission: AuditPermissionCreateDataTransferObject,
+      @Body @Valid
+      permission: AuditPermissionCreateDTO,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {

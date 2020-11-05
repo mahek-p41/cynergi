@@ -5,10 +5,8 @@ import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndic
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.infrastructure.AccountPayableControlRepository
 import com.cynergisuite.middleware.company.Company
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class AccountPayableControlService @Inject constructor(
@@ -19,15 +17,13 @@ class AccountPayableControlService @Inject constructor(
       return accountPayableControlRepository.findOne(company)?.let { transformEntity(it) }
    }
 
-   @Validated
-   fun create(@Valid dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
+   fun create(dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
       val toCreate = accountPayableControlValidator.validateCreate(dto, company)
 
       return transformEntity(accountPayableControlRepository.insert(toCreate, company))
    }
 
-   @Validated
-   fun update(@Valid dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
+   fun update(dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
       val toUpdate = accountPayableControlValidator.validateUpdate(dto, company)
 
       return transformEntity(accountPayableControlRepository.update(toUpdate, company))

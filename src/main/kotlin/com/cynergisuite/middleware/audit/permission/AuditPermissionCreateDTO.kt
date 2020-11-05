@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditPermissionCreate", description = "Payload for creating an audit permission")
-data class AuditPermissionCreateDataTransferObject(
+data class AuditPermissionCreateDTO(
 
    @field:Valid
    @field:NotNull

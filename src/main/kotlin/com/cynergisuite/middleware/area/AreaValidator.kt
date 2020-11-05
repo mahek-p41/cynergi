@@ -10,7 +10,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class AreaValidator @Inject constructor(
@@ -19,7 +18,7 @@ class AreaValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AreaValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateAreaTypeId(company: Company, @Valid areaId: Long) {
+   fun validateAreaTypeId(company: Company, areaId: Long) {
       logger.trace("Validating AreaTypeId {}", areaId)
 
       doValidation { errors ->

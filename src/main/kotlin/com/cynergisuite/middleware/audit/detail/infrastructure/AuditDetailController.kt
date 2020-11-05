@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDTO
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
@@ -108,7 +109,8 @@ class AuditDetailController @Inject constructor(
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
       auditId: Long,
-      @Body vo: AuditDetailCreateDataTransferObject,
+      @Body @Valid
+      vo: AuditDetailCreateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {

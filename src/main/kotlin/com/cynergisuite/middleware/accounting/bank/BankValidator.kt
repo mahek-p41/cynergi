@@ -13,7 +13,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class BankValidator @Inject constructor(
@@ -24,7 +23,7 @@ class BankValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(BankValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid bankDTO: BankDTO, company: Company): BankEntity {
+   fun validateCreate(bankDTO: BankDTO, company: Company): BankEntity {
       logger.trace("Validating Save Bank {}", bankDTO)
 
       return doValidation(bankDTO = bankDTO, company = company)

@@ -74,7 +74,8 @@ class BankController @Inject constructor(
    )
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<BankDTO> {
@@ -101,15 +102,16 @@ class BankController @Inject constructor(
       ]
    )
    fun save(
-      @Body bankDTO: BankDTO,
+      @Body @Valid
+      dto: BankDTO,
       authentication: Authentication
    ): BankDTO {
-      logger.info("Requested Save Bank {}", bankDTO)
+      logger.info("Requested Save Bank {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = bankService.create(bankDTO, user.myCompany())
+      val response = bankService.create(dto, user.myCompany())
 
-      logger.debug("Requested Save Bank {} resulted in {}", bankDTO, response)
+      logger.debug("Requested Save Bank {} resulted in {}", dto, response)
 
       return response
    }
@@ -127,15 +129,16 @@ class BankController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body bankDTO: BankDTO,
+      @Body @Valid
+      dto: BankDTO,
       authentication: Authentication
    ): BankDTO {
-      logger.info("Requested Update Bank {}", bankDTO)
+      logger.info("Requested Update Bank {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = bankService.update(id, bankDTO, user.myCompany())
+      val response = bankService.update(id, dto, user.myCompany())
 
-      logger.debug("Requested Update Bank {} resulted in {}", bankDTO, response)
+      logger.debug("Requested Update Bank {} resulted in {}", dto, response)
 
       return response
    }

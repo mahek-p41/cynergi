@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.localization.AuditDueToday
 import com.cynergisuite.middleware.localization.AuditPastDue
@@ -24,7 +23,6 @@ import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import io.micronaut.validation.Validated
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
@@ -33,14 +31,12 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 @Named("AuditSchedule")
 class AuditScheduleService @Inject constructor(
    private val auditService: AuditService,
    private val auditScheduleValidator: AuditScheduleValidator,
-   private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val localizationService: LocalizationService,
    private val scheduleRepository: ScheduleRepository,
@@ -49,7 +45,7 @@ class AuditScheduleService @Inject constructor(
 ) : DailySchedule {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
-   fun fetchById(id: Long, company: Company): AuditScheduleDataTransferObject? {
+   fun fetchById(id: Long, company: Company): AuditScheduleDTO? {
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
@@ -59,19 +55,17 @@ class AuditScheduleService @Inject constructor(
       }
    }
 
-   @Validated
-   fun fetchAll(@Valid pageRequest: PageRequest, company: Company): Page<AuditScheduleDataTransferObject> {
+   fun fetchAll(pageRequest: PageRequest, company: Company): Page<AuditScheduleDTO> {
       val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule"), company) // find all schedules that are of a command AuditSchedule
 
       return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, company) }
    }
 
-   @Validated
-   fun create(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, employee: User, locale: Locale): AuditScheduleDataTransferObject {
+   fun create(dto: AuditScheduleCreateUpdateDTO, employee: User, locale: Locale): AuditScheduleDTO {
       val (schedule, stores) = auditScheduleValidator.validateCreate(dto, employee, locale)
       val inserted = scheduleRepository.insert(schedule)
 
-      return AuditScheduleDataTransferObject(
+      return AuditScheduleDTO(
          id = inserted.id,
          title = inserted.title,
          description = inserted.description,
@@ -81,12 +75,11 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   @Validated
-   fun update(@Valid dto: AuditScheduleCreateUpdateDataTransferObject, user: User, locale: Locale): AuditScheduleDataTransferObject {
+   fun update(dto: AuditScheduleCreateUpdateDTO, user: User, locale: Locale): AuditScheduleDTO {
       val (schedule, stores) = auditScheduleValidator.validateUpdate(dto, user, locale)
       val updated = scheduleRepository.update(schedule)
 
-      return AuditScheduleDataTransferObject(
+      return AuditScheduleDTO(
          id = updated.id,
          title = updated.title,
          description = updated.description,
@@ -96,7 +89,7 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, company: Company): AuditScheduleDataTransferObject {
+   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, company: Company): AuditScheduleDTO {
       val stores = mutableListOf<StoreDTO>()
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
@@ -107,7 +100,7 @@ class AuditScheduleService @Inject constructor(
          }
       }
 
-      return AuditScheduleDataTransferObject(
+      return AuditScheduleDTO(
          id = schedule.id,
          title = schedule.title,
          description = schedule.description,

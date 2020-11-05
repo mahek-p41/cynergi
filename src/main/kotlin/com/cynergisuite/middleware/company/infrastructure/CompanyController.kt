@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_ANONYMOUS)
 @Controller("/api/company")
@@ -99,7 +100,8 @@ class CompanyController @Inject constructor(
       ]
    )
    fun save(
-      @Body companyDTO: CompanyDTO,
+      @Body @Valid
+      companyDTO: CompanyDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): CompanyDTO {
@@ -126,7 +128,8 @@ class CompanyController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body companyDTO: CompanyDTO,
+      @Body @Valid
+      companyDTO: CompanyDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): CompanyDTO {

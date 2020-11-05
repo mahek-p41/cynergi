@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/vendor/payment/term")
@@ -110,7 +111,8 @@ class VendorPaymentTermController @Inject constructor(
       ]
    )
    fun create(
-      @Body vo: VendorPaymentTermDTO,
+      @Body @Valid
+      vo: VendorPaymentTermDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorPaymentTermDTO {
@@ -141,7 +143,8 @@ class VendorPaymentTermController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the vendor payment term being updated") @QueryValue("id")
       id: Long,
-      @Body vo: VendorPaymentTermDTO,
+      @Body @Valid
+      vo: VendorPaymentTermDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorPaymentTermDTO {

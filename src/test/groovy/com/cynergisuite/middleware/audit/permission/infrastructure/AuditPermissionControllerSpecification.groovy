@@ -4,7 +4,7 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTransferObject
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDTO
 import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -199,7 +199,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final auditTwo = auditFactoryService.single(store, salesAssociate, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      def permission = post("/audit/permission", new AuditPermissionCreateDataTransferObject(permissionType, salesAssociateDepartment))
+      def permission = post("/audit/permission", new AuditPermissionCreateDTO(permissionType, salesAssociateDepartment))
 
       then:
       notThrown(Exception)

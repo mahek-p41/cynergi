@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/vendor/group")
@@ -109,7 +110,8 @@ class VendorGroupController @Inject constructor(
       ]
    )
    fun create(
-      @Body vo: VendorGroupDTO,
+      @Body @Valid
+      vo: VendorGroupDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorGroupDTO {
@@ -139,7 +141,8 @@ class VendorGroupController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the VendorGroup being updated") @QueryValue("id")
       id: Long,
-      @Body vo: VendorGroupDTO,
+      @Body @Valid
+      vo: VendorGroupDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorGroupDTO {

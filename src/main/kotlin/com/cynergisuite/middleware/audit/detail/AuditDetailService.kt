@@ -8,11 +8,9 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
-import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class AuditDetailService @Inject constructor(
@@ -23,17 +21,15 @@ class AuditDetailService @Inject constructor(
    fun fetchById(id: Long, company: Company, locale: Locale): AuditDetailValueObject? =
       auditDetailRepository.findOne(id, company)?.let { transformEntity(it) }
 
-   @Validated
-   fun fetchAll(auditId: Long, company: Company, @Valid pageRequest: PageRequest, locale: Locale): Page<AuditDetailValueObject> {
+   fun fetchAll(auditId: Long, company: Company, pageRequest: PageRequest, locale: Locale): Page<AuditDetailValueObject> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
       val found = auditDetailRepository.findAll(audit, company, pageRequest)
 
       return found.toPage { transformEntity(it) }
    }
 
-   @Validated
-   fun create(auditId: Long, @Valid vo: AuditDetailCreateDataTransferObject, scannedBy: User, locale: Locale): AuditDetailValueObject {
-      val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, vo)
+   fun create(auditId: Long, dto: AuditDetailCreateDTO, scannedBy: User, locale: Locale): AuditDetailValueObject {
+      val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, dto)
 
       return transformEntity(auditDetailRepository.insert(auditDetail))
    }

@@ -5,13 +5,13 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDTO
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import io.micronaut.http.client.exceptions.HttpClientException
@@ -192,7 +192,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -218,9 +218,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final detail = new AuditDetailCreateDataTransferObject(null, null)
-      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDTO([id: null]))
-      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
+      final detail = new AuditDetailCreateDTO(null, null)
+      final secondDetail = new AuditDetailCreateDTO(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDTO([id: null]))
+      final thirdDetail = new AuditDetailCreateDTO(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -230,9 +230,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "inventory"),
-         new ErrorDataTransferObject("Is required", "scanArea"),
+      response.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "inventory"),
+         new ErrorDTO("Is required", "scanArea"),
       ].sort { o1, o2 -> o1 <=> o2 }
 
       when:
@@ -243,9 +243,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       secondException.status == BAD_REQUEST
       final secondResponse = secondException.response.bodyAsJson()
       secondResponse.size() == 2
-      secondResponse.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "inventory.id"),
-         new ErrorDataTransferObject("Is required", "scanArea.id"),
+      secondResponse.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "inventory.id"),
+         new ErrorDTO("Is required", "scanArea.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
 
       when: // an unknown audit id
@@ -255,7 +255,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final auditNotFoundException = thrown(HttpClientResponseException)
       auditNotFoundException.status == NOT_FOUND
       final auditNotFoundResponse = auditNotFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(auditNotFoundResponse.message, auditNotFoundResponse.path) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
+      new ErrorDTO(auditNotFoundResponse.message, auditNotFoundResponse.path) == new ErrorDTO("${audit.id + 1} was unable to be found", null)
 
       when: // an unknown Inventory item
       post("/audit/${audit.id}/detail", thirdDetail)
@@ -265,7 +265,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == BAD_REQUEST
       final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
       inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
+      inventoryNotFoundResponse.collect { new ErrorDTO(it.message, it.path) } == [new ErrorDTO("800,000 was unable to be found", "inventory.id") ]
    }
 
    //Fails: No such property: store for class: com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee 279
@@ -282,15 +282,15 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its details", "audit.status")
+      response.collect { new ErrorDTO(it.message, it.path) } == [
+         new ErrorDTO("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its details", "audit.status")
       ]
    }
 }

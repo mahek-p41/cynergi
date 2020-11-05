@@ -104,16 +104,17 @@ class DivisionController @Inject constructor(
       ]
    )
    fun save(
-      @Body divisionDTO: DivisionDTO,
+      @Body @Valid
+      dto: DivisionDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): DivisionDTO {
-      logger.info("Requested Save Division {}", divisionDTO)
+      logger.info("Requested Save Division {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = divisionService.create(divisionDTO, user.myCompany())
+      val response = divisionService.create(dto, user.myCompany())
 
-      logger.debug("Requested Save Division {} resulted in {}", divisionDTO, response)
+      logger.debug("Requested Save Division {} resulted in {}", dto, response)
 
       return response
    }
@@ -132,16 +133,17 @@ class DivisionController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body divisionDTO: DivisionDTO,
+      @Body @Valid
+      dto: DivisionDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): DivisionDTO {
-      logger.info("Requested Update Division {}", divisionDTO)
+      logger.info("Requested Update Division {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = divisionService.update(id, divisionDTO, user.myCompany())
+      val response = divisionService.update(id, dto, user.myCompany())
 
-      logger.debug("Requested Update Division {} resulted in {}", divisionDTO, response)
+      logger.debug("Requested Update Division {} resulted in {}", dto, response)
 
       return response
    }

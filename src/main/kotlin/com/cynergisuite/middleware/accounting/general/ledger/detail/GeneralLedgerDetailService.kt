@@ -2,10 +2,8 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail
 
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.company.Company
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class GeneralLedgerDetailService @Inject constructor(
@@ -16,15 +14,13 @@ class GeneralLedgerDetailService @Inject constructor(
       return generalLedgerDetailRepository.findOne(id, company)?.let { transformEntity(it) }
    }
 
-   @Validated
-   fun create(@Valid dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailDTO {
+   fun create(dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailDTO {
       val toCreate = generalLedgerDetailValidator.validateCreate(dto, company)
 
       return transformEntity(generalLedgerDetailRepository.insert(toCreate, company))
    }
 
-   @Validated
-   fun update(id: Long, @Valid dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailDTO {
+   fun update(id: Long, dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailDTO {
       val toUpdate = generalLedgerDetailValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerDetailRepository.update(toUpdate, company))

@@ -6,7 +6,7 @@ import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
 @Schema(name = "AuditDetailCreate", title = "Requirements for creating an Audit Detail", description = "Payload required to create an audit detail entity")
-data class AuditDetailCreateDataTransferObject(
+data class AuditDetailCreateDTO(
 
    @field:Valid
    @field:NotNull
