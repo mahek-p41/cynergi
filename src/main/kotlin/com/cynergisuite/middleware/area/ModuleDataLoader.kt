@@ -234,7 +234,7 @@ object ModuleDataLoader {
       ),
       ModuleType(
          id = 29,
-         value = "Inventory Availability",
+         value = "INVAVAIL",
          program = "INVAVAIL",
          description = "inventory.availability",
          localizationCode = "inventory.availability",
@@ -546,42 +546,42 @@ object ModuleDataLoader {
       ),
       ModuleType(
          id = 68,
-         value = "SVCADD",
-         program = "SVCADD",
+         value = "ADDVIA",
+         program = "ADDVIA",
          description = "Add a Ship Via Code",
-         localizationCode = "add.svc",
+         localizationCode = "add.a.ship.via.code",
          menuType = MenuTypeDataLoader.menuTypes().forId(34)
       ),
       ModuleType(
          id = 69,
-         value = "SVCCHG",
-         program = "SVCCHG",
+         value = "CHGVIA",
+         program = "CHGVIA",
          description = "Change a Ship Via Code",
-         localizationCode = "change.svc",
+         localizationCode = "change.a.ship.via.code",
          menuType = MenuTypeDataLoader.menuTypes().forId(34)
       ),
       ModuleType(
          id = 70,
-         value = "SVCDEL",
-         program = "SVCDEL",
+         value = "DELVIA",
+         program = "DELVIA",
          description = "Delete a Ship Via Code",
-         localizationCode = "delete.svc",
+         localizationCode = "delete.a.ship.via.code",
          menuType = MenuTypeDataLoader.menuTypes().forId(34)
       ),
       ModuleType(
          id = 71,
-         value = "SVCPRT",
-         program = "SVCPRT",
+         value = "PRTVIA",
+         program = "PRTVIA",
          description = "Print Ship Via Code",
-         localizationCode = "print.report.svc",
+         localizationCode = "print.ship.via.code",
          menuType = MenuTypeDataLoader.menuTypes().forId(34)
       ),
       ModuleType(
          id = 72,
-         value = "SVCSHW",
-         program = "SVCSHW",
+         value = "SHOVIA",
+         program = "SHOVIA",
          description = "Show a Ship Via List",
-         localizationCode = "show.svc",
+         localizationCode = "show.a.ship.via.list",
          menuType = MenuTypeDataLoader.menuTypes().forId(34)
       ),
       ModuleType(
