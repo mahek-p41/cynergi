@@ -183,14 +183,35 @@ class DevelopDataLoader @Inject constructor(
       areaDataLoaderService.enableArea(5, companies[0])
       areaDataLoaderService.enableArea(5, companies[1])
 
+      // Ship Via
       moduleDataLoaderService.configureLevel(68, 90, companies[0])
       moduleDataLoaderService.configureLevel(69, 80, companies[0])
       moduleDataLoaderService.configureLevel(71, 20, companies[0])
-      moduleDataLoaderService.configureLevel(72, 10, companies[0])
       moduleDataLoaderService.configureLevel(68, 80, companies[1])
       moduleDataLoaderService.configureLevel(69, 70, companies[1])
       moduleDataLoaderService.configureLevel(71, 50, companies[1])
-      moduleDataLoaderService.configureLevel(72, 40, companies[1])
+
+      // Vendor
+      moduleDataLoaderService.configureLevel(60, 90, companies[0])
+      moduleDataLoaderService.configureLevel(61, 80, companies[0])
+      moduleDataLoaderService.configureLevel(64, 20, companies[0])
+      moduleDataLoaderService.configureLevel(60, 80, companies[1])
+      moduleDataLoaderService.configureLevel(61, 70, companies[1])
+      moduleDataLoaderService.configureLevel(64, 50, companies[1])
+
+      // Bank
+      moduleDataLoaderService.configureLevel(83, 90, companies[0])
+      moduleDataLoaderService.configureLevel(84, 80, companies[0])
+      moduleDataLoaderService.configureLevel(87, 20, companies[0])
+      moduleDataLoaderService.configureLevel(83, 80, companies[1])
+      moduleDataLoaderService.configureLevel(84, 70, companies[1])
+      moduleDataLoaderService.configureLevel(87, 20, companies[1])
+
+      // Company
+      moduleDataLoaderService.configureLevel(51, 90, companies[0])
+      moduleDataLoaderService.configureLevel(52, 80, companies[0])
+      moduleDataLoaderService.configureLevel(51, 80, companies[1])
+      moduleDataLoaderService.configureLevel(52, 70, companies[1])
 
       val shipVia = shipViaDataLoaderService.single(corrto)
       val vendorPaymentTerm = vendorPaymentTermDataLoaderService.singleWithSingle90DaysPayment(corrto)
