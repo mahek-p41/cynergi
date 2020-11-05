@@ -118,7 +118,7 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', (SELECT id FROM men
        (26, 'POCOPY', 'Copy a PO', 'copy.a.po', 'POCOPY', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
        (27, 'INVORDMT', 'Allocate/Inq Special Orders and POs', 'allocate.inq.special.orders.and.pos', 'INVORDMT', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
        (28, 'INVCRED', 'Return Item for Credit to Vendor', 'return.item.for.credit.to.vendor', 'INVCRED', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
-       (29, 'Inventory Availability', 'inventory.availability', 'inventory.availability', 'INVAVAIL', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
+       (29, 'INVAVAIL', 'inventory.availability', 'inventory.availability', 'INVAVAIL', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
        (30, 'POSTAT', 'Change PO Status to Open', 'change.po.status.to.open', 'POSTAT', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
        (31, 'PODLST', 'List by Items', 'list.by.items', 'PODLST', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
        (32, 'POSTAT1', 'Change PO Status', 'change.po.status', 'POSTAT1', (SELECT id FROM menu_type_domain WHERE value = 'PO_MAINTENANCE')),
@@ -162,11 +162,11 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', (SELECT id FROM men
        (66, 'SHOVEND', 'Show a Vendor', 'show.a.vendor','SHOVEND', (SELECT id FROM menu_type_domain WHERE value = 'VENDOR')),
 
        (67, 'SHIPVIA', 'Enter/modify Ship Via', 'enter.modify.ship.via', 'SHIPVIA', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
-       (68, 'SVCADD', 'Add a Ship Via Code', 'add.svc', 'SVCADD', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
-       (69, 'SVCCHG', 'Change a Ship Via Code', 'change.svc', 'SVCCHG', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
-       (70, 'SVCDEL', 'Delete a Ship Via Code', 'delete.svc', 'SVCDEL', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
-       (71, 'SVCPRT', 'Print Ship Via Code', 'print.report.svc', 'SVCPRT', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
-       (72, 'SVCSHW', 'Show a Ship Via List', 'show.svc', 'SVCSHW', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
+       (68, 'ADDVIA', 'Add a Ship Via Code', 'add.a.ship.via.code', 'ADDVIA', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
+       (69, 'CHGVIA', 'Change a Ship Via Code', 'change.a.ship.via.code', 'CHGVIA', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
+       (70, 'DELVIA', 'Delete a Ship Via Code', 'delete.a.ship.via.code', 'DELVIA', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
+       (71, 'PRTVIA', 'Print Ship Via Code', 'print.ship.via.code', 'PRTVIA', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
+       (72, 'SHOVIA', 'Show a Ship Via List', 'show.a.ship.via.list', 'SHOVIA', (SELECT id FROM menu_type_domain WHERE value = 'SHIPVIA')),
 
        (73, 'GETVTERM', 'Vendor Term Code', 'vendor.term.code','GETVTERM', (SELECT id FROM menu_type_domain WHERE value = 'VENDOR_TERM_CODE')),
 
