@@ -68,6 +68,7 @@ class GeneralLedgerControlValidator @Inject constructor(
          // defaultProfitCenter is not nullable
          defaultProfitCenter ?: errors.add(ValidationError("defaultProfitCenter.id", NotFound(dto.defaultProfitCenter!!.id!!)))
 
+         // nullable validations
          if (dto.defaultAccountPayableAccount?.id != null && defaultAccountPayableAccount == null) {
             errors.add(ValidationError("defaultAccountPayableAccount.id", NotFound(dto.defaultAccountPayableAccount!!.id!!)))
          }
