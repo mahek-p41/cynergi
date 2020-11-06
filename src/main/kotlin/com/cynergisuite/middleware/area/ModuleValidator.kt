@@ -11,7 +11,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class ModuleValidator @Inject constructor(
@@ -20,7 +19,7 @@ class ModuleValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ModuleValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(company: Company, @Valid moduleDTO: ModuleDTO): ModuleType {
+   fun validateCreate(company: Company, moduleDTO: ModuleDTO): ModuleType {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
       val configExists = moduleRepository.configExists(moduleTypeId, company)
@@ -34,7 +33,7 @@ class ModuleValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(company: Company, @Valid moduleDTO: ModuleDTO): ModuleType {
+   fun validateUpdate(company: Company, moduleDTO: ModuleDTO): ModuleType {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
       val configExists = moduleRepository.configExists(moduleTypeId, company)

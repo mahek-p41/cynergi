@@ -40,7 +40,6 @@ import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
-import io.micronaut.validation.Validated
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,7 +53,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class AuditService @Inject constructor(
@@ -72,8 +70,7 @@ class AuditService @Inject constructor(
    fun fetchById(id: Long, company: Company, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
 
-   @Validated
-   fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
+   fun fetchAll(pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
       val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user)
 
@@ -97,18 +94,17 @@ class AuditService @Inject constructor(
    fun exists(id: Long): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDataTransferObject> {
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDTO> {
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
          .findAuditStatusCounts(validPageRequest, user)
          .map { auditStatusCount ->
-            AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
+            AuditStatusCountDTO(auditStatusCount, locale, localizationService)
          }
    }
 
-   @Validated
-   fun create(@Valid vo: AuditCreateValueObject, user: User, locale: Locale): AuditValueObject {
+   fun create(vo: AuditCreateValueObject, user: User, locale: Locale): AuditValueObject {
       val validAudit = auditValidator.validateCreate(vo, user)
       val audit = auditRepository.insert(validAudit)
 
@@ -131,9 +127,8 @@ class AuditService @Inject constructor(
       return auditRepository.findOneCreatedOrInProgress(store)?.let { AuditValueObject(it, locale, localizationService) }
    }
 
-   @Validated
-   fun completeOrCancel(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
-      val (validAuditAction, existingAudit) = auditValidator.validateCompleteOrCancel(audit, user, locale)
+   fun completeOrCancel(vo: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
+      val (validAuditAction, existingAudit) = auditValidator.validateCompleteOrCancel(vo, user, locale)
 
       existingAudit.actions.add(validAuditAction)
 
@@ -142,8 +137,7 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
-   @Validated
-   fun approve(@Valid audit: SimpleIdentifiableDTO, user: User, locale: Locale): AuditValueObject {
+   fun approve(audit: SimpleIdentifiableDTO, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateApproved(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
       val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
@@ -187,11 +181,10 @@ class AuditService @Inject constructor(
       }
    }
 
-   @Validated
-   fun approveAllExceptions(@Valid audit: SimpleIdentifiableDTO, user: User): AuditApproveAllExceptionsDataTransferObject {
-      val toApprove = auditValidator.validateApproveAll(audit, user.myCompany())
+   fun approveAllExceptions(dto: SimpleIdentifiableDTO, user: User): AuditApproveAllExceptionsDTO {
+      val toApprove = auditValidator.validateApproveAll(dto, user.myCompany())
 
-      return AuditApproveAllExceptionsDataTransferObject(
+      return AuditApproveAllExceptionsDTO(
          auditExceptionRepository.approveAllExceptions(toApprove, user)
       )
    }

@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/inventory")
@@ -51,7 +52,7 @@ class InventoryController(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -85,7 +86,7 @@ class InventoryController(
       ]
    )
    fun fetchAllInventoryApp(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>

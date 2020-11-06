@@ -8,19 +8,15 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.localization.LocalizationService
-import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class AuditExceptionService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditExceptionRepository: AuditExceptionRepository,
-   private val auditExceptionValidator: AuditExceptionValidator,
-   private val localizationService: LocalizationService
+   private val auditExceptionValidator: AuditExceptionValidator
 ) {
    fun fetchById(id: Long, company: Company, locale: Locale): AuditExceptionValueObject? =
       auditExceptionRepository.findOne(id = id, company = company)?.let { transformEntity(it) }
@@ -35,15 +31,13 @@ class AuditExceptionService @Inject constructor(
    fun exists(id: Long): Boolean =
       auditExceptionRepository.exists(id = id)
 
-   @Validated
-   fun create(auditId: Long, @Valid vo: AuditExceptionCreateValueObject, scannedBy: User, locale: Locale): AuditExceptionValueObject {
+   fun create(auditId: Long, vo: AuditExceptionCreateDTO, scannedBy: User, locale: Locale): AuditExceptionValueObject {
       val auditException = auditExceptionValidator.validateCreate(auditId, vo, scannedBy)
 
       return transformEntity(auditExceptionRepository.insert(auditException))
    }
 
-   @Validated
-   fun update(auditId: Long, @Valid vo: AuditExceptionUpdateValueObject, @Valid enteredBy: User, locale: Locale): AuditExceptionValueObject {
+   fun update(auditId: Long, vo: AuditExceptionUpdateValueObject, enteredBy: User, locale: Locale): AuditExceptionValueObject {
       val auditException = auditExceptionValidator.validateUpdate(auditId, vo, enteredBy)
 
       return transformEntity(auditExceptionRepository.update(auditException))

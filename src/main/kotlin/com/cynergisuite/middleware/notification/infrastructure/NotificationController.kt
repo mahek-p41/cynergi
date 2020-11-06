@@ -22,7 +22,6 @@ import io.micronaut.http.annotation.QueryValue
 import io.micronaut.http.annotation.Status
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
-import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.validation.Valid
 
-@Validated
 @Secured(IS_ANONYMOUS)
 @Controller("/api/notifications") // TODO make company a first class part of this controller by defining it here, and remove the plural form
 class NotificationController @Inject constructor(

@@ -20,7 +20,7 @@ class AuditPermissionValidator(
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class)
-   fun validateCreate(permission: AuditPermissionCreateDataTransferObject, user: User): AuditPermissionEntity {
+   fun validateCreate(permission: AuditPermissionCreateDTO, user: User): AuditPermissionEntity {
       doValidation { errors ->
          val permissionTypeId = permission.permissionType!!.myId()!!
          val departmentId = permission.department!!.myId()!!

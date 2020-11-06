@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.exception.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
@@ -116,7 +117,8 @@ class AuditExceptionController @Inject constructor(
    fun create(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId")
       auditId: Long,
-      @Body vo: AuditExceptionCreateValueObject,
+      @Body @Valid
+      vo: AuditExceptionCreateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {
@@ -146,7 +148,8 @@ class AuditExceptionController @Inject constructor(
    fun update(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId")
       auditId: Long,
-      @Body vo: AuditExceptionUpdateValueObject,
+      @Body @Valid
+      vo: AuditExceptionUpdateValueObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {

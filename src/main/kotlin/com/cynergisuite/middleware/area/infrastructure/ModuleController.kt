@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 import javax.validation.ValidationException
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -45,7 +46,8 @@ class ModuleController @Inject constructor(
    )
    fun createLevelConfig(
       @QueryValue("id") id: Long,
-      @Body moduleDTO: ModuleDTO,
+      @Body @Valid
+      moduleDTO: ModuleDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ModuleType {
@@ -69,7 +71,8 @@ class ModuleController @Inject constructor(
    )
    fun updateLevelConfig(
       @QueryValue("id") id: Long,
-      @Body moduleDTO: ModuleDTO,
+      @Body @Valid
+      moduleDTO: ModuleDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ModuleType {

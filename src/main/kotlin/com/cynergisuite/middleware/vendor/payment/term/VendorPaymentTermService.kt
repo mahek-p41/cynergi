@@ -4,10 +4,8 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class VendorPaymentTermService @Inject constructor(
@@ -26,18 +24,16 @@ class VendorPaymentTermService @Inject constructor(
       }
    }
 
-   @Validated
-   fun create(@Valid vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
-      val toCreate = vendorPaymentTermValidator.validateCreate(vo, company)
+   fun create(dto: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
+      val toCreate = vendorPaymentTermValidator.validateCreate(dto, company)
 
       return VendorPaymentTermDTO(
          entity = vendorPaymentTermRepository.insert(entity = toCreate)
       )
    }
 
-   @Validated
-   fun update(id: Long, @Valid vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
-      val toUpdate = vendorPaymentTermValidator.validateUpdate(id, vo, company)
+   fun update(id: Long, dto: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
+      val toUpdate = vendorPaymentTermValidator.validateUpdate(id, dto, company)
 
       return VendorPaymentTermDTO(
          entity = vendorPaymentTermRepository.update(entity = toUpdate)

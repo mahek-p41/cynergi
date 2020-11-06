@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/general-ledger/detail")
@@ -67,7 +68,8 @@ class GeneralLedgerDetailController @Inject constructor(
       ]
    )
    fun create(
-      @Body dto: GeneralLedgerDetailDTO,
+      @Body @Valid
+      dto: GeneralLedgerDetailDTO,
       authentication: Authentication
    ): GeneralLedgerDetailDTO {
       val user = userService.findUser(authentication)
@@ -94,7 +96,8 @@ class GeneralLedgerDetailController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body dto: GeneralLedgerDetailDTO,
+      @Body @Valid
+      dto: GeneralLedgerDetailDTO,
       authentication: Authentication
    ): GeneralLedgerDetailDTO {
       val user = userService.findUser(authentication)

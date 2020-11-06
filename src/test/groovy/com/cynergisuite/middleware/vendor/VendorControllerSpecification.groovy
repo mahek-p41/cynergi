@@ -8,13 +8,13 @@ import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
 import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.FreightOnboardTypeRepository
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaValueObject
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupTestDataLoaderService
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
@@ -68,7 +68,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendor.freightOnboardType)
          paymentTerm.id == vendor.paymentTerm.id
          returnPolicy == vendor.returnPolicy
-         new ShipViaValueObject(shipVia) == new ShipViaValueObject(vendor.shipVia)
+         new ShipViaDTO(shipVia) == new ShipViaDTO(vendor.shipVia)
          minimumQuantity == vendor.minimumQuantity
          minimumAmount?.toString() == vendor.minimumAmount?.toString()
          freeShipQuantity == vendor.freeShipQuantity
@@ -116,7 +116,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendor.freightOnboardType)
          paymentTerm.id == vendor.paymentTerm.id
          returnPolicy == vendor.returnPolicy
-         new ShipViaValueObject(shipVia) == new ShipViaValueObject(vendor.shipVia)
+         new ShipViaDTO(shipVia) == new ShipViaDTO(vendor.shipVia)
          minimumQuantity == vendor.minimumQuantity
          minimumAmount?.toString() == vendor.minimumAmount?.toString()
          freeShipQuantity == vendor.freeShipQuantity
@@ -221,23 +221,23 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 16
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Cannot be blank", "name"),
-         new ErrorDataTransferObject("Is required", "allowDropShipToCustomer"),
-         new ErrorDataTransferObject("Is required", "autoSubmitPurchaseOrder"),
-         new ErrorDataTransferObject("Is required", "chargeInventoryTax1"),
-         new ErrorDataTransferObject("Is required", "chargeInventoryTax2"),
-         new ErrorDataTransferObject("Is required", "chargeInventoryTax3"),
-         new ErrorDataTransferObject("Is required", "chargeInventoryTax4"),
-         new ErrorDataTransferObject("Is required", "federalIdNumberVerification"),
-         new ErrorDataTransferObject("Is required", "freightCalcMethodType"),
-         new ErrorDataTransferObject("Is required", "freightOnboardType"),
-         new ErrorDataTransferObject("Is required", "name"),
-         new ErrorDataTransferObject("Is required", "paymentTerm"),
-         new ErrorDataTransferObject("Is required", "returnPolicy"),
-         new ErrorDataTransferObject("Is required", "separateCheck"),
-         new ErrorDataTransferObject("Is required", "shipVia"),
-         new ErrorDataTransferObject("Is required", "vendor1099"),
+      response.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Cannot be blank", "name"),
+         new ErrorDTO("Is required", "allowDropShipToCustomer"),
+         new ErrorDTO("Is required", "autoSubmitPurchaseOrder"),
+         new ErrorDTO("Is required", "chargeInventoryTax1"),
+         new ErrorDTO("Is required", "chargeInventoryTax2"),
+         new ErrorDTO("Is required", "chargeInventoryTax3"),
+         new ErrorDTO("Is required", "chargeInventoryTax4"),
+         new ErrorDTO("Is required", "federalIdNumberVerification"),
+         new ErrorDTO("Is required", "freightCalcMethodType"),
+         new ErrorDTO("Is required", "freightOnboardType"),
+         new ErrorDTO("Is required", "name"),
+         new ErrorDTO("Is required", "paymentTerm"),
+         new ErrorDTO("Is required", "returnPolicy"),
+         new ErrorDTO("Is required", "separateCheck"),
+         new ErrorDTO("Is required", "shipVia"),
+         new ErrorDTO("Is required", "vendor1099"),
       ]
    }
 
@@ -283,9 +283,9 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("${String.format('%d', vendorPaymentTerm.id)} was unable to be found", "paymentTerm.id"),
-         new ErrorDataTransferObject("${String.format('%d', shipVia.id)} was unable to be found", "shipVia.id"),
+      response.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("${String.format('%d', vendorPaymentTerm.id)} was unable to be found", "paymentTerm.id"),
+         new ErrorDTO("${String.format('%d', shipVia.id)} was unable to be found", "shipVia.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -940,7 +940,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(vendorOne.freightOnboardType)
          paymentTerm.id == vendorOne.paymentTerm.id
          returnPolicy == vendorOne.returnPolicy
-         new ShipViaValueObject(shipVia) == new ShipViaValueObject(vendorOne.shipVia)
+         new ShipViaDTO(shipVia) == new ShipViaDTO(vendorOne.shipVia)
          minimumQuantity == vendorOne.minimumQuantity
          minimumAmount?.toString() == vendorOne.minimumAmount?.toString()
          freeShipQuantity == vendorOne.freeShipQuantity
@@ -991,7 +991,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          new FreightOnboardTypeDTO(freightOnboardType) == new FreightOnboardTypeDTO(targetVendor.freightOnboardType)
          paymentTerm.id == targetVendor.paymentTerm.id
          returnPolicy == targetVendor.returnPolicy
-         new ShipViaValueObject(shipVia) == new ShipViaValueObject(targetVendor.shipVia)
+         new ShipViaDTO(shipVia) == new ShipViaDTO(targetVendor.shipVia)
          minimumQuantity == targetVendor.minimumQuantity
          minimumAmount?.toString() == targetVendor.minimumAmount?.toString()
          freeShipQuantity == targetVendor.freeShipQuantity
@@ -1056,8 +1056,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("accountNumber must be greater than zero", "accountNumber")
+      response.collect { new ErrorDTO(it.message, it.path) } == [
+         new ErrorDTO("accountNumber must be greater than zero", "accountNumber")
       ]
    }
 

@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.shipping.shipvia.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaValueObject
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -47,7 +47,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.sorted { o1,o2 -> o1.id <=> o2.id }.toList()
+      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaDTO(it)}.sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(4, 5, "id", "ASC")
@@ -66,7 +66,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
+      pageOneResult.elements.collect { new ShipViaDTO(it) } == firstPageShipVia
 
       when:
       def pageTwoResult = get("$path${pageTwo}")
@@ -78,7 +78,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.first == false
       pageTwoResult.last == false
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.collect { new ShipViaValueObject(it) } == secondPageShipVia
+      pageTwoResult.elements.collect { new ShipViaDTO(it) } == secondPageShipVia
 
       when:
       def pageLastResult = get("$path${pageLast}")
@@ -90,7 +90,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageLastResult.first == false
       pageLastResult.last == true
       pageLastResult.elements.size() == 5
-      pageLastResult.elements.collect { new ShipViaValueObject(it) } == lastPageShipVia
+      pageLastResult.elements.collect { new ShipViaDTO(it) } == lastPageShipVia
 
       when:
       get("$path/${pageFive}")
@@ -102,7 +102,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all without page" () {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.toList()
+      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaDTO(it)}.toList()
       def firstPageShipVia = twentyShipVias[0..9]
 
       when:
@@ -116,12 +116,12 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 10
-      pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
+      pageOneResult.elements.collect { new ShipViaDTO(it) } == firstPageShipVia
    }
 
    void "fetch all with page" () {
       given:
-      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaValueObject(it)}.toList()
+      def twentyShipVias = shipViaFactoryService.stream(20, nineNineEightEmployee.company).map { new ShipViaDTO(it)}.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def firstPageShipVia = twentyShipVias[0..4]
 
@@ -135,13 +135,13 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.collect { new ShipViaValueObject(it) } == firstPageShipVia
+      pageOneResult.elements.collect { new ShipViaDTO(it) } == firstPageShipVia
    }
 
    void "post valid shipVia" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = ShipViaTestDataLoader.single(company).with { new ShipViaValueObject(it) }
+      final shipVia = ShipViaTestDataLoader.single(company).with { new ShipViaDTO(it) }
 
       when:
       def response = post("$path/", shipVia)
@@ -156,7 +156,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "post null values to shipVia" () {
       given:
-      final def shipVia = new ShipViaValueObject(null as String, 5)
+      final def shipVia = new ShipViaDTO(null as String, 5)
 
       when:
       post("$path/", shipVia)
@@ -167,14 +167,14 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 1
-      result.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "description")
+      result.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "description")
       ]
    }
 
    void "put valid shipVia" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaValueObject(it.id, "test description", null) }
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaDTO(it.id, "test description", null) }
 
       when:
       def response = put("$path/", shipVia)
@@ -188,7 +188,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid shipVia" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaValueObject(it.id, null, 5)}
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaDTO(it.id, null, 5)}
 
       when:
       put("$path/", shipVia)
@@ -199,14 +199,14 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 1
-      result.collect { new ErrorDataTransferObject(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "description")
+      result.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "description")
       ]
    }
 
    void "put invalid shipVia missing Id" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaValueObject(null, "Gary was here", 5)}
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaDTO(null, "Gary was here", 5)}
 
       when:
       put("$path/", shipVia)
@@ -216,6 +216,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
 
       def result = exception.response.bodyAsJson()
-      new ErrorDataTransferObject(result.message, result.path) == new ErrorDataTransferObject(" was unable to be found", null)
+      new ErrorDTO(result.message, result.path) == new ErrorDTO(" was unable to be found", null)
    }
 }

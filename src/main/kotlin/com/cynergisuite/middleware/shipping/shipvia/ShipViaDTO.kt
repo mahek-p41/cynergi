@@ -10,7 +10,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "ShipVia", title = "Ship Via Definition", description = "Defines a single Ship Via for a company")
-data class ShipViaValueObject(
+data class ShipViaDTO(
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")

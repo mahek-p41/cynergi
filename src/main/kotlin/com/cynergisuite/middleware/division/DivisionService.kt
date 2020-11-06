@@ -4,10 +4,8 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class DivisionService @Inject constructor(
@@ -18,8 +16,7 @@ class DivisionService @Inject constructor(
    fun fetchById(id: Long, company: Company): DivisionDTO? =
       divisionRepository.findOne(id, company)?.let { DivisionDTO(it) }
 
-   @Validated
-   fun fetchAll(company: Company, @Valid pageRequest: PageRequest): Page<DivisionDTO> {
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<DivisionDTO> {
       val found = divisionRepository.findAll(company, pageRequest)
 
       return found.toPage { division: DivisionEntity ->
@@ -27,16 +24,14 @@ class DivisionService @Inject constructor(
       }
    }
 
-   @Validated
-   fun create(@Valid divisionDTO: DivisionDTO, company: Company): DivisionDTO {
-      val toCreate = divisionValidator.validateCreate(divisionDTO, company)
+   fun create(dto: DivisionDTO, company: Company): DivisionDTO {
+      val toCreate = divisionValidator.validateCreate(dto, company)
 
       return DivisionDTO(divisionRepository.insert(toCreate))
    }
 
-   @Validated
-   fun update(id: Long, @Valid divisionDTO: DivisionDTO, company: Company): DivisionDTO {
-      val toUpdate = divisionValidator.validateUpdate(id, divisionDTO, company)
+   fun update(id: Long, dto: DivisionDTO, company: Company): DivisionDTO {
+      val toUpdate = divisionValidator.validateUpdate(id, dto, company)
 
       return DivisionDTO(divisionRepository.update(id, toUpdate))
    }

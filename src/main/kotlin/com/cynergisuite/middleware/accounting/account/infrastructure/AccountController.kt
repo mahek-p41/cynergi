@@ -77,7 +77,8 @@ class AccountController @Inject constructor(
    )
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @Valid @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -107,6 +108,7 @@ class AccountController @Inject constructor(
    )
    fun search(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      @Valid
       pageRequest: SearchPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -134,16 +136,17 @@ class AccountController @Inject constructor(
       ]
    )
    fun save(
-      @Body accountDTO: AccountDTO,
+      @Body @Valid
+      dto: AccountDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountDTO {
-      logger.info("Requested Save Account {}", accountDTO)
+      logger.info("Requested Save Account {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = accountService.create(accountDTO, user.myCompany(), httpRequest.findLocaleWithDefault())
+      val response = accountService.create(dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Save Account {} resulted in {}", accountDTO, response)
+      logger.debug("Requested Save Account {} resulted in {}", dto, response)
 
       return response
    }
@@ -161,16 +164,17 @@ class AccountController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body accountDTO: AccountDTO,
+      @Body @Valid
+      dto: AccountDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountDTO {
-      logger.info("Requested Update Account {}", accountDTO)
+      logger.info("Requested Update Account {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = accountService.update(id, accountDTO, user.myCompany(), httpRequest.findLocaleWithDefault())
+      val response = accountService.update(id, dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Update Account {} resulted in {}", accountDTO, response)
+      logger.debug("Requested Update Account {} resulted in {}", dto, response)
 
       return response
    }

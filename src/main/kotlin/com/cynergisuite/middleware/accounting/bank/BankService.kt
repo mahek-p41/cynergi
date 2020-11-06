@@ -4,11 +4,9 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.Company
-import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class BankService @Inject constructor(
@@ -18,23 +16,20 @@ class BankService @Inject constructor(
    fun fetchById(id: Long, company: Company, locale: Locale): BankDTO? =
       bankRepository.findOne(id, company)?.let { BankDTO(it) }
 
-   @Validated
-   fun fetchAll(company: Company, @Valid pageRequest: PageRequest): Page<BankDTO> {
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<BankDTO> {
       val found = bankRepository.findAll(company, pageRequest)
 
       return found.toPage { bank: BankEntity -> BankDTO(bank) }
    }
 
-   @Validated
-   fun create(@Valid bankDTO: BankDTO, company: Company): BankDTO {
-      val toCreate = bankValidator.validateCreate(bankDTO, company)
+   fun create(dto: BankDTO, company: Company): BankDTO {
+      val toCreate = bankValidator.validateCreate(dto, company)
 
       return BankDTO(bankRepository.insert(toCreate))
    }
 
-   @Validated
-   fun update(id: Long, @Valid bankDTO: BankDTO, company: Company): BankDTO {
-      val toUpdate = bankValidator.validateUpdate(id, bankDTO, company)
+   fun update(id: Long, dto: BankDTO, company: Company): BankDTO {
+      val toUpdate = bankValidator.validateUpdate(id, dto, company)
 
       return BankDTO(bankRepository.update(toUpdate))
    }

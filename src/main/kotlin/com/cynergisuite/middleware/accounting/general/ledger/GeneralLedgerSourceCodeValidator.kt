@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.accounting.general.ledger
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -16,8 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GeneralLedgerSourceCodeValidator @Inject constructor(
-   private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
-   private val companyRepository: CompanyRepository
+   private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeValidator::class.java)
 

@@ -5,7 +5,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -172,8 +172,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("${String.format('%,d', account.id)} was unable to be found", "generalLedgerAccount.id")
+      response.collect { new ErrorDTO(it.message, it.path) } == [
+         new ErrorDTO("${String.format('%,d', account.id)} was unable to be found", "generalLedgerAccount.id")
       ]
    }
 
@@ -192,8 +192,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("${String.format('%,d', store.id)} was unable to be found", "generalLedgerProfitCenter.id")
+      response.collect { new ErrorDTO(it.message, it.path) } == [
+         new ErrorDTO("${String.format('%,d', store.id)} was unable to be found", "generalLedgerProfitCenter.id")
       ]
    }
 

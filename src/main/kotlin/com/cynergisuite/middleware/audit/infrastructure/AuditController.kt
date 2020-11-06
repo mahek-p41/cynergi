@@ -3,10 +3,10 @@ package com.cynergisuite.middleware.audit.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDataTransferObject
+import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDTO
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
+import com.cynergisuite.middleware.audit.AuditStatusCountDTO
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
@@ -111,7 +111,7 @@ class AuditController @Inject constructor(
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a listing of Audit Status Counts", description = "Fetch a listing of Audit Status Counts", operationId = "audit-fetchAllStatusCounts")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDataTransferObject>::class))]),
+         ApiResponse(responseCode = "200", description = "If the data was able to be loaded", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Array<AuditStatusCountDTO>::class))]),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -121,7 +121,7 @@ class AuditController @Inject constructor(
       pageRequest: AuditPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): List<AuditStatusCountDataTransferObject> {
+   ): List<AuditStatusCountDTO> {
       logger.debug("Fetching Audit status counts {}", pageRequest)
 
       val user = userService.findUser(authentication)
@@ -143,7 +143,8 @@ class AuditController @Inject constructor(
       ]
    )
    fun create(
-      @Body audit: AuditCreateValueObject,
+      @Body @Valid
+      audit: AuditCreateValueObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
@@ -173,16 +174,17 @@ class AuditController @Inject constructor(
       ]
    )
    fun addNoteCompleteOrCancel(
-      @Body audit: AuditUpdateValueObject,
+      @Body @Valid
+      dto: AuditUpdateValueObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
-      logger.info("Requested Audit status change or note  {}", audit)
+      logger.info("Requested Audit status change or note  {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = auditService.completeOrCancel(audit, user, httpRequest.findLocaleWithDefault())
+      val response = auditService.completeOrCancel(dto, user, httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Update Audit {} resulted in {}", audit, response)
+      logger.debug("Requested Update Audit {} resulted in {}", dto, response)
 
       return response
    }
@@ -201,7 +203,8 @@ class AuditController @Inject constructor(
       ]
    )
    fun approve(
-      @Body audit: SimpleIdentifiableDTO,
+      @Body @Valid
+      audit: SimpleIdentifiableDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
@@ -291,7 +294,7 @@ class AuditController @Inject constructor(
    fun approveAllExceptions(
       @Body audit: SimpleIdentifiableDTO,
       authentication: Authentication
-   ): AuditApproveAllExceptionsDataTransferObject {
+   ): AuditApproveAllExceptionsDTO {
       logger.info("Requested approval on all audit exceptions associated with audit {}", audit)
 
       val user = userService.findUser(authentication)

@@ -11,7 +11,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @Schema(name = "AuditScheduleCreateUpdate", title = "Requirements for creating an audit schedule", description = "Payload for creating a schedule for an audit associated with what stores and which department is supposed to do the audit")
-data class AuditScheduleCreateUpdateDataTransferObject(
+data class AuditScheduleCreateUpdateDTO(
 
    @field:Positive
    @field:Schema(name = "id", description = "System generated ID for the associated schedule")

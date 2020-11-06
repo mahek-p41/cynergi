@@ -16,7 +16,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class GeneralLedgerDetailValidator @Inject constructor(
@@ -28,14 +27,14 @@ class GeneralLedgerDetailValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerDetailValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailEntity {
+   fun validateCreate(dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailEntity {
       logger.debug("Validating Create GeneralLedgerDetail {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, @Valid dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailEntity {
+   fun validateUpdate(id: Long, dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailEntity {
       logger.debug("Validating Update GeneralLedgerDetail {}", dto)
 
       val generalLedgerDetailEntity = generalLedgerDetailRepository.findOne(id, company) ?: throw NotFoundException(id)

@@ -6,7 +6,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditFactory
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.AuditStatusCountDataTransferObject
+import com.cynergisuite.middleware.audit.AuditStatusCountDTO
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
@@ -22,7 +22,7 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.type.Argument
@@ -505,11 +505,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeFilterResult.elements.stream().map{ el -> el.store.storeNumber }.toSet() == storeNumberInElements as Set
 
       where:
-      storeNumberValuesIn | pageSizeIn | pageElementCount | totalElementCount | requestedStoreNumbers | storeNumberInElements
-      [1]                 | 5          | 5                | 5                 | [1]                   | [1]
-      [3]                 | 5          | 5                | 10                | [3]                   | [3]
-      [1, 3]              | 10         | 10               | 15                | [1, 3]                | [1, 3]
-      [1, 3, 10]          | 15         | 15               | 15                | [1, 3, 10]            | [1, 3]
+      storeNumberValuesIn | pageSizeIn || pageElementCount | totalElementCount | requestedStoreNumbers | storeNumberInElements
+      [1]                 | 5          || 5                | 5                 | [1]                   | [1]
+      [3]                 | 5          || 5                | 10                | [3]                   | [3]
+      [1, 3]              | 10         || 10               | 15                | [1, 3]                | [1, 3]
+      [1, 3, 10]          | 15         || 15               | 15                | [1, 3, 10]            | [1, 3]
    }
 
    void "fetch all audits store 1 with one audit that has exceptions and notes" () {
@@ -713,17 +713,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
-      def counts = get("${path}/counts").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts").collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
       counts.size() == 5
       counts == [
-         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
-         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
-         new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
-         new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
-         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.approved()))
+         new AuditStatusCountDTO(1, new AuditStatusValueObject(AuditStatusFactory.created())),
+         new AuditStatusCountDTO(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+         new AuditStatusCountDTO(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
+         new AuditStatusCountDTO(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
+         new AuditStatusCountDTO(5, new AuditStatusValueObject(AuditStatusFactory.approved()))
       ]
    }
 
@@ -739,17 +739,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
-      def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts?from=${from}").collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
       counts.size() == 5
       counts == [
-         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
-         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
-         new AuditStatusCountDataTransferObject(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
-         new AuditStatusCountDataTransferObject(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
-         new AuditStatusCountDataTransferObject(5, new AuditStatusValueObject(AuditStatusFactory.approved()))
+         new AuditStatusCountDTO(1, new AuditStatusValueObject(AuditStatusFactory.created())),
+         new AuditStatusCountDTO(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+         new AuditStatusCountDTO(4, new AuditStatusValueObject(AuditStatusFactory.completed())),
+         new AuditStatusCountDTO(3, new AuditStatusValueObject(AuditStatusFactory.canceled())),
+         new AuditStatusCountDTO(5, new AuditStatusValueObject(AuditStatusFactory.approved()))
       ]
    }
 
@@ -767,14 +767,14 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final def thru = OffsetDateTime.now()
 
       when:
-      def counts = get("${path}/counts?from=$from&thru=$thru&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
+      def counts = get("${path}/counts?from=$from&thru=$thru&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
 
       then:
       notThrown(HttpClientResponseException)
       counts.size() == 2
       counts == [
-         new AuditStatusCountDataTransferObject(1, new AuditStatusValueObject(AuditStatusFactory.created())),
-         new AuditStatusCountDataTransferObject(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
+         new AuditStatusCountDTO(1, new AuditStatusValueObject(AuditStatusFactory.created())),
+         new AuditStatusCountDTO(2, new AuditStatusValueObject(AuditStatusFactory.inProgress())),
       ]
    }
 
@@ -811,7 +811,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: inProgressAuditFromLastWeek.timeCreated.minusDays(8), id: inProgressAuditFromLastWeek.id])
       jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: completedAuditFromLastWeek.timeCreated.minusDays(8), id: completedAuditFromLastWeek.id])
       def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, thru:thru, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
-         .collect { new AuditStatusCountDataTransferObject(it.count, new AuditStatusValueObject(it.status)) }
+         .collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }
 
       then:
       notThrown(HttpClientResponseException)
@@ -825,11 +825,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .findFirst().map({ it -> it.count }).orElse(null) == completedCount
 
       where:
-      storeNumberValuesIn  | statusValuesIn              | createdCount | inProgressCount | completedCount
-      [1]                  | ['CREATED', 'IN-PROGRESS']  | 1            | 2               | null
-      [3]                  | ['CREATED', 'IN-PROGRESS']  | 2            | null            | null
-      [1, 3]               | ['CREATED', 'IN-PROGRESS']  | 3            | 2               | null
-      [1, 3]               | ['COMPLETED']               | null         | null            | 5
+      storeNumberValuesIn  | statusValuesIn              || createdCount | inProgressCount | completedCount
+      [1]                  | ['CREATED', 'IN-PROGRESS']  || 1            | 2               | null
+      [3]                  | ['CREATED', 'IN-PROGRESS']  || 2            | null            | null
+      [1, 3]               | ['CREATED', 'IN-PROGRESS']  || 3            | 2               | null
+      [1, 3]               | ['COMPLETED']               || null         | null            | 5
    }
 
    void "create new audit" () {
@@ -942,7 +942,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Store 1 has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDTO(it.message, it.path) } == [new ErrorDTO("Store 1 has an audit already in progress", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {
@@ -1083,19 +1083,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
-   }
-
-   void "update audit without an id" () {
-      when:
-      put(path, new AuditUpdateValueObject([status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "id"
-      response[0].message == "Is required"
    }
 
    void "update audit with a non-existent id" () {

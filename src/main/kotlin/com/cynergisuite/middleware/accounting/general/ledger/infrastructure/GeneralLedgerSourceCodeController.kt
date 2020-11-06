@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/general-ledger/source-code")
@@ -109,7 +110,8 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       ]
    )
    fun create(
-      @Body dto: GeneralLedgerSourceCodeDTO,
+      @Body @Valid
+      dto: GeneralLedgerSourceCodeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerSourceCodeDTO {
@@ -139,7 +141,8 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the GeneralLedgerSourceCode being updated") @QueryValue("id")
       id: Long,
-      @Body dto: GeneralLedgerSourceCodeDTO,
+      @Body @Valid
+      dto: GeneralLedgerSourceCodeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerSourceCodeDTO {

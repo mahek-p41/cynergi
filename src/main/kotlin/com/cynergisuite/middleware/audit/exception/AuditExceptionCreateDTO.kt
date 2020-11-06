@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @Schema(name = "AuditExceptionCreate", title = "Create an AuditException", description = "Payload required to create an AuditException entity")
-data class AuditExceptionCreateValueObject(
+data class AuditExceptionCreateDTO(
 
    @field:Valid
    @field:Schema(name = "inventory", description = "If this field is not provided then barcode needs to be. Inventory item being associated with a new AuditException.  This indicates that the item was on the list but unable to be found in the store.")

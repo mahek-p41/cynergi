@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaService
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaValueObject
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -45,7 +45,7 @@ class ShipViaController @Inject constructor(
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a single Ship Via", description = "Fetch a single Ship Via by it's system generated primary key", operationId = "shipvia-fetchOne")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If the Ship Via was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+         ApiResponse(responseCode = "200", description = "If the Ship Via was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaDTO::class))]),
          ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -55,7 +55,7 @@ class ShipViaController @Inject constructor(
       id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): ShipViaValueObject {
+   ): ShipViaDTO {
       logger.info("Fetching ShipVia by {}", id)
 
       val user = userService.findUser(authentication)
@@ -81,7 +81,7 @@ class ShipViaController @Inject constructor(
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<ShipViaValueObject> {
+   ): Page<ShipViaDTO> {
       val user = userService.findUser(authentication)
       val page = shipViaService.fetchAll(pageRequest, user.myCompany())
 
@@ -97,21 +97,22 @@ class ShipViaController @Inject constructor(
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If successfully able to save Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+         ApiResponse(responseCode = "200", description = "If successfully able to save Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaDTO::class))]),
          ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
          ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun save(
-      @Body vo: ShipViaValueObject,
+      @Body @Valid
+      vo: ShipViaDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): ShipViaValueObject {
+   ): ShipViaDTO {
       logger.info("Requested Save ShipVia {}", vo)
 
       val user = userService.findUser(authentication)
-      val response = shipViaService.create(vo = vo, company = user.myCompany())
+      val response = shipViaService.create(dto = vo, company = user.myCompany())
 
       logger.debug("Requested Save ShipVia {} resulted in {}", vo, response)
 
@@ -123,16 +124,17 @@ class ShipViaController @Inject constructor(
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-update")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If successfully able to update Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaValueObject::class))]),
+         ApiResponse(responseCode = "200", description = "If successfully able to update Ship Via", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ShipViaDTO::class))]),
          ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
          ApiResponse(responseCode = "404", description = "The requested Ship Via was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun update(
-      @Body vo: ShipViaValueObject,
+      @Body @Valid
+      vo: ShipViaDTO,
       authentication: Authentication
-   ): ShipViaValueObject {
+   ): ShipViaDTO {
       logger.info("Requested Update ShipVia {}", vo)
 
       val employee = userService.findUser(authentication)

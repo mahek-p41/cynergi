@@ -6,11 +6,9 @@ import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissi
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.localization.LocalizationService
-import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 import javax.validation.ValidationException
 
 @Singleton
@@ -45,10 +43,9 @@ class AuditPermissionService @Inject constructor(
       }
    }
 
-   @Validated
    @Throws(ValidationException::class)
-   fun create(@Valid permission: AuditPermissionCreateDataTransferObject, user: User, locale: Locale): AuditPermissionValueObject {
-      val auditPermission = auditPermissionValidator.validateCreate(permission, user)
+   fun create(dto: AuditPermissionCreateDTO, user: User, locale: Locale): AuditPermissionValueObject {
+      val auditPermission = auditPermissionValidator.validateCreate(dto, user)
 
       return AuditPermissionValueObject(
          entity = auditPermissionRepository.insert(auditPermission),

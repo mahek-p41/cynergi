@@ -5,10 +5,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
-import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class VendorService @Inject constructor(
@@ -19,8 +17,7 @@ class VendorService @Inject constructor(
    fun fetchById(id: Long, company: Company): VendorDTO? =
       vendorRepository.findOne(id, company)?.let { VendorDTO(entity = it) }
 
-   @Validated
-   fun create(@Valid dto: VendorDTO, company: Company): VendorDTO {
+   fun create(dto: VendorDTO, company: Company): VendorDTO {
       val toCreate = vendorValidator.validateCreate(dto, company)
 
       return VendorDTO(
@@ -28,8 +25,7 @@ class VendorService @Inject constructor(
       )
    }
 
-   @Validated
-   fun fetchAll(company: Company, @Valid pageRequest: PageRequest): Page<VendorDTO> {
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorDTO> {
       val found = vendorRepository.findAll(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
@@ -37,8 +33,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   @Validated
-   fun search(company: Company, @Valid pageRequest: SearchPageRequest): Page<VendorDTO> {
+   fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
@@ -46,8 +41,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   @Validated
-   fun update(id: Long, @Valid dto: VendorDTO, company: Company): VendorDTO {
+   fun update(id: Long, dto: VendorDTO, company: Company): VendorDTO {
       val (existing, toUpdate) = vendorValidator.validateUpdate(id, dto, company)
 
       return VendorDTO(

@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/account-payable/control")
@@ -65,7 +66,8 @@ class AccountPayableControlController @Inject constructor(
       ]
    )
    fun create(
-      @Body dto: AccountPayableControlDTO,
+      @Body @Valid
+      dto: AccountPayableControlDTO,
       authentication: Authentication
    ): AccountPayableControlDTO {
       val user = userService.findUser(authentication)
@@ -91,7 +93,8 @@ class AccountPayableControlController @Inject constructor(
       ]
    )
    fun update(
-      @Body dto: AccountPayableControlDTO,
+      @Body @Valid
+      dto: AccountPayableControlDTO,
       authentication: Authentication
    ): AccountPayableControlDTO {
       val user = userService.findUser(authentication)

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.notification.NotificationDataLoaderService
 import com.cynergisuite.middleware.notification.NotificationRecipientDataLoaderService
 import com.cynergisuite.middleware.notification.NotificationRecipientTestDataLoader
@@ -77,12 +77,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one notification by id not found" () {
       when:
-      client.exchange(GET("$path/0"), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDataTransferObject))
+      client.exchange(GET("$path/0"), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
-      exception.response.getBody(ErrorDataTransferObject).orElse(null)?.message == "0 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.message == "0 was unable to be found"
    }
 
    void "fetch all by sending employee and company through the admin path" () {
@@ -172,12 +172,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
    @Deprecated
    void "fetch all by company without the required X-Auth-Company header deprecated" () {
       when:
-      client.retrieve(GET(path), Argument.of(NotificationsResponseValueObject), Argument.of(ErrorDataTransferObject))
+      client.retrieve(GET(path), Argument.of(NotificationsResponseValueObject), Argument.of(ErrorDTO))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(ErrorDataTransferObject).orElse(null)?.message == "Required argument companyId not specified"
+      exception.response.getBody(ErrorDTO).orElse(null)?.message == "Required argument companyId not specified"
    }
 
    @Deprecated
@@ -210,12 +210,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "attempt to fetch all types with typo results in bad request status" () {
       when:
-      client.retrieve(GET("${path}/type"), Argument.of(NotificationTypeValueObject[]), Argument.of(ErrorDataTransferObject))
+      client.retrieve(GET("${path}/type"), Argument.of(NotificationTypeValueObject[]), Argument.of(ErrorDTO))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(ErrorDataTransferObject).orElse(null)?.message == "Failed to convert argument [id] for value [type]"
+      exception.response.getBody(ErrorDTO).orElse(null)?.message == "Failed to convert argument [id] for value [type]"
    }
 
    void "post valid notification of type All" () {
@@ -278,12 +278,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification))), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDataTransferObject[]))
+      client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification))), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      final errors = exception.response.getBody(ErrorDataTransferObject[]).get()
+      final errors = exception.response.getBody(ErrorDTO[]).get()
       errors.size() == 1
       errors[0].message == "Recipients required for notification type E:Employee"
       errors[0].path == "recipients"
@@ -301,13 +301,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final json = exception.response.bodyAsJson()
       json.size() == 6
-      json.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "notification.company"),
-         new ErrorDataTransferObject("Is required", "notification.expirationDate"),
-         new ErrorDataTransferObject("Is required", "notification.message"),
-         new ErrorDataTransferObject("Is required", "notification.notificationType"),
-         new ErrorDataTransferObject("Is required", "notification.sendingEmployee"),
-         new ErrorDataTransferObject("Is required", "notification.startDate")
+      json.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "notification.company"),
+         new ErrorDTO("Is required", "notification.expirationDate"),
+         new ErrorDTO("Is required", "notification.message"),
+         new ErrorDTO("Is required", "notification.notificationType"),
+         new ErrorDTO("Is required", "notification.sendingEmployee"),
+         new ErrorDTO("Is required", "notification.startDate")
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -405,13 +405,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final errors = exception.response.bodyAsJson()
       errors.size() == 6
 
-      errors.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "notification.company"),
-         new ErrorDataTransferObject("Is required", "notification.expirationDate"),
-         new ErrorDataTransferObject("Is required", "notification.message"),
-         new ErrorDataTransferObject("Is required", "notification.notificationType"),
-         new ErrorDataTransferObject("Is required", "notification.sendingEmployee"),
-         new ErrorDataTransferObject("Is required", "notification.startDate"),
+      errors.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "notification.company"),
+         new ErrorDTO("Is required", "notification.expirationDate"),
+         new ErrorDTO("Is required", "notification.message"),
+         new ErrorDTO("Is required", "notification.notificationType"),
+         new ErrorDTO("Is required", "notification.sendingEmployee"),
+         new ErrorDTO("Is required", "notification.startDate"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -422,11 +422,11 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final def notification = NotificationTestDataLoader.stream(1, companyId, null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      client.retrieve(PUT("$path/${notification.id}", new NotificationRequestValueObject(new NotificationValueObject(notification))), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDataTransferObject[]))
+      client.retrieve(PUT("$path/${notification.id}", new NotificationRequestValueObject(new NotificationValueObject(notification))), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
-      final errors = exception.response.getBody(ErrorDataTransferObject[]).get().sort {o1, o2 -> (o1.message <=> o2.message) }
+      final errors = exception.response.getBody(ErrorDTO[]).get().sort {o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 1
       errors[0].message == "Failed to convert argument [id] for value [null]"
       errors[0].path == "id"

@@ -20,7 +20,7 @@ class ShipViaValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ShipViaValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid vo: ShipViaValueObject, company: Company): ShipViaEntity {
+   fun validateCreate(@Valid vo: ShipViaDTO, company: Company): ShipViaEntity {
       logger.trace("Validating Save ShipVia {}", vo)
 
       doValidation { errors -> doSharedValidation(errors, vo, company) }
@@ -29,7 +29,7 @@ class ShipViaValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, @Valid vo: ShipViaValueObject, company: Company): ShipViaEntity {
+   fun validateUpdate(id: Long, @Valid vo: ShipViaDTO, company: Company): ShipViaEntity {
       logger.trace("Validating Update ShipVia {}", vo)
 
       val existing = shipViaRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -39,7 +39,7 @@ class ShipViaValidator @Inject constructor(
       return existing.copy(description = vo.description!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: ShipViaValueObject, company: Company) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: ShipViaDTO, company: Company) {
       if (shipViaRepository.exists(vo.description!!, company)) {
          errors.add(ValidationError("description", Duplicate(vo.description)))
       }

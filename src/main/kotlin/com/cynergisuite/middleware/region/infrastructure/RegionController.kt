@@ -106,16 +106,17 @@ class RegionController @Inject constructor(
       ]
    )
    fun save(
-      @Body regionDTO: RegionDTO,
+      @Body @Valid
+      dto: RegionDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): RegionDTO {
-      logger.info("Requested Save Region {}", regionDTO)
+      logger.info("Requested Save Region {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = regionService.create(regionDTO, user.myCompany())
+      val response = regionService.create(dto, user.myCompany())
 
-      logger.debug("Requested Save Region {} resulted in {}", regionDTO, response)
+      logger.debug("Requested Save Region {} resulted in {}", dto, response)
 
       return response
    }
@@ -134,16 +135,17 @@ class RegionController @Inject constructor(
    )
    fun update(
       @QueryValue("id") id: Long,
-      @Body regionDTO: RegionDTO,
+      @Body @Valid
+      dto: RegionDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): RegionDTO {
-      logger.info("Requested Update Region {}", regionDTO)
+      logger.info("Requested Update Region {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = regionService.update(id, regionDTO, user.myCompany())
+      val response = regionService.update(id, dto, user.myCompany())
 
-      logger.debug("Requested Update Region {} resulted in {}", regionDTO, response)
+      logger.debug("Requested Update Region {} resulted in {}", dto, response)
 
       return response
    }

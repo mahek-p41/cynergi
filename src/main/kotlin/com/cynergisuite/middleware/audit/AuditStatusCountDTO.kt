@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditStatusCount", title = "State of Audit Statuses", description = "Lists counts for current audit statuses")
-data class AuditStatusCountDataTransferObject(
+data class AuditStatusCountDTO(
 
    @field:Schema(name = "count", description = "Number of audits at the associated status")
    var count: Int = 0,

@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/vendor")
@@ -78,7 +79,7 @@ class VendorController @Inject constructor(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -107,7 +108,7 @@ class VendorController @Inject constructor(
       ]
    )
    fun search(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: SearchPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -138,7 +139,8 @@ class VendorController @Inject constructor(
       ]
    )
    fun create(
-      @Body dto: VendorDTO,
+      @Body @Valid
+      dto: VendorDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorDTO {
@@ -168,7 +170,8 @@ class VendorController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the vendor being updated") @QueryValue("id")
       id: Long,
-      @Body dto: VendorDTO,
+      @Body @Valid
+      dto: VendorDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorDTO {

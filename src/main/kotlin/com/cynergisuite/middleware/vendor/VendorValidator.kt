@@ -19,7 +19,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
 
 @Singleton
 class VendorValidator @Inject constructor(
@@ -33,7 +32,7 @@ class VendorValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(@Valid dto: VendorDTO, company: Company): VendorEntity {
+   fun validateCreate(dto: VendorDTO, company: Company): VendorEntity {
       logger.trace("Validating Save Vendor {}", dto)
 
       val vendorGroup = dto.vendorGroup?.id?.let { vendorGroupRepository.findOne(it, company) }

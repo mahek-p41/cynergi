@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @Schema(name = "Schedule", description = "Describes the minimum requirements for creating a scheduled job in the system")
-data class ScheduleCreateDataTransferObject(
+data class ScheduleCreateDTO(
 
    @field:Size(min = 2, max = 64)
    @field:NotNull
