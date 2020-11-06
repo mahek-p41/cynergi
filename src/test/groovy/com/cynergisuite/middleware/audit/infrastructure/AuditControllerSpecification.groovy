@@ -505,11 +505,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeFilterResult.elements.stream().map{ el -> el.store.storeNumber }.toSet() == storeNumberInElements as Set
 
       where:
-      storeNumberValuesIn | pageSizeIn | pageElementCount | totalElementCount | requestedStoreNumbers | storeNumberInElements
-      [1]                 | 5          | 5                | 5                 | [1]                   | [1]
-      [3]                 | 5          | 5                | 10                | [3]                   | [3]
-      [1, 3]              | 10         | 10               | 15                | [1, 3]                | [1, 3]
-      [1, 3, 10]          | 15         | 15               | 15                | [1, 3, 10]            | [1, 3]
+      storeNumberValuesIn | pageSizeIn || pageElementCount | totalElementCount | requestedStoreNumbers | storeNumberInElements
+      [1]                 | 5          || 5                | 5                 | [1]                   | [1]
+      [3]                 | 5          || 5                | 10                | [3]                   | [3]
+      [1, 3]              | 10         || 10               | 15                | [1, 3]                | [1, 3]
+      [1, 3, 10]          | 15         || 15               | 15                | [1, 3, 10]            | [1, 3]
    }
 
    void "fetch all audits store 1 with one audit that has exceptions and notes" () {
@@ -825,11 +825,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .findFirst().map({ it -> it.count }).orElse(null) == completedCount
 
       where:
-      storeNumberValuesIn  | statusValuesIn              | createdCount | inProgressCount | completedCount
-      [1]                  | ['CREATED', 'IN-PROGRESS']  | 1            | 2               | null
-      [3]                  | ['CREATED', 'IN-PROGRESS']  | 2            | null            | null
-      [1, 3]               | ['CREATED', 'IN-PROGRESS']  | 3            | 2               | null
-      [1, 3]               | ['COMPLETED']               | null         | null            | 5
+      storeNumberValuesIn  | statusValuesIn              || createdCount | inProgressCount | completedCount
+      [1]                  | ['CREATED', 'IN-PROGRESS']  || 1            | 2               | null
+      [3]                  | ['CREATED', 'IN-PROGRESS']  || 2            | null            | null
+      [1, 3]               | ['CREATED', 'IN-PROGRESS']  || 3            | 2               | null
+      [1, 3]               | ['COMPLETED']               || null         | null            | 5
    }
 
    void "create new audit" () {

@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 import javax.inject.Inject
 
@@ -232,7 +233,8 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
 
    }
 
-   void "create invalid purchase order control without drop five characters on model number" () {
+   @Unroll
+   void "create invalid purchase order control without #nonNullableProp" () {
       given: 'get json PO control and make it invalid'
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
@@ -240,9 +242,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.dropFiveCharactersOnModelNumber = null
 
       when:
+      purchaseOrderControlDTO["$nonNullableProp"] = null
       post("$path/", purchaseOrderControlDTO)
 
       then:
@@ -250,140 +252,24 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'dropFiveCharactersOnModelNumber'
+      response[0].path == errorResponsePath
       response[0].message == 'Is required'
-   }
 
-   void "create invalid purchase order control without update account payable" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.updateAccountPayable = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'updateAccountPayable'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without print second description" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.printSecondDescription = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'printSecondDescription'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without default account payable status type" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.defaultAccountPayableStatusType = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'defaultAccountPayableStatusType'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without print vendor comments" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.printVendorComments = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'printVendorComments'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without include freight in cost" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.includeFreightInCost = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'includeFreightInCost'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without update cost on model" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.updateCostOnModel = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'updateCostOnModel'
-      response[0].message == 'Is required'
+      where:
+      nonNullableProp                     || errorResponsePath
+      'dropFiveCharactersOnModelNumber'   || 'dropFiveCharactersOnModelNumber'
+      'printSecondDescription'            || 'printSecondDescription'
+      'defaultAccountPayableStatusType'   || 'defaultAccountPayableStatusType'
+      'printVendorComments'               || 'printVendorComments'
+      'includeFreightInCost'              || 'includeFreightInCost'
+      'updateCostOnModel'                 || 'updateCostOnModel'
+      'updatePurchaseOrderCost'           || 'updatePurchaseOrderCost'
+      'defaultPurchaseOrderType'          || 'defaultPurchaseOrderType'
+      'sortByShipToOnPrint'               || 'sortByShipToOnPrint'
+      'invoiceByLocation'                 || 'invoiceByLocation'
+      'validateInventory'                 || 'validateInventory'
+      'approvalRequiredFlagType'          || 'approvalRequiredFlagType'
+      'updateAccountPayable'              || 'updateAccountPayable'
    }
 
    void "create invalid purchase order control with non-existing vendor id" () {
@@ -408,116 +294,6 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response[0].message == '99 was unable to be found'
    }
 
-   void "create invalid purchase order control without update purchase order cost" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.updatePurchaseOrderCost = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'updatePurchaseOrderCost'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without default purchase order type" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.defaultPurchaseOrderType = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'defaultPurchaseOrderType'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without sort by ship to on print" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.sortByShipToOnPrint = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'sortByShipToOnPrint'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without invoice by location" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.invoiceByLocation = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'invoiceByLocation'
-      response[0].message == 'Is required'
-   }
-
-   void "create invalid purchase order control without validate inventory" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.validateInventory = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'validateInventory'
-      response[0].message == 'Is required'
-   }
-
    void "create invalid purchase order control with non-existing approver id" () {
       given: 'get json PO control and make it invalid'
       final company = nineNineEightEmployee.company
@@ -538,28 +314,6 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response.size() == 1
       response[0].path == 'defaultApprover.id'
       response[0].message == '0 was unable to be found'
-   }
-
-   void "create invalid purchase order control without approval required flag type" () {
-      given: 'get json PO control and make it invalid'
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
-      final shipViaIn = shipViaTestDataLoaderService.single(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
-      final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.approvalRequiredFlagType = null
-
-      when:
-      post("$path/", purchaseOrderControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'approvalRequiredFlagType'
-      response[0].message == 'Is required'
    }
 
    void "update valid purchase order control without default vendor, default approver" () {
@@ -697,7 +451,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      purchaseOrderControlDataLoaderService.single(company, vendor, employee)
+      final purchaseOrder = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
       def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       updatedPOControlDTO.dropFiveCharactersOnModelNumber = null
       updatedPOControlDTO.updateAccountPayable = null
@@ -714,7 +468,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       updatedPOControlDTO.approvalRequiredFlagType = null
 
       when:
-      put("$path/99", updatedPOControlDTO)
+      put("$path/$purchaseOrder.id", updatedPOControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -722,30 +476,18 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 13
       response[0].path == 'approvalRequiredFlagType'
-      response[0].message == 'Is required'
       response[1].path == 'defaultAccountPayableStatusType'
-      response[1].message == 'Is required'
       response[2].path == 'defaultPurchaseOrderType'
-      response[2].message == 'Is required'
       response[3].path == 'dropFiveCharactersOnModelNumber'
-      response[3].message == 'Is required'
       response[4].path == 'includeFreightInCost'
-      response[4].message == 'Is required'
       response[5].path == 'invoiceByLocation'
-      response[5].message == 'Is required'
       response[6].path == 'printSecondDescription'
-      response[6].message == 'Is required'
       response[7].path == 'printVendorComments'
-      response[7].message == 'Is required'
       response[8].path == 'sortByShipToOnPrint'
-      response[8].message == 'Is required'
       response[9].path == 'updateAccountPayable'
-      response[9].message == 'Is required'
       response[10].path == 'updateCostOnModel'
-      response[10].message == 'Is required'
       response[11].path == 'updatePurchaseOrderCost'
-      response[11].message == 'Is required'
       response[12].path == 'validateInventory'
-      response[12].message == 'Is required'
+      response.collect { it.message } as Set == ['Is required'] as Set
    }
 }

@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 import javax.inject.Inject
 import java.time.LocalDate
@@ -271,7 +272,8 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[0].message == "To date of ${generalLedgerControl.periodTo} is before from date of ${generalLedgerControl.periodFrom}"
    }
 
-   void "create invalid general ledger control without periodFrom" () {
+   @Unroll
+   void "create invalid general ledger control without #nonNullableProp" () {
       given:
       final company = nineNineEightEmployee.company
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
@@ -283,7 +285,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
+      def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
          null,
          null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
@@ -296,9 +298,9 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
          new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
       )
-      generalLedgerControl.periodFrom = null
 
       when:
+      generalLedgerControl["$nonNullableProp"] = null
       post("$path", generalLedgerControl)
 
       then:
@@ -306,86 +308,14 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "periodFrom"
-      response[0].message == "Is required"
-   }
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
 
-   void "create invalid general ledger control without periodTo" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final defAPAcct = accountDataLoaderService.single(company)
-      final defAPDiscAcct = accountDataLoaderService.single(company)
-      final defARAcct = accountDataLoaderService.single(company)
-      final defARDiscAcct = accountDataLoaderService.single(company)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(company)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
-      final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-      generalLedgerControl.periodTo = null
-
-      when:
-      post("$path", generalLedgerControl)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "periodTo"
-      response[0].message == "Is required"
-   }
-
-   void "create invalid general ledger control without default profit center" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final defAPAcct = accountDataLoaderService.single(company)
-      final defAPDiscAcct = accountDataLoaderService.single(company)
-      final defARAcct = accountDataLoaderService.single(company)
-      final defARDiscAcct = accountDataLoaderService.single(company)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(company)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
-      final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-      generalLedgerControl.defaultProfitCenter = null
-
-      when:
-      post("$path", generalLedgerControl)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "defaultProfitCenter"
-      response[0].message == "Is required"
+      where:
+      nonNullableProp                     || errorResponsePath
+      'periodFrom'                        || 'periodFrom'
+      'periodTo'                          || 'periodTo'
+      'defaultProfitCenter'               || 'defaultProfitCenter'
    }
 
    void "create invalid general ledger control with non-existing account ids" () {
@@ -421,14 +351,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[5].path == "defaultAccountSerializedInventoryAccount.id"
       response[6].path == "defaultAccountUnbilledInventoryAccount.id"
       response[7].path == "defaultAccountFreightAccount.id"
-      response[0].message == "0 was unable to be found"
-      response[1].message == "0 was unable to be found"
-      response[2].message == "0 was unable to be found"
-      response[3].message == "0 was unable to be found"
-      response[4].message == "0 was unable to be found"
-      response[5].message == "0 was unable to be found"
-      response[6].message == "0 was unable to be found"
-      response[7].message == "0 was unable to be found"
+      response.collect { it.message } as Set == ['0 was unable to be found'] as Set
    }
 
    void "update valid general ledger control by id" () {
@@ -725,7 +648,8 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[0].message == "To date of ${updatedGLControlDTO.periodTo} is before from date of ${updatedGLControlDTO.periodFrom}"
    }
 
-   void "update invalid general ledger control without periodFrom" () {
+   @Unroll
+   void "update invalid general ledger control without #nonNullableProp" () {
       given:
       final company = nineNineEightEmployee.company
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
@@ -750,9 +674,9 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
          new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
       )
-      updatedGLControlDTO.periodFrom = null
 
       when:
+      updatedGLControlDTO["$nonNullableProp"] = null
       put("$path", updatedGLControlDTO)
 
       then:
@@ -760,86 +684,14 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "periodFrom"
-      response[0].message == "Is required"
-   }
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
 
-   void "update invalid general ledger control without periodTo" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final defAPAcct = accountDataLoaderService.single(company)
-      final defAPDiscAcct = accountDataLoaderService.single(company)
-      final defARAcct = accountDataLoaderService.single(company)
-      final defARDiscAcct = accountDataLoaderService.single(company)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(company)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
-      final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-      updatedGLControlDTO.periodTo = null
-
-      when:
-      put("$path", updatedGLControlDTO)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "periodTo"
-      response[0].message == "Is required"
-   }
-
-   void "update invalid general ledger control without default profit center" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final defAPAcct = accountDataLoaderService.single(company)
-      final defAPDiscAcct = accountDataLoaderService.single(company)
-      final defARAcct = accountDataLoaderService.single(company)
-      final defARDiscAcct = accountDataLoaderService.single(company)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(company)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
-      final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-      updatedGLControlDTO.defaultProfitCenter = null
-
-      when:
-      put("$path", updatedGLControlDTO)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "defaultProfitCenter"
-      response[0].message == "Is required"
+      where:
+      nonNullableProp                     || errorResponsePath
+      'periodFrom'                        || 'periodFrom'
+      'periodTo'                          || 'periodTo'
+      'defaultProfitCenter'               || 'defaultProfitCenter'
    }
 
    void "update invalid general ledger control with non-existing account ids" () {
@@ -900,15 +752,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[6].path == "defaultAccountSerializedInventoryAccount.id"
       response[7].path == "defaultAccountUnbilledInventoryAccount.id"
       response[8].path == "defaultAccountFreightAccount.id"
-      response[0].message == "0 was unable to be found"
-      response[1].message == "0 was unable to be found"
-      response[2].message == "0 was unable to be found"
-      response[3].message == "0 was unable to be found"
-      response[4].message == "0 was unable to be found"
-      response[5].message == "0 was unable to be found"
-      response[6].message == "0 was unable to be found"
-      response[7].message == "0 was unable to be found"
-      response[8].message == "0 was unable to be found"
+      response.collect { it.message } as Set == ['0 was unable to be found'] as Set
    }
 
 }
