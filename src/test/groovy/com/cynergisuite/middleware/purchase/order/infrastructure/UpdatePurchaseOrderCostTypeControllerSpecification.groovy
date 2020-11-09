@@ -18,7 +18,7 @@ class UpdatePurchaseOrderCostTypeControllerSpecification extends ControllerSpeci
       def predefinedUpdatePurchaseOrderCostType = factoryService.predefined().collect { new UpdatePurchaseOrderCostTypeValueObject(it) }
 
       when:
-      def response = get( "/purchase/order/type/cost")
+      def response = get("/purchase/order/type/cost")
 
       then:
       notThrown(HttpClientResponseException)

@@ -15,7 +15,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def module = moduleDataLoaderService.singleDTO(3, 9)
 
       when:
-      def response = post( "/module/3", module)
+      def response = post("/module/3", module)
 
       then:
       notThrown(HttpClientResponseException)
@@ -23,7 +23,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       response.level == module.level
 
       when:
-      def response2 = get( "/area")
+      def response2 = get("/area")
 
       then:
       notThrown(HttpClientResponseException)
@@ -37,7 +37,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def module = moduleDataLoaderService.singleDTO(1, 9)
 
       when:
-      post( "/module/1", module)
+      post("/module/1", module)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -53,7 +53,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def module = moduleDataLoaderService.singleDTO(999, 9)
 
       when:
-      post( "/module/999", module)
+      post("/module/999", module)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -69,7 +69,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def module = moduleDataLoaderService.singleDTO(1, 9)
 
       when:
-      def response = put( "/module/1", module)
+      def response = put("/module/1", module)
 
       then:
       notThrown(HttpClientResponseException)
@@ -77,7 +77,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       response.level == module.level
 
       when:
-      def response2 = get( "/area")
+      def response2 = get("/area")
 
       then:
       notThrown(HttpClientResponseException)
@@ -91,7 +91,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def module = moduleDataLoaderService.singleDTO(999, 9)
 
       when:
-      put( "/module/999", module)
+      put("/module/999", module)
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -107,7 +107,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def module = moduleDataLoaderService.singleDTO(4, 9)
 
       when:
-      put( "/module/4", module)
+      put("/module/4", module)
 
       then:
       final exception = thrown(HttpClientResponseException)

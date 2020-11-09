@@ -18,7 +18,7 @@ class NormalAccountBalanceTypeControllerSpecification extends ControllerSpecific
       def predefinedNormalAccountBalance = normalAccountBalanceFactoryService.predefined().collect { new NormalAccountBalanceTypeValueObject(it) }
 
       when:
-      def response = get( "/accounting/account/balance-type")
+      def response = get("/accounting/account/balance-type")
 
       then:
       notThrown(HttpClientResponseException)

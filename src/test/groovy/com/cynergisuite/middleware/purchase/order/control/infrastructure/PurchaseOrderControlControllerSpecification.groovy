@@ -242,9 +242,9 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      purchaseOrderControlDTO["$nonNullableProp"] = null
 
       when:
-      purchaseOrderControlDTO["$nonNullableProp"] = null
       post("$path/", purchaseOrderControlDTO)
 
       then:
@@ -444,7 +444,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response[0].message == '99 was unable to be found'
    }
 
-   void "update invalid purchase order control with non nullable properties" () {
+   void "update invalid purchase order control with non-nullable properties" () {
       given:
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)

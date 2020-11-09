@@ -20,7 +20,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       def menu2Modules = moduleDataLoaderService.predefined().findAll { it.menuType.id == 2 }.collect { new ModuleDTO(it) }
 
       when:
-      def response = get( "/area")
+      def response = get("/area")
 
       then:
       notThrown(HttpClientResponseException)
@@ -110,7 +110,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
    void "enable/disable an area" () {
       when:
-      def response = get( "/area")
+      def response = get("/area")
 
       then: 'Area 3 is not enabled by default'
       notThrown(HttpClientResponseException)
@@ -118,13 +118,13 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response.find { it.id == 3 }.enabled == false
 
       when:
-      post( "/area", new SimpleIdentifiableDTO(3))
+      post("/area", new SimpleIdentifiableDTO(3))
 
       then: 'Area 3 is enabled'
       notThrown(HttpClientResponseException)
 
       when:
-      def response2 = get( "/area")
+      def response2 = get("/area")
 
       then:
       notThrown(HttpClientResponseException)
@@ -132,13 +132,13 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response2.find { it.id == 3 }.enabled == true
 
       when:
-      delete( "/area", new SimpleIdentifiableDTO(3))
+      delete("/area", new SimpleIdentifiableDTO(3))
 
       then: 'Area 3 is disabled'
       notThrown(HttpClientResponseException)
 
       when:
-      def response3 = get( "/area")
+      def response3 = get("/area")
 
       then:
       notThrown(HttpClientResponseException)
@@ -148,7 +148,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
    void "enable/disable an invalid area" () {
       when:
-      post( "/area", new SimpleIdentifiableDTO(99))
+      post("/area", new SimpleIdentifiableDTO(99))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -159,7 +159,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response[0].path == 'areaTypeId'
 
       when:
-      delete( "/area", new SimpleIdentifiableDTO(99))
+      delete("/area", new SimpleIdentifiableDTO(99))
 
       then:
       final exception2 = thrown(HttpClientResponseException)

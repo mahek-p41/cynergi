@@ -5,8 +5,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -20,8 +18,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 @MicronautTest(transactional = false)
 class AccountControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account'
-   private JsonOutput jsonOutput = new JsonOutput()
-   private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AccountDataLoaderService accountFactoryService
 
    void "fetch one account by id" () {
@@ -370,11 +366,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid account"() {
       given:
-      final def account = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
-      final def jsonAccount = jsonOutput.toJson(account)
+      final def account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
 
       when:
-      def result = post("$path/", jsonAccount)
+      def result = post("$path/", account)
 
       then:
       notThrown(HttpClientResponseException)
@@ -406,53 +401,76 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "create an invalid account without name"() {
-      given: 'get json account object and make it invalid'
-      final accountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
-      // Make invalid json
-      final jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.remove('name')
+   void "create a valid account with null form 1099 field"() {
+      given:
+      final def account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      account.form1099Field = null
 
       when:
-      post("$path/", jsonAccount)
+      def result = post("$path/", account)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      result.number != null
+      result.number > 0
+
+      with(result) {
+         id > 0
+         name == account.name
+         form1099Field == null
+         corporateAccountIndicator == account.corporateAccountIndicator
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+         with(normalAccountBalance) {
+            description == account.normalAccountBalance.description
+            value == account.normalAccountBalance.value
+         }
+         with(status) {
+            description == account.status.description
+            value == account.status.value
+         }
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+      }
+   }
+
+   void "create an invalid account without #nonNullableProp"() {
+      given: 'get json account object and make it invalid'
+      final accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      accountDTO["$nonNullableProp"] = null
+
+      when:
+      post("$path/", accountDTO)
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.path[0] == 'name'
-      response.message[0] == 'Is required'
-   }
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
 
-   void "create an invalid account without type"() {
-      given: 'get json account object and make it invalid'
-      final def accountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
-      // Make invalid json
-      def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.remove('type')
-
-      when:
-      post("$path/", jsonAccount)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.path[0] == 'type'
-      response.message[0] == 'Is required'
+      where:
+      nonNullableProp                              || errorResponsePath
+      'name'                                       || 'name'
+      'type'                                       || 'type'
+      'normalAccountBalance'                       || 'normalAccountBalance'
+      'status'                                     || 'status'
+      'corporateAccountIndicator'                  || 'corporateAccountIndicator'
    }
 
    void "create an invalid account with non exist type value"() {
       given: 'get json account object and make it invalid'
-      final def accountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
-      // Make invalid json
-      def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.type.value = 'Invalid'
+      final def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      accountDTO.type.value = 'Invalid'
 
       when:
-      post("$path/", jsonAccount)
+      post("$path/", accountDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -464,15 +482,14 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "update a valid account"() {
-      given: 'Update existingAccount in DB with all new data in jsonAccount'
-      final def existingAccount = accountFactoryService.single( nineNineEightEmployee.company)
-      final def updatedAccountDTO = accountFactoryService.singleValueObject(nineNineEightEmployee.company)
-      def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(updatedAccountDTO))
-      jsonAccount.id = existingAccount.id
-      jsonAccount.number = existingAccount.number
+      given: 'Update existingAccount in DB with all new data'
+      final def existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final def updatedAccountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      updatedAccountDTO.id = existingAccount.id
+      updatedAccountDTO.number = existingAccount.number
 
       when:
-      def result = put("$path/$existingAccount.id", jsonAccount)
+      def result = put("$path/$existingAccount.id", updatedAccountDTO)
 
       then:
       notThrown(HttpClientResponseException)
@@ -504,32 +521,40 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "update a invalid account without account description"() {
+   void "update a invalid account without non-nullable properties"() {
       given:
-      final def accountDTO = accountFactoryService.single( nineNineEightEmployee.company)
-      def jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.name = ''
+      final def existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      accountDTO.name = null
+      accountDTO.type = null
+      accountDTO.normalAccountBalance = null
+      accountDTO.status = null
+      accountDTO.corporateAccountIndicator = null
 
       when:
-      put("$path/$accountDTO.id", jsonAccount)
+      put("$path/$existingAccount.id", accountDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.path[0] == 'name'
-      response.message[0] == 'Is required' // Maybe a more general message would be better
+      def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
+      response.size() == 5
+      response[0].path == 'corporateAccountIndicator'
+      response[1].path == 'name'
+      response[2].path == 'normalAccountBalance'
+      response[3].path == 'status'
+      response[4].path == 'type'
+      response.collect { it.message } as Set == ['Is required'] as Set
    }
 
    void "update a invalid account with non exist status id"() {
       given:
-      final accountDTO = accountFactoryService.single( nineNineEightEmployee.company)
-      final jsonAccount = jsonSlurper.parseText(jsonOutput.toJson(accountDTO))
-      jsonAccount.status.value = 'Z'
+      final def existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      accountDTO.status.value = 'Z'
 
       when:
-      put("$path/$accountDTO.id", jsonAccount)
+      put("$path/$existingAccount.id", accountDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -547,7 +572,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       def account = accountFactoryService.single(nineNineEightEmployee.company)
 
       when:
-      delete( "$path/$account.id", )
+      delete("$path/$account.id", )
 
       then: "account of for user's company is delete"
       notThrown(HttpClientResponseException)
@@ -570,7 +595,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       def account = accountFactoryService.single(tstds2)
 
       when:
-      delete( "$path/$account.id")
+      delete("$path/$account.id")
 
       then:
       final exception = thrown(HttpClientResponseException)

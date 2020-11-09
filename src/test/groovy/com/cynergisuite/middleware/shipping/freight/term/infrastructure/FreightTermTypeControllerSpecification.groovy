@@ -18,7 +18,7 @@ class FreightTermTypeControllerSpecification extends ControllerSpecificationBase
       def predefinedFreightTermType = dataLoaderService.predefined().collect { new FreightTermTypeDTO(it) }
 
       when:
-      def response = get( "/shipping/freight/term")
+      def response = get("/shipping/freight/term")
 
       then:
       notThrown(HttpClientResponseException)

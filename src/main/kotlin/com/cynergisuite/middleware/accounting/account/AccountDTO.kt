@@ -38,8 +38,7 @@ data class AccountDTO(
    @field:Schema(name = "account status", description = "Account status")
    var status: AccountStatusTypeValueObject? = null,
 
-   @field:NotNull
-   @field:Schema(name = "form 1099 field", required = true, description = "Field # on the 1099 form for this account")
+   @field:Schema(name = "form 1099 field", required = false, description = "Field # on the 1099 form for this account")
    var form1099Field: Int? = null,
 
    @field:NotNull

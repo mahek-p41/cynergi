@@ -18,7 +18,7 @@ class ShipLocationTypeControllerSpecification extends ControllerSpecificationBas
       def predefinedShipLocationType = dataLoaderService.predefined().collect { new ShipLocationTypeDTO(it) }
 
       when:
-      def response = get( "/shipping/location")
+      def response = get("/shipping/location")
 
       then:
       notThrown(HttpClientResponseException)

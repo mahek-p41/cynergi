@@ -15,7 +15,7 @@ class AuditStatusControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit statuses" () {
       when:
-      def response = get( "/audit/status")
+      def response = get("/audit/status")
 
       then:
       notThrown(HttpClientResponseException)

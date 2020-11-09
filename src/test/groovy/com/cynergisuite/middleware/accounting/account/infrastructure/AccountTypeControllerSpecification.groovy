@@ -18,7 +18,7 @@ class AccountTypeControllerSpecification extends ControllerSpecificationBase {
       def predefinedAccountStatus = accountTypeFactoryService.predefined().collect { new AccountTypeValueObject(it) }
 
       when:
-      def response = get( "/accounting/account/type")
+      def response = get("/accounting/account/type")
 
       then:
       notThrown(HttpClientResponseException)

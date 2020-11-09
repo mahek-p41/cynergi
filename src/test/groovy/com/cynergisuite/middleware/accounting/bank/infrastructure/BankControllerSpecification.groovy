@@ -247,7 +247,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single( nineNineEightEmployee.company, store, account)
+      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
       jsonBank.name = ''
 

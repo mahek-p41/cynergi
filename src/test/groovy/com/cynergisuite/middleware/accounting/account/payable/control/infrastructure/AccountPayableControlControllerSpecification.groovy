@@ -149,9 +149,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      accountPayableControl["$nonNullableProp"] = null
 
       when:
-      accountPayableControl["$nonNullableProp"] = null
       post("$path/", accountPayableControl)
 
       then:
@@ -321,7 +321,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.message == "${nineNineEightEmployee.company.myId()} was unable to be found"
    }
 
-   void "update invalid account payable control without nullable properties" () {
+   void "update invalid account payable control without non-nullable properties" () {
       given:
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)

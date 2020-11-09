@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
@@ -277,7 +278,7 @@ class AccountRepository @Inject constructor(
          type = mapAccountType(rs, "${typesPrefix}type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "${typesPrefix}balance_type_"),
          status = mapAccountStatusType(rs, "${typesPrefix}status_"),
-         form1099Field = rs.getInt("${columnPrefix}form_1099_field"),
+         form1099Field = rs.getIntOrNull("${columnPrefix}form_1099_field"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }
@@ -298,7 +299,7 @@ class AccountRepository @Inject constructor(
          type = account.type,
          normalAccountBalance = account.normalAccountBalance,
          status = account.status,
-         form1099Field = rs.getInt("${columnPrefix}form_1099_field"),
+         form1099Field = rs.getIntOrNull("${columnPrefix}form_1099_field"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }

@@ -18,7 +18,7 @@ class ExpenseMonthCreationTypeControllerSpecification extends ControllerSpecific
       def predefinedExpenseMonthCreationType = dataLoaderService.predefined().collect { new ExpenseMonthCreationTypeDTO(it) }
 
       when:
-      def response = get( "/accounting/account-payable/type/expense-month-creation")
+      def response = get("/accounting/account-payable/type/expense-month-creation")
 
       then:
       notThrown(HttpClientResponseException)
