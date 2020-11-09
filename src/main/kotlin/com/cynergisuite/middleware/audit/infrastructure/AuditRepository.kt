@@ -159,7 +159,7 @@ class AuditRepository @Inject constructor(
                a.number AS number,
                (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
                (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
-               (  SELECT count(aen.id) > 0
+               (SELECT count(aen.id) > 0
                   FROM audit_exception ae
                      JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
                   WHERE ae.audit_id = a.id

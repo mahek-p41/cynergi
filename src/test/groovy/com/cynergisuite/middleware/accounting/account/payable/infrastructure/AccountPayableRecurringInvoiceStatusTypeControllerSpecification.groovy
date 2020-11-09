@@ -18,7 +18,7 @@ class AccountPayableRecurringInvoiceStatusTypeControllerSpecification extends Co
       def predefinedAccountPayableRecurringInvoiceStatusType = dataLoaderService.predefined().collect { new AccountPayableRecurringInvoiceStatusTypeDTO(it) }
 
       when:
-      def response = get( "/accounting/account-payable/type/recurring-invoice-status")
+      def response = get("/accounting/account-payable/type/recurring-invoice-status")
 
       then:
       notThrown(HttpClientResponseException)

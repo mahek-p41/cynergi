@@ -18,7 +18,7 @@ class DefaultAccountPayableStatusTypeControllerSpecification extends ControllerS
       def predefinedDefaultAccountPayableStatusType = dataLoaderService.predefined().collect { new DefaultAccountPayableStatusTypeDTO(it) }
 
       when:
-      def response = get( "/accounting/account-payable/type/default-account-payable-status")
+      def response = get("/accounting/account-payable/type/default-account-payable-status")
 
       then:
       notThrown(HttpClientResponseException)

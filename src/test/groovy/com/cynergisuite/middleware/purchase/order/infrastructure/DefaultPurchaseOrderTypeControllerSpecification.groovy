@@ -18,7 +18,7 @@ class DefaultPurchaseOrderTypeControllerSpecification extends ControllerSpecific
       def predefinedDefaultPurchaseOrderType = dataLoaderService.predefined().collect { new DefaultPurchaseOrderTypeDTO(it) }
 
       when:
-      def response = get( "/purchase/order/type/default")
+      def response = get("/purchase/order/type/default")
 
       then:
       notThrown(HttpClientResponseException)

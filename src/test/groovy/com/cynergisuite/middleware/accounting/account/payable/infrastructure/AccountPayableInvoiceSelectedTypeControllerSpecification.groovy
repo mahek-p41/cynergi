@@ -18,7 +18,7 @@ class AccountPayableInvoiceSelectedTypeControllerSpecification extends Controlle
       def predefinedAccountPayableInvoiceSelectedType = dataLoaderService.predefined().collect { new AccountPayableInvoiceSelectedTypeDTO(it) }
 
       when:
-      def response = get( "/accounting/account-payable/type/invoice-selected")
+      def response = get("/accounting/account-payable/type/invoice-selected")
 
       then:
       notThrown(HttpClientResponseException)

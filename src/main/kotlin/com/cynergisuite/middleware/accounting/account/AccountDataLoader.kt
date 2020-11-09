@@ -72,7 +72,7 @@ class AccountDataLoaderService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create Account") }
    }
 
-   fun singleValueObject(company: Company): AccountDTO {
+   fun singleDTO(company: Company): AccountDTO {
       return AccountDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create Account") }
    }
 }

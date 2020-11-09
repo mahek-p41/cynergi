@@ -18,7 +18,7 @@ class PurchaseOrderTypeControllerSpecification extends ControllerSpecificationBa
       def predefinedPurchaseOrderType = factoryService.predefined().collect { new PurchaseOrderTypeValueObject(it) }
 
       when:
-      def response = get( "/purchase/order/type")
+      def response = get("/purchase/order/type")
 
       then:
       notThrown(HttpClientResponseException)

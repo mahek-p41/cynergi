@@ -298,9 +298,9 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
          new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
       )
+      generalLedgerControl["$nonNullableProp"] = null
 
       when:
-      generalLedgerControl["$nonNullableProp"] = null
       post("$path", generalLedgerControl)
 
       then:
@@ -674,9 +674,9 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
          new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
       )
+      updatedGLControlDTO["$nonNullableProp"] = null
 
       when:
-      updatedGLControlDTO["$nonNullableProp"] = null
       put("$path", updatedGLControlDTO)
 
       then:
