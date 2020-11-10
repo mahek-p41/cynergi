@@ -98,7 +98,6 @@ class VendorPaymentTermController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("vendorPaymentTerm-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Create a single VendorPaymentTerm", description = "Create a single VendorPaymentTerm. The logged in Employee is used for the scannedBy property", operationId = "vendorPaymentTerm-create")
    @ApiResponses(
@@ -128,7 +127,6 @@ class VendorPaymentTermController @Inject constructor(
 
    // TODO security validation that this vendor_payment_term id is owned by the same company as user that is logged in
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
-   @AccessControl("vendorPaymentTerm-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Update a single VendorPaymentTerm", description = "Update a single VendorPaymentTerm where the update is the addition of a note", operationId = "vendorPaymentTerm-update")
    @ApiResponses(

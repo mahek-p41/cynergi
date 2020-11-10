@@ -97,7 +97,6 @@ class VendorGroupController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("vendorGroup-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Create a single VendorGroup", description = "Create a single VendorGroup. The logged in Employee is used for the scannedBy property", operationId = "vendorGroup-create")
    @ApiResponses(
@@ -126,7 +125,6 @@ class VendorGroupController @Inject constructor(
    }
 
    @Put(value = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
-   @AccessControl("vendorGroup-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Update a single VendorGroup", description = "Update a single VendorGroup where the update is the addition of a note", operationId = "vendorGroup-update")
    @ApiResponses(

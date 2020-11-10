@@ -67,7 +67,6 @@ class PurchaseOrderControlController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   @AccessControl("POCTLUP")
    fun create(
       @Body @Valid
       dto: PurchaseOrderControlDTO,
@@ -95,7 +94,6 @@ class PurchaseOrderControlController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   @AccessControl("POCTLUP")
    fun update(
       @QueryValue("id") id: Long,
       @Body @Valid

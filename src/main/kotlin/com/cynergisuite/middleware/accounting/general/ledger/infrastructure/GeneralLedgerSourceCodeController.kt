@@ -97,7 +97,6 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("generalLedgerSourceCode-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Create a single GeneralLedgerSourceCode", description = "Create a single GeneralLedgerSourceCode", operationId = "generalLedgerSourceCode-create")
    @ApiResponses(
@@ -126,7 +125,6 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    }
 
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
-   @AccessControl("generalLedgerSourceCode-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Update a single GeneralLedgerSourceCode", description = "Update a single GeneralLedgerSourceCode", operationId = "generalLedgerSourceCode-update")
    @ApiResponses(

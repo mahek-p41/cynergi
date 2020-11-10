@@ -126,7 +126,6 @@ class VendorController @Inject constructor(
    }
 
    @Post(processes = [APPLICATION_JSON])
-   @AccessControl("vendor-create")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorEndpoints"], summary = "Create a single Vendor", description = "Create a single Vendor. The logged in Employee is used for the scannedBy property", operationId = "vendor-create")
    @ApiResponses(
@@ -155,7 +154,6 @@ class VendorController @Inject constructor(
    }
 
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
-   @AccessControl("vendor-update")
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorEndpoints"], summary = "Update a single Vendor", description = "Update a single Vendor where the update is the addition of a note", operationId = "vendor-update")
    @ApiResponses(
