@@ -3,8 +3,8 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.queryPaged
@@ -106,6 +106,21 @@ class AccountRepository @Inject constructor(
       return found
    }
 
+   fun findByNumber(number: Long, company: Company): AccountEntity? {
+      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
+      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id"
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
+            mapRow(rs, company, "account_")
+         }
+      )
+
+      logger.trace("Searching for Account number {}: \nQuery {} \nResulted in {}", number, query, found)
+
+      return found
+   }
+
    fun findAll(company: Company, page: PageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AccountEntity> = mutableListOf()
@@ -197,12 +212,13 @@ class AccountRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO account(company_id, name, type_id, normal_account_balance_type_id, status_type_id, form_1099_field, corporate_account_indicator)
-	      VALUES (:company_id, :name, :type_id, :normal_account_balance_type_id, :status_type_id, :form_1099_field, :corporate_account_indicator)
+         INSERT INTO account(number, company_id, name, type_id, normal_account_balance_type_id, status_type_id, form_1099_field, corporate_account_indicator)
+	      VALUES (:number, :company_id, :name, :type_id, :normal_account_balance_type_id, :status_type_id, :form_1099_field, :corporate_account_indicator)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
+            "number" to account.number,
             "company_id" to account.company.myId(),
             "name" to account.name,
             "type_id" to account.type.id,
@@ -225,6 +241,7 @@ class AccountRepository @Inject constructor(
          """
          UPDATE account
          SET
+            number = :number,
             company_id = :company_id,
             name = :name,
             type_id = :type_id,
@@ -238,6 +255,7 @@ class AccountRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to account.id,
+            "number" to account.number,
             "company_id" to account.company.myId(),
             "name" to account.name,
             "type_id" to account.type.id,

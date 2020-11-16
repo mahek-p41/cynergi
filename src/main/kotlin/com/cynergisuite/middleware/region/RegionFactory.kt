@@ -7,16 +7,12 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 object RegionFactory {
-
-   @JvmStatic
-   private val regionNumberCounter = AtomicLong(1)
 
    @JvmStatic
    fun stream(numberIn: Int = 1, divisionIn: DivisionEntity, regionalManager: EmployeeEntity? = null): Stream<RegionEntity> {

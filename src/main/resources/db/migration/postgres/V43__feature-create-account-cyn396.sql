@@ -49,7 +49,7 @@ CREATE TABLE account
     time_created                   TIMESTAMPTZ                 DEFAULT clock_timestamp()         NOT NULL,
     time_updated                   TIMESTAMPTZ                 DEFAULT clock_timestamp()         NOT NULL,
     company_id                     BIGINT REFERENCES company (id)                                NOT NULL,
-    number                         BIGINT CHECK ( number > 0 ) DEFAULT currval('account_id_seq') NOT NULL,
+    number                         BIGINT CHECK ( number > 0 )                                   NOT NULL,
     name                           VARCHAR(100) CHECK ( char_length(trim(name)) > 1)             NOT NULL,
     type_id                        BIGINT REFERENCES account_type_domain (id)                    NOT NULL,
     normal_account_balance_type_id BIGINT REFERENCES normal_account_balance_type_domain (id)     NOT NULL,
