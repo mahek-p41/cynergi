@@ -222,7 +222,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       then: 'the result for 20 should be [20, 29, 28, 27...21] according to Postgres algorithm for fuzzy search'
       notThrown(HttpClientException)
       pageOneResult.first == true
-      pageOneResult.last == false
       pageOneResult.elements.size() == 10
 
       with(pageOneResult.elements[0]) {
@@ -322,7 +321,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       }
 
       when: "strict querying for number and 'bank'"
-      result = get("$path/search?query=${account1.id}_bank&fuzzy=false")
+      result = get("$path/search?query=${account1.number}%20bank&fuzzy=false")
 
       then: "only one account is returned"
       notThrown(HttpClientException)
@@ -336,7 +335,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       }
 
       when: "fuzzy querying for number and 'credit'"
-      result = get("$path/search?query=${account3.id}%20Credit")
+      result = get("$path/search?query=${account3.number}%20Credit")
 
       then: "only one account is returned"
       notThrown(HttpClientException)
@@ -350,7 +349,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       }
 
       when: "strict querying for number and full account name"
-      result = get("$path/search?query=${account3.id}_Bob's_Credit_Union&fuzzy=false")
+      result = get("$path/search?query=${account3.number}%20Bob's%20Credit%20Union&fuzzy=false")
 
       then: "only one account is returned"
       notThrown(HttpClientException)
@@ -457,6 +456,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       where:
       nonNullableProp                              || errorResponsePath
+      'number'                                     || 'number'
       'name'                                       || 'name'
       'type'                                       || 'type'
       'normalAccountBalance'                       || 'normalAccountBalance'
@@ -477,8 +477,26 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'vo.type.value'
+      response[0].path == 'type.value'
       response[0].message == 'Invalid was unable to be found'
+   }
+
+   void "create an invalid account with duplicate account number"() {
+      given:
+      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      accountDTO.number = existingAccount.number
+
+      when:
+      post("$path/", accountDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'number'
+      response[0].message == "$existingAccount.number already exists"
    }
 
    void "update a valid account"() {
@@ -549,7 +567,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid account with non exist status id"() {
       given:
-      final def existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
       def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
       accountDTO.status.value = 'Z'
 
@@ -561,8 +579,26 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'vo.status.value'
+      response[0].path == 'status.value'
       response[0].message == 'Z was unable to be found'
+   }
+
+   void "update a invalid account with duplicate account number"() {
+      given:
+      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      accountDTO.number = existingAccount.number
+
+      when:
+      put("$path/$existingAccount.id", accountDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'number'
+      response[0].message == "$existingAccount.number already exists"
    }
 
 

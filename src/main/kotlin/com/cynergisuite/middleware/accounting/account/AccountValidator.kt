@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountType
 import com.cynergisuite.middleware.accounting.account.infrastructure.NormalAccountBalanceTypeRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,11 +28,13 @@ class AccountValidator @Inject constructor(
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
+      val existingAccount = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->
-         accountType ?: errors.add(ValidationError("vo.type.value", NotFound(accountDTO.type?.value!!)))
-         balanceType ?: errors.add(ValidationError("vo.normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
-         statusType ?: errors.add(ValidationError("vo.status.value", NotFound(accountDTO.status?.value!!)))
+         accountType ?: errors.add(ValidationError("type.value", NotFound(accountDTO.type?.value!!)))
+         balanceType ?: errors.add(ValidationError("normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
+         statusType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.status?.value!!)))
+         if (existingAccount != null) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 
       return AccountEntity(accountDTO, company, accountType!!, balanceType!!, statusType!!)
@@ -42,12 +45,14 @@ class AccountValidator @Inject constructor(
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
+      val existingAccount = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->
          accountRepository.findOne(id, company) ?: errors.add(ValidationError("vo.id", NotFound(id)))
-         accountType ?: errors.add(ValidationError("vo.type.value", NotFound(accountDTO.type?.value!!)))
-         balanceType ?: errors.add(ValidationError("vo.normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
-         statusType ?: errors.add(ValidationError("vo.status.value", NotFound(accountDTO.status?.value!!)))
+         accountType ?: errors.add(ValidationError("type.value", NotFound(accountDTO.type?.value!!)))
+         balanceType ?: errors.add(ValidationError("normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
+         statusType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.status?.value!!)))
+         if (existingAccount != null && existingAccount.id != accountDTO.id) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 
       return AccountEntity(accountDTO, company, accountType!!, balanceType!!, statusType!!)
