@@ -132,7 +132,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response2.find { it.id == 3 }.enabled == true
 
       when:
-      delete("/area", new SimpleIdentifiableDTO(3))
+      delete("/area/3")
 
       then: 'Area 3 is disabled'
       notThrown(HttpClientResponseException)
@@ -159,7 +159,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response[0].path == 'areaTypeId'
 
       when:
-      delete("/area", new SimpleIdentifiableDTO(99))
+      delete("/area/99")
 
       then:
       final exception2 = thrown(HttpClientResponseException)
