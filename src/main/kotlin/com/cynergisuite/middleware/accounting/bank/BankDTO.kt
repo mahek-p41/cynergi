@@ -16,18 +16,21 @@ data class BankDTO(
    @field:Positive
    var id: Long? = null,
 
+   @field:NotNull
    @field:Positive
+   @field:Schema(name = "number", description = "Bank number")
    var number: Long? = null,
 
    @field:NotNull
    @field:Schema(name = "name", description = "Human readable name for a bank.")
    var name: String? = null,
 
-   @field:Valid
    @field:NotNull
+   @field:Valid
    @field:Schema(name = "generalLedgerProfitCenter", required = true, description = "Store the bank is associated with.")
    var generalLedgerProfitCenter: SimpleIdentifiableDTO? = null,
 
+   @field:NotNull
    @field:Valid
    @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
    var generalLedgerAccount: SimpleIdentifiableDTO? = null

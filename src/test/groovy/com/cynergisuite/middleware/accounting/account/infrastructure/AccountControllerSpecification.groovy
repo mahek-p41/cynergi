@@ -585,12 +585,13 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid account with duplicate account number"() {
       given:
-      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final existingAccounts = accountFactoryService.stream(2, nineNineEightEmployee.company).collect()
       def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
-      accountDTO.number = existingAccount.number
+      accountDTO.id = existingAccounts[0].id
+      accountDTO.number = existingAccounts[1].number
 
       when:
-      put("$path/$existingAccount.id", accountDTO)
+      put("$path/$accountDTO.id", accountDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -598,7 +599,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'number'
-      response[0].message == "$existingAccount.number already exists"
+      response[0].message == "$accountDTO.number already exists"
    }
 
 

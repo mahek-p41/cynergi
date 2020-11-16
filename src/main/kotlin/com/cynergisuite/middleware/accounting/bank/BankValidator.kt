@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
@@ -22,46 +22,38 @@ class BankValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(BankValidator::class.java)
 
-   @Throws(ValidationException::class)
    fun validateCreate(bankDTO: BankDTO, company: Company): BankEntity {
       logger.trace("Validating Save Bank {}", bankDTO)
+      val existingBankByNumber = bankRepository.findByNumber(bankDTO.number!!, company)
 
-      return doValidation(bankDTO = bankDTO, company = company)
+      return doValidation(existingBankByNumber = existingBankByNumber, bankDTO = bankDTO, company = company)
    }
 
-   @Throws(ValidationException::class)
    fun validateUpdate(id: Long, bankDTO: BankDTO, company: Company): BankEntity {
       logger.trace("Validating Update Bank {}", bankDTO)
 
       val existingBank = bankRepository.findOne(id, company) ?: throw NotFoundException(id)
+      val existingBankByNumber = bankRepository.findByNumber(bankDTO.number!!, company)
 
-      return doValidation(existingBank, bankDTO, company)
+      return doValidation(existingBank = existingBank, existingBankByNumber = existingBankByNumber, bankDTO = bankDTO, company = company)
    }
 
-   private fun doValidation(existingBank: BankEntity? = null, bankDTO: BankDTO, company: Company): BankEntity {
+   private fun doValidation(existingBank: BankEntity? = null, existingBankByNumber: BankEntity? = null, bankDTO: BankDTO, company: Company): BankEntity {
       val generalProfitCenter = storeRepository.findOne(bankDTO.generalLedgerProfitCenter!!.id!!, company)
       val generalLedgerAccount = accountRepository.findOne(bankDTO.generalLedgerAccount!!.id!!, company)
 
       doValidation { errors ->
+         if (existingBank == null && existingBankByNumber != null) errors.add(ValidationError("number", Duplicate(bankDTO.number!!)))
+         if (existingBank != null && existingBankByNumber != null && existingBankByNumber.id != existingBank.id) errors.add(ValidationError("number", Duplicate(bankDTO.number!!)))
          generalProfitCenter ?: errors.add(ValidationError("generalLedgerProfitCenter.id", NotFound(bankDTO.generalLedgerProfitCenter!!.id!!)))
          generalLedgerAccount ?: errors.add(ValidationError("generalLedgerAccount.id", NotFound(bankDTO.generalLedgerAccount!!.id!!)))
       }
 
-      return if (existingBank != null) {
-         BankEntity(
-            id = existingBank.id,
-            bankDTO = bankDTO,
-            company = company,
-            store = generalProfitCenter!!,
-            account = generalLedgerAccount!!
-         )
-      } else {
-         BankEntity(
-            bankDTO = bankDTO,
-            company = company,
-            store = generalProfitCenter!!,
-            account = generalLedgerAccount!!
-         )
-      }
+      return BankEntity(
+         bankDTO = bankDTO,
+         company = company,
+         store = generalProfitCenter!!,
+         account = generalLedgerAccount!!
+      )
    }
 }

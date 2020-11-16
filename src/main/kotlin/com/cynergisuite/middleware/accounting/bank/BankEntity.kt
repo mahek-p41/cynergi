@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.store.Store
 
 data class BankEntity(
    val id: Long? = null,
-   val number: Long? = null,
+   val number: Long,
    val company: Company,
    val name: String,
    val generalLedgerProfitCenter: Store,
@@ -16,17 +16,8 @@ data class BankEntity(
 
    constructor(bankDTO: BankDTO, company: Company, store: Store, account: AccountEntity) :
       this(
-         id = null,
-         number = null,
-         bankDTO = bankDTO,
-         company = company,
-         store = store,
-         account = account
-      )
-
-   constructor(id: Long? = null, number: Long? = null, bankDTO: BankDTO, company: Company, store: Store, account: AccountEntity) :
-      this(
-         id = id,
+         id = bankDTO.id,
+         number = bankDTO.number!!,
          company = company,
          name = bankDTO.name!!,
          generalLedgerProfitCenter = store,
