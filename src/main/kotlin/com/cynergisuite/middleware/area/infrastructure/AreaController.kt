@@ -79,7 +79,7 @@ class AreaController @Inject constructor(
       areaService.enableArea(company, areaIdDTO.id!!)
    }
 
-   @Delete(processes = [MediaType.APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9]+}")
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], description = "Disable area for company.", operationId = "disable-area")
@@ -91,14 +91,14 @@ class AreaController @Inject constructor(
       ]
    )
    fun disableArea(
-      @Body areaIdDTO: SimpleIdentifiableDTO,
+      id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
       val company = userService.findUser(authentication).myCompany()
 
-      logger.info("Disable area {} for company {}", areaIdDTO.id, company.myId())
+      logger.info("Disable area {} for company {}", id, company.myId())
 
-      areaService.disableArea(company, areaIdDTO.id!!)
+      areaService.disableArea(company, id!!)
    }
 }
