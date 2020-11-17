@@ -197,17 +197,66 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       ]
    }
 
+   void "create invalid bank with duplicate bank number" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.number = existingBank.number
+
+      when:
+      post("$path/", bankDTO)
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
+      final response = ex.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'number'
+      response[0].message == "$existingBank.number already exists"
+   }
+
+   void "create an invalid account without #nonNullableProp"() {
+      given:
+      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, company2)
+
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO["$nonNullableProp"] = null
+
+      when:
+      post("$path/", bankDTO)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
+
+      where:
+      nonNullableProp                              || errorResponsePath
+      'number'                                     || 'number'
+      'name'                                       || 'name'
+      'generalLedgerProfitCenter'                  || 'generalLedgerProfitCenter'
+      'generalLedgerAccount'                       || 'generalLedgerAccount'
+   }
+
    void "update a valid bank's profit center"() {
       given: 'Update existingBank in DB with all new data in jsonBank'
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final updateStore = storeFactoryService.store(1, nineNineEightEmployee.company)
       final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      final updatedBankDTO = bankFactoryService.singleDTO(store, account)
+      def updatedBankDTO = bankFactoryService.singleDTO(store, account)
+      updatedBankDTO.id = existingBank.id
+      updatedBankDTO.generalLedgerProfitCenter.id = updateStore.id
 
       when:
-      updatedBankDTO.generalLedgerProfitCenter.id = updateStore.id
-      def result = put("$path/$existingBank.id", updatedBankDTO)
+      def result = put("$path/$updatedBankDTO.id", updatedBankDTO)
 
       then:
       notThrown(HttpClientResponseException)
@@ -227,10 +276,11 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final updatedBankDTO = bankFactoryService.singleDTO(store, account)
+      updatedBankDTO.id = existingBank.id
+      updatedBankDTO.generalLedgerAccount.id = updateAccount.id
 
       when:
-      updatedBankDTO.generalLedgerAccount.id = updateAccount.id
-      def result = put("$path/$existingBank.id", updatedBankDTO)
+      def result = put("$path/$updatedBankDTO.id", updatedBankDTO)
 
       then:
       notThrown(HttpClientResponseException)
@@ -243,37 +293,66 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "update a invalid bank without bank name"() {
+   void "update invalid bank without non-nullable properties"() {
       given:
       final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def bankDTO = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def jsonBank = jsonSlurper.parseText(jsonOutput.toJson(bankDTO))
-      jsonBank.name = ''
+      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def updatedBankDTO = bankFactoryService.singleDTO(store, account)
+      updatedBankDTO.id = existingBank.id
+      updatedBankDTO.number = null
+      updatedBankDTO.name = null
+      updatedBankDTO.generalLedgerProfitCenter = null
+      updatedBankDTO.generalLedgerAccount = null
+
 
       when:
-      put("$path/$bankDTO.id", jsonBank)
+      put("$path/$updatedBankDTO.id", updatedBankDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
+      def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
+      response.size() == 4
 
-      response[0].path == 'name'
-      response[0].message == 'Is required'
+      response[0].path == 'generalLedgerAccount'
+      response[1].path == 'generalLedgerProfitCenter'
+      response[2].path == 'name'
+      response[3].path == 'number'
+      response.collect { it.message } as Set == ['Is required'] as Set
+   }
+
+   void "update invalid bank with duplicate bank number" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final existingBanks = bankFactoryService.stream(2, nineNineEightEmployee.company, store, account).collect()
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.id = existingBanks[0].id
+      bankDTO.number = existingBanks[1].number
+
+      when:
+      put("$path/$bankDTO.id", bankDTO)
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
+      final response = ex.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'number'
+      response[0].message == "$bankDTO.number already exists"
    }
 
    void "update a valid bank with no id"() {
-      given: 'Update existingBank in DB with all new data in jsonBank'
+      given: 'Update existingBank in DB with all new data'
       final def account = accountFactoryService.single(nineNineEightEmployee.company)
       final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final def updatedBankDTO = new BankDTO(existingBank)
+      updatedBankDTO.id = existingBank.id
 
       when:
-      updatedBankDTO.id = null
-      def result = put("$path/$existingBank.id", updatedBankDTO)
+      def result = put("$path/$updatedBankDTO.id", updatedBankDTO)
 
       then:
       notThrown(HttpClientResponseException)

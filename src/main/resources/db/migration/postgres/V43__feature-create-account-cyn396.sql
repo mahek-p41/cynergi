@@ -101,10 +101,11 @@ CREATE TABLE bank
     time_created                     TIMESTAMPTZ                 DEFAULT clock_timestamp()      NOT NULL,
     time_updated                     TIMESTAMPTZ                 DEFAULT clock_timestamp()      NOT NULL,
     company_id                       BIGINT REFERENCES company (id)                             NOT NULL,
-    number                           BIGINT CHECK ( number > 0 ) DEFAULT currval('bank_id_seq') NOT NULL,
+    number                           BIGINT CHECK ( number > 0 )                                NOT NULL,
     name                             varchar(50) CHECK ( char_length(trim(name)) > 1)           NOT NULL,
     general_ledger_profit_center_sfk INTEGER CHECK ( general_ledger_profit_center_sfk > 0 )     NOT NULL, --profit center is store or possibly home office
-    general_ledger_account_id        BIGINT REFERENCES account (id)                             NOT NULL
+    general_ledger_account_id        BIGINT REFERENCES account (id)                             NOT NULL,
+    UNIQUE (company_id, number)
 );
 CREATE TRIGGER update_bank_trg
     BEFORE UPDATE

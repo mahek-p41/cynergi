@@ -92,6 +92,21 @@ class BankRepository @Inject constructor(
       return found
    }
 
+   fun findByNumber(number: Long, company: Company): BankEntity? {
+      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
+      val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id"
+      val found = jdbc.findFirstOrNull(
+         query, params,
+         RowMapper { rs, _ ->
+            mapRow(rs, company, "bank_")
+         }
+      )
+
+      logger.trace("Searching for Bank id {}: \nQuery {} \nResulted in {}", number, query, found)
+
+      return found
+   }
+
    fun findAll(company: Company, page: PageRequest): RepositoryPage<BankEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
       val query =
@@ -138,12 +153,13 @@ class BankRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO bank(company_id, name, general_ledger_profit_center_sfk, general_ledger_account_id)
-	      VALUES (:company_id, :name, :general_ledger_profit_center_sfk, :general_ledger_account_id)
+         INSERT INTO bank(number, company_id, name, general_ledger_profit_center_sfk, general_ledger_account_id)
+	      VALUES (:number, :company_id, :name, :general_ledger_profit_center_sfk, :general_ledger_account_id)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
+            "number" to bank.number,
             "company_id" to bank.company.myId(),
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
@@ -163,6 +179,7 @@ class BankRepository @Inject constructor(
          """
          UPDATE bank
          SET
+            number = :number,
             company_id = :company_id,
             name = :name,
             general_ledger_profit_center_sfk = :general_ledger_profit_center_sfk,
@@ -173,6 +190,7 @@ class BankRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to bank.id,
+            "number" to bank.number,
             "company_id" to bank.company.myId(),
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
