@@ -18,13 +18,6 @@ data class BankReconciliationDTO(
    @field:Positive
    var id: Long? = null,
 
-   @field:Positive
-   var number: Long? = null,
-
-   @field:NotNull
-   @field:Schema(description = "Human readable name for a bank reconciliation.")
-   var name: String? = null,
-
    @field:Valid
    @field:NotNull
    @field:Schema(description = "Bank the bank reconciliation is associated with.")
@@ -58,8 +51,6 @@ data class BankReconciliationDTO(
    constructor(entity: BankReconciliationEntity) :
       this(
          id = entity.id,
-         number = entity.number,
-         name = entity.name,
          bank = SimpleIdentifiableDTO(entity.bank.myId()),
          type = SimpleIdentifiableDTO(entity.type.myId()),
          date = entity.date,

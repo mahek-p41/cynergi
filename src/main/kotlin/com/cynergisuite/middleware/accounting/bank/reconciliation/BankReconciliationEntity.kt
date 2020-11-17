@@ -11,9 +11,7 @@ import java.time.LocalDate
 
 data class BankReconciliationEntity(
    val id: Long? = null,
-   val number: Long? = null,
    val company: Company,
-   val name: String,
    var bank: BankEntity,
    var type: BankReconciliationType,
    var date: LocalDate,
@@ -23,21 +21,26 @@ data class BankReconciliationEntity(
    var document: Int?
 ) : Identifiable {
 
-   constructor(bankDTO: BankReconciliationDTO, company: Company, store: Store, account: AccountEntity) :
+   constructor(dto: BankReconciliationDTO, company: Company, bank: BankEntity, type: BankReconciliationType) :
       this(
          id = null,
-         number = null,
          company = company,
-         dto = bankDTO,
-         store = store,
-         account = account
+         dto = dto,
+         bank = bank,
+         type = type
       )
 
-   constructor(id: Long? = null, number: Long? = null, dto: BankReconciliationDTO, company: Company) :
+   constructor(id: Long? = null, dto: BankReconciliationDTO, company: Company, bank: BankEntity, type: BankReconciliationType) :
       this(
          id = id,
          company = company,
-         name = dto.name!!
+         bank = bank,
+         type = type,
+         date = dto.date!!,
+         clearedDate = dto.clearedDate,
+         amount = dto.amount!!,
+         description = dto.description!!,
+         document = dto.document
       )
 
    override fun myId(): Long? = id

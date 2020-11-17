@@ -29,7 +29,7 @@ class BankRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
@@ -202,7 +202,7 @@ class BankRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
