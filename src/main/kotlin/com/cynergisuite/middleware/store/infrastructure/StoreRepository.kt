@@ -135,6 +135,7 @@ class StoreRepository @Inject constructor(
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
 
       when (user.myAlternativeStoreIndicator()) {
+         // with value 'A' return all stores
          "N" -> {
             pagedQuery.append(" AND store.number = :store_number ")
             params["store_number"] = user.myLocation().myNumber()
@@ -146,9 +147,6 @@ class StoreRepository @Inject constructor(
          "D" -> {
             pagedQuery.append(" AND division.number = :division_number ")
             params["division_number"] = user.myAlternativeArea()
-         }
-         else -> {
-            pagedQuery.append(" AND store.number <> 9000 ")
          }
       }
 

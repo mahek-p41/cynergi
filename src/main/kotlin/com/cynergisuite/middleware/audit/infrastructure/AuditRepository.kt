@@ -658,6 +658,7 @@ class AuditRepository @Inject constructor(
       }
 
       when (user.myAlternativeStoreIndicator()) {
+         // with value 'A' return all stores
          "N" -> {
             whereClause.append(" AND a.store_number = :store_number ")
             params["store_number"] = user.myLocation().myNumber()

@@ -89,7 +89,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
-      pageOneResult.elements.size() == 2
+      pageOneResult.elements.size() == 3
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
