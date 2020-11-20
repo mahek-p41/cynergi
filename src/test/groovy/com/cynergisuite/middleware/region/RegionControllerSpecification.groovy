@@ -617,6 +617,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       then: 'state of stores before re-associate'
       notThrown(HttpClientResponseException)
+
       with(result) {
          elements != null
          totalElements == 3
