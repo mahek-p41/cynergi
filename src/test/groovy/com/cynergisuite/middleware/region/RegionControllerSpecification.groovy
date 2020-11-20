@@ -619,7 +619,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       with(result) {
          elements != null
-         totalElements == 2
+         totalElements == 3
          elements[0].id == 1
          elements[0].storeNumber == store1.myNumber()
          elements[0].name == store1.myName()
@@ -640,7 +640,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       with(result2) {
          elements != null
-         totalElements == 2
+         totalElements == 3
          elements[0].id == 1
          elements[0].storeNumber == store1.myNumber()
          elements[0].name == store1.myName()

@@ -50,7 +50,7 @@ data class EmployeeValueObject(
 
    @field:NotNull
    @field:Size(min = 1, max = 1)
-   @field:Schema(name = "altStoreIndicator", description = "Employee's alternate store indicator", minLength = 1, maxLength = 1, required = true, nullable = false)
+   @field:Schema(name = "altStoreIndicator", description = "Employee's alternate store indicator, must be N|R|D|A", minLength = 1, maxLength = 1, required = true, nullable = false)
    var alternativeStoreIndicator: String? = null,
 
    @field:NotNull
