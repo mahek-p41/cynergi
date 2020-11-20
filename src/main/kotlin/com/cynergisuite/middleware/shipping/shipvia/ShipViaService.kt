@@ -33,6 +33,10 @@ class ShipViaService @Inject constructor(
       )
    }
 
+   fun delete(id: Long, company: Company) {
+      shipViaRepository.delete(id, company)
+   }
+
    fun update(dto: ShipViaDTO, company: Company): ShipViaDTO {
       val id = dto.id ?: throw NotFoundException(dto.id?.toString() ?: "") // FIXME need to better handle getting ID.  Should alter the UI to pass id as a path param
       val toUpdate = shipViaValidator.validateUpdate(id, dto, company)

@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -139,6 +140,25 @@ class ShipViaRepository @Inject constructor(
             )
          }
       )
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting account with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM ship_via
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0){
+         throw NotFoundException(id)
+      }
    }
 
    @Transactional

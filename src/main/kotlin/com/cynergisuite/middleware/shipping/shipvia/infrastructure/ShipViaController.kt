@@ -15,6 +15,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
@@ -90,6 +91,27 @@ class ShipViaController @Inject constructor(
       }
 
       return page
+   }
+
+   @Delete(uri="/{id:[0-9]+}")
+   @Operation(tags = ["ShipViaEndpoints"], summary = "Delete a single ship via", description = "Deletes a ship via based on passed id", operationId = "shipvia-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the ship via record was deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling the endpoint does not have permission"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ){
+      logger.debug("User {} requested delete shipvia", authentication)
+
+      val user = userService.findUser(authentication)
+
+      return shipViaService.delete(id, user.myCompany())
    }
 
    @Post(processes = [APPLICATION_JSON])
