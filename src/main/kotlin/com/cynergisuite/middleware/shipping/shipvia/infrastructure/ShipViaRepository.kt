@@ -10,8 +10,8 @@ import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -156,7 +156,7 @@ class ShipViaRepository @Inject constructor(
 
       logger.info("Row affected {}", rowsAffected)
 
-      if (rowsAffected == 0){
+      if (rowsAffected == 0) {
          throw NotFoundException(id)
       }
    }
