@@ -1,12 +1,10 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.company.Company
 
 data class AccountEntity(
    val id: Long? = null,
    val number: Long,
-   val company: Company,
    val name: String,
    val type: AccountType,
    val normalAccountBalance: NormalAccountBalanceType,
@@ -17,7 +15,6 @@ data class AccountEntity(
 
    constructor(
       accountDTO: AccountDTO,
-      company: Company,
       accountType: AccountType,
       normalAccountBalanceType: NormalAccountBalanceType,
       accountStatusType: AccountStatusType
@@ -25,7 +22,6 @@ data class AccountEntity(
       this(
          id = accountDTO.id,
          number = accountDTO.number!!,
-         company = company,
          name = accountDTO.name!!,
          type = accountType,
          normalAccountBalance = normalAccountBalanceType,

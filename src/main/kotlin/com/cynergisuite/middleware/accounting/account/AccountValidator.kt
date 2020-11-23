@@ -37,7 +37,7 @@ class AccountValidator @Inject constructor(
          if (existingAccountByNumber != null) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 
-      return AccountEntity(accountDTO, company, accountType!!, balanceType!!, statusType!!)
+      return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!)
    }
 
    fun validateUpdate(id: Long, accountDTO: AccountDTO, company: Company): AccountEntity {
@@ -55,6 +55,6 @@ class AccountValidator @Inject constructor(
          if (existingAccountByNumber != null && existingAccountByNumber.id != accountDTO.id) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 
-      return AccountEntity(accountDTO, company, accountType!!, balanceType!!, statusType!!)
+      return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!)
    }
 }
