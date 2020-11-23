@@ -24,7 +24,6 @@ import javax.transaction.Transactional
 class BankRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
    private val accountRepository: AccountRepository,
-   private val companyRepository: CompanyRepository,
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankRepository::class.java)
@@ -33,41 +32,34 @@ class BankRepository @Inject constructor(
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
-         ), company AS (
-            ${companyRepository.companyBaseQuery()}
          )
          SELECT
-            bank.id                                   AS bank_id,
-            bank.name                                 AS bank_name,
-            bank.number                               AS bank_number,
-            comp.id                                   AS comp_id,
-            comp.uu_row_id                            AS comp_uu_row_id,
-            comp.time_created                         AS comp_time_created,
-            comp.time_updated                         AS comp_time_updated,
-            comp.name                                 AS comp_name,
-            comp.doing_business_as                    AS comp_doing_business_as,
-            comp.client_code                          AS comp_client_code,
-            comp.client_id                            AS comp_client_id,
-            comp.dataset_code                         AS comp_dataset_code,
-            comp.federal_id_number                    AS comp_federal_id_number,
-            comp.address_id                           AS comp_address_id,
-            comp.address_name                         AS address_name,
-            comp.address_address1                     AS address_address1,
-            comp.address_address2                     AS address_address2,
-            comp.address_city                         AS address_city,
-            comp.address_state                        AS address_state,
-            comp.address_postal_code                  AS address_postal_code,
-            comp.address_latitude                     AS address_latitude,
-            comp.address_longitude                    AS address_longitude,
-            comp.address_country                      AS address_country,
-            comp.address_county                       AS address_county,
-            comp.address_phone                        AS address_phone,
-            comp.address_fax                          AS address_fax,
-            account.*,
-            glProfitCenter.id                         AS glProfitCenter_id,
-            glProfitCenter.number                     AS glProfitCenter_number,
-            glProfitCenter.name                       AS glProfitCenter_name,
-            glProfitCenter.dataset                    AS glProfitCenter_dataset
+            bank.id                                              AS bank_id,
+            bank.name                                            AS bank_name,
+            bank.number                                          AS bank_number,
+            bank.company_id                                      AS comp_id,
+            account.account_id                                   AS account_id,
+            account.account_number                               AS account_number,
+            account.account_name                                 AS account_name,
+            account.account_form_1099_field                      AS account_form_1099_field,
+            account.account_corporate_account_indicator          AS account_corporate_account_indicator,
+            account.comp_id                                      AS account_comp_id,
+            account.type_id                                      AS account_type_id,
+            account.type_value                                   AS account_type_value,
+            account.type_description                             AS account_type_description,
+            account.type_localization_code                       AS account_type_localization_code,
+            account.balance_type_id                              AS account_balance_type_id,
+            account.balance_type_value                           AS account_balance_type_value,
+            account.balance_type_description                     AS account_balance_type_description,
+            account.balance_type_localization_code               AS account_balance_type_localization_code,
+            account.status_id                                    AS account_status_id,
+            account.status_value                                 AS account_status_value,
+            account.status_description                           AS account_status_description,
+            account.status_localization_code                     AS account_status_localization_code,
+            glProfitCenter.id                                    AS glProfitCenter_id,
+            glProfitCenter.number                                AS glProfitCenter_number,
+            glProfitCenter.name                                  AS glProfitCenter_name,
+            glProfitCenter.dataset                               AS glProfitCenter_dataset
          FROM bank
                JOIN company comp ON bank.company_id = comp.id
                JOIN fastinfo_prod_import.store_vw glProfitCenter
@@ -79,7 +71,7 @@ class BankRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): BankEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE bank.id = :id AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query, params,
          RowMapper { rs, _ ->
@@ -148,7 +140,7 @@ class BankRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(bank: BankEntity): BankEntity {
+   fun insert(bank: BankEntity, company: Company): BankEntity {
       logger.debug("Inserting bank {}", bank)
 
       return jdbc.insertReturning(
@@ -160,7 +152,7 @@ class BankRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "number" to bank.number,
-            "company_id" to bank.company.myId(),
+            "company_id" to company.myId(),
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "general_ledger_account_id" to bank.generalLedgerAccount.id
@@ -172,7 +164,7 @@ class BankRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(bank: BankEntity): BankEntity {
+   fun update(bank: BankEntity, company: Company): BankEntity {
       logger.debug("Updating bank {}", bank)
 
       return jdbc.updateReturning(
@@ -191,7 +183,7 @@ class BankRepository @Inject constructor(
          mapOf(
             "id" to bank.id,
             "number" to bank.number,
-            "company_id" to bank.company.myId(),
+            "company_id" to company.myId(),
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "general_ledger_account_id" to bank.generalLedgerAccount.id
@@ -202,14 +194,13 @@ class BankRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, bankPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
-         company = company,
          name = rs.getString("${columnPrefix}name"),
-         generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "glProfitCenter_"),
-         generalLedgerAccount = accountRepository.mapRow(rs, company, "account_")
+         generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "${bankPrefix}glProfitCenter_"),
+         generalLedgerAccount = accountRepository.mapRow(rs, company, "${bankPrefix}account_", "${bankPrefix}account_")
       )
    }
 
@@ -217,7 +208,6 @@ class BankRepository @Inject constructor(
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
-         company = bank.company,
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = bank.generalLedgerProfitCenter,
          generalLedgerAccount = bank.generalLedgerAccount
