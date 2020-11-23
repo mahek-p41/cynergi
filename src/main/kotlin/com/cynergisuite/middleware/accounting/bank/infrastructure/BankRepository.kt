@@ -105,7 +105,7 @@ class BankRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id
+            WHERE bank.company_id = :comp_id
          )
          SELECT
             p.*,

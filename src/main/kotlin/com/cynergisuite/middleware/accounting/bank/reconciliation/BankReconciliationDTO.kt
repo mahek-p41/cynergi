@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -26,7 +27,7 @@ data class BankReconciliationDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(description = "Type the bank reconciliation is associated with.")
-   var type: SimpleIdentifiableDTO? = null,
+   var type: BankReconciliationTypeDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "Transaction date")
@@ -48,11 +49,11 @@ data class BankReconciliationDTO(
    var document: Int? = null
 
 ) : Identifiable {
-   constructor(entity: BankReconciliationEntity) :
+   constructor(entity: BankReconciliationEntity, type: BankReconciliationTypeDTO) :
       this(
          id = entity.id,
          bank = SimpleIdentifiableDTO(entity.bank.myId()),
-         type = SimpleIdentifiableDTO(entity.type.myId()),
+         type = type,
          date = entity.date,
          clearedDate = entity.clearedDate,
          amount = entity.amount,

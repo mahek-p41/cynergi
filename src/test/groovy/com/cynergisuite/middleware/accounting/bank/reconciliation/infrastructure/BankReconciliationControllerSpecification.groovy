@@ -1,15 +1,20 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
-import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 import javax.inject.Inject
 import java.time.LocalDate
+
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class BankReconciliationControllerSpecification extends ControllerSpecificationBase {
@@ -17,16 +22,14 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
    @Inject AccountDataLoaderService accountDataLoaderService
    @Inject BankFactoryService bankFactoryService
    @Inject BankReconciliationDataLoaderService dataLoaderService
-   @Inject BankReconciliationTypeDataLoaderService bankReconciliationTypeDataLoaderService
 
    void "fetch one bank reconciliation by id" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final bank1 = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      final type = bankReconciliationTypeDataLoaderService.random()
-      final bankRecon = dataLoaderService.single(tstds1, bank1, type, LocalDate.now(), null)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), null)
 
       when:
       def result = get("$path/${bankRecon.id}")
@@ -36,17 +39,14 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
       with(result) {
          id == bankRecon.id
-         company == bankRecon.company
          bank.id == bankRecon.bank.id
 
          with(type) {
-            id == bankRecon.type.id
             value == bankRecon.type.value
             description == bankRecon.type.description
-            localizationCode == bankRecon.type.localizationCode
          }
 
-         date == bankRecon.date
+         date == bankRecon.date.toString()
          clearedDate == bankRecon.clearedDate
          amount == bankRecon.amount
          description == bankRecon.description
@@ -54,4 +54,349 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       }
    }
 
+   void "fetch one bank reconciliation by id not found" () {
+      when:
+      get("$path/0")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == '0 was unable to be found'
+   }
+
+   void "fetch all" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('tstds2'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final pageLast = new StandardPageRequest(3, 5, "id", "ASC")
+      final pageFour = new StandardPageRequest(4, 5, "id", "ASC")
+      final firstPageBankRecon = bankRecons[0..4]
+      final secondPageBankRecon = bankRecons[5..9]
+      final lastPageBankRecon = bankRecons[10,11]
+
+      when:
+      def pageOneResult = get("$path${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
+      pageOneResult.totalElements == 12
+      pageOneResult.totalPages == 3
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.eachWithIndex { it, index ->
+         with (it) {
+            id == firstPageBankRecon[index].id
+            bank.id == firstPageBankRecon[index].bank.id
+
+            with(type) {
+               value == firstPageBankRecon[index].type.value
+               description == firstPageBankRecon[index].type.description
+            }
+
+            date == firstPageBankRecon[index].date.toString()
+            clearedDate == firstPageBankRecon[index].clearedDate
+            amount == firstPageBankRecon[index].amount
+            description == firstPageBankRecon[index].description
+            document == firstPageBankRecon[index].document
+         }
+      }
+
+      when:
+      def pageTwoResult = get("$path${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new StandardPageRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 12
+      pageTwoResult.totalPages == 3
+      pageTwoResult.first == false
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == secondPageBankRecon[index].id
+            bank.id == secondPageBankRecon[index].bank.id
+
+            with(type) {
+               value == secondPageBankRecon[index].type.value
+               description == secondPageBankRecon[index].type.description
+            }
+
+            date == secondPageBankRecon[index].date.toString()
+            clearedDate == secondPageBankRecon[index].clearedDate
+            amount == secondPageBankRecon[index].amount
+            description == secondPageBankRecon[index].description
+            document == secondPageBankRecon[index].document
+         }
+      }
+      when:
+      def pageLastResult = get("$path${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new StandardPageRequest(it) } == pageLast
+      pageLastResult.totalElements == 12
+      pageLastResult.totalPages == 3
+      pageLastResult.first == false
+      pageLastResult.last == true
+      pageLastResult.elements.size() == 2
+      pageLastResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == lastPageBankRecon[index].id
+            bank.id == lastPageBankRecon[index].bank.id
+
+            with(type) {
+               value == lastPageBankRecon[index].type.value
+               description == lastPageBankRecon[index].type.description
+            }
+
+            date == lastPageBankRecon[index].date.toString()
+            clearedDate == lastPageBankRecon[index].clearedDate
+            amount == lastPageBankRecon[index].amount
+            description == lastPageBankRecon[index].description
+            document == lastPageBankRecon[index].document
+         }
+      }
+
+      when:
+      get("$path/${pageFour}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "create valid bank reconciliation"() {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+
+      when:
+      def result = post("$path/", bankRecon)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         bank.id == bankRecon.bank.id
+
+         with(type) {
+            value == bankRecon.type.value
+            description == bankRecon.type.description
+         }
+
+         date == bankRecon.date.toString()
+         clearedDate == bankRecon.clearedDate.toString()
+         amount == bankRecon.amount
+         description == bankRecon.description
+         document == bankRecon.document
+      }
+   }
+
+   void "create valid bank reconciliation with null clearedDate and document" () {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+      bankRecon.clearedDate = null
+      bankRecon.document = null
+
+      when:
+      def result = post("$path/", bankRecon)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         bank.id == bankRecon.bank.id
+
+         with(type) {
+            value == bankRecon.type.value
+            description == bankRecon.type.description
+         }
+
+         date == bankRecon.date.toString()
+         clearedDate == bankRecon.clearedDate
+         amount == bankRecon.amount
+         description == bankRecon.description
+         document == bankRecon.document
+      }
+   }
+
+   @Unroll
+   void "create invalid bank reconciliation without #nonNullableProp" () {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final def bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
+      bankRecon["$nonNullableProp"] = null
+
+      when:
+      post("$path/", bankRecon)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
+
+      where:
+      nonNullableProp || errorResponsePath
+      'amount'        || 'amount'
+      'bank'          || 'bank'
+      'date'          || 'date'
+      'description'   || 'description'
+      'type'          || 'type'
+   }
+
+   void "create invalid bank reconciliation with non-existing bank id" () {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
+      bankRecon.bank.id = 99
+
+      when:
+      post("$path/", bankRecon)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "bank.id"
+      response[0].message == "99 was unable to be found"
+   }
+
+   void "update valid bank reconciliation"() {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final existingBankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), LocalDate.now())
+      final updatedBankReconDTO = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+
+      when:
+      def result = put("$path/$existingBankRecon.id", updatedBankReconDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         bank.id == updatedBankReconDTO.bank.id
+
+         with(type) {
+            value == updatedBankReconDTO.type.value
+            description == updatedBankReconDTO.type.description
+         }
+
+         date == updatedBankReconDTO.date.toString()
+         clearedDate == updatedBankReconDTO.clearedDate.toString()
+         amount == updatedBankReconDTO.amount
+         description == updatedBankReconDTO.description
+         document == updatedBankReconDTO.document
+      }
+   }
+
+   void "update valid bank reconciliation with null clearedDate and document"() {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final existingBankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), LocalDate.now())
+      final updatedBankReconDTO = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+      updatedBankReconDTO.clearedDate = null
+      updatedBankReconDTO.document = null
+
+      when:
+      def result = put("$path/$existingBankRecon.id", updatedBankReconDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id > 0
+         bank.id == updatedBankReconDTO.bank.id
+
+         with(type) {
+            value == updatedBankReconDTO.type.value
+            description == updatedBankReconDTO.type.description
+         }
+
+         date == updatedBankReconDTO.date.toString()
+         clearedDate == updatedBankReconDTO.clearedDate
+         amount == updatedBankReconDTO.amount
+         description == updatedBankReconDTO.description
+         document == updatedBankReconDTO.document
+      }
+   }
+
+   void "update invalid bank reconciliation without non-nullable properties" () {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final existingBankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), LocalDate.now())
+      final updatedBankReconDTO = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+      updatedBankReconDTO.amount = null
+      updatedBankReconDTO.bank = null
+      updatedBankReconDTO.date = null
+      updatedBankReconDTO.description = null
+      updatedBankReconDTO.type = null
+
+      when:
+      put("$path/$existingBankRecon.id", updatedBankReconDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
+      response.size() == 5
+      response[0].path == 'amount'
+      response[1].path == 'bank'
+      response[2].path == 'date'
+      response[3].path == 'description'
+      response[4].path == 'type'
+      response.collect { it.message } as Set == ['Is required'] as Set
+   }
+
+   void "update invalid bank reconciliation with non-existing bank id" () {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final existingBankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), LocalDate.now())
+      final updatedBankReconDTO = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+      updatedBankReconDTO.bank.id = 99
+
+      when:
+      put("$path/$existingBankRecon.id", updatedBankReconDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "bank.id"
+      response[0].message == "99 was unable to be found"
+   }
 }

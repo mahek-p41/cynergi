@@ -86,7 +86,7 @@ class BankReconciliationController @Inject constructor(
          throw PageOutOfBoundsException(pageRequest)
       }
 
-      logger.debug("Listing of BankReconciliation Currency Codes resulted in {}", bankRecons)
+      logger.debug("Listing of Bank Reconciliations resulted in {}", bankRecons)
 
       return bankRecons
    }

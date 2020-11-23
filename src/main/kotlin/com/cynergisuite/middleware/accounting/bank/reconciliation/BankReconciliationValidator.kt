@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastru
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,14 +21,12 @@ class BankReconciliationValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(BankReconciliationValidator::class.java)
 
-   @Throws(ValidationException::class)
    fun validateCreate(dto: BankReconciliationDTO, company: Company): BankReconciliationEntity {
       logger.trace("Validating Save BankReconciliation {}", dto)
 
       return doValidation(dto = dto, company = company)
    }
 
-   @Throws(ValidationException::class)
    fun validateUpdate(id: Long, dto: BankReconciliationDTO, company: Company): BankReconciliationEntity {
       logger.trace("Validating Update BankReconciliation {}", dto)
 
@@ -40,24 +37,25 @@ class BankReconciliationValidator @Inject constructor(
 
    private fun doValidation(existingBankRecon: BankReconciliationEntity? = null, dto: BankReconciliationDTO, company: Company): BankReconciliationEntity {
       val bank = bankRepository.findOne(dto.bank!!.id!!, company)
-      val type = bankReconciliationTypeRepository.findOne(dto.type!!.id!!)
+      val type = bankReconciliationTypeRepository.findOne(dto.type!!.value)
 
       doValidation { errors ->
-         bank ?: errors.add(ValidationError("bank.id", NotFound(dto.bank!!.id!!)))
-         type ?: errors.add(ValidationError("type.id", NotFound(dto.type!!.id!!)))
+         bank
+            ?: errors.add(ValidationError("bank.id", NotFound(dto.bank!!.id!!)))
+
+         type
+            ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
       }
 
       return if (existingBankRecon != null) {
          BankReconciliationEntity(
             id = existingBankRecon.id,
-            company = company,
             dto = dto,
             bank = bank!!,
             type = type!!
          )
       } else {
          BankReconciliationEntity(
-            company = company,
             dto = dto,
             bank = bank!!,
             type = type!!
