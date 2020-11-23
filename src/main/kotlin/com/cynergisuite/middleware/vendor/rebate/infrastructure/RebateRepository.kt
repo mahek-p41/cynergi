@@ -50,6 +50,7 @@ class RebateRepository @Inject constructor(
             r.uu_row_id                                         AS r_uu_row_id,
             r.time_created                                      AS r_time_created,
             r.time_updated                                      AS r_time_updated,
+            r.company_id                                        AS r_comp_id,
             r.description                                       AS r_description,
             r.percent                                           AS r_percent,
             r.amount_per_unit                                   AS r_amount_per_unit,
@@ -239,8 +240,8 @@ class RebateRepository @Inject constructor(
    }
 
    fun findOne(id: Long, company: Company): RebateEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery()}\nWHERE r.id = :id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+      val query = "${selectBaseQuery()}\nWHERE r.id = :id AND r.company_id = :comp_id"
 
       logger.debug("Searching for Rebate using {} {}", query, params)
 
@@ -259,7 +260,7 @@ class RebateRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE vendor.comp_id = :comp_id
+            WHERE r.company_id = :comp_id
             ORDER BY r_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -319,7 +320,7 @@ class RebateRepository @Inject constructor(
             "amount_per_unit" to entity.amountPerUnit,
             "accrual_indicator" to entity.accrualIndicator,
             "general_ledger_debit_account_id" to entity.generalLedgerDebitAccount?.id,
-            "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount?.id
+            "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount.id
          ),
          RowMapper { rs, _ -> mapRowUpsert(rs, entity.vendor, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
       )
@@ -358,7 +359,7 @@ class RebateRepository @Inject constructor(
             "amount_per_unit" to entity.amountPerUnit,
             "accrual_indicator" to entity.accrualIndicator,
             "general_ledger_debit_account_id" to entity.generalLedgerDebitAccount?.id,
-            "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount?.id
+            "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount.id
          ),
          RowMapper { rs, _ -> mapRowUpsert(rs, entity.vendor, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
       )
@@ -374,12 +375,12 @@ class RebateRepository @Inject constructor(
          percent = rs.getBigDecimal("${columnPrefix}percent"),
          amountPerUnit = rs.getBigDecimal("${columnPrefix}amount_per_unit"),
          accrualIndicator = rs.getBoolean("${columnPrefix}accrual_indicator"),
-         generalLedgerDebitAccount = accountRepository.mapRow(rs, company, "glDebitAcct_", "glDebitAcct_"),
+         generalLedgerDebitAccount = accountRepository.mapRowOrNull(rs, company, "glDebitAcct_", "glDebitAcct_"),
          generalLedgerCreditAccount = accountRepository.mapRow(rs, company, "glCreditAcct_", "glCreditAcct_")
       )
    }
 
-   private fun mapRowUpsert(rs: ResultSet, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity?, columnPrefix: String = EMPTY): RebateEntity {
+   private fun mapRowUpsert(rs: ResultSet, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity, columnPrefix: String = EMPTY): RebateEntity {
       return RebateEntity(
          id = rs.getLong("${columnPrefix}id"),
          vendor = vendor,

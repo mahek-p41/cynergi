@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.AccountIsRequired
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.SelectPercentOrPerUnit
@@ -39,7 +40,6 @@ class RebateValidator @Inject constructor(
 
    private fun doSharedValidation(dto: RebateDTO, company: Company): RebateEntity {
       val generalLedgerDebitAccountId = dto.generalLedgerDebitAccount?.id
-      val generalLedgerCreditAccountId = dto.generalLedgerCreditAccount?.id
 
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val status = accountStatusTypeRepository.findOne(dto.status!!.value!!)
@@ -49,7 +49,7 @@ class RebateValidator @Inject constructor(
       val amountPerUnit = dto.amountPerUnit
       val accrualIndicator = dto.accrualIndicator
       val generalLedgerDebitAccount = dto.generalLedgerDebitAccount?.id?.let { accountRepository.findOne(it, company) }
-      val generalLedgerCreditAccount = dto.generalLedgerCreditAccount?.id?.let { accountRepository.findOne(it, company) }
+      val generalLedgerCreditAccount = dto.generalLedgerCreditAccount!!.id.let { accountRepository.findOne(it!!, company) }
 
       doValidation { errors ->
          vendor
@@ -72,16 +72,15 @@ class RebateValidator @Inject constructor(
             errors.add(ValidationError("percent, amountPerUnit", SelectPercentOrPerUnit(percent, amountPerUnit)))
          }
 
-         accrualIndicator
-            ?: errors.add(ValidationError("accrualIndicator", NotFound(dto.accrualIndicator!!)))
-
          if (generalLedgerDebitAccountId != null && generalLedgerDebitAccount == null) {
             errors.add(ValidationError("generalLedgerDebitAccount.id", NotFound(generalLedgerDebitAccountId)))
          }
-
-         if (generalLedgerCreditAccountId != null && generalLedgerCreditAccount == null) {
-            errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(generalLedgerCreditAccountId)))
+         if (accrualIndicator == true && generalLedgerDebitAccount == null) {
+            errors.add(ValidationError("generalLedgerDebitAccount", AccountIsRequired(generalLedgerDebitAccount)))
          }
+
+         generalLedgerCreditAccount
+            ?: errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(generalLedgerCreditAccount!!.id!!)))
       }
 
       return RebateEntity(
@@ -90,7 +89,7 @@ class RebateValidator @Inject constructor(
          status = status!!,
          rebate = rebate!!,
          generalLedgerDebitAccount = generalLedgerDebitAccount,
-         generalLedgerCreditAccount = generalLedgerCreditAccount
+         generalLedgerCreditAccount = generalLedgerCreditAccount!!
       )
    }
 }

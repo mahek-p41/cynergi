@@ -201,7 +201,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "create valid rebate with null general ledger debit account and general ledger credit account" () {
+   void "create valid rebate with null general ledger debit account" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
@@ -210,8 +210,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountDataLoaderService.single(company)
       final glCreditAcct = accountDataLoaderService.single(company)
       final rebateDTO = rebateDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor1), new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      rebateDTO.accrualIndicator = false
       rebateDTO.generalLedgerDebitAccount = null
-      rebateDTO.generalLedgerCreditAccount = null
 
       when:
       def result = post(path, rebateDTO)
@@ -242,9 +242,33 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
          amountPerUnit == rebateDTO.amountPerUnit
          accrualIndicator == rebateDTO.accrualIndicator
 
-         generalLedgerDebitAccount == null
-         generalLedgerCreditAccount == null
+         generalLedgerDebitAccount == rebateDTO.generalLedgerDebitAccount
+         generalLedgerCreditAccount.id == rebateDTO.generalLedgerCreditAccount.id
       }
+   }
+
+   void "create invalid rebate with null general ledger debit account" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendor1 = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final glDebitAcct = accountDataLoaderService.single(company)
+      final glCreditAcct = accountDataLoaderService.single(company)
+      final rebateDTO = rebateDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor1), new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      rebateDTO.accrualIndicator = true
+      rebateDTO.generalLedgerDebitAccount = null
+
+      when:
+      post(path, rebateDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'generalLedgerDebitAccount'
+      response[0].message == 'Account is required'
    }
 
    @Unroll
@@ -271,12 +295,13 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       response[0].message == 'Is required'
 
       where:
-      nonNullableProp            || errorResponsePath
-      'accrualIndicator'         || 'accrualIndicator'
-      'description'              || 'description'
-      'rebate'                   || 'rebate'
-      'status'                   || 'status'
-      'vendor'                   || 'vendor'
+      nonNullableProp              || errorResponsePath
+      'accrualIndicator'           || 'accrualIndicator'
+      'description'                || 'description'
+      'generalLedgerCreditAccount' || 'generalLedgerCreditAccount'
+      'rebate'                     || 'rebate'
+      'status'                     || 'status'
+      'vendor'                     || 'vendor'
    }
 
    void "create invalid rebate with percent greater than one" () {
@@ -419,7 +444,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "update valid rebate with null general ledger debit account and general ledger credit account" () {
+   void "update valid rebate with null general ledger debit account" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
@@ -429,8 +454,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glCreditAcct = accountDataLoaderService.single(company)
       def existingRebate = rebateDataLoaderService.single(company, vendor1, glDebitAcct, glCreditAcct)
       def updatedRebateDTO = rebateDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor1), new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      updatedRebateDTO.accrualIndicator = false
       updatedRebateDTO.generalLedgerDebitAccount = null
-      updatedRebateDTO.generalLedgerCreditAccount = null
 
       when:
       updatedRebateDTO.id = existingRebate.id
@@ -461,9 +486,35 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
          amountPerUnit == updatedRebateDTO.amountPerUnit
          accrualIndicator == updatedRebateDTO.accrualIndicator
 
-         generalLedgerDebitAccount == null
-         generalLedgerCreditAccount == null
+         generalLedgerDebitAccount == updatedRebateDTO.generalLedgerDebitAccount
+         generalLedgerCreditAccount.id == updatedRebateDTO.generalLedgerCreditAccount.id
       }
+   }
+
+   void "update invalid rebate with null general ledger debit account" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendor1 = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final glDebitAcct = accountDataLoaderService.single(company)
+      final glCreditAcct = accountDataLoaderService.single(company)
+      def existingRebate = rebateDataLoaderService.single(company, vendor1, glDebitAcct, glCreditAcct)
+      def updatedRebateDTO = rebateDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor1), new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      updatedRebateDTO.accrualIndicator = true
+      updatedRebateDTO.generalLedgerDebitAccount = null
+
+      when:
+      updatedRebateDTO.id = existingRebate.id
+      put("$path/${existingRebate.id}", updatedRebateDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'generalLedgerDebitAccount'
+      response[0].message == 'Account is required'
    }
 
    void "update invalid rebate without non-nullable properties" () {
@@ -481,6 +532,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       updatedRebateDTO.description = null
       updatedRebateDTO.rebate = null
       updatedRebateDTO.accrualIndicator = null
+      updatedRebateDTO.generalLedgerCreditAccount = null
 
       when:
       updatedRebateDTO.id = existingRebate.id
@@ -490,12 +542,13 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
-      response.size() == 5
+      response.size() == 6
       response[0].path == 'accrualIndicator'
       response[1].path == 'description'
-      response[2].path == 'rebate'
-      response[3].path == 'status'
-      response[4].path == 'vendor'
+      response[2].path == 'generalLedgerCreditAccount'
+      response[3].path == 'rebate'
+      response[4].path == 'status'
+      response[5].path == 'vendor'
       response.collect { it.message } as Set == ['Is required'] as Set
    }
 

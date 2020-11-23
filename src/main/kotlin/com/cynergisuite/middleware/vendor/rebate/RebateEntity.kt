@@ -15,10 +15,10 @@ data class RebateEntity(
    val amountPerUnit: BigDecimal?,
    val accrualIndicator: Boolean,
    val generalLedgerDebitAccount: AccountEntity?,
-   val generalLedgerCreditAccount: AccountEntity?
+   val generalLedgerCreditAccount: AccountEntity
 ) : Identifiable {
 
-   constructor(id: Long? = null, dto: RebateDTO, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity?) :
+   constructor(id: Long? = null, dto: RebateDTO, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity) :
       this(
          id = id ?: dto.myId(),
          vendor = vendor,
@@ -32,7 +32,7 @@ data class RebateEntity(
          generalLedgerCreditAccount = generalLedgerCreditAccount
       )
 
-   constructor(existingRebate: RebateEntity, dto: RebateDTO, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity?) :
+   constructor(existingRebate: RebateEntity, dto: RebateDTO, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity) :
       this(
          id = existingRebate.id,
          dto = dto,

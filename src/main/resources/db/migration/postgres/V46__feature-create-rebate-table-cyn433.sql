@@ -27,7 +27,7 @@ CREATE TABLE rebate
     amount_per_unit Numeric (11,2),
     accrual_indicator BOOLEAN DEFAULT FALSE                                     NOT NULL,
     general_ledger_debit_account_id BIGINT REFERENCES account(id),
-    general_ledger_credit_account_id BIGINT REFERENCES account(id)
+    general_ledger_credit_account_id BIGINT REFERENCES account(id)              NOT NULL
  );
 
 CREATE UNIQUE INDEX rebate_id_desc_uq ON rebate USING btree (vendor_id, (UPPER(description)));

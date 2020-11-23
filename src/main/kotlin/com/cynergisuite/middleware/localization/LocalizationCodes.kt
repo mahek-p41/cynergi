@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.localization
 
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.builder.ToStringBuilder
@@ -50,6 +51,7 @@ class AddressNeedsUpdated() : Cynergi("cynergi.validation.address.needs.updated"
 class InvalidPayToVendor(id: Long?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
 class ToDateBeforeFrom(to: LocalDate, from: LocalDate) : Cynergi("cynergi.validation.to.date.before.from", arrayOf(to, from))
 class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) : Cynergi("cynergi.validation.select.percent.or.per.unit", arrayOf(percent, amountPerUnit))
+class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

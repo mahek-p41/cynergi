@@ -54,12 +54,13 @@ data class RebateDTO(
    var accrualIndicator: Boolean? = null,
 
    @field:Valid
-   @field:Schema(name = "generalLedgerDebitAccount", description = "General ledger debit account", required = false)
+   @field:Schema(name = "generalLedgerDebitAccount", description = "General ledger debit account, must not be null if accrualIndicator is true", required = false)
    var generalLedgerDebitAccount: SimpleIdentifiableDTO?,
 
+   @field:NotNull
    @field:Valid
-   @field:Schema(name = "generalLedgerCreditAccount", description = "General ledger credit account", required = false)
-   var generalLedgerCreditAccount: SimpleIdentifiableDTO?
+   @field:Schema(name = "generalLedgerCreditAccount", description = "General ledger credit account")
+   var generalLedgerCreditAccount: SimpleIdentifiableDTO? = null
 
    ) : Identifiable {
 
@@ -74,7 +75,7 @@ data class RebateDTO(
          amountPerUnit = entity.amountPerUnit,
          accrualIndicator = entity.accrualIndicator,
          generalLedgerDebitAccount = entity.generalLedgerDebitAccount?.let { SimpleIdentifiableDTO(it) },
-         generalLedgerCreditAccount = entity.generalLedgerCreditAccount?.let { SimpleIdentifiableDTO(it) }
+         generalLedgerCreditAccount = SimpleIdentifiableDTO(entity.generalLedgerCreditAccount)
       )
 
    override fun myId(): Long? = id
