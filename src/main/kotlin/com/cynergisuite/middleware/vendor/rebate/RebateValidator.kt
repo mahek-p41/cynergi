@@ -4,9 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.SelectPercentOrPerUnit
@@ -27,14 +25,12 @@ class RebateValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(RebateValidator::class.java)
 
-   @Throws(ValidationException::class)
    fun validateCreate(dto: RebateDTO, company: Company): RebateEntity {
       logger.trace("Validating Create Rebate {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   @Throws(ValidationException::class, NotFoundException::class)
    fun validateUpdate(id: Long, dto: RebateDTO, company: Company): RebateEntity {
       logger.debug("Validating Update Rebate {}", dto)
 

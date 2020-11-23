@@ -597,11 +597,11 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
+      def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 2
-      response[0].path == "generalLedgerDebitAccount.id"
-      response[0].message == "generalLedgerDebitAccount.id must be greater than zero"
-      response[1].path == "generalLedgerCreditAccount.id"
-      response[1].message == "generalLedgerCreditAccount.id must be greater than zero"
+      response[0].path == "generalLedgerCreditAccount.id"
+      response[0].message == "generalLedgerCreditAccount.id must be greater than zero"
+      response[1].path == "generalLedgerDebitAccount.id"
+      response[1].message == "generalLedgerDebitAccount.id must be greater than zero"
    }
 }
