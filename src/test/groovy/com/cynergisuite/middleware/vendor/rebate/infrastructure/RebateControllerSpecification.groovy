@@ -53,7 +53,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
          description == rebateEntity.description
 
-         with(rebate) {
+         with(type) {
             value == rebateEntity.rebate.value
             description == rebateEntity.rebate.description
          }
@@ -61,7 +61,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
          percent == rebateEntity.percent
          amountPerUnit == rebateEntity.amountPerUnit
          accrualIndicator == rebateEntity.accrualIndicator
-         generalLedgerDebitAccount.id == rebateEntity.generalLedgerDebitAccount.id
+         if (generalLedgerDebitAccount != null) {
+            generalLedgerDebitAccount.id == rebateEntity.generalLedgerDebitAccount.id
+         }
          generalLedgerCreditAccount.id == rebateEntity.generalLedgerCreditAccount.id
       }
    }
@@ -104,7 +106,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
                description == firstPageRebate[index].description
 
-               with(rebate) {
+               with(type) {
                   value == firstPageRebate[index].rebate.value
                   description == firstPageRebate[index].rebate.description
                }
@@ -112,7 +114,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
                percent == firstPageRebate[index].percent
                amountPerUnit == firstPageRebate[index].amountPerUnit
                accrualIndicator == firstPageRebate[index].accrualIndicator
-               generalLedgerDebitAccount.id == firstPageRebate[index].generalLedgerDebitAccount.id
+               if (generalLedgerDebitAccount != null) {
+                  generalLedgerDebitAccount.id == firstPageRebate[index].generalLedgerDebitAccount.id
+               }
                generalLedgerCreditAccount.id == firstPageRebate[index].generalLedgerCreditAccount.id
             }
          }
@@ -142,7 +146,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
                description == lastPageRebate[index].description
 
-               with(rebate) {
+               with(type) {
                   value == lastPageRebate[index].rebate.value
                   description == lastPageRebate[index].rebate.description
                }
@@ -150,7 +154,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
                percent == lastPageRebate[index].percent
                amountPerUnit == lastPageRebate[index].amountPerUnit
                accrualIndicator == lastPageRebate[index].accrualIndicator
-               generalLedgerDebitAccount.id == lastPageRebate[index].generalLedgerDebitAccount.id
+               if (generalLedgerDebitAccount != null) {
+                  generalLedgerDebitAccount.id == lastPageRebate[index].generalLedgerDebitAccount.id
+               }
                generalLedgerCreditAccount.id == lastPageRebate[index].generalLedgerCreditAccount.id
             }
          }
@@ -187,16 +193,17 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
          description == rebateDTO.description
 
-         with(rebate) {
-            value == rebateDTO.rebate.value
-            description == rebateDTO.rebate.description
+         with(type) {
+            value == rebateDTO.type.value
+            description == rebateDTO.type.description
          }
 
          percent == rebateDTO.percent
          amountPerUnit == rebateDTO.amountPerUnit
          accrualIndicator == rebateDTO.accrualIndicator
-
-         generalLedgerDebitAccount.id == rebateDTO.generalLedgerDebitAccount.id
+         if (generalLedgerDebitAccount != null) {
+            generalLedgerDebitAccount.id == rebateDTO.generalLedgerDebitAccount.id
+         }
          generalLedgerCreditAccount.id == rebateDTO.generalLedgerCreditAccount.id
       }
    }
@@ -233,9 +240,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
          description == rebateDTO.description
 
-         with(rebate) {
-            value == rebateDTO.rebate.value
-            description == rebateDTO.rebate.description
+         with(type) {
+            value == rebateDTO.type.value
+            description == rebateDTO.type.description
          }
 
          percent == rebateDTO.percent
@@ -299,7 +306,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       'accrualIndicator'           || 'accrualIndicator'
       'description'                || 'description'
       'generalLedgerCreditAccount' || 'generalLedgerCreditAccount'
-      'rebate'                     || 'rebate'
+      'type'                       || 'type'
       'status'                     || 'status'
       'vendor'                     || 'vendor'
    }
@@ -431,15 +438,17 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
          description == updatedRebateDTO.description
 
-         with(rebate) {
-            value == updatedRebateDTO.rebate.value
-            description == updatedRebateDTO.rebate.description
+         with(type) {
+            value == updatedRebateDTO.type.value
+            description == updatedRebateDTO.type.description
          }
 
          percent == updatedRebateDTO.percent
          amountPerUnit == updatedRebateDTO.amountPerUnit
          accrualIndicator == updatedRebateDTO.accrualIndicator
-         generalLedgerDebitAccount.id == updatedRebateDTO.generalLedgerDebitAccount.id
+         if (generalLedgerDebitAccount != null) {
+            generalLedgerDebitAccount.id == updatedRebateDTO.generalLedgerDebitAccount.id
+         }
          generalLedgerCreditAccount.id == updatedRebateDTO.generalLedgerCreditAccount.id
       }
    }
@@ -477,9 +486,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
          description == updatedRebateDTO.description
 
-         with(rebate) {
-            value == updatedRebateDTO.rebate.value
-            description == updatedRebateDTO.rebate.description
+         with(type) {
+            value == updatedRebateDTO.type.value
+            description == updatedRebateDTO.type.description
          }
 
          percent == updatedRebateDTO.percent
@@ -530,7 +539,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       updatedRebateDTO.vendor = null
       updatedRebateDTO.status = null
       updatedRebateDTO.description = null
-      updatedRebateDTO.rebate = null
+      updatedRebateDTO.type = null
       updatedRebateDTO.accrualIndicator = null
       updatedRebateDTO.generalLedgerCreditAccount = null
 
@@ -546,8 +555,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       response[0].path == 'accrualIndicator'
       response[1].path == 'description'
       response[2].path == 'generalLedgerCreditAccount'
-      response[3].path == 'rebate'
-      response[4].path == 'status'
+      response[3].path == 'status'
+      response[4].path == 'type'
       response[5].path == 'vendor'
       response.collect { it.message } as Set == ['Is required'] as Set
    }

@@ -63,7 +63,7 @@ object RebateDataLoader {
             vendor = vendorIn,
             status = AccountStatusTypeValueObject(AccountStatusFactory.random()),
             description = lorem.words(2).toString(),
-            rebate = RebateTypeDTO(RebateTypeDataLoader.random()),
+            type = RebateTypeDTO(RebateTypeDataLoader.random()),
             percent = if (boolean) percent else null,
             amountPerUnit = if (!boolean) amountPerUnit else null,
             accrualIndicator = random.nextBoolean(),

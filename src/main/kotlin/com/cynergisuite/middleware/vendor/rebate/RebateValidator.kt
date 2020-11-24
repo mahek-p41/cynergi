@@ -44,7 +44,7 @@ class RebateValidator @Inject constructor(
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val status = accountStatusTypeRepository.findOne(dto.status!!.value!!)
       val description = dto.description
-      val rebate = rebateTypeRepository.findOne(dto.rebate!!.value)
+      val rebate = rebateTypeRepository.findOne(dto.type!!.value)
       val percent = dto.percent
       val amountPerUnit = dto.amountPerUnit
       val accrualIndicator = dto.accrualIndicator
@@ -62,7 +62,7 @@ class RebateValidator @Inject constructor(
             ?: errors.add(ValidationError("description", NotFound(dto.description!!)))
 
          rebate
-            ?: errors.add(ValidationError("rebate.value", NotFound(dto.rebate!!.value)))
+            ?: errors.add(ValidationError("rebate.value", NotFound(dto.type!!.value)))
 
          if ((percent != null) && (percent > BigDecimal.ONE)) {
             errors.add(ValidationError("percent", MustBeInRangeOf("(0, 1]")))

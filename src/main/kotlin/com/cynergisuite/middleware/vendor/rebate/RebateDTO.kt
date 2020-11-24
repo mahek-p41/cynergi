@@ -39,7 +39,7 @@ data class RebateDTO(
    @field:NotNull
    @field:Valid
    @field:Schema(name = "rebate", description = "Rebate type")
-   var rebate: RebateTypeDTO? = null,
+   var type: RebateTypeDTO? = null,
 
    @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "percent", description = "Percent", required = false)
@@ -70,7 +70,7 @@ data class RebateDTO(
          vendor = SimpleIdentifiableDTO(entity.vendor),
          status = AccountStatusTypeValueObject(entity.status),
          description = entity.description,
-         rebate = RebateTypeDTO(entity.rebate),
+         type = RebateTypeDTO(entity.rebate),
          percent = entity.percent,
          amountPerUnit = entity.amountPerUnit,
          accrualIndicator = entity.accrualIndicator,

@@ -234,7 +234,7 @@ class RebateRepository @Inject constructor(
             JOIN vendor                            ON r.vendor_id = vendor.v_id
             JOIN account_status_type_domain status ON r.status_type_id = status.id
             JOIN rebate_type_domain rebate         ON r.rebate_type_id = rebate.id
-            JOIN account glDebitAcct               ON r.general_ledger_debit_account_id = glDebitAcct.account_id
+            LEFT JOIN account glDebitAcct               ON r.general_ledger_debit_account_id = glDebitAcct.account_id
             JOIN account glCreditAcct              ON r.general_ledger_credit_account_id = glCreditAcct.account_id
       """
    }
