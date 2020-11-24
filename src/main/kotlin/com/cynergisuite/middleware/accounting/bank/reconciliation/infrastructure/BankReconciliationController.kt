@@ -51,7 +51,8 @@ class BankReconciliationController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @Valid @QueryValue("id") id: Long,
+      @Valid @QueryValue("id")
+      id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): BankReconciliationDTO {

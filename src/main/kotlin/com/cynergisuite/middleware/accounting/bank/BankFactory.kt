@@ -4,7 +4,6 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker

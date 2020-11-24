@@ -33,7 +33,7 @@ data class BankReconciliationDTO(
    @field:Schema(description = "Transaction date")
    var date: LocalDate? = null,
 
-   @field:Schema(required = false,description = "Cleared date")
+   @field:Schema(required = false, description = "Cleared date")
    var clearedDate: LocalDate? = null,
 
    @field:NotNull

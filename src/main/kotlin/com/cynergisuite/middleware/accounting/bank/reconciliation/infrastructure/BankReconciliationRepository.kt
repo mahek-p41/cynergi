@@ -87,12 +87,12 @@ class BankReconciliationRepository @Inject constructor(
          RowMapper { rs, _ ->
             mapRow(rs, company, "bankRecon_")
          }
-   )
+      )
 
-   logger.trace("Searching for BankReconciliation id {}: \nQuery {} \nResulted in {}", id, query, found)
+      logger.trace("Searching for BankReconciliation id {}: \nQuery {} \nResulted in {}", id, query, found)
 
-   return found
-}
+      return found
+   }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<BankReconciliationEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())

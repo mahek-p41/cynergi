@@ -62,7 +62,7 @@ data class RebateDTO(
    @field:Schema(name = "generalLedgerCreditAccount", description = "General ledger credit account")
    var generalLedgerCreditAccount: SimpleIdentifiableDTO? = null
 
-   ) : Identifiable {
+) : Identifiable {
 
    constructor(entity: RebateEntity) :
       this(

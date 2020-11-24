@@ -8,7 +8,6 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger

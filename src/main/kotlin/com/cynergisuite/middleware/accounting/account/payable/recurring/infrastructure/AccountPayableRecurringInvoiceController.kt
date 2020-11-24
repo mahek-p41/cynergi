@@ -1,13 +1,13 @@
-package com.cynergisuite.middleware.vendor.rebate.infrastructure
+package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDTO
+import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.vendor.rebate.RebateDTO
-import com.cynergisuite.middleware.vendor.rebate.RebateService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -33,21 +33,21 @@ import javax.inject.Inject
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/vendor/rebate")
-class RebateController @Inject constructor(
-   private val rebateService: RebateService,
+@Controller("/api/accounting/account-payable/recurring")
+class AccountPayableRecurringInvoiceController @Inject constructor(
+   private val accountPayableRecurringInvoiceService: AccountPayableRecurringInvoiceService,
    private val userService: UserService
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(RebateController::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(AccountPayableRecurringInvoiceController::class.java)
 
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["RebateEndpoints"], summary = "Fetch a single Rebate", description = "Fetch a single Rebate by it's system generated primary key", operationId = "rebate-fetchOne")
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a single Account Payable Recurring Invoice", description = "Fetch a single Account Payable Recurring Invoice by it's system generated primary key", operationId = "accountPayableRecurringInvoice-fetchOne")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RebateDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableRecurringInvoiceDTO::class))]),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Rebate was unable to be found"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Recurring Invoice was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
@@ -56,24 +56,24 @@ class RebateController @Inject constructor(
       id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): RebateDTO {
-      logger.info("Fetching Rebate by {}", id)
+   ): AccountPayableRecurringInvoiceDTO {
+      logger.info("Fetching Account Payable Recurring Invoice by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = rebateService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
+      val response = accountPayableRecurringInvoiceService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Rebate by {} resulted in", id, response)
+      logger.debug("Fetching Account Payable Recurring Invoice by {} resulted in", id, response)
 
       return response
    }
 
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["RebateEndpoints"], summary = "Fetch a listing of Rebates", description = "Fetch a paginated listing of Rebate", operationId = "rebate-fetchAll")
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a listing of Account Payable Recurring Invoices", description = "Fetch a paginated listing of Account Payable Recurring Invoice", operationId = "accountPayableRecurringInvoice-fetchAll")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-         ApiResponse(responseCode = "204", description = "The requested Rebate was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Recurring Invoice was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -84,11 +84,11 @@ class RebateController @Inject constructor(
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<RebateDTO> {
-      logger.info("Fetching all rebates {}", pageRequest)
+   ): Page<AccountPayableRecurringInvoiceDTO> {
+      logger.info("Fetching all Account Payable Recurring Invoices {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = rebateService.fetchAll(user.myCompany(), pageRequest)
+      val page = accountPayableRecurringInvoiceService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -99,59 +99,59 @@ class RebateController @Inject constructor(
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["RebateEndpoints"], summary = "Create a single Rebate", description = "Create a single Rebate", operationId = "rebate-create")
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Create a single Account Payable Recurring Invoice", description = "Create a single AccountPayableRecurringInvoice", operationId = "accountPayableRecurringInvoice-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RebateDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableRecurringInvoiceDTO::class))]),
          ApiResponse(responseCode = "400", description = "If the request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The rebate was unable to be found"),
+         ApiResponse(responseCode = "404", description = "The Account Payable Recurring Invoice was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun create(
       @Body @Valid
-      dto: RebateDTO,
+      dto: AccountPayableRecurringInvoiceDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): RebateDTO {
-      logger.debug("Requested Create Rebate {}", dto)
+   ): AccountPayableRecurringInvoiceDTO {
+      logger.debug("Requested Create Account Payable Recurring Invoice {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = rebateService.create(dto, user.myCompany())
+      val response = accountPayableRecurringInvoiceService.create(dto, user.myCompany())
 
-      logger.debug("Requested Create Rebate {} resulted in {}", dto, response)
+      logger.debug("Requested Create Account Payable Recurring Invoice {} resulted in {}", dto, response)
 
       return response
    }
 
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["RebateEndpoints"], summary = "Update a single Rebate", description = "Update a single Rebate", operationId = "rebate-update")
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Update a single Account Payable Recurring Invoice", description = "Update a single Account Payable Recurring Invoice", operationId = "accountPayableRecurringInvoice-update")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RebateDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableRecurringInvoiceDTO::class))]),
          ApiResponse(responseCode = "400", description = "If request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Rebate was unable to be found"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Recurring Invoice was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun update(
-      @Parameter(name = "id", `in` = PATH, description = "The id for the rebate being updated")
+      @Parameter(name = "id", `in` = PATH, description = "The id for the Account Payable Recurring Invoice being updated")
       @QueryValue("id")
       id: Long,
       @Body @Valid
-      dto: RebateDTO,
+      dto: AccountPayableRecurringInvoiceDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): RebateDTO {
-      logger.info("Requested Update Rebate {}", dto)
+   ): AccountPayableRecurringInvoiceDTO {
+      logger.info("Requested Update Account Payable Recurring Invoice {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = rebateService.update(id, dto, user.myCompany())
+      val response = accountPayableRecurringInvoiceService.update(id, dto, user.myCompany())
 
-      logger.debug("Requested Update Rebate {} resulted in {}", dto, response)
+      logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)
 
       return response
    }
