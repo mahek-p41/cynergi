@@ -49,7 +49,6 @@ class MustMatchPathVariable(value: Any?) : Cynergi("cynergi.validation.must.matc
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
 class AddressNeedsUpdated() : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
 class InvalidPayToVendor(id: Long?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
-class ToDateBeforeFrom(to: LocalDate, from: LocalDate) : Cynergi("cynergi.validation.to.date.before.from", arrayOf(to, from))
 class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) : Cynergi("cynergi.validation.select.percent.or.per.unit", arrayOf(percent, amountPerUnit))
 class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
 

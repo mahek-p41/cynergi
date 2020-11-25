@@ -6,12 +6,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.control.infrastruct
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
-import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Date
-import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -23,8 +18,6 @@ object GeneralLedgerControlDataLoader {
    @JvmStatic
    fun stream(
       numberIn: Int = 1,
-      periodFrom: LocalDate? = null,
-      periodTo: LocalDate? = null,
       defaultProfitCenter: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
@@ -36,17 +29,10 @@ object GeneralLedgerControlDataLoader {
       defaultAccountFreightAccount: AccountEntity
    ): Stream<GeneralLedgerControlEntity> {
       val number = if (numberIn > 0) numberIn else 1
-      val faker = Faker()
-      val date = faker.date()
-      val fromDate = if (periodFrom != null) Date.from(periodFrom.atStartOfDay(ZoneId.systemDefault()).toInstant()) else date.future(5, TimeUnit.DAYS)
-      val fromLocalDate = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-      val toLocalDate = periodTo ?: date.future(100, TimeUnit.DAYS, fromDate).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerControlEntity(
             id = Random.nextLong(),
-            periodFrom = fromLocalDate,
-            periodTo = toLocalDate,
             defaultProfitCenter = StoreEntity(defaultProfitCenter.myId(), defaultProfitCenter.myNumber(), defaultProfitCenter.myName(), defaultProfitCenter.myRegion(), defaultProfitCenter.myCompany()),
             defaultAccountPayableAccount = defaultAccountPayableAccount,
             defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
@@ -63,8 +49,6 @@ object GeneralLedgerControlDataLoader {
    @JvmStatic
    fun streamDTO(
       numberIn: Int = 1,
-      periodFrom: LocalDate? = null,
-      periodTo: LocalDate? = null,
       defaultProfitCenter: SimpleIdentifiableDTO,
       defaultAccountPayableAccount: SimpleIdentifiableDTO,
       defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO,
@@ -76,16 +60,9 @@ object GeneralLedgerControlDataLoader {
       defaultAccountFreightAccount: SimpleIdentifiableDTO
    ): Stream<GeneralLedgerControlDTO> {
       val number = if (numberIn > 0) numberIn else 1
-      val faker = Faker()
-      val date = faker.date()
-      val fromDate = if (periodFrom != null) Date.from(periodFrom.atStartOfDay(ZoneId.systemDefault()).toInstant()) else date.future(5, TimeUnit.DAYS)
-      val fromLocalDate = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-      val toLocalDate = periodTo ?: date.future(100, TimeUnit.DAYS, fromDate).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerControlDTO(
-            periodFrom = fromLocalDate,
-            periodTo = toLocalDate,
             defaultProfitCenter = defaultProfitCenter,
             defaultAccountPayableAccount = defaultAccountPayableAccount,
             defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
@@ -108,8 +85,6 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    fun stream(
       numberIn: Int = 1,
       company: Company,
-      periodFrom: LocalDate? = null,
-      periodTo: LocalDate? = null,
       store: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
@@ -122,8 +97,6 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    ): Stream<GeneralLedgerControlEntity> {
       return GeneralLedgerControlDataLoader.stream(
          numberIn,
-         periodFrom,
-         periodTo,
          store,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,
@@ -140,8 +113,6 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
 
    fun single(
       company: Company,
-      periodFrom: LocalDate? = null,
-      periodTo: LocalDate? = null,
       store: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
@@ -155,8 +126,6 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
       return stream(
          1,
          company,
-         periodFrom,
-         periodTo,
          store,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,
@@ -170,8 +139,6 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    }
 
    fun singleDTO(
-      periodFrom: LocalDate? = null,
-      periodTo: LocalDate? = null,
       defaultProfitCenter: SimpleIdentifiableDTO,
       defaultAccountPayableAccount: SimpleIdentifiableDTO,
       defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO,
@@ -184,8 +151,6 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    ): GeneralLedgerControlDTO {
       return GeneralLedgerControlDataLoader.streamDTO(
          1,
-         periodFrom,
-         periodTo,
          defaultProfitCenter,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,

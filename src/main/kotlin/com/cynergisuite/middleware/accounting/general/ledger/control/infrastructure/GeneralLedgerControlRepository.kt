@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -39,8 +38,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             glCtrl.time_created                                            AS glCtrl_time_created,
             glCtrl.time_updated                                            AS glCtrl_time_updated,
             glCtrl.company_id                                              AS glCtrl_company_id,
-            glCtrl.period_from                                             AS glCtrl_period_from,
-            glCtrl.period_to                                               AS glCtrl_period_to,
             glCtrl.default_profit_center_sfk                               AS glCtrl_default_profit_center_sfk,
             profitCenter.id                                                AS profitCenter_id,
             profitCenter.number                                            AS profitCenter_number,
@@ -331,8 +328,6 @@ class GeneralLedgerControlRepository @Inject constructor(
          """
          INSERT INTO general_ledger_control(
             company_id,
-            period_from,
-            period_to,
             default_profit_center_sfk,
             default_account_payable_account_id,
             default_account_payable_discount_account_id,
@@ -345,8 +340,6 @@ class GeneralLedgerControlRepository @Inject constructor(
          )
          VALUES (
             :company_id,
-            :period_from,
-            :period_to,
             :default_profit_center_sfk,
             :default_account_payable_account_id,
             :default_account_payable_discount_account_id,
@@ -362,8 +355,6 @@ class GeneralLedgerControlRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "company_id" to company.myId(),
-            "period_from" to entity.periodFrom,
-            "period_to" to entity.periodTo,
             "default_profit_center_sfk" to entity.defaultProfitCenter.myNumber(),
             "default_account_payable_account_id" to entity.defaultAccountPayableAccount?.id,
             "default_account_payable_discount_account_id" to entity.defaultAccountPayableDiscountAccount?.id,
@@ -400,8 +391,6 @@ class GeneralLedgerControlRepository @Inject constructor(
          UPDATE general_ledger_control
          SET
             company_id = :company_id,
-            period_from = :period_from,
-            period_to = :period_to,
             default_profit_center_sfk = :default_profit_center_sfk,
             default_account_payable_account_id = :default_account_payable_account_id,
             default_account_payable_discount_account_id = :default_account_payable_discount_account_id,
@@ -418,8 +407,6 @@ class GeneralLedgerControlRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "company_id" to company.myId(),
-            "period_from" to entity.periodFrom,
-            "period_to" to entity.periodTo,
             "default_profit_center_sfk" to entity.defaultProfitCenter.myNumber(),
             "default_account_payable_account_id" to entity.defaultAccountPayableAccount?.id,
             "default_account_payable_discount_account_id" to entity.defaultAccountPayableDiscountAccount?.id,
@@ -462,8 +449,6 @@ class GeneralLedgerControlRepository @Inject constructor(
    ): GeneralLedgerControlEntity {
       return GeneralLedgerControlEntity(
          id = rs.getLong("${columnPrefix}id"),
-         periodFrom = rs.getLocalDate("${columnPrefix}period_from"),
-         periodTo = rs.getLocalDate("${columnPrefix}period_to"),
          defaultProfitCenter = defaultProfitCenter,
          defaultAccountPayableAccount = defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
