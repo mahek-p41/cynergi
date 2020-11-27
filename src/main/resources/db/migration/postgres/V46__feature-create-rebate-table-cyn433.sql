@@ -18,6 +18,7 @@ CREATE TABLE rebate
     uu_row_id          UUID        DEFAULT uuid_generate_v1()                   NOT NULL,
     time_created       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
     time_updated       TIMESTAMPTZ DEFAULT clock_timestamp()                    NOT NULL,
+    company_id         BIGINT REFERENCES company (id)                           NOT NULL,
     vendor_id BIGINT REFERENCES vendor(id)                                      NOT NULL,
     status_type_id BIGINT REFERENCES account_status_type_domain(id)                     NOT NULL,
     description character varying(40) CHECK (char_length(trim(description)) > 1)   NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE rebate
     amount_per_unit Numeric (11,2),
     accrual_indicator BOOLEAN DEFAULT FALSE                                     NOT NULL,
     general_ledger_debit_account_id BIGINT REFERENCES account(id),
-    general_ledger_credit_account_id BIGINT REFERENCES account(id)
+    general_ledger_credit_account_id BIGINT REFERENCES account(id)              NOT NULL
  );
 
 CREATE UNIQUE INDEX rebate_id_desc_uq ON rebate USING btree (vendor_id, (UPPER(description)));
