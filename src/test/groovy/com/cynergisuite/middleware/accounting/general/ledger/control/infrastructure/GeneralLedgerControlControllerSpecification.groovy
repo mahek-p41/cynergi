@@ -9,12 +9,9 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
 import javax.inject.Inject
-import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static java.time.Month.FEBRUARY
-import static java.time.Month.JANUARY
 
 @MicronautTest(transactional = false)
 class GeneralLedgerControlControllerSpecification extends ControllerSpecificationBase {
@@ -37,8 +34,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.single(
          company,
-         null,
-         null,
          defProfitCenter,
          defAPAcct,
          defAPDiscAcct,
@@ -58,8 +53,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       with(result) {
          id == generalLedgerControl.id
-         periodFrom == generalLedgerControl.periodFrom.toString()
-         periodTo == generalLedgerControl.periodTo.toString()
          defaultProfitCenter.id == generalLedgerControl.defaultProfitCenter.id
          defaultAccountPayableAccount.id == generalLedgerControl.defaultAccountPayableAccount.id
          defaultAccountPayableDiscountAccount.id == generalLedgerControl.defaultAccountPayableDiscountAccount.id
@@ -97,8 +90,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -118,8 +109,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       with(result) {
          id > 0
-         periodFrom == generalLedgerControl.periodFrom.toString()
-         periodTo == generalLedgerControl.periodTo.toString()
          defaultProfitCenter.id == generalLedgerControl.defaultProfitCenter.id
          defaultAccountPayableAccount.id == generalLedgerControl.defaultAccountPayableAccount.id
          defaultAccountPayableDiscountAccount.id == generalLedgerControl.defaultAccountPayableDiscountAccount.id
@@ -145,8 +134,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -174,8 +161,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       with(result) {
          id > 0
-         periodFrom == generalLedgerControl.periodFrom.toString()
-         periodTo == generalLedgerControl.periodTo.toString()
          defaultProfitCenter.id == generalLedgerControl.defaultProfitCenter.id
          defaultAccountPayableAccount == null
          defaultAccountPayableDiscountAccount == null
@@ -209,8 +194,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.single(
          company,
-         null,
-         null,
          defProfitCenter,
          defAPAcct,
          defAPDiscAcct,
@@ -234,44 +217,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[0].message == "${company.myDataset()} already exists"
    }
 
-   void "create invalid general ledger control where periodTo is before periodFrom" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final defAPAcct = accountDataLoaderService.single(company)
-      final defAPDiscAcct = accountDataLoaderService.single(company)
-      final defARAcct = accountDataLoaderService.single(company)
-      final defARDiscAcct = accountDataLoaderService.single(company)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(company)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
-      final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         LocalDate.of(2000, FEBRUARY, 2),
-         LocalDate.of(2000, JANUARY, 2),
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-
-      when:
-      post("$path", generalLedgerControl)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "periodTo"
-      response[0].message == "To date of ${generalLedgerControl.periodTo} is before from date of ${generalLedgerControl.periodFrom}"
-   }
-
    @Unroll
    void "create invalid general ledger control without #nonNullableProp" () {
       given:
@@ -286,8 +231,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -313,8 +256,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       where:
       nonNullableProp                     || errorResponsePath
-      'periodFrom'                        || 'periodFrom'
-      'periodTo'                          || 'periodTo'
       'defaultProfitCenter'               || 'defaultProfitCenter'
    }
 
@@ -322,8 +263,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       given:
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(0),
          new SimpleIdentifiableDTO(0),
@@ -368,8 +307,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def existingGLControl = generalLedgerControlDataLoaderService.single(
          company,
-         null,
-         null,
          defProfitCenter,
          defAPAcct,
          defAPDiscAcct,
@@ -381,8 +318,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -403,8 +338,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       with(result) {
          id > 0
-         periodFrom == updatedGLControlDTO.periodFrom.toString()
-         periodTo == updatedGLControlDTO.periodTo.toString()
          defaultProfitCenter.id == updatedGLControlDTO.defaultProfitCenter.id
          defaultAccountPayableAccount.id == updatedGLControlDTO.defaultAccountPayableAccount.id
          defaultAccountPayableDiscountAccount.id == updatedGLControlDTO.defaultAccountPayableDiscountAccount.id
@@ -431,8 +364,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def existingGLControl = generalLedgerControlDataLoaderService.single(
          company,
-         null,
-         null,
          defProfitCenter,
          defAPAcct,
          defAPDiscAcct,
@@ -444,8 +375,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -474,8 +403,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       with(result) {
          id > 0
-         periodFrom == updatedGLControlDTO.periodFrom.toString()
-         periodTo == updatedGLControlDTO.periodTo.toString()
          defaultProfitCenter.id == updatedGLControlDTO.defaultProfitCenter.id
          defaultAccountPayableAccount == null
          defaultAccountPayableDiscountAccount == null
@@ -508,8 +435,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -548,8 +473,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctFreightAcct = accountDataLoaderService.single(tstds2)
       final def existingGLControl = generalLedgerControlDataLoaderService.single(
          tstds2,
-         null,
-         null,
          defProfitCenter,
          defAPAcct,
          defAPDiscAcct,
@@ -561,8 +484,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -593,61 +514,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response.message[8] == "${defAcctFreightAcct.myId()} was unable to be found"
    }
 
-   void "update invalid general ledger control with periodTo before periodFrom" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final defAPAcct = accountDataLoaderService.single(company)
-      final defAPDiscAcct = accountDataLoaderService.single(company)
-      final defARAcct = accountDataLoaderService.single(company)
-      final defARDiscAcct = accountDataLoaderService.single(company)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(company)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
-      final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def existingGLControl = generalLedgerControlDataLoaderService.single(
-         company,
-         null,
-         null,
-         defProfitCenter,
-         defAPAcct,
-         defAPDiscAcct,
-         defARAcct,
-         defARDiscAcct,
-         defAcctMiscInvAcct,
-         defAcctSerializedInvAcct,
-         defAcctUnbilledInvAcct,
-         defAcctFreightAcct
-      )
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-      updatedGLControlDTO.id = existingGLControl.id
-      updatedGLControlDTO.periodFrom = LocalDate.of(2000, FEBRUARY, 2)
-      updatedGLControlDTO.periodTo = LocalDate.of(2000, JANUARY, 2)
-
-      when:
-      put("$path", updatedGLControlDTO)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "periodTo"
-      response[0].message == "To date of ${updatedGLControlDTO.periodTo} is before from date of ${updatedGLControlDTO.periodFrom}"
-   }
-
    @Unroll
    void "update invalid general ledger control without #nonNullableProp" () {
       given:
@@ -662,8 +528,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -689,8 +553,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
       where:
       nonNullableProp                     || errorResponsePath
-      'periodFrom'                        || 'periodFrom'
-      'periodTo'                          || 'periodTo'
       'defaultProfitCenter'               || 'defaultProfitCenter'
    }
 
@@ -708,8 +570,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def existingGLControl = generalLedgerControlDataLoaderService.single(
          company,
-         null,
-         null,
          defProfitCenter,
          defAPAcct,
          defAPDiscAcct,
@@ -721,8 +581,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         null,
-         null,
          new SimpleIdentifiableDTO(0),
          new SimpleIdentifiableDTO(0),
          new SimpleIdentifiableDTO(0),
@@ -754,5 +612,4 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[8].path == "defaultAccountFreightAccount.id"
       response.collect { it.message } as Set == ['0 was unable to be found'] as Set
    }
-
 }

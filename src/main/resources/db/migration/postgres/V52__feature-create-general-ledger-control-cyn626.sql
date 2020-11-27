@@ -5,8 +5,6 @@ CREATE TABLE general_ledger_control
     time_created                                    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
     time_updated                                    TIMESTAMPTZ DEFAULT clock_timestamp()  NOT NULL,
     company_id                                      BIGINT REFERENCES company (id)         NOT NULL,
-    period_from                                     DATE                                   NOT NULL,
-    period_to                                       DATE                                   NOT NULL,
     default_profit_center_sfk                       INTEGER                                NOT NULL, --this is typically the home office location will be foreign key to store/home office
     default_account_payable_account_id              BIGINT REFERENCES account (id),
     default_account_payable_discount_account_id     BIGINT REFERENCES account (id),

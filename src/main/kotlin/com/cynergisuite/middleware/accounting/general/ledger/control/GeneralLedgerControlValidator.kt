@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.localization.ToDateBeforeFrom
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,8 +43,6 @@ class GeneralLedgerControlValidator @Inject constructor(
       company: Company,
       entity: GeneralLedgerControlEntity? = null
    ): GeneralLedgerControlEntity {
-      val periodFrom = dto.periodFrom!!
-      val periodTo = dto.periodTo!!
       val defaultProfitCenter = dto.defaultProfitCenter?.id?.let { storeRepository.findOne(it, company) }
       val defaultAccountPayableAccount = dto.defaultAccountPayableAccount?.id?.let { accountRepository.findOne(it, company) }
       val defaultAccountPayableDiscountAccount = dto.defaultAccountPayableDiscountAccount?.id?.let { accountRepository.findOne(it, company) }
@@ -59,10 +56,6 @@ class GeneralLedgerControlValidator @Inject constructor(
       doValidation { errors ->
          if (generalLedgerControlRepository.exists(company) && entity == null) { // tried to create a General Ledger Control record, but one already existed, basically they did a post when they should have done a put.
             errors.add(ValidationError("company", ConfigAlreadyExist(company.myDataset())))
-         }
-
-         if (periodTo.isBefore(periodFrom)) {
-            errors.add(ValidationError("periodTo", ToDateBeforeFrom(periodTo, periodFrom)))
          }
 
          // defaultProfitCenter is not nullable
