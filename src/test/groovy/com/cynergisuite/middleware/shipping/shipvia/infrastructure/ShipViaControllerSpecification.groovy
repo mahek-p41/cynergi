@@ -218,4 +218,42 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       def result = exception.response.bodyAsJson()
       new ErrorDTO(result.message, result.path) == new ErrorDTO(" was unable to be found", null)
    }
+
+   void "delete ship via" () {
+      given:
+      def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+
+      when:
+      delete( "$path/$shipVia.id", )
+
+      then: "ship via of for user's company is delete"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$shipVia.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$shipVia.id was unable to be found"
+   }
+
+   void "delete ship via from other company is not allowed" () {
+      given:
+      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      shipViaFactoryService.single(nineNineEightEmployee.company)
+      def shipVia = shipViaFactoryService.single(tstds2)
+
+      when:
+      delete( "$path/$shipVia.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$shipVia.id was unable to be found"
+   }
 }
