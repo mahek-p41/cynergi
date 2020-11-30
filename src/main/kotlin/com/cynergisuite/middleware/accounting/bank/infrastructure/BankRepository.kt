@@ -38,28 +38,28 @@ class BankRepository @Inject constructor(
             bank.name                                            AS bank_name,
             bank.number                                          AS bank_number,
             bank.company_id                                      AS comp_id,
-            account.account_id                                   AS account_id,
-            account.account_number                               AS account_number,
-            account.account_name                                 AS account_name,
-            account.account_form_1099_field                      AS account_form_1099_field,
-            account.account_corporate_account_indicator          AS account_corporate_account_indicator,
-            account.comp_id                                      AS account_comp_id,
-            account.type_id                                      AS account_type_id,
-            account.type_value                                   AS account_type_value,
-            account.type_description                             AS account_type_description,
-            account.type_localization_code                       AS account_type_localization_code,
-            account.balance_type_id                              AS account_balance_type_id,
-            account.balance_type_value                           AS account_balance_type_value,
-            account.balance_type_description                     AS account_balance_type_description,
-            account.balance_type_localization_code               AS account_balance_type_localization_code,
-            account.status_id                                    AS account_status_id,
-            account.status_value                                 AS account_status_value,
-            account.status_description                           AS account_status_description,
-            account.status_localization_code                     AS account_status_localization_code,
-            glProfitCenter.id                                    AS glProfitCenter_id,
-            glProfitCenter.number                                AS glProfitCenter_number,
-            glProfitCenter.name                                  AS glProfitCenter_name,
-            glProfitCenter.dataset                               AS glProfitCenter_dataset
+            account.account_id                                   AS bank_account_id,
+            account.account_number                               AS bank_account_number,
+            account.account_name                                 AS bank_account_name,
+            account.account_form_1099_field                      AS bank_account_form_1099_field,
+            account.account_corporate_account_indicator          AS bank_account_corporate_account_indicator,
+            account.comp_id                                      AS bank_account_comp_id,
+            account.type_id                                      AS bank_account_type_id,
+            account.type_value                                   AS bank_account_type_value,
+            account.type_description                             AS bank_account_type_description,
+            account.type_localization_code                       AS bank_account_type_localization_code,
+            account.balance_type_id                              AS bank_account_balance_type_id,
+            account.balance_type_value                           AS bank_account_balance_type_value,
+            account.balance_type_description                     AS bank_account_balance_type_description,
+            account.balance_type_localization_code               AS bank_account_balance_type_localization_code,
+            account.status_id                                    AS bank_account_status_id,
+            account.status_value                                 AS bank_account_status_value,
+            account.status_description                           AS bank_account_status_description,
+            account.status_localization_code                     AS bank_account_status_localization_code,
+            glProfitCenter.id                                    AS bank_glProfitCenter_id,
+            glProfitCenter.number                                AS bank_glProfitCenter_number,
+            glProfitCenter.name                                  AS bank_glProfitCenter_name,
+            glProfitCenter.dataset                               AS bank_glProfitCenter_dataset
          FROM bank
                JOIN company comp ON bank.company_id = comp.id
                JOIN fastinfo_prod_import.store_vw glProfitCenter
@@ -194,13 +194,13 @@ class BankRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, bankPrefix: String = EMPTY): BankEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "${bankPrefix}glProfitCenter_"),
-         generalLedgerAccount = accountRepository.mapRow(rs, company, "${bankPrefix}account_", "${bankPrefix}account_")
+         generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "${columnPrefix}glProfitCenter_"),
+         generalLedgerAccount = accountRepository.mapRow(rs, company, "${columnPrefix}account_", "${columnPrefix}account_")
       )
    }
 
