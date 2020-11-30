@@ -38,13 +38,13 @@ class AccountService @Inject constructor(
    fun create(dto: AccountDTO, company: Company, locale: Locale): AccountDTO {
       val toCreate = accountValidator.validateCreate(dto, company)
 
-      return transformEntity(accountRepository.insert(toCreate), locale)
+      return transformEntity(accountRepository.insert(toCreate, company), locale)
    }
 
    fun update(id: Long, dto: AccountDTO, company: Company, locale: Locale): AccountDTO {
       val toUpdate = accountValidator.validateUpdate(id, dto, company)
 
-      return transformEntity(accountRepository.update(toUpdate), locale)
+      return transformEntity(accountRepository.update(toUpdate, company), locale)
    }
 
    private fun transformEntity(accountEntity: AccountEntity, locale: Locale): AccountDTO {

@@ -51,7 +51,6 @@ class BankValidator @Inject constructor(
 
       return BankEntity(
          bankDTO = bankDTO,
-         company = company,
          store = generalProfitCenter!!,
          account = generalLedgerAccount!!
       )

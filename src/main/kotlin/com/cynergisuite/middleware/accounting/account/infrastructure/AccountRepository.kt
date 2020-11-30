@@ -14,7 +14,6 @@ import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceType
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -28,45 +27,19 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
-   private val companyRepository: CompanyRepository
+   private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountRepository::class.java)
 
    fun selectBaseQuery(): String {
       return """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             account.id                                   AS account_id,
             account.number                               AS account_number,
             account.name                                 AS account_name,
             account.form_1099_field                      AS account_form_1099_field,
             account.corporate_account_indicator          AS account_corporate_account_indicator,
-            comp.id                                      AS comp_id,
-            comp.uu_row_id                               AS comp_uu_row_id,
-            comp.time_created                            AS comp_time_created,
-            comp.time_updated                            AS comp_time_updated,
-            comp.name                                    AS comp_name,
-            comp.doing_business_as                       AS comp_doing_business_as,
-            comp.client_code                             AS comp_client_code,
-            comp.client_id                               AS comp_client_id,
-            comp.dataset_code                            AS comp_dataset_code,
-            comp.federal_id_number                       AS comp_federal_id_number,
-            comp.address_id                              AS comp_address_id,
-            comp.address_name                            AS address_name,
-            comp.address_address1                        AS address_address1,
-            comp.address_address2                        AS address_address2,
-            comp.address_city                            AS address_city,
-            comp.address_state                           AS address_state,
-            comp.address_postal_code                     AS address_postal_code,
-            comp.address_latitude                        AS address_latitude,
-            comp.address_longitude                       AS address_longitude,
-            comp.address_country                         AS address_country,
-            comp.address_county                          AS address_county,
-            comp.address_phone                           AS address_phone,
-            comp.address_fax                             AS address_fax,
+            account.company_id                           AS comp_id,
             type.id                                      AS type_id,
             type.value                                   AS type_value,
             type.description                             AS type_description,
@@ -207,7 +180,7 @@ class AccountRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(account: AccountEntity): AccountEntity {
+   fun insert(account: AccountEntity, company: Company): AccountEntity {
       logger.debug("Inserting bank {}", account)
 
       return jdbc.insertReturning(
@@ -219,7 +192,7 @@ class AccountRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "number" to account.number,
-            "company_id" to account.company.myId(),
+            "company_id" to company.myId(),
             "name" to account.name,
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
@@ -234,7 +207,7 @@ class AccountRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(account: AccountEntity): AccountEntity {
+   fun update(account: AccountEntity, company: Company): AccountEntity {
       logger.debug("Updating account {}", account)
 
       return jdbc.updateReturning(
@@ -256,7 +229,7 @@ class AccountRepository @Inject constructor(
          mapOf(
             "id" to account.id,
             "number" to account.number,
-            "company_id" to account.company.myId(),
+            "company_id" to company.myId(),
             "name" to account.name,
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
@@ -291,7 +264,6 @@ class AccountRepository @Inject constructor(
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
-         company = company,
          name = rs.getString("${columnPrefix}name"),
          type = mapAccountType(rs, "${typesPrefix}type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "${typesPrefix}balance_type_"),
@@ -312,7 +284,6 @@ class AccountRepository @Inject constructor(
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
-         company = account.company,
          name = rs.getString("${columnPrefix}name"),
          type = account.type,
          normalAccountBalance = account.normalAccountBalance,

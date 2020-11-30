@@ -28,7 +28,6 @@ object BankFactory {
       return IntStream.range(0, number).mapToObj {
          BankEntity(
             number = bankNumber.getAndIncrement(),
-            company = CompanyEntity.create(company)!!,
             name = faker.company().name(),
             generalLedgerProfitCenter = StoreEntity(store.myId(), store.myNumber(), store.myName(), store.myRegion(), store.myCompany()),
             generalLedgerAccount = accountEntity
@@ -60,7 +59,7 @@ class BankFactoryService @Inject constructor(
 
    fun stream(numberIn: Int = 1, company: Company, store: Store, account: AccountEntity): Stream<BankEntity> {
       return BankFactory.stream(numberIn, company, store, account).map {
-         bankRepository.insert(it)
+         bankRepository.insert(it, company)
       }
    }
 

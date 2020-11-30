@@ -25,7 +25,6 @@ object AccountDataLoader {
       return IntStream.range(0, number).mapToObj {
          AccountEntity(
             number = accountNumber.getAndIncrement(),
-            company = company,
             name = name ?: lorem.sentence(5, 3),
             type = AccountTypeFactory.random(),
             normalAccountBalance = NormalAccountBalanceFactory.random(),
@@ -64,7 +63,7 @@ class AccountDataLoaderService @Inject constructor(
 
    fun stream(numberIn: Int = 1, company: Company): Stream<AccountEntity> {
       return AccountDataLoader.stream(numberIn, company).map {
-         accountRepository.insert(it)
+         accountRepository.insert(it, company)
       }
    }
 
@@ -74,7 +73,7 @@ class AccountDataLoaderService @Inject constructor(
 
    fun single(company: Company, name: String? = null): AccountEntity {
       return AccountDataLoader.stream(1, company, name)
-         .map { accountRepository.insert(it) }
+         .map { accountRepository.insert(it, company) }
          .findFirst().orElseThrow { Exception("Unable to create Account") }
    }
 

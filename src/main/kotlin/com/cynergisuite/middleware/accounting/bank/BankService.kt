@@ -25,12 +25,12 @@ class BankService @Inject constructor(
    fun create(dto: BankDTO, company: Company): BankDTO {
       val toCreate = bankValidator.validateCreate(dto, company)
 
-      return BankDTO(bankRepository.insert(toCreate))
+      return BankDTO(bankRepository.insert(toCreate, company))
    }
 
    fun update(id: Long, dto: BankDTO, company: Company): BankDTO {
       val toUpdate = bankValidator.validateUpdate(id, dto, company)
 
-      return BankDTO(bankRepository.update(toUpdate))
+      return BankDTO(bankRepository.update(toUpdate, company))
    }
 }
