@@ -333,7 +333,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       sortedResponse[2].message == "Is required"
    }
 
-/*   void "update valid general ledger detail with non-existing account, profit center, source" () {
+   void "update valid general ledger detail with non-existing account, profit center, source" () {
       given:
       final company = nineNineEightEmployee.company
       final glAccount = accountDataLoaderService.single(company)
@@ -361,5 +361,5 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       sortedResponse[1].message == "0 was unable to be found"
       sortedResponse[2].path == "source.id"
       sortedResponse[2].message == "0 was unable to be found"
-   }*/
+   }
 }
