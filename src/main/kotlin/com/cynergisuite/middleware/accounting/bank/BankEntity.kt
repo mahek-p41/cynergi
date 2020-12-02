@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.Store
 
 data class BankEntity(
