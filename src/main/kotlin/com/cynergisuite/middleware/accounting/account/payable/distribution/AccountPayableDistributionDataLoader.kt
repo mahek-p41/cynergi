@@ -33,7 +33,7 @@ object AccountPayableDistributionDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          AccountPayableDistributionEntity(
-            name = name ?: lorem.words(1).toString().take(10),
+            name = name ?: lorem.words(2).joinToString(" ").take(10),
             profitCenter = StoreEntity(profitCenter.myId(), profitCenter.myNumber(), profitCenter.myName(), profitCenter.myRegion(), profitCenter.myCompany()),
             account = account,
             percent = Random.nextInt(1, 100).toBigDecimal().divide(BigDecimal(100)).setScale(7, RoundingMode.HALF_EVEN)
@@ -49,7 +49,7 @@ object AccountPayableDistributionDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          AccountPayableDistributionDTO(
-            name = name ?: lorem.words(1).toString().take(10),
+            name = name ?: lorem.words(2).joinToString(" ").take(10),
             profitCenter = profitCenter,
             account = account,
             percent = Random.nextInt(1, 100).toBigDecimal().divide(BigDecimal(100)).setScale(7, RoundingMode.HALF_EVEN)

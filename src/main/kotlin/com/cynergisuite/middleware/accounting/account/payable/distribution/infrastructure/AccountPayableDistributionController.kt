@@ -39,7 +39,7 @@ class AccountPayableDistributionController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableDistributionController::class.java)
 
-   @Get(produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch a single AccountPayableDistributionDTO", description = "Fetch a single AccountPayableDistributionDTO that is associated with the logged-in user's company", operationId = "accountPayableDistribution-fetchOne")
    @ApiResponses(
       value = [
@@ -117,7 +117,7 @@ class AccountPayableDistributionController @Inject constructor(
       return response
    }
 
-   @Put(processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Update an AccountPayableDistributionEntity", description = "Update an AccountPayableDistributionEntity from a body of AccountPayableDistributionDTO", operationId = "accountPayableDistribution-update")
    @ApiResponses(
