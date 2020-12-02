@@ -18,7 +18,7 @@ object GeneralLedgerSourceCodeDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          val description = faker.lorem().word()
-         val value = description.substring(0, 2).toUpperCase()
+         val value = faker.lorem().characters(3).toUpperCase()
          GeneralLedgerSourceCodeEntity(
             company = company,
             value = value,
@@ -36,7 +36,7 @@ object GeneralLedgerSourceCodeDataLoader {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val description = faker.lorem().word()
-      val value = description.substring(0, 2).toUpperCase()
+      val value = faker.lorem().characters(3).toUpperCase()
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerSourceCodeDTO(
