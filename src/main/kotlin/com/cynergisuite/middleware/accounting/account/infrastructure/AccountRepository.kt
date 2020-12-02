@@ -39,19 +39,19 @@ class AccountRepository @Inject constructor(
             account.name                                 AS account_name,
             account.form_1099_field                      AS account_form_1099_field,
             account.corporate_account_indicator          AS account_corporate_account_indicator,
-            account.company_id                           AS comp_id,
-            type.id                                      AS type_id,
-            type.value                                   AS type_value,
-            type.description                             AS type_description,
-            type.localization_code                       AS type_localization_code,
-            balance_type.id                              AS balance_type_id,
-            balance_type.value                           AS balance_type_value,
-            balance_type.description                     AS balance_type_description,
-            balance_type.localization_code               AS balance_type_localization_code,
-            status.id                                    AS status_id,
-            status.value                                 AS status_value,
-            status.description                           AS status_description,
-            status.localization_code                     AS status_localization_code
+            account.company_id                           AS account_comp_id,
+            type.id                                      AS account_type_id,
+            type.value                                   AS account_type_value,
+            type.description                             AS account_type_description,
+            type.localization_code                       AS account_type_localization_code,
+            balance_type.id                              AS account_balance_type_id,
+            balance_type.value                           AS account_balance_type_value,
+            balance_type.description                     AS account_balance_type_description,
+            balance_type.localization_code               AS account_balance_type_localization_code,
+            status.id                                    AS account_status_id,
+            status.value                                 AS account_status_value,
+            status.description                           AS account_status_description,
+            status.localization_code                     AS account_status_localization_code
          FROM account
                JOIN company comp
                      ON comp.id = account.company_id
@@ -260,22 +260,22 @@ class AccountRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, typesPrefix: String = EMPTY): AccountEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         type = mapAccountType(rs, "${typesPrefix}type_"),
-         normalAccountBalance = mapNormalAccountBalanceType(rs, "${typesPrefix}balance_type_"),
-         status = mapAccountStatusType(rs, "${typesPrefix}status_"),
+         type = mapAccountType(rs, "${columnPrefix}type_"),
+         normalAccountBalance = mapNormalAccountBalanceType(rs, "${columnPrefix}balance_type_"),
+         status = mapAccountStatusType(rs, "${columnPrefix}status_"),
          form1099Field = rs.getIntOrNull("${columnPrefix}form_1099_field"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, typesPrefix: String = EMPTY): AccountEntity? =
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, company, columnPrefix, typesPrefix)
+         mapRow(rs, company, columnPrefix)
       } else {
          null
       }

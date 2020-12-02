@@ -66,37 +66,37 @@ class AccountPayableControlRepository @Inject constructor(
             glInvCleAcct.account_number                              AS glInvCleAcct_number,
             glInvCleAcct.account_form_1099_field                     AS glInvCleAcct_form_1099_field,
             glInvCleAcct.account_corporate_account_indicator         AS glInvCleAcct_corporate_account_indicator,
-            glInvCleAcct.comp_id                                     AS glInvCleAcct_comp_id,
-            glInvCleAcct.type_id                                     AS glInvCleAcct_type_id,
-            glInvCleAcct.type_value                                  AS glInvCleAcct_type_value,
-            glInvCleAcct.type_description                            AS glInvCleAcct_type_description,
-            glInvCleAcct.type_localization_code                      AS glInvCleAcct_type_localization_code,
-            glInvCleAcct.balance_type_id                             AS glInvCleAcct_balance_type_id,
-            glInvCleAcct.balance_type_value                          AS glInvCleAcct_balance_type_value,
-            glInvCleAcct.balance_type_description                    AS glInvCleAcct_balance_type_description,
-            glInvCleAcct.balance_type_localization_code              AS glInvCleAcct_balance_type_localization_code,
-            glInvCleAcct.status_id                                   AS glInvCleAcct_status_id,
-            glInvCleAcct.status_value                                AS glInvCleAcct_status_value,
-            glInvCleAcct.status_description                          AS glInvCleAcct_status_description,
-            glInvCleAcct.status_localization_code                    AS glInvCleAcct_status_localization_code,
+            glInvCleAcct.account_comp_id                             AS glInvCleAcct_comp_id,
+            glInvCleAcct.account_type_id                             AS glInvCleAcct_type_id,
+            glInvCleAcct.account_type_value                          AS glInvCleAcct_type_value,
+            glInvCleAcct.account_type_description                    AS glInvCleAcct_type_description,
+            glInvCleAcct.account_type_localization_code              AS glInvCleAcct_type_localization_code,
+            glInvCleAcct.account_balance_type_id                     AS glInvCleAcct_balance_type_id,
+            glInvCleAcct.account_balance_type_value                  AS glInvCleAcct_balance_type_value,
+            glInvCleAcct.account_balance_type_description            AS glInvCleAcct_balance_type_description,
+            glInvCleAcct.account_balance_type_localization_code      AS glInvCleAcct_balance_type_localization_code,
+            glInvCleAcct.account_status_id                           AS glInvCleAcct_status_id,
+            glInvCleAcct.account_status_value                        AS glInvCleAcct_status_value,
+            glInvCleAcct.account_status_description                  AS glInvCleAcct_status_description,
+            glInvCleAcct.account_status_localization_code            AS glInvCleAcct_status_localization_code,
             glInvAcct.account_id                                     AS glInvAcct_id,
             glInvAcct.account_number                                 AS glInvAcct_number,
             glInvAcct.account_name                                   AS glInvAcct_name,
             glInvAcct.account_form_1099_field                        AS glInvAcct_form_1099_field,
             glInvAcct.account_corporate_account_indicator            AS glInvAcct_corporate_account_indicator,
-            glInvAcct.comp_id                                        AS glInvAcct_comp_id,
-            glInvAcct.type_id                                        AS glInvAcct_type_id,
-            glInvAcct.type_value                                     AS glInvAcct_type_value,
-            glInvAcct.type_description                               AS glInvAcct_type_description,
-            glInvAcct.type_localization_code                         AS glInvAcct_type_localization_code,
-            glInvAcct.balance_type_id                                AS glInvAcct_balance_type_id,
-            glInvAcct.balance_type_value                             AS glInvAcct_balance_type_value,
-            glInvAcct.balance_type_description                       AS glInvAcct_balance_type_description,
-            glInvAcct.balance_type_localization_code                 AS glInvAcct_balance_type_localization_code,
-            glInvAcct.status_id                                      AS glInvAcct_status_id,
-            glInvAcct.status_value                                   AS glInvAcct_status_value,
-            glInvAcct.status_description                             AS glInvAcct_status_description,
-            glInvAcct.status_localization_code                       AS glInvAcct_status_localization_code
+            glInvAcct.account_comp_id                                AS glInvAcct_comp_id,
+            glInvAcct.account_type_id                                AS glInvAcct_type_id,
+            glInvAcct.account_type_value                             AS glInvAcct_type_value,
+            glInvAcct.account_type_description                       AS glInvAcct_type_description,
+            glInvAcct.account_type_localization_code                 AS glInvAcct_type_localization_code,
+            glInvAcct.account_balance_type_id                        AS glInvAcct_balance_type_id,
+            glInvAcct.account_balance_type_value                     AS glInvAcct_balance_type_value,
+            glInvAcct.account_balance_type_description               AS glInvAcct_balance_type_description,
+            glInvAcct.account_balance_type_localization_code         AS glInvAcct_balance_type_localization_code,
+            glInvAcct.account_status_id                              AS glInvAcct_status_id,
+            glInvAcct.account_status_value                           AS glInvAcct_status_value,
+            glInvAcct.account_status_description                     AS glInvAcct_status_description,
+            glInvAcct.account_status_localization_code               AS glInvAcct_status_localization_code
          FROM account_payable_control accountPayableControl
             JOIN account_payable_check_form_type_domain checkFormType ON accountPayableControl.check_form_type_id = checkFormType.id
             JOIN print_currency_indicator_type_domain printCurrencyIndType ON accountPayableControl.print_currency_indicator_type_id = printCurrencyIndType.id
@@ -123,8 +123,8 @@ class AccountPayableControlRepository @Inject constructor(
             val checkFormType = accountPayableCheckFormTypeRepository.mapRow(rs, "checkFormType_")
             val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.mapRow(rs, "printCurrencyIndType_")
             val purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorTypeRepository.mapRow(rs, "poNumReqIndType_")
-            val generalLedgerInventoryClearingAccount = accountRepository.mapRow(rs, company, "glInvCleAcct_", "glInvCleAcct_")
-            val generalLedgerInventoryAccount = accountRepository.mapRow(rs, company, "glInvAcct_", "glInvCleAcct_")
+            val generalLedgerInventoryClearingAccount = accountRepository.mapRow(rs, company, "glInvCleAcct_")
+            val generalLedgerInventoryAccount = accountRepository.mapRow(rs, company, "glInvAcct_")
 
             mapRow(
                rs,

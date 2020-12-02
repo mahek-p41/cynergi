@@ -51,19 +51,19 @@ class GeneralLedgerDetailRepository @Inject constructor(
             acct.account_name                                         AS acct_name,
             acct.account_form_1099_field                              AS acct_form_1099_field,
             acct.account_corporate_account_indicator                  AS acct_corporate_account_indicator,
-            acct.comp_id                                              AS acct_comp_id,
-            acct.type_id                                              AS acct_type_id,
-            acct.type_value                                           AS acct_type_value,
-            acct.type_description                                     AS acct_type_description,
-            acct.type_localization_code                               AS acct_type_localization_code,
-            acct.balance_type_id                                      AS acct_balance_type_id,
-            acct.balance_type_value                                   AS acct_balance_type_value,
-            acct.balance_type_description                             AS acct_balance_type_description,
-            acct.balance_type_localization_code                       AS acct_balance_type_localization_code,
-            acct.status_id                                            AS acct_status_id,
-            acct.status_value                                         AS acct_status_value,
-            acct.status_description                                   AS acct_status_description,
-            acct.status_localization_code                             AS acct_status_localization_code,
+            acct.account_comp_id                                      AS acct_comp_id,
+            acct.account_type_id                                      AS acct_type_id,
+            acct.account_type_value                                   AS acct_type_value,
+            acct.account_type_description                             AS acct_type_description,
+            acct.account_type_localization_code                       AS acct_type_localization_code,
+            acct.account_balance_type_id                              AS acct_balance_type_id,
+            acct.account_balance_type_value                           AS acct_balance_type_value,
+            acct.account_balance_type_description                     AS acct_balance_type_description,
+            acct.account_balance_type_localization_code               AS acct_balance_type_localization_code,
+            acct.account_status_id                                    AS acct_status_id,
+            acct.account_status_value                                 AS acct_status_value,
+            acct.account_status_description                           AS acct_status_description,
+            acct.account_status_localization_code                     AS acct_status_localization_code,
             profitCenter.id                                           AS profitCenter_id,
             profitCenter.number                                       AS profitCenter_number,
             profitCenter.name                                         AS profitCenter_name,
@@ -96,7 +96,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val found = jdbc.findFirstOrNull(
          query, params,
          RowMapper { rs, _ ->
-            val account = accountRepository.mapRow(rs, company, "acct_", "acct_")
+            val account = accountRepository.mapRow(rs, company, "acct_")
             val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
             val sourceCode = sourceCodeRepository.mapDdlRow(rs, company, "source_")
 
