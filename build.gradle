@@ -9,7 +9,7 @@ plugins {
    id "jacoco"
    id "application"
    id "groovy"
-   id "org.flywaydb.flyway" version "${flywayVersion}"
+   id "org.flywaydb.flyway" version "7.3.0"
    id "org.openapi.generator" version "4.3.0"
    id "org.jmailen.kotlinter" version "2.4.1"
 }

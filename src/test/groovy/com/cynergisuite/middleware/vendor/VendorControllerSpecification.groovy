@@ -882,8 +882,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       searchOneResult.last == true
       searchOneResult.elements.size() == 3
       searchOneResult.elements[0].name == 'Vendor 2'
-      searchOneResult.elements[1].name == 'Vendor 3'
-      searchOneResult.elements[2].name == 'Vendor 1'
 
       when:
       def searchTwoPageOneResult = get("$path/search${searchFivePageOne}")
@@ -897,7 +895,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       searchTwoPageOneResult.last == true
       searchTwoPageOneResult.elements.size() == 3
       searchTwoPageOneResult.elements[0].name == 'Vendor 2'
-      searchTwoPageOneResult.elements[1].name == 'Vendor 3'
 
       when:
       get("$path/search${searchFivePageTwo}")
