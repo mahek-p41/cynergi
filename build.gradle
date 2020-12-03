@@ -53,16 +53,7 @@ sourceSets {
 dependencies {
    implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
    implementation "io.micronaut.sql:micronaut-jdbc-tomcat"
-   implementation ("io.micronaut.flyway:micronaut-flyway") {
-      version {
-         strictly("2.0.1")
-      }
-   }
-   implementation("org.flywaydb:flyway-core") {
-      version {
-         strictly("${flywayVersion}")
-      }
-   }
+   implementation "io.micronaut.flyway:micronaut-flyway"
    implementation "io.micronaut.sql:micronaut-vertx-pg-client"
    implementation "io.micronaut:micronaut-http-server-netty"
    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
