@@ -25,7 +25,7 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
 
       doValidation { errors -> doCreateValidation(errors, dto, company) }
 
-      return GeneralLedgerSourceCodeEntity(dto = dto)
+      return GeneralLedgerSourceCodeEntity(dto)
    }
 
    @Throws(ValidationException::class, NotFoundException::class)

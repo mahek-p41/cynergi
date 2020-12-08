@@ -71,8 +71,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
    void "create one" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = GeneralLedgerSourceCodeDataLoader.single(tstds1)
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
 
       when:
       def result = post(path, glSourceCode)
@@ -87,7 +86,6 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
    void "create invalid source code with null value" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
       glSourceCode.value = null
 
