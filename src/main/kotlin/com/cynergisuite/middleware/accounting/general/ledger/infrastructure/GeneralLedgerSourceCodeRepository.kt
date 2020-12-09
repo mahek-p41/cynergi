@@ -25,15 +25,14 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeRepository::class.java)
    private fun selectBaseQuery() =
       """
-         SELECT
-            glSrcCodes.id               AS glSrcCodes_id,
-            glSrcCodes.company_id       AS glSrcCodes_comp_id,
-            glSrcCodes.value            AS glSrcCodes_value,
-            glSrcCodes.description      AS glSrcCodes_description,
-            glSrcCodes.company_id       AS glSrcCodes_comp_id,
-            count(*) OVER()             AS total_elements
-         FROM general_ledger_source_codes glSrcCodes
-      """
+      SELECT
+         glSrcCodes.id               AS glSrcCodes_id,
+         glSrcCodes.company_id       AS glSrcCodes_company_id,
+         glSrcCodes.value            AS glSrcCodes_value,
+         glSrcCodes.description      AS glSrcCodes_description,
+         count(*) OVER()             AS total_elements
+      FROM general_ledger_source_codes glSrcCodes
+   """
 
    fun exists(value: String, company: Company): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.myId()), Boolean::class.java)!!
@@ -49,11 +48,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
 
       logger.debug("Searching for GeneralLedgerSourceCode using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
-         val generalLedgerSourceCode = mapRow(rs)
-
-         generalLedgerSourceCode
-      }
+      val found = jdbc.findFirstOrNull(query, params) { rs -> mapRow(rs, "glSrcCodes_") }
 
       logger.trace("Searching for GeneralLedgerSourceCode: {} resulted in {}", id, found)
 
@@ -76,7 +71,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          pageRequest
       ) { rs, elements ->
          do {
-            elements.add(mapRow(rs))
+            elements.add(mapRow(rs, "glSrcCodes_"))
          } while (rs.next())
       }
    }
@@ -101,7 +96,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             "value" to entity.value,
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapDdlRow(rs) }
+         RowMapper { rs, _ -> mapRow(rs) }
       )
    }
 
@@ -126,7 +121,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             "value" to entity.value,
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapDdlRow(rs) }
+         RowMapper { rs, _ -> mapRow(rs) }
       )
 
       logger.debug("Updated GeneralLedgerSourceCode {}", updated)
@@ -134,15 +129,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       return updated
    }
 
-   private fun mapRow(rs: ResultSet): GeneralLedgerSourceCodeEntity {
-      return GeneralLedgerSourceCodeEntity(
-         id = rs.getLong("glSrcCodes_id"),
-         value = rs.getString("glSrcCodes_value"),
-         description = rs.getString("glSrcCodes_description")
-      )
-   }
-
-   fun mapDdlRow(rs: ResultSet, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {
       return GeneralLedgerSourceCodeEntity(
          id = rs.getLong("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
