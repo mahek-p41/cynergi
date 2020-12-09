@@ -18,9 +18,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
    private static final String path = "/vendor/payment/term"
 
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
-   @Inject VendorPaymentTermService vendorPaymentTermService
    @Inject VendorPaymentTermRepository vendorPaymentTermRepository
-   @Inject VendorPaymentTermScheduleRepository vendorPaymentTermScheduleRepository
 
    void "fetch one vendor payment term by id"() {
       given:

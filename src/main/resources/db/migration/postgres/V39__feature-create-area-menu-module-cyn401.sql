@@ -9,11 +9,11 @@ CREATE TABLE area_type_domain
 );
 
 INSERT INTO area_type_domain (id, value, description, localization_code)
-VALUES (1, 'AP', 'ACCOUNT PAYABLE', 'account.payable'),
-       (2, 'BR', 'BANK RECONCILIATION', 'bank.reconciliation'),
-       (3, 'GL', 'GENERAL LEDGER', 'general.ledger'),
-       (4, 'PO', 'PURCHASE ORDER', 'purchase.order'),
-       (5, 'MCF', 'MASTER CONTROL FILES', 'master.control.files');
+VALUES (1, 'AP', 'Account Payable', 'account.payable'),
+       (2, 'BR', 'Bank Reconciliation', 'bank.reconciliation'),
+       (3, 'GL', 'General Ledger', 'general.ledger'),
+       (4, 'PO', 'Purchase Order', 'purchase.order'),
+       (5, 'MCF', 'Master Control Files', 'master.control.files');
 
 CREATE TABLE menu_type_domain
 (
@@ -52,22 +52,22 @@ VALUES (1, null, 'ACCOUNTS_PAYABLE', 'Account Payable', 'account.payable', (SELE
        (20, null, 'PO_MAINTENANCE', 'PO', 'purchase.order.maintenance', (SELECT id FROM area_type_domain WHERE value = 'PO'), 1),
        (21, null, 'PO_REPORTS', 'PO Reports', 'purchase.order.reports', (SELECT id FROM area_type_domain WHERE value = 'PO'), 2),
        (22, 21, 'PO_REPORT_EXPORT', 'PO Report (w/Export)', 'po.report.(w/Export)', (SELECT id FROM area_type_domain WHERE value = 'PO'), 3),
-       (23, 21, 'STOCK_REORDER', 'STOCK REORDER REPORT', 'stock.reorder.report', (SELECT id FROM area_type_domain WHERE value = 'PO'), 4),
-       (24, 21, 'RECEIVER_REPORT', 'RECEIVER REPORT', 'receiver.report', (SELECT id FROM area_type_domain WHERE value = 'PO'), 5),
-       (25, 21, 'RECEIVING_WORKSHEET', 'RECEIVING WORKSHEET', 'receiving.worksheet', (SELECT id FROM area_type_domain WHERE value = 'PO'), 6),
-       (26, 21, 'SPECIAL_ORDERS', 'SPECIAL ORDERS', 'special.orders', (SELECT id FROM area_type_domain WHERE value = 'PO'), 7),
+       (23, 21, 'STOCK_REORDER', 'Stock Reorder Report', 'stock.reorder.report', (SELECT id FROM area_type_domain WHERE value = 'PO'), 4),
+       (24, 21, 'RECEIVER_REPORT', 'Receiver Report', 'receiver.report', (SELECT id FROM area_type_domain WHERE value = 'PO'), 5),
+       (25, 21, 'RECEIVING_WORKSHEET', 'Receiving Worksheet', 'receiving.worksheet', (SELECT id FROM area_type_domain WHERE value = 'PO'), 6),
+       (26, 21, 'SPECIAL_ORDERS', 'Special Orders', 'special.orders', (SELECT id FROM area_type_domain WHERE value = 'PO'), 7),
 
-       (28, null, 'HOME_OFFICE', 'HOME OFFICE', 'home.office', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 1),
+       (28, null, 'HOME_OFFICE', 'Home Office', 'home.office', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 1),
        (29, 28, 'BANK', 'Bank', 'bank.maintenance', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 2),
        (30, 28, 'CHART_OF_ACCOUNT', 'Chart of Account', 'chart.of.account', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 3),
        (31, 28, 'DISTRIBUTION_TEMPLATE_MAINTENANCE', 'Distribution Template', 'distribution.template.maintenance', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 4),
        (32, 28, 'FINANCIAL_STATEMENT', 'Financial Statement', 'financial.statement', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 5),
-       (33, 28, 'GL_SOURCE_CODE', 'GL SOURCE CODE', 'gl.source.code', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 6),
+       (33, 28, 'GL_SOURCE_CODE', 'GL Source Code', 'gl.source.code', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 6),
        (34, 28, 'SHIPVIA', 'Ship Via', 'ship.via.maintenance', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 7),
        (35, 28, 'VENDOR', 'Vendor', 'vendor.maintenance', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 8),
        (36, 28, 'VENDOR_GROUP', 'Vendor Group', 'vendor.group', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 9),
 
-       (37, null, 'RESTRICTED_MASTER_CONTROL_FILES', 'RESTRICTED MASTER CONTROL FILES', 'restricted.master.control.files', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 10),
+       (37, null, 'RESTRICTED_MASTER_CONTROL_FILES', 'Restricted Master Control Files', 'restricted.master.control.files', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 10),
        (38, 37, 'COMPANY', 'Company', 'company.maintenance', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 11),
        (39, 28, 'VENDOR_TERM_CODE', 'Vendor Term Code', 'vendor.term.code', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 12),
        (40, 37, 'AP_CONTROL', 'AP Control', 'account.payable.control', (SELECT id FROM area_type_domain WHERE value = 'MCF'), 13),

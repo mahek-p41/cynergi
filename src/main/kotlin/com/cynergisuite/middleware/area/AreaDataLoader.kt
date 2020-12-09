@@ -10,31 +10,31 @@ object AreaDataLoader {
       AreaType(
          id = 1,
          value = "AP",
-         description = "ACCOUNT PAYABLE",
+         description = "Account Payable",
          localizationCode = "account.payable.area.and.functionality"
       ),
       AreaType(
          id = 2,
          value = "BR",
-         description = "BANK RECONCILIATION",
+         description = "Bank Reconciliation",
          localizationCode = "bank.reconciliation.area.and.functionality"
       ),
       AreaType(
          id = 3,
          value = "GL",
-         description = "GENERAL LEDGER",
+         description = "General Ledger",
          localizationCode = "general.ledger.area.and.functionality"
       ),
       AreaType(
          id = 4,
          value = "PO",
-         description = "PURCHASE ORDER",
+         description = "Purchase Order",
          localizationCode = "purchase.order.and.requisition.area.and.functionality"
       ),
       AreaType(
          id = 5,
          value = "MCF",
-         description = "MASTER CONTROL FILES",
+         description = "Master Control Files",
          localizationCode = "master.control.files"
       )
    )
