@@ -8,7 +8,6 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,47 +20,20 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerSourceCodeRepository @Inject constructor(
-   private val companyRepository: CompanyRepository,
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeRepository::class.java)
    private fun selectBaseQuery() =
       """
-      WITH company AS (
-         ${companyRepository.companyBaseQuery()}
-      )
-      SELECT
-         glSrcCodes.id               AS glSrcCodes_id,
-         glSrcCodes.company_id       AS glSrcCodes_company_id,
-         glSrcCodes.value            AS glSrcCodes_value,
-         glSrcCodes.description      AS glSrcCodes_description,
-         comp.id                     AS comp_id,
-         comp.uu_row_id              AS comp_uu_row_id,
-         comp.time_created           AS comp_time_created,
-         comp.time_updated           AS comp_time_updated,
-         comp.name                   AS comp_name,
-         comp.doing_business_as      AS comp_doing_business_as,
-         comp.client_code            AS comp_client_code,
-         comp.client_id              AS comp_client_id,
-         comp.dataset_code           AS comp_dataset_code,
-         comp.federal_id_number      AS comp_federal_id_number,
-         comp.address_id             AS address_id,
-         comp.address_name           AS address_name,
-         comp.address_address1       AS address_address1,
-         comp.address_address2       AS address_address2,
-         comp.address_city           AS address_city,
-         comp.address_state          AS address_state,
-         comp.address_postal_code    AS address_postal_code,
-         comp.address_latitude       AS address_latitude,
-         comp.address_longitude      AS address_longitude,
-         comp.address_country        AS address_country,
-         comp.address_county         AS address_county,
-         comp.address_phone          AS address_phone,
-         comp.address_fax            AS address_fax,
-         count(*) OVER()             AS total_elements
-      FROM general_ledger_source_codes glSrcCodes
-         JOIN company comp ON glSrcCodes.company_id = comp.id
-   """
+         SELECT
+            glSrcCodes.id               AS glSrcCodes_id,
+            glSrcCodes.company_id       AS glSrcCodes_comp_id,
+            glSrcCodes.value            AS glSrcCodes_value,
+            glSrcCodes.description      AS glSrcCodes_description,
+            glSrcCodes.company_id       AS glSrcCodes_comp_id,
+            count(*) OVER()             AS total_elements
+         FROM general_ledger_source_codes glSrcCodes
+      """
 
    fun exists(value: String, company: Company): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.myId()), Boolean::class.java)!!
@@ -73,14 +45,14 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): GeneralLedgerSourceCodeEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id"
 
       logger.debug("Searching for GeneralLedgerSourceCode using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
-         val GeneralLedgerSourceCode = mapRow(rs)
+         val generalLedgerSourceCode = mapRow(rs)
 
-         GeneralLedgerSourceCode
+         generalLedgerSourceCode
       }
 
       logger.trace("Searching for GeneralLedgerSourceCode: {} resulted in {}", id, found)
@@ -92,7 +64,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
-         WHERE comp.id = :comp_id
+         WHERE glSrcCodes.company_id = :comp_id
          ORDER BY glSrcCodes.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -129,12 +101,12 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             "value" to entity.value,
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapDdlRow(rs, company) }
+         RowMapper { rs, _ -> mapDdlRow(rs) }
       )
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerSourceCodeEntity): GeneralLedgerSourceCodeEntity {
+   fun update(entity: GeneralLedgerSourceCodeEntity, company: Company): GeneralLedgerSourceCodeEntity {
       logger.debug("Updating GeneralLedgerSourceCode {}", entity)
 
       val updated = jdbc.updateReturning(
@@ -150,11 +122,11 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "companyId" to entity.company.myId(),
+            "companyId" to company.myId(),
             "value" to entity.value,
             "description" to entity.description
          ),
-         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
+         RowMapper { rs, _ -> mapDdlRow(rs) }
       )
 
       logger.debug("Updated GeneralLedgerSourceCode {}", updated)
@@ -165,16 +137,14 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    private fun mapRow(rs: ResultSet): GeneralLedgerSourceCodeEntity {
       return GeneralLedgerSourceCodeEntity(
          id = rs.getLong("glSrcCodes_id"),
-         company = companyRepository.mapRow(rs, "comp_"),
          value = rs.getString("glSrcCodes_value"),
          description = rs.getString("glSrcCodes_description")
       )
    }
 
-   fun mapDdlRow(rs: ResultSet, company: Company, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {
+   fun mapDdlRow(rs: ResultSet, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {
       return GeneralLedgerSourceCodeEntity(
          id = rs.getLong("${columnPrefix}id"),
-         company = company,
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description")
       )

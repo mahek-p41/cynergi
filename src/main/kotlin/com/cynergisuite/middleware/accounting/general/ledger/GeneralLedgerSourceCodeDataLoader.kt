@@ -19,11 +19,7 @@ object GeneralLedgerSourceCodeDataLoader {
       return IntStream.range(0, number).mapToObj {
          val description = faker.lorem().word()
          val value = faker.lorem().characters(3).toUpperCase()
-         GeneralLedgerSourceCodeEntity(
-            company = company,
-            value = value,
-            description = description
-         )
+         GeneralLedgerSourceCodeEntity(value = value, description = description)
       }
    }
 
@@ -39,10 +35,7 @@ object GeneralLedgerSourceCodeDataLoader {
       val value = faker.lorem().characters(3).toUpperCase()
 
       return IntStream.range(0, number).mapToObj {
-         GeneralLedgerSourceCodeDTO(
-            value = value,
-            description = description
-         )
+         GeneralLedgerSourceCodeDTO(value = value, description = description)
       }
    }
 
@@ -59,9 +52,6 @@ class GeneralLedgerSourceCodeDataLoaderService @Inject constructor(
 
    fun stream(numberIn: Int = 1, company: Company): Stream<GeneralLedgerSourceCodeEntity> {
       return GeneralLedgerSourceCodeDataLoader.stream(numberIn, company)
-         .filter {
-            it.company.myDataset() == company.myDataset()
-         }
          .map { repository.insert(it, company) }
    }
 

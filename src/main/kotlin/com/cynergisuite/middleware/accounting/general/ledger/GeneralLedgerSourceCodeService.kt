@@ -36,7 +36,7 @@ class GeneralLedgerSourceCodeService @Inject constructor(
       val toUpdate = generalLedgerSourceCodeValidator.validateUpdate(id, dto, company)
 
       return GeneralLedgerSourceCodeDTO(
-         entity = generalLedgerSourceCodeRepository.update(entity = toUpdate)
+         entity = generalLedgerSourceCodeRepository.update(entity = toUpdate, company = company)
       )
    }
 }
