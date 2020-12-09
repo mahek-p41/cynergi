@@ -44,9 +44,6 @@ class AccountPayableDistributionValidator @Inject constructor(
          account
             ?: errors.add(ValidationError("account.id", NotFound(dto.account!!.id!!)))
 
-         percent
-            ?: errors.add(ValidationError("percent.id", NotFound(dto.percent!!)))
-
          if ((percent != null) && (percent > BigDecimal.ONE)) {
             errors.add(ValidationError("percent", MustBeInRangeOf("(0, 1]")))
          }
