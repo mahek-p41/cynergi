@@ -39,7 +39,7 @@ CREATE TABLE general_ledger_summary
     net_activity_period_12                          NUMERIC(13,2),
     beginning_balance                               NUMERIC(13,2),
     closing_balance                                 NUMERIC(13,2),
-    UNIQUE (company_id, account_id, profit_center_id_sfk)
+    UNIQUE (company_id, account_id, profit_center_id_sfk,overall_period_id)
  );
 CREATE TRIGGER general_ledger_summary_trg
     BEFORE UPDATE
@@ -61,4 +61,3 @@ which row in the calendar table to reference current, last year , prior to last 
 
 COMMENT ON TABLE  general_ledger_summary IS 'Aggregate Table holds the net activity values for the general ledger entries for the different periods defined in
  the financial_calendar as well as beginning and closing balances.';
-
