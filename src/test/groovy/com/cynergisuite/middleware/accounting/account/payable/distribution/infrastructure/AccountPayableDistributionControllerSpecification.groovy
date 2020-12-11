@@ -12,6 +12,7 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
@@ -89,7 +90,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
             percent == firstPageAccount[index].percent
          }
       }
-/*
+
       when:
       def pageTwoResult = get("$path${pageTwo}")
 
@@ -110,6 +111,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
          }
 
       }
+
       when:
       def pageLastResult = get("$path${pageLast}")
 
@@ -135,7 +137,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
       then:
       final def notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NO_CONTENT*/
+      notFoundException.status == NO_CONTENT
    }
 
    void "create valid account payable distribution"() {

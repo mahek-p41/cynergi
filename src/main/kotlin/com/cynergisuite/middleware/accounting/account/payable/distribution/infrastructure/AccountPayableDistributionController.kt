@@ -39,6 +39,7 @@ class AccountPayableDistributionController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableDistributionController::class.java)
 
+   @Throws(NotFoundException::class)
    @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch a single AccountPayableDistributionDTO", description = "Fetch a single AccountPayableDistributionDTO that is associated with the logged-in user's company", operationId = "accountPayableDistribution-fetchOne")
    @ApiResponses(
@@ -65,6 +66,7 @@ class AccountPayableDistributionController @Inject constructor(
       return response
    }
 
+   @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch a list of account payable distributions", description = "Fetch a listing of account payable distributions", operationId = "accountPayableDistribution-fetchAll")
    @ApiResponses(
       value = [
@@ -73,8 +75,7 @@ class AccountPayableDistributionController @Inject constructor(
    )
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("pageRequest")
+      @Valid @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
