@@ -46,7 +46,7 @@ data class GeneralLedgerJournalDTO(
          account = SimpleIdentifiableDTO(entity.account.id),
          profitCenter = SimpleIdentifiableDTO(entity.profitCenter.myId()),
          date = entity.date,
-         source = GeneralLedgerSourceCodeDTO(entity.source.id),
+         source = GeneralLedgerSourceCodeDTO(entity.source),
          amount = entity.amount,
          message = entity.message
       )

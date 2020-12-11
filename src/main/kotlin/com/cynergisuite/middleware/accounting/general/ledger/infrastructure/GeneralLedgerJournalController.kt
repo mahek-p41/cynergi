@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -78,8 +79,7 @@ class GeneralLedgerJournalController @Inject constructor(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("pageRequest")
+      @Valid @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>

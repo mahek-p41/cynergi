@@ -185,7 +185,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "companyId" to company.myId(),
+            "company_id" to company.myId(),
             "account_id" to entity.account.id,
             "profit_center_id_sfk" to entity.profitCenter.myId(),
             "date" to entity.date,

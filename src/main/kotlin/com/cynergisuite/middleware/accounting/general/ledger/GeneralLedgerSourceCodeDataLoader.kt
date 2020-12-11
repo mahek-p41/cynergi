@@ -41,7 +41,7 @@ object GeneralLedgerSourceCodeDataLoader {
 
    @JvmStatic
    fun singleDTO(): GeneralLedgerSourceCodeDTO =
-      streamDTO(1).findFirst().orElseThrow { Exception("Unable to create AccountPayableControl") }
+      streamDTO(1).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerSourceCode") }
 }
 
 @Singleton
