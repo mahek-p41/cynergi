@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.GeneralLedgerRecurringRepository
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.Company
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
+package com.cynergisuite.middleware.accounting.routine.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
+import com.cynergisuite.middleware.accounting.routine.RoutineDTO
+import com.cynergisuite.middleware.accounting.routine.RoutineService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -21,7 +21,7 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -33,21 +33,21 @@ import javax.inject.Inject
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/general-ledger/journal")
-class GeneralLedgerJournalController @Inject constructor(
-   private val generalLedgerJournalService: GeneralLedgerJournalService,
+@Controller("/api/accounting/routine")
+class RoutineController @Inject constructor(
+   private val routineService: RoutineService,
    private val userService: UserService
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalController::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(RoutineController::class.java)
 
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a single GeneralLedgerJournal", description = "Fetch a single GeneralLedgerJournal by its system generated primary key", operationId = "generalLedgerJournal-fetchOne")
+   @Operation(tags = ["RoutineEndpoints"], summary = "Fetch a single Routine", description = "Fetch a single Routine by it's system generated primary key", operationId = "routine-fetchOne")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerJournalDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerJournal was unable to be found"),
+         ApiResponse(responseCode = "404", description = "The requested Routine was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
@@ -56,38 +56,39 @@ class GeneralLedgerJournalController @Inject constructor(
       id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): GeneralLedgerJournalDTO {
-      logger.info("Fetching GeneralLedgerJournal by {}", id)
+   ): RoutineDTO {
+      logger.info("Fetching Routine by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = generalLedgerJournalService.fetchOne(id, user.myCompany()) ?: throw NotFoundException(id)
+      val response = routineService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching GeneralLedgerJournal by {} resulted in", id, response)
+      logger.debug("Fetching Routine by {} resulted in", id, response)
 
       return response
    }
 
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a listing of GeneralLedgerJournals", description = "Fetch a paginated listing of GeneralLedgerJournals", operationId = "generalLedgerJournal-fetchAll")
+   @Operation(tags = ["RoutineEndpoints"], summary = "Fetch a listing of Routines", description = "Fetch a paginated listing of Routine", operationId = "routine-fetchAll")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-         ApiResponse(responseCode = "204", description = "The requested GeneralLedgerJournal was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "204", description = "The requested Routine was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun fetchAll(
-      @Valid @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Page<GeneralLedgerJournalDTO> {
-      logger.info("Fetching all GeneralLedgerJournals {}", pageRequest)
+   ): Page<RoutineDTO> {
+      logger.info("Fetching all Routines {}", pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = generalLedgerJournalService.fetchAll(user.myCompany(), pageRequest)
+      val page = routineService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -98,58 +99,59 @@ class GeneralLedgerJournalController @Inject constructor(
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Create a single GeneralLedgerJournal", description = "Create a single GeneralLedgerJournal", operationId = "generalLedgerJournal-create")
+   @Operation(tags = ["RoutineEndpoints"], summary = "Create a single Routine", description = "Create a single Routine", operationId = "routine-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerJournalDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
          ApiResponse(responseCode = "400", description = "If the request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The GeneralLedgerJournal was unable to be found"),
+         ApiResponse(responseCode = "404", description = "The Routine was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun create(
       @Body @Valid
-      dto: GeneralLedgerJournalDTO,
+      dto: RoutineDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): GeneralLedgerJournalDTO {
-      logger.debug("Requested Create GeneralLedgerJournal {}", dto)
+   ): RoutineDTO {
+      logger.debug("Requested Create Routine {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = generalLedgerJournalService.create(dto, user.myCompany())
+      val response = routineService.create(dto, user.myCompany())
 
-      logger.debug("Requested Create GeneralLedgerJournal {} resulted in {}", dto, response)
+      logger.debug("Requested Create Routine {} resulted in {}", dto, response)
 
       return response
    }
 
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Update a single GeneralLedgerJournal", description = "Update a single GeneralLedgerJournal", operationId = "generalLedgerJournal-update")
+   @Operation(tags = ["RoutineEndpoints"], summary = "Update a single Routine", description = "Update a single Routine", operationId = "routine-update")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerJournalDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
          ApiResponse(responseCode = "400", description = "If request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerJournal was unable to be found"),
+         ApiResponse(responseCode = "404", description = "The requested Routine was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun update(
-      @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the GeneralLedgerJournal being updated") @QueryValue("id")
+      @Parameter(name = "id", `in` = PATH, description = "The id for the Routine being updated")
+      @QueryValue("id")
       id: Long,
       @Body @Valid
-      dto: GeneralLedgerJournalDTO,
+      dto: RoutineDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): GeneralLedgerJournalDTO {
-      logger.info("Requested Update GeneralLedgerJournal {}", dto)
+   ): RoutineDTO {
+      logger.info("Requested Update Routine {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = generalLedgerJournalService.update(dto, user.myCompany())
+      val response = routineService.update(id, dto, user.myCompany())
 
-      logger.debug("Requested Update GeneralLedgerJournal {} resulted in {}", dto, response)
+      logger.debug("Requested Update Routine {} resulted in {}", dto, response)
 
       return response
    }
