@@ -12,20 +12,19 @@ import javax.inject.Singleton
 object GeneralLedgerSourceCodeDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, company: Company): Stream<GeneralLedgerSourceCodeEntity> {
+   fun stream(numberIn: Int = 1): Stream<GeneralLedgerSourceCodeEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
 
       return IntStream.range(0, number).mapToObj {
          val description = faker.lorem().word()
          val value = faker.lorem().characters(3).toUpperCase()
-         GeneralLedgerSourceCodeEntity(value = value, description = description)
+         GeneralLedgerSourceCodeEntity(
+            value = value,
+            description = description
+         )
       }
    }
-
-   @JvmStatic
-   fun single(company: Company): GeneralLedgerSourceCodeEntity =
-      stream(1, company).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerSourceCodeEntity") }
 
    @JvmStatic
    fun streamDTO(numberIn: Int = 1): Stream<GeneralLedgerSourceCodeDTO> {
@@ -51,7 +50,7 @@ class GeneralLedgerSourceCodeDataLoaderService @Inject constructor(
 ) {
 
    fun stream(numberIn: Int = 1, company: Company): Stream<GeneralLedgerSourceCodeEntity> {
-      return GeneralLedgerSourceCodeDataLoader.stream(numberIn, company)
+      return GeneralLedgerSourceCodeDataLoader.stream(numberIn)
          .map { repository.insert(it, company) }
    }
 
