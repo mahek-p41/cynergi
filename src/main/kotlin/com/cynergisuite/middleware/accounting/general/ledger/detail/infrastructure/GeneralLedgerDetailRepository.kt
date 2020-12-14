@@ -98,7 +98,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          RowMapper { rs, _ ->
             val account = accountRepository.mapRow(rs, company, "acct_")
             val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
-            val sourceCode = sourceCodeRepository.mapDdlRow(rs, company, "source_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
 
             mapRow(
                rs,
