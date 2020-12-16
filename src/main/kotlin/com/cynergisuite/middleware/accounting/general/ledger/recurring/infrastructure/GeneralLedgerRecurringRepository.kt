@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -11,7 +11,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringType
-import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringTypeRepository
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger

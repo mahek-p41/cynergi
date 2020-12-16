@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
-import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.Company
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires

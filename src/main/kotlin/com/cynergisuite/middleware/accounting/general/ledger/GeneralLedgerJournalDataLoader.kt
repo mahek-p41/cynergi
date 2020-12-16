@@ -42,7 +42,6 @@ object GeneralLedgerJournalDataLoader {
          GeneralLedgerJournalDTO(account = accountIn, profitCenter = profitCenterIn, date = dateIn, source = sourceIn, amount = amount, message = message)
       }
    }
-
 }
 
 @Singleton
