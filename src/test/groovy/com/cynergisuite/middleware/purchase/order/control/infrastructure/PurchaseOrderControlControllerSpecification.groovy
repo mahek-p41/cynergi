@@ -15,7 +15,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class PurchaseOrderControlControllerSpecification extends ControllerSpecificationBase {
-   private static String path = '/purchase/order/control'
+   private static String path = '/purchase-order/control'
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService

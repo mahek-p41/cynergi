@@ -4,9 +4,9 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
-import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
-import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
+import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagDTO
+import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeDTO
+import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema

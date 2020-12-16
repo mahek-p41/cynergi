@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/purchase/order/type/requisition-indicator")
+@Controller("/api/purchase-order/type/requisition-indicator")
 class PurchaseOrderRequisitionIndicatorTypeController @Inject constructor(
    private val purchaseOrderRequisitionIndicatorTypeService: PurchaseOrderRequisitionIndicatorTypeService,
    private val localizationService: LocalizationService
