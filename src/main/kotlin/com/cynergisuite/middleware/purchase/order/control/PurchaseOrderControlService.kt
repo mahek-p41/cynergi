@@ -1,7 +1,10 @@
 package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.employee.EmployeeService
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
@@ -12,7 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class PurchaseOrderControlService @Inject constructor(
    private val purchaseOrderControlValidator: PurchaseOrderControlValidator,
-   private val purchaseOrderControlRepository: PurchaseOrderControlRepository
+   private val purchaseOrderControlRepository: PurchaseOrderControlRepository,
+   private val employeeService: EmployeeService
 ) {
    fun fetchOne(company: Company): PurchaseOrderControlDTO? {
       return purchaseOrderControlRepository.findOne(company)?.let { transformEntity(it) }
@@ -38,5 +42,9 @@ class PurchaseOrderControlService @Inject constructor(
          defaultPurchaseOrderType = DefaultPurchaseOrderTypeDTO(purchaseOrderControl.defaultPurchaseOrderType),
          approvalRequiredFlagType = ApprovalRequiredFlagDTO(purchaseOrderControl.approvalRequiredFlagType)
       )
+   }
+
+   fun fetchApprovers(user: User): List<EmployeeValueObject> {
+      return employeeService.fetchPurchaseOrderApprovers(user)
    }
 }
