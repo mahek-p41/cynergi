@@ -102,14 +102,14 @@ CREATE OR REPLACE FUNCTION account_payable_payment_detail_sequence_increment_fn(
     RETURNS TRIGGER AS
 $$
 DECLARE
-    accountPayablePayment CONSTANT   INT := new.account_payable_payment_id;
+    accountPayablePayment CONSTANT   INT := new.payment_number_id;
     maxAccountPayablePaymentDetailSequence INT;
 BEGIN
     PERFORM pg_advisory_xact_lock(accountPayablePayment);
 
     maxAccountPayablePaymentDetailSequence := (SELECT COALESCE(MAX(sequence), 0) + 1
                                        FROM account_payable_payment_detail
-                                       WHERE account_payable_payment_id = accountPayablePayment);
+                                       WHERE payment_number_id = accountPayablePayment);
 
     new.sequence := maxAccountPayablePaymentDetailSequence;
 
