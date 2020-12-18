@@ -183,6 +183,16 @@ class DevelopDataLoader @Inject constructor(
       areaDataLoaderService.enableArea(5, companies[0])
       areaDataLoaderService.enableArea(5, companies[1])
 
+      // Purchase Order
+      moduleDataLoaderService.configureLevel(15, 90, companies[0])
+      moduleDataLoaderService.configureLevel(16, 80, companies[0])
+      moduleDataLoaderService.configureLevel(17, 80, companies[0])
+      moduleDataLoaderService.configureLevel(18, 20, companies[0])
+      moduleDataLoaderService.configureLevel(15, 80, companies[1])
+      moduleDataLoaderService.configureLevel(16, 70, companies[1])
+      moduleDataLoaderService.configureLevel(17, 70, companies[1])
+      moduleDataLoaderService.configureLevel(18, 20, companies[1])
+
       // Ship Via
       moduleDataLoaderService.configureLevel(68, 90, companies[0])
       moduleDataLoaderService.configureLevel(69, 80, companies[0])

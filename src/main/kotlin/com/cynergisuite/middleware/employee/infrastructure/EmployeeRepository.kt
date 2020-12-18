@@ -419,4 +419,34 @@ class EmployeeRepository @Inject constructor(
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
          alternativeArea = rs.getLong("alternative_area")
       )
+
+   fun findPurchaseOrderApprovers(user: User): List<EmployeeEntity> {
+      val params = mapOf("comp_id" to user.myCompany().myId())
+      val query =
+         """
+         WITH emp AS (
+            ${employeeBaseQuery()}
+         )
+         SELECT
+            emp.*
+         FROM
+            fastinfo_prod_import.operator_vw opr
+               JOIN emp ON opr.number = emp.emp_number
+         WHERE comp_id = :comp_id AND purchase_order_security >= (
+            SELECT m.level
+            FROM module m
+                  JOIN module_type_domain type ON m.module_type_id = type.id
+            WHERE type.value = 'POCHG'
+         )
+      """
+      logger.trace("Fetching all purchase order approvers using {} / {}", query, params)
+
+      val elements = mutableListOf<EmployeeEntity>()
+
+      jdbc.query(query, params) { rs ->
+         elements.add(mapRow(rs))
+      }
+
+      return elements
+   }
 }

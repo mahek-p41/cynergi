@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDTO
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlService
@@ -106,6 +108,29 @@ class PurchaseOrderControlController @Inject constructor(
       val response = purchaseOrderControlService.update(id, dto, userCompany)
 
       logger.debug("Requested Update PurchaseOrderControl {} resulted in {}", dto, response)
+
+      return response
+   }
+
+   @Get(uri = "/approver", produces = [APPLICATION_JSON])
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Fetch a listing of approvers", description = "Fetch a listing of employee who have sufficient security to Change a Purchase Order", operationId = "purchaseOrderControl-fetchApprover")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = EmployeeValueObject::class))]),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchApprover(
+      authentication: Authentication
+   ): List<EmployeeValueObject> {
+      logger.info("Fetching all approvers")
+
+      val user = userService.findUser(authentication)
+
+      val response = purchaseOrderControlService.fetchApprovers(user)
+
+      logger.debug("Fetching all approvers resulted in {}", response)
 
       return response
    }
