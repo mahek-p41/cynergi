@@ -436,7 +436,7 @@ class EmployeeRepository @Inject constructor(
             SELECT m.level
             FROM module m
                   JOIN module_type_domain type ON m.module_type_id = type.id
-            WHERE type.value = 'POCHG'
+            WHERE m.company_id = :comp_id AND type.value = 'POCHG'
          )
       """
       logger.trace("Fetching all purchase order approvers using {} / {}", query, params)
