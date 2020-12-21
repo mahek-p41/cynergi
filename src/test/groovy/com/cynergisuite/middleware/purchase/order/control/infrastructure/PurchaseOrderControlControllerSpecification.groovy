@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDataLoader.PurchaseOrderControlDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -10,12 +9,9 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestData
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
-
 import javax.inject.Inject
-
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class PurchaseOrderControlControllerSpecification extends ControllerSpecificationBase {
@@ -495,6 +491,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
 
    void "fetch all purchase order approvers" () {
       given:
+      moduleDataLoaderService.configureLevel(16, 70, companies[0])
       moduleDataLoaderService.configureLevel(16, 70, companies[1])
 
       when:

@@ -224,7 +224,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             defApp.address_latitude                                              AS defApp_comp_address_latitude,
             defApp.address_longitude                                             AS defApp_comp_address_longitude,
             defApp.address_country                                               AS defApp_comp_address_country,
-            defApp.address_county                                                AS defApp_comp_address_county,
+            defApp.address_county                                                AS _comp_address_county,
             defApp.address_phone                                                 AS defApp_comp_address_phone,
             defApp.address_fax                                                   AS defApp_comp_address_fax,
             appReqFlagType.id                                                    AS appReqFlagType_id,
@@ -237,7 +237,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             JOIN default_purchase_order_type_domain defaultPOType ON purchaseOrderControl.default_purchase_order_type_id = defaultPOType.id
             JOIN approval_required_flag_type_domain appReqFlagType ON purchaseOrderControl.approval_required_flag_type_id = appReqFlagType.id
             LEFT JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.v_id
-            LEFT JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_id AND defApp.emp_type = 'eli'
+            LEFT JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_number AND purchaseOrderControl.company_id = defApp.comp_id
       """
    }
 
@@ -342,7 +342,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             "sort_by_ship_to_on_print" to entity.sortByShipToOnPrint,
             "invoice_by_location" to entity.invoiceByLocation,
             "validate_inventory" to entity.validateInventory,
-            "default_approver_id_sfk" to entity.defaultApprover?.id,
+            "default_approver_id_sfk" to entity.defaultApprover?.number,
             "approval_required_flag_type_id" to entity.approvalRequiredFlagType.id
          ),
          RowMapper { rs, _ ->
@@ -403,7 +403,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             "sort_by_ship_to_on_print" to entity.sortByShipToOnPrint,
             "invoice_by_location" to entity.invoiceByLocation,
             "validate_inventory" to entity.validateInventory,
-            "default_approver_id_sfk" to entity.defaultApprover?.id,
+            "default_approver_id_sfk" to entity.defaultApprover?.number,
             "approval_required_flag_type_id" to entity.approvalRequiredFlagType.id
          ),
          RowMapper { rs, _ ->

@@ -29,8 +29,7 @@ class AuditExceptionValidator @Inject constructor (
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,
-   private val inventoryRepository: InventoryRepository,
-   private val scanAreaRepository: AuditScanAreaRepository
+   private val inventoryRepository: InventoryRepository
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class, NotFoundException::class)
