@@ -17,6 +17,7 @@ import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
+import com.cynergisuite.middleware.error.NotFoundException
 
 @Singleton
 class GeneralLedgerSourceCodeRepository @Inject constructor(
@@ -127,6 +128,22 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       logger.debug("Updated GeneralLedgerSourceCode {}", updated)
 
       return updated
+   }
+   
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting GeneralLedgerSourceCode with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM general_ledger_source_codes
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {

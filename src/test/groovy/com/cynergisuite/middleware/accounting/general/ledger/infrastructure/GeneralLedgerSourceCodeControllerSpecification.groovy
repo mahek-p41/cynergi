@@ -12,6 +12,7 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecificationBase {
@@ -255,4 +256,26 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       result.value == updatedGLSourceCode.value
       result.description == updatedGLSourceCode.description
    }
-}
+
+   void "delete one source code" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1');
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+
+      when:
+      delete("$path/${glSourceCode.id}")
+
+      then:
+      notThrown(Exception)
+
+      when:
+      get("$path/${glSourceCode.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$glSourceCode.id was unable to be found"
+   } 
+ }

@@ -39,4 +39,8 @@ class GeneralLedgerSourceCodeService @Inject constructor(
          entity = generalLedgerSourceCodeRepository.update(entity = toUpdate, company = company)
       )
    }
+
+   fun delete(id: Long, company: Company) {
+      generalLedgerSourceCodeRepository.delete(id, company)
+   }
 }
