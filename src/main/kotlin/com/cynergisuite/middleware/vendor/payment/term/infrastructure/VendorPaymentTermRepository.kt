@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -277,7 +278,7 @@ class VendorPaymentTermRepository @Inject constructor(
       return updated
    }
 
-   private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
          id = rs.getLong("vpt_id"),
          company = companyRepository.mapRow(rs, "comp_"),

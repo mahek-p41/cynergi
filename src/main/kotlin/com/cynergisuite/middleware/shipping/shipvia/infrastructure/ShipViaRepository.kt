@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -69,7 +70,7 @@ class ShipViaRepository @Inject constructor(
    fun findOne(id: Long, company: Company): ShipViaEntity? {
       logger.debug("Searching for ShipVia by id {}", id)
 
-      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.myId()), this::mapRow)
+      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.myId()), RowMapper { rs, _ -> mapRow(rs) })
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
@@ -190,7 +191,7 @@ class ShipViaRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet): ShipViaEntity {
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): ShipViaEntity {
       return ShipViaEntity(
          id = rs.getLong("id"),
          description = rs.getString("description"),
