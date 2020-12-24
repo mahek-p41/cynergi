@@ -431,8 +431,8 @@ class EmployeeRepository @Inject constructor(
             emp.*
          FROM
             fastinfo_prod_import.operator_vw opr
-               JOIN emp ON opr.number = emp.emp_number
-         WHERE comp_id = :comp_id AND purchase_order_security >= (
+               JOIN emp ON opr.number = emp.emp_number AND opr.dataset = emp.comp_dataset_code
+         WHERE comp_id = :comp_id AND COALESCE(purchase_order_security, 0) >= (
             SELECT m.level
             FROM module m
                   JOIN module_type_domain type ON m.module_type_id = type.id
