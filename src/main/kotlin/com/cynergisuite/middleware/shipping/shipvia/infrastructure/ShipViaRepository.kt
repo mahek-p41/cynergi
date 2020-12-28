@@ -29,7 +29,7 @@ class ShipViaRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
-   private fun baseSelectQuery() =
+   fun baseSelectQuery() =
       """
       WITH company AS (
          ${companyRepository.companyBaseQuery()}
@@ -191,7 +191,7 @@ class ShipViaRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): ShipViaEntity {
+   private fun mapRow(rs: ResultSet): ShipViaEntity {
       return ShipViaEntity(
          id = rs.getLong("id"),
          description = rs.getString("description"),
@@ -206,6 +206,15 @@ class ShipViaRepository @Inject constructor(
             federalIdNumber = rs.getString("comp_federal_id_number"),
             address = addressRepository.mapAddressOrNull(rs, "address_")
          )
+      )
+   }
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): ShipViaEntity {
+      return ShipViaEntity(
+         id = rs.getLong("${columnPrefix}id"),
+         description = rs.getString("${columnPrefix}description"),
+         number = rs.getInt("${columnPrefix}number"),
+         company = companyRepository.mapRow(rs, "${columnPrefix}comp_", "${columnPrefix}address_")
       )
    }
 }

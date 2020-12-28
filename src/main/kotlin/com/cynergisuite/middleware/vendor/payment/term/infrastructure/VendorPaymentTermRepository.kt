@@ -29,7 +29,7 @@ class VendorPaymentTermRepository @Inject constructor(
    private val vendorPaymentTermScheduleRepository: VendorPaymentTermScheduleRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermRepository::class.java)
-   private fun findOneQuery() =
+   fun findOneQuery() =
       """
       WITH company AS (
          ${companyRepository.companyBaseQuery()}
@@ -278,7 +278,7 @@ class VendorPaymentTermRepository @Inject constructor(
       return updated
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): VendorPaymentTermEntity {
+   private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
          id = rs.getLong("vpt_id"),
          company = companyRepository.mapRow(rs, "comp_"),
@@ -286,6 +286,17 @@ class VendorPaymentTermRepository @Inject constructor(
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
          discountDays = rs.getIntOrNull("vpt_discount_days"),
          discountPercent = rs.getBigDecimal("vpt_discount_percent")
+      )
+   }
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): VendorPaymentTermEntity {
+      return VendorPaymentTermEntity(
+         id = rs.getLong("${columnPrefix}vpt_id"),
+         company = companyRepository.mapRow(rs, "${columnPrefix}comp_", "${columnPrefix}address_"),
+         description = rs.getString("${columnPrefix}vpt_description"),
+         discountMonth = rs.getIntOrNull("${columnPrefix}vpt_discount_month"),
+         discountDays = rs.getIntOrNull("${columnPrefix}vpt_discount_days"),
+         discountPercent = rs.getBigDecimal("${columnPrefix}vpt_discount_percent")
       )
    }
 
