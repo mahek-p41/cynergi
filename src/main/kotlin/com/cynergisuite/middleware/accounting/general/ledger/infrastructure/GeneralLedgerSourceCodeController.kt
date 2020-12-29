@@ -15,6 +15,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
@@ -151,5 +152,28 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       logger.debug("Requested Update GeneralLedgerSourceCode {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Delete(value = "/{id}")
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Delete a single GeneralLedgerSourceCode", description = "Delete a single GeneralLedgerSourceCode", operationId = "generalLedgerSourceCode-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description="If SourceCode was successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerSourceCode was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ){
+      logger.debug("User {} requested delete account", authentication)
+
+      val user = userService.findUser(authentication)
+
+      return generalLedgerSourceCodeService.delete(id, user.myCompany())
    }
 }
