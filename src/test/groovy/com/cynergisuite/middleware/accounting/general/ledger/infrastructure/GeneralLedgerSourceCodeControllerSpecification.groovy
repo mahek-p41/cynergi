@@ -259,7 +259,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
 
    void "delete one source code" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1');
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
 
       when:
@@ -277,5 +277,21 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response.message == "$glSourceCode.id was unable to be found"
-   } 
+   }
+
+   void "delete source code from other company is not allowed" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+
+      when:
+      delete("$path/${glSourceCode.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$glSourceCode.id was unable to be found"
+   }
  }

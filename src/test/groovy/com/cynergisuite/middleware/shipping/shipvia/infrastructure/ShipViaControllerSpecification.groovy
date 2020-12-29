@@ -224,7 +224,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
 
       when:
-      delete( "$path/$shipVia.id", )
+      delete("$path/$shipVia.id")
 
       then: "ship via of for user's company is delete"
       notThrown(HttpClientResponseException)
