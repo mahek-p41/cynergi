@@ -14,6 +14,8 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
 import javax.inject.Inject
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -111,7 +113,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
             description == purchaseOrder.exceptionIndicatorType.description
          }
 
-         vendorSubmittedTime.toString() == "${purchaseOrder.vendorSubmittedTime.toLocalDateTime()}Z"
+         vendorSubmittedTime.with { OffsetDateTime.parse(it) } == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
          ecommerceIndicator == purchaseOrder.ecommerceIndicator
          customerAccount.id == purchaseOrder.customerAccount.id
@@ -228,7 +230,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                   description == firstPage[index].exceptionIndicatorType.description
                }
 
-               vendorSubmittedTime.toString() == "${firstPage[index].vendorSubmittedTime.toLocalDateTime()}Z"
+               vendorSubmittedTime.with { OffsetDateTime.parse(it) } == firstPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == firstPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == firstPage[index].ecommerceIndicator
                customerAccount.id == firstPage[index].customerAccount.id
@@ -299,7 +301,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                   description == secondPage[index].exceptionIndicatorType.description
                }
 
-               vendorSubmittedTime.toString() == "${secondPage[index].vendorSubmittedTime.toLocalDateTime()}Z"
+               vendorSubmittedTime.with { OffsetDateTime.parse(it) } == secondPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == secondPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == secondPage[index].ecommerceIndicator
                customerAccount.id == secondPage[index].customerAccount.id
@@ -370,7 +372,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                   description == lastPage[index].exceptionIndicatorType.description
                }
 
-               vendorSubmittedTime.toString() == "${lastPage[index].vendorSubmittedTime.toLocalDateTime()}Z"
+               vendorSubmittedTime.with { OffsetDateTime.parse(it) } == lastPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == lastPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == lastPage[index].ecommerceIndicator
                customerAccount.id == lastPage[index].customerAccount.id
@@ -469,7 +471,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
             description == purchaseOrder.exceptionIndicatorType.description
          }
 
-         vendorSubmittedTime.toString() == "${purchaseOrder.vendorSubmittedTime.toLocalDateTime()}Z"
+         vendorSubmittedTime.with { OffsetDateTime.parse(it) } == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
          ecommerceIndicator == purchaseOrder.ecommerceIndicator
          customerAccount.id == purchaseOrder.customerAccount.id
@@ -727,7 +729,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
             description == updatedPurchaseOrderDTO.exceptionIndicatorType.description
          }
 
-         vendorSubmittedTime.toString() == "${updatedPurchaseOrderDTO.vendorSubmittedTime.toLocalDateTime()}Z"
+         vendorSubmittedTime.with { OffsetDateTime.parse(it) } == updatedPurchaseOrderDTO.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == updatedPurchaseOrderDTO.vendorSubmittedEmployee.number
          ecommerceIndicator == updatedPurchaseOrderDTO.ecommerceIndicator
          customerAccount.id == updatedPurchaseOrderDTO.customerAccount.id
