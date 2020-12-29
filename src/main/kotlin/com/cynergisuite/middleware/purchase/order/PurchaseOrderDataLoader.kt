@@ -41,16 +41,13 @@ object PurchaseOrderDataLoader {
    fun stream(
       numberIn: Int = 1,
       vendorIn: VendorEntity,
-      orderDateIn: LocalDate,
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: ShipViaEntity,
-      requiredDateIn: LocalDate,
       shipToIn: VendorEntity,
       paymentTermTypeIn: VendorPaymentTermEntity,
-      vendorSubmittedTimeIn: OffsetDateTime,
-      vendorSubmittedEmployeeIn: EmployeeEntity,
-      customerAccountIn: AccountEntity
+      vendorSubmittedEmployeeIn: EmployeeEntity? = null,
+      customerAccountIn: AccountEntity? = null
    ): Stream<PurchaseOrderEntity> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
@@ -64,7 +61,7 @@ object PurchaseOrderDataLoader {
             number = poNumber.getAndIncrement(),
             vendor = vendorIn,
             statusType = PurchaseOrderStatusTypeFactory.random(),
-            orderDate = orderDateIn,
+            orderDate = LocalDate.now(),
             type = PurchaseOrderTypeFactory.random(),
             freightOnboardType = FreightOnboardTypeTestDataLoader.random(),
             freightTermType = FreightTermTypeDataLoader.random(),
@@ -75,14 +72,14 @@ object PurchaseOrderDataLoader {
             paidAmount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             purchaseAgent = purchaseAgentIn,
             shipVia = shipViaIn,
-            requiredDate = requiredDateIn,
+            requiredDate = LocalDate.now(),
             shipTo = shipToIn,
             paymentTermType = paymentTermTypeIn,
             message = lorem.sentence(),
             totalLandedAmount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             totalFreightAmount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             exceptionIndicatorType = ExceptionIndicatorTypeDataLoader.random(),
-            vendorSubmittedTime = vendorSubmittedTimeIn,
+            vendorSubmittedTime = OffsetDateTime.now(),
             vendorSubmittedEmployee = vendorSubmittedEmployeeIn,
             ecommerceIndicator = random.nextBoolean(),
             customerAccount = customerAccountIn
@@ -94,16 +91,13 @@ object PurchaseOrderDataLoader {
    fun streamDTO(
       numberIn: Int = 1,
       vendorIn: SimpleIdentifiableDTO,
-      orderDateIn: LocalDate,
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: SimpleIdentifiableDTO,
-      requiredDateIn: LocalDate,
       shipToIn: SimpleIdentifiableDTO,
       paymentTermTypeIn: SimpleIdentifiableDTO,
-      vendorSubmittedTimeIn: OffsetDateTime,
-      vendorSubmittedEmployeeIn: EmployeeEntity,
-      customerAccountIn: SimpleIdentifiableDTO
+      vendorSubmittedEmployeeIn: EmployeeEntity? = null,
+      customerAccountIn: SimpleIdentifiableDTO? = null
    ): Stream<PurchaseOrderDTO> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
@@ -117,7 +111,7 @@ object PurchaseOrderDataLoader {
             number = poNumber.getAndIncrement(),
             vendor = vendorIn,
             statusType = PurchaseOrderStatusTypeValueObject(PurchaseOrderStatusTypeFactory.random()),
-            orderDate = orderDateIn,
+            orderDate = LocalDate.now(),
             type = PurchaseOrderTypeValueObject(PurchaseOrderTypeFactory.random()),
             freightOnboardType = FreightOnboardTypeDTO(FreightOnboardTypeTestDataLoader.random()),
             freightTermType = FreightTermTypeDTO(FreightTermTypeDataLoader.random()),
@@ -128,15 +122,15 @@ object PurchaseOrderDataLoader {
             paidAmount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             purchaseAgent = EmployeeValueObject(purchaseAgentIn),
             shipVia = shipViaIn,
-            requiredDate = requiredDateIn,
+            requiredDate = LocalDate.now(),
             shipTo = shipToIn,
             paymentTermType = paymentTermTypeIn,
             message = lorem.sentence(),
             totalLandedAmount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             totalFreightAmount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             exceptionIndicatorType = ExceptionIndicatorTypeDTO(ExceptionIndicatorTypeDataLoader.random()),
-            vendorSubmittedTime = vendorSubmittedTimeIn,
-            vendorSubmittedEmployee = EmployeeValueObject(vendorSubmittedEmployeeIn),
+            vendorSubmittedTime = OffsetDateTime.now(),
+            vendorSubmittedEmployee = vendorSubmittedEmployeeIn?.let { it -> EmployeeValueObject(it) },
             ecommerceIndicator = random.nextBoolean(),
             customerAccount = customerAccountIn
          )
@@ -154,53 +148,44 @@ class PurchaseOrderDataLoaderService @Inject constructor(
       numberIn: Int = 1,
       companyIn: Company,
       vendorIn: VendorEntity,
-      orderDateIn: LocalDate,
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: ShipViaEntity,
-      requiredDateIn: LocalDate,
       shipToIn: VendorEntity,
       paymentTermTypeIn: VendorPaymentTermEntity,
-      vendorSubmittedTimeIn: OffsetDateTime,
-      vendorSubmittedEmployeeIn: EmployeeEntity,
-      customerAccountIn: AccountEntity
+      vendorSubmittedEmployeeIn: EmployeeEntity? = null,
+      customerAccountIn: AccountEntity? = null
    ): Stream<PurchaseOrderEntity> {
-      return PurchaseOrderDataLoader.stream(numberIn, vendorIn, orderDateIn, approvedByIn, purchaseAgentIn, shipViaIn, requiredDateIn, shipToIn, paymentTermTypeIn, vendorSubmittedTimeIn, vendorSubmittedEmployeeIn, customerAccountIn)
+      return PurchaseOrderDataLoader.stream(numberIn, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn, customerAccountIn)
          .map { purchaseOrderRepository.insert(it, companyIn) }
    }
 
    fun single(
       companyIn: Company,
       vendorIn: VendorEntity,
-      orderDateIn: LocalDate,
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: ShipViaEntity,
-      requiredDateIn: LocalDate,
       shipToIn: VendorEntity,
       paymentTermTypeIn: VendorPaymentTermEntity,
-      vendorSubmittedTimeIn: OffsetDateTime,
-      vendorSubmittedEmployeeIn: EmployeeEntity,
-      customerAccountIn: AccountEntity
+      vendorSubmittedEmployeeIn: EmployeeEntity? = null,
+      customerAccountIn: AccountEntity? = null
    ): PurchaseOrderEntity {
-      return stream(1, companyIn, vendorIn, orderDateIn, approvedByIn, purchaseAgentIn, shipViaIn, requiredDateIn, shipToIn, paymentTermTypeIn, vendorSubmittedTimeIn, vendorSubmittedEmployeeIn, customerAccountIn)
+      return stream(1, companyIn, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn, customerAccountIn)
          .findFirst().orElseThrow { Exception("Unable to create PurchaseOrderEntity") }
    }
 
    fun singleDTO(
       vendorIn: SimpleIdentifiableDTO,
-      orderDateIn: LocalDate,
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: SimpleIdentifiableDTO,
-      requiredDateIn: LocalDate,
       shipToIn: SimpleIdentifiableDTO,
       paymentTermTypeIn: SimpleIdentifiableDTO,
-      vendorSubmittedTimeIn: OffsetDateTime,
-      vendorSubmittedEmployeeIn: EmployeeEntity,
-      customerAccountIn: SimpleIdentifiableDTO
+      vendorSubmittedEmployeeIn: EmployeeEntity? = null,
+      customerAccountIn: SimpleIdentifiableDTO? = null
    ): PurchaseOrderDTO {
-      return PurchaseOrderDataLoader.streamDTO(1, vendorIn, orderDateIn, approvedByIn, purchaseAgentIn, shipViaIn, requiredDateIn, shipToIn, paymentTermTypeIn, vendorSubmittedTimeIn, vendorSubmittedEmployeeIn, customerAccountIn)
+      return PurchaseOrderDataLoader.streamDTO(1, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn, customerAccountIn)
          .findFirst().orElseThrow { Exception("Unable to create PurchaseOrder") }
    }
 }

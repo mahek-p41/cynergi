@@ -56,12 +56,12 @@ class PurchaseOrderValidator @Inject constructor(
       val freightTermType = freightTermTypeRepository.findOne(dto.freightTermType!!.value!!)
       val shipLocationType = shipLocationTypeRepository.findOne(dto.shipLocationType!!.value!!)
       val approvedBy = employeeRepository.findOne(dto.approvedBy!!.number!!, dto.approvedBy!!.type!!, company)
-      val purchaseAgent = employeeRepository.findOne(dto.approvedBy!!.number!!, dto.approvedBy!!.type!!, company)
+      val purchaseAgent = employeeRepository.findOne(dto.purchaseAgent!!.number!!, dto.purchaseAgent!!.type!!, company)
       val shipVia = shipViaRepository.findOne(dto.shipVia!!.id!!, company)
       val shipTo = vendorRepository.findOne(dto.shipTo!!.id!!, company)
       val paymentTermType = paymentTermRepository.findOne(dto.paymentTermType!!.id!!, company)
       val exceptionIndicatorType = exceptionIndicatorTypeRepository.findOne(dto.exceptionIndicatorType!!.value)
-      val vendorSubmittedEmployee = dto.vendorSubmittedEmployee?.number?.let { employeeRepository.findOne(dto.approvedBy!!.number!!, dto.approvedBy!!.type!!, company) }
+      val vendorSubmittedEmployee = dto.vendorSubmittedEmployee?.id?.let { employeeRepository.findOne(dto.vendorSubmittedEmployee!!.number!!, dto.vendorSubmittedEmployee!!.type!!, company) }
       val customerAccount = dto.customerAccount?.id?.let { accountRepository.findOne(it, company) }
 
       doValidation { errors ->

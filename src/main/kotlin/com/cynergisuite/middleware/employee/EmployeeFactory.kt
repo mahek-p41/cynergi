@@ -173,6 +173,6 @@ class EmployeeFactoryService @Inject constructor(
       val company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: companyFactoryService.random()
 
       return EmployeeFactory.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)
-         .map { employeeRepository.insert(it).copy(passCode = it.passCode) }
+         .map { employeeRepository.insert(it).copy(passCode = it.passCode, type = "eli") }
    }
 }

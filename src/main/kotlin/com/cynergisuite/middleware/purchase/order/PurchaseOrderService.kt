@@ -4,12 +4,6 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
-import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
-import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject
-import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeValueObject
-import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
-import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDTO
-import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,14 +40,6 @@ class PurchaseOrderService @Inject constructor(
    }
 
    private fun transformEntity(purchaseOrderEntity: PurchaseOrderEntity): PurchaseOrderDTO {
-      return PurchaseOrderDTO(
-         entity = purchaseOrderEntity,
-         statusType = PurchaseOrderStatusTypeValueObject(purchaseOrderEntity.statusType),
-         type = PurchaseOrderTypeValueObject(purchaseOrderEntity.type),
-         freightOnboardType = FreightOnboardTypeDTO(purchaseOrderEntity.freightOnboardType),
-         freightTermType = FreightTermTypeDTO(purchaseOrderEntity.freightTermType),
-         shipLocationType = ShipLocationTypeDTO(purchaseOrderEntity.shipLocationType),
-         exceptionIndicatorType = ExceptionIndicatorTypeDTO(purchaseOrderEntity.exceptionIndicatorType)
-      )
+      return PurchaseOrderDTO(entity = purchaseOrderEntity)
    }
 }

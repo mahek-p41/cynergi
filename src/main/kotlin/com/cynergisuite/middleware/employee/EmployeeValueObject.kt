@@ -19,9 +19,8 @@ data class EmployeeValueObject(
    @field:Schema(name = "id", description = "System generated ID for the Employee/User")
    var id: Long? = null,
 
-   @field:JsonIgnore
    @field:NotNull
-   @field:Schema(name = "type", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
+   @field:Schema(name = "type", description = "Where the employee definition's data came from", required = true, nullable = false)
    var type: String? = null,
 
    @field:NotNull

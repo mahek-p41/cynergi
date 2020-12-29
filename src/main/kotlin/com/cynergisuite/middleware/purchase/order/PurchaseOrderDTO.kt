@@ -134,25 +134,17 @@ data class PurchaseOrderDTO(
 
 ) : Identifiable {
 
-   constructor(
-      entity: PurchaseOrderEntity,
-      statusType: PurchaseOrderStatusTypeValueObject,
-      type: PurchaseOrderTypeValueObject,
-      freightOnboardType: FreightOnboardTypeDTO,
-      freightTermType: FreightTermTypeDTO,
-      shipLocationType: ShipLocationTypeDTO,
-      exceptionIndicatorType: ExceptionIndicatorTypeDTO
-   ) :
+   constructor(entity: PurchaseOrderEntity) :
       this(
          id = entity.id,
          number = entity.number,
          vendor = SimpleIdentifiableDTO(entity.vendor),
-         statusType = statusType,
+         statusType = PurchaseOrderStatusTypeValueObject(entity.statusType),
          orderDate = entity.orderDate,
-         type = type,
-         freightOnboardType = freightOnboardType,
-         freightTermType = freightTermType,
-         shipLocationType = shipLocationType,
+         type = PurchaseOrderTypeValueObject(entity.type),
+         freightOnboardType = FreightOnboardTypeDTO(entity.freightOnboardType),
+         freightTermType = FreightTermTypeDTO(entity.freightTermType),
+         shipLocationType = ShipLocationTypeDTO(entity.shipLocationType),
          approvedBy = EmployeeValueObject(entity.approvedBy),
          totalAmount = entity.totalAmount,
          receivedAmount = entity.receivedAmount,
@@ -165,7 +157,7 @@ data class PurchaseOrderDTO(
          message = entity.message,
          totalLandedAmount = entity.totalLandedAmount,
          totalFreightAmount = entity.totalFreightAmount,
-         exceptionIndicatorType = exceptionIndicatorType,
+         exceptionIndicatorType = ExceptionIndicatorTypeDTO(entity.exceptionIndicatorType),
          vendorSubmittedTime = entity.vendorSubmittedTime,
          vendorSubmittedEmployee = entity.vendorSubmittedEmployee?.let { EmployeeValueObject(it) },
          ecommerceIndicator = entity.ecommerceIndicator,
