@@ -59,6 +59,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       when:
@@ -76,6 +80,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       when:
@@ -94,6 +102,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          firstNameMi == 'EMP'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
    }
 
@@ -120,6 +132,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchOneResult.elements[1]) {
@@ -127,6 +143,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'ASST MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchOneResult.elements[2]) {
@@ -134,6 +154,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'MARKET MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       when: 'search for STORE MANAGER'
@@ -151,6 +175,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchTwoResult.elements[1]) {
@@ -158,6 +186,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'ASST MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchTwoResult.elements[2]) {
@@ -165,6 +197,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'MARKET MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       when: 'search for EMP'
@@ -183,6 +219,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          firstNameMi == 'EMP'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       when: 'search for Karager'
@@ -200,6 +240,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'MARKET MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchFourResult.elements[1]) {
@@ -207,6 +251,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'ASST MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchFourResult.elements[2]) {
@@ -214,6 +262,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       when: 'search for St Man'
@@ -231,6 +283,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchFiveResult.elements[1]) {
@@ -238,6 +294,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'ASST MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
 
       with(searchFiveResult.elements[2]) {
@@ -245,6 +305,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          lastName == 'MARKET MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
+         type == 'sysz'
+         passCode == null
+         store == null
+         active == null
       }
    }
 }
