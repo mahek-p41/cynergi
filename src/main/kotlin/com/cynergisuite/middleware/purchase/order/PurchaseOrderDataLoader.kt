@@ -19,6 +19,7 @@ import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDataLoad
 import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
 import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.github.javafaker.Faker
@@ -44,7 +45,7 @@ object PurchaseOrderDataLoader {
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: ShipViaEntity,
-      shipToIn: VendorEntity,
+      shipToIn: Store,
       paymentTermTypeIn: VendorPaymentTermEntity,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
       customerAccountIn: AccountEntity? = null
@@ -151,7 +152,7 @@ class PurchaseOrderDataLoaderService @Inject constructor(
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: ShipViaEntity,
-      shipToIn: VendorEntity,
+      shipToIn: Store,
       paymentTermTypeIn: VendorPaymentTermEntity,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
       customerAccountIn: AccountEntity? = null
@@ -166,7 +167,7 @@ class PurchaseOrderDataLoaderService @Inject constructor(
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: ShipViaEntity,
-      shipToIn: VendorEntity,
+      shipToIn: Store,
       paymentTermTypeIn: VendorPaymentTermEntity,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
       customerAccountIn: AccountEntity? = null

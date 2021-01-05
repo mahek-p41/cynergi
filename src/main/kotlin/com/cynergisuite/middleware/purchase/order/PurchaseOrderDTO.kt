@@ -70,14 +70,17 @@ data class PurchaseOrderDTO(
    @field:Schema(name = "approvedBy", description = "Approved by number")
    var approvedBy: EmployeeValueObject? = null,
 
+   @field:Positive
    @field:Digits(integer = 11, fraction = 2)
    @field:Schema(name = "totalAmount", description = "Total amount", required = false)
    var totalAmount: BigDecimal? = null,
 
+   @field:Positive
    @field:Digits(integer = 11, fraction = 2)
    @field:Schema(name = "receivedAmount", description = "Received amount", required = false)
    var receivedAmount: BigDecimal? = null,
 
+   @field:Positive
    @field:Digits(integer = 11, fraction = 2)
    @field:Schema(name = "paidAmount", description = "Paid amount", required = false)
    var paidAmount: BigDecimal? = null,
@@ -96,7 +99,7 @@ data class PurchaseOrderDTO(
    var requiredDate: LocalDate? = null,
 
    @field:NotNull
-   @field:Schema(name = "shipTo", description = "Ship to vendor id")
+   @field:Schema(name = "shipTo", description = "Ship to store")
    var shipTo: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
@@ -106,10 +109,12 @@ data class PurchaseOrderDTO(
    @field:Schema(name = "message", description = "Purchase order message", required = false)
    var message: String? = null,
 
+   @field:Positive
    @field:Digits(integer = 11, fraction = 2)
    @field:Schema(name = "totalLandedAmount", description = "Total landed amount", required = false)
    var totalLandedAmount: BigDecimal? = null,
 
+   @field:Positive
    @field:Digits(integer = 11, fraction = 2)
    @field:Schema(name = "totalFreightAmount", description = "Total freight amount", required = false)
    var totalFreightAmount: BigDecimal? = null,
@@ -152,7 +157,7 @@ data class PurchaseOrderDTO(
          purchaseAgent = EmployeeValueObject(entity.purchaseAgent),
          shipVia = SimpleIdentifiableDTO(entity.shipVia),
          requiredDate = entity.requiredDate,
-         shipTo = SimpleIdentifiableDTO(entity.shipTo),
+         shipTo = SimpleIdentifiableDTO(entity.shipTo.myId()),
          paymentTermType = SimpleIdentifiableDTO(entity.paymentTermType),
          message = entity.message,
          totalLandedAmount = entity.totalLandedAmount,

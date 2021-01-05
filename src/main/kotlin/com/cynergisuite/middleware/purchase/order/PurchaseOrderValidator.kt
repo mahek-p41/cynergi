@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.Freig
 import com.cynergisuite.middleware.shipping.freight.term.infrastructure.FreightTermTypeRepository
 import com.cynergisuite.middleware.shipping.location.infrastructure.ShipLocationTypeRepository
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
@@ -31,6 +32,7 @@ class PurchaseOrderValidator @Inject constructor(
    private val shipLocationTypeRepository: ShipLocationTypeRepository,
    private val shipViaRepository: ShipViaRepository,
    private val statusTypeRepository: PurchaseOrderStatusTypeRepository,
+   private val storeRepository: StoreRepository,
    private val typeRepository: PurchaseOrderTypeRepository,
    private val vendorRepository: VendorRepository
 ) : ValidatorBase() {
@@ -58,7 +60,7 @@ class PurchaseOrderValidator @Inject constructor(
       val approvedBy = employeeRepository.findOne(dto.approvedBy!!.number!!, dto.approvedBy!!.type!!, company)
       val purchaseAgent = employeeRepository.findOne(dto.purchaseAgent!!.number!!, dto.purchaseAgent!!.type!!, company)
       val shipVia = shipViaRepository.findOne(dto.shipVia!!.id!!, company)
-      val shipTo = vendorRepository.findOne(dto.shipTo!!.id!!, company)
+      val shipTo = storeRepository.findOne(dto.shipTo!!.id!!, company)
       val paymentTermType = paymentTermRepository.findOne(dto.paymentTermType!!.id!!, company)
       val exceptionIndicatorType = exceptionIndicatorTypeRepository.findOne(dto.exceptionIndicatorType!!.value)
       val vendorSubmittedEmployee = dto.vendorSubmittedEmployee?.id?.let { employeeRepository.findOne(dto.vendorSubmittedEmployee!!.number!!, dto.vendorSubmittedEmployee!!.type!!, company) }
