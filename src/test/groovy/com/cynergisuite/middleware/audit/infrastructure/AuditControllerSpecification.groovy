@@ -190,7 +190,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    void "fetch one audit by id that has associated details" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final store = storeFactoryService.random(company)
+      final store = storeFactoryService.store(3, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
       final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom).toList()
@@ -200,8 +200,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      result.inventoryCount > 0
-      result.inventoryCount == savedAudit.inventoryCount
+      result.inventoryCount == 260
       result.totalDetails == 20
       result.totalExceptions == 0
       result.lastUpdated != null
@@ -211,7 +210,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    void "fetch one audit by id that has associated details and exceptions" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final store = storeFactoryService.random(company)
+      final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
       final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom).toList()
@@ -224,6 +223,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.totalDetails == 20
       result.totalExceptions == 20
+      result.inventoryCount == 423
       result.lastUpdated != null
       result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
    }
@@ -262,8 +262,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements[0].id == firstFiveAudits[0].id
-      pageOneResult.elements[0].inventoryCount > 0
-      pageOneResult.elements[0].inventoryCount == firstFiveAudits[0].inventoryCount
+      pageOneResult.elements[0].inventoryCount == 423
       pageOneResult.elements[0].store.id == store.id
       pageOneResult.elements[0].actions.size() == 1
       pageOneResult.elements[0].actions[0].status.value == Created.INSTANCE.value
@@ -279,8 +278,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements[0].id == secondFiveAudits[0].id
-      pageTwoResult.elements[0].inventoryCount > 0
-      pageTwoResult.elements[0].inventoryCount == secondFiveAudits[0].inventoryCount
+      pageTwoResult.elements[0].inventoryCount == 423
       pageTwoResult.elements[0].store.id == store.id
       pageTwoResult.elements[0].actions.size() == 1
       pageTwoResult.elements[0].actions[0].status.value == Created.INSTANCE.value

@@ -8,7 +8,6 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
@@ -42,6 +41,17 @@ class AuditRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditRepository::class.java)
 
+   private val queryAuditCurrentStatus: String =
+      """
+         (
+         SELECT csastd.value
+         FROM audit_action csaa
+               JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
+         WHERE csaa.audit_id = a.id
+         ORDER BY csaa.id DESC LIMIT 1
+         )
+      """
+
    private fun selectByIdBaseQuery(): String =
       """
       WITH employees AS (
@@ -62,18 +72,37 @@ class AuditRepository @Inject constructor(
                JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
           WHERE ae.audit_id = a.id
          )                                                             AS a_exception_has_notes,
-         (SELECT max(time_updated)
-            FROM (
-                 SELECT time_updated FROM audit_detail WHERE audit_id = a.id
-                 UNION
-                 SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+         (
+         SELECT max(time_updated)
+         FROM (
+               SELECT time_updated FROM audit_detail WHERE audit_id = a.id
+               UNION
+               SELECT time_updated FROM audit_exception WHERE audit_id = a.id
                ) AS m
          )                                                             AS a_last_updated,
-         a.inventory_count                                             AS a_inventory_count,
-         (SELECT csastd.value
-          FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
-          WHERE csaa.audit_id = a.id ORDER BY csaa.id DESC LIMIT 1
-         )                                                             AS current_status,
+         $queryAuditCurrentStatus                                      AS current_status,
+         CASE
+         WHEN $queryAuditCurrentStatus IN ('CREATED', 'IN-PROGRESS')
+         THEN
+            (
+            SELECT COUNT (*)
+            FROM fastinfo_prod_import.inventory_vw i
+            WHERE i.primary_location = a.store_number
+                  AND i.location = a.store_number
+                  AND i.status in ('N', 'R')
+                  AND i.dataset = auditStore.dataset
+            )
+         ELSE
+            (
+            SELECT COUNT (*)
+            FROM audit_inventory i
+            WHERE i.primary_location = a.store_number
+                  AND i.location = a.store_number
+                  AND i.status in ('N', 'R')
+                  AND i.dataset = auditStore.dataset
+                  AND i.audit_id = a.id
+            )
+         END                                                           AS a_inventory_count,
          auditAction.id                                                AS auditAction_id,
          auditAction.uu_row_id                                         AS auditAction_uu_row_id,
          auditAction.time_created                                      AS auditAction_time_created,
@@ -154,9 +183,7 @@ class AuditRepository @Inject constructor(
                    SELECT time_updated FROM audit_exception WHERE audit_id = a.id
                 ) AS m
                ) AS last_updated,
-               a.inventory_count AS inventory_count,
                a.company_id AS company_id,
-               s.current_status AS current_status,
                (SELECT count(a.id)
                 FROM audit a
                     JOIN status s ON s.audit_id = a.id
@@ -182,9 +209,30 @@ class AuditRepository @Inject constructor(
             a.number                                            AS a_number,
             a.total_details                                     AS a_total_details,
             a.total_exceptions                                  AS a_total_exceptions,
-            a.current_status                                    AS current_status,
+            $queryAuditCurrentStatus                            AS current_status,
+            CASE
+            WHEN $queryAuditCurrentStatus IN ('CREATED', 'IN-PROGRESS')
+            THEN
+               (
+               SELECT COUNT (*)
+               FROM fastinfo_prod_import.inventory_vw i
+               WHERE i.primary_location = a.store_number
+                     AND i.location = a.store_number
+                     AND i.status in ('N', 'R')
+                     AND i.dataset = auditStore.dataset
+               )
+            ELSE
+               (
+               SELECT COUNT (*)
+               FROM audit_inventory i
+               WHERE i.primary_location = a.store_number
+                     AND i.location = a.store_number
+                     AND i.status in ('N', 'R')
+                     AND i.dataset = auditStore.dataset
+                     AND i.audit_id = a.id
+               )
+            END                                                 AS a_inventory_count,
             a.last_updated                                      AS a_last_updated,
-            a.inventory_count                                   AS a_inventory_count,
             a.exception_has_notes                               AS a_exception_has_notes,
             auditAction.id                                      AS auditAction_id,
             auditAction.uu_row_id                               AS auditAction_uu_row_id,
@@ -358,8 +406,30 @@ class AuditRepository @Inject constructor(
                 SELECT time_updated FROM audit_exception WHERE audit_id = a.id
              ) AS m
             )                                                   AS a_last_updated,
-            a.inventory_count                                   AS a_inventory_count,
-            s.current_status                                    AS a_current_status,
+            $queryAuditCurrentStatus                            AS a_current_status,
+            CASE
+            WHEN $queryAuditCurrentStatus IN ('CREATED', 'IN-PROGRESS')
+            THEN
+               (
+               SELECT COUNT (*)
+               FROM fastinfo_prod_import.inventory_vw i
+               WHERE i.primary_location = a.store_number
+                     AND i.location = a.store_number
+                     AND i.status in ('N', 'R')
+                     AND i.dataset = auditStore.dataset
+               )
+            ELSE
+               (
+               SELECT COUNT (*)
+               FROM audit_inventory i
+               WHERE i.primary_location = a.store_number
+                     AND i.location = a.store_number
+                     AND i.status in ('N', 'R')
+                     AND i.dataset = auditStore.dataset
+                     AND i.audit_id = a.id
+               )
+            END                                                 AS a_inventory_count,
+
             comp.id                                             AS comp_id,
             comp.uu_row_id                                      AS comp_uu_row_id,
             comp.time_created                                   AS comp_time_created,
@@ -529,18 +599,9 @@ class AuditRepository @Inject constructor(
 
       val audit = jdbc.insertReturning(
          """
-        INSERT INTO audit(store_number, inventory_count, company_id)
+        INSERT INTO audit(store_number, company_id)
          VALUES (
             :store_number,
-            (
-               SELECT COUNT (i.id)
-               FROM fastinfo_prod_import.inventory_vw i
-                    JOIN company comp ON i.dataset = comp.dataset_code
-               WHERE i.primary_location = :store_number
-                     AND i.location = :store_number
-                     AND i.status in ('N', 'R')
-                     AND comp.id = :company_id
-            ),
             :company_id
          )
          RETURNING
@@ -550,7 +611,7 @@ class AuditRepository @Inject constructor(
             "store_number" to entity.store.myNumber(),
             "company_id" to entity.store.myCompany().myId()
          ),
-         RowMapper { rs, _ -> mapInsertUpdateAudit(rs, entity.store) }
+         RowMapper { rs, _ -> mapInsertUpdateAudit(rs, entity) }
       )
 
       entity.actions.asSequence()
@@ -564,38 +625,25 @@ class AuditRepository @Inject constructor(
    fun update(entity: AuditEntity): AuditEntity {
       logger.debug("Updating Audit {}", entity)
 
-      val result = jdbc.updateReturning(
-         """
-         UPDATE audit
-         SET inventory_count = :inventory_count
-         WHERE id = :id
-         RETURNING *
-         """.trimIndent(),
-         mapOf(
-            "inventory_count" to entity.inventoryCount,
-            "id" to entity.id
-         ),
-         RowMapper { rs, _ -> mapInsertUpdateAudit(rs, entity.store) }
-      )
       // there is nothing to update on an audit as they can just cancel the audit and create a new one, just upsert the actions
       val actions = entity.actions.asSequence()
          .map { auditActionRepository.upsert(entity, it) }
          .toMutableSet()
 
-      return result.copy(actions = actions)
+      return entity.copy(actions = actions)
    }
 
-   private fun mapInsertUpdateAudit(rs: ResultSet, store: Store): AuditEntity =
+   private fun mapInsertUpdateAudit(rs: ResultSet, audit: AuditEntity): AuditEntity =
       AuditEntity(
          id = rs.getLong("id"),
          timeCreated = rs.getOffsetDateTime("time_created"),
          timeUpdated = rs.getOffsetDateTime("time_updated"),
-         store = store,
+         store = audit.store,
          number = rs.getInt("number"),
          totalDetails = 0,
          totalExceptions = 0,
          hasExceptionNotes = false,
-         inventoryCount = rs.getInt("inventory_count"),
+         inventoryCount = 0,
          lastUpdated = null,
          actions = mutableSetOf()
       )
