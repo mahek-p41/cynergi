@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal
 
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.infrastructure.GeneralLedgerReversalRepository
 import com.cynergisuite.middleware.company.Company
 import com.github.javafaker.Faker
@@ -18,7 +16,7 @@ import kotlin.random.Random
 object GeneralLedgerReversalDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, sourceIn: GeneralLedgerSourceCodeEntity, generalLedgerDetailIn: GeneralLedgerDetailEntity): Stream<GeneralLedgerReversalEntity> {
+   fun stream(numberIn: Int = 1, sourceIn: GeneralLedgerSourceCodeEntity): Stream<GeneralLedgerReversalEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -28,7 +26,6 @@ object GeneralLedgerReversalDataLoader {
             source = sourceIn,
             date = LocalDate.now(),
             reversalDate = LocalDate.now(),
-            generalLedgerDetail = generalLedgerDetailIn,
             comment = lorem.sentence(),
             entryMonth = Random.nextInt(1, 12),
             entryNumber = Random.nextInt(1, 1000000)
@@ -37,7 +34,7 @@ object GeneralLedgerReversalDataLoader {
    }
 
    @JvmStatic
-   fun streamDTO(numberIn: Int = 1, sourceIn: GeneralLedgerSourceCodeDTO, generalLedgerDetailIn: GeneralLedgerDetailDTO): Stream<GeneralLedgerReversalDTO> {
+   fun streamDTO(numberIn: Int = 1, sourceIn: GeneralLedgerSourceCodeDTO): Stream<GeneralLedgerReversalDTO> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -47,7 +44,6 @@ object GeneralLedgerReversalDataLoader {
             source = sourceIn,
             date = LocalDate.now(),
             reversalDate = LocalDate.now(),
-            generalLedgerDetail = generalLedgerDetailIn,
             comment = lorem.sentence(),
             entryMonth = Random.nextInt(1, 12),
             entryNumber = Random.nextInt(1, 1000000)
@@ -62,16 +58,16 @@ class GeneralLedgerReversalDataLoaderService @Inject constructor(
    private val repository: GeneralLedgerReversalRepository
 ) {
 
-   fun stream(numberIn: Int = 1, company: Company, sourceIn: GeneralLedgerSourceCodeEntity, generalLedgerDetailIn: GeneralLedgerDetailEntity): Stream<GeneralLedgerReversalEntity> {
-      return GeneralLedgerReversalDataLoader.stream(numberIn, sourceIn, generalLedgerDetailIn)
+   fun stream(numberIn: Int = 1, company: Company, sourceIn: GeneralLedgerSourceCodeEntity): Stream<GeneralLedgerReversalEntity> {
+      return GeneralLedgerReversalDataLoader.stream(numberIn, sourceIn)
          .map { repository.insert(it, company) }
    }
 
-   fun single(company: Company, sourceIn: GeneralLedgerSourceCodeEntity, generalLedgerDetailIn: GeneralLedgerDetailEntity): GeneralLedgerReversalEntity {
-      return stream(1, company, sourceIn, generalLedgerDetailIn).findFirst().orElseThrow { Exception("Unable to find GeneralLedgerReversal") }
+   fun single(company: Company, sourceIn: GeneralLedgerSourceCodeEntity): GeneralLedgerReversalEntity {
+      return stream(1, company, sourceIn).findFirst().orElseThrow { Exception("Unable to find GeneralLedgerReversal") }
    }
 
-   fun singleDTO(sourceIn: GeneralLedgerSourceCodeDTO, generalLedgerDetailIn: GeneralLedgerDetailDTO): GeneralLedgerReversalDTO {
-      return GeneralLedgerReversalDataLoader.streamDTO(1, sourceIn, generalLedgerDetailIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerReversal") }
+   fun singleDTO(sourceIn: GeneralLedgerSourceCodeDTO): GeneralLedgerReversalDTO {
+      return GeneralLedgerReversalDataLoader.streamDTO(1, sourceIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerReversal") }
    }
 }

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.reversal
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
@@ -13,8 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GeneralLedgerReversalValidator @Inject constructor(
-   private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
-   private val generalLedgerDetailRepository: GeneralLedgerDetailRepository
+   private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReversalValidator::class.java)
 
@@ -32,14 +30,11 @@ class GeneralLedgerReversalValidator @Inject constructor(
 
    private fun doSharedValidation(dto: GeneralLedgerReversalDTO, company: Company): GeneralLedgerReversalEntity {
       val source = generalLedgerSourceCodeRepository.findOne(dto.source!!.id!!, company)
-      val generalLedgerDetail = generalLedgerDetailRepository.findOne(dto.generalLedgerDetail!!.id!!, company)
 
       doValidation { errors ->
          source ?: errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
-
-         generalLedgerDetail ?: errors.add(ValidationError("generalLedgerDetail.id", NotFound(dto.generalLedgerDetail!!.id!!)))
       }
 
-      return GeneralLedgerReversalEntity(dto, source!!, generalLedgerDetail!!)
+      return GeneralLedgerReversalEntity(dto, source!!)
    }
 }

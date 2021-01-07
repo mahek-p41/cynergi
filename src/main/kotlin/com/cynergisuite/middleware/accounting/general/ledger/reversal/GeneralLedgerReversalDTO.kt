@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.validation.constraints.NotNull
@@ -27,10 +26,6 @@ data class GeneralLedgerReversalDTO(
    @field:Schema(name = "reversalDate", description = "Reversal date")
    var reversalDate: LocalDate? = null,
 
-   @field:NotNull
-   @field:Schema(name = "generalLedgerDetail", description = "General ledger detail")
-   var generalLedgerDetail: GeneralLedgerDetailDTO? = null,
-
    @field:Schema(name = "comment", required = false, description = "Comment")
    var comment: String? = null,
 
@@ -52,7 +47,6 @@ data class GeneralLedgerReversalDTO(
          source = GeneralLedgerSourceCodeDTO(entity.source),
          date = entity.date,
          reversalDate = entity.reversalDate,
-         generalLedgerDetail = GeneralLedgerDetailDTO(entity.generalLedgerDetail),
          comment = entity.comment,
          entryMonth = entity.entryMonth,
          entryNumber = entity.entryNumber
