@@ -202,19 +202,21 @@ class InventoryRepository(
 
    fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
       var pageResult = findUnscannedIdleInventory(audit, StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC"))
-      var inventories: MutableList<InventoryEntity> = mutableListOf()
+      val inventories: MutableList<InventoryEntity> = mutableListOf()
+
       while (pageResult.elements.isNotEmpty()) {
          inventories.addAll(pageResult.elements)
          pageResult = findUnscannedIdleInventory(audit, pageResult.requested.nextPage())
       }
+
       return inventories
    }
 
    fun findUnscannedIdleInventory(audit: AuditEntity, pageRequest: PageRequest): RepositoryPage<InventoryEntity, PageRequest> {
       var totalElements: Long? = null
-      var company = audit.store.myCompany()
+      val company = audit.store.myCompany()
       val elements = mutableListOf<InventoryEntity>()
-      val params = mutableMapOf<String, Any?>(
+      val params = mutableMapOf(
          "audit_id" to audit.id,
          "comp_id" to company.myId(),
          "limit" to pageRequest.size(),
@@ -222,7 +224,7 @@ class InventoryRepository(
       )
 
       val sql =
-         """
+      """
       WITH paged AS (
          $selectBase
             JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)
@@ -241,7 +243,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
          OFFSET :offset
-         """.trimIndent()
+      """.trimIndent()
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 
@@ -249,6 +251,7 @@ class InventoryRepository(
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
+
          elements.add(mapRow(rs))
       }
 

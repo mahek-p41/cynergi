@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
@@ -549,21 +550,7 @@ class AuditRepository @Inject constructor(
             "store_number" to entity.store.myNumber(),
             "company_id" to entity.store.myCompany().myId()
          ),
-         RowMapper { rs, _ ->
-            AuditEntity(
-               id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               store = entity.store,
-               number = rs.getInt("number"),
-               totalDetails = 0,
-               totalExceptions = 0,
-               hasExceptionNotes = false,
-               inventoryCount = rs.getInt("inventory_count"),
-               lastUpdated = null,
-               actions = mutableSetOf()
-            )
-         }
+         RowMapper { rs, _ -> mapInsertUpdateAudit(rs, entity.store) }
       )
 
       entity.actions.asSequence()
@@ -577,13 +564,41 @@ class AuditRepository @Inject constructor(
    fun update(entity: AuditEntity): AuditEntity {
       logger.debug("Updating Audit {}", entity)
 
+      val result = jdbc.updateReturning(
+         """
+         UPDATE audit
+         SET inventory_count = :inventory_count
+         WHERE id = :id
+         RETURNING *
+         """.trimIndent(),
+         mapOf(
+            "inventory_count" to entity.inventoryCount,
+            "id" to entity.id
+         ),
+         RowMapper { rs, _ -> mapInsertUpdateAudit(rs, entity.store) }
+      )
       // there is nothing to update on an audit as they can just cancel the audit and create a new one, just upsert the actions
       val actions = entity.actions.asSequence()
          .map { auditActionRepository.upsert(entity, it) }
          .toMutableSet()
 
-      return entity.copy(actions = actions)
+      return result.copy(actions = actions)
    }
+
+   private fun mapInsertUpdateAudit(rs: ResultSet, store: Store): AuditEntity =
+      AuditEntity(
+         id = rs.getLong("id"),
+         timeCreated = rs.getOffsetDateTime("time_created"),
+         timeUpdated = rs.getOffsetDateTime("time_updated"),
+         store = store,
+         number = rs.getInt("number"),
+         totalDetails = 0,
+         totalExceptions = 0,
+         hasExceptionNotes = false,
+         inventoryCount = rs.getInt("inventory_count"),
+         lastUpdated = null,
+         actions = mutableSetOf()
+      )
 
    private fun processAlternativeStoreIndicator(whereClause: StringBuilder, params: MutableMap<String, Any?>, user: User, storeNumbers: Set<Int>?) {
       if (!storeNumbers.isNullOrEmpty() && user.myAlternativeStoreIndicator() != "N") {
