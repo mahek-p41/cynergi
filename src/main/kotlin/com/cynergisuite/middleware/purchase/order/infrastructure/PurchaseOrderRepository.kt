@@ -51,7 +51,7 @@ class PurchaseOrderRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}

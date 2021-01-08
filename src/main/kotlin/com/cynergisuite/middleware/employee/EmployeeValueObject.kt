@@ -20,6 +20,7 @@ data class EmployeeValueObject(
    @field:Schema(name = "id", description = "System generated ID for the Employee/User")
    var id: Long? = null,
 
+   @field:JsonIgnoreProperties(allowSetters = true)
    @field:NotNull
    @field:Schema(name = "type", description = "Where the employee definition's data came from")
    var type: String? = null,
@@ -38,11 +39,13 @@ data class EmployeeValueObject(
    @field:Schema(name = "firstNameMi", description = "Employee's given name", minLength = 2, maxLength = 15, required = true, nullable = false)
    var firstNameMi: String? = null,
 
+   @field:JsonIgnoreProperties
    @field:NotNull
    @field:Size(min = 3)
    @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", hidden = true)
    var passCode: String? = null,
 
+   @field:JsonIgnoreProperties
    @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
    var store: StoreDTO? = null,
 
@@ -56,6 +59,7 @@ data class EmployeeValueObject(
    @field:Schema(name = "alternativeArea", description = "Employee's alternate area")
    var alternativeArea: Long? = null,
 
+   @field:JsonIgnoreProperties
    @field:NotNull
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
    var active: Boolean? = true

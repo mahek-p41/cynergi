@@ -81,7 +81,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             JOIN account ON glJournal.account_id = account.account_id
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
-                  AND profitCenter.number = glJournal.profit_center_id_sfk
+                  AND profitCenter.id = glJournal.profit_center_id_sfk
             JOIN general_ledger_source_codes source ON glJournal.source_id = source.id
       """
    }
@@ -154,7 +154,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          mapOf(
             "company_id" to company.myId(),
             "account_id" to entity.account.id,
-            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
+            "profit_center_id_sfk" to entity.profitCenter.myId(),
             "date" to entity.date,
             "source_id" to entity.source.id,
             "amount" to entity.amount,

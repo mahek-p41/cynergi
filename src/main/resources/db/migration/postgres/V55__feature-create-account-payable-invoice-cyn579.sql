@@ -81,7 +81,7 @@ CREATE INDEX account_payable_invoice_company_id_idx ON account_payable_invoice (
 CREATE INDEX account_payable_invoice_vendor_id_idx ON account_payable_invoice (vendor_id);
 CREATE INDEX account_payable_invoice_purchase_order_id_idx ON account_payable_invoice (purchase_order_id);
 CREATE INDEX account_payable_invoice_selected_id_idx ON account_payable_invoice (selected_id);
-CREATE INDEX account_payable_invoice_tupe_id_idx ON account_payable_invoice (type_id);
+CREATE INDEX account_payable_invoice_type_id_idx ON account_payable_invoice (type_id);
 CREATE INDEX account_payable_invoice_status_id_idx ON account_payable_invoice (status_id);
 CREATE INDEX account_payable_invoice_pay_to_id_idx ON account_payable_invoice (pay_to_id);
 
