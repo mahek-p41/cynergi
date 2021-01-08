@@ -681,7 +681,7 @@ class PurchaseOrderRepository @Inject constructor(
       }
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderEntity {
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderEntity {
       return PurchaseOrderEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
@@ -711,6 +711,13 @@ class PurchaseOrderRepository @Inject constructor(
          customerAccount = accountRepository.mapRowOrNull(rs, company, "${columnPrefix}custAcct_")
       )
    }
+
+   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderEntity? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, company, columnPrefix)
+      } else {
+         null
+      }
 
    private fun mapRow(rs: ResultSet, entity: PurchaseOrderEntity, columnPrefix: String = EMPTY): PurchaseOrderEntity {
       return PurchaseOrderEntity(
