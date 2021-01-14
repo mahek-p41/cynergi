@@ -41,3 +41,20 @@ COMMENT ON TABLE audit_inventory IS 'The financial calendar stores the inventory
 ALTER TABLE audit
 DROP COLUMN inventory_count;
 
+
+-- Migration script to create inventory snapshot for completed, approved, canceled audits
+-- Approved audits also have completed status so the dataset in select clause will be duplicate after joining
+--    Option 1: filter by statuses: (completed, approved, canceled), use distinct to eliminate the duplicate data
+--    Option 2(chosen one): filter by statuses: (completed, canceled)
+-- Inventory snapshot creates snapshot for all inventory items, not only items in statuses ('N', 'R')
+-- because we don't know when do we need those items
+INSERT INTO audit_inventory
+   (audit_id, dataset, serial_number, lookup_key, lookup_key_type, barcode, alt_id, brand, model_number, product_code, description, received_date, original_cost, actual_cost, model_category, times_rented, total_revenue, remaining_value, sell_price, assigned_value, idle_days, condition, returned_date, location, status, primary_location, location_type)
+SELECT a.id, dataset, serial_number, lookup_key, lookup_key_type, barcode, alt_id, brand, model_number, product_code, i.description, received_date, original_cost, actual_cost, model_category, times_rented, total_revenue, remaining_value, sell_price, assigned_value, idle_days, condition, returned_date, location, status, primary_location, location_type
+FROM fastinfo_prod_import.inventory_vw i
+   JOIN company comp ON i.dataset = comp.dataset_code
+   JOIN audit a ON a.company_id = comp.id
+   JOIN audit_action action ON a.id = action.audit_id
+   JOIN audit_status_type_domain status ON action.status_id = status.id
+WHERE status.value IN ('COMPLETED', 'CANCELED')
+ORDER BY a.id;
