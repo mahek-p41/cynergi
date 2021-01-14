@@ -28,7 +28,7 @@ import javax.inject.Inject
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/purchase/order/control")
+@Controller("/api/purchase-order/control")
 class PurchaseOrderControlController @Inject constructor(
    private val purchaseOrderControlService: PurchaseOrderControlService,
    private val userService: UserService

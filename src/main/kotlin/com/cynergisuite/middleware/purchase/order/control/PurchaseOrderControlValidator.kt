@@ -9,9 +9,9 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.purchase.order.control.infrastructure.PurchaseOrderControlRepository
-import com.cynergisuite.middleware.purchase.order.infrastructure.ApprovalRequiredFlagTypeRepository
-import com.cynergisuite.middleware.purchase.order.infrastructure.DefaultPurchaseOrderTypeRepository
-import com.cynergisuite.middleware.purchase.order.infrastructure.UpdatePurchaseOrderCostTypeRepository
+import com.cynergisuite.middleware.purchase.order.type.infrastructure.ApprovalRequiredFlagTypeRepository
+import com.cynergisuite.middleware.purchase.order.type.infrastructure.DefaultPurchaseOrderTypeRepository
+import com.cynergisuite.middleware.purchase.order.type.infrastructure.UpdatePurchaseOrderCostTypeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

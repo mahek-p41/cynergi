@@ -5,9 +5,9 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagDTO
-import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderTypeDTO
-import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostTypeValueObject
+import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagDTO
+import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeDTO
+import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
 import com.cynergisuite.middleware.purchase.order.control.infrastructure.PurchaseOrderControlRepository
 import javax.inject.Inject
 import javax.inject.Singleton

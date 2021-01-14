@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.purchase.order.control
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusType
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.purchase.order.ApprovalRequiredFlagType
-import com.cynergisuite.middleware.purchase.order.DefaultPurchaseOrderType
-import com.cynergisuite.middleware.purchase.order.UpdatePurchaseOrderCostType
+import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagType
+import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderType
+import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostType
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.time.OffsetDateTime
 

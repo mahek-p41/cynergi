@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/purchase/order/type/exception-indicator")
+@Controller("/api/purchase-order/type/exception-indicator")
 class ExceptionIndicatorTypeController @Inject constructor(
    private val exceptionIndicatorTypeService: ExceptionIndicatorTypeService,
    private val localizationService: LocalizationService

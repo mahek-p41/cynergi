@@ -18,7 +18,7 @@ class ExceptionIndicatorTypeControllerSpecification extends ControllerSpecificat
       def predefinedExceptionIndicatorType = dataLoaderService.predefined().collect { new ExceptionIndicatorTypeDTO(it) }
 
       when:
-      def response = get("/purchase/order/type/exception-indicator")
+      def response = get("/purchase-order/type/exception-indicator")
 
       then:
       notThrown(HttpClientResponseException)

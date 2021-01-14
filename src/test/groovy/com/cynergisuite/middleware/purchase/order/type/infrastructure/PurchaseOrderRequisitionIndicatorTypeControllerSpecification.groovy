@@ -18,7 +18,7 @@ class PurchaseOrderRequisitionIndicatorTypeControllerSpecification extends Contr
       def predefinedPurchaseOrderRequisitionIndicatorType = dataLoaderService.predefined().collect { new PurchaseOrderRequisitionIndicatorTypeDTO(it) }
 
       when:
-      def response = get("/purchase/order/type/requisition-indicator")
+      def response = get("/purchase-order/type/requisition-indicator")
 
       then:
       notThrown(HttpClientResponseException)

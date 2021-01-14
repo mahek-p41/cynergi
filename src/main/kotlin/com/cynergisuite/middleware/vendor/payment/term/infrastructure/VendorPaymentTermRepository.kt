@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -28,7 +29,7 @@ class VendorPaymentTermRepository @Inject constructor(
    private val vendorPaymentTermScheduleRepository: VendorPaymentTermScheduleRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermRepository::class.java)
-   private fun findOneQuery() =
+   fun findOneQuery() =
       """
       WITH company AS (
          ${companyRepository.companyBaseQuery()}
@@ -285,6 +286,17 @@ class VendorPaymentTermRepository @Inject constructor(
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
          discountDays = rs.getIntOrNull("vpt_discount_days"),
          discountPercent = rs.getBigDecimal("vpt_discount_percent")
+      )
+   }
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): VendorPaymentTermEntity {
+      return VendorPaymentTermEntity(
+         id = rs.getLong("${columnPrefix}vpt_id"),
+         company = companyRepository.mapRow(rs, "${columnPrefix}comp_", "${columnPrefix}address_"),
+         description = rs.getString("${columnPrefix}vpt_description"),
+         discountMonth = rs.getIntOrNull("${columnPrefix}vpt_discount_month"),
+         discountDays = rs.getIntOrNull("${columnPrefix}vpt_discount_days"),
+         discountPercent = rs.getBigDecimal("${columnPrefix}vpt_discount_percent")
       )
    }
 
