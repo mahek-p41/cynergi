@@ -7,6 +7,8 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.middleware.audit.AuditEntity
+import com.cynergisuite.middleware.audit.status.CREATED
+import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
@@ -80,6 +82,62 @@ class InventoryRepository(
          iltd.localization_code AS location_type_localization_code
       FROM company comp
            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+           JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
+           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
+           JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
+      """.trimIndent()
+
+   private val selectFromAuditInventory =
+      """
+      SELECT
+         i.id AS id,
+         i.serial_number AS serial_number,
+         i.lookup_key AS lookup_key,
+         i.lookup_key_type AS lookup_key_type,
+         i.barcode AS barcode,
+         i.alt_id AS alt_id,
+         i.brand AS brand,
+         i.model_number AS model_number,
+         i.product_code AS product_code,
+         i.description AS description,
+         i.received_date AS received_date,
+         i.original_cost AS original_cost,
+         i.actual_cost AS actual_cost,
+         i.model_category AS model_category,
+         i.times_rented AS times_rented,
+         i.total_revenue AS total_revenue,
+         i.remaining_value AS remaining_value,
+         i.sell_price AS sell_price,
+         i.assigned_value AS assigned_value,
+         i.idle_days AS idle_days,
+         i.condition AS condition,
+         i.returned_date AS returned_date,
+         i.status AS status,
+         i.dataset AS dataset,
+         comp.id AS comp_id,
+         comp.uu_row_id AS comp_uu_row_id,
+         comp.time_created AS comp_time_created,
+         comp.time_updated AS comp_time_updated,
+         comp.name AS comp_name,
+         comp.doing_business_as AS comp_doing_business_as,
+         comp.client_code AS comp_client_code,
+         comp.client_id AS comp_client_id,
+         comp.dataset_code AS comp_dataset_code,
+         comp.federal_id_number AS comp_federal_id_number,
+         primaryStore.id AS primary_store_id,
+         primaryStore.number AS primary_store_number,
+         primaryStore.name AS primary_store_name,
+         primaryStore.dataset AS primary_store_dataset,
+         currentStore.id AS current_store_id,
+         currentStore.number AS current_store_number,
+         currentStore.name AS current_store_name,
+         currentStore.dataset AS current_store_dataset,
+         iltd.id AS location_type_id,
+         iltd.value AS location_type_value,
+         iltd.description AS location_type_description,
+         iltd.localization_code AS location_type_localization_code
+      FROM company comp
+           JOIN audit_inventory i ON comp.dataset_code = i.dataset
            JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
            LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
@@ -226,7 +284,9 @@ class InventoryRepository(
       val sql =
       """
       WITH paged AS (
-         $selectBase
+         ${ if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) selectBase
+            else selectFromAuditInventory
+         }
             JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)
          WHERE
             comp.id = :comp_id
