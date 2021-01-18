@@ -83,19 +83,19 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             JOIN company comp ON glSummary.company_id = comp.id
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
-                       AND profitCenter.number = glSummary.profit_center_id_sfk
+                       AND profitCenter.id = glSummary.profit_center_id_sfk
             JOIN account acct ON glSummary.account_id = acct.account_id
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
       """
    }
 
-   fun exists(company: Company, accountId: Long, profitCenterNumber: Int, overallPeriodId: Long): Boolean {
-      val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterNumber" to profitCenterNumber, "overallPeriodId" to overallPeriodId)
+   fun exists(company: Company, accountId: Long, profitCenterId: Long, overallPeriodId: Long): Boolean {
+      val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT id
                         FROM general_ledger_summary
-                        WHERE company_id = :comp_id AND account_id = :accountId AND profit_center_id_sfk = :profitCenterNumber AND overall_period_id = :overallPeriodId)
+                        WHERE company_id = :comp_id AND account_id = :accountId AND profit_center_id_sfk = :profitCenterId AND overall_period_id = :overallPeriodId)
          """.trimIndent(),
          params, Boolean::class.java
       )!!
@@ -122,9 +122,9 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       return found
    }
 
-   fun findOneByBusinessKey(company: Company, accountId: Long, profitCenterNumber: Int, overallPeriodId: Long): GeneralLedgerSummaryEntity? {
-      val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterNumber" to profitCenterNumber, "overallPeriodId" to overallPeriodId)
-      val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterNumber AND glSummary.overall_period_id = :overallPeriodId"
+   fun findOneByBusinessKey(company: Company, accountId: Long, profitCenterId: Long, overallPeriodId: Long): GeneralLedgerSummaryEntity? {
+      val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
+      val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterId AND glSummary.overall_period_id = :overallPeriodId"
 
       logger.debug("Searching for GeneralLedgerSummary using {} {}", query, params)
 
@@ -227,7 +227,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          mapOf(
             "company_id" to company.myId(),
             "account_id" to entity.account.myId(),
-            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
+            "profit_center_id_sfk" to entity.profitCenter.myId(),
             "overall_period_id" to entity.overallPeriod.id,
             "net_activity_period_1" to entity.netActivityPeriod1,
             "net_activity_period_2" to entity.netActivityPeriod2,
@@ -282,7 +282,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             "id" to entity.id,
             "company_id" to company.myId(),
             "account_id" to entity.account.myId(),
-            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
+            "profit_center_id_sfk" to entity.profitCenter.myId(),
             "overall_period_id" to entity.overallPeriod.id,
             "net_activity_period_1" to entity.netActivityPeriod1,
             "net_activity_period_2" to entity.netActivityPeriod2,

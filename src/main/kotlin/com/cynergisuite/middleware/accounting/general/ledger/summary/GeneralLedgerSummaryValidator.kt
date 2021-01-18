@@ -41,7 +41,7 @@ class GeneralLedgerSummaryValidator @Inject constructor(
       val account = accountRepository.findOne(dto.account!!.id!!, company) ?: throw NotFoundException(dto.account!!.id!!)
       val profitCenter = storeRepository.findOne(dto.profitCenter!!.id!!, company) ?: throw NotFoundException(dto.profitCenter!!.id!!)
       val overallPeriod = overallPeriodTypeRepository.findOne(dto.overallPeriod!!.value) ?: throw NotFoundException(dto.overallPeriod!!.value)
-      val glSummaryByBusinessKey = generalLedgerSummaryRepository.findOneByBusinessKey(company, account.id!!, profitCenter.number, overallPeriod.id)
+      val glSummaryByBusinessKey = generalLedgerSummaryRepository.findOneByBusinessKey(company, account.id!!, profitCenter.id, overallPeriod.id)
 
       doValidation { errors ->
          if ((existingGLSummary == null && glSummaryByBusinessKey != null) || (existingGLSummary != null && glSummaryByBusinessKey != null && (existingGLSummary.id != dto.id || existingGLSummary.id != glSummaryByBusinessKey.id)))
