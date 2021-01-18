@@ -32,7 +32,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerDetailRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
@@ -212,7 +212,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(
+   fun mapRow(
       rs: ResultSet,
       account: AccountEntity,
       profitCenter: Store,
