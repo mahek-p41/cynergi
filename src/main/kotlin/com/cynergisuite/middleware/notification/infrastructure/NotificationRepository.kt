@@ -140,7 +140,7 @@ class NotificationRepository @Inject constructor(
       )
 
    @Transactional
-   @CacheInvalidate("notifications-cache")
+   @CacheInvalidate("notifications-cache", all = true)
    fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
@@ -171,7 +171,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Transactional
-   @CacheInvalidate("notifications-cache")
+   @CacheInvalidate("notifications-cache", all = true)
    fun update(entity: Notification): Notification {
       logger.debug("Updating notification {}", entity)
 
@@ -215,7 +215,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Transactional
-   @CacheInvalidate("notifications-cache")
+   @CacheInvalidate("notifications-cache", all = true)
    fun delete(id: Long): Int {
       logger.trace("notification deletion requested for notification with id {}", id)
 
