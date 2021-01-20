@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.routine.infrastructure.RoutineRepository
 import com.cynergisuite.middleware.company.Company
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,7 +27,6 @@ class RoutineService @Inject constructor(
 
    fun create(dto: RoutineDTO, company: Company): RoutineDTO {
       val toCreate = routineValidator.validateCreate(dto, company)
-
       return transformEntity(routineRepository.insert(toCreate, company))
    }
 
@@ -34,6 +34,10 @@ class RoutineService @Inject constructor(
       val toUpdate = routineValidator.validateUpdate(id, dto, company)
 
       return transformEntity(routineRepository.update(toUpdate, company))
+   }
+
+   fun clearRoutineAccounts(fromDate: LocalDate, toDate: LocalDate, company: Company) {
+      routineRepository.clearGlInRange(fromDate, toDate, company)
    }
 
    private fun transformEntity(routineEntity: RoutineEntity): RoutineDTO {

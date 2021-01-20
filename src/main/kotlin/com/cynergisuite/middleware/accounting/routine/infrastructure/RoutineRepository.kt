@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -185,6 +186,34 @@ class RoutineRepository @Inject constructor(
          ),
          RowMapper { rs, _ ->
             mapRowUpsert(rs, entity.overallPeriod)
+         }
+      )
+   }
+
+      @Transactional
+   fun clearGlInRange(fromDate: LocalDate, toDate: LocalDate, company: Company): RoutineEntity {
+      logger.debug("Updating financial_calendar ", fromDate)
+
+      return jdbc.updateReturning(
+         """
+         UPDATE financial_calendar
+         SET
+            general_ledger_open = :general_ledger_open,
+            account_payable_open = :account_payable_open
+         WHERE company_id = :company_id
+         AND period_from BETWEEN :from_date AND :to_date
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "general_ledger_open" to false,
+            "account_payable_open" to false,
+            "from_date" to fromDate,
+            "to_date" to toDate
+         ),
+         RowMapper { rs, _ ->
+            mapRow(rs)
          }
       )
    }

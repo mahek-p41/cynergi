@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.routine.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.accounting.routine.RoutineDateRangeDTO
 import com.cynergisuite.middleware.accounting.routine.RoutineDTO
 import com.cynergisuite.middleware.accounting.routine.RoutineService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -95,6 +96,23 @@ class RoutineController @Inject constructor(
       }
 
       return page
+   }
+
+   @Post(value = "/open-gl", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class)
+   @Operation(tags = ["RoutineEndpoints"], summary = "Sets all GLAccounts Open to false", description = "Clears GLAccounts", operationId = "routine-open-gl")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun open(@Body @Valid dto: RoutineDateRangeDTO, authentication: Authentication, httpRequest: HttpRequest<*>) {
+
+      val user = userService.findUser(authentication)
+      return routineService.clearRoutineAccounts(dto.periodFrom, dto.periodTo, user.myCompany())
    }
 
    @Post(processes = [APPLICATION_JSON])
