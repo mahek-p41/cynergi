@@ -41,7 +41,6 @@ class RebateValidator @Inject constructor(
    private fun doSharedValidation(dto: RebateDTO, company: Company): RebateEntity {
       val generalLedgerDebitAccountId = dto.generalLedgerDebitAccount?.id
 
-      val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val status = accountStatusTypeRepository.findOne(dto.status!!.value!!)
       val description = dto.description
       val rebate = rebateTypeRepository.findOne(dto.type!!.value)
@@ -52,8 +51,13 @@ class RebateValidator @Inject constructor(
       val generalLedgerCreditAccount = dto.generalLedgerCreditAccount!!.id.let { accountRepository.findOne(it!!, company) }
 
       doValidation { errors ->
-         vendor
-            ?: errors.add(ValidationError("vendor.id", NotFound(dto.vendor!!.id!!)))
+         if (dto.vendors != null) {
+            for ((i, vendor) in dto.vendors!!.withIndex()) {
+               if (vendorRepository.doesNotExist(vendor.id!!)) {
+                  errors.add(ValidationError("vendors[$i].id", NotFound(vendor.id!!)))
+               }
+            }
+         }
 
          status
             ?: errors.add(ValidationError("status.value", NotFound(dto.status!!.value!!)))
@@ -85,7 +89,7 @@ class RebateValidator @Inject constructor(
 
       return RebateEntity(
          dto = dto,
-         vendor = vendor!!,
+         vendors = mutableListOf(),
          status = status!!,
          rebate = rebate!!,
          generalLedgerDebitAccount = generalLedgerDebitAccount,

@@ -2,10 +2,8 @@ package com.cynergisuite.middleware.vendor.rebate.infrastructure
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -39,10 +37,7 @@ class RebateRepository @Inject constructor(
 
    private fun selectBaseQuery(): String {
       return """
-         WITH vendor AS (
-            ${vendorRepository.baseSelectQuery()}
-         ),
-         account AS (
+         WITH account AS (
             ${accountRepository.selectBaseQuery()}
          )
          SELECT
@@ -55,118 +50,6 @@ class RebateRepository @Inject constructor(
             r.percent                                           AS r_percent,
             r.amount_per_unit                                   AS r_amount_per_unit,
             r.accrual_indicator                                 AS r_accrual_indicator,
-            vendor.v_id                                         AS vendor_id,
-            vendor.v_uu_row_id                                  AS vendor_uu_row_id,
-            vendor.v_time_created                               AS vendor_time_created,
-            vendor.v_time_updated                               AS vendor_time_updated,
-            vendor.v_company_id                                 AS vendor_company_id,
-            vendor.v_number                                     AS vendor_number,
-            vendor.v_name                                       AS vendor_name,
-            vendor.v_account_number                             AS vendor_account_number,
-            vendor.v_pay_to_id                                  AS vendor_pay_to_id,
-            vendor.v_freight_on_board_type_id                   AS vendor_freight_on_board_type_id,
-            vendor.v_payment_terms_id                           AS vendor_payment_terms_id,
-            vendor.v_normal_days                                AS vendor_normal_days,
-            vendor.v_return_policy                              AS vendor_return_policy,
-            vendor.v_ship_via_id                                AS vendor_ship_via_id,
-            vendor.v_group_id                                   AS vendor_group_id,
-            vendor.v_minimum_quantity                           AS vendor_minimum_quantity,
-            vendor.v_minimum_amount                             AS vendor_minimum_amount,
-            vendor.v_free_ship_quantity                         AS vendor_free_ship_quantity,
-            vendor.v_free_ship_amount                           AS vendor_free_ship_amount,
-            vendor.v_vendor_1099                                AS vendor_vendor_1099,
-            vendor.v_federal_id_number                          AS vendor_federal_id_number,
-            vendor.v_sales_representative_name                  AS vendor_sales_representative_name,
-            vendor.v_sales_representative_fax                   AS vendor_sales_representative_fax,
-            vendor.v_separate_check                             AS vendor_separate_check,
-            vendor.v_bump_percent                               AS vendor_bump_percent,
-            vendor.v_freight_calc_method_type_id                AS vendor_freight_calc_method_type_id,
-            vendor.v_freight_percent                            AS vendor_freight_percent,
-            vendor.v_freight_amount                             AS vendor_freight_amount,
-            vendor.v_charge_inventory_tax_1                     AS vendor_charge_inventory_tax_1,
-            vendor.v_charge_inventory_tax_2                     AS vendor_charge_inventory_tax_2,
-            vendor.v_charge_inventory_tax_3                     AS vendor_charge_inventory_tax_3,
-            vendor.v_charge_inventory_tax_4                     AS vendor_charge_inventory_tax_4,
-            vendor.v_federal_id_number_verification             AS vendor_federal_id_number_verification,
-            vendor.v_email_address                              AS vendor_email_address,
-            vendor.v_purchase_order_submit_email_address        AS vendor_purchase_order_submit_email_address,
-            vendor.v_allow_drop_ship_to_customer                AS vendor_allow_drop_ship_to_customer,
-            vendor.v_auto_submit_purchase_order                 AS vendor_auto_submit_purchase_order,
-            vendor.v_note                                       AS vendor_note,
-            vendor.v_phone_number                               AS vendor_phone_number,
-            vendor.v_comp_id                                    AS vendor_comp_id,
-            vendor.v_comp_uu_row_id                             AS vendor_comp_uu_row_id,
-            vendor.v_comp_time_created                          AS vendor_comp_time_created,
-            vendor.v_comp_time_updated                          AS vendor_comp_time_updated,
-            vendor.v_comp_name                                  AS vendor_comp_name,
-            vendor.v_comp_doing_business_as                     AS vendor_comp_doing_business_as,
-            vendor.v_comp_client_code                           AS vendor_comp_client_code,
-            vendor.v_comp_client_id                             AS vendor_comp_client_id,
-            vendor.v_comp_dataset_code                          AS vendor_comp_dataset_code,
-            vendor.v_comp_federal_id_number                     AS vendor_comp_federal_id_number,
-            vendor.v_comp_address_id                            AS vendor_comp_address_id,
-            vendor.v_comp_address_name                          AS vendor_comp_address_name,
-            vendor.v_comp_address_address1                      AS vendor_comp_address_address1,
-            vendor.v_comp_address_address2                      AS vendor_comp_address_address2,
-            vendor.v_comp_address_city                          AS vendor_comp_address_city,
-            vendor.v_comp_address_state                         AS vendor_comp_address_state,
-            vendor.v_comp_address_postal_code                   AS vendor_comp_address_postal_code,
-            vendor.v_comp_address_latitude                      AS vendor_comp_address_latitude,
-            vendor.v_comp_address_longitude                     AS vendor_comp_address_longitude,
-            vendor.v_comp_address_country                       AS vendor_comp_address_country,
-            vendor.v_comp_address_county                        AS vendor_comp_address_county,
-            vendor.v_comp_address_phone                         AS vendor_comp_address_phone,
-            vendor.v_comp_address_fax                           AS vendor_comp_address_fax,
-            vendor.v_onboard_id                                 AS vendor_onboard_id,
-            vendor.v_onboard_value                              AS vendor_onboard_value,
-            vendor.v_onboard_description                        AS vendor_onboard_description,
-            vendor.v_onboard_localization_code                  AS vendor_onboard_localization_code,
-            vendor.v_method_id                                  AS vendor_method_id,
-            vendor.v_method_value                               AS vendor_method_value,
-            vendor.v_method_description                         AS vendor_method_description,
-            vendor.v_method_localization_code                   AS vendor_method_localization_code,
-            vendor.v_address_id                                 AS vendor_address_id,
-            vendor.v_address_uu_row_id                          AS vendor_address_uu_row_id,
-            vendor.v_address_time_created                       AS vendor_address_time_created,
-            vendor.v_address_time_updated                       AS vendor_address_time_updated,
-            vendor.v_address_number                             AS vendor_address_number,
-            vendor.v_address_name                               AS vendor_address_name,
-            vendor.v_address_address1                           AS vendor_address_address1,
-            vendor.v_address_address2                           AS vendor_address_address2,
-            vendor.v_address_city                               AS vendor_address_city,
-            vendor.v_address_state                              AS vendor_address_state,
-            vendor.v_address_postal_code                        AS vendor_address_postal_code,
-            vendor.v_address_latitude                           AS vendor_address_latitude,
-            vendor.v_address_longitude                          AS vendor_address_longitude,
-            vendor.v_address_country                            AS vendor_address_country,
-            vendor.v_address_county                             AS vendor_address_county,
-            vendor.v_address_phone                              AS vendor_address_phone,
-            vendor.v_address_fax                                AS vendor_address_fax,
-            vendor.v_vpt_id                                     AS vendor_vpt_id,
-            vendor.v_vpt_uu_row_id                              AS vendor_vpt_uu_row_id,
-            vendor.v_vpt_time_created                           AS vendor_vpt_time_created,
-            vendor.v_vpt_time_updated                           AS vendor_vpt_time_updated,
-            vendor.v_vpt_company_id                             AS vendor_vpt_company_id,
-            vendor.v_vpt_description                            AS vendor_vpt_description,
-            vendor.v_vpt_number                                 AS vendor_vpt_number,
-            vendor.v_vpt_number_of_payments                     AS vendor_vpt_number_of_payments,
-            vendor.v_vpt_discount_month                         AS vendor_vpt_discount_month,
-            vendor.v_vpt_discount_days                          AS vendor_vpt_discount_days,
-            vendor.v_vpt_discount_percent                       AS vendor_vpt_discount_percent,
-            vendor.v_shipVia_id                                 AS vendor_shipVia_id,
-            vendor.v_shipVia_uu_row_id                          AS vendor_shipVia_uu_row_id,
-            vendor.v_shipVia_time_created                       AS vendor_shipVia_time_created,
-            vendor.v_shipVia_time_updated                       AS vendor_shipVia_time_updated,
-            vendor.v_shipVia_description                        AS vendor_shipVia_description,
-            vendor.v_shipVia_number                             AS vendor_shipVia_number,
-            vendor.v_vgrp_id                                    AS vendor_vgrp_id,
-            vendor.v_vgrp_uu_row_id                             AS vendor_vgrp_uu_row_id,
-            vendor.v_vgrp_time_created                          AS vendor_vgrp_time_created,
-            vendor.v_vgrp_time_updated                          AS vendor_vgrp_time_updated,
-            vendor.v_vgrp_company_id                            AS vendor_vgrp_company_id,
-            vendor.v_vgrp_value                                 AS vendor_vgrp_value,
-            vendor.v_vgrp_description                           AS vendor_vgrp_description,
-            count(*) OVER()                                     AS total_elements,
             status.id                                           AS status_id,
             status.value                                        AS status_value,
             status.description                                  AS status_description,
@@ -210,9 +93,9 @@ class RebateRepository @Inject constructor(
             glCreditAcct.account_status_id                      AS glCreditAcct_status_id,
             glCreditAcct.account_status_value                   AS glCreditAcct_status_value,
             glCreditAcct.account_status_description             AS glCreditAcct_status_description,
-            glCreditAcct.account_status_localization_code       AS glCreditAcct_status_localization_code
+            glCreditAcct.account_status_localization_code       AS glCreditAcct_status_localization_code,
+            count(*) OVER()                                     AS total_elements
          FROM rebate r
-            JOIN vendor                            ON r.vendor_id = vendor.v_id
             JOIN account_status_type_domain status ON r.status_type_id = status.id
             JOIN rebate_type_domain rebate         ON r.rebate_type_id = rebate.id
             LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id
@@ -266,7 +149,6 @@ class RebateRepository @Inject constructor(
          """
          INSERT INTO rebate(
             company_id,
-            vendor_id,
             status_type_id,
             description,
             rebate_type_id,
@@ -278,7 +160,6 @@ class RebateRepository @Inject constructor(
          )
          VALUES (
             :company_id,
-            :vendor_id,
             :status_type_id,
             :description,
             :rebate_type_id,
@@ -293,7 +174,6 @@ class RebateRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "company_id" to company.myId(),
-            "vendor_id" to entity.vendor.myId(),
             "status_type_id" to entity.status.id,
             "description" to entity.description,
             "rebate_type_id" to entity.rebate.id,
@@ -303,7 +183,7 @@ class RebateRepository @Inject constructor(
             "general_ledger_debit_account_id" to entity.generalLedgerDebitAccount?.id,
             "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount.id
          ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity.vendor, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
+         RowMapper { rs, _ -> mapRowUpsert(rs, company, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
       )
    }
 
@@ -316,7 +196,6 @@ class RebateRepository @Inject constructor(
             UPDATE rebate
             SET
                company_id = :company_id,
-               vendor_id = :vendor_id,
                status_type_id = :status_type_id,
                description = :description,
                rebate_type_id = :rebate_type_id,
@@ -332,7 +211,6 @@ class RebateRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "company_id" to company.myId(),
-            "vendor_id" to entity.vendor.myId(),
             "status_type_id" to entity.status.id,
             "description" to entity.description,
             "rebate_type_id" to entity.rebate.id,
@@ -342,14 +220,48 @@ class RebateRepository @Inject constructor(
             "general_ledger_debit_account_id" to entity.generalLedgerDebitAccount?.id,
             "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount.id
          ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity.vendor, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
+         RowMapper { rs, _ -> mapRowUpsert(rs, company, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
+      )
+   }
+
+   @Transactional
+   fun disassociateVendorFromRebate(rebate: RebateEntity, vendor: Identifiable) {
+      logger.debug("Deleting Rebate To Vendor rebate id {}, vendor id {}", rebate, vendor)
+
+      jdbc.update(
+         """
+         DELETE FROM rebate_to_vendor
+         WHERE rebate_id = :rebate_id AND vendor_id = :vendor_id
+         """,
+         mapOf(
+            "rebate_id" to rebate.id,
+            "vendor_id" to vendor.myId()
+         )
+      )
+   }
+
+   fun assignVendorToRebate(rebate: RebateEntity, vendor: Identifiable) {
+      logger.trace("Assigning Vendor {} to Rebate {}", vendor, rebate)
+
+      jdbc.update(
+         """
+         INSERT INTO rebate_to_vendor (rebate_id, vendor_id)
+         VALUES (:rebate_id, :vendor_id)
+         """.trimIndent(),
+         mapOf(
+            "rebate_id" to rebate.id,
+            "vendor_id" to vendor.myId()
+         )
       )
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): RebateEntity {
+      val id = rs.getLong("${columnPrefix}id")
+      val vendors = vendorRepository.findVendorIdsByRebate(id, company)
+
       return RebateEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         vendor = SimpleIdentifiableEntity(rs.getLongOrNull("vendor_id")!!),
+         id = id,
+         vendors = vendors,
          status = accountStatusTypeRepository.mapRow(rs, "status_"),
          description = rs.getString("${columnPrefix}description"),
          rebate = rebateTypeRepository.mapRow(rs, "rebate_"),
@@ -361,10 +273,13 @@ class RebateRepository @Inject constructor(
       )
    }
 
-   private fun mapRowUpsert(rs: ResultSet, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity, columnPrefix: String = EMPTY): RebateEntity {
+   private fun mapRowUpsert(rs: ResultSet, company: Company, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity, columnPrefix: String = EMPTY): RebateEntity {
+      val id = rs.getLong("${columnPrefix}id")
+      val vendors = vendorRepository.findVendorIdsByRebate(id, company)
+
       return RebateEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         vendor = vendor,
+         id = id,
+         vendors = vendors,
          status = status,
          description = rs.getString("${columnPrefix}description"),
          rebate = rebate,

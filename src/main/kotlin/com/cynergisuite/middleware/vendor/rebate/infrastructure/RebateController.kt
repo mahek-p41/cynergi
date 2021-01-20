@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.vendor.rebate.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -12,6 +14,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -154,5 +157,53 @@ class RebateController @Inject constructor(
       logger.debug("Requested Update Rebate {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Post(uri = "/{rebateId:[0-9]+}/vendor", processes = [APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["RebateToVendorEndpoints"], summary = "Assign a vendor to rebate", description = "Assign a vendor to rebate.", operationId = "rebate-assignVendor")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to assign a vendor to rebate", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = SimpleIdentifiableDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun assignVendor(
+      @QueryValue("rebateId") rebateId: Long,
+      @Body vendorDTO: SimpleIdentifiableDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Requested assign a Vendor {} to Rebate", vendorDTO)
+
+      val user = userService.findUser(authentication)
+
+      rebateService.assignVendorToRebate(rebateId, vendorDTO, user.myCompany())
+   }
+
+   @Delete(uri = "/{rebateId:[0-9]+}/vendor/{vendorId:[0-9]+}", produces = [APPLICATION_JSON])
+   @AccessControl
+   @Operation(tags = ["RebateToVendorEndpoints"], summary = "Disassociate a vendor from rebate", description = "Disassociate a vendor from rebate", operationId = "rebate-disassociateVendor")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Rebate To Vendor was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RebateDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Rebate was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun disassociateVendor(
+      @QueryValue("rebateId") rebateId: Long,
+      @QueryValue("vendorId") vendorId: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.info("Requested disassociate a Vendor {} from Rebate {}", vendorId, rebateId)
+
+      val user = userService.findUser(authentication)
+
+      rebateService.disassociateVendorFromRebate(rebateId, vendorId, user.myCompany())
    }
 }

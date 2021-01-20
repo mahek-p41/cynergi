@@ -7,7 +7,7 @@ import java.math.BigDecimal
 
 data class RebateEntity(
    val id: Long? = null,
-   val vendor: Identifiable,
+   val vendors: List<Identifiable>? = listOf(),
    val status: AccountStatusType,
    val description: String,
    val rebate: RebateType,
@@ -18,27 +18,16 @@ data class RebateEntity(
    val generalLedgerCreditAccount: AccountEntity
 ) : Identifiable {
 
-   constructor(id: Long? = null, dto: RebateDTO, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity) :
+   constructor(id: Long? = null, dto: RebateDTO, vendors: List<Identifiable>?, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity) :
       this(
          id = id ?: dto.myId(),
-         vendor = vendor,
+         vendors = vendors,
          status = status,
          description = dto.description!!,
          rebate = rebate,
          percent = dto.percent,
          amountPerUnit = dto.amountPerUnit,
          accrualIndicator = dto.accrualIndicator!!,
-         generalLedgerDebitAccount = generalLedgerDebitAccount,
-         generalLedgerCreditAccount = generalLedgerCreditAccount
-      )
-
-   constructor(existingRebate: RebateEntity, dto: RebateDTO, vendor: Identifiable, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity) :
-      this(
-         id = existingRebate.id,
-         dto = dto,
-         vendor = vendor,
-         status = status,
-         rebate = rebate,
          generalLedgerDebitAccount = generalLedgerDebitAccount,
          generalLedgerCreditAccount = generalLedgerCreditAccount
       )

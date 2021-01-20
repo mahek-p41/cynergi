@@ -21,10 +21,9 @@ data class RebateDTO(
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
    var id: Long? = null,
 
-   @field:NotNull
    @field:Valid
-   @field:Schema(name = "vendor", description = "Vendor id", minimum = "1")
-   var vendor: SimpleIdentifiableDTO? = null,
+   @field:Schema(name = "vendors", description = "List of vendors", required = false)
+   var vendors: MutableList<SimpleIdentifiableDTO>? = null,
 
    @field:NotNull
    @field:Valid
@@ -64,10 +63,10 @@ data class RebateDTO(
 
 ) : Identifiable {
 
-   constructor(entity: RebateEntity) :
+   constructor(entity: RebateEntity, vendors: List<SimpleIdentifiableDTO>? = null) :
       this(
          id = entity.id,
-         vendor = SimpleIdentifiableDTO(entity.vendor),
+         vendors = (vendors ?: entity.vendors?.map { SimpleIdentifiableDTO(it) }) as MutableList<SimpleIdentifiableDTO>,
          status = AccountStatusTypeValueObject(entity.status),
          description = entity.description,
          type = RebateTypeDTO(entity.rebate),

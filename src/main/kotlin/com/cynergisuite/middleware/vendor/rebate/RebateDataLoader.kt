@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
 import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
@@ -19,7 +20,7 @@ import javax.inject.Singleton
 object RebateDataLoader {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, vendor: Identifiable, generalLedgerDebitAccount: AccountEntity, generalLedgerCreditAccount: AccountEntity): Stream<RebateEntity> {
+   fun stream(numberIn: Int = 1, vendors: MutableList<Identifiable>?, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity): Stream<RebateEntity> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
       val random = faker.random()
@@ -33,7 +34,7 @@ object RebateDataLoader {
       return IntStream.range(0, number).mapToObj {
          RebateEntity(
             id = null,
-            vendor = vendor,
+            vendors = vendors,
             status = AccountStatusFactory.random(),
             description = lorem.words(2).toString(),
             rebate = RebateTypeDataLoader.random(),
@@ -47,7 +48,7 @@ object RebateDataLoader {
    }
 
    @JvmStatic
-   fun streamDTO(numberIn: Int = 1, vendorIn: SimpleIdentifiableDTO, generalLedgerDebitAccountIn: SimpleIdentifiableDTO, generalLedgerCreditAccountIn: SimpleIdentifiableDTO): Stream<RebateDTO> {
+   fun streamDTO(numberIn: Int = 1, vendorsIn: MutableList<SimpleIdentifiableDTO>?, generalLedgerDebitAccountIn: SimpleIdentifiableDTO?, generalLedgerCreditAccountIn: SimpleIdentifiableDTO): Stream<RebateDTO> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
       val random = faker.random()
@@ -60,7 +61,7 @@ object RebateDataLoader {
       return IntStream.range(0, number).mapToObj {
          RebateDTO(
             id = null,
-            vendor = vendorIn,
+            vendors = vendorsIn,
             status = AccountStatusTypeValueObject(AccountStatusFactory.random()),
             description = lorem.words(2).toString(),
             type = RebateTypeDTO(RebateTypeDataLoader.random()),
@@ -80,16 +81,20 @@ class RebateDataLoaderService @Inject constructor(
    private val rebateRepository: RebateRepository
 ) {
 
-   fun stream(numberIn: Int = 1, companyIn: Company, vendorIn: Identifiable, generalLedgerDebitAccountIn: AccountEntity, generalLedgerCreditAccountIn: AccountEntity): Stream<RebateEntity> {
-      return RebateDataLoader.stream(numberIn, vendorIn, generalLedgerDebitAccountIn, generalLedgerCreditAccountIn)
+   fun stream(numberIn: Int = 1, companyIn: Company, vendorsIn: MutableList<Identifiable>?, generalLedgerDebitAccountIn: AccountEntity?, generalLedgerCreditAccountIn: AccountEntity): Stream<RebateEntity> {
+      return RebateDataLoader.stream(numberIn, vendorsIn, generalLedgerDebitAccountIn, generalLedgerCreditAccountIn)
          .map { rebateRepository.insert(it, companyIn) }
    }
 
-   fun single(companyIn: Company, vendorIn: Identifiable, generalLedgerDebitAccountIn: AccountEntity, generalLedgerCreditAccountIn: AccountEntity): RebateEntity {
-      return stream(companyIn = companyIn, vendorIn = vendorIn, generalLedgerDebitAccountIn = generalLedgerDebitAccountIn, generalLedgerCreditAccountIn = generalLedgerCreditAccountIn).findFirst().orElseThrow { Exception("Unable to create RebateEntity") }
+   fun single(companyIn: Company, vendorsIn: MutableList<Identifiable>?, generalLedgerDebitAccountIn: AccountEntity?, generalLedgerCreditAccountIn: AccountEntity): RebateEntity {
+      return stream(companyIn = companyIn, vendorsIn = vendorsIn, generalLedgerDebitAccountIn = generalLedgerDebitAccountIn, generalLedgerCreditAccountIn = generalLedgerCreditAccountIn).findFirst().orElseThrow { Exception("Unable to create RebateEntity") }
    }
 
-   fun singleDTO(vendorIn: SimpleIdentifiableDTO, generalLedgerDebitAccountIn: SimpleIdentifiableDTO, generalLedgerCreditAccountIn: SimpleIdentifiableDTO): RebateDTO {
-      return RebateDataLoader.streamDTO(1, vendorIn, generalLedgerDebitAccountIn, generalLedgerCreditAccountIn).findFirst().orElseThrow { Exception("Unable to create Rebate") }
+   fun singleDTO(vendorsIn: MutableList<SimpleIdentifiableDTO>?, generalLedgerDebitAccountIn: SimpleIdentifiableDTO?, generalLedgerCreditAccountIn: SimpleIdentifiableDTO): RebateDTO {
+      return RebateDataLoader.streamDTO(1, vendorsIn, generalLedgerDebitAccountIn, generalLedgerCreditAccountIn).findFirst().orElseThrow { Exception("Unable to create Rebate") }
+   }
+
+   fun assignVendorsToRebate(rebate: RebateEntity, vendors: List<VendorEntity>) {
+      vendors.map { rebateRepository.assignVendorToRebate(rebate, SimpleIdentifiableDTO(it)) }
    }
 }

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.vendor
 
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest

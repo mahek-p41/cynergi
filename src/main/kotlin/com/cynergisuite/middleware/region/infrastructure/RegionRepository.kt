@@ -231,7 +231,7 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun unassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+   fun disassociateStoreFromRegion(region: RegionEntity, store: Store, company: Company) {
       logger.debug("Deleting Region To Store region id {}, store number {}", region, store)
 
       jdbc.update(

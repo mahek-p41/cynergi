@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
@@ -22,7 +23,8 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -78,7 +80,7 @@ class VendorController @Inject constructor(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") @Valid
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -107,7 +109,7 @@ class VendorController @Inject constructor(
       ]
    )
    fun search(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest") @Valid
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: SearchPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -165,7 +167,7 @@ class VendorController @Inject constructor(
       ]
    )
    fun update(
-      @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the vendor being updated") @QueryValue("id")
+      @Parameter(name = "id", `in` = PATH, description = "The id for the vendor being updated") @QueryValue("id")
       id: Long,
       @Body @Valid
       dto: VendorDTO,

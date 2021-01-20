@@ -200,7 +200,7 @@ class RegionController @Inject constructor(
 
    @Delete(uri = "/{regionId:[0-9]+}/store/{storeId:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl
-   @Operation(tags = ["RegionEndpoints"], summary = "Unassign a store from region", description = "Unassign a store from region", operationId = "region-unassign-store")
+   @Operation(tags = ["RegionEndpoints"], summary = "Disassociate a store from region", description = "Disassociate a store from region", operationId = "region-disassociate-store")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If the Region was able to be deleted", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RegionDTO::class))]),
@@ -209,16 +209,16 @@ class RegionController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun unassignStore(
+   fun disassociateStore(
       @QueryValue("regionId") regionId: Long,
       @QueryValue("storeId") storeId: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {
-      logger.info("Requested unassign a Store {} from Region {}", storeId, regionId)
+      logger.info("Requested disassociate a Store {} from Region {}", storeId, regionId)
 
       val user = userService.findUser(authentication)
 
-      regionService.unassignStoreToRegion(regionId, storeId, user.myCompany())
+      regionService.disassociateStoreFromRegion(regionId, storeId, user.myCompany())
    }
 }
