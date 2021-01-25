@@ -172,9 +172,8 @@ class InventoryRepository(
          mapOf(
             "comp_id" to company.myId(),
             "id" to id
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Search for Inventory by ID {} produced {}", id, inventory)
 
@@ -212,9 +211,8 @@ class InventoryRepository(
          mapOf(
             "lookup_key" to lookupKey,
             "comp_id" to company.myId()
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Search for Inventory by barcode {} produced {}", lookupKey, inventory)
 
@@ -225,7 +223,7 @@ class InventoryRepository(
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
-      val params = mutableMapOf(
+      val params = mutableMapOf<String, Any?>(
          "location" to pageRequest.storeNumber!!,
          "comp_id" to company.myId()!!,
          "limit" to pageRequest.size(),
