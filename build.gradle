@@ -72,6 +72,8 @@ dependencies {
    implementation "io.micronaut.security:micronaut-security-annotations"
    implementation "io.micronaut.security:micronaut-security-jwt"
    implementation "io.micronaut:micronaut-management"
+   implementation "io.micronaut.cache:micronaut-cache-core"
+   implementation "io.micronaut.cache:micronaut-cache-caffeine"
    implementation "io.micronaut.beanvalidation:micronaut-hibernate-validator"
    implementation "io.swagger.core.v3:swagger-annotations"
    implementation "org.springframework:spring-jdbc"

@@ -128,7 +128,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.audits[0].id == createdAudit.id
 
       when: "Audit is finally completed with the process running on Wednesday"
-      auditService.completeOrCancel(new AuditUpdateValueObject(createdAudit.id, completedStatus), user, Locale.getDefault())
+      auditService.update(new AuditUpdateValueObject(createdAudit.id, completedStatus), user, Locale.getDefault())
       result = auditScheduleService.processDaily(schedule, WEDNESDAY)
 
       then: "No notifications or audits should be created"

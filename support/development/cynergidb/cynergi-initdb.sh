@@ -27,4 +27,4 @@ if [[ -f /tmp/dumps/fastinfo.dump ]]; then
     echo "Finished restoring fastinfo_production from snapshot"
 fi
 
-psql -f /tmp/setup-database.sql -v "ON_ERROR_STOP=1" -v fastinfoUserName=postgres -v fastinfoPassword=password -v datasets=corrto,corptp,corrll,cornwv
+psql -f /tmp/setup-database.sql -v "ON_ERROR_STOP=1" -v fastinfoUserName=postgres -v fastinfoPassword=password -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn

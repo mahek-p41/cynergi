@@ -16,6 +16,7 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
+import io.micronaut.cache.annotation.Cacheable
 import io.reactivex.Maybe
 import io.vertx.reactivex.pgclient.PgPool
 import io.vertx.reactivex.sqlclient.Row

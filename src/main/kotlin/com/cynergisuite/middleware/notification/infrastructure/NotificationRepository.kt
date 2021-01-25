@@ -9,6 +9,8 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationRecipient
 import com.cynergisuite.middleware.notification.NotificationType
+import io.micronaut.cache.annotation.CacheInvalidate
+import io.micronaut.cache.annotation.Cacheable
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
@@ -60,8 +62,9 @@ class NotificationRepository @Inject constructor(
            ON n.id = nr.notification_id
       """.trimIndent()
 
+   @Cacheable("notifications-cache")
    fun findOne(id: Long): Notification? {
-      val found: Notification? = jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs ->
+      return jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs ->
          val notification = fullNotificationRowMapper.mapRow(rs, 0)
 
          do {
@@ -70,10 +73,9 @@ class NotificationRepository @Inject constructor(
 
          notification
       }
-
-      return found
    }
 
+   @Cacheable("notifications-cache")
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
@@ -82,6 +84,7 @@ class NotificationRepository @Inject constructor(
       return exists
    }
 
+   @Cacheable("notifications-cache")
    fun findAllByCompany(companyId: String, type: String): List<Notification> {
       return jdbc.queryFullList(
          """
@@ -99,6 +102,7 @@ class NotificationRepository @Inject constructor(
       )
    }
 
+   @Cacheable("notifications-cache")
    fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> {
       return jdbc.queryFullList<Notification>(
          """
@@ -116,9 +120,11 @@ class NotificationRepository @Inject constructor(
       )
    }
 
+   @Cacheable("notifications-cache")
    fun findAllTypes(): List<NotificationType> =
       notificationTypeDomainRepository.findAll()
 
+   @Cacheable("notifications-cache")
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
       jdbc.queryFullList(
          """
@@ -134,6 +140,7 @@ class NotificationRepository @Inject constructor(
       )
 
    @Transactional
+   @CacheInvalidate("notifications-cache", all = true)
    fun insert(entity: Notification): Notification {
       logger.debug("Inserting notification {}", entity)
 
@@ -164,6 +171,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Transactional
+   @CacheInvalidate("notifications-cache", all = true)
    fun update(entity: Notification): Notification {
       logger.debug("Updating notification {}", entity)
 
@@ -207,6 +215,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Transactional
+   @CacheInvalidate("notifications-cache", all = true)
    fun delete(id: Long): Int {
       logger.trace("notification deletion requested for notification with id {}", id)
 
