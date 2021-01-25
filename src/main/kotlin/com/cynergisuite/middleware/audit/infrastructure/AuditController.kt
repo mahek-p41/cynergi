@@ -171,7 +171,7 @@ class AuditController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun addNoteCompleteOrCancel(
+   fun update(
       @Body audit: AuditUpdateValueObject,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -179,7 +179,7 @@ class AuditController @Inject constructor(
       logger.info("Requested Audit status change or note  {}", audit)
 
       val user = userService.findUser(authentication)
-      val response = auditService.completeOrCancel(audit, user, httpRequest.findLocaleWithDefault())
+      val response = auditService.update(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", audit, response)
 

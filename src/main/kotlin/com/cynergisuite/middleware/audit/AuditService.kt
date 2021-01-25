@@ -9,7 +9,9 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
+import com.cynergisuite.middleware.audit.inventory.infrastructure.AuditInventoryRepository
 import com.cynergisuite.middleware.audit.status.APPROVED
+import com.cynergisuite.middleware.audit.status.CANCELED
 import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
@@ -61,6 +63,7 @@ class AuditService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditExceptionRepository: AuditExceptionRepository,
    private val inventoryRepository: InventoryRepository,
+   private val auditInventoryRepository: AuditInventoryRepository,
    private val auditValidator: AuditValidator,
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
@@ -132,12 +135,17 @@ class AuditService @Inject constructor(
    }
 
    @Validated
-   fun completeOrCancel(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
-      val (validAuditAction, existingAudit) = auditValidator.validateCompleteOrCancel(audit, user, locale)
+   fun update(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
+      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(audit, user, locale)
 
       existingAudit.actions.add(validAuditAction)
 
       val updated = auditRepository.update(existingAudit)
+
+      // after update successfully create the inventory snapshot for the completed or canceled audit
+      if (updated.actions.any { it.status.value == COMPLETED.value || it.status.value == CANCELED.value }) {
+         auditInventoryRepository.createInventorySnapshot(updated)
+      }
 
       return AuditValueObject(updated, locale, localizationService)
    }
