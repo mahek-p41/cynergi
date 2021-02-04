@@ -17,8 +17,7 @@ class AuditInventoryRepository @Inject constructor(
 
    @Transactional
    fun createInventorySnapshot(entity: AuditEntity) {
-      // Inventory snapshot creates snapshot for all inventory items, not only items in statuses ('N', 'R')
-      // because we don't know when do we need those items
+      // Inventory snapshot creates snapshot for all inventory items in statuses ('N', 'R')
       logger.debug("Create inventory snapshot for audit {}", entity.id)
 
       val affectedRows = jdbc.update(
@@ -30,6 +29,7 @@ class AuditInventoryRepository @Inject constructor(
             JOIN company comp ON i.dataset = comp.dataset_code
          WHERE i.primary_location = :store_number
                AND i.location = :store_number
+               AND i.status IN ('N', 'R')
                AND comp.id = :company_id
          """.trimIndent(),
          mapOf(

@@ -90,7 +90,7 @@ class InventoryRepository(
    private val selectFromAuditInventory =
       """
       SELECT
-         i.id AS id,
+         i.audit_id AS id,
          i.serial_number AS serial_number,
          i.lookup_key AS lookup_key,
          i.lookup_key_type AS lookup_key_type,
@@ -284,10 +284,13 @@ class InventoryRepository(
       val sql =
       """
       WITH paged AS (
-         ${ if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) selectBase
-            else selectFromAuditInventory
+         ${ if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) {
+               "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
+            }
+            else {
+               "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
+            }
          }
-            JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)
          WHERE
             comp.id = :comp_id
             AND a.id = :audit_id
