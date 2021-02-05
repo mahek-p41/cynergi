@@ -21,7 +21,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class BankControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/bank'
    private JsonOutput jsonOutput = new JsonOutput()
-   private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject BankFactoryService bankFactoryService
    @Inject AccountDataLoaderService accountFactoryService
 
@@ -363,5 +362,48 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          generalLedgerProfitCenter.id == store.id
          generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
       }
+   }
+
+   void "delete bank" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      when:
+      delete("$path/$bank.id", )
+
+      then: "bank for user's company is delete"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$bank.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$bank.id was unable to be found"
+   }
+
+   void "delete bank from other company is not allowed" () {
+      given:
+      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank = bankFactoryService.single(tstds2, store, account)
+
+      when:
+      delete("$path/$bank.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$bank.id was unable to be found"
    }
 }
