@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -179,6 +180,23 @@ class VendorGroupRepository @Inject constructor(
       logger.debug("Updated VendorGroup {}", updated)
 
       return updated
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting vendor group with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM vendor_group
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String): VendorGroupEntity? {

@@ -39,4 +39,8 @@ class VendorGroupService @Inject constructor(
          entity = vendorGroupRepository.update(entity = toUpdate)
       )
    }
+
+   fun delete(id: Long, company: Company) {
+      vendorGroupRepository.delete(id, company)
+   }
 }
