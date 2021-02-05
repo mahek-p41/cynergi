@@ -101,7 +101,6 @@ class AuditRepository @Inject constructor(
             FROM audit_inventory i
             WHERE i.primary_location = a.store_number
                   AND i.location = a.store_number
-                  AND i.status in ('N', 'R')
                   AND i.dataset = auditStore.dataset
                   AND i.audit_id = a.id
             )
@@ -245,7 +244,6 @@ class AuditRepository @Inject constructor(
                FROM audit_inventory i
                WHERE i.primary_location = a.store_number
                      AND i.location = a.store_number
-                     AND i.status in ('N', 'R')
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
                )
@@ -476,7 +474,6 @@ class AuditRepository @Inject constructor(
                FROM audit_inventory i
                WHERE i.primary_location = a.store_number
                      AND i.location = a.store_number
-                     AND i.status in ('N', 'R')
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
                )

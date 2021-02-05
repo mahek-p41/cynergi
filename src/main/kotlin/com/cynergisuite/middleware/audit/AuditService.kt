@@ -461,7 +461,7 @@ class AuditService @Inject constructor(
       table.setWidths(widths)
 
       table.makeCell("Serial #", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
-      table.makeCell("Barcode", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Alt ID", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Brand", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Model #", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Product Code", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
@@ -476,7 +476,7 @@ class AuditService @Inject constructor(
       unscannedIdleInventory.forEachIndexed { index, it ->
          table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor
          table.addCell(Phrase(it.serialNumber, rowFont))
-         table.addCell(Phrase(it.barcode, rowFont))
+         table.addCell(Phrase(it.altId, rowFont))
          table.addCell(Phrase(it.brand, rowFont))
          table.addCell(Phrase(it.modelNumber, rowFont))
          table.addCell(Phrase(it.productCode, rowFont))
