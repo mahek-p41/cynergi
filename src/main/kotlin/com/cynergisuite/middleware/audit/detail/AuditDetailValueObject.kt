@@ -23,6 +23,9 @@ data class AuditDetailValueObject(
    @field:Schema(required = true)
    var scanArea: AuditScanAreaDTO? = null,
 
+   @field:Size(min = 2, max = 200)
+   var lookupKey: String? = null,
+
    @field:NotNull
    @field:NotBlank
    @field:Size(min = 1, max = 200)
@@ -72,6 +75,7 @@ data class AuditDetailValueObject(
       this(
          id = entity.id,
          scanArea = auditScanArea,
+         lookupKey = entity.lookupKey,
          barcode = entity.barcode,
          productCode = entity.productCode,
          altId = entity.altId,

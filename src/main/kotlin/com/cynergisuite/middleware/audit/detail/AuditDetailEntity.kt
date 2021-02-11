@@ -12,6 +12,7 @@ data class AuditDetailEntity(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val scanArea: AuditScanAreaEntity,
+   val lookupKey: String,
    val barcode: String,
    val serialNumber: String,
    val productCode: String,
@@ -22,9 +23,11 @@ data class AuditDetailEntity(
    val audit: Identifiable
 ) : Identifiable {
 
-   constructor(inventory: InventoryEntity, audit: SimpleIdentifiableEntity, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity) :
+   constructor(id: Long?, inventory: InventoryEntity, audit: SimpleIdentifiableEntity, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity) :
       this(
+         id = id,
          scanArea = scanArea,
+         lookupKey = inventory.lookupKey,
          barcode = inventory.barcode,
          serialNumber = inventory.serialNumber,
          productCode = inventory.productCode,

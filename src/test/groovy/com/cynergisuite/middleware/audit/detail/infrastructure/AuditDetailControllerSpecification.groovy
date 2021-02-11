@@ -5,7 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.AuditFactoryService
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDataTransferObject
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateUpdateDTO
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
@@ -58,6 +58,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.scanArea.name == savedAuditDetail.scanArea.name
       result.scanArea.store.storeNumber == savedAuditDetail.scanArea.store.number
       result.scanArea.store.name == savedAuditDetail.scanArea.store.name
+      result.lookupKey == savedAuditDetail.lookupKey
       result.barcode == savedAuditDetail.barcode
       result.serialNumber == savedAuditDetail.serialNumber
       result.inventoryBrand == savedAuditDetail.inventoryBrand
@@ -197,7 +198,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -206,12 +207,39 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.scanArea.name == scanArea.name
       result.scanArea.store.storeNumber == scanArea.store.number
       result.scanArea.store.name == scanArea.store.name
+      result.lookupKey == inventoryItem.lookupKey
       result.barcode == inventoryItem.barcode
       result.serialNumber == inventoryItem.serialNumber
       result.inventoryBrand == inventoryItem.brand
       result.inventoryModel == inventoryItem.modelNumber
       result.scannedBy.number == nineNineEightAuthenticatedEmployee.number
       result.audit.id == audit.id
+   }
+
+   void "create duplicate audit detail" () {
+      given:
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
+      final storeWarehouse = auditScanAreaFactoryService.warehouse(store, company)
+      final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, inventoryItem)
+
+      when:
+      post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "inventory.lookup_key"
+      response[0].message == "${inventoryItem.lookupKey} already exists"
    }
 
    //Passes
@@ -223,54 +251,27 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final detail = new AuditDetailCreateDataTransferObject(null, null)
-      final secondDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDTO([id: null]))
-      final thirdDetail = new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
+      final detail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO([id: 9998]), new SimpleIdentifiableDTO([id: 9998]))
+      final secondDetail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == BAD_REQUEST
+      exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "inventory"),
-         new ErrorDataTransferObject("Is required", "scanArea"),
-      ].sort { o1, o2 -> o1 <=> o2 }
+      response.message == "9998 was unable to be found"
 
       when:
       post("/audit/${audit.id}/detail", secondDetail)
 
       then:
-      final secondException = thrown(HttpClientResponseException)
-      secondException.status == BAD_REQUEST
-      final secondResponse = secondException.response.bodyAsJson()
-      secondResponse.size() == 2
-      secondResponse.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "inventory.id"),
-         new ErrorDataTransferObject("Is required", "scanArea.id"),
-      ].sort { o1, o2 -> o1 <=> o2 }
-
-      when: // an unknown audit id
-      post("/audit/${audit.id + 1}/detail", thirdDetail)
-
-      then:
-      final auditNotFoundException = thrown(HttpClientResponseException)
-      auditNotFoundException.status == NOT_FOUND
-      final auditNotFoundResponse = auditNotFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(auditNotFoundResponse.message, auditNotFoundResponse.path) == new ErrorDataTransferObject("${audit.id + 1} was unable to be found", null)
-
-      when: // an unknown Inventory item
-      post("/audit/${audit.id}/detail", thirdDetail)
-
-      then:
       final inventoryNotFoundException = thrown(HttpClientResponseException)
-      inventoryNotFoundException.status == BAD_REQUEST
-      final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
-      inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("800,000 was unable to be found", "inventory.id") ]
+      inventoryNotFoundException.status == NOT_FOUND
+      exception.status == NOT_FOUND
+      response == exception.response.bodyAsJson()
+      response.message == "9998 was unable to be found"
    }
 
    //Fails: No such property: store for class: com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee 279
@@ -287,7 +288,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateDataTransferObject(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       final def exception = thrown(HttpClientResponseException)
@@ -297,5 +298,66 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
          new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its details", "audit.status")
       ]
+   }
+
+   void "update audit detail" () {
+      given:
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final showroom = auditScanAreaFactoryService.showroom(store, company)
+      final warehouse = auditScanAreaFactoryService.warehouse(store, company)
+      final existingAuditDetail = auditDetailFactoryService.single(audit, showroom)
+
+      when:
+      def result = put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(warehouse)))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.id > 0
+      result.scanArea.name == warehouse.name
+      result.scanArea.store.storeNumber == warehouse.store.number
+      result.scanArea.store.name == warehouse.store.name
+      result.lookupKey == inventoryItem.lookupKey
+      result.barcode == inventoryItem.barcode
+      result.serialNumber == inventoryItem.serialNumber
+      result.inventoryBrand == inventoryItem.brand
+      result.inventoryModel == inventoryItem.modelNumber
+      result.scannedBy.number == nineNineEightAuthenticatedEmployee.number
+      result.audit.id == audit.id
+   }
+
+   void "update invalid audit detail" () {
+      given:
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final inventoryItem2 = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final showroom = auditScanAreaFactoryService.showroom(store, company)
+      final warehouse = auditScanAreaFactoryService.warehouse(store, company)
+      final existingAuditDetail = auditDetailFactoryService.single(audit, showroom, inventoryItem)
+      auditDetailFactoryService.single(audit, showroom, inventoryItem2)
+
+      when:
+      def result = put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleIdentifiableDTO(inventoryItem2.id), new SimpleIdentifiableDTO(warehouse)))
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == BAD_REQUEST
+      final response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "inventory.lookup_key"
+      response[0].message == "${inventoryItem2.lookupKey} already exists"
    }
 }

@@ -32,10 +32,17 @@ class AuditDetailService @Inject constructor(
    }
 
    @Validated
-   fun create(auditId: Long, @Valid vo: AuditDetailCreateDataTransferObject, scannedBy: User, locale: Locale): AuditDetailValueObject {
+   fun create(auditId: Long, @Valid vo: AuditDetailCreateUpdateDTO, scannedBy: User, locale: Locale): AuditDetailValueObject {
       val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, vo)
 
       return transformEntity(auditDetailRepository.insert(auditDetail))
+   }
+
+   @Validated
+   fun update(auditId: Long, @Valid vo: AuditDetailCreateUpdateDTO, scannedBy: User, locale: Locale): AuditDetailValueObject {
+      val auditDetail = auditDetailValidator.validateUpdate(auditId, scannedBy, vo)
+
+      return transformEntity(auditDetailRepository.update(auditDetail))
    }
 
    private fun transformEntity(auditDetail: AuditDetailEntity): AuditDetailValueObject {
