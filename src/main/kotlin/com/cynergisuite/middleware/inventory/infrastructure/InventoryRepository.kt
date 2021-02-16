@@ -184,7 +184,7 @@ class InventoryRepository(
       !exists(id, company)
 
    fun findByLookupKey(lookupKey: String, company: Company): InventoryEntity? {
-      logger.debug("Finding Inventory by barcode with {}", lookupKey)
+      logger.debug("Finding Inventory by lookup key with {}", lookupKey)
 
       val inventory = jdbc.findFirstOrNull(
          """
@@ -199,7 +199,7 @@ class InventoryRepository(
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.debug("Search for Inventory by barcode {} produced {}", lookupKey, inventory)
+      logger.debug("Search for Inventory by lookup key {} produced {}", lookupKey, inventory)
 
       return inventory
    }
