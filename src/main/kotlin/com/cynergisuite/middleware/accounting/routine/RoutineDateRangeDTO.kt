@@ -9,15 +9,17 @@ import javax.validation.constraints.NotNull
 @JsonInclude(NON_NULL)
 @Schema(name = "RoutineDateRange", title = "An entity with a date range", description = "Yep")
 data class RoutineDateRangeDTO(
+
    @field:NotNull
    @field:Schema(description = "Period from date")
-   var periodFrom: LocalDate,
+   var periodFrom: LocalDate? = null,
 
    @field:NotNull
    @field:Schema(description = "Period to date")
-   var periodTo: LocalDate
-){
-   constructor(entity: RoutineDateRangeDTO):
+   var periodTo: LocalDate? = null
+
+) {
+   constructor(entity: RoutineDateRangeEntity):
       this(
          periodFrom = entity.periodFrom,
          periodTo = entity.periodTo

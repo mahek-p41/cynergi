@@ -2,13 +2,13 @@ package com.cynergisuite.middleware.accounting.routine
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
 import javax.inject.Inject
+import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -19,7 +19,6 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/accounting/routine"
 
    @Inject RoutineDataLoaderService routineDataLoaderService
-   @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
 
    void "fetch one" () {
       given:
@@ -219,4 +218,28 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       response.message == 'invalid was unable to be found'
    }
 
+   void "open gl account" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final routines = RoutineDataLoader.streamDTO(8).toList()
+      final firstRoutine = routines[0]
+      //final dateRangeDTO = new RoutineDateRangeDTO(firstRoutine.periodFrom, firstRoutine.periodTo)
+      final dateRangeDTO = new RoutineDateRangeDTO(LocalDate.now(), LocalDate.of(2021, 4, 18))
+
+      when:
+      put("$path/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      def result = get("$path/${firstRoutine.id}")
+
+      then:
+      result != firstRoutine
+   }
+
+   void "create fiscal calendar" () {
+
+   }
 }

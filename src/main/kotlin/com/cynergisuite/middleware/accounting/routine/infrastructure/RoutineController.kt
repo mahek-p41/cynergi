@@ -98,23 +98,6 @@ class RoutineController @Inject constructor(
       return page
    }
 
-   @Post(value = "/open-gl", processes = [APPLICATION_JSON])
-   @Throws(ValidationException::class)
-   @Operation(tags = ["RoutineEndpoints"], summary = "Sets all GLAccounts Open to false", description = "Clears GLAccounts", operationId = "routine-open-gl")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
-         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun open(@Body @Valid dto: RoutineDateRangeDTO, authentication: Authentication, httpRequest: HttpRequest<*>) {
-
-      val user = userService.findUser(authentication)
-      return routineService.clearRoutineAccounts(dto.periodFrom, dto.periodTo, user.myCompany())
-   }
-
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RoutineEndpoints"], summary = "Create a single Routine", description = "Create a single Routine", operationId = "routine-create")
@@ -172,5 +155,29 @@ class RoutineController @Inject constructor(
       logger.debug("Requested Update Routine {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Put(value = "/open-gl", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class)
+   @Operation(tags = ["RoutineEndpoints"], summary = "Set GLAccounts Open for a period", description = "Set GLAccounts to false then set to true for the desired period(s)", operationId = "routine-open-gl")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun open(
+      @Body @Valid dateRangeDTO: RoutineDateRangeDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Requested set GLAccounts Open for periods in date range {}", dateRangeDTO)
+
+      val user = userService.findUser(authentication)
+      val response = routineService.openGLAccountsForPeriods(dateRangeDTO, user.myCompany())
+
+      logger.debug("Requested set GLAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
    }
 }

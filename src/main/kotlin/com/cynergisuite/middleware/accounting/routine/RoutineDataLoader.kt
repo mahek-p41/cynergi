@@ -61,6 +61,29 @@ object RoutineDataLoader {
          )
       }
    }
+
+   @JvmStatic
+   fun streamFiscalYear(numberIn: Int = 1): Stream<RoutineEntity> {
+      val number = if (numberIn < 0) 12 else (numberIn * 12)
+      val overallPeriod = OverallPeriodTypeDataLoader.random()
+      val periodCounter = AtomicInteger(1)
+      val faker = Faker()
+      val random = faker.random()
+      val date = faker.date()
+      val beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+
+      return IntStream.range(0, number).mapToObj {
+         RoutineEntity(
+            overallPeriod = overallPeriod,
+            period = periodCounter.getAndIncrement(),
+            periodFrom = beginDate,
+            periodTo = beginDate.plusMonths(1),
+            fiscalYear = random.nextInt(2015, 2020),
+            generalLedgerOpen = random.nextBoolean(),
+            accountPayableOpen = random.nextBoolean()
+         )
+      }
+   }
 }
 
 @Singleton
@@ -80,5 +103,10 @@ class RoutineDataLoaderService @Inject constructor(
 
    fun singleDTO(company: Company): RoutineDTO {
       return RoutineDataLoader.streamDTO(1).findFirst().orElseThrow { Exception("Unable to create Routine") }
+   }
+
+   fun streamFiscalYear(numberIn: Int = 1, company: Company): Stream<RoutineEntity> {
+      return RoutineDataLoader.streamFiscalYear(numberIn)
+         .map { routineRepository.insert(it, company) }
    }
 }
