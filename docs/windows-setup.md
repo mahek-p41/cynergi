@@ -6,6 +6,13 @@
     2. Add path `C:\ \` into `Resources` -> `File sharing`
 4. Install [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) by following their
    provided instructions.  Just use Ubuntu as it is the most supported by Microsoft at the moment.
+   Run `sudo vim /etc/wsl.conf` & add:
+   ```
+   [automount]
+   root = /
+   options = "metadata,case=off
+   ```
+
 5. Install [Sdkman](https://sdkman.io/) inside of your WSL environment once you have finished step 3.
 6. Install [direnv](https://direnv.net/) inside of your WSL environment once you have finished step 3.
    1. `sudo apt install direnv`
