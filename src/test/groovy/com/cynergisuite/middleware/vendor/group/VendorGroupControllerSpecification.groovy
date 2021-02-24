@@ -2,6 +2,9 @@ package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -10,6 +13,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
@@ -19,6 +23,9 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
    private jsonSlurper = new JsonSlurper()
 
    @Inject VendorGroupTestDataLoaderService vendorGroupTestDataLoaderService
+   @Inject ShipViaTestDataLoaderService shipViaFactoryService
+   @Inject VendorTestDataLoaderService vendorTestDataLoaderService
+   @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
 
    void "fetch one" () {
       given:
@@ -309,5 +316,24 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response.message == "${vendorGroup[0].id} was unable to be found"
+   }
+
+   void "delete vendor group still has reference" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final vendorGroup = vendorGroupTestDataLoaderService.stream(nineNineEightEmployee.company).collect().first()
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, vendorGroup)
+
+      when:
+      delete("$path/${vendorGroup.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "Key (id)=($vendorGroup.id) is still referenced from table \"vendor\"."
    }
 }

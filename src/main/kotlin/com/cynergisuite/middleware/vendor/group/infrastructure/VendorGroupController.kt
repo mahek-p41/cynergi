@@ -162,6 +162,7 @@ class VendorGroupController @Inject constructor(
       value = [
          ApiResponse(responseCode = "200", description = "If the vendor group was able to be deleted"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "409", description = "If the vendor group is still referenced from other tables"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )

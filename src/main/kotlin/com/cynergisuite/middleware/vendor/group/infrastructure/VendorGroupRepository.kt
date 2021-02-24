@@ -186,7 +186,7 @@ class VendorGroupRepository @Inject constructor(
    fun delete(id: Long, company: Company) {
       logger.debug("Deleting vendor group with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val affectedRows = jdbc.update(
          """
          DELETE FROM vendor_group
          WHERE id = :id AND company_id = :company_id
@@ -194,9 +194,9 @@ class VendorGroupRepository @Inject constructor(
          mapOf("id" to id, "company_id" to company.myId())
       )
 
-      logger.info("Row affected {}", rowsAffected)
+      logger.info("Affected rows: {}", affectedRows)
 
-      if (rowsAffected == 0) throw NotFoundException(id)
+      if (affectedRows == 0) throw NotFoundException(id)
    }
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String): VendorGroupEntity? {
