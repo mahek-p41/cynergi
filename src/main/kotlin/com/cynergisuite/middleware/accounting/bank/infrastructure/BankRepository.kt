@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -191,6 +192,24 @@ class BankRepository @Inject constructor(
             mapRow(rs, bank)
          }
       )
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting bank with id={}", id)
+
+      val affectedRows = jdbc.update(
+         """
+         DELETE FROM bank
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+
+      logger.info("Affected rows: {}", affectedRows)
+
+      if (affectedRows == 0) throw NotFoundException(id)
+
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {

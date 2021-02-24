@@ -31,6 +31,8 @@ import io.micronaut.http.HttpResponse.badRequest
 import io.micronaut.http.HttpResponse.noContent
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
+import io.micronaut.http.HttpResponseFactory
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -42,6 +44,7 @@ import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
@@ -173,6 +176,18 @@ class ErrorHandlerController @Inject constructor(
          validationException.errors.map { validationError: ValidationError ->
             ErrorDTO(message = localizationService.localize(validationError.localizationCode, locale), path = validationError.path)
          }
+      )
+   }
+
+   @Error(global = true, exception = DataIntegrityViolationException::class)
+   fun constraintViolationException(httpRequest: HttpRequest<*>, dataIntegrityViolationException: DataIntegrityViolationException): HttpResponse<ErrorDTO> {
+      logger.trace("DataIntegrityViolationException Error", dataIntegrityViolationException)
+
+      // Return a brief message to client
+      val detail = dataIntegrityViolationException.localizedMessage.substringAfterLast("Detail:").trim()
+
+      return HttpResponseFactory.INSTANCE.status(HttpStatus.CONFLICT,
+         ErrorDTO(message = detail)
       )
    }
 

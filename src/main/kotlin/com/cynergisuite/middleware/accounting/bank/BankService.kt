@@ -33,4 +33,8 @@ class BankService @Inject constructor(
 
       return BankDTO(bankRepository.update(toUpdate, company))
    }
+
+   fun delete(id: Long, company: Company) {
+      bankRepository.delete(id, company)
+   }
 }

@@ -5,6 +5,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
 import com.cynergisuite.middleware.error.ErrorDTO
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -12,8 +13,11 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
+import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
+import static io.micronaut.http.HttpStatus.INTERNAL_SERVER_ERROR
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -21,9 +25,9 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class BankControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/bank'
    private JsonOutput jsonOutput = new JsonOutput()
-   private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject BankFactoryService bankFactoryService
    @Inject AccountDataLoaderService accountFactoryService
+   @Inject BankReconciliationDataLoaderService bankReconciliationDataLoaderService
 
    void "fetch one bank by id" () {
       given:
@@ -363,5 +367,67 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          generalLedgerProfitCenter.id == store.id
          generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
       }
+   }
+
+   void "delete bank" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      when:
+      delete("$path/$bank.id", )
+
+      then: "bank for user's company is delete"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$bank.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$bank.id was unable to be found"
+   }
+
+   void "delete bank from other company is not allowed" () {
+      given:
+      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank = bankFactoryService.single(tstds2, store, account)
+
+      when:
+      delete("$path/$bank.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "$bank.id was unable to be found"
+   }
+
+   void "delete bank still has reference" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      bankReconciliationDataLoaderService.single(tstds1, bank, LocalDate.now(), null)
+
+      when:
+      delete("$path/$bank.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "Key (id)=($bank.id) is still referenced from table \"bank_reconciliation\"."
    }
 }
