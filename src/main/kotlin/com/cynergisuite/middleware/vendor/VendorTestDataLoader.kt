@@ -4,6 +4,7 @@ import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeTestDataLoader
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
@@ -84,8 +85,8 @@ class VendorTestDataLoaderService(
    private val vendorRepository: VendorRepository
 ) {
 
-   fun stream(numberIn: Int = 1, companyIn: Company, addressIn: AddressEntity? = null, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): Stream<VendorEntity> {
-      return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, nameIn = null)
+   fun stream(numberIn: Int = 1, companyIn: Company, addressIn: AddressEntity? = null, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, vendorGroupIn: VendorGroupEntity? = null): Stream<VendorEntity> {
+      return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, vendorGroupIn, nameIn = null)
          .map { vendorRepository.insert(it) }
    }
 
@@ -106,6 +107,10 @@ class VendorTestDataLoaderService(
 
    fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity): VendorEntity {
       return stream(companyIn = companyIn, addressIn = null, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
+   }
+
+   fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, vendorGroupIn: VendorGroupEntity): VendorEntity {
+      return stream(companyIn = companyIn, addressIn = null, paymentTermIn = paymentTermIn, shipViaIn = shipViaIn, vendorGroupIn = vendorGroupIn).findFirst().orElseThrow { Exception("Unable to create VendorEntity") }
    }
 
    fun single(companyIn: Company, paymentTermIn: VendorPaymentTermEntity, shipViaIn: ShipViaEntity, nameIn: String): VendorEntity {

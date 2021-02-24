@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.vendor.group.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -12,6 +13,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -21,8 +23,8 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -78,7 +80,7 @@ class VendorGroupController @Inject constructor(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -151,5 +153,28 @@ class VendorGroupController @Inject constructor(
       logger.debug("Requested Update VendorGroup {} resulted in {}", vo, response)
 
       return response
+   }
+
+   @Delete(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @AccessControl
+   @Operation(tags = ["VendorGroupEndpoints"], summary = "Delete a vendor group", description = "Delete a single vendor group", operationId = "vendorGroup-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the vendor group was able to be deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "409", description = "If the vendor group is still referenced from other tables"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete vendor group", authentication)
+
+      val user = userService.findUser(authentication)
+
+      return vendorGroupService.delete(id, user.myCompany())
    }
 }
