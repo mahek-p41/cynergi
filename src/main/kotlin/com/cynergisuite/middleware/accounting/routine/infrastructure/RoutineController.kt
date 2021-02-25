@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.accounting.routine.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.routine.RoutineDateRangeDTO
 import com.cynergisuite.middleware.accounting.routine.RoutineDTO
+import com.cynergisuite.middleware.accounting.routine.RoutineDateRangeDTO
 import com.cynergisuite.middleware.accounting.routine.RoutineService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -126,6 +126,34 @@ class RoutineController @Inject constructor(
       return response
    }
 
+   @Post(uri = "/year",processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["RoutineEndpoints"], summary = "Create a single Routine", description = "Create a single Routine", operationId = "routine-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = List::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Routine was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun createFinancialYear(
+      @Body @Valid
+      routineList: List<RoutineDTO>,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<RoutineDTO> {
+      logger.debug("Requested Create Routine {}", routineList)
+
+      val user = userService.findUser(authentication)
+      val response = routineList.map { routineService.create(it, user.myCompany()) }.toList()
+
+      logger.debug("Requested Create Routine {} resulted in {}", routineList, response)
+
+      return response
+   }
+
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RoutineEndpoints"], summary = "Update a single Routine", description = "Update a single Routine", operationId = "routine-update")
@@ -168,7 +196,7 @@ class RoutineController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun open(
+   fun openGL(
       @Body @Valid dateRangeDTO: RoutineDateRangeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -179,5 +207,29 @@ class RoutineController @Inject constructor(
       val response = routineService.openGLAccountsForPeriods(dateRangeDTO, user.myCompany())
 
       logger.debug("Requested set GLAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
+   }
+
+   @Put(value = "/open-ap", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class)
+   @Operation(tags = ["RoutineEndpoints"], summary = "Set AP Accounts Open for a period", description = "Set APAccounts to false then set to true for the desired period(s)", operationId = "routine-open-ap")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = RoutineDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun openAP(
+      @Body @Valid dateRangeDTO: RoutineDateRangeDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Requested set APAccounts Open for periods in date range {}", dateRangeDTO)
+
+      val user = userService.findUser(authentication)
+      val response = routineService.openAPAccountsForPeriods(dateRangeDTO, user.myCompany())
+
+      logger.debug("Requested set APAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
    }
 }
