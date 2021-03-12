@@ -34,6 +34,9 @@ class VendorService @Inject constructor(
       }
    }
 
+   fun fetchVendorIdsByRebate(rebateId: Long, company: Company): List<Identifiable> =
+      vendorRepository.findVendorIdsByRebate(rebateId, company)
+
    fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
 

@@ -4,6 +4,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
@@ -23,6 +24,8 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import com.cynergisuite.middleware.vendor.rebate.RebateDataLoader
+import com.cynergisuite.middleware.vendor.rebate.RebateDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -36,9 +39,11 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class VendorControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor"
 
+   @Inject AccountDataLoaderService accountDataLoaderService
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
    @Inject FreightCalcMethodTypeRepository freightCalcMethodTypeRepository
+   @Inject RebateDataLoaderService rebateDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
    @Inject VendorRepository vendorRepository
    @Inject VendorGroupRepository vendorGroupRepository
@@ -1091,5 +1096,154 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].message == "20.00000008 is out of range for bumpPercent"
       response[0].path == "bumpPercent"
+   }
+
+   void "assign rebates to vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+
+      final glDebitAcct = accountDataLoaderService.single(company)
+      final glCreditAcct = accountDataLoaderService.single(company)
+      def rebateList = rebateDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
+      def rebateDTOList = RebateDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+
+      when: // create vendor
+      def result = post(path, vendor)
+      vendor.id = result.id
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id > 0
+
+      when: // assign rebates to vendor
+      rebateDTOList.eachWithIndex { rebateDTO, index ->
+         rebateDTO.id = rebateList[index].id
+         result = post("/vendor/rebate/${rebateDTO.id}/vendor", vendor)
+      }
+
+      then:
+      notThrown(HttpClientResponseException)
+      result == null
+
+      when: // update rebates' vendor lists
+      def vendorDTO = new SimpleIdentifiableDTO(vendor.id)
+      def resultList = []
+      rebateDTOList.eachWithIndex { rebateDTO, index ->
+         rebateDTO.vendors.add(vendorDTO)
+         resultList.add(put("/vendor/rebate/${rebateDTO.id}", rebateDTO))
+      }
+
+      then:
+      notThrown(Exception)
+      resultList.eachWithIndex { rebateResult, index ->
+         rebateResult != null
+         with(rebateResult) {
+            id == rebateDTOList[index].id
+
+            vendors.eachWithIndex { v, i ->
+               v == rebateDTOList[index].vendors[i]
+            }
+
+            with(status) {
+               value == rebateDTOList[index].status.value
+               description == rebateDTOList[index].status.description
+            }
+
+            description == rebateDTOList[index].description
+
+            with(type) {
+               value == rebateDTOList[index].type.value
+               description == rebateDTOList[index].type.description
+            }
+
+            percent == rebateDTOList[index].percent
+            amountPerUnit == rebateDTOList[index].amountPerUnit
+            accrualIndicator == rebateDTOList[index].accrualIndicator
+            if (generalLedgerDebitAccount != null) {
+               generalLedgerDebitAccount.id == rebateDTOList[index].generalLedgerDebitAccount.id
+            }
+            generalLedgerCreditAccount.id == rebateDTOList[index].generalLedgerCreditAccount.id
+         }
+      }
+   }
+
+   void "disassociate rebate from vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaFactoryService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+
+      final glDebitAcct = accountDataLoaderService.single(company)
+      final glCreditAcct = accountDataLoaderService.single(company)
+      def rebateList = rebateDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
+      def rebateDTOList = RebateDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+
+      when: // create vendor
+      def result = post(path, vendor)
+      vendor.id = result.id
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.id != null
+      result.id > 0
+
+      when: // assign rebates to vendor
+      rebateDTOList.eachWithIndex { rebateDTO, index ->
+         rebateDTO.id = rebateList[index].id
+         result = post("/vendor/rebate/${rebateDTO.id}/vendor", vendor)
+      }
+
+      then:
+      notThrown(HttpClientResponseException)
+      result == null
+
+      when: // update rebates' vendor lists
+      def vendorDTO = new SimpleIdentifiableDTO(vendor.id)
+      def resultList = []
+      rebateDTOList.eachWithIndex { rebateDTO, index ->
+         rebateDTO.vendors.add(vendorDTO)
+         resultList.add(put("/vendor/rebate/${rebateDTO.id}", rebateDTO))
+      }
+
+      then:
+      notThrown(Exception)
+      resultList.eachWithIndex { rebateResult, index ->
+         rebateResult != null
+         rebateResult.id == rebateDTOList[index].id
+         rebateResult.vendors.eachWithIndex { v, i ->
+            v == rebateDTOList[index].vendors[i]
+         }
+      }
+
+      when: // disassociate a rebate from the vendor
+      result = delete("/vendor/rebate/${rebateDTOList[0].id}/vendor/${vendor.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result == null
+
+      when: // update rebates' vendor lists again
+      def newResultList = []
+      rebateDTOList.eachWithIndex { rebateDTO, index ->
+         rebateDTO.vendors.add(vendorDTO)
+         newResultList.add(put("/vendor/rebate/${rebateDTO.id}", rebateDTO))
+      }
+
+      then:
+      notThrown(Exception)
+      newResultList.eachWithIndex { rebateResult, index ->
+         rebateResult != null
+         rebateResult.id == rebateDTOList[index].id
+         rebateResult.vendors.eachWithIndex { v, i ->
+            v == rebateDTOList[index].vendors[i]
+         }
+      }
    }
 }

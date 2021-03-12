@@ -97,6 +97,34 @@ class VendorController @Inject constructor(
       return page
    }
 
+/*
+   @Throws(NotFoundException::class)
+   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorEndpoints"], summary = "Fetch a list of Vendors by Rebate", description = "Fetch a list of Vendor ids by Rebate id", operationId = "vendor-fetchVendorIdsByRebate")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "There are no Vendors associated with the Rebate"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchVendorIdsByRebate(
+      @QueryValue("rebateId") rebateId: Long,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): MutableList<Identifiable> {
+      logger.info("Fetching Vendor ids by Rebate {}", rebateId)
+
+      val user = userService.findUser(authentication)
+      val response = vendorService.fetchVendorIdsByRebate(rebateId, user.myCompany())
+
+      logger.debug("Fetching Vendor ids by Rebate {} resulted in", rebateId, response)
+
+      return response
+   }
+*/
+
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/search{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorEndpoints"], summary = "Fetch a listing of Vendors", description = "Fetch a paginated listing of Vendor", operationId = "vendor-search")
