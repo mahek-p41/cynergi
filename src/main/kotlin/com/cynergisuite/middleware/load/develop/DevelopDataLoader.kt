@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.load.develop
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.routine.RoutineDataLoaderService
+import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.area.AreaDataLoaderService
 import com.cynergisuite.middleware.area.ModuleDataLoaderService
 import com.cynergisuite.middleware.audit.AuditFactoryService
@@ -28,6 +30,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
@@ -54,7 +57,8 @@ class DevelopDataLoader @Inject constructor(
    private val shipViaDataLoaderService: ShipViaTestDataLoaderService,
    private val vendorPaymentTermDataLoaderService: VendorPaymentTermTestDataLoaderService,
    private val vendorDataLoaderService: VendorTestDataLoaderService,
-   private val accountPayableControlDataLoaderService: AccountPayableControlDataLoaderService
+   private val accountPayableControlDataLoaderService: AccountPayableControlDataLoaderService,
+   private val routineDataLoaderService: RoutineDataLoaderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -228,6 +232,17 @@ class DevelopDataLoader @Inject constructor(
       vendorDataLoaderService.stream(3, corrto, vendorPaymentTerm, shipVia).forEach {}
 
       accountPayableControlDataLoaderService.single(corrto, corrtoAccount, corrtoAccount)
+
+      // Financial year
+      val startingDate = LocalDate.now()
+      routineDataLoaderService.streamFiscalYear(companies[0], OverallPeriodTypeDataLoader.predefined().first { it.value == "R" }, startingDate.minusYears(2)).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[0], OverallPeriodTypeDataLoader.predefined().first { it.value == "P" }, startingDate.minusYears(1)).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[0], OverallPeriodTypeDataLoader.predefined().first { it.value == "C" }, startingDate).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[0], OverallPeriodTypeDataLoader.predefined().first { it.value == "N" }, startingDate.plusYears(1)).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "R" }, startingDate.minusYears(2)).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "P" }, startingDate.minusYears(1)).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "C" }, startingDate).forEach {}
+      routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "N" }, startingDate.plusYears(1)).forEach {}
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())

@@ -2,13 +2,14 @@ package com.cynergisuite.middleware.accounting.routine
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
 import javax.inject.Inject
+import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -19,7 +20,6 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/accounting/routine"
 
    @Inject RoutineDataLoaderService routineDataLoaderService
-   @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
 
    void "fetch one" () {
       given:
@@ -219,4 +219,60 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       response.message == 'invalid was unable to be found'
    }
 
+   void "open gl account" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      routineDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new RoutineDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+
+      when:
+      put("$path/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+
+   }
+
+   void "open ap account" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      routineDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new RoutineDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+
+      when:
+      put("$path/open-ap", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+   }
+
+   void "create fiscal calendar year" () {
+      given:
+      final routines = RoutineDataLoader.streamFiscalYearDTO(1).collect()
+
+      when:
+      def result = post("$path/year", routines)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.eachWithIndex { routine, index ->
+         with(routine) {
+            id > 0
+            period == routines[index].period
+            periodFrom == routines[index].periodFrom.toString()
+            periodTo == routines[index].periodTo.toString()
+            fiscalYear == routines[index].fiscalYear
+            generalLedgerOpen == routines[index].generalLedgerOpen
+            accountPayableOpen == routines[index].accountPayableOpen
+
+            with(overallPeriod) {
+               value == routines[index].overallPeriod.value
+               abbreviation == routines[index].overallPeriod.abbreviation
+               description == routines[index].overallPeriod.description
+            }
+         }
+      }
+   }
 }

@@ -36,6 +36,12 @@ class RoutineService @Inject constructor(
       return transformEntity(routineRepository.update(toUpdate, company))
    }
 
+   fun openGLAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: Company) =
+      routineRepository.openGLAccountsForPeriods(dateRangeDTO, company)
+
+   fun openAPAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: Company) =
+      routineRepository.openAPAccountsForPeriods(dateRangeDTO, company)
+
    private fun transformEntity(routineEntity: RoutineEntity): RoutineDTO {
       return RoutineDTO(routineEntity)
    }

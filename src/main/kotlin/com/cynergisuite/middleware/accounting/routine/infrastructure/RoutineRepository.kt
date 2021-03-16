@@ -7,11 +7,12 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.routine.RoutineDateRangeDTO
 import com.cynergisuite.middleware.accounting.routine.RoutineEntity
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
 import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.company.Company
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -189,9 +190,152 @@ class RoutineRepository @Inject constructor(
       )
    }
 
+   @Transactional
+   fun openGLAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: Company) {
+      logger.debug("Set GLAccounts to false")
+
+      val affectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar
+         SET
+            general_ledger_open = :general_ledger_open
+         FROM financial_calendar finCal
+            JOIN company ON finCal.company_id = company.id
+            JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
+         WHERE finCal.company_id = :company_id
+            AND overallPeriod.value = :financial_period
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "financial_period" to "C",
+            "general_ledger_open" to false
+         )
+      )
+
+      logger.info("Affected row count {}", affectedRowCount)
+
+      logger.debug("Set GLAccounts to true for selected period(s)")
+
+      val newAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar finCal
+         SET
+            general_ledger_open = :general_ledger_open
+         FROM overall_period_type_domain overallPeriod
+         WHERE overallPeriod.id = finCal.overall_period_id
+            AND finCal.company_id = :company_id
+            AND overallPeriod.value = :financial_period
+            AND finCal.period_from BETWEEN :from_date AND :to_date
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "financial_period" to "C",
+            "general_ledger_open" to true,
+            "from_date" to dateRangeDTO.periodFrom,
+            "to_date" to dateRangeDTO.periodTo
+         )
+      )
+
+      logger.info("Affected row count when opening GLAccounts {}", newAffectedRowCount)
+   }
+
+   @Transactional
+   fun openAPAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: Company) {
+      logger.debug("Set APAccounts to false")
+
+      val affectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar
+         SET
+            account_payable_open = :account_payable_open
+         FROM financial_calendar finCal
+            JOIN company ON finCal.company_id = company.id
+            JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
+         WHERE finCal.company_id = :company_id
+            AND overallPeriod.value = :financial_period
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "financial_period" to "C",
+            "account_payable_open" to false
+         )
+      )
+
+      logger.info("Affected row count {}", affectedRowCount)
+
+      logger.debug("Set APAccounts to true for selected period(s)")
+
+      val newAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar finCal
+         SET
+            account_payable_open = :account_payable_open
+         FROM overall_period_type_domain overallPeriod
+         WHERE overallPeriod.id = finCal.overall_period_id
+            AND finCal.company_id = :company_id
+            AND overallPeriod.value = :financial_period
+            AND finCal.period_from BETWEEN :from_date AND :to_date
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "financial_period" to "C",
+            "account_payable_open" to true,
+            "from_date" to dateRangeDTO.periodFrom,
+            "to_date" to dateRangeDTO.periodTo
+         )
+      )
+
+      logger.info("Affected row count when opening APAccounts {}", newAffectedRowCount)
+   }
+
+   @Transactional
+   fun insertFinancialCalendar(entity: RoutineEntity, company: Company): RoutineEntity {
+      logger.debug("Creating entire financial_calendar {}", company)
+
+      return jdbc.insertReturning(
+         """
+         INSERT INTO financial_calendar (
+            company_id,
+            overall_period_id,
+            period,
+            period_from,
+            period_to,
+            fiscal_year,
+            general_ledger_open,
+            account_payable_open
+         )
+         VALUES (
+            :company_id,
+            :overall_period_id,
+            :period,
+            :period_from,
+            :period_to,
+            :fiscal_year,
+            :general_ledger_open,
+            :account_payable_open
+         )
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "overall_period_id" to entity.overallPeriod.id,
+            "period" to entity.period,
+            "period_from" to entity.periodFrom,
+            "period_to" to entity.periodTo,
+            "fiscal_year" to entity.fiscalYear,
+            "general_ledger_open" to entity.generalLedgerOpen,
+            "account_payable_open" to entity.accountPayableOpen
+         ),
+         RowMapper { rs, _ ->
+            mapRowUpsert(rs, entity.overallPeriod)
+         }
+      )
+   }
+
    private fun mapRow(
       rs: ResultSet,
-      columnPrefix: String = StringUtils.EMPTY
+      columnPrefix: String = EMPTY
    ): RoutineEntity {
       return RoutineEntity(
          id = rs.getLong("${columnPrefix}id"),
@@ -208,7 +352,7 @@ class RoutineRepository @Inject constructor(
    private fun mapRowUpsert(
       rs: ResultSet,
       overallPeriodType: OverallPeriodType,
-      columnPrefix: String = StringUtils.EMPTY
+      columnPrefix: String = EMPTY
    ): RoutineEntity {
       return RoutineEntity(
          id = rs.getLong("${columnPrefix}id"),
