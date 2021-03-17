@@ -184,28 +184,33 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
-      final glJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
+      final def glJournalDTO = dataLoaderService.singleDTO(
+         new SimpleIdentifiableDTO(acct.myId()),
+         new SimpleIdentifiableDTO(store.myId()),
+         LocalDate.now(),
+         new GeneralLedgerSourceCodeDTO(glSourceCode)
+      )
 
       when:
-      def result = post("$path/", glJournal)
+      def result = post("$path/", glJournalDTO)
 
       then:
       notThrown(Exception)
       result != null
       with(result) {
          id > 0
-         account.id == glJournal.account.id
-         profitCenter.id == glJournal.profitCenter.myId()
-         date == glJournal.date.toString()
+         account.id == glJournalDTO.account.id
+         profitCenter.id == glJournalDTO.profitCenter.myId()
+         date == glJournalDTO.date.toString()
 
          with(source) {
-            id == glJournal.source.id
-            value == glJournal.source.value
-            description == glJournal.source.description
+            id == glJournalDTO.source.id
+            value == glJournalDTO.source.value
+            description == glJournalDTO.source.description
          }
 
-         amount == glJournal.amount
-         message == glJournal.message
+         amount == glJournalDTO.amount
+         message == glJournalDTO.message
       }
    }
 

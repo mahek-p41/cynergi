@@ -175,4 +175,8 @@ class EmployeeFactoryService @Inject constructor(
       return EmployeeFactory.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)
          .map { employeeRepository.insert(it).copy(passCode = it.passCode) }
    }
+
+   fun stream(numberIn: Int = 1, company: Company): Stream<EmployeeEntity> {
+      return stream(numberIn = numberIn, companyIn = company)
+   }
 }

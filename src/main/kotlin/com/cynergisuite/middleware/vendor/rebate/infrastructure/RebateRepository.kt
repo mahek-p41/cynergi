@@ -62,7 +62,6 @@ class RebateRepository @Inject constructor(
             vendor.v_company_id                                 AS vendor_company_id,
             vendor.v_number                                     AS vendor_number,
             vendor.v_name                                       AS vendor_name,
-            vendor.v_address_id                                 AS vendor_address_id,
             vendor.v_account_number                             AS vendor_account_number,
             vendor.v_pay_to_id                                  AS vendor_pay_to_id,
             vendor.v_freight_on_board_type_id                   AS vendor_freight_on_board_type_id,
