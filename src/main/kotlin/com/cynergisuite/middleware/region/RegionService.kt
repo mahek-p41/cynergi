@@ -55,11 +55,10 @@ class RegionService @Inject constructor(
       }
    }
 
-   @Throws(NotFoundException::class)
-   fun unassignStoreToRegion(regionId: Long, storeId: Long, company: Company) {
+   fun disassociateStoreFromRegion(regionId: Long, storeId: Long, company: Company) {
       val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
       val store = storeRepository.findOne(storeId, company) ?: throw NotFoundException(storeId)
 
-      regionRepository.unassignStoreToRegion(region, store, company)
+      regionRepository.disassociateStoreFromRegion(region, store, company)
    }
 }

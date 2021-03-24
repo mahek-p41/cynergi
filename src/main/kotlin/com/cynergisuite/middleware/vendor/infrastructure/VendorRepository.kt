@@ -1,26 +1,25 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.extensions.getLongOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
+import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
+import com.cynergisuite.middleware.vendor.rebate.RebateEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -201,6 +200,24 @@ class VendorRepository @Inject constructor(
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs, company))
+         } while (rs.next())
+      }
+   }
+
+   fun findVendorIdsByRebate(rebateId: Long, company: Company): List<Identifiable> {
+      return jdbc.queryFullList(
+         """
+            SELECT
+               vendor_id
+            FROM rebate_to_vendor
+            WHERE rebate_id = :rebate_id
+         """.trimIndent(),
+         mapOf(
+            "rebate_id" to rebateId
+         )
+      ) { rs, elements ->
+         do {
+            elements.add(SimpleIdentifiableEntity(rs.getLong("vendor_id")))
          } while (rs.next())
       }
    }

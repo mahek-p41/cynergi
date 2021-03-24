@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.vendor
 
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
@@ -32,6 +33,9 @@ class VendorService @Inject constructor(
          VendorDTO(vendor)
       }
    }
+
+   fun fetchVendorIdsByRebate(rebateId: Long, company: Company): List<Identifiable> =
+      vendorRepository.findVendorIdsByRebate(rebateId, company)
 
    fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
