@@ -27,7 +27,7 @@ data class InventoryDTO(
    val lookupKey: String,
 
    @field:JsonView(value = [Full::class])
-   @field:Schema(name = "lookupKeyType", description = "Defines where the value in lookupKey came from", example = "SERIAL", allowableValues = ["SERIAL", "BARCODE"])
+   @field:Schema(name = "lookupKeyType", description = "Defines where the value in lookupKey came from", example = "SERIAL", allowableValues = ["SERIAL", "ALT_ID"])
    val lookupKeyType: String,
 
    @field:JsonView(value = [Full::class, InventoryApp::class])
