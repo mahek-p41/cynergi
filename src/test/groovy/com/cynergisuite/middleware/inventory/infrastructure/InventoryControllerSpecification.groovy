@@ -31,7 +31,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -121,7 +121,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -170,7 +170,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -218,7 +218,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -255,7 +255,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       inventory.id == 70884
       inventory.serialNumber == "1104000198"
       inventory.lookupKey == "1104000198"
-      inventory.lookupKeyType == "BARCODE"
+      inventory.lookupKeyType == "ALT_ID"
       inventory.barcode == "1104000198"
       inventory.altId == "1104000198"
       inventory.brand == "BLACK & DECKER"
@@ -293,7 +293,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       inventory.id == 70884
       inventory.serialNumber == "1104000198"
       inventory.lookupKey == "1104000198"
-      inventory.lookupKeyType == "BARCODE"
+      inventory.lookupKeyType == "ALT_ID"
       inventory.barcode == "1104000198"
       inventory.altId == "1104000198"
       inventory.brand == "BLACK & DECKER"

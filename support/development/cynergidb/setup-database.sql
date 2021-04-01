@@ -161,11 +161,11 @@ BEGIN
             ''' || r.schema_name || '''::text                                                                                        AS dataset,
             inventory.inv_serial_nbr_key                                                                                             AS serial_number,
             CASE
-               WHEN LEFT(location.loc_tran_strip_dir, 1) = ''B'' THEN inventory.inv_alt_id
+               WHEN LEFT(location.loc_tran_strip_dir, 1) = ''B'' AND inventory.inv_alt_id <> '''' THEN inventory.inv_alt_id
                ELSE inventory.inv_serial_nbr_key
             END                                                                                                                      AS lookup_key,
             CASE
-               WHEN LEFT(location.loc_tran_strip_dir, 1) = ''B'' THEN ''BARCODE''
+               WHEN LEFT(location.loc_tran_strip_dir, 1) = ''B'' AND inventory.inv_alt_id <> '''' THEN ''ALT_ID''
                ELSE ''SERIAL''
             END                                                                                                                      AS lookup_key_type,
             inventory.inv_serial_nbr_key                                                                                             AS barcode,
