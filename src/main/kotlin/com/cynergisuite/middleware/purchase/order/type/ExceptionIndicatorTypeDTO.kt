@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "ExceptionIndicator", title = "Exception indicator", description = "Exception indicator type")
+@Schema(name = "ExceptionIndicatorType", title = "Exception indicator type", description = "Exception indicator type")
 data class ExceptionIndicatorTypeDTO(
 
    @field:NotNull

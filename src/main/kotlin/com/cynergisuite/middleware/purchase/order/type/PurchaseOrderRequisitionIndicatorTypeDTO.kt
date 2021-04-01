@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "PurchaseOrderRequisitionIndicator", title = "Purchase order requisition indicator", description = "Purchase order requisition indicator type")
+@Schema(name = "PurchaseOrderRequisitionIndicatorType", title = "Purchase order requisition indicator type", description = "Purchase order requisition indicator type")
 data class PurchaseOrderRequisitionIndicatorTypeDTO(
 
    @field:NotNull

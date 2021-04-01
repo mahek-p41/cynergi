@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "ExpenseMonthCreation", title = "Expense month creation", description = "Expense month creation type")
+@Schema(name = "ExpenseMonthCreationType", title = "Expense month creation type", description = "Expense month creation type")
 data class ExpenseMonthCreationTypeDTO(
 
    @field:NotNull
