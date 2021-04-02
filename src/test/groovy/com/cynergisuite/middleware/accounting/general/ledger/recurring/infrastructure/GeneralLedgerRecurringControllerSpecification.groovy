@@ -28,7 +28,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
 
-
       when:
       def result = get("$path/${glRecurring.id}")
 
