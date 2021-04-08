@@ -31,7 +31,7 @@ data class PurchaseOrderDetailDTO(
 
    @field:NotNull
    @field:Valid
-   @field:Schema(name = "purchaseOrder", description = "Purchase order id")
+   @field:Schema(name = "purchaseOrder", description = "Purchase order")
    var purchaseOrder: PurchaseOrderDTO? = null,
 
    @field:Positive

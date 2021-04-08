@@ -35,6 +35,10 @@ class PurchaseOrderDetailService @Inject constructor(
       return transformEntity(purchaseOrderDetailRepository.update(toUpdate, company))
    }
 
+   fun delete(id: Long, company: Company) {
+      purchaseOrderDetailRepository.delete(id, company)
+   }
+
    private fun transformEntity(purchaseOrderDetailEntity: PurchaseOrderDetailEntity): PurchaseOrderDetailDTO {
       return PurchaseOrderDetailDTO(entity = purchaseOrderDetailEntity)
    }

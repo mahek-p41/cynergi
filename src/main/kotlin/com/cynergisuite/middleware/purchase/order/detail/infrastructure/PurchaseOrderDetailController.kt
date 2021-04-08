@@ -150,4 +150,24 @@ class PurchaseOrderDetailController @Inject constructor(
 
       return response
    }
+   @Delete(uri = "/{id:[0-9]+}")
+   @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Delete a single purchase order detail", description = "Deletes a purchase order detail based on passed id", operationId = "purchaseOrderDetail-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the purchase order detail record was deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling the endpoint does not have permission"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete purchase order detail", authentication)
+
+      val user = userService.findUser(authentication)
+
+      return purchaseOrderDetailService.delete(id, user.myCompany())
+   }
 }

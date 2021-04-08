@@ -43,7 +43,7 @@ data class CompanyDTO(
    @field:Schema(name = "federalTaxNumber", required = true, nullable = false, description = "Federal taxpayer identification number")
    var federalTaxNumber: String? = null,
 
-   @field:Schema(name = "address", required = false, nullable = true, description = "Address id")
+   @field:Schema(name = "address", required = false, nullable = true, description = "Address")
    var address: AddressDTO? = null
 
 ) : Company {

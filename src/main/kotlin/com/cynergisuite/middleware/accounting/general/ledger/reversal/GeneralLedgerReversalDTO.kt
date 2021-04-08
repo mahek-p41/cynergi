@@ -15,7 +15,7 @@ data class GeneralLedgerReversalDTO(
    var id: Long? = null,
 
    @field:NotNull
-   @field:Schema(name = "source", description = "General ledger source code id")
+   @field:Schema(name = "source", description = "General ledger source code")
    var source: GeneralLedgerSourceCodeDTO? = null,
 
    @field:NotNull

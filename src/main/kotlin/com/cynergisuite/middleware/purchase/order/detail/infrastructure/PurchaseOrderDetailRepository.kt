@@ -5,6 +5,7 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.purchase.order.detail.PurchaseOrderDetailEntity
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.ExceptionIndicatorTypeRepository
@@ -763,6 +764,25 @@ class PurchaseOrderDetailRepository @Inject constructor(
          ),
          RowMapper { rs, _ -> mapRow(rs, entity) }
       )
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting PurchaseOrderDetail with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM purchase_order_detail
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) {
+         throw NotFoundException(id)
+      }
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderDetailEntity {
