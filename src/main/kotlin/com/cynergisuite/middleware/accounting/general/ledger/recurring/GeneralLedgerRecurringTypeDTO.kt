@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "GeneralLedgerRecurring", description = "General ledger recurring type")
+@Schema(name = "GeneralLedgerRecurringType", description = "General ledger recurring type")
 data class GeneralLedgerRecurringTypeDTO(
 
    @field:NotNull

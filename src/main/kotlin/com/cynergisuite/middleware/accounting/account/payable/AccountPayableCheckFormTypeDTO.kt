@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AccountPayableCheckForm", title = "Account payable check form", description = "Account payable check form type")
+@Schema(name = "AccountPayableCheckFormType", title = "Account payable check form type", description = "Account payable check form type")
 data class AccountPayableCheckFormTypeDTO(
 
    @field:NotNull

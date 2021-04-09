@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
+package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest

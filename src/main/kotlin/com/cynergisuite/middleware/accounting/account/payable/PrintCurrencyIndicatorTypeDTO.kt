@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "PrintCurrencyIndicator", title = "Print currency indicator", description = "Print currency indicator type")
+@Schema(name = "PrintCurrencyIndicatorType", title = "Print currency indicator type", description = "Print currency indicator type")
 data class PrintCurrencyIndicatorTypeDTO(
 
    @field:NotNull
