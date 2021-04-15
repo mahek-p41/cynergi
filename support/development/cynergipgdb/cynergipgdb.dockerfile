@@ -11,4 +11,4 @@ RUN chmod u+x /root/db-ready.sh
 COPY db-dump.sh /root/db-dump.sh
 RUN chmod u+x /root/db-dump.sh
 
-RUN apk add pspg
+RUN apk update && apk add pspg
