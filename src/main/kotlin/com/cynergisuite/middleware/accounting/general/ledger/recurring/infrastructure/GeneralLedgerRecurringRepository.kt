@@ -187,7 +187,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   fun mapRow(
+   private fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY
    ): GeneralLedgerRecurringEntity {
