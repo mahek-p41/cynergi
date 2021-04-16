@@ -13,6 +13,7 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
@@ -315,4 +316,43 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')    || 'type.value'         | 'Z was unable to be found'
    }
 
+   void "delete one GL recurring" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
+
+      when:
+      delete("$path/${glRecurring.id}")
+
+      then:
+      notThrown(Exception)
+
+      when:
+      get("$path/${glRecurring.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "${glRecurring.id} was unable to be found"
+   }
+
+   void "delete GL recurring from other company is not allowed" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+      final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds2, glSourceCode)
+
+      when:
+      delete("$path/${glRecurring.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "${glRecurring.id} was unable to be found"
+   }
 }
