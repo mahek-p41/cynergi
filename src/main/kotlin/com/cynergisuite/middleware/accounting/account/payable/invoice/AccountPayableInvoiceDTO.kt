@@ -81,7 +81,7 @@ data class AccountPayableInvoiceDTO(
    var message: String? = null,
 
    @field:NotNull
-   @field:Schema(description = "Account payable invoice selected type id")
+   @field:Schema(description = "Account payable invoice selected type")
    var selected: AccountPayableInvoiceSelectedTypeDTO? = null,
 
    @field:NotNull
@@ -96,11 +96,11 @@ data class AccountPayableInvoiceDTO(
    var selectedAmount: BigDecimal? = null,
 
    @field:NotNull
-   @field:Schema(description = "Account payable invoice type id")
+   @field:Schema(description = "Account payable invoice type")
    var type: AccountPayableInvoiceTypeDTO? = null,
 
    @field:NotNull
-   @field:Schema(description = "Account payable invoice status type id")
+   @field:Schema(description = "Account payable invoice status type")
    var status: AccountPayableInvoiceStatusTypeDTO? = null,
 
    @field:NotNull

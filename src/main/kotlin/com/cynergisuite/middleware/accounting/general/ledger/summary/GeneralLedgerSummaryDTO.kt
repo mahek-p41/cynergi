@@ -24,7 +24,7 @@ data class GeneralLedgerSummaryDTO(
    var profitCenter: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
-   @field:Schema(name = "overallPeriod", description = "Overall period ID")
+   @field:Schema(name = "overallPeriod", description = "Overall period")
    var overallPeriod: OverallPeriodTypeDTO? = null,
 
    @field:Schema(name = "netActivityPeriod1", description = "Net activity period 1", required = false)

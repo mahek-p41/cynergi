@@ -28,7 +28,7 @@ data class GeneralLedgerJournalDTO(
    var date: LocalDate? = null,
 
    @field:NotNull
-   @field:Schema(name = "source", description = "General ledger source code id")
+   @field:Schema(name = "source", description = "General ledger source code")
    var source: GeneralLedgerSourceCodeDTO? = null,
 
    @field:NotNull
