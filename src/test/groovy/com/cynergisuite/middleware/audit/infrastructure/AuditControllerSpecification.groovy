@@ -621,6 +621,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all opened audits with from thru" () {
       setup:
+      final def from = OffsetDateTime.now().toInstant()
+      final def thru = OffsetDateTime.now().plusHours(1).toInstant()
+
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
@@ -666,7 +669,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(4, storeThree, storeThreeEmployee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
 
       when:
-      def twoCreatedAudits = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', from: OffsetDateTime.now(), thru: OffsetDateTime.now(), status: [AuditStatusFactory.created().value] as Set]))
+      def twoCreatedAudits = get("$path?from=$from&thru=$thru&status=CREATED")
 
       then:
       notThrown(HttpClientResponseException)
@@ -727,7 +730,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch audit status counts using specified from" () {
       setup:
-      final def from = OffsetDateTime.now().minusDays(1)
+      final def from = OffsetDateTime.now().minusDays(1).toInstant()
+
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
       auditFactoryService.generate(1, employee, [AuditStatusFactory.created()] as Set)
@@ -753,6 +757,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch audit status counts using specified from/thru and statuses" () {
       setup:
+      final def from = OffsetDateTime.now().minusDays(1).toInstant()
+      final def thru = OffsetDateTime.now().plusHours(1).toInstant()
+
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
       auditFactoryService.generate(1, employee, [AuditStatusFactory.created()] as Set)
@@ -760,9 +767,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditFactoryService.generate(3, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.canceled()] as Set)
       auditFactoryService.generate(4, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       auditFactoryService.generate(5, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed(), AuditStatusFactory.approved()] as Set)
-
-      final def from = OffsetDateTime.now().minusDays(1)
-      final def thru = OffsetDateTime.now()
 
       when:
       def counts = get("${path}/counts?from=$from&thru=$thru&status=CREATED&status=IN-PROGRESS").collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }.sort { o1, o2 -> o1.getStatus().id <=> o2.getStatus().id }
@@ -802,13 +806,13 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final completedAuditFromLastWeek = auditFactoryService.single(storeThree, employee,
             [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
-      final def from = OffsetDateTime.now().minusDays(3)
-      final def thru = OffsetDateTime.now()
+      final def from = OffsetDateTime.now().minusDays(3).toInstant()
+      final def thru = OffsetDateTime.now().plusHours(1).toInstant()
 
       when:
       jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: inProgressAuditFromLastWeek.timeCreated.minusDays(8), id: inProgressAuditFromLastWeek.id])
       jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: completedAuditFromLastWeek.timeCreated.minusDays(8), id: completedAuditFromLastWeek.id])
-      def countsResult = get("${path}/counts" + new AuditPageRequest([from: from, thru:thru, status: statusValuesIn, storeNumber: storeNumberValuesIn]))
+      def countsResult = get("$path/counts?from=$from&thru=$thru&$statusValuesIn&$storeNumberValuesIn")
          .collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }
 
       then:
@@ -823,11 +827,11 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .findFirst().map({ it -> it.count }).orElse(null) == completedCount
 
       where:
-      storeNumberValuesIn  | statusValuesIn              || createdCount | inProgressCount | completedCount
-      [1]                  | ['CREATED', 'IN-PROGRESS']  || 1            | 2               | null
-      [3]                  | ['CREATED', 'IN-PROGRESS']  || 2            | null            | null
-      [1, 3]               | ['CREATED', 'IN-PROGRESS']  || 3            | 2               | null
-      [1, 3]               | ['COMPLETED']               || null         | null            | 5
+      storeNumberValuesIn            | statusValuesIn                       || createdCount | inProgressCount | completedCount
+      "storeNumber=1"                | "status=CREATED&status=IN-PROGRESS"  || 1            | 2               | null
+      "storeNumber=3"                | "status=CREATED&status=IN-PROGRESS"  || 2            | null            | null
+      "storeNumber=1&storeNumber=3"  | "status=CREATED&status=IN-PROGRESS"  || 3            | 2               | null
+      "storeNumber=1&storeNumber=3"  | "status=COMPLETED"                   || null         | null            | 5
    }
 
    void "create new audit" () {
