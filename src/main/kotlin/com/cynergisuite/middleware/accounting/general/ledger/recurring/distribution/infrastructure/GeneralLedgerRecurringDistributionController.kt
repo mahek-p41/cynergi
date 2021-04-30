@@ -92,6 +92,39 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       return page
    }
 
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/recurring-id-{glRecurringId:[0-9]+}{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Fetch a listing of General Ledger Recurring Distributions by General Ledger Recurring ID", description = "Fetch a paginated listing of General Ledger Recurring Distributions by General Ledger Recurring ID", operationId = "generalLedgerRecurringDistribution-fetchAllByRecurringId")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Recurring Distribution was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAllByRecurringId(
+      @Parameter(name = "glRecurringId", `in` = PATH, description = "The General Ledger Recurring ID for which the list of General Ledger Recurring Distributions is to be loaded")
+      @Valid @QueryValue("glRecurringId")
+      glRecurringId: Long,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<GeneralLedgerRecurringDistributionDTO> {
+      logger.info("Fetching all General Ledger Recurring Distributions {} by General Ledger Recurring ID {}", pageRequest, glRecurringId)
+
+      val user = userService.findUser(authentication)
+      val page = generalLedgerRecurringDistributionService.fetchAllByRecurringId(glRecurringId, user.myCompany(), pageRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
+   }
+
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Create a single General Ledger Recurring Distribution", description = "Create a single GeneralLedgerRecurringDistribution", operationId = "generalLedgerRecurringDistribution-create")
