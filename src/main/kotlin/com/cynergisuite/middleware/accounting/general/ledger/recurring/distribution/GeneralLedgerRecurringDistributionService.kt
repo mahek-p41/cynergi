@@ -1,0 +1,46 @@
+package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution
+
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure.GeneralLedgerRecurringDistributionRepository
+import com.cynergisuite.middleware.company.Company
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class GeneralLedgerRecurringDistributionService @Inject constructor(
+   private val generalLedgerRecurringDistributionRepository: GeneralLedgerRecurringDistributionRepository,
+   private val generalLedgerRecurringDistributionValidator: GeneralLedgerRecurringDistributionValidator
+) {
+
+   fun fetchById(id: Long, company: Company): GeneralLedgerRecurringDistributionDTO? =
+      generalLedgerRecurringDistributionRepository.findOne(id, company)?.let { GeneralLedgerRecurringDistributionDTO(it) }
+
+   fun create(dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionDTO {
+      val toCreate = generalLedgerRecurringDistributionValidator.validateCreate(dto, company)
+
+      return transformEntity(generalLedgerRecurringDistributionRepository.insert(toCreate))
+   }
+
+   fun fetchAll(company: Company, pageRequest: PageRequest): Page<GeneralLedgerRecurringDistributionDTO> {
+      val found = generalLedgerRecurringDistributionRepository.findAll(company, pageRequest)
+
+      return found.toPage { entity: GeneralLedgerRecurringDistributionEntity ->
+         GeneralLedgerRecurringDistributionDTO(entity)
+      }
+   }
+
+   fun update(id: Long, dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionDTO {
+      val toUpdate = generalLedgerRecurringDistributionValidator.validateUpdate(id, dto, company)
+
+      return transformEntity(generalLedgerRecurringDistributionRepository.update(toUpdate))
+   }
+
+   fun delete(id: Long, company: Company) {
+      generalLedgerRecurringDistributionRepository.delete(id)
+   }
+
+   private fun transformEntity(entity: GeneralLedgerRecurringDistributionEntity): GeneralLedgerRecurringDistributionDTO {
+      return GeneralLedgerRecurringDistributionDTO(entity)
+   }
+}

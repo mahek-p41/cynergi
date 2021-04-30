@@ -31,7 +31,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          SELECT
             glRecurring.id                                        AS glRecurring_id,
@@ -187,7 +187,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   private fun mapRow(
+   fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY
    ): GeneralLedgerRecurringEntity {
