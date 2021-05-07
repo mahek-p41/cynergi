@@ -248,75 +248,95 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       when:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      def inventory = get("inventory/1104000198", tstds1Store1UserLogin)
+      def inventory = get("inventory/00110360", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)
-      inventory.id == 70884
-      inventory.serialNumber == "1104000198"
-      inventory.lookupKey == "1104000198"
-      inventory.lookupKeyType == "ALT_ID"
-      inventory.barcode == "1104000198"
-      inventory.altId == "1104000198"
-      inventory.brand == "BLACK & DECKER"
-      inventory.modelNumber == "ACB&DBWE12A"
-      inventory.productCode == "A-AIR CONDITIONER"
-      inventory.description == "AIR CONDITIONER"
-      inventory.receivedDate == "2012-05-10"
-      inventory.originalCost == 199.99
-      inventory.actualCost == 199.99
-      inventory.modelCategory == "A"
-      inventory.timesRented == 1
-      inventory.totalRevenue == 379.99
-      inventory.remainingValue == 0.00
-      inventory.sellPrice == 379.99
-      inventory.assignedValue == 0
-      inventory.idleDays == 50
-      inventory.condition == null
-      inventory.location == null
-      inventory.status == "E"
-      inventory.primaryLocation.id == 1
-      inventory.primaryLocation.storeNumber == 1
-      inventory.primaryLocation.name == "KANSAS CITY"
-      inventory.locationType.value == "STORE"
-      inventory.locationType.description == "Store"
+      with(inventory) {
+         id == 73830
+         serialNumber == "00110360"
+         lookupKey == "00110360"
+         lookupKeyType == "ALT_ID"
+         barcode == "00110360"
+         altId == "00110360"
+         brand == "HD CANVAS ART"
+         modelNumber == "FPHAD11856"
+         productCode == "F-MISCELLANEOUS FURNITURE PICT"
+         description == "MISCELLANEOUS FURNITURE PICT"
+         receivedDate == "2010-05-18"
+         originalCost == 85
+         actualCost == 85
+         modelCategory == "F"
+         timesRented == 0
+         totalRevenue == 0
+         remainingValue == 0
+         sellPrice == 0
+         assignedValue == 0
+         idleDays == 0
+         condition == null
+         with(location) {
+            id == 1
+            storeNumber == 1
+            name == "KANSAS CITY"
+         }
+         status == "N"
+         with(primaryLocation) {
+            id == 1
+            storeNumber == 1
+            name == "KANSAS CITY"
+         }
+         with(locationType) {
+            value == "STORE"
+            description == "Store"
+         }
+      }
    }
 
    void "fetch by existing lookup key" () {
       when:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      def inventory = get("inventory/lookup?key=1104000198", tstds1Store1UserLogin)
+      def inventory = get("inventory/lookup?key=00110360", tstds1Store1UserLogin)
 
       then:
       notThrown(HttpClientResponseException)
-      inventory.id == 70884
-      inventory.serialNumber == "1104000198"
-      inventory.lookupKey == "1104000198"
-      inventory.lookupKeyType == "ALT_ID"
-      inventory.barcode == "1104000198"
-      inventory.altId == "1104000198"
-      inventory.brand == "BLACK & DECKER"
-      inventory.modelNumber == "ACB&DBWE12A"
-      inventory.productCode == "A-AIR CONDITIONER"
-      inventory.description == "AIR CONDITIONER"
-      inventory.receivedDate == "2012-05-10"
-      inventory.originalCost == 199.99
-      inventory.actualCost == 199.99
-      inventory.modelCategory == "A"
-      inventory.timesRented == 1
-      inventory.totalRevenue == 379.99
-      inventory.remainingValue == 0.00
-      inventory.sellPrice == 379.99
-      inventory.assignedValue == 0
-      inventory.idleDays == 50
-      inventory.condition == null
-      inventory.location == null
-      inventory.status == "E"
-      inventory.primaryLocation.id == 1
-      inventory.primaryLocation.storeNumber == 1
-      inventory.primaryLocation.name == "KANSAS CITY"
-      inventory.locationType.value == "STORE"
-      inventory.locationType.description == "Store"
+      with(inventory) {
+         id == 73830
+         serialNumber == "00110360"
+         lookupKey == "00110360"
+         lookupKeyType == "ALT_ID"
+         barcode == "00110360"
+         altId == "00110360"
+         brand == "HD CANVAS ART"
+         modelNumber == "FPHAD11856"
+         productCode == "F-MISCELLANEOUS FURNITURE PICT"
+         description == "MISCELLANEOUS FURNITURE PICT"
+         receivedDate == "2010-05-18"
+         originalCost == 85
+         actualCost == 85
+         modelCategory == "F"
+         timesRented == 0
+         totalRevenue == 0
+         remainingValue == 0
+         sellPrice == 0
+         assignedValue == 0
+         idleDays == 0
+         condition == null
+         with(location) {
+            id == 1
+            storeNumber == 1
+            name == "KANSAS CITY"
+         }
+         status == "N"
+         with(primaryLocation) {
+            id == 1
+            storeNumber == 1
+            name == "KANSAS CITY"
+         }
+         with(locationType) {
+            value == "STORE"
+            description == "Store"
+         }
+      }
    }
 }
