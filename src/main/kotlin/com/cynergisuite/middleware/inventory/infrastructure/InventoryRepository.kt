@@ -191,6 +191,7 @@ class InventoryRepository(
          $selectBase
          WHERE i.lookup_key = :lookup_key
                AND comp.id = :comp_id
+               AND i.status in ('N', 'R')
          """.trimIndent(),
          mapOf(
             "lookup_key" to lookupKey,
@@ -199,7 +200,7 @@ class InventoryRepository(
          RowMapper { rs, _ -> mapRow(rs) }
       )
 
-      logger.debug("Search for Inventory by lookup key {} produced {}", lookupKey, inventory)
+      logger.debug("Search for available Inventory by lookup key {} produced {}", lookupKey, inventory)
 
       return inventory
    }
@@ -295,7 +296,7 @@ class InventoryRepository(
             comp.id = :comp_id
             AND a.id = :audit_id
             AND i.status in ('N', 'R')
-            AND i.serial_number NOT IN (SELECT serial_number
+            AND i.lookup_key NOT IN (SELECT lookup_key
                                         FROM audit_detail
                                         WHERE audit_id = :audit_id)
       )
