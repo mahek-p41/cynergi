@@ -105,6 +105,72 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       notFoundException.status == NO_CONTENT
    }
 
+   void "fetch all by gl recurring id" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final glRecurring1 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      final glRecurring2 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      final glRecurringDistributions = dataLoaderService.stream(3, glRecurring1, account, profitCenter).toList()
+      glRecurringDistributions.add(dataLoaderService.single(glRecurring2, account, profitCenter))
+      glRecurringDistributions.add(dataLoaderService.single(glRecurring2, account, profitCenter))
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+
+      when: // fetch records with first gl recurring id
+      def result = get("$path/recurring-id-${glRecurring1.id}$pageOne")
+
+      then: // first three records are found
+      notThrown(Exception)
+      with(result) {
+         requested.with { new StandardPageRequest(it) } == pageOne
+         totalElements == 3
+         totalPages == 1
+         first == true
+         last == true
+         elements.eachWithIndex { pageOneResult, index ->
+            with(pageOneResult) {
+               id == glRecurringDistributions[index].id
+               generalLedgerRecurring.id == glRecurringDistributions[index].generalLedgerRecurring.id
+               generalLedgerDistributionAccount.id == glRecurringDistributions[index].generalLedgerDistributionAccount.id
+               generalLedgerDistributionProfitCenter.id == glRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
+               generalLedgerDistributionAmount == glRecurringDistributions[index].generalLedgerDistributionAmount
+            }
+         }
+      }
+
+      when: // fetch records with second gl recurring id
+      result = get("$path/recurring-id-${glRecurring2.id}$pageOne")
+
+      then: // last two records are found
+      notThrown(Exception)
+      with(result) {
+         requested.with { new StandardPageRequest(it) } == pageOne
+         totalElements == 2
+         totalPages == 1
+         first == true
+         last == true
+         elements.eachWithIndex { pageOneResult, index ->
+            with(pageOneResult) {
+               id == glRecurringDistributions[index + 3].id
+               generalLedgerRecurring.id == glRecurringDistributions[index + 3].generalLedgerRecurring.id
+               generalLedgerDistributionAccount.id == glRecurringDistributions[index + 3].generalLedgerDistributionAccount.id
+               generalLedgerDistributionProfitCenter.id == glRecurringDistributions[index + 3].generalLedgerDistributionProfitCenter.myId()
+               generalLedgerDistributionAmount == glRecurringDistributions[index + 3].generalLedgerDistributionAmount
+            }
+         }
+      }
+
+      when:
+      get("$path$pageTwo")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
    void "create one" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')

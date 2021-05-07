@@ -5,7 +5,6 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.Company
@@ -101,6 +100,27 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
+            "limit" to page.size(),
+            "offset" to page.offset()
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "glRecurringDist_"))
+         } while (rs.next())
+      }
+   }
+
+   fun findAllByRecurringId(glRecurringId: Long, company: Company, page: PageRequest): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
+      return jdbc.queryPaged(
+         """
+            ${selectBaseQuery()}
+            WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId
+            ORDER BY glRecurringDist_${page.snakeSortBy()} ${page.sortDirection()}
+            LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "glRecurringId" to glRecurringId,
             "limit" to page.size(),
             "offset" to page.offset()
          ),

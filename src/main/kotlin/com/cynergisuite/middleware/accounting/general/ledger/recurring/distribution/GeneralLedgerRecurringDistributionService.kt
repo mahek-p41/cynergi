@@ -16,18 +16,26 @@ class GeneralLedgerRecurringDistributionService @Inject constructor(
    fun fetchById(id: Long, company: Company): GeneralLedgerRecurringDistributionDTO? =
       generalLedgerRecurringDistributionRepository.findOne(id, company)?.let { GeneralLedgerRecurringDistributionDTO(it) }
 
-   fun create(dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionDTO {
-      val toCreate = generalLedgerRecurringDistributionValidator.validateCreate(dto, company)
-
-      return transformEntity(generalLedgerRecurringDistributionRepository.insert(toCreate))
-   }
-
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<GeneralLedgerRecurringDistributionDTO> {
       val found = generalLedgerRecurringDistributionRepository.findAll(company, pageRequest)
 
       return found.toPage { entity: GeneralLedgerRecurringDistributionEntity ->
          GeneralLedgerRecurringDistributionDTO(entity)
       }
+   }
+
+   fun fetchAllByRecurringId(glRecurringId: Long, company: Company, pageRequest: PageRequest): Page<GeneralLedgerRecurringDistributionDTO> {
+      val found = generalLedgerRecurringDistributionRepository.findAllByRecurringId(glRecurringId, company, pageRequest)
+
+      return found.toPage { entity: GeneralLedgerRecurringDistributionEntity ->
+         GeneralLedgerRecurringDistributionDTO(entity)
+      }
+   }
+
+   fun create(dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionDTO {
+      val toCreate = generalLedgerRecurringDistributionValidator.validateCreate(dto, company)
+
+      return transformEntity(generalLedgerRecurringDistributionRepository.insert(toCreate))
    }
 
    fun update(id: Long, dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionDTO {
