@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.audit.detail.AuditDetailCreateDTO
+import com.cynergisuite.middleware.audit.detail.AuditDetailCreateUpdateDTO
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -16,6 +16,7 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
@@ -110,7 +111,7 @@ class AuditDetailController @Inject constructor(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
       auditId: Long,
       @Body @Valid
-      vo: AuditDetailCreateDTO,
+      vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
@@ -120,6 +121,36 @@ class AuditDetailController @Inject constructor(
       val response = auditDetailService.create(auditId, vo, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
+
+      return response
+   }
+
+   @Put(uri = "/{auditId}/detail/{auditDetailId}", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AuditDetailEndpoints"], summary = "Modify a single AuditDetail", description = "Modify a single AuditDetail. The logged in Employee is used for the scannedBy property", operationId = "auditDetail-update")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditDetailValueObject::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The parent Audit was unable to be found, or the scanArea was unknown"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun update(
+      @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
+      auditId: Long,
+      @Parameter(name = "auditDetailId", `in` = ParameterIn.PATH, description = "The audit detail id") @QueryValue("auditDetailId")
+      auditDetailId: Long,
+      @Body vo: AuditDetailCreateUpdateDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AuditDetailValueObject {
+      logger.info("Requested Update AuditDetail {}", vo)
+
+      val user = userService.findUser(authentication)
+      val response = auditDetailService.update(auditId, vo, user, httpRequest.findLocaleWithDefault())
+
+      logger.debug("Requested Update AuditDetail {} resulted in {}", vo, response)
 
       return response
    }

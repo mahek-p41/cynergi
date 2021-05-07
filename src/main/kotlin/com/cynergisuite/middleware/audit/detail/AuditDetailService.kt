@@ -8,9 +8,11 @@ import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
+import io.micronaut.validation.Validated
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.validation.Valid
 
 @Singleton
 class AuditDetailService @Inject constructor(
@@ -28,10 +30,18 @@ class AuditDetailService @Inject constructor(
       return found.toPage { transformEntity(it) }
    }
 
-   fun create(auditId: Long, dto: AuditDetailCreateDTO, scannedBy: User, locale: Locale): AuditDetailValueObject {
-      val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, dto)
+   @Validated
+   fun create(auditId: Long, @Valid vo: AuditDetailCreateUpdateDTO, scannedBy: User, locale: Locale): AuditDetailValueObject {
+      val auditDetail = auditDetailValidator.validateCreate(auditId, scannedBy, vo)
 
       return transformEntity(auditDetailRepository.insert(auditDetail))
+   }
+
+   @Validated
+   fun update(auditId: Long, @Valid vo: AuditDetailCreateUpdateDTO, scannedBy: User, locale: Locale): AuditDetailValueObject {
+      val auditDetail = auditDetailValidator.validateUpdate(auditId, scannedBy, vo)
+
+      return transformEntity(auditDetailRepository.update(auditDetail))
    }
 
    private fun transformEntity(auditDetail: AuditDetailEntity): AuditDetailValueObject {

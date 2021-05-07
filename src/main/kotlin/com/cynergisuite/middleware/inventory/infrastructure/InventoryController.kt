@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
 import com.fasterxml.jackson.annotation.JsonView
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType.APPLICATION_FORM_URLENCODED
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -21,7 +22,7 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -94,6 +95,7 @@ class InventoryController(
       return fetchAll(pageRequest, authentication, httpRequest)
    }
 
+   @Deprecated("The is a deprecated endpoint to support the old scanning app.")
    @Throws(AccessException::class, NotFoundException::class)
    @Get(uri = "/{lookupKey}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookupKey", description = "Fetch an Inventory item by lookupKey", operationId = "inventory-fetchByLookupKey")
@@ -106,12 +108,36 @@ class InventoryController(
       ]
    )
    fun fetchByBarcode(
-      @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey")
+      @Parameter(name = "lookupKey", `in` = ParameterIn.PATH, required = false) @QueryValue("lookupKey")
       lookupKey: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): InventoryDTO {
       logger.info("Fetching Inventory by barcode {}", lookupKey)
+
+      val user = userService.findUser(authentication)
+
+      return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
+   }
+
+   @Throws(AccessException::class, NotFoundException::class)
+   @Get(uri = "/lookup", produces = [APPLICATION_JSON, APPLICATION_FORM_URLENCODED], consumes = [APPLICATION_JSON, APPLICATION_FORM_URLENCODED])
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookup key", description = "Fetch an Inventory item by lookup key", operationId = "inventory-fetchByLookupKey")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
+         ApiResponse(responseCode = "403", description = "If authentication fails"),
+         ApiResponse(responseCode = "404", description = "If the lookup key was unable to be located"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchByLookupKey(
+      @Parameter(name = "key", `in` = QUERY, required = true) @QueryValue("key")
+      lookupKey: String,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): InventoryDTO {
+      logger.info("Fetching Inventory by lookup key {}", lookupKey)
 
       val user = userService.findUser(authentication)
 

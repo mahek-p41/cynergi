@@ -29,7 +29,8 @@ class AuditInventoryRepository @Inject constructor(
             JOIN company comp ON i.dataset = comp.dataset_code
          WHERE i.primary_location = :store_number
                AND i.location = :store_number
-               AND i.status IN ('N', 'R')
+               AND (i.status IN ('N', 'R')
+                     OR i.lookup_key IN (SELECT lookup_key FROM audit_detail WHERE audit_id = :audit_id))
                AND comp.id = :company_id
          """.trimIndent(),
          mapOf(

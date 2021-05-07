@@ -31,7 +31,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -121,7 +121,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -170,7 +170,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -218,7 +218,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 73821
       pageOneResult.elements[0].serialNumber == "201-00923"
       pageOneResult.elements[0].lookupKey == "201-00923"
-      pageOneResult.elements[0].lookupKeyType == "BARCODE"
+      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
       pageOneResult.elements[0].barcode == "201-00923"
       pageOneResult.elements[0].altId == "201-00923"
       pageOneResult.elements[0].brand == "GIDGET MEAUT"
@@ -255,7 +255,45 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       inventory.id == 70884
       inventory.serialNumber == "1104000198"
       inventory.lookupKey == "1104000198"
-      inventory.lookupKeyType == "BARCODE"
+      inventory.lookupKeyType == "ALT_ID"
+      inventory.barcode == "1104000198"
+      inventory.altId == "1104000198"
+      inventory.brand == "BLACK & DECKER"
+      inventory.modelNumber == "ACB&DBWE12A"
+      inventory.productCode == "A-AIR CONDITIONER"
+      inventory.description == "AIR CONDITIONER"
+      inventory.receivedDate == "2012-05-10"
+      inventory.originalCost == 199.99
+      inventory.actualCost == 199.99
+      inventory.modelCategory == "A"
+      inventory.timesRented == 1
+      inventory.totalRevenue == 379.99
+      inventory.remainingValue == 0.00
+      inventory.sellPrice == 379.99
+      inventory.assignedValue == 0
+      inventory.idleDays == 50
+      inventory.condition == null
+      inventory.location == null
+      inventory.status == "E"
+      inventory.primaryLocation.id == 1
+      inventory.primaryLocation.storeNumber == 1
+      inventory.primaryLocation.name == "KANSAS CITY"
+      inventory.locationType.value == "STORE"
+      inventory.locationType.description == "Store"
+   }
+
+   void "fetch by existing lookup key" () {
+      when:
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      def inventory = get("inventory/lookup?key=1104000198", tstds1Store1UserLogin)
+
+      then:
+      notThrown(HttpClientResponseException)
+      inventory.id == 70884
+      inventory.serialNumber == "1104000198"
+      inventory.lookupKey == "1104000198"
+      inventory.lookupKeyType == "ALT_ID"
       inventory.barcode == "1104000198"
       inventory.altId == "1104000198"
       inventory.brand == "BLACK & DECKER"

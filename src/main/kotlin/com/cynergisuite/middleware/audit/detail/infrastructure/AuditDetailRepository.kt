@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.inventory.InventoryEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -43,6 +44,7 @@ class AuditDetailRepository @Inject constructor(
             auditDetail.uu_row_id                     AS auditDetail_uu_row_id,
             auditDetail.time_created                  AS auditDetail_time_created,
             auditDetail.time_updated                  AS auditDetail_time_updated,
+            auditDetail.lookup_key                    AS auditDetail_lookup_key,
             auditDetail.barcode                       AS auditDetail_barcode,
             auditDetail.product_code                  AS auditDetail_product_code,
             auditDetail.alt_id                        AS auditDetail_alt_id,
@@ -101,6 +103,26 @@ class AuditDetailRepository @Inject constructor(
               JOIN audit_scan_area scanArea ON auditDetail.scan_area_id = scanArea.id
               JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND scanArea.store_number_sfk = store.number
       """
+   }
+
+   fun exists(auditId: Long, inventory: InventoryEntity): Boolean {
+      val exists = jdbc.queryForObject(
+         """
+               SELECT EXISTS (
+                  SELECT id
+                  FROM audit_detail
+                  WHERE audit_id = :audit_id
+                     AND lookup_key = :lookup_key
+               )
+            """,
+         mapOf("audit_id" to auditId,
+               "lookup_key" to inventory.lookupKey),
+         Boolean::class.java
+      )!!
+
+      logger.info("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
+
+      return exists
    }
 
    fun findOne(id: Long, company: Company): AuditDetailEntity? {
@@ -164,13 +186,14 @@ class AuditDetailRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO audit_detail(scan_area_id, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, audit_id)
-         VALUES (:scan_area_id, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :audit_id)
+         INSERT INTO audit_detail(scan_area_id, lookup_key, barcode, product_code, alt_id, serial_number, inventory_brand, inventory_model, scanned_by, audit_id)
+         VALUES (:scan_area_id, :lookup_key, :barcode, :product_code, :alt_id, :serial_number, :inventory_brand, :inventory_model, :scanned_by, :audit_id)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
             "scan_area_id" to entity.scanArea.id,
+            "lookup_key" to entity.lookupKey,
             "barcode" to entity.barcode,
             "product_code" to entity.productCode,
             "alt_id" to entity.altId,
@@ -195,6 +218,7 @@ class AuditDetailRepository @Inject constructor(
          UPDATE audit_detail
          SET
             scan_area_id = :scan_area_id,
+            lookup_key = :lookup_key,
             barcode = :barcode,
             product_code = :product_code,
             alt_id = :alt_id,
@@ -209,6 +233,7 @@ class AuditDetailRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "scan_area_id" to entity.scanArea.id,
+            "lookup_key" to entity.lookupKey,
             "barcode" to entity.barcode,
             "product_code" to entity.productCode,
             "alt_id" to entity.altId,
@@ -229,6 +254,7 @@ class AuditDetailRepository @Inject constructor(
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          scanArea = scanArea,
+         lookupKey = rs.getString("${columnPrefix}lookup_key"),
          barcode = rs.getString("${columnPrefix}barcode"),
          productCode = rs.getString("${columnPrefix}product_code"),
          altId = rs.getString("${columnPrefix}alt_id"),
