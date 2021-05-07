@@ -36,6 +36,10 @@ class GeneralLedgerRecurringService @Inject constructor(
       return transformEntity(generalLedgerRecurringRepository.update(toUpdate, company))
    }
 
+   fun delete(id: Long, company: Company) {
+      generalLedgerRecurringRepository.delete(id, company)
+   }
+
    private fun transformEntity(generalLedgerRecurringEntity: GeneralLedgerRecurringEntity): GeneralLedgerRecurringDTO {
       return GeneralLedgerRecurringDTO(generalLedgerRecurringEntity)
    }

@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.Gene
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringType
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -167,6 +168,22 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             mapRowUpsert(rs, entity.type, entity.source)
          }
       )
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting GeneralLedgerRecurring with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM general_ledger_recurring
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    private fun mapRow(
