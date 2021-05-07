@@ -55,8 +55,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditRepository auditRepository
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
    @Inject NamedParameterJdbcTemplate jdbc
    @Inject LocalizationService localizationService
 

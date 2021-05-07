@@ -6,14 +6,17 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
+import java.time.LocalDate
 
 data class DivisionEntity(
    val id: Long? = null,
+   val company: CompanyEntity,
    val number: Long? = null,
    val name: String,
+   val divisionalManager: EmployeeEntity? = null,
    val description: String?,
-   val company: CompanyEntity,
-   val divisionalManager: EmployeeEntity? = null
+   val effectiveDate: LocalDate,
+   val endingDate: LocalDate?,
 ) : Identifiable, Comparable<DivisionEntity> {
    constructor(dto: DivisionDTO, company: Company, divisionalManager: EmployeeEntity?) : this(
       id = dto.id,
