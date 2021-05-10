@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 show() {
   TYPE="$1"; shift
   for i in $(echo $*)
@@ -20,7 +21,7 @@ drive() {
 }
 
 cd "${0%/*}" # see: https://stackoverflow.com/questions/6393551/what-is-the-meaning-of-0-in-a-bash-script for explanation
-# need to make sure the current directory is that of this script in the cynergi-middleware/support/.cyn/ so that the child scripts will work correctly
+# need to make sure the current directory is that of this script in the warehouse-managment/support/.nigel/ so that the child scripts will work correctly
 # plan is to use direnv https://direnv.net/ to setup the path variable using the PATH_add function in a .envrc file
 
 unset POSSBILE
@@ -46,7 +47,6 @@ do
 done
 ##########################################
 if [ "$SCRIPT" ]; then
-  echo "running --> $POSSIBLE with arguments: $ARGS"
   eval $POSSIBLE "$ARGS"
 else
   [ ! "$POSSIBLE" ] && POSSIBLE="$CMD"

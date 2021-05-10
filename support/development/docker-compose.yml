@@ -3,12 +3,11 @@ networks:
    cynerginet:
       name: cynerginet
 services:
-   cynergipgdb:
-      container_name: cynergipgdb
-      image: cynergipgdbbase
+   cynergibasedb:
+      image: cynergibasedb
       build:
-         context: cynergipgdb
-         dockerfile: cynergipgdb.dockerfile
+         context: basedb
+         dockerfile: basedb.dockerfile
    cynergidb:
       container_name: cynergidb
       networks:
@@ -16,6 +15,11 @@ services:
       build:
          context: cynergidb
          dockerfile: cynergidb.dockerfile
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       ports:
          - "6432:5432"
       volumes:
@@ -25,7 +29,7 @@ services:
       restart: 'no'
    cynergidbready:
       container_name: cynergidbready
-      image: cynergipgdbbase
+      image: cynergibasedb
       networks:
          - cynerginet
       depends_on:
@@ -35,31 +39,46 @@ services:
       command: [ "/root/db-ready.sh", "cynergidb" ]
    cynergidbpsql:
       container_name: cynergidbpsql
-      image: cynergipgdbbase
+      image: cynergibasedb
       depends_on:
          - cynergidb
       networks:
          - cynerginet
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       stdin_open: true
       tty: true
       command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "cynergiuser" ]
    cynergidevelopdbpsql:
       container_name: cynergidbpsql
-      image: cynergipgdbbase
+      image: cynergibasedb
       depends_on:
          - cynergidb
       networks:
          - cynerginet
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       stdin_open: true
       tty: true
       command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidevelopdb", "cynergiuser" ]
    fastinfopsql:
       container_name: fastinfopsql
-      image: cynergipgdbbase
+      image: cynergibasedb
       depends_on:
          - cynergidb
       networks:
          - cynerginet
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "fastinfo_production", "postgres" ]
    cynergitestdb:
       container_name: cynergitestdb
@@ -68,6 +87,11 @@ services:
       build:
          context: cynergitestdb
          dockerfile: cynergitestdb.dockerfile
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       ports:
          - "7432:5432"
       tmpfs: /var/lib/postgresql/data:rw
@@ -79,7 +103,12 @@ services:
          - ./cynergitestdb/fastinfo:/tmp/fastinfo
    cynergitestdbready:
       container_name: cynergitestdbready
-      image: cynergipgdbbase
+      image: cynergibasedb
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       depends_on:
          - cynergitestdb
       networks:
@@ -89,7 +118,12 @@ services:
       command: [ "/root/db-ready.sh", "cynergitestdb" ]
    cynergitestdbpsql:
       container_name: cynergitestdbpsql
-      image: cynergipgdbbase
+      image: cynergibasedb
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       depends_on:
          - cynergitestdb
       networks:
@@ -99,6 +133,11 @@ services:
       command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
    cynmidintegration:
       container_name: cynmidintegration
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
       depends_on:
          - cynergitestdb
       networks:

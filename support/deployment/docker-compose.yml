@@ -3,12 +3,12 @@ networks:
    cynergideploynet:
       name: cynergideploynet
 services:
-   cynergipgdb:
-      container_name: cynergipgdb
-      image: cynergipgdbbase
+   cynergibasedb:
+      container_name: cynergibasedb
+      image: cynergibasedb
       build:
-         context: ../development/cynergipgdb
-         dockerfile: cynergipgdb.dockerfile
+         context: ../development/basedb
+         dockerfile: ../development/basedb/basedb.dockerfile
    cynergitestdeploydb:
       container_name: cynergitestdeploydb
       networks:
@@ -24,7 +24,7 @@ services:
          - POSTGRES_PASSWORD=password
    cynergidbready:
       container_name: cynergidbready
-      image: cynergipgdbbase
+      image: cynergibasedb
       networks:
          - cynergideploynet
       depends_on:
