@@ -315,6 +315,7 @@ class RegionRepository @Inject constructor(
             null
          }
       } catch (e: SQLException) {
+         logger.error("Unable to map Region", e)
          null
       }
 

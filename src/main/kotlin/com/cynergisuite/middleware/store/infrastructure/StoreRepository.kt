@@ -70,10 +70,14 @@ class StoreRepository @Inject constructor(
             region.division_id            AS reg_division_id,
             region.name                   AS reg_name,
             region.description            AS reg_description,
+            region.effective_date         AS reg_effective_date,
+            region.ending_date            AS reg_ending_date,
             division.id                   AS div_id,
             division.number               AS div_number,
             division.name                 AS div_name,
-            division.description          AS div_description
+            division.description          AS div_description,
+            division.effective_date       AS div_effective_date,
+            division.ending_date          AS div_ending_date
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
               LEFT JOIN address ON comp.address_id = address.id
@@ -284,6 +288,7 @@ class StoreRepository @Inject constructor(
             null
          }
       } catch (e: SQLException) {
+         logger.error("Unable to map Store", e)
          null
       }
 }
