@@ -19,7 +19,7 @@ data class RoutineDateRangeDTO(
    var periodTo: LocalDate? = null
 
 ) {
-   constructor(entity: RoutineDateRangeEntity):
+   constructor(entity: RoutineDateRangeEntity) :
       this(
          periodFrom = entity.periodFrom,
          periodTo = entity.periodTo

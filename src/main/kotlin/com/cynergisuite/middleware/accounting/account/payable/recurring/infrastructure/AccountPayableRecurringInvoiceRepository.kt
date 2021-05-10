@@ -305,7 +305,8 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE apRecurringInvoice.id = :id AND apRecurringInvoice.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             val vendor = vendorRepository.mapRow(rs, company, "apRecurringInvoice_vendor_")
             val payTo = vendorRepository.mapRow(rs, company, "apRecurringInvoice_payTo_")

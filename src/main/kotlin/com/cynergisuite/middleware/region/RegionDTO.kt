@@ -4,7 +4,6 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.division.DivisionDTO
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -38,14 +37,7 @@ data class RegionDTO(
    @field:Schema(name = "regionalManager", description = "Regional manager id")
    var regionalManager: SimpleIdentifiableDTO? = null,
 
-   @field:NotNull
-   @field:Schema(name = "effectiveDate", description = "Date that this Region will become active")
-   val effectiveDate: LocalDate? = null,
-
-   @field:Schema(name = "endingDate", description = "Date that this Region will become inactive")
-   val endingDate: LocalDate? = null,
-
-   ) : Identifiable {
+) : Identifiable {
    override fun myId() = id
 
    constructor(entity: RegionEntity) :
@@ -56,7 +48,5 @@ data class RegionDTO(
          description = entity.description,
          regionalManager = SimpleIdentifiableDTO(entity.regionalManager?.id),
          division = DivisionDTO(entity.division),
-         effectiveDate = entity.effectiveDate,
-         endingDate = entity.endingDate,
       )
 }

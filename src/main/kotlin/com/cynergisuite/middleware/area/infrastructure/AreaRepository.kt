@@ -138,7 +138,8 @@ class AreaRepository @Inject constructor(
          """
          SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)
          """,
-         mapOf("area_type_id" to areaTypeId), Boolean::class.java
+         mapOf("area_type_id" to areaTypeId),
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if Area exists {}")

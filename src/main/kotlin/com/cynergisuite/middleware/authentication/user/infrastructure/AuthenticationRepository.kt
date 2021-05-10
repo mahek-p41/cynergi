@@ -26,7 +26,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
-import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -295,7 +294,8 @@ class AuthenticationRepository @Inject constructor(
          """.trimIndent()
 
       return jdbc.findFirstOrNull(
-         sql, params
+         sql,
+         params
       ) { rs, _ ->
          mapUserSecurityLevels(rs)
       } ?: UserSecurityLevels(user.isCynergiAdmin())
@@ -334,7 +334,6 @@ class AuthenticationRepository @Inject constructor(
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),
             company = company,
-            effectiveDate = LocalDate.MIN // FIXME this is not valid, but trying to avoid joining to the region_to_store for authentication
          )
       } else {
          null

@@ -66,8 +66,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      bankFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'), store, account)
-      final banks = bankFactoryService.stream(12, nineNineEightEmployee.company, store, account).toList()
+      bankFactoryService.stream(5, store, account)
+      final banks = bankFactoryService.stream(12, store, account).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageLast = new StandardPageRequest(3, 5, "id", "ASC")
@@ -330,7 +330,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final existingBanks = bankFactoryService.stream(2, nineNineEightEmployee.company, store, account).collect()
+      final existingBanks = bankFactoryService.stream(2, store, account).collect()
       final bankDTO = bankFactoryService.singleDTO(store, account)
       bankDTO.id = existingBanks[0].id
       bankDTO.number = existingBanks[1].number

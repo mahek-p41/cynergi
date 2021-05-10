@@ -32,8 +32,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
-import java.time.LocalDate
-import java.time.LocalDate.MIN
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -532,7 +530,6 @@ class AuditExceptionRepository @Inject constructor(
             number = rs.getInt("${columnPrefix}store_number"),
             name = rs.getString("${columnPrefix}store_name"),
             company = mapCompany(rs, address),
-            effectiveDate = MIN // FIXME this is not valid, but trying to avoid joining to the region_to_store for audits
          )
          storeEntity
       } else {

@@ -49,7 +49,8 @@ class GeneralLedgerSummaryController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @Valid @QueryValue("id") id: Long,
+      @Valid @QueryValue("id")
+      id: Long,
       authentication: Authentication
    ): GeneralLedgerSummaryDTO {
       val user = userService.findUser(authentication)

@@ -94,7 +94,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE glDetail.id = :id AND glDetail.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             val account = accountRepository.mapRow(rs, company, "acct_")
             val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")

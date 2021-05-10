@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.division
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -32,14 +31,7 @@ data class DivisionDTO(
    @field:Schema(name = "divisionalManager", description = "Divisional manager id")
    var divisionalManager: SimpleIdentifiableDTO? = null,
 
-   @field:NotNull
-   @field:Schema(name = "effectiveDate", description = "Date that this Division will become active")
-   val effectiveDate: LocalDate? = null,
-
-   @field:Schema(name = "endingDate", description = "Date that this Division will become inactive")
-   val endingDate: LocalDate? = null,
-
-   ) : Identifiable {
+) : Identifiable {
    override fun myId() = id
 
    constructor(entity: DivisionEntity) :
@@ -49,7 +41,5 @@ data class DivisionDTO(
          name = entity.name,
          description = entity.description,
          divisionalManager = SimpleIdentifiableDTO(entity.divisionalManager?.id),
-         effectiveDate = entity.effectiveDate,
-         endingDate = entity.endingDate,
       )
 }

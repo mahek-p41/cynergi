@@ -58,7 +58,8 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             mapRow(
                rs,

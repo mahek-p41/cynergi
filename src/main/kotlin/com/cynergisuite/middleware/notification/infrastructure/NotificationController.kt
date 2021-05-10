@@ -37,8 +37,9 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.validation.Valid
 
+// TODO make company a first class part of this controller by defining it here, and remove the plural form
 @Secured(IS_ANONYMOUS)
-@Controller("/api/notifications") // TODO make company a first class part of this controller by defining it here, and remove the plural form
+@Controller("/api/notifications")
 class NotificationController @Inject constructor(
    private val notificationService: NotificationService,
    private val notificationValidator: NotificationValidator

@@ -6,7 +6,12 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
 import com.cynergisuite.middleware.purchase.order.detail.infrastructure.PurchaseOrderDetailRepository
-import com.cynergisuite.middleware.purchase.order.type.*
+import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
+import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDataLoader
+import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderRequisitionIndicatorTypeDTO
+import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderRequisitionIndicatorTypeDataLoader
+import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeFactory
+import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.github.javafaker.Faker

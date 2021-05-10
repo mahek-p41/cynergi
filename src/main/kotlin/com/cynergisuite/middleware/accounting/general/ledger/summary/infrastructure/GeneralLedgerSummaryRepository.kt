@@ -97,7 +97,8 @@ class GeneralLedgerSummaryRepository @Inject constructor(
                         FROM general_ledger_summary
                         WHERE company_id = :comp_id AND account_id = :accountId AND profit_center_id_sfk = :profitCenterId AND overall_period_id = :overallPeriodId)
          """.trimIndent(),
-         params, Boolean::class.java
+         params,
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if general_ledger_summary: {} exists resulted in {}", params, exists)

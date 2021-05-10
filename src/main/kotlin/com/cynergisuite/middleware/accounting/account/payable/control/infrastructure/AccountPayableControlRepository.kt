@@ -118,7 +118,8 @@ class AccountPayableControlRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE accountPayableControl.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             val checkFormType = accountPayableCheckFormTypeRepository.mapRow(rs, "checkFormType_")
             val printCurrencyIndicatorType = printCurrencyIndicatorTypeRepository.mapRow(rs, "printCurrencyIndType_")

@@ -68,7 +68,8 @@ class AccountRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             mapRow(rs, company, "account_")
          }
@@ -83,7 +84,8 @@ class AccountRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             mapRow(rs, company, "account_")
          }

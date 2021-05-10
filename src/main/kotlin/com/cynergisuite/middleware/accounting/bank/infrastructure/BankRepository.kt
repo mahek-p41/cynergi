@@ -13,7 +13,6 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -73,7 +72,8 @@ class BankRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params
+         query,
+         params
       ) { rs, _ ->
          mapRow(rs, company, "bank_")
       }
@@ -87,7 +87,8 @@ class BankRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params
+         query,
+         params
       ) { rs, _ ->
          mapRow(rs, company, "bank_")
       }
@@ -205,7 +206,6 @@ class BankRepository @Inject constructor(
       logger.info("Affected rows: {}", affectedRows)
 
       if (affectedRows == 0) throw NotFoundException(id)
-
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {

@@ -44,8 +44,9 @@ class GeneralLedgerSummaryValidator @Inject constructor(
       val glSummaryByBusinessKey = generalLedgerSummaryRepository.findOneByBusinessKey(company, account.id!!, profitCenter.id, overallPeriod.id)
 
       doValidation { errors ->
-         if ((existingGLSummary == null && glSummaryByBusinessKey != null) || (existingGLSummary != null && glSummaryByBusinessKey != null && (existingGLSummary.id != dto.id || existingGLSummary.id != glSummaryByBusinessKey.id)))
+         if ((existingGLSummary == null && glSummaryByBusinessKey != null) || (existingGLSummary != null && glSummaryByBusinessKey != null && (existingGLSummary.id != dto.id || existingGLSummary.id != glSummaryByBusinessKey.id))) {
             errors.add(ValidationError("id", Duplicate(dto.id)))
+         }
       }
 
       return GeneralLedgerSummaryEntity(dto, account, profitCenter, overallPeriod)

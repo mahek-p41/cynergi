@@ -140,7 +140,8 @@ class LocationRepository @Inject constructor(
                JOIN company comp ON comp.dataset_code = location.dataset
             WHERE location.id = :location_id
          """.trimIndent(),
-         mapOf("location_id" to id, "comp_id" to company.myId()), Boolean::class.java
+         mapOf("location_id" to id, "comp_id" to company.myId()),
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if Location: {} exists resulted in {}", id, exists)
@@ -157,7 +158,8 @@ class LocationRepository @Inject constructor(
             WHERE location.number = :location_number
                AND comp.id = :comp_id
          """.trimIndent(),
-         mapOf("location_number" to number, "comp_id" to company.myId()), Boolean::class.java
+         mapOf("location_number" to number, "comp_id" to company.myId()),
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if Location: {} exists resulted in {}", number, exists)

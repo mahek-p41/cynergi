@@ -126,7 +126,7 @@ class RoutineController @Inject constructor(
       return response
    }
 
-   @Post(uri = "/year",processes = [APPLICATION_JSON])
+   @Post(uri = "/year", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RoutineEndpoints"], summary = "Create a single Routine", description = "Create a single Routine", operationId = "routine-create")
    @ApiResponses(
@@ -197,7 +197,8 @@ class RoutineController @Inject constructor(
       ]
    )
    fun openGL(
-      @Body @Valid dateRangeDTO: RoutineDateRangeDTO,
+      @Body @Valid
+      dateRangeDTO: RoutineDateRangeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
@@ -221,7 +222,8 @@ class RoutineController @Inject constructor(
       ]
    )
    fun openAP(
-      @Body @Valid dateRangeDTO: RoutineDateRangeDTO,
+      @Body @Valid
+      dateRangeDTO: RoutineDateRangeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {

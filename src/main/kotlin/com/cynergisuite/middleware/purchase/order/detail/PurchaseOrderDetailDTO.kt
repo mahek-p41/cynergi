@@ -125,7 +125,7 @@ data class PurchaseOrderDetailDTO(
    @field:Schema(name = "approvedIndicator", description = "Approved indicator")
    var approvedIndicator: Boolean? = null
 
-   ) : Identifiable {
+) : Identifiable {
 
    constructor(entity: PurchaseOrderDetailEntity) :
       this(

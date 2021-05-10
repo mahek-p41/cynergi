@@ -57,7 +57,8 @@ class RoutineRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE r.id = :id AND r.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             mapRow(
                rs,
@@ -100,7 +101,8 @@ class RoutineRepository @Inject constructor(
                         FROM financial_calendar
                         WHERE company_id = :comp_id AND overall_period_id = :overallPeriodId AND period = :period)
          """.trimIndent(),
-         params, Boolean::class.java
+         params,
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if financial_calendar: {} exists resulted in {}", params, exists)

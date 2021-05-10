@@ -215,7 +215,8 @@ class GeneralLedgerControlRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE glCtrl.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             val defaultProfitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
             val defaultAccountPayableAccount = accountRepository.mapRowOrNull(rs, company, "defAPAcct_")

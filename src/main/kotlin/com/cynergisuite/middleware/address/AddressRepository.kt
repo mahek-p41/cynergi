@@ -45,7 +45,8 @@ class AddressRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()} WHERE address.id = :id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             mapAddress(rs, "address_")
          }

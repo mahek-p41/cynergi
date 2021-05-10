@@ -76,7 +76,8 @@ class AuditScanAreaRepository @Inject constructor(
 
    fun findOne(id: Long, company: Company): AuditScanAreaEntity? =
       jdbc.findFirstOrNull(
-         "${selectBaseQuery()} WHERE area.id = :id", mapOf("id" to id),
+         "${selectBaseQuery()} WHERE area.id = :id",
+         mapOf("id" to id),
          RowMapper { rs, _ -> mapRow(rs, company) }
       )
 

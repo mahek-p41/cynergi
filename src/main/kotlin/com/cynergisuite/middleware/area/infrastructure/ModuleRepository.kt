@@ -99,7 +99,8 @@ class ModuleRepository @Inject constructor(
          """
          SELECT EXISTS (SELECT * FROM module WHERE module_type_id = :module_type_id AND company_id = :company_id)
          """,
-         mapOf("module_type_id" to moduleTypeId, "company_id" to company.myId()), Boolean::class.java
+         mapOf("module_type_id" to moduleTypeId, "company_id" to company.myId()),
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if Module config exists {}")

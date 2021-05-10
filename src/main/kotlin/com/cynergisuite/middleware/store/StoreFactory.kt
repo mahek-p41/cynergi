@@ -6,8 +6,6 @@ import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.context.annotation.Requires
-import java.time.LocalDate
-import java.time.LocalDate.MIN
 import java.util.stream.Stream
 import javax.inject.Singleton
 
@@ -20,49 +18,42 @@ object StoreFactory {
          number = 1,
          name = "KANSAS CITY",
          company = CompanyFactory.tstds1(),
-         effectiveDate = MIN,
       ),
       StoreEntity(
          id = 2,
          number = 3,
          name = "INDEPENDENCE",
          company = CompanyFactory.tstds1(),
-         effectiveDate = MIN,
       ),
       StoreEntity(
          id = 4,
          number = 1,
          name = "Pelham Trading Post, Inc",
          company = CompanyFactory.tstds2(),
-         effectiveDate = MIN,
       ),
       StoreEntity(
          id = 5,
          number = 2,
          name = "Camilla Trading Post, Inc.",
          company = CompanyFactory.tstds2(),
-         effectiveDate = MIN,
       ),
       StoreEntity(
          id = 6,
          number = 3,
          name = "Arlington Trading Post",
          company = CompanyFactory.tstds2(),
-         effectiveDate = MIN,
       ),
       StoreEntity(
          id = 7,
          number = 4,
          name = "Moultrie Trading Post, Inc",
          company = CompanyFactory.tstds2(),
-         effectiveDate = MIN,
       ),
       StoreEntity(
          id = 8,
          number = 5,
          name = "Bainbridge Trading Post",
          company = CompanyFactory.tstds2(),
-         effectiveDate = MIN,
       )
    )
 
@@ -108,19 +99,17 @@ class StoreFactoryService(
                name = it.myName(),
                number = it.myNumber(),
                company = it.myCompany(),
-               effectiveDate = it.effectiveDate,
-               endingDate = it.endingDate,
             )
          }
          ?: throw Exception("Unable to find Store")
 
    fun companyStoresToRegion(region: RegionEntity, limit: Long): Stream<Pair<RegionEntity, Location>> {
       return StoreFactory.stores(region.division.company).stream().limit(limit)
-         .map { storeRepository.assignToRegion(it, MIN, null, region, region.division.company.myId()!!) }
+         .map { storeRepository.assignToRegion(it, region, region.division.company.myId()!!) }
    }
 
    fun companyStoresToRegion(region: RegionEntity, vararg stores: Store): List<Pair<RegionEntity, Location>> {
-      return stores.map { storeRepository.assignToRegion(it, MIN, null, region, region.division.company.myId()!!) }
+      return stores.map { storeRepository.assignToRegion(it, region, region.division.company.myId()!!) }
    }
 
    fun random(company: Company): StoreEntity {

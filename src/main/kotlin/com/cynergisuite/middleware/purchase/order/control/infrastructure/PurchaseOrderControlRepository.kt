@@ -9,10 +9,10 @@ import com.cynergisuite.middleware.accounting.account.payable.infrastructure.Def
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlEntity
 import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagType
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderType
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostType
-import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlEntity
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.ApprovalRequiredFlagTypeRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.DefaultPurchaseOrderTypeRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.UpdatePurchaseOrderCostTypeRepository
@@ -248,7 +248,8 @@ class PurchaseOrderControlRepository @Inject constructor(
       logger.trace("Searching for PurchaseOrderControl:\n{}\nParams:{}", query, company)
 
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.mapRow(rs, "defaultAPStatusType_")
             val defaultVendor = vendorRepository.mapRowOrNull(rs, company, "defVen_")
@@ -421,14 +422,14 @@ class PurchaseOrderControlRepository @Inject constructor(
    }
 
    private fun mapRow(
-       rs: ResultSet,
-       defaultAccountPayableStatusType: DefaultAccountPayableStatusType,
-       defaultVendor: VendorEntity?,
-       updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
-       defaultPurchaseOrderType: DefaultPurchaseOrderType,
-       defaultApprover: EmployeeEntity?,
-       approvalRequiredFlagType: ApprovalRequiredFlagType,
-       columnPrefix: String = EMPTY
+      rs: ResultSet,
+      defaultAccountPayableStatusType: DefaultAccountPayableStatusType,
+      defaultVendor: VendorEntity?,
+      updatePurchaseOrderCost: UpdatePurchaseOrderCostType,
+      defaultPurchaseOrderType: DefaultPurchaseOrderType,
+      defaultApprover: EmployeeEntity?,
+      approvalRequiredFlagType: ApprovalRequiredFlagType,
+      columnPrefix: String = EMPTY
    ): PurchaseOrderControlEntity {
       return PurchaseOrderControlEntity(
          id = rs.getLong("${columnPrefix}id"),

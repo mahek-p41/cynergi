@@ -2,7 +2,10 @@ package com.cynergisuite.middleware.division.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.deleteReturning
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
@@ -34,8 +37,6 @@ class DivisionRepository @Inject constructor(
             div.name                               AS div_name,
             div.manager_number                     AS div_manager_number,
             div.description                        AS div_description,
-            div.effective_date                     AS div_effective_date,
-            div.ending_date                        AS div_ending_date,
             emp.emp_id                             AS emp_id,
             emp.emp_type                           AS emp_type,
             emp.emp_number                         AS emp_number,
@@ -87,7 +88,8 @@ class DivisionRepository @Inject constructor(
       logger.trace("Searching for Division params {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(
-         query, params
+         query,
+         params
       ) { rs, _ ->
          mapRow(rs, company, "div_")
       }
@@ -139,8 +141,8 @@ class DivisionRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-            INSERT INTO division(company_id, name, description, manager_number, effective_date, ending_date)
-            VALUES (:company_id, :name, :description, :manager_number, :effective_date, :ending_date)
+            INSERT INTO division(company_id, name, description, manager_number)
+            VALUES (:company_id, :name, :description, :manager_number)
             RETURNING *
          """.trimIndent(),
          mapOf(
@@ -148,8 +150,6 @@ class DivisionRepository @Inject constructor(
             "name" to entity.name,
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number,
-            "effective_date" to entity.effectiveDate,
-            "ending_date" to entity.endingDate,
          )
       ) { rs, _ -> mapRow(rs, entity) }
    }
@@ -165,9 +165,7 @@ class DivisionRepository @Inject constructor(
             company_id = :company_id,
             name = :name,
             description = :description,
-            manager_number = :manager_number,
-            effective_date = :effective_date,
-            ending_date = :ending_date
+            manager_number = :manager_number
          WHERE id = :id
          RETURNING
             *
@@ -178,8 +176,6 @@ class DivisionRepository @Inject constructor(
             "company_id" to entity.company.myId(),
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number,
-            "effective_date" to entity.effectiveDate,
-            "ending_date" to entity.endingDate,
          )
       ) { rs, _ ->
          mapRow(rs, entity)
@@ -248,8 +244,6 @@ class DivisionRepository @Inject constructor(
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
          divisionalManager = simpleEmployeeRepository.mapRowOrNull(rs),
-         effectiveDate = rs.getLocalDate("${columnPrefix}effective_date"),
-         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 
    private fun mapRow(rs: ResultSet, division: DivisionEntity, columnPrefix: String = EMPTY): DivisionEntity =
@@ -260,7 +254,5 @@ class DivisionRepository @Inject constructor(
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
          divisionalManager = division.divisionalManager,
-         effectiveDate = rs.getLocalDate("${columnPrefix}effective_date"),
-         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 }

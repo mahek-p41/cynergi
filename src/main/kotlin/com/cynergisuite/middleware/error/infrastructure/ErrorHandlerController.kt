@@ -186,7 +186,8 @@ class ErrorHandlerController @Inject constructor(
       // Return a brief message to client
       val detail = dataIntegrityViolationException.localizedMessage.substringAfterLast("Detail:").trim()
 
-      return HttpResponseFactory.INSTANCE.status(HttpStatus.CONFLICT,
+      return HttpResponseFactory.INSTANCE.status(
+         HttpStatus.CONFLICT,
          ErrorDTO(message = detail)
       )
    }

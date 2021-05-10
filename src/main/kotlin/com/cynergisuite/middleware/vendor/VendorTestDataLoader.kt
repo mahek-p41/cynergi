@@ -4,7 +4,6 @@ import com.cynergisuite.extensions.truncate
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeTestDataLoader
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity

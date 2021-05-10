@@ -13,18 +13,14 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDetails
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.RuntimeException
-import java.util.DuplicateFormatFlagsException
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.ConstraintViolationException
 
 @Singleton
 class AuditDetailValidator @Inject constructor (
@@ -63,8 +59,9 @@ class AuditDetailValidator @Inject constructor (
 
       doValidation { errors ->
 
-         if ((isCreate && auditDetailRepository.exists(auditId, inventory))
-            || (!isCreate && auditDetailRepository.exists(auditId, inventory) && inventory.id == dto.inventory.id)) {
+         if ((isCreate && auditDetailRepository.exists(auditId, inventory)) ||
+            (!isCreate && auditDetailRepository.exists(auditId, inventory) && inventory.id == dto.inventory.id)
+         ) {
             errors.add(ValidationError("inventory.lookup_key", Duplicate(inventory.lookupKey)))
          }
 
@@ -80,13 +77,13 @@ class AuditDetailValidator @Inject constructor (
          )
 
          if (inventoryRepository.doesNotExist(inventoryId, scannedBy.myCompany())) {
-               errors.add(
-                  ValidationError("inventory.id", NotFound(inventoryId))
-               )
+            errors.add(
+               ValidationError("inventory.id", NotFound(inventoryId))
+            )
          }
 
          if (employeeRepository.doesNotExist(scannedBy)) {
-               errors.add(ValidationError("user", NotFound(scannedBy.myEmployeeNumber())))
+            errors.add(ValidationError("user", NotFound(scannedBy.myEmployeeNumber())))
          }
       }
 

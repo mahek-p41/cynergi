@@ -7,7 +7,7 @@ data class RoutineDateRangeEntity(
    val periodTo: LocalDate
 ) {
 
-   constructor(dto: RoutineDateRangeDTO):
+   constructor(dto: RoutineDateRangeDTO) :
       this(
          periodFrom = dto.periodFrom!!,
          periodTo = dto.periodTo!!

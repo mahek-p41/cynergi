@@ -17,7 +17,6 @@ import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
@@ -188,7 +187,8 @@ class InventoryRepository(
               JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
          WHERE i.id = :i_id AND comp.id = :comp_id
          """.trimIndent(),
-         mapOf("i_id" to id, "comp_id" to company.myId()), Boolean::class.java
+         mapOf("i_id" to id, "comp_id" to company.myId()),
+         Boolean::class.java
       )!!
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)
@@ -298,14 +298,13 @@ class InventoryRepository(
       )
 
       val sql =
-      """
+         """
       WITH paged AS (
          ${ if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) {
-               "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
-            }
-            else {
-               "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
-            }
+            "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
+         } else {
+            "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
+         }
          }
          WHERE
             comp.id = :comp_id
@@ -322,7 +321,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
          OFFSET :offset
-      """.trimIndent()
+         """.trimIndent()
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 

@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,7 +18,6 @@ import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
-import com.cynergisuite.middleware.error.NotFoundException
 
 @Singleton
 class GeneralLedgerSourceCodeRepository @Inject constructor(
@@ -129,7 +129,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
 
       return updated
    }
-   
+
    @Transactional
    fun delete(id: Long, company: Company) {
       logger.debug("Deleting GeneralLedgerSourceCode with id={}", id)

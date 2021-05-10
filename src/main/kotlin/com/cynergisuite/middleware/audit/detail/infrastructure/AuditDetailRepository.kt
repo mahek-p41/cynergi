@@ -115,8 +115,10 @@ class AuditDetailRepository @Inject constructor(
                      AND lookup_key = :lookup_key
                )
             """,
-         mapOf("audit_id" to auditId,
-               "lookup_key" to inventory.lookupKey),
+         mapOf(
+            "audit_id" to auditId,
+            "lookup_key" to inventory.lookupKey
+         ),
          Boolean::class.java
       )!!
 
@@ -129,7 +131,8 @@ class AuditDetailRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE auditDetail.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
+         query,
+         params,
          RowMapper { rs, _ ->
             val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
             val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")

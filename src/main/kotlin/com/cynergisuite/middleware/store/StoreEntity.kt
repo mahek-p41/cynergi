@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.store
 
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.region.RegionEntity
-import java.time.LocalDate
 
 /**
  * Represents a Store as loaded from fastinfo_prod_import.store_vw
@@ -13,8 +12,6 @@ data class StoreEntity(
    val name: String,
    val region: RegionEntity? = null,
    val company: Company,
-   val effectiveDate: LocalDate,
-   val endingDate: LocalDate? = null,
 ) : Store {
    override fun myId(): Long = id
    override fun myNumber(): Int = number
