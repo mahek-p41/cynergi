@@ -2,10 +2,7 @@ package com.cynergisuite.middleware.region.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.deleteReturning
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
@@ -14,7 +11,6 @@ import com.cynergisuite.middleware.store.Store
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -42,11 +38,15 @@ class RegionRepository @Inject constructor(
                reg.manager_number                     AS reg_manager_number,
                reg.division_id                        AS reg_division_id,
                reg.description                        AS reg_description,
+               reg.effective_date                     AS reg_effective_date,
+               reg.ending_date                        AS reg_ending_date,
                div.id                                 AS div_id,
                div.number                             AS div_number,
                div.name                               AS div_name,
                div.manager_number                     AS div_manager_number,
                div.description                        AS div_description,
+               div.effective_date                     AS div_effective_date,
+               div.ending_date                        AS div_ending_date,
                emp.emp_id                             AS emp_id,
                emp.emp_type                           AS emp_type,
                emp.emp_number                         AS emp_number,
@@ -100,11 +100,10 @@ class RegionRepository @Inject constructor(
       logger.trace("Searching for Region params {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(
-         query, params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "reg_")
-         }
-      )
+         query, params
+      ) { rs, _ ->
+         mapRow(rs, company, "reg_")
+      }
 
       logger.trace("Searching for Region params {}: \nQuery {} \nResulted in {}", params, query, found)
 
@@ -146,23 +145,24 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(region: RegionEntity): RegionEntity {
-      logger.debug("Inserting region {}", region)
+   fun insert(entity: RegionEntity): RegionEntity {
+      logger.debug("Inserting region {}", entity)
 
       return jdbc.insertReturning(
          """
-            INSERT INTO region(division_id, name, description, manager_number)
-            VALUES (:division_id, :name, :description, :manager_number)
+            INSERT INTO region(division_id, name, description, manager_number, effective_date, ending_date)
+            VALUES (:division_id, :name, :description, :manager_number, :effective_date, :ending_date)
             RETURNING *
          """.trimIndent(),
          mapOf(
-            "division_id" to region.division.id,
-            "name" to region.name,
-            "description" to region.description,
-            "manager_number" to region.regionalManager?.number
-         ),
-         RowMapper { rs, _ -> mapRow(rs, region) }
-      )
+            "division_id" to entity.division.id,
+            "name" to entity.name,
+            "description" to entity.description,
+            "manager_number" to entity.regionalManager?.number,
+            "effective_date" to entity.effectiveDate,
+            "ending_date" to entity.endingDate,
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
    @Transactional
    fun update(id: Long, entity: RegionEntity): RegionEntity {
@@ -175,7 +175,9 @@ class RegionRepository @Inject constructor(
             division_id = :division_id,
             name = :name,
             description = :description,
-            manager_number = :manager_number
+            manager_number = :manager_number,
+            effective_date = :effective_date,
+            ending_date = :ending_date
          WHERE id = :id
          RETURNING
             *
@@ -185,12 +187,13 @@ class RegionRepository @Inject constructor(
             "name" to entity.name,
             "division_id" to entity.division.id,
             "description" to entity.description,
-            "manager_number" to entity.regionalManager?.number
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+            "manager_number" to entity.regionalManager?.number,
+            "effective_date" to entity.effectiveDate,
+            "ending_date" to entity.endingDate,
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -209,9 +212,8 @@ class RegionRepository @Inject constructor(
             WHERE id = :id
             RETURNING
                *""",
-            mapOf("id" to id),
-            RowMapper { rs, _ -> mapRow(rs, region) }
-         )
+            mapOf("id" to id)
+         ) { rs, _ -> mapRow(rs, region) }
       } else {
          null
       }
@@ -300,7 +302,9 @@ class RegionRepository @Inject constructor(
          division = divisionRepository.mapRow(rs, company, "div_"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
-         regionalManager = simpleEmployeeRepository.mapRowOrNull(rs)
+         regionalManager = simpleEmployeeRepository.mapRowOrNull(rs),
+         effectiveDate = rs.getLocalDate("${columnPrefix}effective_date"),
+         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "reg_", companyPrefix: String = "comp_", departmentPrefix: String = "dept_", storePrefix: String = "store_"): RegionEntity? =
@@ -321,6 +325,8 @@ class RegionRepository @Inject constructor(
          division = region.division,
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
-         regionalManager = region.regionalManager
+         regionalManager = region.regionalManager,
+         effectiveDate = rs.getLocalDate("${columnPrefix}effective_date"),
+         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 }

@@ -32,8 +32,12 @@ data class DivisionDTO(
    @field:Schema(name = "divisionalManager", description = "Divisional manager id")
    var divisionalManager: SimpleIdentifiableDTO? = null,
 
-   val effectiveDate: LocalDate,
-   val endingDate: LocalDate?
+   @field:NotNull
+   @field:Schema(name = "effectiveDate", description = "Date that this Division will become active")
+   val effectiveDate: LocalDate? = null,
+
+   @field:Schema(name = "endingDate", description = "Date that this Division will become inactive")
+   val endingDate: LocalDate? = null,
 
    ) : Identifiable {
    override fun myId() = id
@@ -44,6 +48,8 @@ data class DivisionDTO(
          number = entity.number,
          name = entity.name,
          description = entity.description,
-         divisionalManager = SimpleIdentifiableDTO(entity.divisionalManager?.id)
+         divisionalManager = SimpleIdentifiableDTO(entity.divisionalManager?.id),
+         effectiveDate = entity.effectiveDate,
+         endingDate = entity.endingDate,
       )
 }

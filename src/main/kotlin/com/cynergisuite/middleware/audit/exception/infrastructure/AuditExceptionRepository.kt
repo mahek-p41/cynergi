@@ -30,9 +30,10 @@ import com.cynergisuite.middleware.store.StoreEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.time.LocalDate
+import java.time.LocalDate.MIN
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -410,11 +411,10 @@ class AuditExceptionRepository @Inject constructor(
             "approved_by" to entity.approvedBy?.number,
             "lookup_key" to entity.lookupKey,
             "audit_id" to entity.audit.myId()
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.approvedBy, entity.audit, EMPTY)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity.scanArea, entity.scannedBy, entity.approvedBy, entity.audit, EMPTY)
+      }
    }
 
    @Transactional
@@ -453,11 +453,10 @@ class AuditExceptionRepository @Inject constructor(
             "approved" to entity.approved,
             "approved_by" to if (entity.approved) entity.approvedBy?.number else null,
             "id" to entity.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.approvedBy, entity.audit, EMPTY)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity.scanArea, entity.scannedBy, entity.approvedBy, entity.audit, EMPTY)
+      }
 
       val notes = entity.notes
          .asSequence()
@@ -528,12 +527,14 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun mapScannedByStore(rs: ResultSet, address: AddressEntity?, columnPrefix: String): Store? {
       return if (rs.getString("${columnPrefix}store_id") != null) {
-         StoreEntity(
+         val storeEntity = StoreEntity(
             id = rs.getLong("${columnPrefix}store_id"),
             number = rs.getInt("${columnPrefix}store_number"),
             name = rs.getString("${columnPrefix}store_name"),
-            company = mapCompany(rs, address)
+            company = mapCompany(rs, address),
+            effectiveDate = MIN // FIXME this is not valid, but trying to avoid joining to the region_to_store for audits
          )
+         storeEntity
       } else {
          null
       }

@@ -4,6 +4,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.location.Location
@@ -18,6 +20,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.time.LocalDate
+import java.time.LocalDate.MIN
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -36,6 +40,8 @@ class StoreRepository @Inject constructor(
             store.id                      AS id,
             store.number                  AS number,
             store.name                    AS name,
+            r2s.effective_date            AS effective_date,
+            r2s.ending_date               AS ending_date,
             comp.id                       AS comp_id,
             comp.uu_row_id                AS comp_uu_row_id,
             comp.time_created             AS comp_time_created,
@@ -228,18 +234,20 @@ class StoreRepository @Inject constructor(
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
    @Transactional
-   fun assignToRegion(store: Location, region: RegionEntity, companyId: Long): Pair<RegionEntity, Location> {
+   fun assignToRegion(store: Location, effectiveDate: LocalDate, endingDate: LocalDate?, region: RegionEntity, companyId: Long): Pair<RegionEntity, Location> {
       logger.trace("Assigning Store {} to Region {}", store, region)
 
       jdbc.update(
          """
-         INSERT INTO region_to_store (region_id, store_number, company_id)
-         VALUES (:region_id, :store_number, :company_id)
+         INSERT INTO region_to_store (region_id, store_number, company_id, effective_date, ending_date)
+         VALUES (:region_id, :store_number, :company_id, :effective_date, :ending_date)
          """.trimIndent(),
          mapOf(
             "region_id" to region.id,
             "store_number" to store.myNumber(),
-            "company_id" to companyId
+            "company_id" to companyId,
+            "effective_date" to effectiveDate,
+            "ending_date" to endingDate,
          )
       )
 
@@ -252,7 +260,9 @@ class StoreRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          region = regionRepository.mapRowOrNull(rs, company, "reg_"),
-         company = company
+         company = company,
+         effectiveDate = rs.getLocalDateOrNull("${columnPrefix}effective_date") ?: MIN,
+         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 
    fun mapRowWithRegion(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
@@ -261,7 +271,9 @@ class StoreRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          region = regionRepository.mapRowOrNull(rs, company, "reg_"),
-         company = company
+         company = company,
+         effectiveDate = rs.getLocalDateOrNull("${columnPrefix}effective_date") ?: MIN,
+         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date")
       )
 
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =

@@ -2,18 +2,14 @@ package com.cynergisuite.middleware.division.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.deleteReturning
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -38,6 +34,8 @@ class DivisionRepository @Inject constructor(
             div.name                               AS div_name,
             div.manager_number                     AS div_manager_number,
             div.description                        AS div_description,
+            div.effective_date                     AS div_effective_date,
+            div.ending_date                        AS div_ending_date,
             emp.emp_id                             AS emp_id,
             emp.emp_type                           AS emp_type,
             emp.emp_number                         AS emp_number,
@@ -89,11 +87,10 @@ class DivisionRepository @Inject constructor(
       logger.trace("Searching for Division params {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(
-         query, params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "div_")
-         }
-      )
+         query, params
+      ) { rs, _ ->
+         mapRow(rs, company, "div_")
+      }
 
       logger.trace("Searching for Division params {}: \nQuery {} \nResulted in {}", params, query, found)
 
@@ -141,18 +138,19 @@ class DivisionRepository @Inject constructor(
       logger.debug("Inserting division {}", entity)
       return jdbc.insertReturning(
          """
-            INSERT INTO division(company_id, name, description, manager_number)
-            VALUES (:company_id, :name, :description, :manager_number)
+            INSERT INTO division(company_id, name, description, manager_number, effective_date, ending_date)
+            VALUES (:company_id, :name, :description, :manager_number, :effective_date, :ending_date)
             RETURNING *
          """.trimIndent(),
          mapOf(
             "company_id" to entity.company.id,
             "name" to entity.name,
             "description" to entity.description,
-            "manager_number" to entity.divisionalManager?.number
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+            "manager_number" to entity.divisionalManager?.number,
+            "effective_date" to entity.effectiveDate,
+            "ending_date" to entity.endingDate,
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
 
    @Transactional
@@ -166,7 +164,9 @@ class DivisionRepository @Inject constructor(
             company_id = :company_id,
             name = :name,
             description = :description,
-            manager_number = :manager_number
+            manager_number = :manager_number,
+            effective_date = :effective_date,
+            ending_date = :ending_date
          WHERE id = :id
          RETURNING
             *
@@ -176,12 +176,13 @@ class DivisionRepository @Inject constructor(
             "name" to entity.name,
             "company_id" to entity.company.myId(),
             "description" to entity.description,
-            "manager_number" to entity.divisionalManager?.number
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+            "manager_number" to entity.divisionalManager?.number,
+            "effective_date" to entity.effectiveDate,
+            "ending_date" to entity.endingDate,
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -201,9 +202,8 @@ class DivisionRepository @Inject constructor(
             WHERE id = :id
             RETURNING
                *""",
-            mapOf("id" to id),
-            RowMapper { rs, _ -> mapRow(rs, division) }
-         )
+            mapOf("id" to id)
+         ) { rs, _ -> mapRow(rs, division) }
       } else {
          null
       }
@@ -239,23 +239,27 @@ class DivisionRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
+   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = CompanyEntity.create(company)!!, // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
-         divisionalManager = simpleEmployeeRepository.mapRowOrNull(rs)
+         divisionalManager = simpleEmployeeRepository.mapRowOrNull(rs),
+         effectiveDate = rs.getLocalDate("${columnPrefix}effective_date"),
+         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 
-   private fun mapRow(rs: ResultSet, division: DivisionEntity, columnPrefix: String = StringUtils.EMPTY): DivisionEntity =
+   private fun mapRow(rs: ResultSet, division: DivisionEntity, columnPrefix: String = EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getLong("${columnPrefix}id"),
          company = division.company,
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
-         divisionalManager = division.divisionalManager
+         divisionalManager = division.divisionalManager,
+         effectiveDate = rs.getLocalDate("${columnPrefix}effective_date"),
+         endingDate = rs.getLocalDateOrNull("${columnPrefix}ending_date"),
       )
 }

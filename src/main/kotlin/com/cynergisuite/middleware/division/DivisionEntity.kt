@@ -24,7 +24,9 @@ data class DivisionEntity(
       name = dto.name!!,
       description = dto.description,
       company = CompanyEntity.create(company)!!,
-      divisionalManager = divisionalManager
+      divisionalManager = divisionalManager,
+      effectiveDate = dto.effectiveDate!!,
+      endingDate = dto.endingDate,
    )
 
    override fun compareTo(other: DivisionEntity): Int =
@@ -34,6 +36,8 @@ data class DivisionEntity(
          .append(this.description, other.description)
          .append(this.company, other.company)
          .append(this.divisionalManager, other.divisionalManager)
+         .append(this.effectiveDate, other.effectiveDate)
+         .append(this.endingDate, other.endingDate)
          .toComparison()
 
    fun toValueObject(): DivisionDTO {
@@ -42,7 +46,9 @@ data class DivisionEntity(
          number = this.number,
          name = this.name,
          description = this.description,
-         divisionalManager = this.divisionalManager?.let { SimpleIdentifiableDTO(it) }
+         divisionalManager = this.divisionalManager?.let { SimpleIdentifiableDTO(it) },
+         effectiveDate = this.effectiveDate,
+         endingDate = this.endingDate,
       )
    }
 

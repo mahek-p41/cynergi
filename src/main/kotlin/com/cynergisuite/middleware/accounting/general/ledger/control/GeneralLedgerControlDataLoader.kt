@@ -33,7 +33,7 @@ object GeneralLedgerControlDataLoader {
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerControlEntity(
             id = Random.nextLong(),
-            defaultProfitCenter = StoreEntity(defaultProfitCenter.myId(), defaultProfitCenter.myNumber(), defaultProfitCenter.myName(), defaultProfitCenter.myRegion(), defaultProfitCenter.myCompany()),
+            defaultProfitCenter = defaultProfitCenter,
             defaultAccountPayableAccount = defaultAccountPayableAccount,
             defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
             defaultAccountReceivableAccount = defaultAccountReceivableAccount,

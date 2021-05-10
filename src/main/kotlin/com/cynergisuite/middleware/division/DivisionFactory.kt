@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.time.LocalDate
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -25,7 +26,9 @@ object DivisionFactory {
             name = name,
             description = description,
             company = companyIn,
-            divisionalManager = divisionalManagerIn
+            divisionalManager = divisionalManagerIn,
+            effectiveDate = LocalDate.MIN,
+            endingDate = null
          )
       }
    }

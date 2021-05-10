@@ -13,7 +13,7 @@
     <logger name="io.netty" level="ERROR"/>
     <logger name="org.jboss" level="ERROR"/>
     <logger name="org.springframework" level="ERROR"/>
-    <logger name="org.springframework.jdbc.core" level="DEBUG"/>
+    <logger name="org.springframework.jdbc.core" level="INFO"/>
     <logger name="org.flywaydb.core.internal.scanner.classpath" level="INFO"/>
     <logger name="io.micronaut.http.client" level="TRACE"/>
     <logger name="com.hightouchinc" level="TRACE"/>

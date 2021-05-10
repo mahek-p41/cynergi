@@ -73,11 +73,10 @@ class BankRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "bank_")
-         }
-      )
+         query, params
+      ) { rs, _ ->
+         mapRow(rs, company, "bank_")
+      }
 
       logger.trace("Searching for Bank id {}: \nQuery {} \nResulted in {}", id, query, found)
 
@@ -88,11 +87,10 @@ class BankRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
-         query, params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "bank_")
-         }
-      )
+         query, params
+      ) { rs, _ ->
+         mapRow(rs, company, "bank_")
+      }
 
       logger.trace("Searching for Bank id {}: \nQuery {} \nResulted in {}", number, query, found)
 
@@ -140,7 +138,7 @@ class BankRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(bank: BankEntity, company: Company): BankEntity {
+   fun insert(bank: BankEntity): BankEntity {
       logger.debug("Inserting bank {}", bank)
 
       return jdbc.insertReturning(
@@ -152,19 +150,18 @@ class BankRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "number" to bank.number,
-            "company_id" to company.myId(),
+            "company_id" to bank.generalLedgerProfitCenter.myCompany().myId(),
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "general_ledger_account_id" to bank.generalLedgerAccount.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, bank)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, bank)
+      }
    }
 
    @Transactional
-   fun update(bank: BankEntity, company: Company): BankEntity {
+   fun update(bank: BankEntity): BankEntity {
       logger.debug("Updating bank {}", bank)
 
       return jdbc.updateReturning(
@@ -183,15 +180,14 @@ class BankRepository @Inject constructor(
          mapOf(
             "id" to bank.id,
             "number" to bank.number,
-            "company_id" to company.myId(),
+            "company_id" to bank.generalLedgerProfitCenter.myCompany().myId(),
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "general_ledger_account_id" to bank.generalLedgerAccount.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, bank)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, bank)
+      }
    }
 
    @Transactional

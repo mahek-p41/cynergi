@@ -1,11 +1,7 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getOffsetDateTimeOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
@@ -25,6 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.time.LocalDate.MIN
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -752,7 +749,8 @@ class AuditRepository @Inject constructor(
          id = rs.getLong("auditStore_id"),
          number = rs.getInt("auditStore_number"),
          name = rs.getString("auditStore_name"),
-         company = companyRepository.mapRow(rs, "comp_")
+         company = companyRepository.mapRow(rs, "comp_"),
+         effectiveDate = MIN // FIXME this is not valid, but trying to avoid joining to the region_to_store for audits
       )
    }
 

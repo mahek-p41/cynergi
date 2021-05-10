@@ -175,12 +175,12 @@ class DevelopDataLoader @Inject constructor(
       // setup account & bank
       val corrtoAccount = accountDataLoaderService.single(corrto)
       accountDataLoaderService.stream(2, corrto).forEach { }
-      bankFactoryService.stream(3, corrto, corrtoStore1, corrtoAccount).forEach { }
-      bankFactoryService.stream(3, corrto, corrtoStore3, corrtoAccount).forEach { }
+      bankFactoryService.stream(3, corrtoStore1, corrtoAccount).forEach { }
+      bankFactoryService.stream(3, corrtoStore3, corrtoAccount).forEach { }
 
       val corptpAccount = accountDataLoaderService.single(corptp)
-      bankFactoryService.stream(3, corptp, corptpStore1, corptpAccount).forEach { }
-      bankFactoryService.stream(3, corptp, corptpStore2, corptpAccount).forEach { }
+      bankFactoryService.stream(3, corptpStore1, corptpAccount).forEach { }
+      bankFactoryService.stream(3, corptpStore2, corptpAccount).forEach { }
 
       areaDataLoaderService.enableArea(1, companies[0])
       areaDataLoaderService.enableArea(4, companies[0])

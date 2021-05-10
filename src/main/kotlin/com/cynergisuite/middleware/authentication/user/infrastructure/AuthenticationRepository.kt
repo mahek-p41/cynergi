@@ -24,9 +24,9 @@ import io.vertx.reactivex.sqlclient.Tuple
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -295,11 +295,10 @@ class AuthenticationRepository @Inject constructor(
          """.trimIndent()
 
       return jdbc.findFirstOrNull(
-         sql, params,
-         RowMapper { rs, _ ->
-            mapUserSecurityLevels(rs)
-         }
-      ) ?: UserSecurityLevels(user.isCynergiAdmin())
+         sql, params
+      ) { rs, _ ->
+         mapUserSecurityLevels(rs)
+      } ?: UserSecurityLevels(user.isCynergiAdmin())
    }
 
    private fun processPermissionValues(sql: String, params: Map<String, Any?>): Set<String> {
@@ -334,7 +333,8 @@ class AuthenticationRepository @Inject constructor(
             id = row.getLong("${columnPrefix}id"),
             number = row.getInteger("${columnPrefix}number"),
             name = row.getString("${columnPrefix}name"),
-            company = company
+            company = company,
+            effectiveDate = LocalDate.MIN // FIXME this is not valid, but trying to avoid joining to the region_to_store for authentication
          )
       } else {
          null

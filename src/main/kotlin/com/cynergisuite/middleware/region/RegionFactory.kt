@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
+import java.time.LocalDate
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -27,7 +28,9 @@ object RegionFactory {
             name = name,
             description = description,
             division = divisionIn,
-            regionalManager = regionalManager
+            regionalManager = regionalManager,
+            effectiveDate = LocalDate.MIN,
+            endingDate = null,
          )
       }
    }

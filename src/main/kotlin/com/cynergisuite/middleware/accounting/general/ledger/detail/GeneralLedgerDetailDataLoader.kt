@@ -34,7 +34,7 @@ object GeneralLedgerDetailDataLoader {
          GeneralLedgerDetailEntity(
             account = account,
             date = dateLocalDate,
-            profitCenter = StoreEntity(profitCenter.myId(), profitCenter.myNumber(), profitCenter.myName(), profitCenter.myRegion(), profitCenter.myCompany()),
+            profitCenter = profitCenter,
             source = source,
             amount = Random.nextInt().toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             message = faker.lorem().sentence(),

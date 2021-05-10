@@ -5,11 +5,10 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.math.BigDecimal
-import java.math.RoundingMode
+import java.math.RoundingMode.HALF_EVEN
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -27,9 +26,9 @@ object AccountPayableDistributionDataLoader {
       return IntStream.range(0, number).mapToObj {
          AccountPayableDistributionEntity(
             name = name ?: lorem.characters(5, 10),
-            profitCenter = StoreEntity(profitCenter.myId(), profitCenter.myNumber(), profitCenter.myName(), profitCenter.myRegion(), profitCenter.myCompany()),
+            profitCenter = profitCenter,
             account = account,
-            percent = Random.nextInt(1, 100).toBigDecimal().divide(BigDecimal(100)).setScale(7, RoundingMode.HALF_EVEN)
+            percent = Random.nextInt(1, 100).toBigDecimal().divide(BigDecimal(100)).setScale(7, HALF_EVEN)
          )
       }
    }
@@ -45,7 +44,7 @@ object AccountPayableDistributionDataLoader {
             name = name ?: lorem.characters(5, 10),
             profitCenter = profitCenter,
             account = account,
-            percent = Random.nextInt(1, 100).toBigDecimal().divide(BigDecimal(100)).setScale(7, RoundingMode.HALF_EVEN)
+            percent = Random.nextInt(1, 100).toBigDecimal().divide(BigDecimal(100)).setScale(7, HALF_EVEN)
          )
       }
    }
