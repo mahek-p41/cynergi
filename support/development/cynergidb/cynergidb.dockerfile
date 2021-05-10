@@ -1,4 +1,4 @@
-FROM cynergipgdbbase
+FROM cynergibasedb
 
 COPY cynergi-initdb.sh /docker-entrypoint-initdb.d/initdb.sh
 COPY cynergi-initdb.sql /docker-entrypoint-initdb.d/initdb.sql

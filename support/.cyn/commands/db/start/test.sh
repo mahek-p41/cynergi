@@ -5,7 +5,7 @@ cd ../development
 
 if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergitestdb)` ]; then
   docker rm cynergitestdb > /dev/null 2>&1
-  docker-compose build --force-rm --quiet cynergipgdb
+  docker-compose build --force-rm --quiet cynergibasedb
   docker-compose build --force-rm --quiet cynergitestdb
   docker-compose up -d --no-deps cynergitestdb
   docker-compose build --force-rm --quiet cynergitestdbready && docker-compose run --rm cynergitestdbready
