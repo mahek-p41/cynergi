@@ -136,7 +136,7 @@ class DivisionRepository @Inject constructor(
    @Transactional
    fun insert(entity: DivisionEntity): DivisionEntity {
       logger.debug("Inserting division {}", entity)
-      
+
       return jdbc.insertReturning(
          """
             INSERT INTO division(company_id, name, description, manager_number, effective_date, ending_date)
