@@ -4,13 +4,17 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateUpdateDTO
+import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
+import com.cynergisuite.middleware.audit.detail.AuditDetailValidator
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -31,11 +35,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit")
 class AuditDetailController @Inject constructor(
    private val auditDetailService: AuditDetailService,
+   private val auditDetailValidator: AuditDetailValidator,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailController::class.java)
@@ -62,7 +68,7 @@ class AuditDetailController @Inject constructor(
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 
-      return response
+      return transformEntity(response)
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -87,6 +93,7 @@ class AuditDetailController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val page = auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+         .toPage { transformEntity(it) }
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
@@ -109,18 +116,26 @@ class AuditDetailController @Inject constructor(
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
       auditId: Long,
-      @Body vo: AuditDetailCreateUpdateDTO,
+      @Valid @Body
+      vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): AuditDetailValueObject {
+   ): HttpResponse<AuditDetailValueObject> {
       logger.info("Requested Create AuditDetail {}", vo)
 
       val user = userService.findUser(authentication)
-      val response = auditDetailService.create(auditId, vo, user, httpRequest.findLocaleWithDefault())
+      val existingDetail = auditDetailValidator.validateDuplicateDetail(auditId, vo, user)
 
-      logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
+      return if (existingDetail != null) {
+         HttpResponse.notModified<AuditDetailValueObject>()
+      } else {
+         val detailToCreate = auditDetailValidator.validateCreate(auditId, user, vo)
+         val response = auditDetailService.create(auditId, detailToCreate, user, httpRequest.findLocaleWithDefault())
 
-      return response
+         logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
+
+         HttpResponse.created(transformEntity(response))
+      }
    }
 
    @Put(uri = "/{auditId}/detail/{auditDetailId}", processes = [APPLICATION_JSON])
@@ -139,17 +154,23 @@ class AuditDetailController @Inject constructor(
       auditId: Long,
       @Parameter(name = "auditDetailId", `in` = ParameterIn.PATH, description = "The audit detail id") @QueryValue("auditDetailId")
       auditDetailId: Long,
-      @Body vo: AuditDetailCreateUpdateDTO,
+      @Valid @Body
+      vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Requested Update AuditDetail {}", vo)
 
       val user = userService.findUser(authentication)
-      val response = auditDetailService.update(auditId, vo, user, httpRequest.findLocaleWithDefault())
+      val existingDetail = auditDetailValidator.validateUpdate(auditId, user, vo)
+      val response = auditDetailService.update(auditId, existingDetail, user, httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Update AuditDetail {} resulted in {}", vo, response)
+      logger.debug("Requested Update AuditDetail {} resulted in {}", existingDetail, response)
 
-      return response
+      return transformEntity(response)
+   }
+
+   private fun transformEntity(auditDetail: AuditDetailEntity): AuditDetailValueObject {
+      return AuditDetailValueObject(entity = auditDetail, auditScanArea = AuditScanAreaDTO(auditDetail.scanArea))
    }
 }

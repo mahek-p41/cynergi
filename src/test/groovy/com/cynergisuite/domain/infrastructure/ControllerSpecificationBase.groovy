@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -61,11 +62,15 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    }
 
    Object post(String path, Object body, String accessToken = nineNineEightAccessToken) throws HttpClientResponseException {
+      return postForResponse(path, body, accessToken).bodyAsJson()
+   }
+
+   HttpResponse postForResponse(String path, Object body, String accessToken = nineNineEightAccessToken) throws HttpClientResponseException {
       return client.exchange(
          POST("/${path}", body).header("Authorization", "Bearer $accessToken"),
          Argument.of(String),
          Argument.of(String)
-      ).bodyAsJson()
+      )
    }
 
    Object put(String path, Object body, String accessToken = nineNineEightAccessToken) throws HttpClientResponseException {

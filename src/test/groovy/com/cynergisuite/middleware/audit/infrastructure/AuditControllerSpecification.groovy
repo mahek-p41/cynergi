@@ -695,8 +695,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch audit status counts using specified from" () {
       setup:
-      final def from = OffsetDateTime.now().minusDays(1).toInstant()
-
+      final from = OffsetDateTime.now().minusDays(1).toInstant()
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
       auditFactoryService.generate(1, employee, [AuditStatusFactory.created()] as Set)
@@ -722,8 +721,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch audit status counts using specified from/thru and statuses" () {
       setup:
-      final def from = OffsetDateTime.now().minusDays(1).toInstant()
-      final def thru = OffsetDateTime.now().plusHours(1).toInstant()
+      final from = OffsetDateTime.now().minusDays(1).toInstant()
+      final thru = OffsetDateTime.now().plusHours(1).toInstant()
 
       final company = companyFactoryService.forDatasetCode('tstds1')
       final employee = employeeFactoryService.single(company)
@@ -771,8 +770,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final completedAuditFromLastWeek = auditFactoryService.single(storeThree, employee,
             [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
-      final def from = OffsetDateTime.now().minusDays(3).toInstant()
-      final def thru = OffsetDateTime.now().plusHours(1).toInstant()
+      final from = OffsetDateTime.now().minusDays(3).toInstant()
+      final thru = OffsetDateTime.now().plusHours(1).toInstant()
 
       when:
       jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: inProgressAuditFromLastWeek.timeCreated.minusDays(8), id: inProgressAuditFromLastWeek.id])

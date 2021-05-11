@@ -24,7 +24,7 @@
     <logger name="io.micronaut.context.event" level="ERROR" />
     <logger name="io.micronaut.management" level="ERROR" />
     <logger name="io.micronaut.runtime.Micronaut" level="INFO" />
-    <logger name="com.cynergisuite" level="TRACE" />
+    <logger name="com.cynergisuite" level="INFO" />
     <logger name="org.flywaydb" level="INFO" />
 
     <root level="INFO">

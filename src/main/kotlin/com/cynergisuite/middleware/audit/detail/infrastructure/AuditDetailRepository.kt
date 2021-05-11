@@ -102,8 +102,10 @@ class AuditDetailRepository @Inject constructor(
                      AND lookup_key = :lookup_key
                )
             """,
-         mapOf("audit_id" to auditId,
-               "lookup_key" to inventory.lookupKey),
+         mapOf(
+            "audit_id" to auditId,
+            "lookup_key" to inventory.lookupKey
+         ),
          Boolean::class.java
       )!!
 
@@ -126,6 +128,25 @@ class AuditDetailRepository @Inject constructor(
       )
 
       logger.trace("Searching for AuditDetail: {} resulted in {}", id, found)
+
+      return found
+   }
+
+   fun findOne(auditId: Long, inventory: InventoryEntity, company: Company): AuditDetailEntity? {
+      logger.trace("Searching for audit detail by audit ID {} and inventory {}", auditId, inventory)
+
+      val found = jdbc.findFirstOrNull(
+         "${selectBaseQuery()} WHERE audit_id = :audit_id AND alt_id = :alt_id AND serial_number = :serial_number",
+         mapOf("audit_id" to auditId, "alt_id" to inventory.altId, "serial_number" to inventory.serialNumber),
+         RowMapper { rs, _ ->
+            val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
+            val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
+
+            mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_")
+         }
+      )
+
+      logger.trace("Searching for audit detail by audit ID {} and inventory {}, resulted in ", auditId, inventory, found)
 
       return found
    }

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.inventory.infrastructure
 
-
 import com.cynergisuite.middleware.audit.AuditEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

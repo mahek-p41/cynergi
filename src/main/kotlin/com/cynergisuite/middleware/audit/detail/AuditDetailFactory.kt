@@ -28,8 +28,8 @@ object AuditDetailFactory {
       }
 
       return IntStream.range(0, number).mapToObj {
-         val lookupKey = inventory?.lookupKey ?: "${faker.code().asin()}${it}"
-         val barcode = inventory?.barcode ?: "${faker.code().asin()}${it}"
+         val lookupKey = inventory?.lookupKey ?: "${faker.code().asin()}$it"
+         val barcode = inventory?.barcode ?: "${faker.code().asin()}$it"
          val productCode = inventory?.productCode ?: faker.commerce().productName()
          val inventoryBrand = inventory?.brand ?: faker.company().name()
          val serialNumber = inventory?.serialNumber ?: faker.idNumber().valid()
@@ -108,16 +108,9 @@ class AuditDetailFactoryService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
    }
 
-   private fun single(
-      audit: AuditEntity,
-      scanArea: AuditScanAreaEntity,
-      scannedByIn: EmployeeEntity,
-      inventory: InventoryDTO
-   ): AuditDetailEntity {
+   fun single(audit: AuditEntity, scanArea: AuditScanAreaEntity, scannedByIn: EmployeeEntity, inventory: InventoryDTO): AuditDetailEntity {
       return AuditDetailFactory.stream(audit = audit, scanAreaIn = scanArea, scannedByIn = scannedByIn, inventory = inventory)
          .map { auditDetailRepository.insert(it) }
          .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
    }
-
-
 }

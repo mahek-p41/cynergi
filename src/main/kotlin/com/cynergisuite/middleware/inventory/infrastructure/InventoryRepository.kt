@@ -283,14 +283,13 @@ class InventoryRepository(
       )
 
       val sql =
-      """
+         """
       WITH paged AS (
          ${ if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) {
-               "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
-            }
-            else {
-               "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
-            }
+            "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
+         } else {
+            "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
+         }
          }
          WHERE
             comp.id = :comp_id
@@ -307,7 +306,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
          OFFSET :offset
-      """.trimIndent()
+         """.trimIndent()
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 
