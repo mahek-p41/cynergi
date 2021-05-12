@@ -395,21 +395,24 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "delete bank from other company is not allowed" () {
       given:
-      def tstds2 = companies.find { it.datasetCode == "tstds2" }
-      final account = accountFactoryService.single(nineNineEightEmployee.company)
-      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def bank = bankFactoryService.single(tstds2, store, account)
+      final tstds1 = companies.find { it.datasetCode == "tstds1" }
+      final tstds2 = companies.find { it.datasetCode == "tstds2" }
+      final accountTstds1 = accountFactoryService.single(tstds1)
+      final accountTstds2 = accountFactoryService.single(tstds2)
+      final store3Tstds1 = storeFactoryService.store(3, tstds1)
+      final store4Tstds2 = storeFactoryService.store(4, tstds2)
+      final bankStore3Tstds1 = bankFactoryService.single(tstds1, store3Tstds1, accountTstds1)
+      final bankStore4Tstds2 = bankFactoryService.single(tstds2, store4Tstds2, accountTstds2)
 
       when:
-      delete("$path/$bank.id")
+      delete("$path/$bankStore4Tstds2.id")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "$bank.id was unable to be found"
+      response.message == "$bankStore4Tstds2.id was unable to be found"
    }
 
    void "delete bank still has reference" () {

@@ -8,11 +8,9 @@ import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateUpdateDTO
 import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -23,10 +21,7 @@ import org.apache.commons.lang3.RandomUtils
 
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NOT_MODIFIED
-import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.*
 
 @MicronautTest(transactional = false)
 class AuditDetailControllerSpecification extends ControllerSpecificationBase {
@@ -241,9 +236,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final detail = new AuditDetailCreateUpdateDTO(null, null)
-      final secondDetail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO([id: null]), new SimpleIdentifiableDTO([id: null]))
-      final thirdDetail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
+      final detail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO([id: 9998]), new SimpleIdentifiableDTO([id: 9998]))
+      final secondDetail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO([id: 800000]), new SimpleIdentifiableDTO(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -252,43 +246,17 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Is required", "inventory"),
-         new ErrorDTO("Is required", "scanArea"),
-      ].sort { o1, o2 -> o1 <=> o2 }
+      response.message == "9998 was unable to be found"
 
       when:
       post("/audit/${audit.id}/detail", secondDetail)
 
       then:
-      final secondException = thrown(HttpClientResponseException)
-      secondException.status == BAD_REQUEST
-      final secondResponse = secondException.response.bodyAsJson()
-      secondResponse.size() == 2
-      secondResponse.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Is required", "inventory.id"),
-         new ErrorDTO("Is required", "scanArea.id"),
-      ].sort { o1, o2 -> o1 <=> o2 }
-
-      when: // an unknown audit id
-      post("/audit/${audit.id + 1}/detail", thirdDetail)
-
-      then:
-      final auditNotFoundException = thrown(HttpClientResponseException)
-      auditNotFoundException.status == NOT_FOUND
-      final auditNotFoundResponse = auditNotFoundException.response.bodyAsJson()
-      new ErrorDTO(auditNotFoundResponse.message, auditNotFoundResponse.path) == new ErrorDTO("${audit.id + 1} was unable to be found", null)
-
-      when: // an unknown Inventory item
-      post("/audit/${audit.id}/detail", thirdDetail)
-
-      then:
       final inventoryNotFoundException = thrown(HttpClientResponseException)
-      inventoryNotFoundException.status == BAD_REQUEST
-      final inventoryNotFoundResponse = inventoryNotFoundException.response.bodyAsJson()
-      inventoryNotFoundResponse.size() == 1
-      inventoryNotFoundResponse.collect { new ErrorDTO(it.message, it.path) } == [new ErrorDTO("800,000 was unable to be found", "inventory.id") ]
+      inventoryNotFoundException.status == NOT_FOUND
+      exception.status == NOT_FOUND
+      response == exception.response.bodyAsJson()
+      response.message == "9998 was unable to be found"
    }
 
    void "create audit detail when audit is in state OPENED (CREATED?)" () {

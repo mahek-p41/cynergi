@@ -116,7 +116,7 @@ class AuditDetailController @Inject constructor(
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
       auditId: Long,
-      @Valid @Body @Valid
+      @Valid @Body
       vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -127,7 +127,7 @@ class AuditDetailController @Inject constructor(
       val existingDetail = auditDetailValidator.validateDuplicateDetail(auditId, vo, user)
 
       return if (existingDetail != null) {
-         HttpResponse.notModified<AuditDetailValueObject>()
+         HttpResponse.notModified()
       } else {
          val detailToCreate = auditDetailValidator.validateCreate(auditId, user, vo)
          val response = auditDetailService.create(auditId, detailToCreate, user, httpRequest.findLocaleWithDefault())
