@@ -245,9 +245,11 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch by existing barcode" () {
-      when:
+      given:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+
+      when:
       def inventory = get("inventory/00110360", tstds1Store1UserLogin)
 
       then:
