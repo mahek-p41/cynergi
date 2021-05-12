@@ -25,6 +25,7 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NOT_MODIFIED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
@@ -36,7 +37,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject InventoryService inventoryService
 
-   //Passes
    void "fetch one audit detail by id" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -64,7 +64,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.scannedBy.number == savedAuditDetail.scannedBy.number
    }
 
-   //Passes
    void "fetch all audit details related to an audit" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -114,7 +113,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
-   //Passes
    void "fetch all audit details related to an audit where there are 2 audits both have details" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -141,7 +139,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
    }
 
-   //Passes
    void "fetch all audit details related to an audit where there are 2 different scan areas" () {
       given:
       final pageOne = new StandardPageRequest(1, 10, "ID", "ASC")
@@ -169,7 +166,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) }.sort {o1, o2 -> o1.id <=> o2.id } == auditDetailsWarehouse[0..9]
    }
 
-   //Passes
    void "fetch one audit detail by id not found" () {
       when:
       get("$path/0")
@@ -228,18 +224,15 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, inventoryItem)
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "inventory.lookup_key"
-      response[0].message == "${inventoryItem.lookupKey} already exists"
+      notThrown(Exception)
+      response.status == NOT_MODIFIED
+      final result = response.bodyAsJson()
+      result == null // 304 doesn't return a body
    }
 
-   //Passes
    void "create invalid audit detail" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -298,7 +291,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundResponse.collect { new ErrorDTO(it.message, it.path) } == [new ErrorDTO("800,000 was unable to be found", "inventory.id") ]
    }
 
-   //Fails: No such property: store for class: com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee 279
    void "create audit detail when audit is in state OPENED (CREATED?)" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -374,14 +366,14 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       auditDetailFactoryService.single(audit, showroom, inventoryItem2)
 
       when:
-      def result = put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleIdentifiableDTO(inventoryItem2.id), new SimpleIdentifiableDTO(warehouse)))
+      put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleIdentifiableDTO(inventoryItem2.id), new SimpleIdentifiableDTO(warehouse)))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "inventory.lookup_key"
+      response[0].path == "inventory.lookupKey"
       response[0].message == "${inventoryItem2.lookupKey} already exists"
    }
 }

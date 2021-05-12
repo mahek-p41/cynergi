@@ -8,7 +8,7 @@ services:
       image: cynergibasedb
       build:
          context: ../development/basedb
-         dockerfile: ../development/basedb/basedb.dockerfile
+         dockerfile: basedb.dockerfile
    cynergitestdeploydb:
       container_name: cynergitestdeploydb
       networks:

@@ -108,12 +108,7 @@ class AuditDetailFactoryService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
    }
 
-   private fun single(
-      audit: AuditEntity,
-      scanArea: AuditScanAreaEntity,
-      scannedByIn: EmployeeEntity,
-      inventory: InventoryDTO
-   ): AuditDetailEntity {
+   fun single(audit: AuditEntity, scanArea: AuditScanAreaEntity, scannedByIn: EmployeeEntity, inventory: InventoryDTO): AuditDetailEntity {
       return AuditDetailFactory.stream(audit = audit, scanAreaIn = scanArea, scannedByIn = scannedByIn, inventory = inventory)
          .map { auditDetailRepository.insert(it) }
          .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }

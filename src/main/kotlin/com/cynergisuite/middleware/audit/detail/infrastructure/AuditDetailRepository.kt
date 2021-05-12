@@ -146,6 +146,25 @@ class AuditDetailRepository @Inject constructor(
       return found
    }
 
+   fun findOne(auditId: Long, inventory: InventoryEntity, company: Company): AuditDetailEntity? {
+      logger.trace("Searching for audit detail by audit ID {} and inventory {}", auditId, inventory)
+
+      val found = jdbc.findFirstOrNull(
+         "${selectBaseQuery()} WHERE audit_id = :audit_id AND alt_id = :alt_id AND serial_number = :serial_number",
+         mapOf("audit_id" to auditId, "alt_id" to inventory.altId, "serial_number" to inventory.serialNumber),
+         RowMapper { rs, _ ->
+            val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
+            val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
+
+            mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_")
+         }
+      )
+
+      logger.trace("Searching for audit detail by audit ID {} and inventory {}, resulted in ", auditId, inventory, found)
+
+      return found
+   }
+
    fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to company.myId())
       val query =
