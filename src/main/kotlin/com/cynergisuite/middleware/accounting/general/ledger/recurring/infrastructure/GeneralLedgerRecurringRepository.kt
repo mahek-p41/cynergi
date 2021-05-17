@@ -16,7 +16,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -59,14 +58,13 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               "glRecurring_"
-            )
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            "glRecurring_"
+         )
+      }
 
       logger.trace("Searching for GeneralLedgerRecurring: {} resulted in {}", company, found)
 
@@ -129,11 +127,10 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
             "end_date" to entity.endDate
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.type, entity.source)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.type, entity.source)
+      }
    }
 
    @Transactional
@@ -164,11 +161,10 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
             "end_date" to entity.endDate
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.type, entity.source)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.type, entity.source)
+      }
    }
 
    @Transactional
