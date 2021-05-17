@@ -93,7 +93,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "/recurring-id-{glRecurringId:[0-9]+}{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "/recurring-id/{glRecurringId:[0-9]+}{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Fetch a listing of General Ledger Recurring Distributions by General Ledger Recurring ID", description = "Fetch a paginated listing of General Ledger Recurring Distributions by General Ledger Recurring ID", operationId = "generalLedgerRecurringDistribution-fetchAllByRecurringId")
    @ApiResponses(
       value = [

@@ -120,7 +120,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
 
       when: // fetch records with first gl recurring id
-      def result = get("$path/recurring-id-${glRecurring1.id}$pageOne")
+      def result = get("$path/recurring-id/${glRecurring1.id}$pageOne")
 
       then: // first three records are found
       notThrown(Exception)
@@ -142,7 +142,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       }
 
       when: // fetch records with second gl recurring id
-      result = get("$path/recurring-id-${glRecurring2.id}$pageOne")
+      result = get("$path/recurring-id/${glRecurring2.id}$pageOne")
 
       then: // last two records are found
       notThrown(Exception)
