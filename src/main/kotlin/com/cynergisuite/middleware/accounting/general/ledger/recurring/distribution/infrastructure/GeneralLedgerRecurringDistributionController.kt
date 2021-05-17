@@ -10,7 +10,13 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
@@ -189,7 +195,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Delete a single GeneralLedgerRecurringDistribution", description = "Delete a single GeneralLedgerRecurringDistribution", operationId = "generalLedgerRecurringDistribution-delete")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description="If GeneralLedgerRecurringDistribution was successfully deleted"),
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerRecurringDistribution was successfully deleted"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested GeneralLedgerRecurringDistribution was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -199,7 +205,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       @QueryValue("id") id: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
-   ){
+   ) {
       logger.debug("User {} requested delete GeneralLedgerRecurringDistribution", authentication)
 
       val user = userService.findUser(authentication)
