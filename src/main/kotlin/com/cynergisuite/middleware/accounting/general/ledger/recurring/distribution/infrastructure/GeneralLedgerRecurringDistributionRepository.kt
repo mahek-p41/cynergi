@@ -15,7 +15,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -84,11 +83,10 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()} WHERE glRecurringDist.id = :id"
       val found = jdbc.findFirstOrNull(
-         query, params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "glRecurringDist_")
-         }
-      )
+         query, params
+      ) { rs, _ ->
+         mapRow(rs, company, "glRecurringDist_")
+      }
 
       logger.trace("Searching for GeneralLedgerRecurringDistribution: resulted in {}", found)
 
@@ -161,11 +159,10 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.id,
             "general_ledger_distribution_profit_center_id_sfk" to entity.generalLedgerDistributionProfitCenter.myId(),
             "general_ledger_distribution_amount" to entity.generalLedgerDistributionAmount
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -191,10 +188,9 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             "general_ledger_distribution_profit_center_id_sfk" to entity.generalLedgerDistributionProfitCenter.myId(),
             "general_ledger_distribution_amount" to entity.generalLedgerDistributionAmount
          ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
