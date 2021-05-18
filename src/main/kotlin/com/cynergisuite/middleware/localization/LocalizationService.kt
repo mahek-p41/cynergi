@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.localization
 
+import com.cynergisuite.middleware.error.ErrorDTO
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -30,6 +31,16 @@ class LocalizationService @Inject constructor(
    fun localeFor(languageTag: String): Locale? {
       return Locale.forLanguageTag(languageTag)
    }
+
+   /**
+    * Helper method for converting errors to ErrorDataTransferObject's
+    */
+   fun localizeError(localizationCode: LocalizationCode, locale: Locale, path: String? = null): ErrorDTO =
+      ErrorDTO(
+         message = localize(localizationCode, locale),
+         path = path,
+         code = localizationCode.getCode()
+      )
 
    /**
     * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided.  Assumption with

@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.localization
 
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.time.OffsetDateTime
 
@@ -33,7 +35,7 @@ class Max : Validation("javax.validation.constraints.Max.message", emptyArray())
 class Pattern : Validation("javax.validation.constraints.Pattern.message", emptyArray())
 
 abstract class Cynergi(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
-class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", arrayOf(duplicateValue))
+class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", if (duplicateValue != null) arrayOf<Any?>(duplicateValue) else arrayOf<Any?>(EMPTY))
 class NotUpdatable(notUpdatableValue: Any?) : Cynergi("cynergi.validation.not.updatable", arrayOf(notUpdatableValue))
 class EndDateBeforeStart(endDate: String, startDate: String) : Cynergi("cynergi.validation.end.date.before.start", arrayOf(endDate, startDate))
 class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cynergi.validation.notification.recipients.not.required", arrayOf(notificationType))

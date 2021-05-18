@@ -24,7 +24,7 @@ import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.core.type.Argument
@@ -236,8 +236,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == "0 was unable to be found"
+      with(response) {
+         message == "0 was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "fetch all audits for store 1" () {
@@ -908,7 +910,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [new ErrorDataTransferObject("Store 1 has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [new ErrorDTO("Store 1 has an audit already in progress", "cynergi.audit.open.at.store", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {

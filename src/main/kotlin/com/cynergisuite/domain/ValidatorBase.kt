@@ -22,4 +22,17 @@ abstract class ValidatorBase {
          throw ValidationException(errors)
       }
    }
+
+   protected fun <RESULT> doValidationWithResult(validator: (MutableSet<ValidationError>) -> RESULT?): RESULT {
+      val errors = mutableSetOf<ValidationError>()
+      val result: RESULT? = validator(errors)
+
+      if (errors.isNotEmpty()) {
+         logger.warn("Validation encountered errors {}", errors)
+
+         throw ValidationException(errors)
+      }
+
+      return result!!
+   }
 }

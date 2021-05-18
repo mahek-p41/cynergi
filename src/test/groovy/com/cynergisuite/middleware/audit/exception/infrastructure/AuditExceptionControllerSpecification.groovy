@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.audit.AuditFactoryService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
 import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
@@ -17,9 +18,11 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
+import com.cynergisuite.middleware.inventory.location.InventoryLocationFactory
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -36,6 +39,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY
 @MicronautTest(transactional = false)
 class AuditExceptionControllerSpecification extends ControllerSpecificationBase {
 
+   @Inject AuditExceptionRepository auditExceptionRepository
    @Inject AuditExceptionFactoryService auditExceptionFactoryService
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
@@ -218,8 +222,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditNotFoundException = thrown(HttpClientResponseException)
       auditNotFoundException.status == NOT_FOUND
       final auditNotFoundResult = auditNotFoundException.response.bodyAsJson()
-      auditNotFoundResult.size() == 1
-      auditNotFoundResult.message == "${audit.id + 1} was unable to be found"
+      with(auditNotFoundResult) {
+         message == "${audit.id + 1} was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "fetch all audit exceptions for a single audit where each exception has 2 notes attached" () {
@@ -335,7 +341,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
          .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
    }
 
-   //Passes
    void "fetch one audit exception by id not found" () {
       when:
       get("/audit/exception/0")
@@ -344,8 +349,10 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == "0 was unable to be found"
+      with(response) {
+         message == "0 was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "create audit exception" () {
@@ -482,7 +489,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      new ErrorDataTransferObject(response[0].message, response[0].path) == new ErrorDataTransferObject("999 was unable to be found", "audit.scanArea.id")
+      new ErrorDTO(response[0].message, response[0].code, response[0].path) == new ErrorDTO("999 was unable to be found", "system.not.found", "audit.scanArea.id")
    }
 
    void "create invalid audit exception" () {
@@ -502,9 +509,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Cannot be blank", "exceptionCode"),
-         new ErrorDataTransferObject("Is required", "exceptionCode"),
+      response.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Cannot be blank", "javax.validation.constraints.NotBlank.message", "exceptionCode"),
+         new ErrorDTO("Is required","javax.validation.constraints.NotNull.message", "exceptionCode"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -525,7 +532,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorDataTransferObject(notFoundResponse.message, notFoundResponse.path) == new ErrorDataTransferObject("-1 was unable to be found", null)
+      new ErrorDTO(notFoundResponse.message, notFoundResponse.code, notFoundResponse.path) == new ErrorDTO("-1 was unable to be found", "system.not.found", null)
    }
 
    void "create audit exception where inventory id is null" () {
@@ -545,8 +552,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDataTransferObject("Is required", "inventory.id"),
+      response.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "inventory.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -569,8 +576,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its exceptions", "audit.status")
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("Audit ${String.format('%,d', audit.id)} must be In Progress to modify its exceptions", "cynergi.audit.must.be.in.progress.exception", "audit.status")
       ]
    }
 
@@ -624,9 +631,33 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("Must provide either an Inventory item or a barcode", "barcode")
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("Must provide either an Inventory item or a barcode", "cynergi.audit.exception.inventory.or.barcode", "barcode")
       ]
+   }
+
+   void "create duplicate exception" () {
+      given:
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final inventoryLocationType = InventoryLocationFactory.findByValue(inventoryItem.locationType.value)
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final warehouse = auditScanAreaFactoryService.warehouse(store, company)
+      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final auditException = auditExceptionRepository.insert(new AuditExceptionEntity(audit.id, new InventoryEntity(inventoryItem, store, store, inventoryLocationType), warehouse, employee, exceptionCode))
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(warehouse), exceptionCode: exceptionCode])
+
+      when:
+      post("/audit/${audit.id}/exception", exception)
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      ex.status == BAD_REQUEST
    }
 
    void "update audit exception with a new note" () {
@@ -745,8 +776,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       e.status == BAD_REQUEST
       final response = e.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDataTransferObject(it.message, it.path) } == [
-         new ErrorDataTransferObject("Audit ${String.format('%,d', audit.id)} has already been Approved. No new notes allowed", null)
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("Audit ${String.format('%,d', audit.id)} has already been Approved. No new notes allowed", "cynergi.audit.has.been.approved.no.new.notes.allowed", null)
       ]
    }
 }

@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.error.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
-import com.cynergisuite.middleware.error.ErrorDataTransferObject
+import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -55,31 +55,33 @@ class ErrorHandlerController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
 
    @Error(global = true, exception = JsonParseException::class)
-   fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDataTransferObject> {
+   fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDTO> {
       logger.warn("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
+      val localizationCode = UnableToParseJson(exception.localizedMessage)
 
       return badRequest(
-         ErrorDataTransferObject(
-            message = localizationService.localize(localizationCode = UnableToParseJson(exception.localizedMessage), locale = locale)
+         ErrorDTO(
+            message = localizationService.localize(localizationCode = localizationCode, locale = locale),
+            code = localizationCode.getCode()
          )
       )
    }
 
    @Error(global = true, exception = NotImplementedError::class)
-   fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<ErrorDataTransferObject> {
+   fun notImplemented(httpRequest: HttpRequest<*>, exception: NotImplementedError): HttpResponse<ErrorDTO> {
       logger.warn("Endpoint not implemented", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return HttpResponse
-         .status<ErrorDataTransferObject>(NOT_IMPLEMENTED)
-         .body(ErrorDataTransferObject(localizationService.localize(localizationCode = NotImplemented(httpRequest.path), locale = locale)))
+         .status<ErrorDTO>(NOT_IMPLEMENTED)
+         .body(localizationService.localizeError(NotImplemented(httpRequest.path), locale))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
-   fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDataTransferObject> {
+   fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDTO> {
       logger.warn("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
@@ -94,10 +96,10 @@ class ErrorHandlerController @Inject constructor(
 
          conversionErrorCause is JsonMappingException -> {
             badRequest(
-               ErrorDataTransferObject(
-                  message = localizationService.localize(ConversionError(argument.name, conversionError.originalValue.orElse(null)), locale),
-                  path = conversionErrorCause.path.joinToString(".") { it.fieldName }
-               )
+               localizationService.localizeError(
+                  localizationCode = ConversionError(argument.name, conversionError.originalValue.orElse(null)),
+                  locale = locale,
+                  path = conversionErrorCause.path.joinToString(".") { it.fieldName })
             )
          }
 
@@ -108,76 +110,70 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = OperationNotPermittedException::class)
-   fun operationNotPermitted(httpRequest: HttpRequest<*>, exception: OperationNotPermittedException): HttpResponse<ErrorDataTransferObject> {
+   fun operationNotPermitted(httpRequest: HttpRequest<*>, exception: OperationNotPermittedException): HttpResponse<ErrorDTO> {
       logger.warn("An operation that is not permitted was initiated", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         ErrorDataTransferObject(
+         ErrorDTO(
             message = localizationService.localize(messageKey = exception.messageTemplate, locale = locale, arguments = emptyArray()),
-            path = exception.path
+            path = exception.path,
+            code = exception.messageTemplate
          )
       )
    }
 
-   private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDataTransferObject> {
+   private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDTO> {
       return badRequest(
-         ErrorDataTransferObject(
-            message = localizationService.localize(ConversionError(argumentName, argumentValue), locale),
-            path = argumentName
-         )
+         localizationService.localizeError(ConversionError(argumentName, argumentValue), locale, argumentName)
       )
    }
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
-   fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorDataTransferObject> {
+   fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorDTO> {
       logger.trace("Unsatisfied Route Error", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         ErrorDataTransferObject(
-            localizationService.localize(localizationCode = RouteError(exception.argument.name), locale = locale)
-         )
+         localizationService.localizeError(localizationCode = RouteError(exception.argument.name), locale = locale)
       )
    }
 
    @Error(global = true, exception = PageOutOfBoundsException::class)
-   fun pageOutOfBoundsExceptionHandler(exception: PageOutOfBoundsException): HttpResponse<ErrorDataTransferObject> {
+   fun pageOutOfBoundsExceptionHandler(exception: PageOutOfBoundsException): HttpResponse<ErrorDTO> {
       logger.error("Page out of bounds was requested {}", exception.toString())
 
       return noContent()
    }
 
    @Error(global = true, exception = NotFoundException::class)
-   fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorDataTransferObject> {
+   fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorDTO> {
       logger.trace("Not Found Error {}", notFoundException.message)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return notFound(
-         ErrorDataTransferObject(
-            localizationService.localize(localizationCode = NotFound(notFoundException.notFound), locale = locale)
-         )
+         localizationService.localizeError(localizationCode = NotFound(notFoundException.notFound), locale = locale)
       )
    }
 
    @Error(global = true, exception = ValidationException::class)
-   fun validationException(httpRequest: HttpRequest<*>, validationException: ValidationException): HttpResponse<List<ErrorDataTransferObject>> {
+   fun validationException(httpRequest: HttpRequest<*>, validationException: ValidationException): HttpResponse<List<ErrorDTO>> {
       logger.trace("Validation Error", validationException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
          validationException.errors.map { validationError: ValidationError ->
-            ErrorDataTransferObject(message = localizationService.localize(validationError.localizationCode, locale), path = validationError.path)
+            localizationService.localizeError(validationError.localizationCode, locale, validationError.path)
          }
       )
    }
 
    @Error(global = true, exception = ConstraintViolationException::class)
-   fun constraintViolationException(httpRequest: HttpRequest<*>, constraintViolationException: ConstraintViolationException): HttpResponse<List<ErrorDataTransferObject>> {
+   fun constraintViolationException(httpRequest: HttpRequest<*>, constraintViolationException: ConstraintViolationException): HttpResponse<List<ErrorDTO>> {
       logger.trace("Constraint Violation Error", constraintViolationException)
 
       val locale = httpRequest.findLocaleWithDefault()
@@ -187,69 +183,67 @@ class ErrorHandlerController @Inject constructor(
             val field = buildPropertyPath(rootPath = it.propertyPath)
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
 
-            ErrorDataTransferObject(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value.toString())), path = field)
+            ErrorDTO(
+               message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value.toString())),
+               path = field,
+               code = it.messageTemplate.removeSurrounding("{", "}")
+            )
          }
       )
    }
 
    @Error(global = true, exception = AuthenticationException::class)
-   fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDataTransferObject> {
+   fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDTO> {
       logger.warn("AuthenticationException {}", authenticationException.localizedMessage)
 
       val userName = httpRequest.body.map { if (it is ObjectNode && it.has("username")) it.get("username").textValue() else null }.orElse(null)
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authenticationException.message.isDigits()) { // most likely store should have been provided
-         val message = localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
+         val message = localizationService.localizeError(AccessDeniedStore(authenticationException.message!!), locale)
 
-         HttpResponse
-            .status<ErrorDataTransferObject>(UNAUTHORIZED)
-            .body(ErrorDataTransferObject(message))
+         HttpResponse.status<ErrorDTO>(UNAUTHORIZED).body(message)
       } else if (!authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
-         val message = localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
+         val message = localizationService.localizeError(AccessDeniedCredentialsDoNotMatch(userName), locale)
 
-         HttpResponse
-            .status<ErrorDataTransferObject>(UNAUTHORIZED)
-            .body(ErrorDataTransferObject(message))
+         HttpResponse.status<ErrorDTO>(UNAUTHORIZED).body(message)
       } else {
-         val message = localizationService.localize(AccessDenied(), locale)
+         val message = localizationService.localizeError(AccessDenied(), locale)
 
-         HttpResponse
-            .status<ErrorDataTransferObject>(FORBIDDEN)
-            .body(ErrorDataTransferObject(message))
+         HttpResponse.status<ErrorDTO>(FORBIDDEN).body(message)
       }
    }
 
    @Error(global = true, exception = AuthorizationException::class)
-   fun authorizationExceptionHandler(httpRequest: HttpRequest<*>, authorizationException: AuthorizationException): HttpResponse<ErrorDataTransferObject> {
+   fun authorizationExceptionHandler(httpRequest: HttpRequest<*>, authorizationException: AuthorizationException): HttpResponse<ErrorDTO> {
       logger.warn("AuthorizationException {}", authorizationException.localizedMessage)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authorizationException.isForbidden) {
-         val message = localizationService.localize(AccessDenied(), locale)
+         val message = localizationService.localizeError(AccessDenied(), locale)
 
          HttpResponse
-            .status<ErrorDataTransferObject>(FORBIDDEN)
-            .body(ErrorDataTransferObject(message))
+            .status<ErrorDTO>(FORBIDDEN)
+            .body(message)
       } else {
-         val message = localizationService.localize(NotLoggedIn(), locale)
+         val message = localizationService.localizeError(NotLoggedIn(), locale)
 
          HttpResponse
-            .status<ErrorDataTransferObject>(UNAUTHORIZED)
-            .body(ErrorDataTransferObject(message))
+            .status<ErrorDTO>(UNAUTHORIZED)
+            .body(message)
       }
    }
 
    @Error(global = true, exception = AccessException::class)
-   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException): HttpResponse<ErrorDataTransferObject> {
+   fun accessExceptionHandler(httpRequest: HttpRequest<*>, accessException: AccessException): HttpResponse<ErrorDTO> {
       logger.warn("Unauthorized exception", accessException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
       return HttpResponse
-         .status<ErrorDataTransferObject>(FORBIDDEN)
-         .body(ErrorDataTransferObject(localizationService.localize(localizationCode = accessException.error, locale = locale)))
+         .status<ErrorDTO>(FORBIDDEN)
+         .body(localizationService.localizeError(localizationCode = accessException.error, locale = locale))
    }
 
    @Error(global = true, exception = IOException::class)
@@ -265,12 +259,12 @@ class ErrorHandlerController @Inject constructor(
    }
 
    @Error(global = true, exception = Throwable::class)
-   fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorDataTransferObject> {
+   fun allElseFailsExceptionHandler(httpRequest: HttpRequest<*>, throwable: Throwable): HttpResponse<ErrorDTO> {
       logger.error("Unknown Error", throwable)
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorDataTransferObject(localizationService.localize(localizationCode = InternalError(), locale = locale)))
+      return serverError(localizationService.localizeError(localizationCode = InternalError(), locale = locale))
    }
 
    private fun buildPropertyPath(rootPath: Path): String =

@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import org.apache.commons.lang3.builder.CompareToBuilder
 
 @JsonInclude(NON_NULL)
-data class ErrorDataTransferObject(
+data class ErrorDTO(
    var message: String,
+   var code: String,
    var path: String? = null
-) : Comparable<ErrorDataTransferObject> {
-   override fun compareTo(other: ErrorDataTransferObject): Int =
+) : Comparable<ErrorDTO> {
+   override fun compareTo(other: ErrorDTO): Int =
       CompareToBuilder()
          .append(this.message, other.message)
          .append(this.path, other.path)

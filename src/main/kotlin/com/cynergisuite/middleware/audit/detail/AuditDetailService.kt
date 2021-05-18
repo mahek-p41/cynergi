@@ -18,21 +18,21 @@ class AuditDetailService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditDetailRepository: AuditDetailRepository
 ) {
-   fun fetchById(id: Long, company: Company, locale: Locale): AuditDetailEntity? =
+   fun fetchById(id: Long, company: Company): AuditDetailEntity? =
       auditDetailRepository.findOne(id, company)
 
    @Validated
-   fun fetchAll(auditId: Long, company: Company, @Valid pageRequest: PageRequest, locale: Locale): RepositoryPage<AuditDetailEntity, PageRequest> {
+   fun fetchAll(auditId: Long, company: Company, @Valid pageRequest: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
 
       return auditDetailRepository.findAll(audit, company, pageRequest)
    }
 
    @Validated
-   fun create(auditId: Long, @Valid auditDetail: AuditDetailEntity, scannedBy: User, locale: Locale) =
+   fun create(auditId: Long, @Valid auditDetail: AuditDetailEntity, scannedBy: User) =
       auditDetailRepository.insert(auditDetail)
 
    @Validated
-   fun update(auditId: Long, @Valid auditDetail: AuditDetailEntity, scannedBy: User, locale: Locale): AuditDetailEntity =
+   fun update(auditId: Long, @Valid auditDetail: AuditDetailEntity, scannedBy: User): AuditDetailEntity =
       auditDetailRepository.update(auditDetail)
 }
