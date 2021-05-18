@@ -47,6 +47,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             glRecurring.glRecurring_message                                   AS glRecurringDist_glRecurring_message,
             glRecurring.glRecurring_begin_date                                AS glRecurringDist_glRecurring_begin_date,
             glRecurring.glRecurring_end_date                                  AS glRecurringDist_glRecurring_end_date,
+            glRecurring.glRecurring_last_transfer_date                        AS glRecurringDist_glRecurring_last_transfer_date,
             glRecurring.glRecurring_source_id                                 AS glRecurringDist_glRecurring_source_id,
             glRecurring.glRecurring_source_value                              AS glRecurringDist_glRecurring_source_value,
             glRecurring.glRecurring_source_description                        AS glRecurringDist_glRecurring_source_description,

@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.company.Company
 import com.github.javafaker.Faker
 import io.micronaut.context.annotation.Requires
 import java.time.ZoneId
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -22,7 +23,11 @@ object GeneralLedgerRecurringDataLoader {
       val random = faker.random()
       val lorem = faker.lorem()
       val date = faker.date()
-      val beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      val defaultZoneId = ZoneId.systemDefault()
+      val beginLocalDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(defaultZoneId).toLocalDate()
+      val endLocalDate = beginLocalDate.plusDays(random.nextInt(30).toLong())
+      val beginDate = Date.from(beginLocalDate.atStartOfDay(defaultZoneId).toInstant())
+      val endDate = Date.from(endLocalDate.atStartOfDay(defaultZoneId).toInstant())
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerRecurringEntity(
@@ -30,8 +35,9 @@ object GeneralLedgerRecurringDataLoader {
             type = GeneralLedgerRecurringTypeDataLoader.random(),
             reverseIndicator = random.nextBoolean(),
             message = lorem.characters(),
-            beginDate = beginDate,
-            endDate = beginDate.plusDays(random.nextInt(30).toLong())
+            beginDate = beginLocalDate,
+            endDate = endLocalDate,
+            lastTransferDate = date.between(beginDate, endDate).toInstant().atZone(defaultZoneId).toLocalDate()
          )
       }
    }
@@ -43,7 +49,11 @@ object GeneralLedgerRecurringDataLoader {
       val random = faker.random()
       val lorem = faker.lorem()
       val date = faker.date()
-      val beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      val defaultZoneId = ZoneId.systemDefault()
+      val beginLocalDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(defaultZoneId).toLocalDate()
+      val endLocalDate = beginLocalDate.plusDays(random.nextInt(30).toLong())
+      val beginDate = Date.from(beginLocalDate.atStartOfDay(defaultZoneId).toInstant())
+      val endDate = Date.from(endLocalDate.atStartOfDay(defaultZoneId).toInstant())
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerRecurringDTO(
@@ -51,8 +61,9 @@ object GeneralLedgerRecurringDataLoader {
             type = GeneralLedgerRecurringTypeDTO(GeneralLedgerRecurringTypeDataLoader.random()),
             reverseIndicator = random.nextBoolean(),
             message = lorem.characters(),
-            beginDate = beginDate,
-            endDate = beginDate.plusDays(random.nextInt(30).toLong())
+            beginDate = beginLocalDate,
+            endDate = endLocalDate,
+            lastTransferDate = date.between(beginDate, endDate).toInstant().atZone(defaultZoneId).toLocalDate()
          )
       }
    }

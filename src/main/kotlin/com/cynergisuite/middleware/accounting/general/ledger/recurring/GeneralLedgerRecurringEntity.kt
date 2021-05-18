@@ -11,7 +11,8 @@ data class GeneralLedgerRecurringEntity(
    val reverseIndicator: Boolean,
    val message: String? = null,
    val beginDate: LocalDate? = null,
-   val endDate: LocalDate? = null
+   val endDate: LocalDate? = null,
+   val lastTransferDate: LocalDate? = null
 
 ) : Identifiable {
 
@@ -27,7 +28,8 @@ data class GeneralLedgerRecurringEntity(
          reverseIndicator = dto.reverseIndicator!!,
          message = dto.message,
          beginDate = dto.beginDate,
-         endDate = dto.endDate
+         endDate = dto.endDate,
+         lastTransferDate = dto.lastTransferDate
       )
 
    override fun myId(): Long? = id

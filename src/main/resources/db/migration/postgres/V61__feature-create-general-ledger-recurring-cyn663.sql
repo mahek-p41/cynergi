@@ -25,7 +25,8 @@ CREATE TABLE general_ledger_recurring
     reverse_indicator             BOOLEAN DEFAULT FALSE                                                       NOT NULL,
     message                       TEXT,
     begin_date                    DATE,
-    end_date                      DATE
+    end_date                      DATE,
+    last_transfer_date            DATE
    );
 
 CREATE TRIGGER update_general_ledger_recurring_trg

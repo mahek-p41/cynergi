@@ -36,7 +36,10 @@ data class GeneralLedgerRecurringDTO(
    var beginDate: LocalDate? = null,
 
    @field:Schema(description = "General ledger recurring end date", required = false)
-   var endDate: LocalDate? = null
+   var endDate: LocalDate? = null,
+
+   @field:Schema(description = "General ledger recurring last transfer date", required = false)
+   var lastTransferDate: LocalDate? = null
 
 ) : Identifiable {
    constructor(
@@ -49,7 +52,8 @@ data class GeneralLedgerRecurringDTO(
          source = GeneralLedgerSourceCodeDTO(entity.source),
          type = GeneralLedgerRecurringTypeDTO(entity.type),
          beginDate = entity.beginDate,
-         endDate = entity.endDate
+         endDate = entity.endDate,
+         lastTransferDate = entity.lastTransferDate
       )
 
    override fun myId(): Long? = id
