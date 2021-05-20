@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -12,9 +13,8 @@ import javax.validation.constraints.Size
 @Schema(name = "ShipVia", title = "Ship Via Definition", description = "Defines a single Ship Via for a company")
 data class ShipViaDTO(
 
-   @field:Positive
-   @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   @field:Schema(name = "id", required = false, description = "System generated ID")
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 30)
@@ -40,5 +40,5 @@ data class ShipViaDTO(
          number = entity.number
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

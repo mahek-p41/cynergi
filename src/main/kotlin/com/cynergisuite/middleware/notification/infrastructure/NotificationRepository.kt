@@ -36,7 +36,6 @@ class NotificationRepository @Inject constructor(
       """
       SELECT
          n.id AS n_id,
-         n.uu_row_id AS n_uu_row_id,
          n.time_created AS n_time_created,
          n.time_updated AS n_time_updated,
          n.company_id AS n_company_id,
@@ -49,7 +48,6 @@ class NotificationRepository @Inject constructor(
          ntd.description AS ntd_description,
          ntd.localization_code AS ntd_localization_code,
          nr.id AS nr_id,
-         nr.uu_row_id AS nr_uu_row_id,
          nr.time_created AS nr_time_created,
          nr.time_updated AS nr_time_updated,
          nr.description AS nr_description,

@@ -6,18 +6,17 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Routine", title = "An entity containing a routine", description = "An entity containing a routine.")
 data class RoutineDTO(
 
-   @field:Positive
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Valid
    @field:NotNull
@@ -63,5 +62,5 @@ data class RoutineDTO(
          accountPayableOpen = entity.accountPayableOpen
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

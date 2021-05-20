@@ -10,7 +10,13 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -24,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -37,7 +44,7 @@ class AccountPayableDistributionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableDistributionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch a single AccountPayableDistributionDTO", description = "Fetch a single AccountPayableDistributionDTO that is associated with the logged-in user's company", operationId = "accountPayableDistribution-fetchOne")
    @ApiResponses(
       value = [
@@ -47,7 +54,7 @@ class AccountPayableDistributionController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableDistributionDTO {
@@ -169,7 +176,7 @@ class AccountPayableDistributionController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Update an AccountPayableDistributionEntity", description = "Update an AccountPayableDistributionEntity from a body of AccountPayableDistributionDTO", operationId = "accountPayableDistribution-update")
    @ApiResponses(
@@ -181,7 +188,7 @@ class AccountPayableDistributionController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: AccountPayableDistributionDTO,
       authentication: Authentication,
@@ -198,7 +205,7 @@ class AccountPayableDistributionController @Inject constructor(
       return response
    }
 
-   @Delete(value = "/{id}")
+   @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Delete a single AccountPayableDistribution", description = "Delete a single AccountPayableDistribution", operationId = "accountPayableDistribution-delete")
    @ApiResponses(
@@ -210,7 +217,7 @@ class AccountPayableDistributionController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

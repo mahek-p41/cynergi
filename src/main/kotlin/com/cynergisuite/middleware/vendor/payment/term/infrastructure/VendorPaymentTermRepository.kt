@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -15,9 +16,9 @@ import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.V
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -36,7 +37,6 @@ class VendorPaymentTermRepository @Inject constructor(
       )
       SELECT
          vpt.id                     AS vpt_id,
-         vpt.uu_row_id              AS vpt_uu_row_id,
          vpt.time_created           AS vpt_time_created,
          vpt.time_updated           AS vpt_time_updated,
          vpt.company_id             AS vpt_company_id,
@@ -47,7 +47,6 @@ class VendorPaymentTermRepository @Inject constructor(
          vpt.discount_days          AS vpt_discount_days,
          vpt.discount_percent       AS vpt_discount_percent,
          comp.id                    AS comp_id,
-         comp.uu_row_id             AS comp_uu_row_id,
          comp.time_created          AS comp_time_created,
          comp.time_updated          AS comp_time_updated,
          comp.name                  AS comp_name,
@@ -70,10 +69,9 @@ class VendorPaymentTermRepository @Inject constructor(
          comp.address_phone         AS address_phone,
          comp.address_fax           AS address_fax,
          vpts.id                    AS vpts_id,
-         vpts.uu_row_id             AS vpts_uu_row_id,
          vpts.time_created          AS vpts_time_created,
          vpts.time_updated          AS vpts_time_updated,
-         vpts.payment_term_id       AS vpts_payment_term_id,
+         vpts.vendor_payment_term_id       AS vpts_vendor_payment_term_id,
          vpts.due_month             AS vpts_due_month,
          vpts.due_days              AS vpts_due_days,
          vpts.due_percent           AS vpts_due_percent,
@@ -81,10 +79,10 @@ class VendorPaymentTermRepository @Inject constructor(
          count(*) OVER()            AS total_elements
       FROM vendor_payment_term vpt
            JOIN company comp ON vpt.company_id = comp.id
-           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.payment_term_id
+           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.vendor_payment_term_id
    """
 
-   fun findOne(id: Long, company: Company): VendorPaymentTermEntity? {
+   fun findOne(id: UUID, company: Company): VendorPaymentTermEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${findOneQuery()}\nWHERE vpt.id = :id AND comp.id = :comp_id"
 
@@ -106,8 +104,8 @@ class VendorPaymentTermRepository @Inject constructor(
    }
 
    fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorPaymentTermEntity, PageRequest> {
-      val comp_id = company.myId()
-      val params = mutableMapOf<String, Any?>("comp_id" to comp_id, "limit" to page.size(), "offset" to page.offset())
+      val compId = company.myId()
+      val params = mutableMapOf<String, Any?>("comp_id" to compId, "limit" to page.size(), "offset" to page.offset())
       val sql =
          """
          WITH paged AS (
@@ -116,7 +114,6 @@ class VendorPaymentTermRepository @Inject constructor(
             )
             SELECT
                vpt.id                     AS vpt_id,
-               vpt.uu_row_id              AS vpt_uu_row_id,
                vpt.time_created           AS vpt_time_created,
                vpt.time_updated           AS vpt_time_updated,
                vpt.company_id             AS vpt_company_id,
@@ -127,7 +124,6 @@ class VendorPaymentTermRepository @Inject constructor(
                vpt.discount_days          AS vpt_discount_days,
                vpt.discount_percent       AS vpt_discount_percent,
                comp.id                    AS comp_id,
-               comp.uu_row_id             AS comp_uu_row_id,
                comp.time_created          AS comp_time_created,
                comp.time_updated          AS comp_time_updated,
                comp.name                  AS comp_name,
@@ -159,27 +155,26 @@ class VendorPaymentTermRepository @Inject constructor(
          SELECT
             p.*,
             vpts.id                    AS vpts_id,
-            vpts.uu_row_id             AS vpts_uu_row_id,
             vpts.time_created          AS vpts_time_created,
             vpts.time_updated          AS vpts_time_updated,
-            vpts.payment_term_id       AS vpts_payment_term_id,
+            vpts.vendor_payment_term_id       AS vpts_vendor_payment_term_id,
             vpts.due_month             AS vpts_due_month,
             vpts.due_days              AS vpts_due_days,
             vpts.due_percent           AS vpts_due_percent,
             vpts.schedule_order_number AS vpts_schedule_order_number
          FROM paged AS p
-            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON p.vpt_id = vpts.payment_term_id
+            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON p.vpt_id = vpts.vendor_payment_term_id
          ORDER BY vpt_${page.snakeSortBy()}, vpts.id ${page.sortDirection()}
       """
 
       logger.debug("find all vendor payment terms {}/{}", sql, params)
 
       return jdbc.queryPaged(sql, params, page) { rs, elements ->
-         var currentId = -1L
+         var currentId = UUID.randomUUID()
          var currentParentEntity: VendorPaymentTermEntity? = null
 
          do {
-            val tempId = rs.getLong("vpt_id")
+            val tempId = rs.getUuid("vpt_id")
             val tempParentEntity: VendorPaymentTermEntity = if (tempId != currentId) {
                currentId = tempId
                currentParentEntity = mapRow(rs)
@@ -218,9 +213,8 @@ class VendorPaymentTermRepository @Inject constructor(
             "discount_month" to entity.discountMonth,
             "discount_days" to entity.discountDays,
             "discount_percent" to entity.discountPercent
-         ),
-         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
-      )
+         )
+      ) { rs, _ -> mapDdlRow(rs, entity.company) }
 
       // The below will loop through each schedule record to first insert it into vendor_payment_term_schedule,
       // and then add each to the mutable list on VendorPaymentTermEntity.
@@ -263,9 +257,8 @@ class VendorPaymentTermRepository @Inject constructor(
             "discountMonth" to entity.discountMonth,
             "discountDays" to entity.discountDays,
             "discountPercent" to entity.discountPercent
-         ),
-         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
-      )
+         )
+      ) { rs, _ -> mapDdlRow(rs, entity.company) }
 
       // The below will loop through each schedule record to first update or delete it in vendor_payment_term_schedule,
       // and then add each to the mutable list on VendorPaymentTermEntity.
@@ -280,7 +273,7 @@ class VendorPaymentTermRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
-         id = rs.getLong("vpt_id"),
+         id = rs.getUuid("vpt_id"),
          company = companyRepository.mapRow(rs, "comp_"),
          description = rs.getString("vpt_description"),
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
@@ -291,7 +284,7 @@ class VendorPaymentTermRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
-         id = rs.getLong("${columnPrefix}vpt_id"),
+         id = rs.getUuid("${columnPrefix}vpt_id"),
          company = companyRepository.mapRow(rs, "${columnPrefix}comp_", "${columnPrefix}address_"),
          description = rs.getString("${columnPrefix}vpt_description"),
          discountMonth = rs.getIntOrNull("${columnPrefix}vpt_discount_month"),
@@ -302,7 +295,7 @@ class VendorPaymentTermRepository @Inject constructor(
 
    private fun mapDdlRow(rs: ResultSet, company: Company): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
-         id = rs.getLong("id"),
+         id = rs.getUuid("id"),
          company = company,
          description = rs.getString("description"),
          discountMonth = rs.getIntOrNull("discount_month"),
@@ -314,7 +307,7 @@ class VendorPaymentTermRepository @Inject constructor(
    private fun mapRowVendorPaymentTermSchedule(rs: ResultSet): VendorPaymentTermScheduleEntity? =
       if (rs.getString("vpts_id") != null) {
          VendorPaymentTermScheduleEntity(
-            id = rs.getLong("vpts_id"),
+            id = rs.getUuid("vpts_id"),
             dueMonth = rs.getIntOrNull("vpts_due_month"),
             dueDays = rs.getInt("vpts_due_days"),
             duePercent = rs.getBigDecimal("vpts_due_percent"),

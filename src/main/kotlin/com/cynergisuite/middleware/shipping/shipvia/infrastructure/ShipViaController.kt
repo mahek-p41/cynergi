@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -53,7 +54,7 @@ class ShipViaController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Ship Via with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ShipViaDTO {
@@ -93,7 +94,7 @@ class ShipViaController @Inject constructor(
       return page
    }
 
-   @Delete(uri = "/{id:[0-9]+}")
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}")
    @Operation(tags = ["ShipViaEndpoints"], summary = "Delete a single ship via", description = "Deletes a ship via based on passed id", operationId = "shipvia-delete")
    @ApiResponses(
       value = [
@@ -103,7 +104,7 @@ class ShipViaController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

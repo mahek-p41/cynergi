@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -44,7 +45,7 @@ class AccountController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountEndpoints"], summary = "Fetch a single Account", description = "Fetch a single Account by ID", operationId = "account-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class AccountController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountDTO {
@@ -151,7 +152,7 @@ class AccountController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountEndpoints"], summary = "Create a single account", description = "Create a single account.", operationId = "account-update")
    @ApiResponses(
@@ -163,7 +164,7 @@ class AccountController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: AccountDTO,
       authentication: Authentication,
@@ -179,7 +180,7 @@ class AccountController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["AccountEndpoints"], summary = "Delete an account", description = "Delete a single account", operationId = "account-delete")
    @ApiResponses(
@@ -190,7 +191,7 @@ class AccountController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

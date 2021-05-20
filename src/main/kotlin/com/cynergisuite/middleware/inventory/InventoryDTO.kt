@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.inventory
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
@@ -122,7 +122,7 @@ data class InventoryDTO(
    @field:Schema(name = "dataset", description = "dataset item is associated with")
    val dataset: String
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(item: InventoryEntity, locationType: InventoryLocationTypeValueObject) :
       this(

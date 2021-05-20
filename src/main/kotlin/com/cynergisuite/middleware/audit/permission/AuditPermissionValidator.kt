@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.audit.permission
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionTypeRepository
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -13,16 +11,14 @@ import javax.inject.Singleton
 
 @Singleton
 class AuditPermissionValidator(
-   private val auditPermissionRepository: AuditPermissionRepository,
    private val auditPermissionTypeRepository: AuditPermissionTypeRepository,
-   private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class)
    fun validateCreate(permission: AuditPermissionCreateDTO, user: User): AuditPermissionEntity {
       doValidation { errors ->
-         val permissionTypeId = permission.permissionType!!.myId()!!
+         val permissionTypeId = permission.permissionType!!.id!!
          val departmentId = permission.department!!.myId()!!
 
          if (auditPermissionTypeRepository.doesNotExist(permissionTypeId)) {
@@ -35,7 +31,7 @@ class AuditPermissionValidator(
       }
 
       val company = user.myCompany()
-      val permissionType = auditPermissionTypeRepository.findOne(permission.permissionType!!.myId()!!)!!
+      val permissionType = auditPermissionTypeRepository.findOne(permission.permissionType!!.id!!)!!
       val department = departmentRepository.findOne(permission.department!!.myId()!!, company)!!
 
       return AuditPermissionEntity(

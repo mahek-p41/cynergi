@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.shipping.shipvia.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -36,13 +38,11 @@ class ShipViaRepository @Inject constructor(
       )
       SELECT
          shipVia.id                    AS id,
-         shipVia.uu_row_id             AS uu_row_id,
          shipVia.time_created          AS time_created,
          shipVia.time_updated          AS time_updated,
          shipVia.description           AS description,
          shipVia.number                AS number,
          comp.id                       AS comp_id,
-         comp.uu_row_id                AS comp_uu_row_id,
          comp.name                     AS comp_name,
          comp.doing_business_as        AS comp_doing_business_as,
          comp.client_code              AS comp_client_code,
@@ -67,7 +67,7 @@ class ShipViaRepository @Inject constructor(
            JOIN company comp ON shipVia.company_id = comp.id
    """
 
-   fun findOne(id: Long, company: Company): ShipViaEntity? {
+   fun findOne(id: UUID, company: Company): ShipViaEntity? {
       logger.debug("Searching for ShipVia by id {}", id)
 
       val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.myId()), RowMapper { rs, _ -> mapRow(rs) })
@@ -118,7 +118,7 @@ class ShipViaRepository @Inject constructor(
    fun insert(entity: ShipViaEntity): ShipViaEntity {
       logger.debug("Inserting shipVia {}", entity)
 
-      return jdbc.insertReturning(
+      val result = jdbc.insertReturning(
          """
          INSERT INTO ship_via(description, company_id)
          VALUES (
@@ -131,20 +131,21 @@ class ShipViaRepository @Inject constructor(
          mapOf(
             "description" to entity.description,
             "comp_id" to entity.company.myId()
-         ),
-         RowMapper { rs, _ ->
-            ShipViaEntity(
-               id = rs.getLong("id"),
-               description = rs.getString("description"),
-               number = rs.getInt("number"),
-               company = entity.company
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         ShipViaEntity(
+            id = rs.getUuid("id"),
+            description = rs.getString("description"),
+            number = rs.getInt("number"),
+            company = entity.company
+         )
+      }
+
+      return result
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting account with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -179,25 +180,24 @@ class ShipViaRepository @Inject constructor(
             "id" to entity.id,
             "description" to entity.description,
             "number" to entity.number
-         ),
-         RowMapper { rs, _ ->
-            ShipViaEntity(
-               id = rs.getLong("id"),
-               description = rs.getString("description"),
-               number = rs.getInt("number"),
-               company = entity.company
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         ShipViaEntity(
+            id = rs.getUuid("id"),
+            description = rs.getString("description"),
+            number = rs.getInt("number"),
+            company = entity.company
+         )
+      }
    }
 
    private fun mapRow(rs: ResultSet): ShipViaEntity {
       return ShipViaEntity(
-         id = rs.getLong("id"),
+         id = rs.getUuid("id"),
          description = rs.getString("description"),
          number = rs.getInt("number"),
          company = CompanyEntity(
-            id = rs.getLong("comp_id"),
+            id = rs.getUuid("comp_id"),
             name = rs.getString("comp_name"),
             doingBusinessAs = rs.getString("comp_doing_business_as"),
             clientCode = rs.getString("comp_client_code"),
@@ -211,7 +211,7 @@ class ShipViaRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): ShipViaEntity {
       return ShipViaEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          description = rs.getString("${columnPrefix}description"),
          number = rs.getInt("${columnPrefix}number"),
          company = companyRepository.mapRow(rs, "${columnPrefix}comp_", "${columnPrefix}address_")

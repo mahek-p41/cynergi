@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.division
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
@@ -38,10 +38,11 @@ object DivisionFactory {
       return IntStream.range(0, numberIn).mapToObj {
          val name = lorem.word().capitalize() + " Division"
          val description = "$name Description"
+
          DivisionDTO(
             name = name,
             description = description,
-            divisionalManager = SimpleIdentifiableDTO(divisionalManagerIn?.id)
+            divisionalManager = SimpleLegacyIdentifiableDTO(divisionalManagerIn?.id)
          )
       }
    }

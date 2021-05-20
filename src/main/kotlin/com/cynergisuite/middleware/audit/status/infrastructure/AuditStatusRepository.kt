@@ -26,7 +26,7 @@ class AuditStatusRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long): AuditStatus? =
+   fun findOne(id: Int): AuditStatus? =
       executeFindQuery(mapOf("id" to id))
 
    fun findOne(value: String): AuditStatus? =
@@ -40,11 +40,9 @@ class AuditStatusRepository @Inject constructor(
 
    private fun executeFindQuery(params: Map<String, Any>): AuditStatus? {
       var root: AuditStatus? = null
-      val existingStatuses = mutableMapOf<Long, AuditStatus>()
+      val existingStatuses = mutableMapOf<Int, AuditStatus>()
       val whereClause = if (params.keys.first() == "id") "WHERE astd.id = :id" else "WHERE astd.value = UPPER(:value)"
-
-      jdbc.query(
-         """
+      val sql = """
          WITH RECURSIVE transition(depth, id, value, description, color, localization_code, frm, nxt) AS (
             SELECT
                1 AS depth,
@@ -90,9 +88,11 @@ class AuditStatusRepository @Inject constructor(
             frm
          FROM transition
          ORDER BY depth, id, frm, nxt
-         """.trimIndent(),
-         params
-      ) { rs: ResultSet ->
+      """.trimIndent()
+
+      logger.trace("{}/{}", sql, params)
+
+      jdbc.query(sql, params) { rs: ResultSet ->
          if (root == null) {
             val r = simpleAuditStatusRowMapper.mapRow(rs, "parent_")
             existingStatuses[r.id] = r
@@ -103,7 +103,7 @@ class AuditStatusRepository @Inject constructor(
 
          if (nxt != null) {
             var audit = simpleAuditStatusRowMapper.mapRow(rs, "child_")
-            val fromId: Long = rs.getLong("frm")
+            val fromId: Int = rs.getInt("frm")
             val from: AuditStatus = existingStatuses[fromId]!!
 
             if (existingStatuses.containsKey(audit.id)) {
@@ -127,7 +127,7 @@ private class AuditStatusRowMapper(
 
    fun mapRow(rs: ResultSet, columnPrefix: String): AuditStatus =
       AuditStatusEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          color = rs.getString("${columnPrefix}color"),

@@ -3,9 +3,10 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import java.time.LocalDate
+import java.util.UUID
 
 data class GeneralLedgerReversalEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val source: GeneralLedgerSourceCodeEntity,
    val date: LocalDate,
    val reversalDate: LocalDate,
@@ -14,9 +15,9 @@ data class GeneralLedgerReversalEntity(
    val entryNumber: Int
 ) : Identifiable {
 
-   constructor(dto: GeneralLedgerReversalDTO, source: GeneralLedgerSourceCodeEntity) :
+   constructor(id: UUID?, dto: GeneralLedgerReversalDTO, source: GeneralLedgerSourceCodeEntity) :
       this(
-         id = dto.id,
+         id = id,
          source = source,
          date = dto.date!!,
          reversalDate = dto.reversalDate!!,
@@ -25,5 +26,5 @@ data class GeneralLedgerReversalEntity(
          entryNumber = dto.entryNumber!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

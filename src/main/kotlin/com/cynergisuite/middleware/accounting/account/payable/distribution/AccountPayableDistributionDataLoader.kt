@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.distribution
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
 import com.cynergisuite.middleware.company.Company
@@ -34,7 +35,7 @@ object AccountPayableDistributionDataLoader {
    }
 
    @JvmStatic
-   fun streamDTO(numberIn: Int = 1, profitCenter: SimpleIdentifiableDTO, account: SimpleIdentifiableDTO, name: String? = null): Stream<AccountPayableDistributionDTO> {
+   fun streamDTO(numberIn: Int = 1, profitCenter: SimpleLegacyIdentifiableDTO, account: SimpleIdentifiableDTO, name: String? = null): Stream<AccountPayableDistributionDTO> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val lorem = faker.lorem()
@@ -72,7 +73,7 @@ class AccountPayableDistributionDataLoaderService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create AccountPayableDistribution") }
    }
 
-   fun singleDTO(profitCenterIn: SimpleIdentifiableDTO, accountIn: SimpleIdentifiableDTO, nameIn: String? = null): AccountPayableDistributionDTO {
+   fun singleDTO(profitCenterIn: SimpleLegacyIdentifiableDTO, accountIn: SimpleIdentifiableDTO, nameIn: String? = null): AccountPayableDistributionDTO {
       return AccountPayableDistributionDataLoader.streamDTO(1, profitCenter = profitCenterIn, account = accountIn, name = nameIn).findFirst().orElseThrow { Exception("Unable to create AccountPayableDistribution") }
    }
 }

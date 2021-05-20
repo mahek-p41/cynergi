@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import java.math.BigDecimal
 import java.time.OffsetDateTime
 
@@ -18,10 +18,10 @@ data class VerificationLandlord(
    val phone: Boolean?,
    val reliable: Boolean?,
    val rent: BigDecimal?,
-   val verification: Identifiable
-) : Identifiable {
+   val verification: LegacyIdentifiable
+) : LegacyIdentifiable {
 
-   constructor(dto: VerificationLandlordValueObject, verification: Identifiable) :
+   constructor(dto: VerificationLandlordValueObject, verification: LegacyIdentifiable) :
       this(
          id = dto.id,
          address = dto.address,

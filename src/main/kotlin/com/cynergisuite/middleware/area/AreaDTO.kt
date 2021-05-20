@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 data class AreaDTO(
 
    @field:Positive
-   var id: Long? = null,
+   var id: Int? = null,
 
    @field:NotNull
    @field:Size(min = 1, max = 10)

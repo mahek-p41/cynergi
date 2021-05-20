@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceType
@@ -9,9 +11,10 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 data class AccountPayableInvoiceEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val vendor: VendorEntity,
    val invoice: String,
    val purchaseOrder: Identifiable?,
@@ -38,7 +41,7 @@ data class AccountPayableInvoiceEntity(
    val separateCheckIndicator: Boolean,
    val useTaxIndicator: Boolean,
    val receiveDate: LocalDate?,
-   val location: Identifiable?
+   val location: LegacyIdentifiable?
 ) : Identifiable {
 
    constructor(
@@ -50,7 +53,7 @@ data class AccountPayableInvoiceEntity(
       type: AccountPayableInvoiceType,
       status: AccountPayableInvoiceStatusType,
       payTo: SimpleIdentifiableEntity,
-      location: SimpleIdentifiableEntity?
+      location: SimpleLegacyIdentifiableEntity?
    ) :
       this(
          id = dto.id,
@@ -83,5 +86,5 @@ data class AccountPayableInvoiceEntity(
          location = location
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

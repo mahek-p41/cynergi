@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,17 +30,17 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(id: Long, dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeEntity {
       logger.trace("Validating Update GeneralLedgerSourceCode {}", dto)
 
       val existing = generalLedgerSourceCodeRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-      doValidation { errors -> doUpdateValidation(errors, dto, company) }
+      doValidation { errors -> doUpdateValidation(errors, dto) }
 
       return existing.copy(value = dto.value!!, description = dto.description!!)
    }
 
-   private fun doUpdateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: Company) {
+   private fun doUpdateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO) {
       if (dto.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }
@@ -50,7 +51,7 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
    }
 
    private fun doCreateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: Company) {
-      doUpdateValidation(errors, dto, company)
+      doUpdateValidation(errors, dto)
 
       if (generalLedgerSourceCodeRepository.exists(dto.value!!, company)) {
          errors.add(ValidationError("value", Duplicate("value")))

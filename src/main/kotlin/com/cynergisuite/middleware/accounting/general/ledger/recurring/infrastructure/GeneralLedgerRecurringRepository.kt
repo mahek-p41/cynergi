@@ -2,7 +2,13 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastr
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
@@ -14,6 +20,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -50,7 +57,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerRecurringEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerRecurringEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
@@ -165,7 +172,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting GeneralLedgerRecurring with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -185,7 +192,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): GeneralLedgerRecurringEntity {
       return GeneralLedgerRecurringEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          reverseIndicator = rs.getBoolean("${columnPrefix}reverse_indicator"),
          message = rs.getString("${columnPrefix}message"),
          type = recurringTypeRepository.mapRow(rs, "${columnPrefix}type_"),
@@ -203,7 +210,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): GeneralLedgerRecurringEntity {
       return GeneralLedgerRecurringEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          reverseIndicator = rs.getBoolean("${columnPrefix}reverse_indicator"),
          message = rs.getString("${columnPrefix}message"),
          type = type,

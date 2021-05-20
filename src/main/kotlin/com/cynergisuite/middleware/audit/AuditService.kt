@@ -53,6 +53,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -70,7 +71,7 @@ class AuditService @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditService::class.java)
 
-   fun fetchById(id: Long, company: Company, locale: Locale): AuditValueObject? =
+   fun fetchById(id: UUID, company: Company, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
 
    fun fetchAll(pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
@@ -82,19 +83,19 @@ class AuditService @Inject constructor(
       }
    }
 
-   fun fetchAuditExceptionReport(id: Long, company: Company, os: OutputStream) {
+   fun fetchAuditExceptionReport(id: UUID, company: Company, os: OutputStream) {
       val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
 
       generateAuditExceptionReport(os, audit, true)
    }
 
-   fun fetchUnscannedIdleInventoryReport(id: Long, company: Company, os: OutputStream) {
+   fun fetchUnscannedIdleInventoryReport(id: UUID, company: Company, os: OutputStream) {
       val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
 
       generateUnscannedIdleInventoryReport(os, audit, true)
    }
 
-   fun exists(id: Long): Boolean =
+   fun exists(id: UUID): Boolean =
       auditRepository.exists(id = id)
 
    fun findAuditStatusCounts(pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDTO> {

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.purchase.order.detail
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,7 +34,7 @@ class PurchaseOrderDetailValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailEntity {
+   fun validateUpdate(id: UUID, dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailEntity {
       logger.debug("Validating Update PurchaseOrderDetail {}", dto)
 
       return doSharedValidation(dto, company)
@@ -70,7 +71,7 @@ class PurchaseOrderDetailValidator @Inject constructor(
       return PurchaseOrderDetailEntity(
          dto = dto,
          purchaseOrder = purchaseOrder!!,
-         shipTo = SimpleIdentifiableEntity(shipTo!!.id),
+         shipTo = SimpleLegacyIdentifiableEntity(shipTo!!.id),
          vendor = vendor!!,
          statusType = statusType!!,
          purchaseOrderRequisitionIndicatorType = purchaseOrderRequisitionIndicatorType!!,

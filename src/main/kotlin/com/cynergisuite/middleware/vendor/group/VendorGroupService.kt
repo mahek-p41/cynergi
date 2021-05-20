@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class VendorGroupService @Inject constructor(
    private val vendorGroupValidator: VendorGroupValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): VendorGroupDTO? =
+   fun fetchById(id: UUID, company: Company): VendorGroupDTO? =
       vendorGroupRepository.findOne(id, company)?.let { VendorGroupDTO(entity = it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorGroupDTO> {
@@ -32,7 +33,7 @@ class VendorGroupService @Inject constructor(
       )
    }
 
-   fun update(id: Long, dto: VendorGroupDTO, company: Company): VendorGroupDTO {
+   fun update(id: UUID, dto: VendorGroupDTO, company: Company): VendorGroupDTO {
       val toUpdate = vendorGroupValidator.validateUpdate(id, dto, company)
 
       return VendorGroupDTO(
@@ -40,7 +41,7 @@ class VendorGroupService @Inject constructor(
       )
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       vendorGroupRepository.delete(id, company)
    }
 }

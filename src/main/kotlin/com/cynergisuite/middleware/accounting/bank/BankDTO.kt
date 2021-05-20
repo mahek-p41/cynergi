@@ -2,9 +2,11 @@ package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -13,8 +15,7 @@ import javax.validation.constraints.Positive
 @Schema(name = "Bank", title = "An entity containing a bank information", description = "An entity containing a bank information.")
 data class BankDTO(
 
-   @field:Positive
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Positive
@@ -28,7 +29,7 @@ data class BankDTO(
    @field:NotNull
    @field:Valid
    @field:Schema(name = "generalLedgerProfitCenter", required = true, description = "Store the bank is associated with.")
-   var generalLedgerProfitCenter: SimpleIdentifiableDTO? = null,
+   var generalLedgerProfitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Valid
@@ -41,9 +42,9 @@ data class BankDTO(
          id = bankEntity.id,
          number = bankEntity.number,
          name = bankEntity.name,
-         generalLedgerProfitCenter = SimpleIdentifiableDTO(bankEntity.generalLedgerProfitCenter.myId()),
+         generalLedgerProfitCenter = SimpleLegacyIdentifiableDTO(bankEntity.generalLedgerProfitCenter.myId()),
          generalLedgerAccount = SimpleIdentifiableDTO(bankEntity.generalLedgerAccount.myId())
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

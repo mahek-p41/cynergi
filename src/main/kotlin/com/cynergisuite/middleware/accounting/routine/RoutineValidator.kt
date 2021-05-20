@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,7 +26,7 @@ class RoutineValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: RoutineDTO, company: Company): RoutineEntity {
+   fun validateUpdate(id: UUID, dto: RoutineDTO, company: Company): RoutineEntity {
       logger.debug("Validating Update Routine{}", dto)
 
       val existingRoutine = routineRepository.findOne(id, company) ?: throw NotFoundException(id)

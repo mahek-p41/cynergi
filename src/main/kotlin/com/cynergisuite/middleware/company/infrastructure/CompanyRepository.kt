@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
@@ -14,9 +15,9 @@ import com.cynergisuite.middleware.store.Store
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -32,7 +33,6 @@ class CompanyRepository @Inject constructor(
       """
       SELECT
          comp.id                  AS id,
-         comp.uu_row_id           AS uu_row_id,
          comp.time_created        AS time_created,
          comp.time_updated        AS time_updated,
          comp.name                AS name,
@@ -65,7 +65,6 @@ class CompanyRepository @Inject constructor(
          """
          SELECT
            comp.id                  AS id,
-           comp.uu_row_id           AS uu_row_id,
            comp.time_created        AS time_created,
            comp.time_updated        AS time_updated,
            comp.name                AS name,
@@ -97,17 +96,16 @@ class CompanyRepository @Inject constructor(
          mapOf(
             "store_id" to store.myId(),
             "dataset" to store.myCompany().myDataset()
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Searching for company by store id {} resulted in {}", store.myId(), found)
 
       return found
    }
 
-   fun findOne(id: Long): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id", mapOf("id" to id), RowMapper { rs, _ -> mapRow(rs) })
+   fun findOne(id: UUID): CompanyEntity? {
+      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id", mapOf("id" to id)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Company: {} resulted in {}", id, found)
 
@@ -115,7 +113,7 @@ class CompanyRepository @Inject constructor(
    }
 
    fun findByDataset(datasetCode: String): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE dataset_code = :dataset_code", mapOf("dataset_code" to datasetCode), RowMapper { rs, _ -> mapRow(rs) })
+      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE dataset_code = :dataset_code", mapOf("dataset_code" to datasetCode)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Company: {} resulted in {}", datasetCode, found)
 
@@ -167,7 +165,7 @@ class CompanyRepository @Inject constructor(
       }
    }
 
-   fun exists(id: Long? = null): Boolean {
+   fun exists(id: UUID? = null): Boolean {
       if (id == null) return false
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
@@ -176,7 +174,7 @@ class CompanyRepository @Inject constructor(
       return exists
    }
 
-   fun duplicate(id: Long? = null, clientId: Int? = null, datasetCode: String? = null): Boolean {
+   fun duplicate(id: UUID? = null, clientId: Int? = null, datasetCode: String? = null): Boolean {
       if (clientId == null && datasetCode == null) return false
       var and = EMPTY
       val params = mapOf("id" to id, "clientId" to clientId, "datasetCode" to datasetCode)
@@ -229,9 +227,8 @@ class CompanyRepository @Inject constructor(
             "dataset_code" to company.datasetCode,
             "federal_id_number" to company.federalIdNumber,
             "address_id" to addressCreated?.id
-         ),
-         RowMapper { rs, _ -> mapRow(rs, addressCreated) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, addressCreated) }
    }
 
    @Transactional
@@ -273,11 +270,10 @@ class CompanyRepository @Inject constructor(
             "dataset_code" to toUpdate.datasetCode,
             "federal_id_number" to toUpdate.federalIdNumber,
             "address_id" to companyAddress?.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, companyAddress)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, companyAddress)
+      }
 
       addressToDelete?.id?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
@@ -286,7 +282,7 @@ class CompanyRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY, addressPrefix: String = "address_"): CompanyEntity =
       CompanyEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
          clientCode = rs.getString("${columnPrefix}client_code"),
@@ -298,7 +294,7 @@ class CompanyRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, address: AddressEntity?, columnPrefix: String = EMPTY): CompanyEntity =
       CompanyEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
          clientCode = rs.getString("${columnPrefix}client_code"),

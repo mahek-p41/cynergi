@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -57,7 +58,7 @@ class AuditDetailController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
@@ -83,7 +84,7 @@ class AuditDetailController @Inject constructor(
    )
    fun fetchAll(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
@@ -115,7 +116,7 @@ class AuditDetailController @Inject constructor(
    )
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Valid @Body
       vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
@@ -130,7 +131,7 @@ class AuditDetailController @Inject constructor(
          HttpResponse.notModified()
       } else {
          val detailToCreate = auditDetailValidator.validateCreate(auditId, user, vo)
-         val response = auditDetailService.create(auditId, detailToCreate, user, httpRequest.findLocaleWithDefault())
+         val response = auditDetailService.create(detailToCreate, user, httpRequest.findLocaleWithDefault())
 
          logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
 
@@ -151,9 +152,9 @@ class AuditDetailController @Inject constructor(
    )
    fun update(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Parameter(name = "auditDetailId", `in` = ParameterIn.PATH, description = "The audit detail id") @QueryValue("auditDetailId")
-      auditDetailId: Long,
+      auditDetailId: UUID,
       @Valid @Body
       vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
@@ -163,7 +164,7 @@ class AuditDetailController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val existingDetail = auditDetailValidator.validateUpdate(auditId, user, vo)
-      val response = auditDetailService.update(auditId, existingDetail, user, httpRequest.findLocaleWithDefault())
+      val response = auditDetailService.update(existingDetail, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update AuditDetail {} resulted in {}", existingDetail, response)
 

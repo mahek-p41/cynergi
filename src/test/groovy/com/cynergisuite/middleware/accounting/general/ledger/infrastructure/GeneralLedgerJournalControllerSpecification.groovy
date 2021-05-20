@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
@@ -58,15 +59,18 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -186,7 +190,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final def glJournalDTO = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleIdentifiableDTO(store.myId()),
+         new SimpleLegacyIdentifiableDTO(store.myId()),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -198,7 +202,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          account.id == glJournalDTO.account.id
          profitCenter.id == glJournalDTO.profitCenter.myId()
          date == glJournalDTO.date.toString()
@@ -222,7 +226,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final def glJournalDTO = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleIdentifiableDTO(store.myId()),
+         new SimpleLegacyIdentifiableDTO(store.myId()),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -235,7 +239,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          account.id == glJournalDTO.account.id
          profitCenter.id == glJournalDTO.profitCenter.myId()
          date == glJournalDTO.date.toString()
@@ -260,7 +264,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final def glJournalDTO = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleIdentifiableDTO(store.myId()),
+         new SimpleLegacyIdentifiableDTO(store.myId()),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -295,7 +299,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final def existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final def updatedGLJournal = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleIdentifiableDTO(store.myId()),
+         new SimpleLegacyIdentifiableDTO(store.myId()),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -333,7 +337,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final def existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final def updatedGLJournal = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleIdentifiableDTO(store.myId()),
+         new SimpleLegacyIdentifiableDTO(store.myId()),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -373,7 +377,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final def existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final def updatedGLJournal = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleIdentifiableDTO(store.myId()),
+         new SimpleLegacyIdentifiableDTO(store.myId()),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )

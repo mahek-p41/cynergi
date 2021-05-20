@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.localization.AddressNeedsUpdated
 import com.cynergisuite.middleware.localization.Duplicate
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +31,7 @@ class CompanyValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, companyDTO: CompanyDTO): Pair<CompanyEntity, CompanyEntity> {
+   fun validateUpdate(id: UUID, companyDTO: CompanyDTO): Pair<CompanyEntity, CompanyEntity> {
       logger.trace("Validating Update Company {}", companyDTO)
       val existingEntity = companyRepository.findOne(id = id) ?: throw NotFoundException(id)
 
@@ -48,7 +49,7 @@ class CompanyValidator @Inject constructor(
       return Pair(existingEntity, CompanyEntity(companyDTO))
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, companyDTO: CompanyDTO, id: Long? = null) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, companyDTO: CompanyDTO, id: UUID? = null) {
       if (companyRepository.duplicate(id = id, clientId = companyDTO.clientId)) {
          errors.add(ValidationError("clientId", Duplicate(companyDTO.clientId.toString())))
       }

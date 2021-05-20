@@ -4,20 +4,19 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalEntity
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -25,9 +24,7 @@ import javax.transaction.Transactional
 @Singleton
 class GeneralLedgerReversalRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val accountRepository: AccountRepository,
    private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
-   private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReversalRepository::class.java)
 
@@ -35,7 +32,6 @@ class GeneralLedgerReversalRepository @Inject constructor(
       return """
          SELECT
             glReversal.id                                                   AS glReversal_id,
-            glReversal.uu_row_id                                            AS glReversal_uu_row_id,
             glReversal.time_created                                         AS glReversal_time_created,
             glReversal.time_updated                                         AS glReversal_time_updated,
             glReversal.company_id                                           AS glReversal_company_id,
@@ -55,7 +51,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerReversalEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerReversalEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()}\nWHERE glReversal.id = :id"
 
@@ -128,9 +124,8 @@ class GeneralLedgerReversalRepository @Inject constructor(
             "comment" to entity.comment,
             "entry_month" to entity.entryMonth,
             "entry_number" to entity.entryNumber
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
 
    @Transactional
@@ -161,9 +156,8 @@ class GeneralLedgerReversalRepository @Inject constructor(
             "comment" to entity.comment,
             "entry_month" to entity.entryMonth,
             "entry_number" to entity.entryNumber
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
 
       logger.debug("Updated GeneralLedgerReversal {}", updated)
 
@@ -172,7 +166,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerReversalEntity {
       return GeneralLedgerReversalEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          source = generalLedgerSourceCodeRepository.mapRow(rs, "${columnPrefix}source_"),
          date = rs.getLocalDate("${columnPrefix}date"),
          reversalDate = rs.getLocalDate("${columnPrefix}reversal_date"),
@@ -184,7 +178,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, entity: GeneralLedgerReversalEntity, columnPrefix: String = EMPTY): GeneralLedgerReversalEntity {
       return GeneralLedgerReversalEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          source = entity.source,
          date = rs.getLocalDate("${columnPrefix}date"),
          reversalDate = rs.getLocalDate("${columnPrefix}reversal_date"),

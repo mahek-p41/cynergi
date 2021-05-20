@@ -2,23 +2,23 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "GeneralLedgerControl", title = "General Ledger Control", description = "General ledger control")
 data class GeneralLedgerControlDTO(
 
-   @field:Positive
    @field:Schema(description = "General ledger control id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Default profit center")
-   var defaultProfitCenter: SimpleIdentifiableDTO? = null,
+   var defaultProfitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account payable account")
    var defaultAccountPayableAccount: SimpleIdentifiableDTO?,
@@ -50,7 +50,7 @@ data class GeneralLedgerControlDTO(
    ) :
       this(
          id = entity.id,
-         defaultProfitCenter = SimpleIdentifiableDTO(entity.defaultProfitCenter.myId()),
+         defaultProfitCenter = SimpleLegacyIdentifiableDTO(entity.defaultProfitCenter.myId()),
          defaultAccountPayableAccount = entity.defaultAccountPayableAccount?.let { SimpleIdentifiableDTO(it) },
          defaultAccountPayableDiscountAccount = entity.defaultAccountPayableDiscountAccount?.let { SimpleIdentifiableDTO(it) },
          defaultAccountReceivableAccount = entity.defaultAccountReceivableAccount?.let { SimpleIdentifiableDTO(it) },
@@ -61,5 +61,5 @@ data class GeneralLedgerControlDTO(
          defaultAccountFreightAccount = entity.defaultAccountFreightAccount?.let { SimpleIdentifiableDTO(it) }
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

@@ -17,12 +17,12 @@ class AreaService @Inject constructor(
    fun fetchAll(company: Company, locale: Locale): List<AreaDTO> =
       repository.findAll(company).map { transformEntity(it, locale) }
 
-   fun enableArea(company: Company, areaTypeId: Long) {
+   fun enableArea(company: Company, areaTypeId: Int) {
       validator.validateAreaTypeId(company, areaTypeId)
       repository.enable(company, areaTypeId)
    }
 
-   fun disableArea(company: Company, areaTypeId: Long) {
+   fun disableArea(company: Company, areaTypeId: Int) {
       validator.validateAreaTypeId(company, areaTypeId)
       repository.disable(company, areaTypeId)
    }

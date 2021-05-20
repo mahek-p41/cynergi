@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.purchase.order.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderRequisitionIndicatorTypeDTO
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
@@ -20,9 +22,8 @@ import javax.validation.constraints.Positive
 @Schema(name = "PurchaseOrderDetail", title = "An entity containing purchase order detail information", description = "An entity containing purchase order detail information.")
 data class PurchaseOrderDetailDTO(
 
-   @field:Positive
    @field:Schema(name = "id", description = "Purchase order detail id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Positive
@@ -33,10 +34,6 @@ data class PurchaseOrderDetailDTO(
    @field:Valid
    @field:Schema(name = "purchaseOrder", description = "Purchase order")
    var purchaseOrder: PurchaseOrderDTO? = null,
-
-   @field:Positive
-   @field:Schema(name = "sequence", description = "Sequence")
-   var sequence: Int? = null,
 
    @field:NotNull
    @field:Schema(name = "itemfileNumber", description = "Itemfile number")
@@ -74,7 +71,7 @@ data class PurchaseOrderDetailDTO(
    @field:NotNull
    @field:Valid
    @field:Schema(name = "shipTo", description = "Ship to id")
-   var shipTo: SimpleIdentifiableDTO? = null,
+   var shipTo: SimpleLegacyIdentifiableDTO? = null,
 
    @field:Schema(name = "requiredDate", description = "Required date", required = false)
    var requiredDate: LocalDate? = null,
@@ -132,7 +129,6 @@ data class PurchaseOrderDetailDTO(
          id = entity.id,
          number = entity.number,
          purchaseOrder = PurchaseOrderDTO(entity.purchaseOrder),
-         sequence = entity.sequence,
          itemfileNumber = entity.itemfileNumber,
          orderQuantity = entity.orderQuantity,
          receivedQuantity = entity.receivedQuantity,
@@ -142,7 +138,7 @@ data class PurchaseOrderDetailDTO(
          fabric = entity.fabric,
          cancelledQuantity = entity.cancelledQuantity,
          cancelledTempQuantity = entity.cancelledTempQuantity,
-         shipTo = SimpleIdentifiableDTO(entity.shipTo),
+         shipTo = SimpleLegacyIdentifiableDTO(entity.shipTo),
          requiredDate = entity.requiredDate,
          dateOrdered = entity.dateOrdered,
          freightPerItem = entity.freightPerItem,
@@ -157,5 +153,5 @@ data class PurchaseOrderDetailDTO(
          approvedIndicator = entity.approvedIndicator
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

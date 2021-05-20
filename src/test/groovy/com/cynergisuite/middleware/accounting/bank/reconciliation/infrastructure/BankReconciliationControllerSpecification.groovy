@@ -55,15 +55,18 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
    }
 
    void "fetch one bank reconciliation by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -187,7 +190,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          bank.id == bankRecon.bank.id
 
          with(type) {
@@ -219,7 +222,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          bank.id == bankRecon.bank.id
 
          with(type) {
@@ -266,11 +269,12 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
    void "create invalid bank reconciliation with non-existing bank id" () {
       given:
+      final nonExistentBankId = UUID.randomUUID()
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
-      bankRecon.bank.id = 99
+      bankRecon.bank.id = nonExistentBankId
 
       when:
       post("$path/", bankRecon)
@@ -281,7 +285,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "bank.id"
-      response[0].message == "99 was unable to be found"
+      response[0].message == "$nonExistentBankId was unable to be found"
    }
 
    void "update valid bank reconciliation"() {
@@ -300,7 +304,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          bank.id == updatedBankReconDTO.bank.id
 
          with(type) {
@@ -334,7 +338,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id == existingBankRecon.id
          bank.id == updatedBankReconDTO.bank.id
 
          with(type) {
@@ -381,12 +385,13 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
    void "update invalid bank reconciliation with non-existing bank id" () {
       given:
+      final nonExistentBankId = UUID.randomUUID()
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final existingBankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), LocalDate.now())
       final updatedBankReconDTO = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
-      updatedBankReconDTO.bank.id = 99
+      updatedBankReconDTO.bank.id = nonExistentBankId
 
       when:
       put("$path/$existingBankRecon.id", updatedBankReconDTO)
@@ -397,6 +402,6 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "bank.id"
-      response[0].message == "99 was unable to be found"
+      response[0].message == "$nonExistentBankId was unable to be found"
    }
 }

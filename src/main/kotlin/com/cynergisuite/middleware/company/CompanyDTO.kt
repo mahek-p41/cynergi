@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.CompareToBuilder
+import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -13,9 +14,8 @@ import javax.validation.constraints.Size
 @Schema(name = "Company", title = "An entity containing a rental company", description = "An entity containing a rental company.", requiredProperties = ["clientId", "name", "clientId", "datasetCode"])
 data class CompanyDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(name = "name", required = false, nullable = false, description = "Human readable name for a company")
@@ -100,7 +100,7 @@ data class CompanyDTO(
 
    override fun myDataset(): String = datasetCode!!
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 
    override fun compareTo(other: Company): Int {
       val compareToBuilder = CompareToBuilder()

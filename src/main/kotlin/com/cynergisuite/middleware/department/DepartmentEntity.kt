@@ -8,7 +8,7 @@ data class DepartmentEntity(
    val description: String?,
    val company: Company // aka company
 ) : Department, Comparable<Department> {
-   override fun myId(): Long? = id
+   override fun myId(): Long = id
    override fun myCode(): String = code
    override fun myCompany(): Company = company
 

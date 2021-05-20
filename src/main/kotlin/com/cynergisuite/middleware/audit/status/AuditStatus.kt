@@ -2,17 +2,18 @@ package com.cynergisuite.middleware.audit.status
 
 import com.cynergisuite.domain.TypeDomainEntity
 import org.apache.commons.lang3.builder.HashCodeBuilder
+import org.apache.commons.lang3.builder.ToStringBuilder
 
 /**
  * Defines the shape of an audit status
  */
 sealed class AuditStatus(
-   val id: Long,
+   val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String,
    val color: String,
-   val nextStates: MutableSet<AuditStatus> = mutableSetOf<AuditStatus>()
+   val nextStates: MutableSet<AuditStatus> = mutableSetOf()
 ) : TypeDomainEntity<AuditStatus> {
 
    private val myHashCode: Int = HashCodeBuilder()
@@ -20,9 +21,10 @@ sealed class AuditStatus(
       .append(value)
       .append(description)
       .append(localizationCode)
+      .append(color)
       .toHashCode()
 
-   override fun myId(): Long = id
+   override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
@@ -35,13 +37,22 @@ sealed class AuditStatus(
       } else {
          false
       }
+
+   override fun toString(): String =
+      ToStringBuilder(this)
+         .append(id)
+         .append(value)
+         .append(description)
+         .append(localizationCode)
+         .append(color)
+         .build()
 }
 
 /**
  * A container to hold values loaded from the database
  */
 class AuditStatusEntity(
-   id: Long,
+   id: Int,
    value: String,
    description: String,
    localizationCode: String,

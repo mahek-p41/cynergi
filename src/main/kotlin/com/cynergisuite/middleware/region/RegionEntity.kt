@@ -1,21 +1,22 @@
 package com.cynergisuite.middleware.region
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
+import java.util.UUID
 
 data class RegionEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val number: Long? = null,
    val name: String,
    val description: String?,
    val division: DivisionEntity,
    val regionalManager: EmployeeEntity? = null,
 ) : Identifiable, Comparable<RegionEntity> {
-   constructor(dto: RegionDTO, division: DivisionEntity, regionalManager: EmployeeEntity?) : this(
-      id = dto.id,
+   constructor(id: UUID? = null, dto: RegionDTO, division: DivisionEntity, regionalManager: EmployeeEntity?) : this(
+      id = id,
       number = dto.number,
       name = dto.name!!,
       description = dto.description,
@@ -39,9 +40,9 @@ data class RegionEntity(
          name = this.name,
          description = this.description,
          division = this.division.toValueObject(),
-         regionalManager = this.regionalManager?.let { SimpleIdentifiableDTO(it) },
+         regionalManager = this.regionalManager?.let { SimpleLegacyIdentifiableDTO(it) },
       )
    }
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

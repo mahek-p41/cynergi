@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class VendorPaymentTermController @Inject constructor(
 
    // TODO security validation that this vendor_payment_term id is owned by the same company as user that is logged in
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a single VendorPaymentTerm", description = "Fetch a single VendorPaymentTerm by it's system generated primary key", operationId = "vendorPaymentTerm-fetchOne")
    @ApiResponses(
       value = [
@@ -53,7 +54,7 @@ class VendorPaymentTermController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorPaymentTermDTO {
@@ -139,7 +140,7 @@ class VendorPaymentTermController @Inject constructor(
    )
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the vendor payment term being updated") @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       vo: VendorPaymentTermDTO,
       authentication: Authentication,

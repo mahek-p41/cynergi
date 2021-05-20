@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +13,7 @@ class GeneralLedgerSummaryService @Inject constructor(
    private val generalLedgerSummaryRepository: GeneralLedgerSummaryRepository,
    private val generalLedgerSummaryValidator: GeneralLedgerSummaryValidator
 ) {
-   fun fetchOne(id: Long, company: Company): GeneralLedgerSummaryDTO? {
+   fun fetchOne(id: UUID, company: Company): GeneralLedgerSummaryDTO? {
       return generalLedgerSummaryRepository.findOne(id, company)?.let { transformEntity(it) }
    }
 
@@ -30,7 +31,7 @@ class GeneralLedgerSummaryService @Inject constructor(
       return transformEntity(generalLedgerSummaryRepository.insert(toCreate, company))
    }
 
-   fun update(id: Long, dto: GeneralLedgerSummaryDTO, company: Company): GeneralLedgerSummaryDTO {
+   fun update(id: UUID, dto: GeneralLedgerSummaryDTO, company: Company): GeneralLedgerSummaryDTO {
       val toUpdate = generalLedgerSummaryValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerSummaryRepository.update(toUpdate, company))

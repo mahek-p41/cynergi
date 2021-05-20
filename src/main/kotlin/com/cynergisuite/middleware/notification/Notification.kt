@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -15,7 +15,7 @@ data class Notification(
    val company: String, // TODO convert from soft foreign key to point to a company, does this even need to exist since you'd be able to walk the customer_account back up to get the company
    val notificationDomainType: NotificationType,
    val recipients: MutableSet<NotificationRecipient> = mutableSetOf()
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(startDate: LocalDate, expirationDate: LocalDate, message: String, sendingEmployee: String, company: String, notificationDomainType: NotificationType) :
       this (

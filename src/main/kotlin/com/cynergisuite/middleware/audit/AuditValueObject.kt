@@ -10,15 +10,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
 import java.util.Locale
+import java.util.UUID
 import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Audit", title = "Single Audit associated with a single Store", description = "A single audit for a store on a specified date along with it's current state")
 data class AuditValueObject(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Schema(name = "timeCreated", required = false, description = "UTC Timestamp when the Audit was created")
    val timeCreated: OffsetDateTime? = null,
@@ -69,7 +69,7 @@ data class AuditValueObject(
          }.toMutableSet()
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 
    @Schema(name = "currentStatus", description = "The current AuditStatus of the referenced Audit")
    fun getCurrentStatus(): AuditStatusValueObject? =

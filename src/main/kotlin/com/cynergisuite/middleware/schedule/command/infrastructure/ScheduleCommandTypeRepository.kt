@@ -4,7 +4,6 @@ import com.cynergisuite.extensions.findFirst
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
@@ -28,9 +27,8 @@ class ScheduleCommandTypeRepository(
          FROM schedule_command_type_domain
          WHERE UPPER(value) = UPPER(:value)
          """.trimIndent(),
-         mapOf("value" to value),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         mapOf("value" to value)
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Searching for schedule command by {} resulted in {}", value, found)
 
@@ -39,7 +37,7 @@ class ScheduleCommandTypeRepository(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = "sctd_"): ScheduleCommandTypeEntity =
       ScheduleCommandTypeEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")

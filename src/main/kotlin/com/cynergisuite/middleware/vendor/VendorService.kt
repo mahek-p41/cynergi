@@ -1,11 +1,11 @@
 package com.cynergisuite.middleware.vendor
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,7 +15,7 @@ class VendorService @Inject constructor(
    private val vendorValidator: VendorValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): VendorDTO? =
+   fun fetchById(id: UUID, company: Company): VendorDTO? =
       vendorRepository.findOne(id, company)?.let { VendorDTO(entity = it) }
 
    fun create(dto: VendorDTO, company: Company): VendorDTO {
@@ -34,9 +34,6 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun fetchVendorIdsByRebate(rebateId: Long, company: Company): List<Identifiable> =
-      vendorRepository.findVendorIdsByRebate(rebateId, company)
-
    fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
 
@@ -45,7 +42,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun update(id: Long, dto: VendorDTO, company: Company): VendorDTO {
+   fun update(id: UUID, dto: VendorDTO, company: Company): VendorDTO {
       val (existing, toUpdate) = vendorValidator.validateUpdate(id, dto, company)
 
       return VendorDTO(

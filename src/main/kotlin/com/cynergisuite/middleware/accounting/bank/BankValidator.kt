@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,7 +30,7 @@ class BankValidator @Inject constructor(
       return doValidation(existingBankByNumber = existingBankByNumber, bankDTO = bankDTO, company = company)
    }
 
-   fun validateUpdate(id: Long, bankDTO: BankDTO, company: Company): BankEntity {
+   fun validateUpdate(id: UUID, bankDTO: BankDTO, company: Company): BankEntity {
       logger.trace("Validating Update Bank {}", bankDTO)
 
       val existingBank = bankRepository.findOne(id, company) ?: throw NotFoundException(id)

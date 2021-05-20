@@ -2,21 +2,21 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "GeneralLedgerDetail", title = "General Ledger detail", description = "General Ledger detail")
 data class GeneralLedgerDetailDTO(
 
-   @field:Positive
    @field:Schema(description = "General ledger detail ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger detail account")
@@ -28,7 +28,7 @@ data class GeneralLedgerDetailDTO(
 
    @field:NotNull
    @field:Schema(description = "General ledger profit center")
-   var profitCenter: SimpleIdentifiableDTO? = null,
+   var profitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger source code")
@@ -55,7 +55,7 @@ data class GeneralLedgerDetailDTO(
          id = entity.id,
          account = SimpleIdentifiableDTO(entity.account),
          date = entity.date,
-         profitCenter = SimpleIdentifiableDTO(entity.profitCenter.myId()),
+         profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
          source = SimpleIdentifiableDTO(entity.source),
          amount = entity.amount,
          message = entity.message,
@@ -63,5 +63,5 @@ data class GeneralLedgerDetailDTO(
          journalEntryNumber = entity.journalEntryNumber
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

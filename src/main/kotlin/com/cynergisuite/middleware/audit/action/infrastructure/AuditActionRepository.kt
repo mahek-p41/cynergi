@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.audit.action.infrastructure
 
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
@@ -12,10 +13,9 @@ import org.eclipse.collections.api.multimap.Multimap
 import org.eclipse.collections.impl.factory.Multimaps
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowCallbackHandler
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -29,8 +29,8 @@ class AuditActionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditActionRepository::class.java)
 
-   fun findAll(parents: Collection<Long>): Multimap<Long, AuditActionEntity> {
-      val result = Multimaps.mutable.list.empty<Long, AuditActionEntity>()
+   fun findAll(parents: Collection<UUID>): Multimap<UUID, AuditActionEntity> {
+      val result = Multimaps.mutable.list.empty<UUID, AuditActionEntity>()
 
       if (parents.isNotEmpty()) {
          jdbc.query(
@@ -66,7 +66,6 @@ class AuditActionRepository @Inject constructor(
             astd.color                                          AS astd_color,
             astd.localization_code                              AS astd_localization_code,
             comp.id                                             AS comp_id,
-            comp.uu_row_id                                      AS comp_uu_row_id,
             comp.time_created                                   AS comp_time_created,
             comp.time_updated                                   AS comp_time_updated,
             comp.name                                           AS comp_name,
@@ -96,14 +95,13 @@ class AuditActionRepository @Inject constructor(
            JOIN employees auditActionEmployee ON comp.dataset_code = auditActionEmployee.comp_dataset_code AND auditActions.changed_by = auditActionEmployee.emp_number
       WHERE auditActions.audit_id IN (:auditAction_id)
             """.trimIndent(),
-            mapOf("auditAction_id" to parents),
-            RowCallbackHandler { rs ->
-               val action = mapAuditAction(rs)
-               val auditId = rs.getLong("audit_id")
+            mapOf("auditAction_id" to parents)
+         ) { rs ->
+            val action = mapAuditAction(rs)
+            val auditId = rs.getUuid("audit_id")
 
-               result.put(auditId, action)
-            }
-         )
+            result.put(auditId, action)
+         }
       }
 
       return result
@@ -124,17 +122,16 @@ class AuditActionRepository @Inject constructor(
             "changed_by" to entity.changedBy.number,
             "status_id" to entity.status.id,
             "audit_id" to parent.id
-         ),
-         RowMapper { rs, _ ->
-            AuditActionEntity(
-               rs.getLong("id"),
-               rs.getOffsetDateTime("time_created"),
-               rs.getOffsetDateTime("time_updated"),
-               entity.status,
-               changedBy = entity.changedBy
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         AuditActionEntity(
+            rs.getUuid("id"),
+            rs.getOffsetDateTime("time_created"),
+            rs.getOffsetDateTime("time_updated"),
+            entity.status,
+            changedBy = entity.changedBy
+         )
+      }
    }
 
    fun upsert(parent: AuditEntity, entity: AuditActionEntity): AuditActionEntity {
@@ -151,18 +148,9 @@ class AuditActionRepository @Inject constructor(
       }
    }
 
-   private fun mapRow(rs: ResultSet, rowPrefix: String = "aa_"): AuditActionEntity =
-      AuditActionEntity(
-         rs.getLong("${rowPrefix}id"),
-         rs.getOffsetDateTime("${rowPrefix}time_created"),
-         rs.getOffsetDateTime("${rowPrefix}time_updated"),
-         auditStatusRepository.mapRow(rs, "astd_"),
-         employeeRepository.mapRow(rs, "auditActionEmployee_")
-      )
-
    private fun mapAuditAction(rs: ResultSet): AuditActionEntity {
       return AuditActionEntity(
-         id = rs.getLong("auditAction_id"),
+         id = rs.getUuid("auditAction_id"),
          timeCreated = rs.getOffsetDateTime("auditAction_time_created"),
          timeUpdated = rs.getOffsetDateTime("auditAction_time_updated"),
          status = auditStatusRepository.mapRow(rs, "astd_"),

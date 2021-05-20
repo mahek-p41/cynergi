@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.audit.permission
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.SimpleTypeDomainDTO
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -14,15 +15,15 @@ data class AuditPermissionCreateDTO(
 
    @field:Valid
    @field:NotNull
-   val permissionType: SimpleIdentifiableDTO? = null,
+   val permissionType: SimpleTypeDomainDTO? = null,
 
    @field:Valid
    @field:NotNull
-   val department: SimpleIdentifiableDTO? = null
+   val department: SimpleLegacyIdentifiableDTO? = null
 ) {
    constructor(permission: AuditPermissionType, department: DepartmentEntity) :
       this(
-         permissionType = SimpleIdentifiableDTO(permission),
-         department = SimpleIdentifiableDTO(department)
+         permissionType = SimpleTypeDomainDTO(permission),
+         department = SimpleLegacyIdentifiableDTO(department)
       )
 }

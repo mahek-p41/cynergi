@@ -2,11 +2,14 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.getLongOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -20,9 +23,9 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -73,7 +76,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
             apInvoice.receive_date                                      AS apInvoice_receive_date,
             apInvoice.location_id_sfk                                   AS apInvoice_location_id_sfk,
             vendor.v_id                                                 AS apInvoice_vendor_id,
-            vendor.v_uu_row_id                                          AS apInvoice_vendor_uu_row_id,
             vendor.v_time_created                                       AS apInvoice_vendor_time_created,
             vendor.v_time_updated                                       AS apInvoice_vendor_time_updated,
             vendor.v_company_id                                         AS apInvoice_vendor_company_id,
@@ -83,11 +85,11 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vendor.v_account_number                                     AS apInvoice_vendor_account_number,
             vendor.v_pay_to_id                                          AS apInvoice_vendor_pay_to_id,
             vendor.v_freight_on_board_type_id                           AS apInvoice_vendor_freight_on_board_type_id,
-            vendor.v_payment_terms_id                                   AS apInvoice_vendor_payment_terms_id,
+            vendor.v_vendor_payment_term_id                             AS apInvoice_vendor_vendor_payment_term_id,
             vendor.v_normal_days                                        AS apInvoice_vendor_normal_days,
             vendor.v_return_policy                                      AS apInvoice_vendor_return_policy,
             vendor.v_ship_via_id                                        AS apInvoice_vendor_ship_via_id,
-            vendor.v_group_id                                           AS apInvoice_vendor_group_id,
+            vendor.v_vendor_group_id                                    AS apInvoice_vendor_group_id,
             vendor.v_minimum_quantity                                   AS apInvoice_vendor_minimum_quantity,
             vendor.v_minimum_amount                                     AS apInvoice_vendor_minimum_amount,
             vendor.v_free_ship_quantity                                 AS apInvoice_vendor_free_ship_quantity,
@@ -113,7 +115,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vendor.v_note                                               AS apInvoice_vendor_note,
             vendor.v_phone_number                                       AS apInvoice_vendor_phone_number,
             vendor.v_comp_id                                            AS apInvoice_vendor_comp_id,
-            vendor.v_comp_uu_row_id                                     AS apInvoice_vendor_comp_uu_row_id,
             vendor.v_comp_time_created                                  AS apInvoice_vendor_comp_time_created,
             vendor.v_comp_time_updated                                  AS apInvoice_vendor_comp_time_updated,
             vendor.v_comp_name                                          AS apInvoice_vendor_comp_name,
@@ -144,7 +145,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vendor.v_method_description                                 AS apInvoice_vendor_method_description,
             vendor.v_method_localization_code                           AS apInvoice_vendor_method_localization_code,
             vendor.v_address_id                                         AS apInvoice_vendor_address_id,
-            vendor.v_address_uu_row_id                                  AS apInvoice_vendor_address_uu_row_id,
             vendor.v_address_time_created                               AS apInvoice_vendor_address_time_created,
             vendor.v_address_time_updated                               AS apInvoice_vendor_address_time_updated,
             vendor.v_address_number                                     AS apInvoice_vendor_address_number,
@@ -161,7 +161,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vendor.v_address_phone                                      AS apInvoice_vendor_address_phone,
             vendor.v_address_fax                                        AS apInvoice_vendor_address_fax,
             vendor.v_vpt_id                                             AS apInvoice_vendor_vpt_id,
-            vendor.v_vpt_uu_row_id                                      AS apInvoice_vendor_vpt_uu_row_id,
             vendor.v_vpt_time_created                                   AS apInvoice_vendor_vpt_time_created,
             vendor.v_vpt_time_updated                                   AS apInvoice_vendor_vpt_time_updated,
             vendor.v_vpt_company_id                                     AS apInvoice_vendor_vpt_company_id,
@@ -172,13 +171,11 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vendor.v_vpt_discount_days                                  AS apInvoice_vendor_vpt_discount_days,
             vendor.v_vpt_discount_percent                               AS apInvoice_vendor_vpt_discount_percent,
             vendor.v_shipVia_id                                         AS apInvoice_vendor_shipVia_id,
-            vendor.v_shipVia_uu_row_id                                  AS apInvoice_vendor_shipVia_uu_row_id,
             vendor.v_shipVia_time_created                               AS apInvoice_vendor_shipVia_time_created,
             vendor.v_shipVia_time_updated                               AS apInvoice_vendor_shipVia_time_updated,
             vendor.v_shipVia_description                                AS apInvoice_vendor_shipVia_description,
             vendor.v_shipVia_number                                     AS apInvoice_vendor_shipVia_number,
             vendor.v_vgrp_id                                            AS apInvoice_vendor_vgrp_id,
-            vendor.v_vgrp_uu_row_id                                     AS apInvoice_vendor_vgrp_uu_row_id,
             vendor.v_vgrp_time_created                                  AS apInvoice_vendor_vgrp_time_created,
             vendor.v_vgrp_time_updated                                  AS apInvoice_vendor_vgrp_time_updated,
             vendor.v_vgrp_company_id                                    AS apInvoice_vendor_vgrp_company_id,
@@ -198,7 +195,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
             employee.store_number                                       AS apInvoice_employee_store_number,
             employee.store_name                                         AS apInvoice_employee_store_name,
             employee.comp_id                                            AS apInvoice_employee_comp_id,
-            employee.comp_uu_row_id                                     AS apInvoice_employee_comp_uu_row_id,
             employee.comp_time_created                                  AS apInvoice_employee_comp_time_created,
             employee.comp_time_updated                                  AS apInvoice_employee_comp_time_updated,
             employee.comp_name                                          AS apInvoice_employee_comp_name,
@@ -246,16 +242,15 @@ class AccountPayableInvoiceRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): AccountPayableInvoiceEntity? {
+   fun findOne(id: UUID, company: Company): AccountPayableInvoiceEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE apInvoice.id = :id AND apInvoice.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "apInvoice_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "apInvoice_")
+      }
 
       logger.trace("Searching for AccountPayableInvoice: {} resulted in {}", company, found)
 
@@ -381,11 +376,10 @@ class AccountPayableInvoiceRepository @Inject constructor(
             "use_tax_indicator" to entity.useTaxIndicator,
             "receive_date" to entity.receiveDate,
             "location_id_sfk" to entity.location?.myId()
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -458,11 +452,10 @@ class AccountPayableInvoiceRepository @Inject constructor(
             "use_tax_indicator" to entity.useTaxIndicator,
             "receive_date" to entity.receiveDate,
             "location_id_sfk" to entity.location?.myId()
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableInvoiceEntity {
@@ -473,10 +466,10 @@ class AccountPayableInvoiceRepository @Inject constructor(
       val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
 
       return AccountPayableInvoiceEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          vendor = vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
-         purchaseOrder = rs.getLongOrNull("${columnPrefix}purchase_order_id")?.let { SimpleIdentifiableEntity(it) },
+         purchaseOrder = rs.getUuidOrNull("${columnPrefix}purchase_order_id")?.let { SimpleIdentifiableEntity(it) },
          invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          discountAmount = rs.getBigDecimal("${columnPrefix}discount_amount"),
@@ -496,17 +489,17 @@ class AccountPayableInvoiceRepository @Inject constructor(
          type = type,
          status = status,
          dueDate = rs.getLocalDate("${columnPrefix}due_date"),
-         payTo = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}pay_to_id")),
+         payTo = SimpleIdentifiableEntity(rs.getUuid("${columnPrefix}pay_to_id")),
          separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
          useTaxIndicator = rs.getBoolean("${columnPrefix}use_tax_indicator"),
          receiveDate = rs.getLocalDateOrNull("${columnPrefix}receive_date"),
-         location = rs.getLongOrNull("${columnPrefix}location_id_sfk")?.let { SimpleIdentifiableEntity(it) }
+         location = rs.getIntOrNull("${columnPrefix}location_id_sfk")?.let { SimpleLegacyIdentifiableEntity(it) }
       )
    }
 
    private fun mapRow(rs: ResultSet, entity: AccountPayableInvoiceEntity, columnPrefix: String = EMPTY): AccountPayableInvoiceEntity {
       return AccountPayableInvoiceEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          vendor = entity.vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
          purchaseOrder = entity.purchaseOrder,

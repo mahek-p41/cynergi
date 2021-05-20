@@ -6,13 +6,14 @@ import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.MustMatchPathVariable
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,22 +35,21 @@ class RegionValidator @Inject constructor(
          doShareValidator(regionalManager, errors, dto, division)
       }
 
-      return RegionEntity(dto, division!!, regionalManager)
+      return RegionEntity(dto = dto, division = division!!, regionalManager = regionalManager)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, dto: RegionDTO, company: Company): RegionEntity {
+   fun validateUpdate(id: UUID, dto: RegionDTO, company: Company): RegionEntity {
       logger.trace("Validating Update Region {}", dto)
       val regionalManager = simpleEmployeeRepository.findOne(dto.regionalManager?.id!!, company)
+      val existingRegion = regionRepository.findOne(id, company) ?: throw NotFoundException(id)
       val division = divisionRepository.findOne(dto.division?.id!!, company)
 
       doValidation { errors ->
-         if (id != dto.myId()) errors.add(ValidationError("dto.id", MustMatchPathVariable("Id")))
-         regionRepository.findOne(id, company) ?: errors.add(ValidationError("dto.id", NotFound(id)))
          doShareValidator(regionalManager, errors, dto, division)
       }
 
-      return RegionEntity(dto, division!!, regionalManager)
+      return RegionEntity(existingRegion.id, dto, division!!, regionalManager)
    }
 
    private fun doShareValidator(regionalManager: EmployeeEntity?, errors: MutableSet<ValidationError>, regionDTO: RegionDTO, division: DivisionEntity?) {

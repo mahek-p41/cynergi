@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.purchase.order.detail.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDataLoaderService
 import com.cynergisuite.middleware.purchase.order.detail.PurchaseOrderDetailDTO
@@ -28,7 +28,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class PurchaseOrderDetailControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/purchase-order/detail"
 
-   @Inject AccountDataLoaderService accountDataLoaderService
    @Inject PurchaseOrderDataLoaderService purchaseOrderDataLoaderService
    @Inject PurchaseOrderDetailDataLoaderService dataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
@@ -48,8 +47,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
          approvedByIn,
@@ -57,11 +55,10 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity)
-      final def poDetail = dataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
+      final poDetail = dataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
 
       when:
       def result = get("$path/${poDetail.id}")
@@ -72,7 +69,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          id == poDetail.id
          number == poDetail.number
          purchaseOrder.id == poDetail.purchaseOrder.id
-         sequence == poDetail.sequence
          itemfileNumber == poDetail.itemfileNumber
          orderQuantity == poDetail.orderQuantity
          receivedQuantity == poDetail.receivedQuantity
@@ -112,15 +108,18 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size()== 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -136,8 +135,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
          approvedByIn,
@@ -145,8 +143,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity)
       def poDetails = dataLoaderService.stream(20, company, purchaseOrderIn, shipToIn, vendorIn)
@@ -176,7 +173,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
                id == firstPage[index].id
                number == firstPage[index].number
                purchaseOrder.id == firstPage[index].purchaseOrder.id
-               sequence == firstPage[index].sequence
                itemfileNumber == firstPage[index].itemfileNumber
                orderQuantity == firstPage[index].orderQuantity
                receivedQuantity == firstPage[index].receivedQuantity
@@ -233,7 +229,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
                id == secondPage[index].id
                number == secondPage[index].number
                purchaseOrder.id == secondPage[index].purchaseOrder.id
-               sequence == secondPage[index].sequence
                itemfileNumber == secondPage[index].itemfileNumber
                orderQuantity == secondPage[index].orderQuantity
                receivedQuantity == secondPage[index].receivedQuantity
@@ -290,7 +285,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
                id == lastPage[index].id
                number == lastPage[index].number
                purchaseOrder.id == lastPage[index].purchaseOrder.id
-               sequence == lastPage[index].sequence
                itemfileNumber == lastPage[index].itemfileNumber
                orderQuantity == lastPage[index].orderQuantity
                receivedQuantity == lastPage[index].receivedQuantity
@@ -334,7 +328,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       get("$path/${pageFive}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -351,8 +345,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
          approvedByIn,
@@ -360,11 +353,10 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
-      final def poDetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
+      final poDetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
 
       when:
       def result = post("$path/", poDetailDTO)
@@ -374,7 +366,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       result != null
       result.id != null
       with(result) {
-         id > 0
+         id != null
          number == poDetailDTO.number
          purchaseOrder.id == poDetailDTO.purchaseOrder.id
          itemfileNumber == poDetailDTO.itemfileNumber
@@ -428,7 +420,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
@@ -437,12 +428,10 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
-      final def poDetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
-      poDetailDTO.sequence = null
+      final def poDetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       poDetailDTO.message = null
       poDetailDTO.color = null
       poDetailDTO.fabric = null
@@ -463,7 +452,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       result != null
       result.id != null
       with(result) {
-         id > 0
+         id != null
          number == poDetailDTO.number
          purchaseOrder.id == poDetailDTO.purchaseOrder.id
          itemfileNumber == poDetailDTO.itemfileNumber
@@ -518,7 +507,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
@@ -527,11 +515,10 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
-      final def poDetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
+      final def poDetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       poDetailDTO["$nonNullableProp"] = null
 
       when:
@@ -574,7 +561,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
@@ -583,12 +569,11 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
       final def existingPODetail = dataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
-      final def updatedPODetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
+      final def updatedPODetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       updatedPODetailDTO.id = existingPODetail.id
 
       when:
@@ -652,7 +637,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
@@ -661,14 +645,12 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
       final def existingPODetail = dataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
-      final def updatedPODetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
+      final def updatedPODetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       updatedPODetailDTO.id = existingPODetail.id
-      updatedPODetailDTO.sequence = null
       updatedPODetailDTO.message = null
       updatedPODetailDTO.color = null
       updatedPODetailDTO.fabric = null
@@ -744,7 +726,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
@@ -753,12 +734,11 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
       final def existingPODetail = dataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
-      final def updatedPODetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
+      final def updatedPODetailDTO = dataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       updatedPODetailDTO.id = existingPODetail.id
       updatedPODetailDTO["$nonNullableProp"] = null
 
@@ -802,7 +782,6 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderIn = purchaseOrderDataLoaderService.single(
          company,
          poVendorIn,
@@ -811,8 +790,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          shipViaIn as ShipViaEntity,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
       final def poDetail = dataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)

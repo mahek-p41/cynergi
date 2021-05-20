@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastruct
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -16,9 +17,9 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -90,26 +91,25 @@ class GeneralLedgerDetailRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerDetailEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE glDetail.id = :id AND glDetail.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            val account = accountRepository.mapRow(rs, company, "acct_")
-            val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
-            val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+         params
+      ) { rs, _ ->
+         val account = accountRepository.mapRow(rs, company, "acct_")
+         val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
+         val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
 
-            mapRow(
-               rs,
-               account,
-               profitCenter,
-               sourceCode,
-               "glDetail_"
-            )
-         }
-      )
+         mapRow(
+            rs,
+            account,
+            profitCenter,
+            sourceCode,
+            "glDetail_"
+         )
+      }
 
       logger.trace("Searching for GeneralLedgerDetail id: {} resulted in {}\nQuery {}", id, found, query)
 
@@ -157,16 +157,15 @@ class GeneralLedgerDetailRepository @Inject constructor(
             "message" to entity.message,
             "employee_number_id_sfk" to entity.employeeNumberId,
             "journal_entry_number" to entity.journalEntryNumber
-         ),
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               entity.account,
-               entity.profitCenter,
-               entity.source
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            entity.account,
+            entity.profitCenter,
+            entity.source
+         )
+      }
    }
 
    @Transactional
@@ -201,16 +200,15 @@ class GeneralLedgerDetailRepository @Inject constructor(
             "message" to entity.message,
             "employee_number_id_sfk" to entity.employeeNumberId,
             "journal_entry_number" to entity.journalEntryNumber
-         ),
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               entity.account,
-               entity.profitCenter,
-               entity.source
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            entity.account,
+            entity.profitCenter,
+            entity.source
+         )
+      }
    }
 
    fun mapRow(
@@ -221,7 +219,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): GeneralLedgerDetailEntity {
       return GeneralLedgerDetailEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          account = account,
          date = rs.getLocalDate("${columnPrefix}date"),
          profitCenter = profitCenter,

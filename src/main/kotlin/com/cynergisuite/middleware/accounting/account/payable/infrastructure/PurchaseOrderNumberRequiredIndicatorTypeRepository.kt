@@ -18,7 +18,7 @@ class PurchaseOrderNumberRequiredIndicatorTypeRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderNumberRequiredIndicatorTypeRepository::class.java)
 
    fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM purchase_order_number_required_indicator_type_domain WHERE UPPER(value) = :value", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM purchase_order_number_required_indicator_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
 
       logger.trace("Checking if PurchaseOrderNumberRequiredIndicatorType: {} exists resulting in {}", value, exists)
 
@@ -54,7 +54,7 @@ class PurchaseOrderNumberRequiredIndicatorTypeRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): PurchaseOrderNumberRequiredIndicatorType =
       PurchaseOrderNumberRequiredIndicatorType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")

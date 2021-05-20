@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
@@ -70,7 +71,7 @@ object AccountPayableInvoiceDataLoader {
             separateCheckIndicator = random.nextBoolean(),
             useTaxIndicator = random.nextBoolean(),
             receiveDate = LocalDate.now(),
-            location = locationIn?.myId()?.let { it -> SimpleIdentifiableEntity(it) }
+            location = locationIn?.myId()?.let { SimpleLegacyIdentifiableDTO(it) }
          )
       }
    }
@@ -82,7 +83,7 @@ object AccountPayableInvoiceDataLoader {
       purchaseOrderIn: SimpleIdentifiableDTO? = null,
       employeeIn: EmployeeValueObject,
       payToIn: SimpleIdentifiableDTO,
-      locationIn: SimpleIdentifiableDTO? = null
+      locationIn: SimpleLegacyIdentifiableDTO? = null
    ): Stream<AccountPayableInvoiceDTO> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
@@ -160,7 +161,7 @@ class AccountPayableInvoiceDataLoaderService @Inject constructor(
       purchaseOrderIn: SimpleIdentifiableDTO? = null,
       employeeIn: EmployeeValueObject,
       payToIn: SimpleIdentifiableDTO,
-      locationIn: SimpleIdentifiableDTO? = null
+      locationIn: SimpleLegacyIdentifiableDTO? = null
    ): AccountPayableInvoiceDTO {
       return AccountPayableInvoiceDataLoader.streamDTO(1, vendorIn, purchaseOrderIn, employeeIn, payToIn, locationIn).findFirst().orElseThrow { Exception("Unable to create Account Payable Invoice") }
    }

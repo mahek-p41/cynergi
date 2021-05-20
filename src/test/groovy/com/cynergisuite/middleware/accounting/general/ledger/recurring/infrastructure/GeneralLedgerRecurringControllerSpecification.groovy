@@ -118,7 +118,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          reverseIndicator == glRecurring.reverseIndicator
          message == glRecurring.message
          beginDate == glRecurring.beginDate.toString()
@@ -152,7 +152,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          reverseIndicator == glRecurring.reverseIndicator
          message == null
          beginDate == glRecurring.beginDate.toString()
@@ -219,8 +219,8 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
 
       where:
       testProp  | invalidValue                                              || errorResponsePath    | errorMessage
-      'source'  | new GeneralLedgerSourceCodeDTO (999, 'Z', 'Invalid DTO')  || 'source.id'          | '999 was unable to be found'
-      'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')    || 'type.value'         | 'Z was unable to be found'
+      'source' | new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO') || 'source.id'  | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'type'   | new GeneralLedgerRecurringTypeDTO('Z', 'Invalid DTO')                                                       || 'type.value' | 'Z was unable to be found'
    }
 
    void "update one" () {
@@ -238,7 +238,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          reverseIndicator == glRecurring.reverseIndicator
          message == glRecurring.message
          beginDate == glRecurring.beginDate.toString()
@@ -274,7 +274,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          reverseIndicator == glRecurring.reverseIndicator
          message == null
          beginDate == glRecurring.beginDate.toString()
@@ -344,7 +344,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
 
       where:
       testProp  | invalidValue                                              || errorResponsePath    | errorMessage
-      'source'  | new GeneralLedgerSourceCodeDTO (999, 'Z', 'Invalid DTO')  || 'source.id'          | '999 was unable to be found'
+      'source'  | new GeneralLedgerSourceCodeDTO (UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO')  || 'source.id'          | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
       'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')    || 'type.value'         | 'Z was unable to be found'
    }
 

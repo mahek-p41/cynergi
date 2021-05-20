@@ -2,22 +2,21 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribu
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "GeneralLedgerRecurringDistribution", title = "General Ledger Recurring Distribution", description = "General ledger recurring distribution entity")
 data class GeneralLedgerRecurringDistributionDTO(
 
-   @field:Positive
    @field:Schema(description = "General ledger recurring distribution id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Valid
    @field:NotNull
@@ -31,7 +30,7 @@ data class GeneralLedgerRecurringDistributionDTO(
 
    @field:NotNull
    @field:Schema(description = "General ledger distribution profit center")
-   var generalLedgerDistributionProfitCenter: SimpleIdentifiableDTO? = null,
+   var generalLedgerDistributionProfitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger distribution amount")
@@ -45,9 +44,9 @@ data class GeneralLedgerRecurringDistributionDTO(
          id = entity.id,
          generalLedgerRecurring = SimpleIdentifiableDTO(entity.generalLedgerRecurring),
          generalLedgerDistributionAccount = SimpleIdentifiableDTO(entity.generalLedgerDistributionAccount),
-         generalLedgerDistributionProfitCenter = SimpleIdentifiableDTO(entity.generalLedgerDistributionProfitCenter),
+         generalLedgerDistributionProfitCenter = SimpleLegacyIdentifiableDTO(entity.generalLedgerDistributionProfitCenter),
          generalLedgerDistributionAmount = entity.generalLedgerDistributionAmount
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

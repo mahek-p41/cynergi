@@ -4,6 +4,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -22,9 +23,9 @@ import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -60,7 +61,6 @@ class AuditRepository @Inject constructor(
       )
       SELECT
          a.id                                                          AS a_id,
-         a.uu_row_id                                                   AS a_uu_row_id,
          a.time_created                                                AS a_time_created,
          a.time_updated                                                AS a_time_updated,
          a.store_number                                                AS store_number,
@@ -104,7 +104,6 @@ class AuditRepository @Inject constructor(
             )
          END                                                           AS a_inventory_count,
          auditAction.id                                                AS auditAction_id,
-         auditAction.uu_row_id                                         AS auditAction_uu_row_id,
          auditAction.time_created                                      AS auditAction_time_created,
          auditAction.time_updated                                      AS auditAction_time_updated,
          astd.id                                                       AS astd_id,
@@ -130,7 +129,6 @@ class AuditRepository @Inject constructor(
          auditStore.number                                             AS auditStore_number,
          auditStore.dataset                                            AS auditStore_dataset,
          comp.id                                                       AS comp_id,
-         comp.uu_row_id                                                AS comp_uu_row_id,
          comp.time_created                                             AS comp_time_created,
          comp.time_updated                                             AS comp_time_updated,
          comp.name                                                     AS comp_name,
@@ -179,7 +177,6 @@ class AuditRepository @Inject constructor(
             )
             SELECT
                a.id AS id,
-               a.uu_row_id AS uu_row_id,
                a.time_created AS time_created,
                a.time_updated AS time_updated,
                a.store_number AS store_number,
@@ -217,7 +214,6 @@ class AuditRepository @Inject constructor(
          )
          SELECT
             a.id                                                AS a_id,
-            a.uu_row_id                                         AS a_uu_row_id,
             a.time_created                                      AS a_time_created,
             a.time_updated                                      AS a_time_updated,
             a.store_number                                      AS store_number,
@@ -249,7 +245,6 @@ class AuditRepository @Inject constructor(
             a.last_updated                                      AS a_last_updated,
             a.exception_has_notes                               AS a_exception_has_notes,
             auditAction.id                                      AS auditAction_id,
-            auditAction.uu_row_id                               AS auditAction_uu_row_id,
             auditAction.time_created                            AS auditAction_time_created,
             auditAction.time_updated                            AS auditAction_time_updated,
             astd.id                                             AS astd_id,
@@ -275,7 +270,6 @@ class AuditRepository @Inject constructor(
             auditStore.number                                   AS auditStore_number,
             auditStore.dataset                                  AS auditStore_dataset,
             comp.id                                             AS comp_id,
-            comp.uu_row_id                                      AS comp_uu_row_id,
             comp.time_created                                   AS comp_time_created,
             comp.time_updated                                   AS comp_time_updated,
             comp.name                                           AS comp_name,
@@ -327,7 +321,7 @@ class AuditRepository @Inject constructor(
                                  ))
    """
 
-   fun findOne(id: Long, company: Company): AuditEntity? {
+   fun findOne(id: UUID, company: Company): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
 
       val params = mutableMapOf<String, Any?>("id" to id)
@@ -355,12 +349,14 @@ class AuditRepository @Inject constructor(
    private fun executeFindForMultipleAudits(query: String, params: MutableMap<String, Any>): List<AuditEntity> {
       val elements = mutableListOf<AuditEntity>()
 
+      logger.trace("{}/{}", query, params)
+
       jdbc.query(query, params) { rs ->
-         var currentId: Long = -1
+         var currentId: UUID? = null
          var currentParentEntity: AuditEntity? = null
 
          do {
-            val tempId = rs.getLong("a_id")
+            val tempId = rs.getUuid("a_id")
             val tempParentEntity: AuditEntity = if (tempId != currentId) {
                currentId = tempId
                currentParentEntity = mapRow(rs)
@@ -377,6 +373,8 @@ class AuditRepository @Inject constructor(
    }
 
    private fun executeFindForSingleAudit(query: String, params: Map<String, Any?>): AuditEntity? {
+      logger.trace("Executing find single audit query {}/{}", query, params)
+
       val found = jdbc.findFirstOrNull(query, params) { rs ->
          val audit = this.mapRow(rs)
 
@@ -396,7 +394,7 @@ class AuditRepository @Inject constructor(
 
    fun findAll(pageRequest: AuditPageRequest, user: User): RepositoryPage<AuditEntity, AuditPageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to user.myCompany().myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
-      val auditIds = mutableListOf<Long>()
+      val auditIds = mutableListOf<UUID>()
       val whereClause = StringBuilder(" WHERE a.company_id = :comp_id ")
       val storeNumbers = pageRequest.storeNumber
       val status = pageRequest.status
@@ -478,7 +476,6 @@ class AuditRepository @Inject constructor(
             END                                                 AS a_inventory_count,
 
             comp.id                                             AS comp_id,
-            comp.uu_row_id                                      AS comp_uu_row_id,
             comp.time_created                                   AS comp_time_created,
             comp.time_updated                                   AS comp_time_updated,
             comp.name                                           AS comp_name,
@@ -538,7 +535,7 @@ class AuditRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: UUID): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Audit: {} exists resulted in {}", id, exists)
@@ -546,7 +543,7 @@ class AuditRepository @Inject constructor(
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun doesNotExist(id: UUID): Boolean = !exists(id)
 
    fun findAuditStatusCounts(pageRequest: AuditPageRequest, user: User): List<AuditStatusCount> {
       val status = pageRequest.status
@@ -618,7 +615,7 @@ class AuditRepository @Inject constructor(
 
       return jdbc.query(sql, params) { rs, _ ->
          AuditStatusCount(
-            id = rs.getLong("current_status_id"),
+            id = rs.getInt("current_status_id"),
             value = rs.getString("current_status"),
             description = rs.getString("current_status_description"),
             localizationCode = rs.getString("current_status_localization_code"),
@@ -671,9 +668,8 @@ class AuditRepository @Inject constructor(
          mapOf(
             "store_number" to entity.store.myNumber(),
             "company_id" to entity.store.myCompany().myId()
-         ),
-         RowMapper { rs, _ -> mapInsertUpdateAudit(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapInsertUpdateAudit(rs, entity) }
 
       entity.actions.asSequence()
          .map { auditActionRepository.insert(audit, it) }
@@ -696,7 +692,7 @@ class AuditRepository @Inject constructor(
 
    private fun mapInsertUpdateAudit(rs: ResultSet, audit: AuditEntity): AuditEntity =
       AuditEntity(
-         id = rs.getLong("id"),
+         id = rs.getUuid("id"),
          timeCreated = rs.getOffsetDateTime("time_created"),
          timeUpdated = rs.getOffsetDateTime("time_updated"),
          store = audit.store,
@@ -734,7 +730,7 @@ class AuditRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet): AuditEntity {
       return AuditEntity(
-         id = rs.getLong("a_id"),
+         id = rs.getUuid("a_id"),
          timeCreated = rs.getOffsetDateTime("a_time_created"),
          timeUpdated = rs.getOffsetDateTime("a_time_updated"),
          store = mapStore(rs),
@@ -758,7 +754,7 @@ class AuditRepository @Inject constructor(
 
    private fun mapAuditAction(rs: ResultSet): AuditActionEntity {
       return AuditActionEntity(
-         id = rs.getLong("auditAction_id"),
+         id = rs.getUuid("auditAction_id"),
          timeCreated = rs.getOffsetDateTime("auditAction_time_created"),
          timeUpdated = rs.getOffsetDateTime("auditAction_time_updated"),
          status = auditStatusRepository.mapRow(rs, "astd_"),

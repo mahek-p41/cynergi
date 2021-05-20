@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.AccountPayableRecurringInvoiceRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
    private val accountPayableRecurringInvoiceValidator: AccountPayableRecurringInvoiceValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): AccountPayableRecurringInvoiceDTO? =
+   fun fetchById(id: UUID, company: Company): AccountPayableRecurringInvoiceDTO? =
       accountPayableRecurringInvoiceRepository.findOne(id, company)?.let { AccountPayableRecurringInvoiceDTO(it) }
 
    fun create(dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceDTO {
@@ -30,7 +31,7 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
       }
    }
 
-   fun update(id: Long, dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceDTO {
+   fun update(id: UUID, dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceDTO {
       val toUpdate = accountPayableRecurringInvoiceValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountPayableRecurringInvoiceRepository.update(toUpdate, company))

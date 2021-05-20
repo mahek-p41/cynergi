@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.schedule.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
@@ -199,7 +199,6 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id != null
-      result.id > 0
       result.title == "test schedule"
       result.description == "test schedule description"
       result.schedule == "TUESDAY"
@@ -219,7 +218,6 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id != null
-      result.id > 0
       result.title == "test schedule"
       result.description == "test schedule description"
       result.schedule == "TUESDAY"
@@ -230,7 +228,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule with invalid store" () {
       when:
-      post("/audit/schedule", new AuditScheduleCreateUpdateDTO([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleIdentifiableDTO(42L)] as Set, enabled: true]))
+      post("/audit/schedule", new AuditScheduleCreateUpdateDTO([title: "test schedule", description: "test schedule description", schedule: TUESDAY, stores: [new SimpleLegacyIdentifiableDTO(42L)] as Set, enabled: true]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -307,7 +305,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleIdentifiableDTO(storeOne.id)] as Set, enabled: false]))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleLegacyIdentifiableDTO(storeOne.id)] as Set, enabled: false]))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:

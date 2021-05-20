@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruc
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -13,9 +14,9 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -106,7 +107,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerSummaryEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerSummaryEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()}\nWHERE glSummary.id = :id AND glSummary.company_id = :comp_id"
 
@@ -123,7 +124,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       return found
    }
 
-   fun findOneByBusinessKey(company: Company, accountId: Long, profitCenterId: Long, overallPeriodId: Long): GeneralLedgerSummaryEntity? {
+   fun findOneByBusinessKey(company: Company, accountId: UUID, profitCenterId: Long, overallPeriodId: Int): GeneralLedgerSummaryEntity? {
       val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
       val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterId AND glSummary.overall_period_id = :overallPeriodId"
 
@@ -244,9 +245,8 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             "net_activity_period_12" to entity.netActivityPeriod12,
             "beginning_balance" to entity.beginningBalance,
             "closing_balance" to entity.closingBalance
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
 
    @Transactional
@@ -299,14 +299,13 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             "net_activity_period_12" to entity.netActivityPeriod12,
             "beginning_balance" to entity.beginningBalance,
             "closing_balance" to entity.closingBalance
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          account = accountRepository.mapRow(rs, company, "${columnPrefix}acct_"),
          profitCenter = storeRepository.mapRow(rs, company, "${columnPrefix}profitCenter_"),
          overallPeriod = overallPeriodTypeRepository.mapRow(rs, "${columnPrefix}overallPeriod_"),
@@ -329,7 +328,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, entity: GeneralLedgerSummaryEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          account = entity.account,
          profitCenter = entity.profitCenter,
          overallPeriod = entity.overallPeriod,

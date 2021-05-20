@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.Company
@@ -42,7 +43,7 @@ object BankFactory {
          BankDTO(
             number = bankNumber.getAndIncrement(),
             name = faker.company().name(),
-            generalLedgerProfitCenter = SimpleIdentifiableDTO(generalLedgerProfitCenter.myId()),
+            generalLedgerProfitCenter = SimpleLegacyIdentifiableDTO(generalLedgerProfitCenter.myId()),
             generalLedgerAccount = SimpleIdentifiableDTO(accountEntity.id)
          )
       }

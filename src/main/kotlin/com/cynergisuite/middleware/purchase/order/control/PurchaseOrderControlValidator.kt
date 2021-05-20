@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.purchase.order.type.infrastructure.UpdatePurc
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,7 +39,7 @@ class PurchaseOrderControlValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlEntity {
+   fun validateUpdate(id: UUID, dto: PurchaseOrderControlDTO, company: Company): Pair<PurchaseOrderControlEntity, PurchaseOrderControlEntity> {
       logger.debug("Validating Update PurchaseOrderControl {}", dto)
 
       doValidation { errors ->
@@ -49,7 +50,7 @@ class PurchaseOrderControlValidator @Inject constructor(
 
       val entity = purchaseOrderControlRepository.findOne(company)
 
-      return doSharedValidation(dto, company, entity)
+      return Pair(entity!!, doSharedValidation(dto, company, entity))
    }
 
    private fun doSharedValidation(
@@ -93,6 +94,7 @@ class PurchaseOrderControlValidator @Inject constructor(
       }
 
       return PurchaseOrderControlEntity(
+         entity?.id,
          dto,
          defaultAccountPayableStatusType = defaultAccountPayableStatusType!!,
          defaultVendor = defaultVendor,

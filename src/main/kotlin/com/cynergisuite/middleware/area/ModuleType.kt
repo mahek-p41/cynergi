@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.area
 import com.cynergisuite.domain.TypeDomainEntity
 
 data class ModuleType(
-   val id: Long,
+   val id: Int,
    val value: String,
    val program: String? = null,
    val description: String,
@@ -12,7 +12,7 @@ data class ModuleType(
    val menuType: MenuType? = null
 ) : TypeDomainEntity<ModuleType> {
 
-   override fun myId(): Long = id
+   override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode

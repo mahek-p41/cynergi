@@ -6,6 +6,7 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -19,9 +20,9 @@ import com.cynergisuite.middleware.inventory.InventoryEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -41,7 +42,6 @@ class AuditDetailRepository @Inject constructor(
          )
          SELECT
             auditDetail.id AS auditDetail_id,
-            auditDetail.uu_row_id                     AS auditDetail_uu_row_id,
             auditDetail.time_created                  AS auditDetail_time_created,
             auditDetail.time_updated                  AS auditDetail_time_updated,
             auditDetail.lookup_key                    AS auditDetail_lookup_key,
@@ -66,7 +66,6 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.store_number                    AS store_number,
             scannedBy.store_name                      AS store_name,
             scannedBy.comp_id                         AS comp_id,
-            scannedBy.comp_uu_row_id                  AS comp_uu_row_id,
             scannedBy.comp_time_created               AS comp_time_created,
             scannedBy.comp_time_updated               AS comp_time_updated,
             scannedBy.comp_name                       AS comp_name,
@@ -105,7 +104,7 @@ class AuditDetailRepository @Inject constructor(
       """
    }
 
-   fun exists(auditId: Long, inventory: InventoryEntity): Boolean {
+   fun exists(auditId: UUID, inventory: InventoryEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
                SELECT EXISTS (
@@ -127,38 +126,48 @@ class AuditDetailRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long, company: Company): AuditDetailEntity? {
+   fun findOne(id: UUID, company: Company): AuditDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE auditDetail.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
-            val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
+         params
+      ) { rs, _ ->
+         val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
+         val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
-            mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_")
-         }
-      )
+         mapRow(
+            rs,
+            auditScanArea,
+            scannedBy,
+            SimpleIdentifiableEntity(rs.getUuid("auditDetail_audit_id")),
+            "auditDetail_"
+         )
+      }
 
       logger.trace("Searching for AuditDetail: {} resulted in {}", id, found)
 
       return found
    }
 
-   fun findOne(auditId: Long, inventory: InventoryEntity, company: Company): AuditDetailEntity? {
+   fun findOne(auditId: UUID, inventory: InventoryEntity, company: Company): AuditDetailEntity? {
       logger.trace("Searching for audit detail by audit ID {} and inventory {}", auditId, inventory)
 
       val found = jdbc.findFirstOrNull(
          "${selectBaseQuery()} WHERE audit_id = :audit_id AND alt_id = :alt_id AND serial_number = :serial_number",
-         mapOf("audit_id" to auditId, "alt_id" to inventory.altId, "serial_number" to inventory.serialNumber),
-         RowMapper { rs, _ ->
-            val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
-            val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
+         mapOf("audit_id" to auditId, "alt_id" to inventory.altId, "serial_number" to inventory.serialNumber)
+      ) { rs, _ ->
+         val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
+         val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
-            mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_")
-         }
-      )
+         mapRow(
+            rs,
+            auditScanArea,
+            scannedBy,
+            SimpleIdentifiableEntity(rs.getUuid("auditDetail_audit_id")),
+            "auditDetail_"
+         )
+      }
 
       logger.trace("Searching for audit detail by audit ID {} and inventory {}, resulted in ", auditId, inventory, found)
 
@@ -188,7 +197,7 @@ class AuditDetailRepository @Inject constructor(
          val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
          val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
-         resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getLong("auditDetail_audit_id")), "auditDetail_"))
+         resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getUuid("auditDetail_audit_id")), "auditDetail_"))
 
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -224,11 +233,10 @@ class AuditDetailRepository @Inject constructor(
             "inventory_model" to entity.inventoryModel,
             "scanned_by" to entity.scannedBy.number,
             "audit_id" to entity.audit.myId()
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
+      }
    }
 
    @Transactional
@@ -263,16 +271,15 @@ class AuditDetailRepository @Inject constructor(
             "inventory_brand" to entity.inventoryBrand,
             "inventory_model" to entity.inventoryModel,
             "scanned_by" to entity.scannedBy.number
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity.scanArea, entity.scannedBy, entity.audit)
+      }
    }
 
    private fun mapRow(rs: ResultSet, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
       return AuditDetailEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          scanArea = scanArea,

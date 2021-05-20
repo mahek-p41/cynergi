@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -29,7 +30,7 @@ class ShipViaValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, @Valid vo: ShipViaDTO, company: Company): ShipViaEntity {
+   fun validateUpdate(id: UUID, @Valid vo: ShipViaDTO, company: Company): ShipViaEntity {
       logger.trace("Validating Update ShipVia {}", vo)
 
       val existing = shipViaRepository.findOne(id, company) ?: throw NotFoundException(id)

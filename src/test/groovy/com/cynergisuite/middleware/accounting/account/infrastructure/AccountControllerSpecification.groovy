@@ -57,15 +57,18 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one account by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -306,7 +309,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account3 = accountFactoryService.single(company, "Bob's Credit Union")
 
       when: "fuzzy querying for number and 'bank'"
-      def result = get("$path/search?query=${account1.id}%20bank")
+      def result = get("$path/search?query=${account1.number}%20bank")
 
       then: "both accounts with 'bank' are returned"
       notThrown(HttpClientException)
@@ -365,7 +368,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid account"() {
       given:
-      final def account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
 
       when:
       def result = post("$path/", account)
@@ -377,7 +380,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       result.number > 0
 
       with(result) {
-         id > 0
+         id != null
          name == account.name
          form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
@@ -415,7 +418,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       result.number > 0
 
       with(result) {
-         id > 0
+         id != null
          name == account.name
          form1099Field == null
          corporateAccountIndicator == account.corporateAccountIndicator

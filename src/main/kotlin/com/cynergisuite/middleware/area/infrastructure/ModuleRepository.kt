@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -82,19 +81,18 @@ class ModuleRepository @Inject constructor(
       return moduleType.copy(level = moduleType.level)
    }
 
-   fun findOne(moduleTypeId: Long, company: Company): ModuleType? {
+   fun findOne(moduleTypeId: Int, company: Company): ModuleType? {
       val found = jdbc.findFirstOrNull(
          "${selectBaseQuery()} WHERE module.id = :type_id",
-         mapOf("type_id" to moduleTypeId),
-         RowMapper { rs, _ -> mapSimpleModule(rs, company, "module_") }
-      )
+         mapOf("type_id" to moduleTypeId)
+      ) { rs, _ -> mapSimpleModule(rs, company, "module_") }
 
       logger.trace("Searching for ModuleTypeDomain: {} resulted in {}", moduleTypeId, found)
 
       return found
    }
 
-   fun configExists(moduleTypeId: Long, company: Company): Boolean {
+   fun configExists(moduleTypeId: Int, company: Company): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT * FROM module WHERE module_type_id = :module_type_id AND company_id = :company_id)
@@ -110,7 +108,7 @@ class ModuleRepository @Inject constructor(
 
    fun mapSimpleModule(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): ModuleType =
       ModuleType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          program = rs.getString("${columnPrefix}program"),
          description = rs.getString("${columnPrefix}description"),

@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,7 +15,7 @@ class AuditScanAreaService @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository
 ) {
 
-   fun fetchOne(company: Company, id: Long): AuditScanAreaDTO? =
+   fun fetchOne(company: Company, id: UUID): AuditScanAreaDTO? =
       auditScanAreaRepository.findOne(id, company)?.let { AuditScanAreaDTO(it) }
 
    fun fetchAll(user: User): List<AuditScanAreaDTO> =
@@ -29,7 +30,7 @@ class AuditScanAreaService @Inject constructor(
       return AuditScanAreaDTO(auditScanAreaRepository.insert(toCreate))
    }
 
-   fun update(id: Long, auditScanAreaDTO: AuditScanAreaDTO, company: Company): AuditScanAreaDTO {
+   fun update(id: UUID, auditScanAreaDTO: AuditScanAreaDTO, company: Company): AuditScanAreaDTO {
       val toUpdate = auditScanAreaValidator.validateUpdate(id, auditScanAreaDTO, company)
 
       return AuditScanAreaDTO(auditScanAreaRepository.update(toUpdate))

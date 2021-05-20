@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
@@ -11,18 +12,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableInvoice", title = "Account Payable Invoice", description = "Account payable invoice")
 data class AccountPayableInvoiceDTO(
 
-   @field:Positive
    @field:Schema(description = "Account payable invoice id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Vendor id")
@@ -122,7 +122,7 @@ data class AccountPayableInvoiceDTO(
    var receiveDate: LocalDate? = null,
 
    @field:Schema(description = "Location", required = false)
-   var location: SimpleIdentifiableDTO? = null
+   var location: SimpleLegacyIdentifiableDTO? = null
 
 ) : Identifiable {
    constructor(entity: AccountPayableInvoiceEntity) :
@@ -154,8 +154,8 @@ data class AccountPayableInvoiceDTO(
          separateCheckIndicator = entity.separateCheckIndicator,
          useTaxIndicator = entity.useTaxIndicator,
          receiveDate = entity.receiveDate,
-         location = SimpleIdentifiableDTO(entity.location?.myId())
+         location = SimpleLegacyIdentifiableDTO(entity.location?.myId())
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

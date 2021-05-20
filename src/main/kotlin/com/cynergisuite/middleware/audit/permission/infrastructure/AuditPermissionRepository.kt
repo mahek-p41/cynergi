@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -16,9 +17,9 @@ import com.cynergisuite.middleware.department.infrastructure.DepartmentRepositor
 import org.eclipse.collections.impl.factory.Sets
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -31,7 +32,7 @@ class AuditPermissionRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionRepository::class.java)
 
-   fun findById(id: Long, company: Company): AuditPermissionEntity? {
+   fun findById(id: UUID, company: Company): AuditPermissionEntity? {
       logger.debug("Searching for AuditPermission with id {}/{}", id, company)
 
       val found = jdbc.findFirstOrNull(
@@ -41,7 +42,6 @@ class AuditPermissionRepository @Inject constructor(
          )
          SELECT
             ap.id                      AS ap_id,
-            ap.uu_row_id               AS ap_uu_row_id,
             ap.time_created            AS ap_time_created,
             ap.time_updated            AS ap_time_updated,
             aptd.id                    AS aptd_id,
@@ -49,7 +49,6 @@ class AuditPermissionRepository @Inject constructor(
             aptd.description           AS aptd_description,
             aptd.localization_code     AS aptd_localization_code,
             comp.id                    AS comp_id,
-            comp.uu_row_id             AS comp_uu_row_id,
             comp.time_created          AS comp_time_created,
             comp.time_updated          AS comp_time_updated,
             comp.name                  AS comp_name,
@@ -81,11 +80,10 @@ class AuditPermissionRepository @Inject constructor(
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE ap.id = :ap_id
                AND comp.id = :comp_id""",
-         mapOf("ap_id" to id, "comp_id" to company.myId()),
-         RowMapper { rs, _ ->
-            processFindRow(rs, company)
-         }
-      )
+         mapOf("ap_id" to id, "comp_id" to company.myId())
+      ) { rs, _ ->
+         processFindRow(rs, company)
+      }
 
       logger.trace("Searching for AuditPermission with id {} resulted in {}", id, found)
 
@@ -102,7 +100,6 @@ class AuditPermissionRepository @Inject constructor(
          )
          SELECT
             ap.id                         AS ap_id,
-            ap.uu_row_id                  AS ap_uu_row_id,
             ap.time_created               AS ap_time_created,
             ap.time_updated               AS ap_time_updated,
             aptd.id                       AS aptd_id,
@@ -110,7 +107,6 @@ class AuditPermissionRepository @Inject constructor(
             aptd.description              AS aptd_description,
             aptd.localization_code        AS aptd_localization_code,
             comp.id                       AS comp_id,
-            comp.uu_row_id                AS comp_uu_row_id,
             comp.time_created             AS comp_time_created,
             comp.time_updated             AS comp_time_updated,
             comp.name                     AS comp_name,
@@ -165,7 +161,6 @@ class AuditPermissionRepository @Inject constructor(
          )
          SELECT
             ap.id                         AS ap_id,
-            ap.uu_row_id                  AS ap_uu_row_id,
             ap.time_created               AS ap_time_created,
             ap.time_updated               AS ap_time_updated,
             aptd.id                       AS aptd_id,
@@ -173,7 +168,6 @@ class AuditPermissionRepository @Inject constructor(
             aptd.description              AS aptd_description,
             aptd.localization_code        AS aptd_localization_code,
             comp.id                       AS comp_id,
-            comp.uu_row_id                AS comp_uu_row_id,
             comp.time_created             AS comp_time_created,
             comp.time_updated             AS comp_time_updated,
             comp.name                     AS comp_name,
@@ -258,9 +252,9 @@ class AuditPermissionRepository @Inject constructor(
 
    private fun processFindRow(rs: ResultSet, company: Company): AuditPermissionEntity {
       return AuditPermissionEntity(
-         id = rs.getLong("ap_id"),
+         id = rs.getUuid("ap_id"),
          type = AuditPermissionType(
-            id = rs.getLong("aptd_id"),
+            id = rs.getInt("aptd_id"),
             value = rs.getString("aptd_value"),
             description = rs.getString("aptd_description"),
             localizationCode = rs.getString("aptd_localization_code")
@@ -293,7 +287,7 @@ class AuditPermissionRepository @Inject constructor(
          do {
             elements.add(
                AuditPermissionType(
-                  id = rs.getLong("id"),
+                  id = rs.getInt("id"),
                   value = rs.getString("value"),
                   description = rs.getString("description"),
                   localizationCode = rs.getString("localization_code")
@@ -317,15 +311,14 @@ class AuditPermissionRepository @Inject constructor(
             "department" to auditPermission.department.code,
             "type_id" to auditPermission.type.id,
             "company_id" to auditPermission.department.company.myId()
-         ),
-         RowMapper { rs, _ ->
-            AuditPermissionEntity(
-               id = rs.getLong("id"),
-               department = auditPermission.department.copy(),
-               type = auditPermission.type.copy()
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         AuditPermissionEntity(
+            id = rs.getUuid("id"),
+            department = auditPermission.department.copy(),
+            type = auditPermission.type.copy()
+         )
+      }
    }
 
    @Transactional
@@ -347,19 +340,18 @@ class AuditPermissionRepository @Inject constructor(
             "department" to auditPermission.department.code,
             "type_id" to auditPermission.type.id,
             "company_id" to company.myId()
-         ),
-         RowMapper { rs, _ ->
-            AuditPermissionEntity(
-               id = rs.getLong("id"),
-               department = auditPermission.department.copy(),
-               type = auditPermission.type.copy()
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         AuditPermissionEntity(
+            id = rs.getUuid("id"),
+            department = auditPermission.department.copy(),
+            type = auditPermission.type.copy()
+         )
+      }
    }
 
    @Transactional
-   fun deleteById(id: Long, company: Company): AuditPermissionEntity? {
+   fun deleteById(id: UUID, company: Company): AuditPermissionEntity? {
       logger.debug("Deleting AuditPermission using {}/{}", id, company)
 
       val existingPermission = findById(id, company)
@@ -371,15 +363,14 @@ class AuditPermissionRepository @Inject constructor(
             WHERE id = :id
             RETURNING
                *""",
-            mapOf("id" to id),
-            RowMapper { rs, _ ->
-               AuditPermissionEntity(
-                  id = rs.getLong("id"),
-                  department = existingPermission.department,
-                  type = existingPermission.type
-               )
-            }
-         )
+            mapOf("id" to id)
+         ) { rs, _ ->
+            AuditPermissionEntity(
+               id = rs.getUuid("id"),
+               department = existingPermission.department,
+               type = existingPermission.type
+            )
+         }
       } else {
          null
       }

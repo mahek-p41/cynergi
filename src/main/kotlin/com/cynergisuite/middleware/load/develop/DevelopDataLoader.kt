@@ -85,7 +85,7 @@ class DevelopDataLoader @Inject constructor(
 
       val nineNineEightEmployeeCorrtoEmployee = employeeFactoryService.singleSuperUser(998, corrto, "user", "super", "pass")
       val corrtoStore3StoreManager = employeeFactoryService.single(corrtoStore3, corrtoStoreManagerDepartment)
-      val corrtoRegion1Manager = employeeFactoryService.single(1000, corrto, corrtoRegionalManagerDepartment, corrtoStoreHomeOffice, "manager", "regional", "12345", "R", corrtoDivision1Region1.id!!)
+      val corrtoRegion1Manager = employeeFactoryService.single(1000, corrto, corrtoRegionalManagerDepartment, corrtoStoreHomeOffice, "manager", "regional", "12345", "R", corrtoDivision1Region1.number!!)
       // end setting up corrto stores and employees
 
       // begin setting up corptp stores and employees

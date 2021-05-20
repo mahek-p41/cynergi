@@ -79,7 +79,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.actions.size() == 1
-      result.actions[0].id > 0
+      result.actions[0].id != null
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
@@ -108,7 +108,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.actions.size() == 1
-      result.actions[0].id > 0
+      result.actions[0].id != null
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
@@ -140,7 +140,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.actions.size() == 1
-      result.actions[0].id > 0
+      result.actions[0].id != null
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
@@ -177,7 +177,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == store.number
       result.store.name == store.name
       result.actions.size() == 1
-      result.actions[0].id > 0
+      result.actions[0].id != null
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
@@ -227,15 +227,18 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one audit by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all audits for store 1" () {
@@ -311,7 +314,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeOneFilterResult.last == true
       storeOneFilterResult.elements != null
       storeOneFilterResult.elements.size() == 5
-      storeOneFilterResult.elements[0].id > 0
+      storeOneFilterResult.elements[0].id != null
       storeOneFilterResult.elements[0].store.storeNumber == storeOne.number
       storeOneFilterResult.elements[0].actions[0].id == fiveAuditsStoreOne[0].actions[0].id
       storeOneFilterResult.elements[0].actions[0].status.value == fiveAuditsStoreOne[0].actions[0].status.value
@@ -379,7 +382,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeOneFilterResult.last == false
       storeOneFilterResult.elements != null
       storeOneFilterResult.elements.size() == 5
-      storeOneFilterResult.elements[0].id > 0
+      storeOneFilterResult.elements[0].id != null
       storeOneFilterResult.elements[0].store.storeNumber == store3Tstds1.number
       storeOneFilterResult.elements[0].actions[0].id == tenAuditsStoreThreeTstds1[0].actions[0].id
       storeOneFilterResult.elements[0].actions[0].status.value == tenAuditsStoreThreeTstds1[0].actions[0].status.value
@@ -448,7 +451,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final regionalManager = departmentFactoryService.department('RM', company)
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
-      final regionalManagerEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, regionalManager, 'R', regions[0].id) //should only be able to access audits for the store they are assigned
+      final regionalManagerEmployee = employeeFactoryService.singleAuthenticated(company, storeOne, regionalManager, 'R', regions[0].number) //should only be able to access audits for the store they are assigned
       final regionalManagerEmployeeAuth = loginEmployee(regionalManagerEmployee)
       final storeOneAudit = auditFactoryService.single(storeOne)
       final storeThreeAudit = auditFactoryService.single(storeThree)
@@ -536,7 +539,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       storeOneFilterResult.last == false
       storeOneFilterResult.elements != null
       storeOneFilterResult.elements.size() == 5
-      storeOneFilterResult.elements[0].id > 0
+      storeOneFilterResult.elements[0].id != null
       storeOneFilterResult.elements[0].store.storeNumber == storeOne.myNumber()
       storeOneFilterResult.elements[0].hasExceptionNotes == true
       storeOneFilterResult.elements[0].actions[0].id == singleAudit.actions[0].id
@@ -848,7 +851,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id != null
-      result.id > 0
+      result.id != null
       result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
@@ -885,7 +888,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id != null
-      result.id > 0
+      result.id != null
       result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
@@ -907,7 +910,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id != null
-      result.id > 0
+      result.id != null
       result.store.storeNumber == 1
       result.actions.size() == 1
       result.actions[0].status.value == "CREATED"
@@ -968,12 +971,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
-      resultActions[0].id > 0
+      resultActions[0].id != null
       resultActions[0].status.value == "CREATED"
       resultActions[0].status.description == "Created"
       resultActions[0].changedBy.number == audit.actions[0].changedBy.number
       resultActions[1].id != null
-      resultActions[1].id > 0
+      resultActions[0].id != null
       resultActions[1].id > resultActions[0].id
       resultActions[1].status.value == "IN-PROGRESS"
       resultActions[1].status.description == "In Progress"
@@ -1001,12 +1004,12 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
-      resultActions[0].id > 0
+      resultActions[0].id != null
       resultActions[0].status.value == "CREATED"
       resultActions[0].status.description == "Created"
       resultActions[0].changedBy.number == audit.actions[0].changedBy.number
       resultActions[1].id != null
-      resultActions[1].id > 0
+      resultActions[0].id != null
       resultActions[1].id > resultActions[0].id
       resultActions[1].status.value == "CANCELED"
       resultActions[1].status.description == "Canceled"
@@ -1028,7 +1031,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "status"
-      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from Created to Completed"
+      response[0].message == "Audit ${audit.id} cannot be changed from Created to Completed"
    }
 
    void "update in progress to opened" () {
@@ -1047,7 +1050,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "status"
-      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from In Progress to Created"
+      response[0].message == "Audit ${audit.id} cannot be changed from In Progress to Created"
    }
 
    void "update completed to opened" () {
@@ -1066,7 +1069,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "status"
-      response[0].message == "Audit ${String.format("%,d", audit.id)} cannot be changed from Completed to Created"
+      response[0].message == "Audit ${audit.id} cannot be changed from Completed to Created"
    }
 
    void "update opened to null status" () {
@@ -1093,7 +1096,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
-      final missingId = savedAudit.id * 100
+      final missingId = UUID.randomUUID()
 
       when:
       put(path, new AuditUpdateValueObject([id: missingId, status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
@@ -1104,7 +1107,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "id"
-      response[0].message == "${String.format("%,d", missingId)} was unable to be found"
+      response[0].message == "$missingId was unable to be found"
    }
 
    void "update opened audit to invalid progress" () {
@@ -1132,7 +1135,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       openedResult.id != null
-      openedResult.id > 0
       openedResult.store.storeNumber == 3
       openedResult.actions.size() == 1
       final openActions = openedResult.actions
@@ -1141,7 +1143,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       openActions[0].id != null
-      openActions[0].id > 0
       openActions[0].status.value == "CREATED"
       openActions[0].status.description == "Created"
       openActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
@@ -1152,7 +1153,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       inProgressResult.id != null
-      inProgressResult.id > 0
       inProgressResult.store.storeNumber == 3
       inProgressResult.actions.size() == 2
       final inProgressActions = inProgressResult.actions
@@ -1161,12 +1161,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       inProgressActions[0].id != null
-      inProgressActions[0].id > 0
       inProgressActions[0].status.value == "CREATED"
       inProgressActions[0].status.description == "Created"
       inProgressActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
       inProgressActions[1].id != null
-      inProgressActions[1].id > 0
       inProgressActions[1].id > inProgressActions[0].id
       inProgressActions[1].status.value == "IN-PROGRESS"
       inProgressActions[1].status.description == "In Progress"
@@ -1178,7 +1176,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       completedResult.id != null
-      completedResult.id > 0
       completedResult.store.storeNumber == 3
       completedResult.actions.size() == 3
       final completedActions = completedResult.actions
@@ -1187,18 +1184,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       completedActions[0].id != null
-      completedActions[0].id > 0
       completedActions[0].status.value == "CREATED"
       completedActions[0].status.description == "Created"
       completedActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
       completedActions[1].id != null
-      completedActions[1].id > 0
       completedActions[1].id > completedActions[0].id
       completedActions[1].status.value == "IN-PROGRESS"
       completedActions[1].status.description == "In Progress"
       completedActions[1].changedBy.number == nineNineEightAuthenticatedEmployee.number
       completedActions[2].id != null
-      completedActions[2].id > 0
       completedActions[2].id > completedActions[1].id
       completedActions[2].status.value == "COMPLETED"
       completedActions[2].status.description == "Completed"
@@ -1258,24 +1252,22 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
-      resultActions[0].id > 0
+      resultActions[0].id != null
       resultActions[0].status.value == "CREATED"
       resultActions[0].status.description == "Created"
       resultActions[0].changedBy.number == audit.actions[0].changedBy.number
       resultActions[1].id != null
-      resultActions[1].id > 0
+      resultActions[0].id != null
       resultActions[1].id > resultActions[0].id
       resultActions[1].status.value == "IN-PROGRESS"
       resultActions[1].status.description == "In Progress"
       resultActions[1].changedBy.number == audit.actions[1].changedBy.number
       resultActions[2].id != null
-      resultActions[2].id > 0
       resultActions[2].id > resultActions[0].id
       resultActions[2].status.value == "COMPLETED"
       resultActions[2].status.description == "Completed"
       resultActions[2].changedBy.number == audit.actions[2].changedBy.number
       resultActions[3].id != null
-      resultActions[3].id > 0
       resultActions[3].id > resultActions[0].id
       resultActions[3].status.value == "APPROVED"
       resultActions[3].status.description == "Approved"

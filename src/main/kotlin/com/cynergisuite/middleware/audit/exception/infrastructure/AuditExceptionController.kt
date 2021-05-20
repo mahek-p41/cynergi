@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -55,7 +56,7 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {
@@ -83,7 +84,7 @@ class AuditExceptionController @Inject constructor(
    )
    fun fetchAll(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
@@ -116,7 +117,7 @@ class AuditExceptionController @Inject constructor(
    )
    fun create(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Body @Valid
       vo: AuditExceptionCreateDTO,
       authentication: Authentication,
@@ -147,7 +148,7 @@ class AuditExceptionController @Inject constructor(
    )
    fun update(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Body @Valid
       vo: AuditExceptionUpdateValueObject,
       authentication: Authentication,

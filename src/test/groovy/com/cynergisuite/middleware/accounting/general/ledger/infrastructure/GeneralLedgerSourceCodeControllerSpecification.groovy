@@ -80,7 +80,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == glSourceCode.value
       result.description == glSourceCode.description
    }
@@ -152,7 +152,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == glSourceCode2.value
       result.description == glSourceCode2.description
    }
@@ -170,7 +170,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == updatedGLSourceCode.value
       result.description == updatedGLSourceCode.description
    }
@@ -231,7 +231,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == glSourceCode2.value
       result.description == glSourceCode2.description
    }
@@ -252,7 +252,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == updatedGLSourceCode.value
       result.description == updatedGLSourceCode.description
    }

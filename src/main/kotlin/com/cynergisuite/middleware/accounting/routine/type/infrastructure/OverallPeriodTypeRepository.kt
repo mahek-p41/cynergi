@@ -54,7 +54,7 @@ class OverallPeriodTypeRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): OverallPeriodType =
       OverallPeriodType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          abbreviation = rs.getString("${columnPrefix}abbreviation"),
          description = rs.getString("${columnPrefix}description"),

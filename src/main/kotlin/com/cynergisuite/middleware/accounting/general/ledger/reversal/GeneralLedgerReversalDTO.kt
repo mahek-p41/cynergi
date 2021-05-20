@@ -4,15 +4,15 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 @Schema(name = "GeneralLedgerReversal", title = "Defines a general ledger reversal", description = "Defines a general ledger reversal")
 data class GeneralLedgerReversalDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(name = "source", description = "General ledger source code")
@@ -52,5 +52,5 @@ data class GeneralLedgerReversalDTO(
          entryNumber = entity.entryNumber
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

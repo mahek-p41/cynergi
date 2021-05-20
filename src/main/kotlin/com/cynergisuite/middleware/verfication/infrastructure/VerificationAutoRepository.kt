@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
@@ -174,6 +174,6 @@ private class VerificationAutoRowMapper(
          previousLoan = rs.getBoolean("${columnPrefix}previous_loan"),
          purchaseDate = rs.getLocalDateOrNull("${columnPrefix}purchase_date"),
          related = rs.getString("${columnPrefix}related"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
+         verification = SimpleLegacyIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

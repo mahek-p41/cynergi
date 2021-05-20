@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.region
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.division.DivisionDTO
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
@@ -41,11 +41,12 @@ object RegionFactory {
       return IntStream.range(0, number).mapToObj {
          val name = lorem.word().capitalize() + " Region"
          val description = "$name Description"
+
          RegionDTO(
             name = name,
             description = description,
             division = DivisionDTO(divisionIn),
-            regionalManager = SimpleIdentifiableDTO(regionalManager?.id)
+            regionalManager = SimpleLegacyIdentifiableDTO(regionalManager?.id)
          )
       }
    }

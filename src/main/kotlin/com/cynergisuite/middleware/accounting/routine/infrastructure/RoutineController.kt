@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class RoutineController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(RoutineController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["RoutineEndpoints"], summary = "Fetch a single Routine", description = "Fetch a single Routine by it's system generated primary key", operationId = "routine-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class RoutineController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): RoutineDTO {
@@ -154,7 +155,7 @@ class RoutineController @Inject constructor(
       return response
    }
 
-   @Put(value = "/{id}", processes = [APPLICATION_JSON])
+   @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RoutineEndpoints"], summary = "Update a single Routine", description = "Update a single Routine", operationId = "routine-update")
    @ApiResponses(
@@ -169,7 +170,7 @@ class RoutineController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the Routine being updated")
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: RoutineDTO,
       authentication: Authentication,

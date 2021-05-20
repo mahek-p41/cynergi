@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class AccountPayableInvoiceService @Inject constructor(
    private val accountPayableInvoiceValidator: AccountPayableInvoiceValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): AccountPayableInvoiceDTO? =
+   fun fetchById(id: UUID, company: Company): AccountPayableInvoiceDTO? =
       accountPayableInvoiceRepository.findOne(id, company)?.let { AccountPayableInvoiceDTO(it) }
 
    fun create(dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceDTO {
@@ -30,7 +31,7 @@ class AccountPayableInvoiceService @Inject constructor(
       }
    }
 
-   fun update(id: Long, dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceDTO {
+   fun update(id: UUID, dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceDTO {
       val toUpdate = accountPayableInvoiceValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountPayableInvoiceRepository.update(toUpdate, company))

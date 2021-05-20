@@ -2,9 +2,10 @@ package com.cynergisuite.middleware.vendor.payment.term.schedule
 
 import com.cynergisuite.domain.Identifiable
 import java.math.BigDecimal
+import java.util.UUID
 
 data class VendorPaymentTermScheduleEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val dueMonth: Int?,
    val dueDays: Int,
    val duePercent: BigDecimal,
@@ -20,5 +21,5 @@ data class VendorPaymentTermScheduleEntity(
          scheduleOrderNumber = vo.scheduleOrderNumber!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

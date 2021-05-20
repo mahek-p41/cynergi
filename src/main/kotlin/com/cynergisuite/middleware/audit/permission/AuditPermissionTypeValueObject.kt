@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.audit.permission
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -16,7 +15,7 @@ data class AuditPermissionTypeValueObject(
 
    @field:Positive
    @field:Schema(name = "id", description = "This is the primary key")
-   var id: Long,
+   var id: Int,
 
    @field:NotNull
    @field:Size(min = 3, max = 15)
@@ -26,7 +25,7 @@ data class AuditPermissionTypeValueObject(
    @field:Size(min = 3, max = 50)
    @field:Schema(name = "description", description = "A localized description suitable for showing the user")
    var description: String? = null
-) : Identifiable {
+) {
 
    constructor(type: AuditPermissionType, localizedDescription: String) :
       this(
@@ -41,6 +40,4 @@ data class AuditPermissionTypeValueObject(
          value = type.value,
          description = type.localizeMyDescription(locale, localizationService)
       )
-
-   override fun myId(): Long? = id
 }

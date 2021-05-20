@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.company.Company
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,7 +16,7 @@ class BankReconciliationService @Inject constructor(
    private val bankReconciliationRepository: BankReconciliationRepository,
    private val bankReconciliationValidator: BankReconciliationValidator
 ) {
-   fun fetchById(id: Long, company: Company, locale: Locale): BankReconciliationDTO? =
+   fun fetchById(id: UUID, company: Company, locale: Locale): BankReconciliationDTO? =
       bankReconciliationRepository.findOne(id, company)?.let { transformEntity(it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<BankReconciliationDTO> {
@@ -30,7 +31,7 @@ class BankReconciliationService @Inject constructor(
       return transformEntity(bankReconciliationRepository.insert(toCreate, company))
    }
 
-   fun update(id: Long, dto: BankReconciliationDTO, company: Company): BankReconciliationDTO {
+   fun update(id: UUID, dto: BankReconciliationDTO, company: Company): BankReconciliationDTO {
       val toUpdate = bankReconciliationValidator.validateUpdate(id, dto, company)
 
       return transformEntity(bankReconciliationRepository.update(toUpdate, company))

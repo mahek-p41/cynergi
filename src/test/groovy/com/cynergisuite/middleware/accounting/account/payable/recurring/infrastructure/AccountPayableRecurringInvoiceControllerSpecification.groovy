@@ -215,7 +215,6 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == accountPayableRecurringInvoiceDTO.id
          vendor.id == accountPayableRecurringInvoiceDTO.vendor.id
@@ -278,10 +277,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       then:
       notThrown(Exception)
       result != null
-      result.id != null
-      result.id > 0
       with(result) {
-         id > 0
+         id != null
          vendor.id == accountPayableRecurringInvoiceDTO.vendor.id
          invoice == accountPayableRecurringInvoiceDTO.invoice
          invoiceAmount == accountPayableRecurringInvoiceDTO.invoiceAmount
@@ -381,11 +378,11 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       response[0].message == errorMessage
 
       where:
-      testProp                         | invalidValue                                                        || errorResponsePath                      | errorMessage
-      'vendor'                         | new SimpleIdentifiableDTO(999999)                                   || 'vendor.id'                            | '999,999 was unable to be found'
-      'payTo'                          | new SimpleIdentifiableDTO(999999)                                   || 'payTo.id'                             | '999,999 was unable to be found'
-      'status'                         | new AccountPayableRecurringInvoiceStatusTypeDTO('Z', 'Invalid DTO') || 'status.value'                         | 'Z was unable to be found'
-      'expenseMonthCreationIndicator'  | new ExpenseMonthCreationTypeDTO('Z', 'Invalid DTO')                 || 'expenseMonthCreationIndicator.value'  | 'Z was unable to be found'
+      testProp                        | invalidValue                                                                       || errorResponsePath                     | errorMessage
+      'vendor'                        | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'vendor.id'                           | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'payTo'                         | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'payTo.id'                            | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'status'                        | new AccountPayableRecurringInvoiceStatusTypeDTO('Z', 'Invalid DTO')                || 'status.value'                        | 'Z was unable to be found'
+      'expenseMonthCreationIndicator' | new ExpenseMonthCreationTypeDTO('Z', 'Invalid DTO')                                || 'expenseMonthCreationIndicator.value' | 'Z was unable to be found'
    }
 
    void "update one" () {
@@ -406,7 +403,6 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == accountPayableRecurringInvoiceDTO.id
          vendor.id == accountPayableRecurringInvoiceDTO.vendor.id
@@ -471,7 +467,6 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == accountPayableRecurringInvoiceDTO.id
          vendor.id == accountPayableRecurringInvoiceDTO.vendor.id
@@ -512,6 +507,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "update invalid Account Payable Recurring Invoice with non-existing values" () {
       given:
+      final nonExistentVendorId = UUID.randomUUID()
+      final nonExistentPayToId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
@@ -520,8 +517,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
-      accountPayableRecurringInvoiceDTO.vendor = new SimpleIdentifiableDTO(999999)
-      accountPayableRecurringInvoiceDTO.payTo = new SimpleIdentifiableDTO(999999)
+      accountPayableRecurringInvoiceDTO.vendor = new SimpleIdentifiableDTO(nonExistentVendorId)
+      accountPayableRecurringInvoiceDTO.payTo = new SimpleIdentifiableDTO(nonExistentPayToId)
       accountPayableRecurringInvoiceDTO.status = new AccountPayableRecurringInvoiceStatusTypeDTO('Z', 'Invalid DTO')
       accountPayableRecurringInvoiceDTO.expenseMonthCreationIndicator = new ExpenseMonthCreationTypeDTO('Z', 'Invalid DTO')
 
@@ -537,10 +534,10 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       response[0].path == "expenseMonthCreationIndicator.value"
       response[0].message == "Z was unable to be found"
       response[1].path == "payTo.id"
-      response[1].message == "999,999 was unable to be found"
+      response[1].message == "$nonExistentPayToId was unable to be found"
       response[2].path == "status.value"
       response[2].message == "Z was unable to be found"
       response[3].path == "vendor.id"
-      response[3].message == "999,999 was unable to be found"
+      response[3].message == "$nonExistentVendorId was unable to be found"
    }
 }

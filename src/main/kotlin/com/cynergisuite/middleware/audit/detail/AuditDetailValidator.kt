@@ -19,6 +19,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,21 +33,21 @@ class AuditDetailValidator @Inject constructor (
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailValidator::class.java)
 
-   fun validateDuplicateDetail(auditId: Long, dto: AuditDetailCreateUpdateDTO, scannedBy: User): AuditDetailEntity? {
+   fun validateDuplicateDetail(auditId: UUID, dto: AuditDetailCreateUpdateDTO, scannedBy: User): AuditDetailEntity? {
       val inventory = inventoryRepository.findOne(dto.inventory!!.id!!, scannedBy.myCompany()) ?: throw NotFoundException(dto.inventory.id!!)
 
       return auditDetailRepository.findOne(auditId, inventory, scannedBy.myCompany())
    }
 
    @Throws(ValidationException::class)
-   fun validateCreate(auditId: Long, scannedBy: User, dto: AuditDetailCreateUpdateDTO): AuditDetailEntity {
+   fun validateCreate(auditId: UUID, scannedBy: User, dto: AuditDetailCreateUpdateDTO): AuditDetailEntity {
       logger.debug("Validating Create AuditDetail {}", dto)
 
       return doValidation(false, dto, auditId, scannedBy)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(auditId: Long, scannedBy: User, dto: AuditDetailCreateUpdateDTO): AuditDetailEntity {
+   fun validateUpdate(auditId: UUID, scannedBy: User, dto: AuditDetailCreateUpdateDTO): AuditDetailEntity {
       logger.debug("Validating Update AuditDetail {}", dto)
 
       auditDetailRepository.findOne(dto.id!!, scannedBy.myCompany()) ?: throw NotFoundException(dto.id!!)
@@ -54,7 +55,7 @@ class AuditDetailValidator @Inject constructor (
       return doValidation(true, dto, auditId, scannedBy)
    }
 
-   private fun doValidation(isUpdate: Boolean, dto: AuditDetailCreateUpdateDTO, auditId: Long, scannedBy: User): AuditDetailEntity {
+   private fun doValidation(isUpdate: Boolean, dto: AuditDetailCreateUpdateDTO, auditId: UUID, scannedBy: User): AuditDetailEntity {
       val inventory = inventoryRepository.findOne(dto.inventory!!.id!!, scannedBy.myCompany()) ?: throw NotFoundException(dto.inventory.id!!)
       val scanArea = auditScanAreaRepository.findOne(dto.scanArea!!.id!!, scannedBy.myCompany()) ?: throw NotFoundException(dto.scanArea!!.id!!)
 
@@ -95,7 +96,7 @@ class AuditDetailValidator @Inject constructor (
       )
    }
 
-   private fun validateAudit(auditId: Long, company: Company, errors: MutableSet<ValidationError>) {
+   private fun validateAudit(auditId: UUID, company: Company, errors: MutableSet<ValidationError>) {
       val audit: AuditEntity = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
       val auditStatus = audit.currentStatus()
 

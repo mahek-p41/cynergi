@@ -8,16 +8,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Bank Reconciliation", title = "An entity containing a bank reconciliation information", description = "An entity containing a bank reconciliation information.")
 data class BankReconciliationDTO(
 
-   @field:Positive
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Valid
    @field:NotNull
@@ -49,17 +48,5 @@ data class BankReconciliationDTO(
    var document: Int? = null
 
 ) : Identifiable {
-   constructor(entity: BankReconciliationEntity, type: BankReconciliationTypeDTO) :
-      this(
-         id = entity.id,
-         bank = SimpleIdentifiableDTO(entity.bank.myId()),
-         type = type,
-         date = entity.date,
-         clearedDate = entity.clearedDate,
-         amount = entity.amount,
-         description = entity.description,
-         document = entity.document
-      )
-
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

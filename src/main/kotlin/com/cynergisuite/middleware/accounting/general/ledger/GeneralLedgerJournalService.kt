@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +13,7 @@ class GeneralLedgerJournalService @Inject constructor(
    private val generalLedgerJournalRepository: GeneralLedgerJournalRepository,
    private val generalLedgerJournalValidator: GeneralLedgerJournalValidator
 ) {
-   fun fetchOne(id: Long, company: Company): GeneralLedgerJournalDTO? {
+   fun fetchOne(id: UUID, company: Company): GeneralLedgerJournalDTO? {
       return generalLedgerJournalRepository.findOne(id, company)?.let { transformEntity(it) }
    }
 
@@ -30,8 +31,8 @@ class GeneralLedgerJournalService @Inject constructor(
       return transformEntity(generalLedgerJournalRepository.insert(toCreate, company))
    }
 
-   fun update(dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalDTO {
-      val toUpdate = generalLedgerJournalValidator.validateUpdate(dto, company)
+   fun update(id: UUID, dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalDTO {
+      val toUpdate = generalLedgerJournalValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerJournalRepository.update(toUpdate, company))
    }

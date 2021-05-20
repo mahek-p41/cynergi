@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.bank.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -15,6 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -68,7 +70,7 @@ class BankRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): BankEntity? {
+   fun findOne(id: UUID, company: Company): BankEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
@@ -192,7 +194,7 @@ class BankRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting bank with id={}", id)
 
       val affectedRows = jdbc.update(
@@ -210,7 +212,7 @@ class BankRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = storeRepository.mapRow(rs, company, "${columnPrefix}glProfitCenter_"),
@@ -220,7 +222,7 @@ class BankRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, bank: BankEntity, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          generalLedgerProfitCenter = bank.generalLedgerProfitCenter,

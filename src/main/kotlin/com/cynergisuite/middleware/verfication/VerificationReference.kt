@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import java.time.OffsetDateTime
 import java.util.Objects
 import java.util.UUID
@@ -19,10 +19,10 @@ data class VerificationReference(
    val reliable: Boolean?,
    val timeFrame: Int?, // what is this?
    val verifyPhone: Boolean?,
-   val verification: Identifiable
-) : Identifiable {
+   val verification: LegacyIdentifiable
+) : LegacyIdentifiable {
 
-   constructor(dto: VerificationReferenceValueObject, parent: Identifiable) :
+   constructor(dto: VerificationReferenceValueObject, parent: LegacyIdentifiable) :
       this(
          id = dto.id,
          address = dto.address,

@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEndpoints"], summary = "Fetch a single General Ledger Recurring", description = "Fetch a single General Ledger Recurring by it's system generated primary key", operationId = "generalLedgerRecurring-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerRecurringDTO {
@@ -141,7 +142,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the General Ledger Recurring being updated")
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: GeneralLedgerRecurringDTO,
       authentication: Authentication,
@@ -169,7 +170,7 @@ class GeneralLedgerRecurringController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

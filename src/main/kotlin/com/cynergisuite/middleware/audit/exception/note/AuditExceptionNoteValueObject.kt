@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
@@ -19,9 +19,8 @@ import javax.validation.constraints.Size
 )
 data class AuditExceptionNoteValueObject(
 
-   @field:Positive
    @field:Schema(name = "id", description = "System generated ID", example = "1")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Schema(name = "timeCreated", description = "The time when the note was created")
    var timeCreated: OffsetDateTime? = null,
@@ -49,5 +48,5 @@ data class AuditExceptionNoteValueObject(
          note = entity.note
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

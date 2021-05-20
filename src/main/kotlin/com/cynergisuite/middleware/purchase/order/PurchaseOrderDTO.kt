@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
@@ -24,9 +26,8 @@ import javax.validation.constraints.Positive
 @Schema(name = "PurchaseOrder", title = "An entity containing purchase order information", description = "An entity containing purchase order information.")
 data class PurchaseOrderDTO(
 
-   @field:Positive
    @field:Schema(name = "id", description = "Purchase order id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Positive
@@ -100,7 +101,7 @@ data class PurchaseOrderDTO(
 
    @field:NotNull
    @field:Schema(name = "shipTo", description = "Ship to store")
-   var shipTo: SimpleIdentifiableDTO? = null,
+   var shipTo: SimpleLegacyIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "paymentTermType", description = "Vendor payment term")
@@ -134,9 +135,6 @@ data class PurchaseOrderDTO(
    @field:Schema(name = "ecommerceIndicator", description = "Ecommerce indicator")
    var ecommerceIndicator: Boolean? = null,
 
-   @field:Schema(name = "customerAccount", description = "Customer account number", required = false)
-   var customerAccount: SimpleIdentifiableDTO?
-
 ) : Identifiable {
 
    constructor(entity: PurchaseOrderEntity) :
@@ -157,7 +155,7 @@ data class PurchaseOrderDTO(
          purchaseAgent = EmployeeValueObject(entity.purchaseAgent),
          shipVia = SimpleIdentifiableDTO(entity.shipVia),
          requiredDate = entity.requiredDate,
-         shipTo = SimpleIdentifiableDTO(entity.shipTo.myId()),
+         shipTo = SimpleLegacyIdentifiableDTO(entity.shipTo.myId()),
          paymentTermType = SimpleIdentifiableDTO(entity.paymentTermType),
          message = entity.message,
          totalLandedAmount = entity.totalLandedAmount,
@@ -166,8 +164,7 @@ data class PurchaseOrderDTO(
          vendorSubmittedTime = entity.vendorSubmittedTime,
          vendorSubmittedEmployee = entity.vendorSubmittedEmployee?.let { EmployeeValueObject(it) },
          ecommerceIndicator = entity.ecommerceIndicator,
-         customerAccount = entity.customerAccount?.let { SimpleIdentifiableDTO(it) }
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

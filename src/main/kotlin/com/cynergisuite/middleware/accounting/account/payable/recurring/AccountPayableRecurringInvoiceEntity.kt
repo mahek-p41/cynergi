@@ -6,9 +6,10 @@ import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 data class AccountPayableRecurringInvoiceEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val vendor: VendorEntity,
    val invoice: String,
    val invoiceAmount: BigDecimal,
@@ -67,5 +68,5 @@ data class AccountPayableRecurringInvoiceEntity(
          nextExpenseDate = dto.nextExpenseDate
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

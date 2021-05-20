@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -15,9 +16,9 @@ import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -53,19 +54,18 @@ class RoutineRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): RoutineEntity? {
+   fun findOne(id: UUID, company: Company): RoutineEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE r.id = :id AND r.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               "r_"
-            )
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            "r_"
+         )
+      }
 
       logger.trace("Searching for Routine: {} resulted in {}", company, found)
 
@@ -93,7 +93,7 @@ class RoutineRepository @Inject constructor(
       }
    }
 
-   fun exists(company: Company, overallPeriodTypeId: Long, period: Int): Boolean {
+   fun exists(company: Company, overallPeriodTypeId: Int, period: Int): Boolean {
       val params = mutableMapOf("comp_id" to company.myId(), "overallPeriodId" to overallPeriodTypeId, "period" to period)
       val exists = jdbc.queryForObject(
          """
@@ -148,11 +148,10 @@ class RoutineRepository @Inject constructor(
             "fiscal_year" to entity.fiscalYear,
             "general_ledger_open" to entity.generalLedgerOpen,
             "account_payable_open" to entity.accountPayableOpen
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.overallPeriod)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.overallPeriod)
+      }
    }
 
    @Transactional
@@ -185,11 +184,10 @@ class RoutineRepository @Inject constructor(
             "fiscal_year" to entity.fiscalYear,
             "general_ledger_open" to entity.generalLedgerOpen,
             "account_payable_open" to entity.accountPayableOpen
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.overallPeriod)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.overallPeriod)
+      }
    }
 
    @Transactional
@@ -328,11 +326,10 @@ class RoutineRepository @Inject constructor(
             "fiscal_year" to entity.fiscalYear,
             "general_ledger_open" to entity.generalLedgerOpen,
             "account_payable_open" to entity.accountPayableOpen
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.overallPeriod)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.overallPeriod)
+      }
    }
 
    private fun mapRow(
@@ -340,7 +337,7 @@ class RoutineRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): RoutineEntity {
       return RoutineEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          overallPeriod = overallPeriodTypeRepository.mapRow(rs, "${columnPrefix}overallPeriod_"),
          period = rs.getInt("${columnPrefix}period"),
          periodFrom = rs.getLocalDate("${columnPrefix}period_from"),
@@ -357,7 +354,7 @@ class RoutineRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): RoutineEntity {
       return RoutineEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          overallPeriod = overallPeriodType,
          period = rs.getInt("${columnPrefix}period"),
          periodFrom = rs.getLocalDate("${columnPrefix}period_from"),

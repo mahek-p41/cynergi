@@ -1,7 +1,8 @@
 package com.cynergisuite.middleware.purchase.order.detail
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
@@ -46,7 +47,6 @@ object PurchaseOrderDetailDataLoader {
             id = null,
             number = poDetailNumber.getAndIncrement(),
             purchaseOrder = purchaseOrderIn,
-            sequence = null,
             itemfileNumber = lorem.words(1).toString(),
             orderQuantity = numbers.numberBetween(1, 100),
             receivedQuantity = numbers.numberBetween(1, 100),
@@ -56,7 +56,7 @@ object PurchaseOrderDetailDataLoader {
             fabric = numbers.numberBetween(1, 100),
             cancelledQuantity = numbers.numberBetween(1, 100),
             cancelledTempQuantity = numbers.numberBetween(1, 100),
-            shipTo = SimpleIdentifiableEntity(shipToIn.myId()),
+            shipTo = SimpleLegacyIdentifiableEntity(shipToIn.myId()),
             requiredDate = LocalDate.now(),
             dateOrdered = LocalDate.now(),
             freightPerItem = numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
@@ -77,7 +77,7 @@ object PurchaseOrderDetailDataLoader {
    fun streamDTO(
       numberIn: Int = 1,
       purchaseOrderIn: PurchaseOrderDTO,
-      shipToIn: SimpleIdentifiableDTO,
+      shipToIn: SimpleLegacyIdentifiableDTO,
       vendorIn: SimpleIdentifiableDTO
    ): Stream<PurchaseOrderDetailDTO> {
       val number = if (numberIn < 0) 1 else numberIn
@@ -91,7 +91,6 @@ object PurchaseOrderDetailDataLoader {
             id = null,
             number = poDetailNumber.getAndIncrement(),
             purchaseOrder = purchaseOrderIn,
-            sequence = null,
             itemfileNumber = lorem.words(1).toString(),
             orderQuantity = numbers.numberBetween(1, 100),
             receivedQuantity = numbers.numberBetween(1, 100),
@@ -101,7 +100,7 @@ object PurchaseOrderDetailDataLoader {
             fabric = numbers.numberBetween(1, 100),
             cancelledQuantity = numbers.numberBetween(1, 100),
             cancelledTempQuantity = numbers.numberBetween(1, 100),
-            shipTo = SimpleIdentifiableDTO(shipToIn.myId()),
+            shipTo = SimpleLegacyIdentifiableDTO(shipToIn.myId()),
             requiredDate = LocalDate.now(),
             dateOrdered = LocalDate.now(),
             freightPerItem = numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
@@ -135,7 +134,7 @@ class PurchaseOrderDetailDataLoaderService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create PurchaseOrderDetailEntity") }
    }
 
-   fun singleDTO(purchaseOrderIn: PurchaseOrderDTO, shipToIn: SimpleIdentifiableDTO, vendorIn: SimpleIdentifiableDTO): PurchaseOrderDetailDTO {
+   fun singleDTO(purchaseOrderIn: PurchaseOrderDTO, shipToIn: SimpleLegacyIdentifiableDTO, vendorIn: SimpleIdentifiableDTO): PurchaseOrderDetailDTO {
       return PurchaseOrderDetailDataLoader.streamDTO(1, purchaseOrderIn, shipToIn, vendorIn)
          .findFirst().orElseThrow { Exception("Unable to create PurchaseOrderDetail") }
    }

@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.core.type.MutableArgumentValue
 import io.micronaut.http.annotation.QueryValue
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,8 +32,8 @@ class CompanyAccessControlProvider @Inject constructor(
       val id = parameters
          .filter { it.value.isAnnotationPresent(QueryValue::class.java) }
          .filter { it.value.name == "id" }
-         .filter { it.value.type == Long::class.java }
-         .map { it.value.value as Long }
+         .filter { it.value.type == UUID::class.java }
+         .map { it.value.value as UUID }
          .first()
       val company = companyRepository.findOne(id)
       return authenticatedUserClientId == company?.myClientId()

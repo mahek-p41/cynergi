@@ -208,9 +208,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       result.address.id != null
-      result.address.id > 0
       new VendorDTO(result) == vendor
    }
 
@@ -265,9 +263,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       result.address.id != null
-      result.address.id > 0
       result.payTo.id == payToVendor.id
       new VendorDTO(result) == vendor
    }
@@ -289,8 +285,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 2
       response.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("${String.format('%d', vendorPaymentTerm.id)} was unable to be found", "paymentTerm.id"),
-         new ErrorDTO("${String.format('%d', shipVia.id)} was unable to be found", "shipVia.id"),
+         new ErrorDTO("${vendorPaymentTerm.id} was unable to be found", "paymentTerm.id"),
+         new ErrorDTO("${shipVia.id} was unable to be found", "shipVia.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -317,9 +313,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       result.address.id != null
-      result.address.id > 0
       result.vendorGroup != null
       new VendorDTO(result) == vendor
    }
@@ -347,9 +341,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       result.address.id != null
-      result.address.id > 0
       result.vendorGroup == null
       new VendorDTO(result) == vendor
    }
@@ -370,7 +362,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(Exception)
-      result.id > 0
       result.address == null
       result.accountNumber == null
 
@@ -403,9 +394,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       result.address.id != null
-      result.address.id > 0
       result.vendorGroup != null
       result.allowDropShipToCustomer == true
       result.autoSubmitPurchaseOrder == true
@@ -438,9 +427,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       result.address.id != null
-      result.address.id > 0
       result.vendorGroup != null
       result.allowDropShipToCustomer == false
       result.autoSubmitPurchaseOrder == false
@@ -640,7 +627,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       result.id != null
       result.id == vendor.id
       result.address.id != null
-      result.address.id > 0
       result.address.id == vendor.address.id
       new VendorDTO(result) == vendor
    }
@@ -844,9 +830,10 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
    void "search vendors" () {
       given:
+      final addressId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressDTO(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressDTO(addressId, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -978,7 +965,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final targetVendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Super Awesome Company")
 
       when: "A specific vendor is searched for by their 'number'"
-      def result = get("$path/search?query=${targetVendor.id}&fuzzy=false")
+      def result = get("$path/search?query=${targetVendor.number}&fuzzy=false")
 
       then: "That vendor is returned"
       notThrown(HttpClientResponseException)
@@ -1029,9 +1016,10 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
    void "Try creating vendor with a negative accountNumber" () {
       given:
+      final addressId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressDTO(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressDTO(addressId, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -1065,9 +1053,10 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
    void "Create vendor with bumpPercent that has 2 integral and 8 fractional" () {
       given:
+      final addressId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
 
-      final addressVO = new AddressDTO(1, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
+      final addressVO = new AddressDTO(addressId, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
@@ -1118,7 +1107,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
 
       when: // assign rebates to vendor
       rebateDTOList.eachWithIndex { rebateDTO, index ->
@@ -1192,7 +1180,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
 
       when: // assign rebates to vendor
       rebateDTOList.eachWithIndex { rebateDTO, index ->

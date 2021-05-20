@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -17,7 +17,7 @@ data class Verification(
    var employment: VerificationEmployment? = null,
    var landlord: VerificationLandlord? = null,
    val references: MutableList<VerificationReference> = mutableListOf()
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(dto: VerificationValueObject, company: String) :
       this(

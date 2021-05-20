@@ -5,9 +5,10 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.store.Store
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 data class GeneralLedgerJournalEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val account: AccountEntity,
    val profitCenter: Store,
    val date: LocalDate,
@@ -16,9 +17,9 @@ data class GeneralLedgerJournalEntity(
    val message: String?
 ) : Identifiable {
 
-   constructor(dto: GeneralLedgerJournalDTO, account: AccountEntity, profitCenter: Store, source: GeneralLedgerSourceCodeEntity) :
+   constructor(id: UUID?, dto: GeneralLedgerJournalDTO, account: AccountEntity, profitCenter: Store, source: GeneralLedgerSourceCodeEntity) :
       this(
-         id = dto.id,
+         id = id,
          account = account,
          profitCenter = profitCenter,
          date = dto.date!!,
@@ -27,5 +28,5 @@ data class GeneralLedgerJournalEntity(
          message = dto.message
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

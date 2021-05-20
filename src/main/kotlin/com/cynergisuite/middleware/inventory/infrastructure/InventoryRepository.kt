@@ -61,7 +61,6 @@ class InventoryRepository(
          i.status                      AS status,
          i.dataset                     AS dataset,
          comp.id                       AS comp_id,
-         comp.uu_row_id                AS comp_uu_row_id,
          comp.time_created             AS comp_time_created,
          comp.time_updated             AS comp_time_updated,
          comp.name                     AS comp_name,
@@ -131,7 +130,6 @@ class InventoryRepository(
          i.status AS status,
          i.dataset AS dataset,
          comp.id AS comp_id,
-         comp.uu_row_id AS comp_uu_row_id,
          comp.time_created AS comp_time_created,
          comp.time_updated AS comp_time_updated,
          comp.name AS comp_name,
@@ -370,7 +368,7 @@ class InventoryRepository(
          status = rs.getString("status"),
          primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
          locationType = InventoryLocationType(
-            id = rs.getLong("location_type_id"),
+            id = rs.getInt("location_type_id"),
             value = rs.getString("location_type_value"),
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")

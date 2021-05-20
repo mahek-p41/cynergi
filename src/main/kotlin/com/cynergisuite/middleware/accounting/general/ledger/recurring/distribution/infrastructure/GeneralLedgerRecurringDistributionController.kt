@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringDistributionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Fetch a single General Ledger Recurring Distribution", description = "Fetch a single General Ledger Recurring Distribution by its system generated primary key", operationId = "generalLedgerRecurringDistribution-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerRecurringDistributionDTO {
@@ -99,7 +100,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "/recurring-id/{glRecurringId:[0-9]+}{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "/recurring-id/{glRecurringId:[0-9a-fA-F\\-]+}{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Fetch a listing of General Ledger Recurring Distributions by General Ledger Recurring ID", description = "Fetch a paginated listing of General Ledger Recurring Distributions by General Ledger Recurring ID", operationId = "generalLedgerRecurringDistribution-fetchAllByRecurringId")
    @ApiResponses(
       value = [
@@ -112,7 +113,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    fun fetchAllByRecurringId(
       @Parameter(name = "glRecurringId", `in` = PATH, description = "The General Ledger Recurring ID for which the list of General Ledger Recurring Distributions is to be loaded")
       @Valid @QueryValue("glRecurringId")
-      glRecurringId: Long,
+      glRecurringId: UUID,
       @Parameter(name = "pageRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
@@ -159,7 +160,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       return response
    }
 
-   @Put(value = "/{id}", processes = [APPLICATION_JSON])
+   @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Update a single General Ledger Recurring Distribution", description = "Update a single General Ledger Recurring Distribution", operationId = "generalLedgerRecurringDistribution-update")
    @ApiResponses(
@@ -174,7 +175,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the General Ledger Recurring Distribution being updated")
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: GeneralLedgerRecurringDistributionDTO,
       authentication: Authentication,
@@ -190,7 +191,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       return response
    }
 
-   @Delete(value = "/{id}")
+   @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Delete a single GeneralLedgerRecurringDistribution", description = "Delete a single GeneralLedgerRecurringDistribution", operationId = "generalLedgerRecurringDistribution-delete")
    @ApiResponses(
@@ -202,7 +203,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

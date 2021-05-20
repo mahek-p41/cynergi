@@ -2,16 +2,15 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Identifiable
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @Schema(name = "GeneralLedgerSourceCode", title = "Defines a general ledger source code", description = "Defines a general ledger source code")
 data class GeneralLedgerSourceCodeDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Size(min = 1, max = 3)
@@ -31,5 +30,5 @@ data class GeneralLedgerSourceCodeDTO(
          description = entity.description
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

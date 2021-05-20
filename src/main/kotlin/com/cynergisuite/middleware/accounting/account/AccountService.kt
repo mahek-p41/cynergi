@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.localization.LocalizationService
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,7 +17,7 @@ class AccountService @Inject constructor(
    private val accountValidator: AccountValidator,
    private val localizationService: LocalizationService
 ) {
-   fun fetchById(id: Long, company: Company, locale: Locale): AccountDTO? =
+   fun fetchById(id: UUID, company: Company, locale: Locale): AccountDTO? =
       accountRepository.findOne(id, company)?.let { transformEntity(it, locale) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest, locale: Locale): Page<AccountDTO> {
@@ -41,7 +42,7 @@ class AccountService @Inject constructor(
       return transformEntity(accountRepository.insert(toCreate, company), locale)
    }
 
-   fun update(id: Long, dto: AccountDTO, company: Company, locale: Locale): AccountDTO {
+   fun update(id: UUID, dto: AccountDTO, company: Company, locale: Locale): AccountDTO {
       val toUpdate = accountValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountRepository.update(toUpdate, company), locale)
@@ -60,7 +61,7 @@ class AccountService @Inject constructor(
       )
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       accountRepository.delete(id, company)
    }
 }

@@ -79,7 +79,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == vendorGroup.value
       result.description == vendorGroup.description
    }
@@ -157,7 +157,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == jsonVendorGroup.value
       result.description == jsonVendorGroup.description
    }
@@ -177,7 +177,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == "value1"
       result.description == "description1"
    }
@@ -194,7 +194,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == vendorGroup.value
       result.description == vendorGroup.description
    }
@@ -275,7 +275,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       result != null
-      result.id > 0
+      result.id != null
       result.value == jsonUpdatedVG.value
       result.description == jsonUpdatedVG.description
    }

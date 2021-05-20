@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -30,7 +29,7 @@ class AccountPayableInvoiceSelectedTypeRepository @Inject constructor(
       val query = "SELECT * FROM account_payable_invoice_selected_type_domain WHERE id = :id"
       logger.trace("Searching for AccountPayableInvoiceSelectedTypeDomain {}: \nQuery {}", params, query)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for AccountPayableInvoiceSelectedTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
@@ -42,7 +41,7 @@ class AccountPayableInvoiceSelectedTypeRepository @Inject constructor(
       val query = "SELECT * FROM account_payable_invoice_selected_type_domain WHERE UPPER(value) = :value"
       logger.trace("Searching for AccountPayableInvoiceSelectedTypeDomain {}: \nQuery {}", params, query)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for AccountPayableInvoiceSelectedTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
 
@@ -54,7 +53,7 @@ class AccountPayableInvoiceSelectedTypeRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableInvoiceSelectedType =
       AccountPayableInvoiceSelectedType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")

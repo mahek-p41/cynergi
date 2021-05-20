@@ -122,7 +122,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       with(result) {
-         id > 0
+         id != null
          name == area.name
          with(store) {
             id == storeThree.myId()

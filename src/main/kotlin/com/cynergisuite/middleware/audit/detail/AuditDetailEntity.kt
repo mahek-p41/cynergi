@@ -6,9 +6,10 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class AuditDetailEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val scanArea: AuditScanAreaEntity,
@@ -23,7 +24,7 @@ data class AuditDetailEntity(
    val audit: Identifiable
 ) : Identifiable {
 
-   constructor(id: Long?, inventory: InventoryEntity, audit: SimpleIdentifiableEntity, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity) :
+   constructor(id: UUID?, inventory: InventoryEntity, audit: SimpleIdentifiableEntity, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity) :
       this(
          id = id,
          scanArea = scanArea,
@@ -38,5 +39,5 @@ data class AuditDetailEntity(
          audit = audit
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

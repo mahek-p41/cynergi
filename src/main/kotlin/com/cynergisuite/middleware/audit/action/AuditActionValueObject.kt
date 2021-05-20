@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
+import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
@@ -14,9 +15,8 @@ import javax.validation.constraints.Positive
 @Schema(name = "AuditAction", title = "Single item of an Audit's history", description = "An action taken against an Audit such as going from CREATED to IN-PROGRESS at a point in time")
 data class AuditActionValueObject(
 
-   @field:Positive
    @field:Schema(name = "id", description = "This is a database generated primary key", required = false)
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Schema(name = "timeCreated", required = false, description = "UTC Timestamp when the Audit was created")
    var timeCreated: OffsetDateTime? = null,
@@ -43,5 +43,5 @@ data class AuditActionValueObject(
          changedBy = EmployeeValueObject(entity.changedBy)
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

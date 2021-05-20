@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDTO
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDataLoader.PurchaseOrderControlDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -102,7 +103,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          dropFiveCharactersOnModelNumber == purchaseOrderControl.dropFiveCharactersOnModelNumber
          updateAccountPayable == purchaseOrderControl.updateAccountPayable
          printSecondDescription == purchaseOrderControl.printSecondDescription
@@ -165,7 +166,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          dropFiveCharactersOnModelNumber == purchaseOrderControl.dropFiveCharactersOnModelNumber
          updateAccountPayable == purchaseOrderControl.updateAccountPayable
          printSecondDescription == purchaseOrderControl.printSecondDescription
@@ -272,13 +273,14 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
 
    void "create invalid purchase order control with non-existing vendor id" () {
       given: 'get json PO control and make it invalid'
+      final nonExistentDefaultVendorId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      purchaseOrderControlDTO.defaultVendor.id = 99
+      purchaseOrderControlDTO.defaultVendor.id = nonExistentDefaultVendorId
 
       when:
       post("$path/", purchaseOrderControlDTO)
@@ -289,7 +291,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'defaultVendor.id'
-      response[0].message == '99 was unable to be found'
+      response[0].message == "$nonExistentDefaultVendorId was unable to be found"
    }
 
    void "create invalid purchase order control with non-existing approver id" () {
@@ -373,6 +375,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
 
    void "update invalid purchase order control with non-existing default vendor, default approver" () {
       given: 'Update existingPOControl in db with all new data in jsonPOControl'
+      final vendorId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
       final shipViaIn = shipViaTestDataLoaderService.single(company)
@@ -380,7 +383,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final employee = employeeFactoryService.single(company)
       final def existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
       final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      updatedPOControlDTO.defaultVendor = new SimpleIdentifiableDTO(999)
+      updatedPOControlDTO.defaultVendor = new SimpleIdentifiableDTO(vendorId)
       updatedPOControlDTO.defaultApprover.id = 999
 
       when:
@@ -394,34 +397,66 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response[0].path == 'defaultApprover.id'
       response[0].message == '999 was unable to be found'
       response[1].path == 'defaultVendor.id'
-      response[1].message == '999 was unable to be found'
+      response[1].message == "${vendorId} was unable to be found"
    }
 
-   void "update invalid purchase order control with id 0" () {
+   void "update invalid purchase order control with id" () {
       given:
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      updatedPOControlDTO.id = 0
+      final existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      updatedPOControlDTO.id = UUID.randomUUID() // this should be ignored by the API
 
       when:
-      put("$path/$existingPOControl.id", updatedPOControlDTO)
+      def response = put("$path/$existingPOControl.id", updatedPOControlDTO)
 
       then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'id'
-      response[0].message == 'id must be greater than zero'
+      notThrown(HttpClientResponseException)
+      with(response) {
+         id == existingPOControl.id
+         dropFiveCharactersOnModelNumber == updatedPOControlDTO.dropFiveCharactersOnModelNumber
+         updateAccountPayable == updatedPOControlDTO.updateAccountPayable
+         printSecondDescription == updatedPOControlDTO.printSecondDescription
+
+         with(defaultAccountPayableStatusType) {
+            value == updatedPOControlDTO.defaultAccountPayableStatusType.value
+            description == updatedPOControlDTO.defaultAccountPayableStatusType.description
+         }
+
+         printVendorComments == updatedPOControlDTO.printVendorComments
+         includeFreightInCost == updatedPOControlDTO.includeFreightInCost
+         updateCostOnModel == updatedPOControlDTO.updateCostOnModel
+
+         with(updatePurchaseOrderCost) {
+            value == updatedPOControlDTO.updatePurchaseOrderCost.value
+            description == updatedPOControlDTO.updatePurchaseOrderCost.description
+         }
+
+         with(defaultPurchaseOrderType) {
+            value == updatedPOControlDTO.defaultPurchaseOrderType.value
+            description == updatedPOControlDTO.defaultPurchaseOrderType.description
+         }
+
+         sortByShipToOnPrint == updatedPOControlDTO.sortByShipToOnPrint
+         invoiceByLocation == updatedPOControlDTO.invoiceByLocation
+         validateInventory == updatedPOControlDTO.validateInventory
+         defaultVendor.id == updatedPOControlDTO.defaultVendor.id
+         defaultApprover.id == updatedPOControlDTO.defaultApprover.id
+
+         with(approvalRequiredFlagType) {
+            value == updatedPOControlDTO.approvalRequiredFlagType.value
+            description == updatedPOControlDTO.approvalRequiredFlagType.description
+         }
+      }
    }
 
    void "update invalid purchase order control with non-existing id" () {
       given:
+      final invalidPurchaseOrderId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(company)
       final shipViaIn = shipViaTestDataLoaderService.single(company)
@@ -431,7 +466,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
 
       when:
-      put("$path/99", updatedPOControlDTO)
+      put("$path/$invalidPurchaseOrderId", updatedPOControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -439,7 +474,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'id'
-      response[0].message == '99 was unable to be found'
+      response[0].message == "$invalidPurchaseOrderId was unable to be found"
    }
 
    void "update invalid purchase order control with non-nullable properties" () {

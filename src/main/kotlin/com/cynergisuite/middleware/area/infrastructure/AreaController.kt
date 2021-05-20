@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.area.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleTypeDomainDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.area.AreaDTO
 import com.cynergisuite.middleware.area.AreaService
@@ -16,7 +16,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule
+import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.validation.ValidationException
 
-@Secured(SecurityRule.IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED)
 @Controller("/api/area")
 class AreaController @Inject constructor(
    private val userService: UserService,
@@ -68,7 +68,7 @@ class AreaController @Inject constructor(
       ]
    )
    fun enableArea(
-      @Body areaIdDTO: SimpleIdentifiableDTO,
+      @Body areaIdDTO: SimpleTypeDomainDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
@@ -91,7 +91,7 @@ class AreaController @Inject constructor(
       ]
    )
    fun disableArea(
-      id: Long,
+      id: Int,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
@@ -99,6 +99,6 @@ class AreaController @Inject constructor(
 
       logger.info("Disable area {} for company {}", id, company.myId())
 
-      areaService.disableArea(company, id!!)
+      areaService.disableArea(company, id)
    }
 }

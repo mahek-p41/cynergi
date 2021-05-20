@@ -5,8 +5,8 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 
 interface LocalizationCode {
    fun getCode(): String
@@ -45,24 +45,23 @@ class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cyner
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
 class InvalidCompany(company: Company) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.myDataset()))
-class MustMatchPathVariable(value: Any?) : Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
-class AddressNeedsUpdated() : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
-class InvalidPayToVendor(id: Long?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
+class AddressNeedsUpdated : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
+class InvalidPayToVendor(id: UUID?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
 class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) : Cynergi("cynergi.validation.select.percent.or.per.unit", arrayOf(percent, amountPerUnit))
 class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
 class PercentTotalGreaterThan100(percent: BigDecimal) : Cynergi("cynergi.validation.percent.total.greater.than.100", arrayOf(percent))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
-class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
-class AuditMustBeInProgressDetails(auditId: Long) : Cynergi("cynergi.audit.must.be.in.progress.details", arrayOf(auditId))
-class AuditMustBeInProgressDiscrepancy(auditId: Long) : Cynergi("cynergi.audit.must.be.in.progress.exception", arrayOf(auditId))
+class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
+class AuditMustBeInProgressDetails(auditId: UUID) : Cynergi("cynergi.audit.must.be.in.progress.details", arrayOf(auditId))
+class AuditMustBeInProgressDiscrepancy(auditId: UUID) : Cynergi("cynergi.audit.must.be.in.progress.exception", arrayOf(auditId))
 class AuditScanAreaNotFound(scanArea: String?) : Cynergi("cynergi.audit.scan.area.not.found", arrayOf(scanArea))
 class AuditOpenAtStore(storeNumber: Int) : Cynergi("cynergi.audit.open.at.store", arrayOf(storeNumber))
 class AuditExceptionMustHaveInventoryOrBarcode() : Cynergi("cynergi.audit.exception.inventory.or.barcode", emptyArray())
-class AuditHasBeenApprovedNoNewNotesAllowed(auditId: Long) : Cynergi("cynergi.audit.has.been.approved.no.new.notes.allowed", arrayOf(auditId))
+class AuditHasBeenApprovedNoNewNotesAllowed(auditId: UUID) : Cynergi("cynergi.audit.has.been.approved.no.new.notes.allowed", arrayOf(auditId))
 class AuditUpdateRequiresApprovedOrNote() : Cynergi("cynergi.audit.update.requires.approval.or.note", emptyArray())
-class AuditExceptionHasNotBeenApproved(auditExceptionId: Long) : Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
+class AuditExceptionHasNotBeenApproved(auditExceptionId: UUID) : Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
 class AuditDueToday(auditNumber: Int) : Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
 class AuditPastDue(auditNumber: Int) : Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 

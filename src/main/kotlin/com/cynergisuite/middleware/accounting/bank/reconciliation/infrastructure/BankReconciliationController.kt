@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -41,7 +42,7 @@ class BankReconciliationController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(BankReconciliationController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch a single BankReconciliation", description = "Fetch a single BankReconciliation by ID", operationId = "bankReconciliation-fetchOne")
    @ApiResponses(
       value = [
@@ -52,7 +53,7 @@ class BankReconciliationController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): BankReconciliationDTO {
@@ -117,7 +118,7 @@ class BankReconciliationController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankReconciliationEndpoints"], summary = "Create a single bank reconciliation", description = "Create a single bank reconciliation.", operationId = "bankReconciliation-update")
    @ApiResponses(
@@ -129,7 +130,7 @@ class BankReconciliationController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: BankReconciliationDTO,
       authentication: Authentication

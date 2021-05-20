@@ -5,18 +5,17 @@ import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditScanAreaEntity", title = "Area where an item was scanned", description = "Possible location within a store where an item was scanned as part of an audit")
 data class AuditScanAreaDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Scan area name")
@@ -37,7 +36,7 @@ data class AuditScanAreaDTO(
    var store: StoreDTO? = null
 
 ) : Identifiable {
-   override fun myId(): Long? = this.id
+   override fun myId(): UUID? = id
 
    constructor(entity: AuditScanAreaEntity) :
       this(

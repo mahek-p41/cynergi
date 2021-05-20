@@ -6,8 +6,6 @@ import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -94,7 +92,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
 
          with(checkFormType) {
             value == accountPayableControl.checkFormType.value
@@ -199,11 +197,12 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "create invalid account payable control with non-existing general ledger inventory clearing account id" () {
       given:
+      final nonExistentGeneralLedgerInventoryClearingAccountId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      accountPayableControl.generalLedgerInventoryClearingAccount.id = 0
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      accountPayableControl.generalLedgerInventoryClearingAccount.id = nonExistentGeneralLedgerInventoryClearingAccountId
 
       when:
       post("$path/", accountPayableControl)
@@ -214,16 +213,17 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "generalLedgerInventoryClearingAccount.id"
-      response[0].message == "0 was unable to be found"
+      response[0].message == "$nonExistentGeneralLedgerInventoryClearingAccountId was unable to be found"
    }
 
    void "create invalid account payable control with non-existing general ledger inventory account id" () {
       given:
+      final nonExistentGeneralLedgerInventoryAccountId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      accountPayableControl.generalLedgerInventoryAccount.id = 0
+      accountPayableControl.generalLedgerInventoryAccount.id = nonExistentGeneralLedgerInventoryAccountId
 
       when:
       post("$path/", accountPayableControl)
@@ -234,7 +234,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "generalLedgerInventoryAccount.id"
-      response[0].message == "0 was unable to be found"
+      response[0].message == "$nonExistentGeneralLedgerInventoryAccountId was unable to be found"
    }
 
    void "update valid account payable control by id" () {
@@ -282,25 +282,49 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       }
    }
 
-   void "update invalid account payable control with id 0" () {
+   void "update account payable control with invalid id in payload" () {
       given:
+      final nonExistentAPControlId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
       final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
-      updatedAPControlDTO.id = 0
+      updatedAPControlDTO.id = nonExistentAPControlId
 
-      when:
-      put("$path", updatedAPControlDTO)
+      when: "sending a payload with an invalid id"
+      def result = put("$path", updatedAPControlDTO)
 
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "id"
-      response[0].message == "id must be greater than zero"
+      then: "the id should be ignored and the entity associated with the company of the user should be used"
+      notThrown(HttpClientResponseException)
+      with(result) {
+         id == existingAPControl.id
+
+         with(checkFormType) {
+            value == updatedAPControlDTO.checkFormType.value
+            description == updatedAPControlDTO.checkFormType.description
+         }
+
+         payAfterDiscountDate == updatedAPControlDTO.payAfterDiscountDate
+         resetExpense == updatedAPControlDTO.resetExpense
+         useRebatesIndicator == updatedAPControlDTO.useRebatesIndicator
+         tradeCompanyIndicator == updatedAPControlDTO.tradeCompanyIndicator
+
+         with(printCurrencyIndicatorType) {
+            value == updatedAPControlDTO.printCurrencyIndicatorType.value
+            description == updatedAPControlDTO.printCurrencyIndicatorType.description
+         }
+
+         lockInventoryIndicator == updatedAPControlDTO.lockInventoryIndicator
+
+         with(purchaseOrderNumberRequiredIndicatorType) {
+            value == updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType.value
+            description == updatedAPControlDTO.purchaseOrderNumberRequiredIndicatorType.description
+         }
+
+         generalLedgerInventoryClearingAccount.id == updatedAPControlDTO.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryAccount.id == updatedAPControlDTO.generalLedgerInventoryAccount.id
+      }
    }
 
    void "update invalid account payable control with non-existing id" () {

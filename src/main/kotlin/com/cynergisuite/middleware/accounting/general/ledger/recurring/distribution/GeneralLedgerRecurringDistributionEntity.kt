@@ -1,29 +1,34 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import java.math.BigDecimal
+import java.util.UUID
 
 data class GeneralLedgerRecurringDistributionEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val generalLedgerRecurring: GeneralLedgerRecurringEntity,
-   val generalLedgerDistributionAccount: Identifiable,
-   val generalLedgerDistributionProfitCenter: Identifiable,
+   val generalLedgerDistributionAccount: AccountEntity,
+   val generalLedgerDistributionProfitCenter: LegacyIdentifiable,
    val generalLedgerDistributionAmount: BigDecimal
 
 ) : Identifiable {
 
    constructor(
+      id: UUID?,
       dto: GeneralLedgerRecurringDistributionDTO,
-      generalLedgerRecurring: GeneralLedgerRecurringEntity
+      generalLedgerRecurring: GeneralLedgerRecurringEntity,
+      generalLedgerDistributionAccount: AccountEntity
    ) :
       this(
-         id = dto.id,
+         id = id,
          generalLedgerRecurring = generalLedgerRecurring,
-         generalLedgerDistributionAccount = dto.generalLedgerDistributionAccount!!,
+         generalLedgerDistributionAccount = generalLedgerDistributionAccount,
          generalLedgerDistributionProfitCenter = dto.generalLedgerDistributionProfitCenter!!,
          generalLedgerDistributionAmount = dto.generalLedgerDistributionAmount!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

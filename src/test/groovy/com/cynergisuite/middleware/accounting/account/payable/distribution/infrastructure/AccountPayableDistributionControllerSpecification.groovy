@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
@@ -46,15 +47,18 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
    }
 
    void "fetch one account payable distribution not found" () {
+      given:
+      final nonExistentAccountPayableDistribution = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentAccountPayableDistribution")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentAccountPayableDistribution was unable to be found"
    }
 
    void "fetch all" () {
@@ -195,7 +199,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistribution = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final def apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
 
       when:
       def result = post("$path/", apDistribution)
@@ -204,7 +208,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          name == apDistribution.name
          profitCenter.id == apDistribution.profitCenter.id
          account.id == apDistribution.account.id
@@ -218,7 +222,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$nonNullableProp"] = null
 
       when:
@@ -246,7 +250,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$testProp"] = invalidValue
 
       when:
@@ -260,9 +264,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response[0].path == errorResponsePath
       response[0].message == errorMessage
       where:
-      testProp          | invalidValue                         || errorResponsePath    | errorMessage
-      'account'         | new SimpleIdentifiableDTO(999999)    || 'account.id'         | '999,999 was unable to be found'
-      'profitCenter'    | new SimpleIdentifiableDTO(999999)    || 'profitCenter.id'    | '999,999 was unable to be found'
+      testProp       | invalidValue                                                                       || errorResponsePath | errorMessage
+      'account'      | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'account.id'      | "ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found"
+      'profitCenter' | new SimpleLegacyIdentifiableDTO(999999)                                            || 'profitCenter.id' | "999,999 was unable to be found"
    }
 
    @Unroll
@@ -271,7 +275,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -297,7 +301,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final accounts = accountDataLoaderService.stream(5, company).toList()
       def apDistributions = []
       accounts.eachWithIndex { account, index ->
-         apDistributions.add(dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(account.myId()), "test"))
+         apDistributions.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(account.myId()), "test"))
       }
       apDistributions[4].percent = 1
 
@@ -322,7 +326,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      final def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.id = existingAPDistribution.id
 
       when:
@@ -346,7 +350,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.account = null
       updatedAPDistributionDTO.name = null
       updatedAPDistributionDTO.percent = null
@@ -369,12 +373,13 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
    void "update invalid account payable distribution with non-existing ids" () {
       given:
+      final nonExistentAccountId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
-      updatedAPDistributionDTO.account.id = 999999
+      final existingAPDistribution = dataLoaderService.single(store, acct, company)
+      final updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      updatedAPDistributionDTO.account.id = nonExistentAccountId
       updatedAPDistributionDTO.profitCenter.id = 999999
 
       when:
@@ -386,9 +391,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 2
       response[0].path == 'account.id'
+      response[0].message == "$nonExistentAccountId was unable to be found"
       response[1].path == 'profitCenter.id'
-      response[0].message == '999,999 was unable to be found'
-      response[1].message == '999,999 was unable to be found'
+      response[1].message == "999,999 was unable to be found"
    }
 
    @Unroll
@@ -398,7 +403,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -426,7 +431,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       def updatedAPDistDTOs = []
       accounts.eachWithIndex { account, index ->
          existingAPDistributions.add(dataLoaderService.single(store, account, company))
-         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(account.myId()), "test"))
+         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(account.myId()), "test"))
       }
       updatedAPDistDTOs.eachWithIndex{ dto, index ->
          dto.id = existingAPDistributions[index].id
@@ -453,7 +458,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistribution = dataLoaderService.single(store, acct, company)
+      final apDistribution = dataLoaderService.single(store, acct, company)
 
       when:
       delete("$path/${apDistribution.id}")
@@ -477,7 +482,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(3, tstds2)
       final acct = accountDataLoaderService.single(tstds2)
-      final def apDistribution = dataLoaderService.single(store, acct, tstds2)
+      final apDistribution = dataLoaderService.single(store, acct, tstds2)
 
       when:
       delete("$path/${apDistribution.id}")

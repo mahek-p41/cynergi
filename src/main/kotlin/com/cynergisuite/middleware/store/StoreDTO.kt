@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.store
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionDTO
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -35,7 +35,7 @@ data class StoreDTO(
    @field:Schema(name = "region", required = false, nullable = true, description = "Region that a store belong to")
    var region: RegionDTO? = null
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: StoreEntity) :
       this(

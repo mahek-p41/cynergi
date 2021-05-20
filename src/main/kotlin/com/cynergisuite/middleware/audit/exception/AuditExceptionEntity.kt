@@ -7,9 +7,10 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class AuditExceptionEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val scanArea: AuditScanAreaEntity?,
@@ -28,7 +29,7 @@ data class AuditExceptionEntity(
    val audit: Identifiable
 ) : Identifiable {
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: UUID, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -43,7 +44,7 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, barcode: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: UUID, barcode: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = barcode,
@@ -58,5 +59,5 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

@@ -5,9 +5,10 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormType
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorType
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorType
+import java.util.UUID
 
 data class AccountPayableControlEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val checkFormType: AccountPayableCheckFormType,
    val payAfterDiscountDate: Boolean,
    val resetExpense: Boolean,
@@ -21,6 +22,7 @@ data class AccountPayableControlEntity(
 ) : Identifiable {
 
    constructor(
+      id: UUID?,
       dto: AccountPayableControlDTO,
       checkFormType: AccountPayableCheckFormType,
       printCurrencyIndicatorType: PrintCurrencyIndicatorType,
@@ -29,7 +31,7 @@ data class AccountPayableControlEntity(
       generalLedgerInventoryAccount: AccountEntity
    ) :
       this(
-         id = dto.id,
+         id = id,
          checkFormType = checkFormType,
          payAfterDiscountDate = dto.payAfterDiscountDate!!,
          resetExpense = dto.resetExpense!!,
@@ -42,5 +44,5 @@ data class AccountPayableControlEntity(
          generalLedgerInventoryAccount = generalLedgerInventoryAccount
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

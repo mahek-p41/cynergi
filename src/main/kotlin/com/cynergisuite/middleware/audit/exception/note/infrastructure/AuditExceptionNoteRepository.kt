@@ -2,13 +2,13 @@ package com.cynergisuite.middleware.audit.exception.note.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
@@ -33,18 +33,17 @@ class AuditExceptionNoteRepository(
             "note" to note.note,
             "entered_by" to note.enteredBy.number,
             "audit_exception_id" to note.auditException.myId()
-         ),
-         RowMapper { rs, _ ->
-            AuditExceptionNote(
-               id = rs.getLong("id"),
-               timeCreated = rs.getOffsetDateTime("time_created"),
-               timeUpdated = rs.getOffsetDateTime("time_updated"),
-               note = rs.getString("note"),
-               enteredBy = note.enteredBy,
-               auditException = SimpleIdentifiableEntity(rs.getLong("audit_exception_id"))
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         AuditExceptionNote(
+            id = rs.getUuid("id"),
+            timeCreated = rs.getOffsetDateTime("time_created"),
+            timeUpdated = rs.getOffsetDateTime("time_updated"),
+            note = rs.getString("note"),
+            enteredBy = note.enteredBy,
+            auditException = SimpleIdentifiableEntity(rs.getUuid("audit_exception_id"))
+         )
+      }
    }
 
    fun upsert(note: AuditExceptionNote): AuditExceptionNote =
@@ -57,12 +56,12 @@ class AuditExceptionNoteRepository(
    fun mapRow(rs: ResultSet, enteredBy: EmployeeEntity, columnPrefix: String = EMPTY): AuditExceptionNote? =
       if (rs.getString("${columnPrefix}id") != null) {
          AuditExceptionNote(
-            id = rs.getLong("${columnPrefix}id"),
+            id = rs.getUuid("${columnPrefix}id"),
             timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
             timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
             note = rs.getString("${columnPrefix}note"),
             enteredBy = enteredBy,
-            auditException = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}audit_exception_id"))
+            auditException = SimpleIdentifiableEntity(rs.getUuid("${columnPrefix}audit_exception_id"))
          )
       } else {
          null

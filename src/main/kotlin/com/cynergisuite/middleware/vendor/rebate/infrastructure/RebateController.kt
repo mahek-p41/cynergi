@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -44,7 +45,7 @@ class RebateController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(RebateController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["RebateEndpoints"], summary = "Fetch a single Rebate", description = "Fetch a single Rebate by it's system generated primary key", operationId = "rebate-fetchOne")
    @ApiResponses(
       value = [
@@ -56,7 +57,7 @@ class RebateController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): RebateDTO {
@@ -143,7 +144,7 @@ class RebateController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the rebate being updated")
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: RebateDTO,
       authentication: Authentication,
@@ -159,7 +160,7 @@ class RebateController @Inject constructor(
       return response
    }
 
-   @Post(uri = "/{rebateId:[0-9]+}/vendor", processes = [APPLICATION_JSON])
+   @Post(uri = "/{rebateId:[0-9a-fA-F\\-]+}/vendor", processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RebateToVendorEndpoints"], summary = "Assign a vendor to rebate", description = "Assign a vendor to rebate.", operationId = "rebate-assignVendor")
@@ -171,7 +172,7 @@ class RebateController @Inject constructor(
       ]
    )
    fun assignVendor(
-      @QueryValue("rebateId") rebateId: Long,
+      @QueryValue("rebateId") rebateId: UUID,
       @Body vendorDTO: SimpleIdentifiableDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -183,7 +184,7 @@ class RebateController @Inject constructor(
       rebateService.assignVendorToRebate(rebateId, vendorDTO, user.myCompany())
    }
 
-   @Delete(uri = "/{rebateId:[0-9]+}/vendor/{vendorId:[0-9]+}", produces = [APPLICATION_JSON])
+   @Delete(uri = "/{rebateId:[0-9a-fA-F\\-]+}/vendor/{vendorId:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["RebateToVendorEndpoints"], summary = "Disassociate a vendor from rebate", description = "Disassociate a vendor from rebate", operationId = "rebate-disassociateVendor")
    @ApiResponses(
@@ -195,8 +196,8 @@ class RebateController @Inject constructor(
       ]
    )
    fun disassociateVendor(
-      @QueryValue("rebateId") rebateId: Long,
-      @QueryValue("vendorId") vendorId: Long,
+      @QueryValue("rebateId") rebateId: UUID,
+      @QueryValue("vendorId") vendorId: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

@@ -21,6 +21,9 @@ fun ResultSet.getLocalDateOrNull(columnLabel: String): LocalDate? =
 fun ResultSet.getUuid(columnLabel: String): UUID =
    this.getObject(columnLabel, UUID::class.java)
 
+fun ResultSet.getUuidOrNull(columnLabel: String): UUID? =
+   this.getObject(columnLabel, UUID::class.java)
+
 fun ResultSet.getIntOrNull(columnLabel: String): Int? {
    val column = this.getString(columnLabel)?.trimToNull()
 

@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -41,7 +42,7 @@ class GeneralLedgerReversalController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReversalController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Fetch a single GeneralLedgerReversal", description = "Fetch a single GeneralLedgerReversal by its system generated primary key", operationId = "generalLedgerReversal-fetchOne")
    @ApiResponses(
       value = [
@@ -53,7 +54,7 @@ class GeneralLedgerReversalController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerReversalDTO {
@@ -139,7 +140,7 @@ class GeneralLedgerReversalController @Inject constructor(
    )
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the GeneralLedgerReversal being updated") @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: GeneralLedgerReversalDTO,
       authentication: Authentication,
@@ -148,7 +149,7 @@ class GeneralLedgerReversalController @Inject constructor(
       logger.info("Requested Update GeneralLedgerReversal {}", dto)
 
       val user = userService.findUser(authentication)
-      val response = generalLedgerReversalService.update(dto, user.myCompany())
+      val response = generalLedgerReversalService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update GeneralLedgerReversal {} resulted in {}", dto, response)
 

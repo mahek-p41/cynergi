@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.region.infrastructure
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.ValidationException
@@ -44,7 +45,7 @@ class RegionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(RegionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["RegionEndpoints"], summary = "Fetch a single Region", description = "Fetch a single Region by ID", operationId = "region-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class RegionController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): RegionDTO {
@@ -121,7 +122,7 @@ class RegionController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RegionEndpoints"], summary = "Update a single region", description = "Update a single region.", operationId = "region-update")
@@ -134,7 +135,7 @@ class RegionController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: RegionDTO,
       authentication: Authentication,
@@ -150,7 +151,7 @@ class RegionController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["RegionEndpoints"], summary = "Delete a single Region", description = "Delete a single Region by it's system generated primary key", operationId = "region-delete")
    @ApiResponses(
@@ -163,7 +164,7 @@ class RegionController @Inject constructor(
    )
    fun delete(
       @Parameter(description = "Primary Key to delete the Region with", `in` = ParameterIn.PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): RegionDTO {
@@ -174,7 +175,7 @@ class RegionController @Inject constructor(
       return regionService.delete(id, user.myCompany()) ?: throw NotFoundException(id)
    }
 
-   @Post(uri = "/{regionId:[0-9]+}/store", processes = [APPLICATION_JSON])
+   @Post(uri = "/{regionId:[0-9a-fA-F\\-]+}/store", processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RegionEndpoints"], summary = "Assign a store to region", description = "Assign a store to region.", operationId = "region-assign-store")
@@ -186,8 +187,8 @@ class RegionController @Inject constructor(
       ]
    )
    fun assignStore(
-      @QueryValue("regionId") regionId: Long,
-      @Body storeDTO: SimpleIdentifiableDTO,
+      @QueryValue("regionId") regionId: UUID,
+      @Body storeDTO: SimpleLegacyIdentifiableDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
@@ -198,7 +199,7 @@ class RegionController @Inject constructor(
       regionService.assignStoreToRegion(regionId, storeDTO, user.myCompany())
    }
 
-   @Delete(uri = "/{regionId:[0-9]+}/store/{storeId:[0-9]+}", produces = [APPLICATION_JSON])
+   @Delete(uri = "/{regionId:[0-9a-fA-F\\-]+}/store/{storeId:[0-9]+}", produces = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["RegionEndpoints"], summary = "Disassociate a store from region", description = "Disassociate a store from region", operationId = "region-disassociate-store")
    @ApiResponses(
@@ -210,7 +211,7 @@ class RegionController @Inject constructor(
       ]
    )
    fun disassociateStore(
-      @QueryValue("regionId") regionId: Long,
+      @QueryValue("regionId") regionId: UUID,
       @QueryValue("storeId") storeId: Long,
       httpRequest: HttpRequest<*>,
       authentication: Authentication

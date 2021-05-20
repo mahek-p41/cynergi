@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -17,9 +18,9 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -40,7 +41,6 @@ class GeneralLedgerJournalRepository @Inject constructor(
          )
          SELECT
             glJournal.id                                                    AS glJournal_id,
-            glJournal.uu_row_id                                             AS glJournal_uu_row_id,
             glJournal.time_created                                          AS glJournal_time_created,
             glJournal.time_updated                                          AS glJournal_time_updated,
             glJournal.company_id                                            AS glJournal_company_id,
@@ -86,7 +86,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerJournalEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerJournalEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()}\nWHERE glJournal.id = :id AND glJournal.company_id = :comp_id"
 
@@ -159,9 +159,8 @@ class GeneralLedgerJournalRepository @Inject constructor(
             "source_id" to entity.source.id,
             "amount" to entity.amount,
             "message" to entity.message
-         ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity.account, entity.profitCenter, entity.source) }
-      )
+         )
+      ) { rs, _ -> mapRowUpsert(rs, entity.account, entity.profitCenter, entity.source) }
    }
 
    @Transactional
@@ -192,9 +191,8 @@ class GeneralLedgerJournalRepository @Inject constructor(
             "source_id" to entity.source.id,
             "amount" to entity.amount,
             "message" to entity.message
-         ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity.account, entity.profitCenter, entity.source) }
-      )
+         )
+      ) { rs, _ -> mapRowUpsert(rs, entity.account, entity.profitCenter, entity.source) }
 
       logger.debug("Updated GeneralLedgerJournal {}", updated)
 
@@ -203,7 +201,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
       return GeneralLedgerJournalEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          account = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
          profitCenter = storeRepository.mapRow(rs, company, "${columnPrefix}profitCenter_"),
          date = rs.getLocalDate("${columnPrefix}date"),
@@ -215,7 +213,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
 
    private fun mapRowUpsert(rs: ResultSet, account: AccountEntity, profitCenter: Store, source: GeneralLedgerSourceCodeEntity, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
       return GeneralLedgerJournalEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          account = account,
          profitCenter = profitCenter,
          date = rs.getLocalDate("${columnPrefix}date"),

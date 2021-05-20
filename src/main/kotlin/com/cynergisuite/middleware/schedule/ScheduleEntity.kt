@@ -6,9 +6,10 @@ import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.type.ScheduleType
+import java.util.UUID
 
 data class ScheduleEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val title: String,
    val description: String?,
    val schedule: String,
@@ -42,5 +43,5 @@ data class ScheduleEntity(
          arguments = arguments
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

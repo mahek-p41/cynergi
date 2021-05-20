@@ -35,7 +35,7 @@ class LocationController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(LocationController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["LocationEndpoints"], summary = "Fetch a single Location", description = "Fetch a single Location by it's system generated primary key", operationId = "location-fetchOne")
    @ApiResponses(
       value = [

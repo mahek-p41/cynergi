@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +18,7 @@ class RebateService @Inject constructor(
    private val vendorRepository: VendorRepository
 ) {
 
-   fun fetchById(id: Long, company: Company): RebateDTO? =
+   fun fetchById(id: UUID, company: Company): RebateDTO? =
       rebateRepository.findOne(id, company)?.let { RebateDTO(entity = it) }
 
    fun create(dto: RebateDTO, company: Company): RebateDTO {
@@ -34,20 +35,20 @@ class RebateService @Inject constructor(
       }
    }
 
-   fun update(id: Long, dto: RebateDTO, company: Company): RebateDTO {
+   fun update(id: UUID, dto: RebateDTO, company: Company): RebateDTO {
       val toUpdate = rebateValidator.validateUpdate(id, dto, company)
 
       return transformEntity(rebateRepository.update(toUpdate, company))
    }
 
-   fun assignVendorToRebate(rebateId: Long, dto: SimpleIdentifiableDTO, company: Company) {
+   fun assignVendorToRebate(rebateId: UUID, dto: SimpleIdentifiableDTO, company: Company) {
       val rebate = rebateRepository.findOne(rebateId, company) ?: throw NotFoundException(rebateId)
       val vendor = vendorRepository.findOne(dto.id!!, company) ?: throw NotFoundException(dto.id!!)
 
       rebateRepository.assignVendorToRebate(rebate, vendor)
    }
 
-   fun disassociateVendorFromRebate(rebateId: Long, vendorId: Long, company: Company) {
+   fun disassociateVendorFromRebate(rebateId: UUID, vendorId: UUID, company: Company) {
       val rebate = rebateRepository.findOne(rebateId, company) ?: throw NotFoundException(rebateId)
       val vendor = vendorRepository.findOne(vendorId, company) ?: throw NotFoundException(vendorId)
 

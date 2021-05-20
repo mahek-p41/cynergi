@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.area
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleTypeDomainDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -16,7 +16,7 @@ data class ModuleDTO(
 
    @field:NotNull
    @field:Positive
-   var id: Long? = null,
+   var id: Int? = null,
 
    @field:Size(min = 1, max = 10)
    @field:Schema(description = "Module value")
@@ -37,7 +37,7 @@ data class ModuleDTO(
    var level: Int?,
 
    @field:Schema(description = "Menu in which module belongs to")
-   var menuType: SimpleIdentifiableDTO? = null
+   var menuType: SimpleTypeDomainDTO? = null
 
 ) {
 
@@ -48,7 +48,7 @@ data class ModuleDTO(
          program = type.program,
          description = type.description,
          level = type.level,
-         menuType = type.menuType?.let { SimpleIdentifiableDTO(it.id) }
+         menuType = type.menuType?.let { SimpleTypeDomainDTO(it.id) }
       )
 
    constructor(type: ModuleType, localizedDescription: String) :
@@ -58,6 +58,6 @@ data class ModuleDTO(
          program = type.program,
          description = localizedDescription,
          level = type.level,
-         menuType = type.menuType?.let { SimpleIdentifiableDTO(it.id) }
+         menuType = type.menuType?.let { SimpleTypeDomainDTO(it.id) }
       )
 }
