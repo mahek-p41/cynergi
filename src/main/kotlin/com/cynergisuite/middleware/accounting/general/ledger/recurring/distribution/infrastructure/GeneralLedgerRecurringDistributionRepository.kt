@@ -7,7 +7,6 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.Company
@@ -24,7 +23,6 @@ import javax.transaction.Transactional
 @Singleton
 class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
-   private val accountRepository: AccountRepository,
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringDistributionRepository::class.java)
@@ -33,12 +31,10 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return """
          WITH general_ledger_recurring AS (
             ${generalLedgerRecurringRepository.selectBaseQuery()}
-         ),
-         account AS (
-            ${accountRepository.selectBaseQuery()}
          )
          SELECT
             glRecurringDist.id                                                AS glRecurringDist_id,
+            glRecurringDist.general_ledger_distribution_account_id            AS glRecurringDist_account_id,
             glRecurringDist.general_ledger_distribution_profit_center_id_sfk  AS glRecurringDist_profit_center_id_sfk,
             glRecurringDist.general_ledger_distribution_amount                AS glRecurringDist_general_ledger_distribution_amount,
             glRecurring.glRecurring_id                                        AS glRecurringDist_glRecurring_id,
@@ -55,28 +51,9 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             glRecurring.glRecurring_type_value                                AS glRecurringDist_glRecurring_type_value,
             glRecurring.glRecurring_type_description                          AS glRecurringDist_glRecurring_type_description,
             glRecurring.glRecurring_type_localization_code                    AS glRecurringDist_glRecurring_type_localization_code,
-            account.account_id                                                AS glRecurringDist_account_id,
-            account.account_number                                            AS glRecurringDist_account_number,
-            account.account_name                                              AS glRecurringDist_account_name,
-            account.account_form_1099_field                                   AS glRecurringDist_account_form_1099_field,
-            account.account_corporate_account_indicator                       AS glRecurringDist_account_corporate_account_indicator,
-            account.account_comp_id                                           AS glRecurringDist_account_comp_id,
-            account.account_type_id                                           AS glRecurringDist_account_type_id,
-            account.account_type_value                                        AS glRecurringDist_account_type_value,
-            account.account_type_description                                  AS glRecurringDist_account_type_description,
-            account.account_type_localization_code                            AS glRecurringDist_account_type_localization_code,
-            account.account_balance_type_id                                   AS glRecurringDist_account_balance_type_id,
-            account.account_balance_type_value                                AS glRecurringDist_account_balance_type_value,
-            account.account_balance_type_description                          AS glRecurringDist_account_balance_type_description,
-            account.account_balance_type_localization_code                    AS glRecurringDist_account_balance_type_localization_code,
-            account.account_status_id                                         AS glRecurringDist_account_status_id,
-            account.account_status_value                                      AS glRecurringDist_account_status_value,
-            account.account_status_description                                AS glRecurringDist_account_status_description,
-            account.account_status_localization_code                          AS glRecurringDist_account_status_localization_code,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring_distribution glRecurringDist
             JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id
-            JOIN account ON glRecurringDist.general_ledger_distribution_account_id = account.account_id
       """
    }
 
@@ -157,7 +134,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "general_ledger_recurring_id" to entity.generalLedgerRecurring.id,
-            "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.id,
+            "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.myId(),
             "general_ledger_distribution_profit_center_id_sfk" to entity.generalLedgerDistributionProfitCenter.myId(),
             "general_ledger_distribution_amount" to entity.generalLedgerDistributionAmount
          )
@@ -185,7 +162,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "general_ledger_recurring_id" to entity.generalLedgerRecurring.id,
-            "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.id,
+            "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.myId(),
             "general_ledger_distribution_profit_center_id_sfk" to entity.generalLedgerDistributionProfitCenter.myId(),
             "general_ledger_distribution_amount" to entity.generalLedgerDistributionAmount
          ),
@@ -214,7 +191,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return GeneralLedgerRecurringDistributionEntity(
          id = rs.getLong("${columnPrefix}id"),
          generalLedgerRecurring = generalLedgerRecurringRepository.mapRow(rs, "${columnPrefix}glRecurring_"),
-         generalLedgerDistributionAccount = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
+         generalLedgerDistributionAccount = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}account_id")),
          generalLedgerDistributionProfitCenter = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}profit_center_id_sfk")),
          generalLedgerDistributionAmount = rs.getBigDecimal("${columnPrefix}general_ledger_distribution_amount")
       )
