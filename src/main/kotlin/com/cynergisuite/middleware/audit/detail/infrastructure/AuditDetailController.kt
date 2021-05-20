@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.detail.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateUpdateDTO
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailService
@@ -64,7 +63,7 @@ class AuditDetailController @Inject constructor(
       logger.info("Fetching AuditDetail by {}", id)
 
       val user = userService.findUser(authentication)
-      val response = auditDetailService.fetchById(id = id, company = user.myCompany(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
+      val response = auditDetailService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
 
@@ -92,7 +91,7 @@ class AuditDetailController @Inject constructor(
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
       val user = userService.findUser(authentication)
-      val page = auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+      val page = auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest)
          .toPage { transformEntity(it) }
 
       if (page.elements.isEmpty()) {
@@ -130,7 +129,7 @@ class AuditDetailController @Inject constructor(
          HttpResponse.notModified<AuditDetailValueObject>()
       } else {
          val detailToCreate = auditDetailValidator.validateCreate(auditId, user, vo)
-         val response = auditDetailService.create(auditId, detailToCreate, user, httpRequest.findLocaleWithDefault())
+         val response = auditDetailService.create(auditId, detailToCreate, user)
 
          logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
 
@@ -163,7 +162,7 @@ class AuditDetailController @Inject constructor(
 
       val user = userService.findUser(authentication)
       val existingDetail = auditDetailValidator.validateUpdate(auditId, user, vo)
-      val response = auditDetailService.update(auditId, existingDetail, user, httpRequest.findLocaleWithDefault())
+      val response = auditDetailService.update(auditId, existingDetail, user)
 
       logger.debug("Requested Update AuditDetail {} resulted in {}", existingDetail, response)
 

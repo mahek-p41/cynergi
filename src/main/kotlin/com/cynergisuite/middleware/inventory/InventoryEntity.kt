@@ -35,5 +35,35 @@ data class InventoryEntity(
    val primaryLocation: Store,
    val locationType: InventoryLocationType
 ) : Identifiable {
-   override fun myId(): Long? = id
+   constructor(dto: InventoryDTO, location: Location, primaryLocation: Store, locationType: InventoryLocationType) :
+      this(
+         id = dto.id,
+         serialNumber = dto.serialNumber,
+         lookupKey = dto.lookupKey,
+         lookupKeyType = dto.lookupKeyType,
+         barcode = dto.barcode,
+         altId = dto.altId,
+         brand = dto.brand,
+         modelNumber = dto.modelNumber,
+         productCode = dto.productCode,
+         description = dto.description,
+         receivedDate = dto.receivedDate,
+         originalCost = dto.originalCost,
+         actualCost = dto.actualCost,
+         modelCategory = dto.modelCategory,
+         timesRented = dto.timesRented,
+         totalRevenue = dto.totalRevenue,
+         remainingValue = dto.remainingValue,
+         sellPrice = dto.sellPrice,
+         assignedValue = dto.assignedValue,
+         idleDays = dto.idleDays,
+         condition = dto.condition,
+         returnedDate = dto.returnedDate,
+         location = location,
+         status = dto.status,
+         primaryLocation = primaryLocation,
+         locationType = locationType
+      )
+
+   override fun myId(): Long = id
 }
