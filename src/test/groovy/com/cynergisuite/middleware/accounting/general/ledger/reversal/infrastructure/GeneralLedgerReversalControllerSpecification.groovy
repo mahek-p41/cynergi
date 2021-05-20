@@ -26,7 +26,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       given:
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
-      final def generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
 
       when:
       def result = get("$path/$generalLedgerReversal.id")
@@ -143,7 +143,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -151,7 +151,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       given:
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
-      final def generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
 
       when:
       def result = post("$path/", generalLedgerReversal)
@@ -246,7 +246,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       given:
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
-      final def existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
       def updatedGLReversal = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(sourceCode))
       updatedGLReversal.id = existingGLReversal.id
 
@@ -271,7 +271,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       given:
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
-      final def existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
       def updatedGLReversal = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(sourceCode))
       updatedGLReversal.id = existingGLReversal.id
       updatedGLReversal.comment = null
@@ -298,7 +298,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       given:
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
-      final def existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
       def updatedGLReversal = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(sourceCode))
       updatedGLReversal.id = existingGLReversal.id
       updatedGLReversal["$nonNullableProp"] = null
@@ -328,7 +328,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       final nonExistentId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
-      final def existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
       def updatedGLReversal = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(sourceCode))
       updatedGLReversal.id = existingGLReversal.id
       updatedGLReversal.source.id = nonExistentId

@@ -152,7 +152,7 @@ data class InventoryDTO(
          status = item.status,
          primaryLocation = StoreDTO(item.primaryLocation),
          locationType = locationType,
-         dataset = item.primaryLocation.myCompany().myDataset()
+         dataset = item.primaryLocation.myCompany().datasetCode
       )
 
    override fun myId(): Long? = id

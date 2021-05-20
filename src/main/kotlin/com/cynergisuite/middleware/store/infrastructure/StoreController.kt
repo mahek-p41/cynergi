@@ -38,7 +38,7 @@ class StoreController @Inject constructor(
    @Throws(NotFoundException::class)
    @AccessControl("store-fetchOne", StoreAccessControlProvider::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
+   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "store-fetchOne")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
@@ -53,7 +53,7 @@ class StoreController @Inject constructor(
    ): StoreDTO {
       logger.info("Fetching Store by id {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = storeService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
@@ -79,7 +79,7 @@ class StoreController @Inject constructor(
    ): Page<StoreDTO> {
       logger.info("Fetching all stores {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = storeService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {

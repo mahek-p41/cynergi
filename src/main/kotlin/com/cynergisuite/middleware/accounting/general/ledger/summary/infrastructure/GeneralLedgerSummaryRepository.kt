@@ -5,16 +5,19 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -23,7 +26,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerSummaryRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
@@ -90,8 +93,9 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       """
    }
 
-   fun exists(company: Company, accountId: Long, profitCenterId: Long, overallPeriodId: Long): Boolean {
-      val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
+   @ReadOnly
+   fun exists(company: CompanyEntity, accountId: Long, profitCenterId: Long, overallPeriodId: Long): Boolean {
+      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT id
@@ -100,20 +104,21 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          """.trimIndent(),
          params,
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if general_ledger_summary: {} exists resulted in {}", params, exists)
 
       return exists
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerSummaryEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerSummaryEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE glSummary.id = :id AND glSummary.company_id = :comp_id"
 
       logger.debug("Searching for GeneralLedgerSummary using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val generalLedgerSummary = mapRow(rs, company, "glSummary_")
 
          generalLedgerSummary
@@ -124,13 +129,14 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       return found
    }
 
-   fun findOneByBusinessKey(company: Company, accountId: UUID, profitCenterId: Long, overallPeriodId: Int): GeneralLedgerSummaryEntity? {
-      val params = mutableMapOf("comp_id" to company.myId(), "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
+   @ReadOnly
+   fun findOneByBusinessKey(company: CompanyEntity, accountId: UUID, profitCenterId: Long, overallPeriodId: Int): GeneralLedgerSummaryEntity? {
+      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
       val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterId AND glSummary.overall_period_id = :overallPeriodId"
 
       logger.debug("Searching for GeneralLedgerSummary using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val generalLedgerSummary = mapRow(rs, company, "glSummary_")
 
          generalLedgerSummary
@@ -141,7 +147,8 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<GeneralLedgerSummaryEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<GeneralLedgerSummaryEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<GeneralLedgerSummaryEntity> = mutableListOf()
 
@@ -159,11 +166,11 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """,
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          )
-      ) { rs ->
+      ) { rs, _ ->
          resultList.add(mapRow(rs, company, "glSummary_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -178,7 +185,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: GeneralLedgerSummaryEntity, company: Company): GeneralLedgerSummaryEntity {
+   fun insert(entity: GeneralLedgerSummaryEntity, company: CompanyEntity): GeneralLedgerSummaryEntity {
       logger.debug("Inserting GeneralLedgerSummary {}", entity)
 
       return jdbc.insertReturning(
@@ -227,7 +234,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "account_id" to entity.account.myId(),
             "profit_center_id_sfk" to entity.profitCenter.myId(),
             "overall_period_id" to entity.overallPeriod.id,
@@ -250,7 +257,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerSummaryEntity, company: Company): GeneralLedgerSummaryEntity {
+   fun update(entity: GeneralLedgerSummaryEntity, company: CompanyEntity): GeneralLedgerSummaryEntity {
       logger.debug("Updating GeneralLedgerSummary {}", entity)
 
       return jdbc.updateReturning(
@@ -281,7 +288,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "account_id" to entity.account.myId(),
             "profit_center_id_sfk" to entity.profitCenter.myId(),
             "overall_period_id" to entity.overallPeriod.id,
@@ -303,7 +310,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       ) { rs, _ -> mapRow(rs, entity) }
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
+   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
          id = rs.getUuid("${columnPrefix}id"),
          account = accountRepository.mapRow(rs, company, "${columnPrefix}acct_"),

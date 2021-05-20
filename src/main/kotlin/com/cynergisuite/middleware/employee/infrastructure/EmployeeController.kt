@@ -49,7 +49,7 @@ class EmployeeController @Inject constructor(
    ): Page<EmployeeValueObject> {
       logger.info("Fetching all employees {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = employeeService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {

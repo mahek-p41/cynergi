@@ -10,12 +10,13 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
@@ -24,10 +25,11 @@ import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -38,7 +40,7 @@ import javax.transaction.Transactional
 class VendorRepository @Inject constructor(
    private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository,
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val vendorGroupRepository: VendorGroupRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
@@ -164,13 +166,14 @@ class VendorRepository @Inject constructor(
             LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id
       """
 
-   fun findOne(id: UUID, company: Company): VendorEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): VendorEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${baseSelectQuery()}\nWHERE v.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for Vendor using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val vendor = mapRow(rs, company)
 
          vendor
@@ -181,7 +184,8 @@ class VendorRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<VendorEntity, PageRequest> {
       return jdbc.queryPaged(
          """
       ${baseSelectQuery()}
@@ -190,7 +194,7 @@ class VendorRepository @Inject constructor(
       LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -202,7 +206,8 @@ class VendorRepository @Inject constructor(
       }
    }
 
-   fun findVendorIdsByRebate(rebateId: UUID, company: Company): List<Identifiable> {
+   @ReadOnly
+   fun findVendorIdsByRebate(rebateId: UUID, company: CompanyEntity): List<Identifiable> {
       return jdbc.queryFullList(
          """
             SELECT
@@ -213,19 +218,20 @@ class VendorRepository @Inject constructor(
          mapOf(
             "rebate_id" to rebateId
          )
-      ) { rs, elements ->
+      ) { rs, _, elements ->
          do {
             elements.add(SimpleIdentifiableEntity(rs.getUuid("vendor_id")))
          } while (rs.next())
       }
    }
 
-   fun search(company: Company, page: SearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
+   @ReadOnly
+   fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
       var searchQuery = page.query
       val where = StringBuilder(" WHERE comp.id = :comp_id ")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
-            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
+            where.append(" AND (search_vector @@ websearch_to_tsquery(:search_query)) ")
             searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
             EMPTY
          } else {
@@ -245,7 +251,7 @@ class VendorRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset(),
             "search_query" to searchQuery
@@ -258,21 +264,27 @@ class VendorRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
    fun exists(id: UUID): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM vendor WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM vendor WHERE id = :id)",
+         mapOf("id" to id),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if Vendor: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
+   @ReadOnly
    fun doesNotExist(id: UUID): Boolean = !exists(id)
 
    @Transactional
    fun insert(entity: VendorEntity): VendorEntity {
       logger.debug("Inserting vendor {}", entity)
 
-      val address = entity.address?.let { addressRepository.insert(it) }
+      val address = entity.address?.let { addressRepository.save(it) }
 
       return jdbc.insertReturning(
          """
@@ -354,7 +366,7 @@ class VendorRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to entity.company.myId(),
+            "company_id" to entity.company.id,
             "name" to entity.name,
             "address_id" to address?.id,
             "account_number" to entity.accountNumber,
@@ -464,7 +476,7 @@ class VendorRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to toUpdate.id,
-            "companyId" to toUpdate.company.myId(),
+            "companyId" to toUpdate.company.id,
             "name" to toUpdate.name,
             "addressId" to vendorAddress?.id,
             "accountNumber" to toUpdate.accountNumber,
@@ -513,12 +525,12 @@ class VendorRepository @Inject constructor(
          )
       }
 
-      addressToDelete?.id?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
+      addressToDelete?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
       return updatedVendor
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String? = "v_"): VendorEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String? = "v_"): VendorEntity {
       val payToId = rs.getUuidOrNull("${columnPrefix}pay_to_id")
 
       return VendorEntity(
@@ -562,14 +574,23 @@ class VendorRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String? = "v_"): VendorEntity? =
+   fun mapRowOrNull(rs: ResultSet, company: CompanyEntity, columnPrefix: String? = "v_"): VendorEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, company, columnPrefix)
       } else {
          null
       }
 
-   private fun mapRowUpsert(rs: ResultSet, company: Company, address: AddressEntity?, freightOnboardType: FreightOnboardType, paymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, freightCalcMethodType: FreightCalcMethodType): VendorEntity {
+   private fun mapRowUpsert(
+      rs: ResultSet,
+      company: CompanyEntity,
+      address: AddressEntity?,
+      freightOnboardType: FreightOnboardType,
+      paymentTerm: VendorPaymentTermEntity,
+      shipVia: ShipViaEntity,
+      vendorGroup: VendorGroupEntity?,
+      freightCalcMethodType: FreightCalcMethodType
+   ): VendorEntity {
       val payToId = rs.getUuidOrNull("pay_to_id")
 
       return VendorEntity(
@@ -629,7 +650,11 @@ class VendorRepository @Inject constructor(
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
 
-   private fun mapPaymentTerm(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): VendorPaymentTermEntity =
+   private fun mapPaymentTerm(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY
+   ): VendorPaymentTermEntity =
       VendorPaymentTermEntity(
          id = rs.getUuid("${columnPrefix}id"),
          company = company,
@@ -639,7 +664,7 @@ class VendorRepository @Inject constructor(
          discountPercent = rs.getBigDecimal("${columnPrefix}discount_percent")
       )
 
-   private fun mapShipVia(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): ShipViaEntity =
+   private fun mapShipVia(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): ShipViaEntity =
       ShipViaEntity(
          id = rs.getUuid("${columnPrefix}id"),
          description = rs.getString("${columnPrefix}description"),

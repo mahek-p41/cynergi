@@ -48,7 +48,7 @@ class AreaController @Inject constructor(
    ): List<AreaDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val areas = areaService.fetchAll(user.myCompany(), locale)
 
       logger.debug("Canonical structure of resulted in {}", areas)
@@ -72,9 +72,9 @@ class AreaController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      val company = userService.findUser(authentication).myCompany()
+      val company = userService.fetchUser(authentication).myCompany()
 
-      logger.info("Enable area {} for company {}", areaIdDTO.id, company.myId())
+      logger.info("Enable area {} for company {}", areaIdDTO.id, company.id)
 
       areaService.enableArea(company, areaIdDTO.id!!)
    }
@@ -95,9 +95,9 @@ class AreaController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      val company = userService.findUser(authentication).myCompany()
+      val company = userService.fetchUser(authentication).myCompany()
 
-      logger.info("Disable area {} for company {}", id, company.myId())
+      logger.info("Disable area {} for company {}", id, company.id)
 
       areaService.disableArea(company, id)
    }

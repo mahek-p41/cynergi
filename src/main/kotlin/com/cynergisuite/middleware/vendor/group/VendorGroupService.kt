@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import java.util.UUID
 import javax.inject.Inject
@@ -14,10 +14,10 @@ class VendorGroupService @Inject constructor(
    private val vendorGroupValidator: VendorGroupValidator
 ) {
 
-   fun fetchById(id: UUID, company: Company): VendorGroupDTO? =
+   fun fetchById(id: UUID, company: CompanyEntity): VendorGroupDTO? =
       vendorGroupRepository.findOne(id, company)?.let { VendorGroupDTO(entity = it) }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorGroupDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<VendorGroupDTO> {
       val found = vendorGroupRepository.findAll(pageRequest, company)
 
       return found.toPage { vendorGroup: VendorGroupEntity ->
@@ -25,7 +25,7 @@ class VendorGroupService @Inject constructor(
       }
    }
 
-   fun create(dto: VendorGroupDTO, company: Company): VendorGroupDTO {
+   fun create(dto: VendorGroupDTO, company: CompanyEntity): VendorGroupDTO {
       val toCreate = vendorGroupValidator.validateCreate(dto, company)
 
       return VendorGroupDTO(
@@ -33,7 +33,7 @@ class VendorGroupService @Inject constructor(
       )
    }
 
-   fun update(id: UUID, dto: VendorGroupDTO, company: Company): VendorGroupDTO {
+   fun update(id: UUID, dto: VendorGroupDTO, company: CompanyEntity): VendorGroupDTO {
       val toUpdate = vendorGroupValidator.validateUpdate(id, dto, company)
 
       return VendorGroupDTO(
@@ -41,7 +41,7 @@ class VendorGroupService @Inject constructor(
       )
    }
 
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       vendorGroupRepository.delete(id, company)
    }
 }

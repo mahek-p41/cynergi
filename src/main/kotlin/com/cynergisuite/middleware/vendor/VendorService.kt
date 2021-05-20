@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.vendor
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import java.util.UUID
 import javax.inject.Inject
@@ -15,10 +15,10 @@ class VendorService @Inject constructor(
    private val vendorValidator: VendorValidator
 ) {
 
-   fun fetchById(id: UUID, company: Company): VendorDTO? =
+   fun fetchById(id: UUID, company: CompanyEntity): VendorDTO? =
       vendorRepository.findOne(id, company)?.let { VendorDTO(entity = it) }
 
-   fun create(dto: VendorDTO, company: Company): VendorDTO {
+   fun create(dto: VendorDTO, company: CompanyEntity): VendorDTO {
       val toCreate = vendorValidator.validateCreate(dto, company)
 
       return VendorDTO(
@@ -26,7 +26,7 @@ class VendorService @Inject constructor(
       )
    }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<VendorDTO> {
       val found = vendorRepository.findAll(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
@@ -34,7 +34,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun search(company: Company, pageRequest: SearchPageRequest): Page<VendorDTO> {
+   fun search(company: CompanyEntity, pageRequest: SearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
@@ -42,7 +42,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun update(id: UUID, dto: VendorDTO, company: Company): VendorDTO {
+   fun update(id: UUID, dto: VendorDTO, company: CompanyEntity): VendorDTO {
       val (existing, toUpdate) = vendorValidator.validateUpdate(id, dto, company)
 
       return VendorDTO(

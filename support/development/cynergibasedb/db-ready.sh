@@ -3,11 +3,6 @@
 
 SLEEP_SECONDS=5
 
-if [ $# -eq 0 ]; then
-    echo "No database server provided"
-    exit 1
-fi
-
 # 0 success (server is accepting connections)
 # 1 failure (server is rejecting connections)
 # 2 failure (there was no response from the server)

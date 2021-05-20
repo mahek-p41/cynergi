@@ -4,18 +4,22 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.UUID
@@ -25,7 +29,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class StoreRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val regionRepository: RegionRepository
 ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(StoreRepository::class.java)
@@ -92,8 +96,8 @@ class StoreRepository @Inject constructor(
             ))
    """
 
-   fun findOne(id: Long, company: Company): StoreEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly fun findOne(id: Long, company: CompanyEntity): StoreEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query =
          """
          ${selectBaseQuery()}
@@ -104,15 +108,16 @@ class StoreRepository @Inject constructor(
 
       logger.trace("{} / {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company) }
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRowWithRegion(rs, company) }
 
       logger.trace("Searching for Store with params {} resulted in {}", params, found)
 
       return found
    }
 
-   fun findOne(number: Int, company: Company): StoreEntity? {
-      val params = mutableMapOf("number" to number, "comp_id" to company.myId())
+   @Transactional
+   @ReadOnly fun findOne(number: Int, company: CompanyEntity): StoreEntity? {
+      val params = mutableMapOf("number" to number, "comp_id" to company.id)
       val query =
          """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
                                                 AND $subQuery
@@ -120,16 +125,17 @@ class StoreRepository @Inject constructor(
 
       logger.debug("Searching for Store by number {}/{}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { mapRowWithRegion(it, company) }
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRowWithRegion(rs, company) }
 
       logger.trace("Search for Store by number with params resulted in {}", params, found)
 
       return found
    }
 
+   @ReadOnly
    fun findAll(pageRequest: PageRequest, user: User): RepositoryPage<StoreEntity, PageRequest> {
       val company = user.myCompany()
-      val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+      val params = mutableMapOf("comp_id" to company.id, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
@@ -165,7 +171,7 @@ class StoreRepository @Inject constructor(
 
       logger.trace("Fetching all stores using {} / {}", query, params)
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -180,7 +186,8 @@ class StoreRepository @Inject constructor(
       )
    }
 
-   override fun exists(id: Long, company: Company): Boolean {
+   @ReadOnly
+   override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
@@ -192,9 +199,9 @@ class StoreRepository @Inject constructor(
          WHERE store.id = :store_id
                AND $subQuery
       """.trimIndent(),
-         mapOf("store_id" to id, "comp_id" to company.myId()),
+         mapOf("store_id" to id, "comp_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if Store: {} exists resulted in {}", id, exists)
 
@@ -205,7 +212,8 @@ class StoreRepository @Inject constructor(
     * The sub-query added to make sure we won't get the store of region belong to another company
     * which have the same store number
     **/
-   fun exists(number: Int, company: Company): Boolean {
+   @ReadOnly
+   fun exists(number: Int, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
@@ -218,16 +226,16 @@ class StoreRepository @Inject constructor(
                   AND comp.id = :comp_id
                   AND $subQuery
       """.trimIndent(),
-         mapOf("store_number" to number, "comp_id" to company.myId()),
+         mapOf("store_number" to number, "comp_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if Store: {} exists resulted in {}", number, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
+   fun doesNotExist(id: Long, company: CompanyEntity): Boolean = !exists(id, company)
 
    @Transactional
    fun assignToRegion(store: Location, region: RegionEntity, companyId: UUID): Pair<RegionEntity, Location> {
@@ -248,7 +256,7 @@ class StoreRepository @Inject constructor(
       return region to store
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store =
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): Store =
       StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
@@ -257,7 +265,7 @@ class StoreRepository @Inject constructor(
          company = company,
       )
 
-   fun mapRowWithRegion(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): StoreEntity =
+   fun mapRowWithRegion(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
@@ -266,7 +274,7 @@ class StoreRepository @Inject constructor(
          company = company,
       )
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): Store? =
+   fun mapRowOrNull(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): Store? =
       try {
          if (rs.getString("${columnPrefix}id") != null) {
             mapRow(rs, company, columnPrefix)

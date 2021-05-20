@@ -8,19 +8,22 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -31,7 +34,7 @@ import javax.transaction.Transactional
 class AuditDetailRepository @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditDetailRepository::class.java)
 
@@ -104,6 +107,7 @@ class AuditDetailRepository @Inject constructor(
       """
    }
 
+   @ReadOnly
    fun exists(auditId: UUID, inventory: InventoryEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
@@ -119,44 +123,46 @@ class AuditDetailRepository @Inject constructor(
             "lookup_key" to inventory.lookupKey
          ),
          Boolean::class.java
-      )!!
+      )
 
       logger.info("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
 
       return exists
    }
 
-   fun findOne(id: UUID, company: Company): AuditDetailEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
-      val query = "${selectBaseQuery()} WHERE auditDetail.id = :id AND comp.id = :comp_id"
-      val found = jdbc.findFirstOrNull(
-         query,
-         params
-      ) { rs, _ ->
-         val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
-         val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AuditDetailEntity? {
+      val sql = "${selectBaseQuery()} WHERE auditDetail.id = :id AND comp.id = :comp_id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
 
-         mapRow(
-            rs,
-            auditScanArea,
-            scannedBy,
-            SimpleIdentifiableEntity(rs.getUuid("auditDetail_audit_id")),
-            "auditDetail_"
-         )
-      }
+      val found = queryAndExtractFindOneResults(sql, params, company)
 
       logger.trace("Searching for AuditDetail: {} resulted in {}", id, found)
 
       return found
    }
 
-   fun findOne(auditId: UUID, inventory: InventoryEntity, company: Company): AuditDetailEntity? {
-      logger.trace("Searching for audit detail by audit ID {} and inventory(lookup_key) {}", auditId, inventory)
+   @ReadOnly
+   fun findOne(auditId: UUID, inventory: InventoryEntity, company: CompanyEntity): AuditDetailEntity? {
+      val sql = "${selectBaseQuery()} WHERE audit_id = :audit_id AND auditDetail.alt_id = :alt_id AND auditDetail.serial_number = :serial_number"
+      val params = mapOf("audit_id" to auditId, "alt_id" to inventory.altId, "serial_number" to inventory.serialNumber)
 
-      val found = jdbc.findFirstOrNull(
-         "${selectBaseQuery()} WHERE audit_id = :audit_id AND lookup_key = :lookup_key",
-         mapOf("audit_id" to auditId, "lookup_key" to inventory.lookupKey)
-      ) { rs, _ ->
+      val found = queryAndExtractFindOneResults(sql, params, company)
+
+      logger.trace(
+         "Searching for audit detail by audit ID {} and inventory(lookup_key) {}, resulted in ",
+         auditId,
+         inventory,
+         found
+      )
+
+      return found
+   }
+
+   private fun queryAndExtractFindOneResults(sql: String, params: Map<String, Any?>, company: CompanyEntity): AuditDetailEntity? {
+      logger.trace("Querying for single AuditDetail using {}/{}", sql, params)
+
+      return jdbc.findFirstOrNull(sql, params) { rs, _ ->
          val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
          val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
@@ -168,36 +174,45 @@ class AuditDetailRepository @Inject constructor(
             "auditDetail_"
          )
       }
-
-      logger.trace("Searching for audit detail by audit ID {} and inventory(lookup_key) {}, resulted in ", auditId, inventory, found)
-
-      return found
    }
 
-   fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findAll(
+      audit: AuditEntity,
+      company: CompanyEntity,
+      page: PageRequest
+   ): RepositoryPage<AuditDetailEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to company.id)
       val query =
          """
-         WITH paged AS (
-            ${selectBaseQuery()}
-            WHERE scannedBy.comp_id = :comp_id
-         )
-         SELECT
-            p.*,
-            count(*) OVER() as total_elements
-         FROM paged AS p
-         WHERE p.auditDetail_audit_id = :audit_id
-         ORDER by auditDetail_${page.snakeSortBy()} ${page.sortDirection()}
-         LIMIT ${page.size()} OFFSET ${page.offset()}
+      WITH paged AS (
+         ${selectBaseQuery()}
+         WHERE scannedBy.comp_id = :comp_id
+      )
+      SELECT
+         p.*,
+         count(*) OVER() as total_elements
+      FROM paged AS p
+      WHERE p.auditDetail_audit_id = :audit_id
+      ORDER by auditDetail_${page.snakeSortBy()} ${page.sortDirection()}
+      LIMIT ${page.size()} OFFSET ${page.offset()}
       """
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")
          val auditScanArea = auditScanAreaRepository.mapRow(rs, company, "scanArea_", "scanAreaStore_")
 
-         resultList.add(mapRow(rs, auditScanArea, scannedBy, SimpleIdentifiableEntity(rs.getUuid("auditDetail_audit_id")), "auditDetail_"))
+         resultList.add(
+            mapRow(
+               rs,
+               auditScanArea,
+               scannedBy,
+               SimpleIdentifiableEntity(rs.getUuid("auditDetail_audit_id")),
+               "auditDetail_"
+            )
+         )
 
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -277,7 +292,13 @@ class AuditDetailRepository @Inject constructor(
       }
    }
 
-   private fun mapRow(rs: ResultSet, scanArea: AuditScanAreaEntity, scannedBy: EmployeeEntity, audit: Identifiable, columnPrefix: String = EMPTY): AuditDetailEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      scanArea: AuditScanAreaEntity,
+      scannedBy: EmployeeEntity,
+      audit: Identifiable,
+      columnPrefix: String = EMPTY
+   ): AuditDetailEntity {
       return AuditDetailEntity(
          id = rs.getUuid("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

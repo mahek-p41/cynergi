@@ -18,8 +18,8 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one location by id" () {
       given: 'location number 1 is assigned to company tstds1'
-      final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def loc1 = locationDataLoaderService.location(1, company)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final loc1 = locationDataLoaderService.location(1, company)
 
       when:
       def result = get("$path/$loc1.id")
@@ -90,7 +90,7 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
       get("${path}${pageTwo}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 }

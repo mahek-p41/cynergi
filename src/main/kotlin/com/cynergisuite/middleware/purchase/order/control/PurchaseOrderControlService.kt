@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.control.infrastructure.PurchaseOrderControlRepository
@@ -19,17 +19,17 @@ class PurchaseOrderControlService @Inject constructor(
    private val purchaseOrderControlRepository: PurchaseOrderControlRepository,
    private val employeeService: EmployeeService
 ) {
-   fun fetchOne(company: Company): PurchaseOrderControlDTO? {
+   fun fetchOne(company: CompanyEntity): PurchaseOrderControlDTO? {
       return purchaseOrderControlRepository.findOne(company)?.let { transformEntity(it) }
    }
 
-   fun create(dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlDTO {
+   fun create(dto: PurchaseOrderControlDTO, company: CompanyEntity): PurchaseOrderControlDTO {
       val toCreate = purchaseOrderControlValidator.validateCreate(dto, company)
 
       return transformEntity(purchaseOrderControlRepository.insert(toCreate, company))
    }
 
-   fun update(id: UUID, dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlDTO {
+   fun update(id: UUID, dto: PurchaseOrderControlDTO, company: CompanyEntity): PurchaseOrderControlDTO {
       val (existing, toUpdate) = purchaseOrderControlValidator.validateUpdate(id, dto, company)
 
       return if (existing != toUpdate) {

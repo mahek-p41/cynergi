@@ -23,14 +23,14 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
    private jsonSlurper = new JsonSlurper()
 
    @Inject VendorGroupTestDataLoaderService vendorGroupTestDataLoaderService
-   @Inject ShipViaTestDataLoaderService shipViaFactoryService
+   @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
 
    void "fetch one" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).collect()
+      final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).toList()
 
       when:
       def result = get("$path/${vendorGroup[0].id}")
@@ -146,8 +146,8 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       vendorGroupTestDataLoaderService.stream(tstds1).toList()
       vendorGroupTestDataLoaderService.stream(tstds2).toList()
-      final vendorGroup1 = vendorGroupTestDataLoaderService.predefined().find { it.company.myDataset() == tstds1.myDataset() }
-      final vendorGroup2 = vendorGroupTestDataLoaderService.predefined().find { it.company.myDataset() == tstds2.myDataset() }
+      final vendorGroup1 = vendorGroupTestDataLoaderService.predefined().find { it.company.datasetCode == tstds1.datasetCode }
+      final vendorGroup2 = vendorGroupTestDataLoaderService.predefined().find { it.company.datasetCode == tstds2.datasetCode }
       def jsonVendorGroup = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup1))
       jsonVendorGroup.value = vendorGroup2.value
 
@@ -322,7 +322,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(nineNineEightEmployee.company).collect().first()
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, vendorGroup)
 
@@ -333,7 +333,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == CONFLICT
       def response = exception.response.bodyAsJson()
-      response.message == "Key (id)=($vendorGroup.id) is still referenced from table \"vendor\"."
-      response.code == "system.data.access.exception"
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
    }
 }

@@ -57,7 +57,7 @@ class AccountPayablePaymentDetailController @Inject constructor(
    ): AccountPayablePaymentDetailDTO {
       logger.info("Fetching AAccount Payable Payment Detail by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = apPaymentDetailService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AAccount Payable Payment Detail by {} resulted in", id, response)
@@ -85,7 +85,7 @@ class AccountPayablePaymentDetailController @Inject constructor(
    ): AccountPayablePaymentDetailDTO {
       logger.debug("Requested Create Account Payable Payment Detail {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = apPaymentDetailService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Account Payable Payment Detail {} resulted in {}", dto, response)
@@ -116,7 +116,7 @@ class AccountPayablePaymentDetailController @Inject constructor(
    ): AccountPayablePaymentDetailDTO {
       logger.info("Requested Update Account Payable Payment Detail {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = apPaymentDetailService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Account Payable Payment Detail {} resulted in {}", dto, response)
@@ -142,7 +142,7 @@ class AccountPayablePaymentDetailController @Inject constructor(
    ) {
       logger.debug("User {} requested delete Account Payable Payment Detail", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return apPaymentDetailService.delete(id, user.myCompany())
    }

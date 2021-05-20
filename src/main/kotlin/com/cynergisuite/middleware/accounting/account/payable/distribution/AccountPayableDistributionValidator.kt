@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
@@ -25,19 +25,19 @@ class AccountPayableDistributionValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableDistributionValidator::class.java)
 
-   fun validateCreate(dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionEntity {
+   fun validateCreate(dto: AccountPayableDistributionDTO, company: CompanyEntity): AccountPayableDistributionEntity {
       logger.debug("Validating Create AccountPayableDistribution {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayableDistributionDTO, company: CompanyEntity): AccountPayableDistributionEntity {
       logger.debug("Validating Update AccountPayableDistribution {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionEntity {
+   private fun doSharedValidation(dto: AccountPayableDistributionDTO, company: CompanyEntity): AccountPayableDistributionEntity {
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) } // FIXME change to loading using the id provided via the URL on update
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
       val percent = dto.percent
@@ -54,7 +54,7 @@ class AccountPayableDistributionValidator @Inject constructor(
             errors.add(ValidationError("percent", MustBeInRangeOf("[0, 1]")))
          }
 
-         if (percentTotal != null && percentTotal > 1.toBigDecimal()) {
+         if (percentTotal > ONE) {
             errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
          }
       }

@@ -61,7 +61,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    ): GeneralLedgerRecurringDTO {
       logger.info("Fetching General Ledger Recurring by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerRecurringService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching General Ledger Recurring by {} resulted in", id, response)
@@ -89,7 +89,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    ): Page<GeneralLedgerRecurringDTO> {
       logger.info("Fetching all General Ledger Recurrings {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerRecurringService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -119,7 +119,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    ): GeneralLedgerRecurringDTO {
       logger.debug("Requested Create General Ledger Recurring {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerRecurringService.create(dto, user.myCompany())
 
       logger.debug("Requested Create General Ledger Recurring {} resulted in {}", dto, response)
@@ -150,7 +150,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    ): GeneralLedgerRecurringDTO {
       logger.info("Requested Update General Ledger Recurring {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerRecurringService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update General Ledger Recurring {} resulted in {}", dto, response)
@@ -176,7 +176,7 @@ class GeneralLedgerRecurringController @Inject constructor(
    ) {
       logger.debug("User {} requested delete GeneralLedgerRecurring", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return generalLedgerRecurringService.delete(id, user.myCompany())
    }

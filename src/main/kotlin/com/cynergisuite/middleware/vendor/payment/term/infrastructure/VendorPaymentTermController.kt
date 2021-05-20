@@ -60,7 +60,7 @@ class VendorPaymentTermController @Inject constructor(
    ): VendorPaymentTermDTO {
       logger.info("Fetching VendorPaymentTerm by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorPaymentTermService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching VendorPaymentTerm by {} resulted in", id, response)
@@ -87,7 +87,7 @@ class VendorPaymentTermController @Inject constructor(
    ): Page<VendorPaymentTermDTO> {
       logger.info("Fetching all vendor payment terms {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = vendorPaymentTermService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -117,7 +117,7 @@ class VendorPaymentTermController @Inject constructor(
    ): VendorPaymentTermDTO {
       logger.debug("Requested Create VendorPaymentTerm {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorPaymentTermService.create(vo, user.myCompany())
 
       logger.debug("Requested Create VendorPaymentTerm {} resulted in {}", vo, response)
@@ -148,7 +148,7 @@ class VendorPaymentTermController @Inject constructor(
    ): VendorPaymentTermDTO {
       logger.info("Requested Update VendorPaymentTerm {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorPaymentTermService.update(id, vo, user.myCompany())
 
       logger.debug("Requested Update VendorPaymentTerm {} resulted in {}", vo, response)

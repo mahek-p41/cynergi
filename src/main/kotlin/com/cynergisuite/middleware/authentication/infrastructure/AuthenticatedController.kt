@@ -41,7 +41,7 @@ class AuthenticatedController @Inject constructor(
       logger.debug("Checking authentication {}", authentication)
 
       return if (authentication != null) {
-         val user = userService.findUser(authentication)
+         val user = userService.fetchUser(authentication)
          val company = user.myCompany()
          val department = user.myDepartment()
          val companyWithNullFederalIdNumber = CompanyDTO(company = company)

@@ -60,7 +60,7 @@ class VendorController @Inject constructor(
    ): VendorDTO {
       logger.info("Fetching Vendor by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Vendor by {} resulted in", id, response)
@@ -87,7 +87,7 @@ class VendorController @Inject constructor(
    ): Page<VendorDTO> {
       logger.info("Fetching all vendors {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = vendorService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -116,7 +116,7 @@ class VendorController @Inject constructor(
    ): Page<VendorDTO> {
       logger.info("Searching for vendors {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = vendorService.search(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -146,7 +146,7 @@ class VendorController @Inject constructor(
    ): VendorDTO {
       logger.debug("Requested Create Vendor {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Vendor {} resulted in {}", dto, response)
@@ -176,7 +176,7 @@ class VendorController @Inject constructor(
    ): VendorDTO {
       logger.info("Requested Update Vendor {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Vendor {} resulted in {}", dto, response)

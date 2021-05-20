@@ -1,4 +1,4 @@
-FROM adoptopenjdk:8u262-b10-jdk-openj9-0.21.0-bionic
+FROM adoptopenjdk:11.0.11_9-jdk-openj9-0.26.0-focal
 
 ARG USER_ID
 ARG GROUP_ID
@@ -18,4 +18,5 @@ ENV GRADLE_USER_HOME /home/jenkins
 USER jenkins
 
 VOLUME /home/jenkins/cynergi-middleware
+WORKDIR /home/jenkins/cynergi-middleware
 

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.store
 
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.region.RegionEntity
 
@@ -10,4 +11,5 @@ import com.cynergisuite.middleware.region.RegionEntity
  */
 interface Store : Location {
    fun myRegion(): RegionEntity?
+   fun myCompany(): CompanyEntity
 }

@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastruct
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
@@ -19,7 +19,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class GeneralLedgerDetailControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/general-ledger/detail'
 
-   @Inject AccountDataLoaderService accountDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService sourceCodeDataLoaderService
    @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
 
@@ -29,7 +29,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final def generalLedgerDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
+      final generalLedgerDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
 
       when:
       def result = get("$path/$generalLedgerDetail.id")
@@ -76,7 +76,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final def generalLedgerDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
+      final generalLedgerDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
 
       when:
       def result = post("$path/", generalLedgerDetail)
@@ -224,7 +224,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final def existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
+      final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       def updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
 
@@ -253,7 +253,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final def existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
+      final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
 
       when:
       def result = put("$path/$existingGLDetail.id", existingGLDetail)
@@ -280,7 +280,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final def existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
+      final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       def updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
       updatedGLDetail.message = null
@@ -312,7 +312,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final def existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
+      final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       def updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
       updatedGLDetail.account = null

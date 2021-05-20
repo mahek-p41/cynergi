@@ -4,7 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.extensions.equalTo
 import com.cynergisuite.extensions.sum
 import com.cynergisuite.extensions.toFixed
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -31,7 +31,7 @@ class VendorPaymentTermValidator @Inject constructor(
    // TODO be deleted if it is the paymentTerms on a Vendor record.
 
    @Throws(ValidationException::class)
-   fun validateCreate(vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
+   fun validateCreate(vo: VendorPaymentTermDTO, company: CompanyEntity): VendorPaymentTermEntity {
       logger.trace("Validating Save VendorPaymentTerm {}", vo)
 
       doValidation { errors -> doSharedValidation(errors, vo, company) }
@@ -40,7 +40,7 @@ class VendorPaymentTermValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: UUID, vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
+   fun validateUpdate(id: UUID, vo: VendorPaymentTermDTO, company: CompanyEntity): VendorPaymentTermEntity {
       logger.trace("Validating Update VendorPaymentTerm {}", vo)
 
       val existing = vendorPaymentTermRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -50,7 +50,7 @@ class VendorPaymentTermValidator @Inject constructor(
       return VendorPaymentTermEntity(source = existing, updateWith = vo)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorPaymentTermDTO, company: Company) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, vo: VendorPaymentTermDTO, company: CompanyEntity) {
       if ((vo.discountDays != null || vo.discountMonth != null) && vo.discountPercent == null) {
          errors.add(ValidationError("discountPercent", NotNull("discountPercent")))
       } else if (vo.discountDays == null && vo.discountMonth == null && vo.discountPercent != null) {

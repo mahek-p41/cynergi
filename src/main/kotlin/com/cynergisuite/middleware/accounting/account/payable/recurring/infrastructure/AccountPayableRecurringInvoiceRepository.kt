@@ -12,15 +12,15 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecu
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceEntity
 import com.cynergisuite.middleware.accounting.account.payable.recurring.ExpenseMonthCreationType
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -29,7 +29,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountPayableRecurringInvoiceRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val vendorRepository: VendorRepository,
    private val statusTypeRepository: AccountPayableRecurringInvoiceStatusTypeRepository,
    private val expenseMonthCreationTypeRepository: ExpenseMonthCreationTypeRepository
@@ -291,8 +291,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): AccountPayableRecurringInvoiceEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AccountPayableRecurringInvoiceEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE apRecurringInvoice.id = :id AND apRecurringInvoice.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -320,7 +321,11 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      company: CompanyEntity,
+      page: PageRequest
+   ): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -329,7 +334,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -342,7 +347,10 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: AccountPayableRecurringInvoiceEntity, company: Company): AccountPayableRecurringInvoiceEntity {
+   fun insert(
+      entity: AccountPayableRecurringInvoiceEntity,
+      company: CompanyEntity
+   ): AccountPayableRecurringInvoiceEntity {
       logger.debug("Inserting account_payable_recurring_invoice {}", company)
 
       return jdbc.insertReturning(
@@ -401,7 +409,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "vendor_id" to entity.vendor.id,
             "invoice" to entity.invoice,
             "invoice_amount" to entity.invoiceAmount,
@@ -424,22 +432,24 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             "next_creation_date" to entity.nextCreationDate,
             "next_invoice_date" to entity.nextInvoiceDate,
             "next_expense_date" to entity.nextExpenseDate
-         ),
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               entity.vendor,
-               entity.payTo,
-               entity.status,
-               entity.expenseMonthCreationIndicator,
-               entity.schedule
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            entity.vendor,
+            entity.payTo,
+            entity.status,
+            entity.expenseMonthCreationIndicator,
+            entity.schedule
+         )
+      }
    }
 
    @Transactional
-   fun update(entity: AccountPayableRecurringInvoiceEntity, company: Company): AccountPayableRecurringInvoiceEntity {
+   fun update(
+      entity: AccountPayableRecurringInvoiceEntity,
+      company: CompanyEntity
+   ): AccountPayableRecurringInvoiceEntity {
       logger.debug("Updating account_payable_recurring_invoice {}", entity)
 
       return jdbc.updateReturning(
@@ -475,7 +485,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "vendor_id" to entity.vendor.id,
             "invoice" to entity.invoice,
             "invoice_amount" to entity.invoiceAmount,
@@ -549,7 +559,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
 
    private fun mapRow(
       rs: ResultSet,
-      company: Company,
+      company: CompanyEntity,
       columnPrefix: String = EMPTY
    ): AccountPayableRecurringInvoiceEntity {
       return AccountPayableRecurringInvoiceEntity(

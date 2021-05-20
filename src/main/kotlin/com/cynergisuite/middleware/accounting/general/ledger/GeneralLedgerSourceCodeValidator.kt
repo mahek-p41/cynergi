@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -21,7 +21,7 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeEntity {
+   fun validateCreate(dto: GeneralLedgerSourceCodeDTO, company: CompanyEntity): GeneralLedgerSourceCodeEntity {
       logger.trace("Validating Save GeneralLedgerSourceCode {}", dto)
 
       doValidation { errors -> doCreateValidation(errors, dto, company) }
@@ -30,7 +30,7 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(id: UUID, dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerSourceCodeDTO, company: CompanyEntity): GeneralLedgerSourceCodeEntity {
       logger.trace("Validating Update GeneralLedgerSourceCode {}", dto)
 
       val existing = generalLedgerSourceCodeRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -50,7 +50,7 @@ class GeneralLedgerSourceCodeValidator @Inject constructor(
       }
    }
 
-   private fun doCreateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: Company) {
+   private fun doCreateValidation(errors: MutableSet<ValidationError>, dto: GeneralLedgerSourceCodeDTO, company: CompanyEntity) {
       doUpdateValidation(errors, dto)
 
       if (generalLedgerSourceCodeRepository.exists(dto.value!!, company)) {

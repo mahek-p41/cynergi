@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -19,7 +19,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 @MicronautTest(transactional = false)
 class BankReconciliationControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/bank-recon'
-   @Inject AccountDataLoaderService accountDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject BankFactoryService bankFactoryService
    @Inject BankReconciliationDataLoaderService dataLoaderService
 
@@ -244,7 +244,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      final def bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
+      final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
       bankRecon["$nonNullableProp"] = null
 
       when:

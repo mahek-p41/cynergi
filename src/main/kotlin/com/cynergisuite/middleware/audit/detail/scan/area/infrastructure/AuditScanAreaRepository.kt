@@ -5,18 +5,20 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -25,7 +27,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AuditScanAreaRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScanAreaRepository::class.java)
@@ -47,14 +49,20 @@ class AuditScanAreaRepository @Inject constructor(
       """
    }
 
+   @ReadOnly
    fun exists(id: UUID): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM audit_scan_area WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS (SELECT id FROM audit_scan_area WHERE id = :id)",
+         mapOf("id" to id),
+         Boolean::class.java
+      )!!
 
       logger.info("Checking if Scan Area: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
+   @ReadOnly
    fun exists(name: String, store: StoreEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
@@ -66,24 +74,26 @@ class AuditScanAreaRepository @Inject constructor(
                      AND company_id = :comp_id
                )
             """,
-         mapOf("name" to name, "comp_id" to store.myCompany().myId(), "store_number" to store.myNumber()),
+         mapOf("name" to name, "comp_id" to store.myCompany().id, "store_number" to store.myNumber()),
          Boolean::class.java
-      )!!
+      )
 
       logger.info("Checking if Scan Area with the same name, company, store exists resulted in {}", exists)
 
       return exists
    }
 
-   fun findOne(id: UUID, company: Company): AuditScanAreaEntity? =
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AuditScanAreaEntity? =
       jdbc.findFirstOrNull(
          "${selectBaseQuery()} WHERE area.id = :id",
          mapOf("id" to id)
       ) { rs, _ -> mapRow(rs, company) }
 
+   @ReadOnly
    fun findAll(user: User): List<AuditScanAreaEntity> {
       val elements = mutableListOf<AuditScanAreaEntity>()
-      var params = mapOf("comp_id" to user.myCompany().myId(), "store_number" to user.myLocation().myNumber())
+      val params = mapOf("comp_id" to user.myCompany().id, "store_number" to user.myLocation().myNumber())
       jdbc.query(
          """${selectBaseQuery()}
                     WHERE company_id = :comp_id AND store_number_sfk = :store_number
@@ -96,10 +106,21 @@ class AuditScanAreaRepository @Inject constructor(
       return elements
    }
 
-   fun findAll(company: Company, storeId: Long, pageRequest: PageRequest): RepositoryPage<AuditScanAreaEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      company: CompanyEntity,
+      storeId: Long,
+      pageRequest: PageRequest
+   ): RepositoryPage<AuditScanAreaEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<AuditScanAreaEntity>()
-      var params = mapOf("comp_id" to company.myId(), "store_id" to storeId, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+      val params = mapOf(
+         "comp_id" to company.id,
+         "store_id" to storeId,
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset()
+      )
+
       jdbc.query(
          """
          WITH paged AS (
@@ -115,7 +136,7 @@ class AuditScanAreaRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """,
          params
-      ) { rs ->
+      ) { rs, _ ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -143,7 +164,7 @@ class AuditScanAreaRepository @Inject constructor(
          mapOf(
             "name" to entity.name,
             "store_number" to entity.store!!.number,
-            "company_id" to entity.company.myId()
+            "company_id" to entity.company.id
          )
       ) { rs, _ -> mapRow(rs, entity.company, entity.store) }
    }
@@ -167,26 +188,36 @@ class AuditScanAreaRepository @Inject constructor(
             "id" to entity.id,
             "name" to entity.name,
             "store_number" to entity.store!!.number,
-            "comp_id" to entity.company.myId()
+            "comp_id" to entity.company.id
          )
       ) { rs, _ ->
          mapRow(rs, entity.company, entity.store)
       }
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, storePrefix: String = "store_"): AuditScanAreaEntity =
+   fun mapRow(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY,
+      storePrefix: String = "store_"
+   ): AuditScanAreaEntity =
       AuditScanAreaEntity(
          id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          store = storeRepository.mapRowOrNull(rs, company, storePrefix) as? StoreEntity,
-         company = company as CompanyEntity
+         company = company
       )
 
-   private fun mapRow(rs: ResultSet, company: Company, store: StoreEntity, columnPrefix: String? = EMPTY): AuditScanAreaEntity =
+   private fun mapRow(
+      rs: ResultSet,
+      company: CompanyEntity,
+      store: StoreEntity,
+      columnPrefix: String? = EMPTY
+   ): AuditScanAreaEntity =
       AuditScanAreaEntity(
          id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          store = store,
-         company = company as CompanyEntity
+         company = company
       )
 }

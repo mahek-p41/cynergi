@@ -5,25 +5,29 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.VerificationAuto
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class VerificationAutoRepository(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper()
    private val prefixedVerificationAutoRowMapper: RowMapper<VerificationAuto> = VerificationAutoRowMapper(columnPrefix = "va_")
 
+   @ReadOnly
    fun findOne(id: Long): VerificationAuto? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_auto WHERE id = :id", mapOf("id" to id), simpleVerificationAutoRowMapper)
 
@@ -143,14 +147,14 @@ class VerificationAutoRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationAuto? =
-      rs.getString("va_id")?.let { prefixedVerificationAutoRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, ctx: StatementContext): VerificationAuto? =
+      rs.getString("va_id")?.let { prefixedVerificationAutoRowMapper.map(rs, ctx) }
 }
 
 private class VerificationAutoRowMapper(
    private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationAuto> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationAuto =
+   override fun map(rs: ResultSet, ctx: StatementContext): VerificationAuto =
       VerificationAuto(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

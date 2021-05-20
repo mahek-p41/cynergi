@@ -356,7 +356,7 @@ BEGIN
             ''' || r.schema_name || '''::text        AS dataset,
             furncol.created_at AT TIME ZONE ''UTC''  AS time_created,
             furncol.updated_at AT TIME ZONE ''UTC''  AS time_updated,
-            furncol.furn_col_code                   AS number,
+            furncol.furn_col_code                    AS number,
             furncol.furn_col_description             AS description
          FROM ' || r.schema_name || '.level1_furn_cols furncol
          WHERE furn_col_rec_type = ''1''
@@ -393,7 +393,7 @@ BEGIN
             ''' || r.schema_name || '''::text        AS dataset,
             furnfab.created_at AT TIME ZONE ''UTC''  AS time_created,
             furnfab.updated_at AT TIME ZONE ''UTC''  AS time_updated,
-            furnfab.furn_fab_code                   AS number,
+            furnfab.furn_fab_code                    AS number,
             furnfab.furn_fab_description             AS description
          FROM ' || r.schema_name || '.level1_furn_cols furnfab
          WHERE furn_col_rec_type = ''2''
@@ -448,6 +448,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 
 DROP SERVER IF EXISTS fastinfo CASCADE;

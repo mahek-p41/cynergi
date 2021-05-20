@@ -5,7 +5,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.validation.Validated
 import java.util.UUID
@@ -18,11 +18,11 @@ class AuditDetailService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditDetailRepository: AuditDetailRepository
 ) {
-   fun fetchById(id: UUID, company: Company): AuditDetailEntity? =
+   fun fetchById(id: UUID, company: CompanyEntity): AuditDetailEntity? =
       auditDetailRepository.findOne(id, company)
 
    @Validated
-   fun fetchAll(auditId: UUID, company: Company, @Valid pageRequest: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
+   fun fetchAll(auditId: UUID, company: CompanyEntity, @Valid pageRequest: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
 
       return auditDetailRepository.findAll(audit, company, pageRequest)

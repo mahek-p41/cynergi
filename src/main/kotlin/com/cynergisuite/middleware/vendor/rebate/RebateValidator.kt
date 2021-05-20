@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.vendor.rebate
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.AccountIsRequired
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
@@ -27,19 +27,19 @@ class RebateValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(RebateValidator::class.java)
 
-   fun validateCreate(dto: RebateDTO, company: Company): RebateEntity {
+   fun validateCreate(dto: RebateDTO, company: CompanyEntity): RebateEntity {
       logger.trace("Validating Create Rebate {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: RebateDTO, company: Company): RebateEntity {
+   fun validateUpdate(id: UUID, dto: RebateDTO, company: CompanyEntity): RebateEntity {
       logger.debug("Validating Update Rebate {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: RebateDTO, company: Company): RebateEntity {
+   private fun doSharedValidation(dto: RebateDTO, company: CompanyEntity): RebateEntity {
       val generalLedgerDebitAccountId = dto.generalLedgerDebitAccount?.id
 
       val status = accountStatusTypeRepository.findOne(dto.status!!.value!!)

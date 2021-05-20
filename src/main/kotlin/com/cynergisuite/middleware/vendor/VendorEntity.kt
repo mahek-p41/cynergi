@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.address.AddressEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
@@ -13,7 +13,7 @@ import java.util.UUID
 
 data class VendorEntity(
    val id: UUID? = null,
-   val company: Company,
+   val company: CompanyEntity,
    val name: String, // 30 max
    val address: AddressEntity?,
    val accountNumber: String?,
@@ -51,7 +51,7 @@ data class VendorEntity(
    val phone: String?
 ) : Identifiable {
 
-   constructor(id: UUID? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
+   constructor(id: UUID? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: CompanyEntity, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
       this(
          id = id ?: dto.id,
          company = company,

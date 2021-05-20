@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.region
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -18,10 +18,10 @@ class RegionService @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
 
-   fun fetchById(id: UUID, company: Company): RegionDTO? =
+   fun fetchById(id: UUID, company: CompanyEntity): RegionDTO? =
       regionRepository.findOne(id, company)?.let { RegionDTO(it) }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<RegionDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<RegionDTO> {
       val found = regionRepository.findAll(company, pageRequest)
 
       return found.toPage { region: RegionEntity ->
@@ -29,23 +29,23 @@ class RegionService @Inject constructor(
       }
    }
 
-   fun create(dto: RegionDTO, company: Company): RegionDTO {
+   fun create(dto: RegionDTO, company: CompanyEntity): RegionDTO {
       val toCreate = regionValidator.validateCreate(dto, company)
 
       return RegionDTO(regionRepository.insert(toCreate))
    }
 
-   fun update(id: UUID, dto: RegionDTO, company: Company): RegionDTO {
+   fun update(id: UUID, dto: RegionDTO, company: CompanyEntity): RegionDTO {
       val toUpdate = regionValidator.validateUpdate(id, dto, company)
 
       return RegionDTO(regionRepository.update(id, toUpdate))
    }
 
-   fun delete(id: UUID, company: Company): RegionDTO? {
+   fun delete(id: UUID, company: CompanyEntity): RegionDTO? {
       return regionRepository.delete(id, company)?.let { RegionDTO(it) }
    }
 
-   fun assignStoreToRegion(regionId: UUID, dto: SimpleLegacyIdentifiableDTO, company: Company) {
+   fun assignStoreToRegion(regionId: UUID, dto: SimpleLegacyIdentifiableDTO, company: CompanyEntity) {
       val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
       val store = storeRepository.findOne(dto.id!!, company) ?: throw NotFoundException(dto.id!!)
 
@@ -56,7 +56,7 @@ class RegionService @Inject constructor(
       }
    }
 
-   fun disassociateStoreFromRegion(regionId: UUID, storeId: Long, company: Company) {
+   fun disassociateStoreFromRegion(regionId: UUID, storeId: Long, company: CompanyEntity) {
       val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
       val store = storeRepository.findOne(storeId, company) ?: throw NotFoundException(storeId)
 

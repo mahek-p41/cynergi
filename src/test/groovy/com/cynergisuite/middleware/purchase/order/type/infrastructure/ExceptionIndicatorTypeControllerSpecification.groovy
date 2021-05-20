@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.purchase.order.type.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDataLoaderService
+import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeTestDataLoaderService
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -11,7 +11,7 @@ import javax.inject.Inject
 @MicronautTest(transactional = false)
 class ExceptionIndicatorTypeControllerSpecification extends ControllerSpecificationBase {
 
-   @Inject ExceptionIndicatorTypeDataLoaderService dataLoaderService
+   @Inject ExceptionIndicatorTypeTestDataLoaderService dataLoaderService
 
    void "fetch all exception indicator types" () {
       given:

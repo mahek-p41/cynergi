@@ -4,10 +4,10 @@ import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.permission.AuditPermissionEntity
-import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeTestDataLoader
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDTO
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleTestDataLoaderService
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -23,7 +23,7 @@ import static java.time.DayOfWeek.TUESDAY
 
 @MicronautTest(transactional = false)
 class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
-   @Inject AuditScheduleFactoryService auditScheduleFactoryService
+   @Inject AuditScheduleTestDataLoaderService auditScheduleFactoryService
    @Inject AuditPermissionRepository auditPermissionRepository
    @Inject ScheduleRepository scheduleRepository
 
@@ -413,7 +413,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
    void "fetch audit schedule with 998 user and multiple permissions" () {
       setup:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final auditApprover = AuditPermissionTypeFactory.findByValue('audit-approver')
+      final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
       final pageOne = new StandardPageRequest(1, 100, "id", "ASC")
       departmentFactoryService.department('SM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
       departmentFactoryService.department('AM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }

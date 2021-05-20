@@ -8,18 +8,21 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceType
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -28,7 +31,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountRepository::class.java)
 
@@ -65,8 +68,9 @@ class AccountRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): AccountEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AccountEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -80,8 +84,9 @@ class AccountRepository @Inject constructor(
       return found
    }
 
-   fun findByNumber(number: Long, company: Company): AccountEntity? {
-      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
+   @ReadOnly
+   fun findByNumber(number: Long, company: CompanyEntity): AccountEntity? {
+      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -95,7 +100,8 @@ class AccountRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<AccountEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AccountEntity> = mutableListOf()
 
@@ -113,11 +119,11 @@ class AccountRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """,
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          )
-      ) { rs ->
+      ) { rs, _ ->
          resultList.add(mapRow(rs, company, "account_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -131,12 +137,13 @@ class AccountRepository @Inject constructor(
       )
    }
 
-   fun search(company: Company, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
+   @ReadOnly
+   fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var searchQuery = page.query
       val where = StringBuilder(" WHERE comp.id = :comp_id ")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
-            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
+            where.append(" AND (search_vector @@ websearch_to_tsquery(:search_query)) ")
             searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
             EMPTY
          } else {
@@ -167,7 +174,7 @@ class AccountRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset(),
             "search_query" to searchQuery
@@ -181,7 +188,7 @@ class AccountRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(account: AccountEntity, company: Company): AccountEntity {
+   fun insert(account: AccountEntity, company: CompanyEntity): AccountEntity {
       logger.debug("Inserting bank {}", account)
 
       return jdbc.insertReturning(
@@ -193,7 +200,7 @@ class AccountRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "number" to account.number,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "name" to account.name,
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
@@ -207,7 +214,7 @@ class AccountRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(account: AccountEntity, company: Company): AccountEntity {
+   fun update(account: AccountEntity, company: CompanyEntity): AccountEntity {
       logger.debug("Updating account {}", account)
 
       return jdbc.updateReturning(
@@ -229,7 +236,7 @@ class AccountRepository @Inject constructor(
          mapOf(
             "id" to account.id,
             "number" to account.number,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "name" to account.name,
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
@@ -243,7 +250,7 @@ class AccountRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting account with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -251,7 +258,7 @@ class AccountRepository @Inject constructor(
          DELETE FROM account
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Row affected {}", rowsAffected)
@@ -259,7 +266,7 @@ class AccountRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
          id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
@@ -272,7 +279,7 @@ class AccountRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity? =
+   fun mapRowOrNull(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): AccountEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, company, columnPrefix)
       } else {

@@ -63,7 +63,7 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Fetching AuditDetail by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditDetailService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
@@ -91,7 +91,7 @@ class AuditDetailController @Inject constructor(
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest)
          .toPage { transformEntity(it) }
 
@@ -123,7 +123,7 @@ class AuditDetailController @Inject constructor(
    ): HttpResponse<AuditDetailValueObject> {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val existingDetail = auditDetailValidator.validateDuplicateDetail(auditId, vo, user)
 
       return if (existingDetail != null) {
@@ -161,7 +161,7 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Requested Update AuditDetail {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val existingDetail = auditDetailValidator.validateUpdate(auditId, user, vo)
       val response = auditDetailService.update(existingDetail, user)
 

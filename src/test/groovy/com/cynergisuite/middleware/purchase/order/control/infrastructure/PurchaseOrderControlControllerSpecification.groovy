@@ -2,8 +2,7 @@ package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDTO
-import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlDataLoader.PurchaseOrderControlDataLoaderService
+import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
@@ -20,7 +19,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
-   @Inject PurchaseOrderControlDataLoaderService purchaseOrderControlDataLoaderService
+   @Inject PurchaseOrderControlTestDataLoaderService purchaseOrderControlDataLoaderService
 
    void "fetch one purchase order control by company" () {
       given:
@@ -29,7 +28,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
+      final purchaseOrderControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
 
       when:
       def result = get("$path/")
@@ -94,7 +93,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
 
       when:
       def result = post("$path/", purchaseOrderControl)
@@ -217,7 +216,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
+      final purchaseOrderControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
 
       when:
       post("$path/", purchaseOrderControl)
@@ -301,7 +300,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       purchaseOrderControlDTO.defaultApprover.id = 0
 
       when:
@@ -323,8 +322,8 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       updatedPOControlDTO.id = existingPOControl.id
       updatedPOControlDTO.defaultVendor = null
       updatedPOControlDTO.defaultApprover = null
@@ -381,8 +380,8 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final def existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
       updatedPOControlDTO.defaultVendor = new SimpleIdentifiableDTO(vendorId)
       updatedPOControlDTO.defaultApprover.id = 999
 
@@ -463,7 +462,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
 
       when:
       put("$path/$invalidPurchaseOrderId", updatedPOControlDTO)

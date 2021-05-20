@@ -10,11 +10,12 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -23,7 +24,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerReversalRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReversalRepository::class.java)
@@ -51,13 +52,14 @@ class GeneralLedgerReversalRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerReversalEntity? {
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerReversalEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()}\nWHERE glReversal.id = :id"
 
       logger.debug("Searching for GeneralLedgerReversal using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val generalLedgerReversal = mapRow(rs, company, "glReversal_")
 
          generalLedgerReversal
@@ -68,7 +70,11 @@ class GeneralLedgerReversalRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<GeneralLedgerReversalEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      pageRequest: PageRequest,
+      company: CompanyEntity
+   ): RepositoryPage<GeneralLedgerReversalEntity, PageRequest> {
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
@@ -77,7 +83,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to pageRequest.size(),
             "offset" to pageRequest.offset()
          ),
@@ -90,7 +96,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: GeneralLedgerReversalEntity, company: Company): GeneralLedgerReversalEntity {
+   fun insert(entity: GeneralLedgerReversalEntity, company: CompanyEntity): GeneralLedgerReversalEntity {
       logger.debug("Inserting GeneralLedgerReversal {}", entity)
 
       return jdbc.insertReturning(
@@ -117,7 +123,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "source_id" to entity.source.id,
             "date" to entity.date,
             "reversal_date" to entity.reversalDate,
@@ -129,7 +135,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerReversalEntity, company: Company): GeneralLedgerReversalEntity {
+   fun update(entity: GeneralLedgerReversalEntity, company: CompanyEntity): GeneralLedgerReversalEntity {
       logger.debug("Updating GeneralLedgerReversal {}", entity)
 
       val updated = jdbc.updateReturning(
@@ -149,7 +155,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "source_id" to entity.source.id,
             "date" to entity.date,
             "reversal_date" to entity.reversalDate,
@@ -164,7 +170,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
       return updated
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerReversalEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerReversalEntity {
       return GeneralLedgerReversalEntity(
          id = rs.getUuid("${columnPrefix}id"),
          source = generalLedgerSourceCodeRepository.mapRow(rs, "${columnPrefix}source_"),
@@ -176,7 +182,11 @@ class GeneralLedgerReversalRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, entity: GeneralLedgerReversalEntity, columnPrefix: String = EMPTY): GeneralLedgerReversalEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      entity: GeneralLedgerReversalEntity,
+      columnPrefix: String = EMPTY
+   ): GeneralLedgerReversalEntity {
       return GeneralLedgerReversalEntity(
          id = rs.getUuid("${columnPrefix}id"),
          source = entity.source,

@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -21,19 +21,19 @@ class AccountPayablePaymentDetailValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayablePaymentDetailValidator::class.java)
 
-   fun validateCreate(dto: AccountPayablePaymentDetailDTO, company: Company): AccountPayablePaymentDetailEntity {
+   fun validateCreate(dto: AccountPayablePaymentDetailDTO, company: CompanyEntity): AccountPayablePaymentDetailEntity {
       logger.trace("Validating Create AccountPayablePaymentDetail {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: AccountPayablePaymentDetailDTO, company: Company): AccountPayablePaymentDetailEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayablePaymentDetailDTO, company: CompanyEntity): AccountPayablePaymentDetailEntity {
       logger.debug("Validating Update AccountPayablePaymentDetail {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: AccountPayablePaymentDetailDTO, company: Company): AccountPayablePaymentDetailEntity {
+   private fun doSharedValidation(dto: AccountPayablePaymentDetailDTO, company: CompanyEntity): AccountPayablePaymentDetailEntity {
       val invoice = apInvoiceRepository.findOne(dto.invoice!!.id!!, company)
       val payment = apPaymentRepository.findOne(dto.payment!!.id!!, company)
       val vendor = dto.vendor?.id?.let { vendorRepository.findOne(it, company) }

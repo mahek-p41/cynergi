@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.shipping.freight.term.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDTO
-import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDataLoaderService
+import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -11,7 +11,7 @@ import javax.inject.Inject
 @MicronautTest(transactional = false)
 class FreightTermTypeControllerSpecification extends ControllerSpecificationBase {
 
-   @Inject FreightTermTypeDataLoaderService dataLoaderService
+   @Inject FreightTermTypeTestDataLoaderService dataLoaderService
 
    void "fetch all freight term types" () {
       given:

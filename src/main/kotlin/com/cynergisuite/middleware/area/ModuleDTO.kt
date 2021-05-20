@@ -34,7 +34,7 @@ data class ModuleDTO(
    @field:Min(value = 0)
    @field:Max(value = 99)
    @field:Schema(description = "Configured security level of a module", minimum = "0", maximum = "99")
-   var level: Int?,
+   var level: Int? = null,
 
    @field:Schema(description = "Menu in which module belongs to")
    var menuType: SimpleTypeDomainDTO? = null

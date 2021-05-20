@@ -98,8 +98,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
 
    void "create one" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final routine = routineDataLoaderService.singleDTO(tstds1)
+      final routine = routineDataLoaderService.singleDTO()
 
       when:
       def result = post(path, routine)
@@ -126,8 +125,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid Routine without #nonNullableProp" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final routineDTO = routineDataLoaderService.singleDTO(tstds1)
+      final routineDTO = routineDataLoaderService.singleDTO()
       routineDTO["$nonNullableProp"] = null
 
       when:
@@ -155,8 +153,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
    @Unroll
    void "create invalid Routine with non-existing overallPeriod" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final routineDTO = routineDataLoaderService.singleDTO(tstds1)
+      final routineDTO = routineDataLoaderService.singleDTO()
       routineDTO.overallPeriod = new OverallPeriodTypeDTO ('invalid', 'Z', 'Invalid DTO')
 
       when:
@@ -174,7 +171,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final routineEntity = routineDataLoaderService.single(tstds1)
-      final routine = routineDataLoaderService.singleDTO(tstds1)
+      final routine = routineDataLoaderService.singleDTO()
       routine.id = routineEntity.id
 
       when:
@@ -205,7 +202,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final routineEntity = routineDataLoaderService.single(tstds1)
-      final routineDTO = routineDataLoaderService.singleDTO(tstds1)
+      final routineDTO = routineDataLoaderService.singleDTO()
       routineDTO.overallPeriod = new OverallPeriodTypeDTO ('invalid', 'Z', 'Invalid DTO')
 
       when:

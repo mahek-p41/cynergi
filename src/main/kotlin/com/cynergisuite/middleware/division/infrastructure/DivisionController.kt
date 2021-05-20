@@ -59,7 +59,7 @@ class DivisionController @Inject constructor(
    ): DivisionDTO {
       logger.info("Fetching Division by ID {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = divisionService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
@@ -81,7 +81,7 @@ class DivisionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<DivisionDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val divisions = divisionService.fetchAll(user.myCompany(), pageRequest)
 
       if (divisions.elements.isEmpty()) {
@@ -112,7 +112,7 @@ class DivisionController @Inject constructor(
    ): DivisionDTO {
       logger.info("Requested Save Division {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = divisionService.create(dto, user.myCompany())
 
       logger.debug("Requested Save Division {} resulted in {}", dto, response)
@@ -141,7 +141,7 @@ class DivisionController @Inject constructor(
    ): DivisionDTO {
       logger.info("Requested Update Division {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = divisionService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Division {} resulted in {}", dto, response)
@@ -168,7 +168,7 @@ class DivisionController @Inject constructor(
    ): DivisionDTO {
       logger.debug("User {} requested Division Deletion by ID {}", authentication, id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return divisionService.delete(id, user.myCompany()) ?: throw NotFoundException(id)
    }

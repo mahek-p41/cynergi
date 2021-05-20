@@ -51,9 +51,9 @@ class ModuleController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ModuleType {
-      val company = userService.findUser(authentication).myCompany()
+      val company = userService.fetchUser(authentication).myCompany()
 
-      logger.info("Create module level config {} for company {}", moduleDTO.id, company.myId())
+      logger.info("Create module level config {} for company {}", moduleDTO.id, company.id)
 
       return moduleService.createLevelConfig(company, moduleDTO)
    }
@@ -76,9 +76,9 @@ class ModuleController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): ModuleType {
-      val company = userService.findUser(authentication).myCompany()
+      val company = userService.fetchUser(authentication).myCompany()
 
-      logger.info("Update module level config {} for company {}", moduleDTO.id, company.myId())
+      logger.info("Update module level config {} for company {}", moduleDTO.id, company.id)
 
       return moduleService.updateLevelConfig(company, moduleDTO)
    }

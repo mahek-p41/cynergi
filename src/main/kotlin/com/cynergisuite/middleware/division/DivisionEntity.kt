@@ -2,20 +2,20 @@ package com.cynergisuite.middleware.division
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 import java.util.UUID
 
 data class DivisionEntity(
    val id: UUID? = null,
-   val company: Company,
+   val company: CompanyEntity,
    val number: Long? = null,
    val name: String,
    val divisionalManager: EmployeeEntity? = null,
    val description: String?,
 ) : Identifiable, Comparable<DivisionEntity> {
-   constructor(id: UUID? = null, dto: DivisionDTO, company: Company, divisionalManager: EmployeeEntity?) : this(
+   constructor(id: UUID? = null, dto: DivisionDTO, company: CompanyEntity, divisionalManager: EmployeeEntity?) : this(
       id = id,
       number = dto.number,
       name = dto.name!!,

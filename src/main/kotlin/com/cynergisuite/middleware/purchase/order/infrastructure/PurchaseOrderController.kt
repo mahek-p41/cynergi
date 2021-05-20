@@ -61,7 +61,7 @@ class PurchaseOrderController @Inject constructor(
    ): PurchaseOrderDTO {
       logger.info("Fetching PurchaseOrder by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = purchaseOrderService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching PurchaseOrder by {} resulted in", id, response)
@@ -89,7 +89,7 @@ class PurchaseOrderController @Inject constructor(
    ): Page<PurchaseOrderDTO> {
       logger.info("Fetching all PurchaseOrders {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = purchaseOrderService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -119,7 +119,7 @@ class PurchaseOrderController @Inject constructor(
    ): PurchaseOrderDTO {
       logger.debug("Requested Create PurchaseOrder {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = purchaseOrderService.create(dto, user.myCompany())
 
       logger.debug("Requested Create PurchaseOrder {} resulted in {}", dto, response)
@@ -150,7 +150,7 @@ class PurchaseOrderController @Inject constructor(
    ): PurchaseOrderDTO {
       logger.info("Requested Update PurchaseOrder {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = purchaseOrderService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update PurchaseOrder {} resulted in {}", dto, response)
@@ -174,7 +174,7 @@ class PurchaseOrderController @Inject constructor(
    ) {
       logger.debug("User {} requested delete purchase order", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return purchaseOrderService.delete(id, user.myCompany())
    }

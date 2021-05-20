@@ -3,36 +3,35 @@ package com.cynergisuite.middleware.audit.infrastructure
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.domain.infrastructure.SimpleTransactionalSql
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
-import com.cynergisuite.middleware.audit.AuditFactory
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoader
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.AuditStatusCountDTO
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
-import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
-import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
+import com.cynergisuite.middleware.audit.detail.AuditDetailTestDataLoaderService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
-import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
+import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoaderService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreDTO
+import groovy.sql.Sql
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import spock.lang.Unroll
 
 import javax.inject.Inject
@@ -51,14 +50,15 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit"
    private static final Locale locale = US
 
-   @Inject AuditDetailFactoryService auditDetailFactoryService
-   @Inject AuditExceptionFactoryService auditExceptionFactoryService
+   @Inject AuditDetailTestDataLoaderService auditDetailFactoryService
+   @Inject AuditExceptionTestDataLoaderService auditExceptionFactoryService
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
-   @Inject AuditFactoryService auditFactoryService
+   @Inject AuditTestDataLoaderService auditFactoryService
    @Inject AuditRepository auditRepository
    @Inject InventoryService inventoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
-   @Inject NamedParameterJdbcTemplate jdbc
+   @Inject Sql sql
+   @Inject SimpleTransactionalSql sts
    @Inject LocalizationService localizationService
 
    void "fetch one audit by id" () {
@@ -194,7 +194,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
-      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom).toList()
+      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom, inventory).toList()
 
       when:
       def result = get("$path/${savedAudit.id}")
@@ -214,7 +215,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
-      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom).toList()
+      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom, inventory).toList()
       final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, storeroom).toList()
 
       when:
@@ -497,9 +499,9 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Unroll
    void "fetch all audits by store with storeNumber #storeNumberValuesIn" () {
       given:
-      final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def storeOne = storeFactoryService.store(1, company)
-      final def storeThree = storeFactoryService.store(3, company)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
       auditFactoryService.stream(5, storeOne).forEach { }
       auditFactoryService.stream(10, storeThree).forEach { }
 
@@ -599,7 +601,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeOneOpenAuditOne = auditFactoryService.single(storeOne, employee, [AuditStatusFactory.created()] as Set).with { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def updated = jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: storeOneOpenAuditOne.timeCreated.minusDays(8), id: storeOneOpenAuditOne.id])
+      def updated = sts.executeUpdate([time_created: storeOneOpenAuditOne.timeCreated.minusDays(8), id: storeOneOpenAuditOne.id] , "UPDATE audit set time_created = :time_created WHERE id = :id")
       def openedResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['CREATED'] as Set]))
 
       then:
@@ -618,7 +620,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeOneInProgressAuditOne = auditFactoryService.single(storeOne, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set).with { new AuditValueObject(it, locale, localizationService) }
 
       when:
-      def updated = jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: storeOneInProgressAuditOne.timeCreated.minusDays(8), id: storeOneInProgressAuditOne.id])
+      def updated = sts.executeUpdate( [time_created: storeOneInProgressAuditOne.timeCreated.minusDays(8), id: storeOneInProgressAuditOne.id], "UPDATE audit set time_created = :time_created WHERE id = :id")
       def inProgressResult = get(path + new AuditPageRequest([page: 1, size: 5, sortBy: 'id', status: ['IN-PROGRESS'] as Set]))
 
       then:
@@ -631,8 +633,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all opened audits with from thru" () {
       setup:
-      final def from = OffsetDateTime.now().toInstant()
-      final def thru = OffsetDateTime.now().plusHours(1).toInstant()
+      final from = OffsetDateTime.now().toInstant()
+      final thru = OffsetDateTime.now().plusHours(1).toInstant()
 
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
@@ -794,10 +796,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Unroll
    void "fetch audit status counts using specified from/thru and statuses #statusValuesIn and store numbers #storeNumberValuesIn" () {
       given:
-      final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def storeOne = storeFactoryService.store(1, company)
-      final def storeThree = storeFactoryService.store(3, company)
-      final def employee = employeeFactoryService.single(company)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(company)
 
       auditFactoryService.generate(1, storeOne, employee,
             [AuditStatusFactory.created()] as Set)
@@ -821,8 +823,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final thru = OffsetDateTime.now().plusHours(1).toInstant()
 
       when:
-      jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: inProgressAuditFromLastWeek.timeCreated.minusDays(8), id: inProgressAuditFromLastWeek.id])
-      jdbc.update("UPDATE audit set time_created = :time_created WHERE id = :id", [time_created: completedAuditFromLastWeek.timeCreated.minusDays(8), id: completedAuditFromLastWeek.id])
+      sts.executeUpdate( [time_created: inProgressAuditFromLastWeek.timeCreated.minusDays(8), id: inProgressAuditFromLastWeek.id], "UPDATE audit set time_created = :time_created WHERE id = :id")
+      sts.executeUpdate( [time_created: completedAuditFromLastWeek.timeCreated.minusDays(8), id: completedAuditFromLastWeek.id], "UPDATE audit set time_created = :time_created WHERE id = :id")
       def countsResult = get("$path/counts?from=$from&thru=$thru&$statusValuesIn&$storeNumberValuesIn")
          .collect { new AuditStatusCountDTO(it.count, new AuditStatusValueObject(it.status)) }
 
@@ -849,7 +851,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       when:
@@ -883,7 +885,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       final store = storeFactoryService.random(tstds1)
       final employee = employeeFactoryService.single(tstds1)
@@ -907,7 +909,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.approved()] as Set)
 
@@ -942,10 +944,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       auditFactoryService.single(store1Tstds1)
-      final newAudit = AuditFactory.single(store1Tstds1).with { new AuditCreateValueObject([store: new StoreDTO(it.store)]) }
+      final newAudit = AuditTestDataLoader.single(store1Tstds1).with { new AuditCreateValueObject([store: new StoreDTO(it.store)]) }
 
       when:
       post(path, newAudit, store1Tstds1UserAccessToken)
@@ -1200,7 +1202,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.myDataset(), store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       final audit = auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 

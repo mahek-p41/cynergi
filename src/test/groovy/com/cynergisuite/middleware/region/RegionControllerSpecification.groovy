@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.region
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.division.DivisionEntity
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -21,7 +21,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class RegionControllerSpecification extends ControllerSpecificationBase {
-   @Inject EmployeeFactoryService userSetupEmployeeFactoryService
+   @Inject EmployeeTestDataLoaderService userSetupEmployeeTestDataLoaderService
 
    private static String path = '/region'
    private JsonOutput jsonOutput = new JsonOutput()
@@ -95,7 +95,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      final def regions = []
+      final regions = []
       regions.add(this.regions[0])
       regions.addAll(regionFactoryService.stream(11, tstds1Division, nineNineEightEmployee).toList())
 
@@ -189,17 +189,16 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
    void "create a valid region"() {
       given:
-      final def region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
-      final def jsonRegion = jsonOutput.toJson(region)
+      final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
 
       when:
-      def result = post("$path/", jsonRegion)
+      def result = post("$path/", region)
 
       then:
       notThrown(HttpClientResponseException)
@@ -221,7 +220,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid region without name"() {
       given: 'get json region object and make it invalid'
-      final def regionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+      final regionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
       // Make invalid json
       def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.remove('name')
@@ -240,7 +239,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid region without description"() {
       given: 'get json region object and make it invalid'
-      final def regionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+      final regionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
       // Make invalid json
       def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.remove('description')
@@ -259,7 +258,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid region with non exist regionalManager value"() {
       given: 'get json region object and make it invalid'
-      final def regionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+      final regionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
       // Make invalid json
       def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.regionalManager.id = 'Invalid'
@@ -278,8 +277,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid region"() {
       given: 'Update existingRegion in DB with new data in jsonRegion'
-      final def existingRegion = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
-      final def updatedRegionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+      final existingRegion = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final updatedRegionDTO = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
       def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(updatedRegionDTO))
       jsonRegion.id = existingRegion.id
 
@@ -353,7 +352,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid region without region description"() {
       given:
-      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
       def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.description = ''
 
@@ -372,7 +371,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid region with non exist regionalManager value"() {
       given:
-      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
       def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.regionalManager.id = 'Z'
 
@@ -524,7 +523,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(2, tstds2)
-      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds2)
@@ -543,7 +542,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final tstds1Store3 = storeFactoryService.store(3, tstds1)
-      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds1)
@@ -563,7 +562,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(2, tstds2)
-      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds2)
@@ -583,7 +582,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(3, tstds1)
-      final tstds2SuperUser = userSetupEmployeeFactoryService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
+      final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds1)

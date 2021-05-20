@@ -4,9 +4,9 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDataLoaderService
-import com.cynergisuite.middleware.store.StoreFactory
+import com.cynergisuite.middleware.store.StoreTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -22,14 +22,14 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
    private static String path = '/accounting/account-payable/distribution'
 
    @Inject AccountPayableDistributionDataLoaderService dataLoaderService
-   @Inject AccountDataLoaderService accountDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
 
    void "fetch one account payable distribution by id" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistribution = dataLoaderService.single(store, acct, company)
+      final apDistribution = dataLoaderService.single(store, acct, company)
 
       when:
       def result = get("$path/${apDistribution.id}")
@@ -139,7 +139,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -175,10 +175,10 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       def insuranceGroup = []
 
       2.times {
-         accountingGroup.add(dataLoaderService.single(StoreFactory.stores(company)[it], acct, company, 'Accounting'))
+         accountingGroup.add(dataLoaderService.single(StoreTestDataLoader.stores(company)[it], acct, company, 'Accounting'))
       }
       2.times {
-         insuranceGroup.add(dataLoaderService.single(StoreFactory.stores(company)[it], acct2, company, 'Insurance'))
+         insuranceGroup.add(dataLoaderService.single(StoreTestDataLoader.stores(company)[it], acct2, company, 'Insurance'))
       }
 
       when:
@@ -199,7 +199,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
 
       when:
       def result = post("$path/", apDistribution)
@@ -222,7 +222,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$nonNullableProp"] = null
 
       when:
@@ -250,7 +250,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$testProp"] = invalidValue
 
       when:
@@ -266,7 +266,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       where:
       testProp       | invalidValue                                                                       || errorResponsePath | errorMessage
       'account'      | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'account.id'      | "ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found"
-      'profitCenter' | new SimpleLegacyIdentifiableDTO(999999)                                            || 'profitCenter.id' | "999,999 was unable to be found"
+      'profitCenter' | new SimpleLegacyIdentifiableDTO(999999)                                            || 'profitCenter.id' | "999999 was unable to be found"
    }
 
    @Unroll
@@ -275,7 +275,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -325,8 +325,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      final def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company)
+      final updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.id = existingAPDistribution.id
 
       when:
@@ -349,7 +349,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def existingAPDistribution = dataLoaderService.single(store, acct, company)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company)
       def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.account = null
       updatedAPDistributionDTO.name = null
@@ -393,7 +393,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response[0].path == 'account.id'
       response[0].message == "$nonExistentAccountId was unable to be found"
       response[1].path == 'profitCenter.id'
-      response[1].message == "999,999 was unable to be found"
+      response[1].message == "999999 was unable to be found"
    }
 
    @Unroll
@@ -402,7 +402,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def existingAPDistribution = dataLoaderService.single(store, acct, company)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company)
       def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO["$percent"] = invalidPercent
 

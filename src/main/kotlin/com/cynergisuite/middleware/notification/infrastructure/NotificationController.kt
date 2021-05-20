@@ -88,13 +88,23 @@ class NotificationController @Inject constructor(
    ): NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
       logger.trace("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
 
-      val response = when (type.toUpperCase()) {
+      val response = when (type.uppercase()) {
          "A" -> notificationService.fetchAllByCompanyWrapped(companyId = companyId, type = type)
 
-         else -> notificationService.fetchAllByRecipientWrapped(companyId = companyId, sendingEmployee = authId, type = type)
+         else -> notificationService.fetchAllByRecipientWrapped(
+            companyId = companyId,
+            sendingEmployee = authId,
+            type = type
+         )
       }
 
-      logger.debug("Fetching All Notifications by company: {}, authId: {}, type: {} resulted in {}", companyId, authId, type, response)
+      logger.debug(
+         "Fetching All Notifications by company: {}, authId: {}, type: {} resulted in {}",
+         companyId,
+         authId,
+         type,
+         response
+      )
 
       return response
    }

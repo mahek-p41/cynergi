@@ -4,7 +4,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -18,12 +18,12 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 @MicronautTest(transactional = false)
 class AccountControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account'
-   @Inject AccountDataLoaderService accountFactoryService
+   @Inject AccountTestDataLoaderService accountFactoryService
 
    void "fetch one account by id" () {
       given:
       accountFactoryService.single(nineNineEightEmployee.company)
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
 
       when:
       def result = get("$path/${account.id}")
@@ -73,9 +73,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       accountFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'))
-      final def accounts = accountFactoryService.stream(12, nineNineEightEmployee.company).toList()
+      final accounts = accountFactoryService.stream(12, nineNineEightEmployee.company).toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
@@ -195,7 +195,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -405,7 +405,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid account with null form 1099 field"() {
       given:
-      final def account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
       account.form1099Field = null
 
       when:
@@ -469,7 +469,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid account with non exist type value"() {
       given: 'get json account object and make it invalid'
-      final def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
       accountDTO.type.value = 'Invalid'
 
       when:
@@ -504,8 +504,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid account"() {
       given: 'Update existingAccount in DB with all new data'
-      final def existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
-      final def updatedAccountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final updatedAccountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
       updatedAccountDTO.id = existingAccount.id
       updatedAccountDTO.number = existingAccount.number
 
@@ -544,7 +544,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid account without non-nullable properties"() {
       given:
-      final def existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
       def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
       accountDTO.name = null
       accountDTO.type = null

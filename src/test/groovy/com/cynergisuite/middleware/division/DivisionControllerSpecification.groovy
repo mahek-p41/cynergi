@@ -69,7 +69,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      final def divisions = []
+      final divisions = []
       divisions.add(this.divisions[0])
       divisions.addAll(divisionFactoryService.stream(11, nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee).toList())
 
@@ -146,14 +146,14 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
    void "create a valid division"() {
       given:
-      final def division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      final def jsonDivision = jsonOutput.toJson(division)
+      final division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final jsonDivision = jsonOutput.toJson(division)
 
       when:
       def result = post("$path/", jsonDivision)
@@ -172,7 +172,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid division without name"() {
       given: 'get json division object and make it invalid'
-      final def divisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final divisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       // Make invalid json
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
       jsonDivision.remove('name')
@@ -191,7 +191,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid division without description"() {
       given: 'get json division object and make it invalid'
-      final def divisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final divisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       // Make invalid json
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
       jsonDivision.remove('description')
@@ -210,7 +210,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid division with non exist divisionalManager value"() {
       given: 'get json division object and make it invalid'
-      final def divisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final divisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       // Make invalid json
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
       jsonDivision.divisionalManager.id = 'Invalid'
@@ -229,8 +229,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid division"() {
       given: 'Update existingDivision in DB with new data in jsonDivision'
-      final def existingDivision = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      final def updatedDivisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final existingDivision = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final updatedDivisionDTO = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(updatedDivisionDTO))
       jsonDivision.id = existingDivision.id
 
@@ -305,7 +305,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "update an invalid division with non exist divisionalManager value"() {
       given:
-      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
       def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
       jsonDivision.divisionalManager.id = 'Z'
 
@@ -323,7 +323,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "delete a valid division"() {
       given:
-      final def existingDivision = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final existingDivision = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
 
       when:
       def result = delete("$path/$existingDivision.id")
@@ -389,8 +389,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "create a division with logged in user who is not superuser"() {
       given:
-      final def division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      final def jsonDivision = jsonOutput.toJson(division)
+      final division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final jsonDivision = jsonOutput.toJson(division)
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)
@@ -408,8 +408,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a division with logged in user who is not superuser"() {
       given:
-      final def division = this.divisions[0]
-      final def jsonDivision = jsonOutput.toJson(division)
+      final division = this.divisions[0]
+      final jsonDivision = jsonOutput.toJson(division)
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)
@@ -427,7 +427,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "delete a division with logged in user who is not superuser"() {
       given:
-      final def division = this.divisions[0]
+      final division = this.divisions[0]
 
       final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)

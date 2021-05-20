@@ -16,7 +16,7 @@ import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
@@ -42,6 +42,7 @@ import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -56,6 +57,7 @@ import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditService @Inject constructor(
@@ -71,7 +73,7 @@ class AuditService @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditService::class.java)
 
-   fun fetchById(id: UUID, company: Company, locale: Locale): AuditValueObject? =
+   fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
 
    fun fetchAll(pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
@@ -83,13 +85,13 @@ class AuditService @Inject constructor(
       }
    }
 
-   fun fetchAuditExceptionReport(id: UUID, company: Company, os: OutputStream) {
+   fun fetchAuditExceptionReport(id: UUID, company: CompanyEntity, os: OutputStream) {
       val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
 
       generateAuditExceptionReport(os, audit, true)
    }
 
-   fun fetchUnscannedIdleInventoryReport(id: UUID, company: Company, os: OutputStream) {
+   fun fetchUnscannedIdleInventoryReport(id: UUID, company: CompanyEntity, os: OutputStream) {
       val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
 
       generateUnscannedIdleInventoryReport(os, audit, true)
@@ -98,6 +100,7 @@ class AuditService @Inject constructor(
    fun exists(id: UUID): Boolean =
       auditRepository.exists(id = id)
 
+   @ReadOnly
    fun findAuditStatusCounts(pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDTO> {
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
@@ -115,6 +118,7 @@ class AuditService @Inject constructor(
       return AuditValueObject(audit, locale, localizationService)
    }
 
+   @Transactional
    fun findOrCreate(store: StoreEntity, user: User, locale: Locale): AuditValueObject {
       val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
 
@@ -127,6 +131,7 @@ class AuditService @Inject constructor(
       }
    }
 
+   @ReadOnly
    fun findOneCreatedOrInProgress(store: Store, user: User, locale: Locale): AuditValueObject? {
       return auditRepository.findOneCreatedOrInProgress(store)?.let { AuditValueObject(it, locale, localizationService) }
    }
@@ -472,7 +477,7 @@ class AuditService @Inject constructor(
       table.makeCell("Condition", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Status", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
 
-      var unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
+      val unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
 
       unscannedIdleInventory.forEachIndexed { index, it ->
          table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor

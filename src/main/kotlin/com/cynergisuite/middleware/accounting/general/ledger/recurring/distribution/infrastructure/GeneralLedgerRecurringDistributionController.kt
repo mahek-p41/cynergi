@@ -61,7 +61,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    ): GeneralLedgerRecurringDistributionDTO {
       logger.info("Fetching General Ledger Recurring Distribution by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerRecurringDistributionService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching General Ledger Recurring Distribution by {} resulted in", id, response)
@@ -89,7 +89,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    ): Page<GeneralLedgerRecurringDistributionDTO> {
       logger.info("Fetching all General Ledger Recurring Distributions {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerRecurringDistributionService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -122,7 +122,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    ): Page<GeneralLedgerRecurringDistributionDTO> {
       logger.info("Fetching all General Ledger Recurring Distributions {} by General Ledger Recurring ID {}", pageRequest, glRecurringId)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerRecurringDistributionService.fetchAllByRecurringId(glRecurringId, user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -152,7 +152,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    ): GeneralLedgerRecurringDistributionDTO {
       logger.debug("Requested Create General Ledger Recurring Distribution {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerRecurringDistributionService.create(dto, user.myCompany())
 
       logger.debug("Requested Create General Ledger Recurring Distribution {} resulted in {}", dto, response)
@@ -183,7 +183,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    ): GeneralLedgerRecurringDistributionDTO {
       logger.info("Requested Update General Ledger Recurring Distribution {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerRecurringDistributionService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update General Ledger Recurring Distribution {} resulted in {}", dto, response)
@@ -209,7 +209,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
    ) {
       logger.debug("User {} requested delete GeneralLedgerRecurringDistribution", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return generalLedgerRecurringDistributionService.delete(id, user.myCompany())
    }

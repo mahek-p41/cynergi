@@ -60,7 +60,7 @@ class AccountPayablePaymentController @Inject constructor(
    ): AccountPayablePaymentDTO {
       logger.info("Fetching Account Payable Payment by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayablePaymentService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Account Payable Payment by {} resulted in", id, response)
@@ -87,7 +87,7 @@ class AccountPayablePaymentController @Inject constructor(
    ): AccountPayablePaymentReportTemplate {
       logger.info("Fetching all Account Payable Payments {}")
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       return accountPayablePaymentService.fetchReport(user.myCompany(), filterRequest)
    }
 
@@ -111,7 +111,7 @@ class AccountPayablePaymentController @Inject constructor(
    ): AccountPayablePaymentDTO {
       logger.debug("Requested Create Account Payable Payment {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayablePaymentService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Account Payable Payment {} resulted in {}", dto, response)
@@ -142,7 +142,7 @@ class AccountPayablePaymentController @Inject constructor(
    ): AccountPayablePaymentDTO {
       logger.info("Requested Update Account Payable Payment {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayablePaymentService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Account Payable Payment {} resulted in {}", dto, response)
@@ -168,7 +168,7 @@ class AccountPayablePaymentController @Inject constructor(
    ) {
       logger.debug("User {} requested delete Account Payable Payment Detail", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return accountPayablePaymentService.delete(id, user.myCompany())
    }

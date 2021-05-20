@@ -54,7 +54,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       id: UUID,
       authentication: Authentication
    ): GeneralLedgerSummaryDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Fetching GeneralLedgerSummary by ID {}", id)
 
@@ -84,7 +84,7 @@ class GeneralLedgerSummaryController @Inject constructor(
    ): Page<GeneralLedgerSummaryDTO> {
       logger.info("Fetching all GeneralLedgerSummaries {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerSummaryService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -109,7 +109,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       dto: GeneralLedgerSummaryDTO,
       authentication: Authentication
    ): GeneralLedgerSummaryDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create GeneralLedgerSummary {}", dto)
 
@@ -137,7 +137,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       dto: GeneralLedgerSummaryDTO,
       authentication: Authentication
    ): GeneralLedgerSummaryDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Update GeneralLedgerSummary {}", dto)
 

@@ -5,15 +5,18 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -22,7 +25,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerSourceCodeRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeRepository::class.java)
    private fun selectBaseQuery() =
@@ -36,28 +39,38 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       FROM general_ledger_source_codes glSrcCodes
    """
 
-   fun exists(value: String, company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly
+   fun exists(value: String, company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id)",
+         mapOf("value" to value, "company_id" to company.id),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if GeneralLedgerSourceCode: {} exists resulted in {}", value, exists)
 
       return exists
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerSourceCodeEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerSourceCodeEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id"
 
       logger.debug("Searching for GeneralLedgerSourceCode using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs -> mapRow(rs, "glSrcCodes_") }
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs, "glSrcCodes_") }
 
       logger.trace("Searching for GeneralLedgerSourceCode: {} resulted in {}", id, found)
 
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<GeneralLedgerSourceCodeEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      pageRequest: PageRequest,
+      company: CompanyEntity
+   ): RepositoryPage<GeneralLedgerSourceCodeEntity, PageRequest> {
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
@@ -66,7 +79,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to pageRequest.size(),
             "offset" to pageRequest.offset()
          ),
@@ -79,7 +92,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: GeneralLedgerSourceCodeEntity, company: Company): GeneralLedgerSourceCodeEntity {
+   fun insert(entity: GeneralLedgerSourceCodeEntity, company: CompanyEntity): GeneralLedgerSourceCodeEntity {
       logger.debug("Inserting GeneralLedgerSourceCode {}", entity)
 
       return jdbc.insertReturning(
@@ -94,7 +107,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "value" to entity.value,
             "description" to entity.description
          )
@@ -102,7 +115,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerSourceCodeEntity, company: Company): GeneralLedgerSourceCodeEntity {
+   fun update(entity: GeneralLedgerSourceCodeEntity, company: CompanyEntity): GeneralLedgerSourceCodeEntity {
       logger.debug("Updating GeneralLedgerSourceCode {}", entity)
 
       val updated = jdbc.updateReturning(
@@ -118,7 +131,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "companyId" to company.myId(),
+            "companyId" to company.id,
             "value" to entity.value,
             "description" to entity.description
          )
@@ -130,7 +143,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting GeneralLedgerSourceCode with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -138,7 +151,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          DELETE FROM general_ledger_source_codes
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
       logger.info("Row affected {}", rowsAffected)
 

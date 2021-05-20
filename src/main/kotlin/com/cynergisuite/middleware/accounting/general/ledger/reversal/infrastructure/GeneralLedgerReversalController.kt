@@ -60,7 +60,7 @@ class GeneralLedgerReversalController @Inject constructor(
    ): GeneralLedgerReversalDTO {
       logger.info("Fetching GeneralLedgerReversal by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerReversalService.fetchOne(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching GeneralLedgerReversal by {} resulted in", id, response)
@@ -88,7 +88,7 @@ class GeneralLedgerReversalController @Inject constructor(
    ): Page<GeneralLedgerReversalDTO> {
       logger.info("Fetching all GeneralLedgerReversals {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerReversalService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -118,7 +118,7 @@ class GeneralLedgerReversalController @Inject constructor(
    ): GeneralLedgerReversalDTO {
       logger.debug("Requested Create GeneralLedgerReversal {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerReversalService.create(dto, user.myCompany())
 
       logger.debug("Requested Create GeneralLedgerReversal {} resulted in {}", dto, response)
@@ -148,7 +148,7 @@ class GeneralLedgerReversalController @Inject constructor(
    ): GeneralLedgerReversalDTO {
       logger.info("Requested Update GeneralLedgerReversal {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerReversalService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update GeneralLedgerReversal {} resulted in {}", dto, response)

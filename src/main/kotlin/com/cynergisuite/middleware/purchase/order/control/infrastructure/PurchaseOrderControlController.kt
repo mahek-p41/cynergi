@@ -48,7 +48,7 @@ class PurchaseOrderControlController @Inject constructor(
    fun fetchOne(
       authentication: Authentication
    ): PurchaseOrderControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Fetching PurchaseOrderControl by {}", userCompany)
 
@@ -74,7 +74,7 @@ class PurchaseOrderControlController @Inject constructor(
       dto: PurchaseOrderControlDTO,
       authentication: Authentication
    ): PurchaseOrderControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create PurchaseOrderControl {}", dto)
 
@@ -102,7 +102,7 @@ class PurchaseOrderControlController @Inject constructor(
       dto: PurchaseOrderControlDTO,
       authentication: Authentication
    ): PurchaseOrderControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Update PurchaseOrderControl {}", dto)
 
@@ -127,7 +127,7 @@ class PurchaseOrderControlController @Inject constructor(
    ): List<EmployeeValueObject> {
       logger.info("Fetching all approvers")
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       val response = purchaseOrderControlService.fetchApprovers(user)
 

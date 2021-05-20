@@ -66,7 +66,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission by ID {}", authentication, id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
@@ -92,7 +92,7 @@ class AuditPermissionController @Inject constructor(
    ): Page<AuditPermissionValueObject> {
       logger.debug("User {} requested Audit Permissions {}", authentication, pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val page = auditPermissionService.fetchAll(pageRequest, user, locale)
 
@@ -125,7 +125,7 @@ class AuditPermissionController @Inject constructor(
    ): Page<AuditPermissionValueObject> {
       logger.debug("User {} requested Audit Permissions {} of TypeId {}", authentication, pageRequest, typeId)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val page = auditPermissionService.fetchAllByType(typeId, pageRequest, user, locale)
 
@@ -185,7 +185,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.info("User {} requested creation of audit permission {}", authentication, permission)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.create(permission, user, locale)
@@ -210,7 +210,7 @@ class AuditPermissionController @Inject constructor(
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission Deletion by ID {}", authentication, id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return auditPermissionService.deleteById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
    }

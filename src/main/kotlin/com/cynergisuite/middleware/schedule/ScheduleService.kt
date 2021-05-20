@@ -11,6 +11,7 @@ import java.time.DayOfWeek
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class ScheduleService @Inject constructor(
@@ -27,6 +28,7 @@ class ScheduleService @Inject constructor(
       logger.info("Submitted {} jobs", jobsRan)
    }
 
+   @Transactional
    fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek): Int { // useful for calling on-demand
       var jobsRan = 0
 

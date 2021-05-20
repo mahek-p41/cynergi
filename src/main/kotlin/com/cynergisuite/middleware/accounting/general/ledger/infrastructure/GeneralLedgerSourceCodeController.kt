@@ -60,7 +60,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    ): GeneralLedgerSourceCodeDTO {
       logger.info("Fetching GeneralLedgerSourceCode by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerSourceCodeService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching GeneralLedgerSourceCode by {} resulted in", id, response)
@@ -87,7 +87,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    ): Page<GeneralLedgerSourceCodeDTO> {
       logger.info("Fetching all GeneralLedgerSourceCodes {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerSourceCodeService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -117,7 +117,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    ): GeneralLedgerSourceCodeDTO {
       logger.debug("Requested Create GeneralLedgerSourceCode {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerSourceCodeService.create(dto, user.myCompany())
 
       logger.debug("Requested Create GeneralLedgerSourceCode {} resulted in {}", dto, response)
@@ -147,7 +147,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    ): GeneralLedgerSourceCodeDTO {
       logger.info("Requested Update GeneralLedgerSourceCode {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerSourceCodeService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update GeneralLedgerSourceCode {} resulted in {}", dto, response)
@@ -173,7 +173,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    ) {
       logger.debug("User {} requested delete account", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return generalLedgerSourceCodeService.delete(id, user.myCompany())
    }

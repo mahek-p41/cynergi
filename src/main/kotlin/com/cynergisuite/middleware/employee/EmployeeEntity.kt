@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.department.Department
+import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.store.Store
 
 data class EmployeeEntity(
@@ -13,14 +13,14 @@ data class EmployeeEntity(
    val passCode: String,
    val active: Boolean,
    val cynergiSystemAdmin: Boolean = false,
-   val company: Company,
-   val department: Department?,
+   val company: CompanyEntity,
+   val department: DepartmentEntity?,
    val store: Store? = null,
    val alternativeStoreIndicator: String,
    val alternativeArea: Long
 ) : Employee {
 
-   constructor(vo: EmployeeValueObject, company: Company, department: Department?, store: Store?) :
+   constructor(vo: EmployeeValueObject, company: CompanyEntity, department: DepartmentEntity?, store: Store?) :
       this(
          id = vo.id,
          type = vo.type!!,
@@ -42,4 +42,5 @@ data class EmployeeEntity(
    override fun myId(): Long? = id
    override fun myNumber(): Int = number
    override fun copyMe(): EmployeeEntity = copy()
+   fun copyMeWithDifferentPassCode(passCode: String): EmployeeEntity = copy(passCode = passCode)
 }

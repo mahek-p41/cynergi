@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.detail.scan.area
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
@@ -21,7 +21,7 @@ class AuditScanAreaValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditScanAreaValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: AuditScanAreaDTO, company: Company): AuditScanAreaEntity {
+   fun validateCreate(dto: AuditScanAreaDTO, company: CompanyEntity): AuditScanAreaEntity {
       logger.trace("Validating Save AuditScanArea {}", dto)
       val storeEntity = storeRepository.findOne(dto.store!!.id!!, company)
 
@@ -37,7 +37,7 @@ class AuditScanAreaValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: UUID, dto: AuditScanAreaDTO, company: Company): AuditScanAreaEntity {
+   fun validateUpdate(id: UUID, dto: AuditScanAreaDTO, company: CompanyEntity): AuditScanAreaEntity {
       logger.trace("Validating Update AuditScanArea {}", dto)
       val storeEntity = storeRepository.findOne(dto.store!!.id!!, company)
 

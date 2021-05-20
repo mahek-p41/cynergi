@@ -63,7 +63,7 @@ class RebateController @Inject constructor(
    ): RebateDTO {
       logger.info("Fetching Rebate by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = rebateService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Rebate by {} resulted in", id, response)
@@ -91,7 +91,7 @@ class RebateController @Inject constructor(
    ): Page<RebateDTO> {
       logger.info("Fetching all rebates {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = rebateService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -121,7 +121,7 @@ class RebateController @Inject constructor(
    ): RebateDTO {
       logger.debug("Requested Create Rebate {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = rebateService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Rebate {} resulted in {}", dto, response)
@@ -152,7 +152,7 @@ class RebateController @Inject constructor(
    ): RebateDTO {
       logger.info("Requested Update Rebate {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = rebateService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Rebate {} resulted in {}", dto, response)
@@ -179,7 +179,7 @@ class RebateController @Inject constructor(
    ) {
       logger.info("Requested assign a Vendor {} to Rebate", vendorDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       rebateService.assignVendorToRebate(rebateId, vendorDTO, user.myCompany())
    }
@@ -203,7 +203,7 @@ class RebateController @Inject constructor(
    ) {
       logger.info("Requested disassociate a Vendor {} from Rebate {}", vendorId, rebateId)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       rebateService.disassociateVendorFromRebate(rebateId, vendorId, user.myCompany())
    }

@@ -4,7 +4,11 @@ import com.cynergisuite.middleware.localization.LocalizationCode
 
 class ValidationException(
    val errors: Set<ValidationError>
-) : Exception()
+) : Exception(
+   errors.asSequence()
+      .map { "${it.localizationCode.getCode()}:${it.localizationCode.getArguments().joinToString("\$")}->${it.path}" }
+      .joinToString(",")
+)
 
 data class ValidationError(
    val path: String?,

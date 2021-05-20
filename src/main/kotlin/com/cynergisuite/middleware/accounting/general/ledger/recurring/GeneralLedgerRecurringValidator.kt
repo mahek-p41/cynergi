@@ -4,7 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
@@ -22,7 +22,7 @@ class GeneralLedgerRecurringValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringValidator::class.java)
 
-   fun validateCreate(dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
+   fun validateCreate(dto: GeneralLedgerRecurringDTO, company: CompanyEntity): GeneralLedgerRecurringEntity {
       logger.trace("Validating Create GeneralLedgerRecurring{}", dto)
 
       dto.lastTransferDate = null
@@ -30,7 +30,7 @@ class GeneralLedgerRecurringValidator @Inject constructor(
       return doSharedValidation(dto, company, null)
    }
 
-   fun validateUpdate(id: UUID, dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerRecurringDTO, company: CompanyEntity): GeneralLedgerRecurringEntity {
       logger.debug("Validating Update GeneralLedgerRecurring{}", dto)
 
       val existingGeneralLedgerRecurring = recurringRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -40,7 +40,7 @@ class GeneralLedgerRecurringValidator @Inject constructor(
 
    private fun doSharedValidation(
       dto: GeneralLedgerRecurringDTO,
-      company: Company,
+      company: CompanyEntity,
       existingGeneralLedgerRecurring: GeneralLedgerRecurringEntity?
    ): GeneralLedgerRecurringEntity {
       val source = sourceCodeRepository.findOne(dto.source!!.id!!, company)

@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.accounting.account.payable.recurring.infrast
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.recurring.ExpenseMonthCreationTypeDTO
@@ -205,7 +204,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
 
       when:
       def result = post(path, accountPayableRecurringInvoiceDTO)
@@ -260,7 +259,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.message = null
       accountPayableRecurringInvoiceDTO.codeIndicator = null
       accountPayableRecurringInvoiceDTO.lastTransferToCreateInvoiceDate = null
@@ -323,7 +322,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO["$nonNullableProp"] = null
 
       when:
@@ -363,7 +362,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO["$testProp"] = invalidValue
 
       when:
@@ -393,7 +392,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
 
       when:
@@ -449,7 +448,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
       accountPayableRecurringInvoiceDTO.message = null
       accountPayableRecurringInvoiceDTO.codeIndicator = null
@@ -515,7 +514,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
-      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(company, vendor, payTo)
+      final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
       accountPayableRecurringInvoiceDTO.vendor = new SimpleIdentifiableDTO(nonExistentVendorId)
       accountPayableRecurringInvoiceDTO.payTo = new SimpleIdentifiableDTO(nonExistentPayToId)

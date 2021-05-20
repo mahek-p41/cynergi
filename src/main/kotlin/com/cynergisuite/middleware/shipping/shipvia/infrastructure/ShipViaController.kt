@@ -60,7 +60,7 @@ class ShipViaController @Inject constructor(
    ): ShipViaDTO {
       logger.info("Fetching ShipVia by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = shipViaService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetch ShipVia by {} resulted {}", id, response)
@@ -84,7 +84,7 @@ class ShipViaController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<ShipViaDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = shipViaService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
@@ -110,7 +110,7 @@ class ShipViaController @Inject constructor(
    ) {
       logger.debug("User {} requested delete ship via", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return shipViaService.delete(id, user.myCompany())
    }
@@ -134,7 +134,7 @@ class ShipViaController @Inject constructor(
    ): ShipViaDTO {
       logger.info("Requested Save ShipVia {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = shipViaService.create(dto = vo, company = user.myCompany())
 
       logger.debug("Requested Save ShipVia {} resulted in {}", vo, response)
@@ -160,7 +160,7 @@ class ShipViaController @Inject constructor(
    ): ShipViaDTO {
       logger.info("Requested Update ShipVia {}", vo)
 
-      val employee = userService.findUser(authentication)
+      val employee = userService.fetchUser(authentication)
       val response = shipViaService.update(vo, employee.myCompany())
 
       logger.debug("Requested Update ShipVia {} resulted in {}", vo, response)

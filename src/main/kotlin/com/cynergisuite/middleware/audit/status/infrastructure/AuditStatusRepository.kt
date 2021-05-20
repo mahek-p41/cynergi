@@ -1,39 +1,51 @@
 package com.cynergisuite.middleware.audit.status.infrastructure
 
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.audit.status.AuditStatusEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuditStatusRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditStatusRepository::class.java)
    private val simpleAuditStatusRowMapper = AuditStatusRowMapper()
 
+   @ReadOnly
    fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_status_type_domain WHERE value = :value)", mapOf("value" to value), Boolean::class.java)!!
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM audit_status_type_domain WHERE value = :value)",
+         mapOf("value" to value),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if Audit: {} exists resulted in {}", value, exists)
 
       return exists
    }
 
+   @ReadOnly
    fun findOne(id: Int): AuditStatus? =
       executeFindQuery(mapOf("id" to id))
 
+   @ReadOnly
    fun findOne(value: String): AuditStatus? =
       executeFindQuery(mapOf("value" to value))
 
+   @ReadOnly
    fun findAll(): List<AuditStatus> =
-      jdbc.query("SELECT * FROM audit_status_type_domain ORDER BY value", simpleAuditStatusRowMapper)
+      jdbc.query("SELECT * FROM audit_status_type_domain ORDER BY value", rowMapper = simpleAuditStatusRowMapper)
 
    fun mapRow(rs: ResultSet, rowPrefix: String = "astd_"): AuditStatus =
       simpleAuditStatusRowMapper.mapRow(rs, rowPrefix)
@@ -92,7 +104,7 @@ class AuditStatusRepository @Inject constructor(
 
       logger.trace("{}/{}", sql, params)
 
-      jdbc.query(sql, params) { rs: ResultSet ->
+      jdbc.query(sql, params) { rs: ResultSet, _ ->
          if (root == null) {
             val r = simpleAuditStatusRowMapper.mapRow(rs, "parent_")
             existingStatuses[r.id] = r
@@ -122,7 +134,7 @@ class AuditStatusRepository @Inject constructor(
 private class AuditStatusRowMapper(
    private val columnPrefix: String = EMPTY
 ) : RowMapper<AuditStatus> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): AuditStatus =
+   override fun map(rs: ResultSet, ctx: StatementContext): AuditStatus =
       mapRow(rs, columnPrefix)
 
    fun mapRow(rs: ResultSet, columnPrefix: String): AuditStatus =

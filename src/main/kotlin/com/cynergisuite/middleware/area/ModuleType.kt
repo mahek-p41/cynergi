@@ -16,4 +16,6 @@ data class ModuleType(
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
+
+   fun copyMeWithNewLevel(level: Int?) = copy(level = level)
 }

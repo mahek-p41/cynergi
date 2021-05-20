@@ -7,18 +7,20 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AuditExceptionNoteRepository(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionNoteRepository::class.java)
 
+   @Transactional
    fun insert(note: AuditExceptionNote): AuditExceptionNote {
       logger.debug("Inserting AuditExceptionNote {}", note)
 

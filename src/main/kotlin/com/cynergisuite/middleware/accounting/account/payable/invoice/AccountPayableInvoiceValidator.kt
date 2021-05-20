@@ -6,7 +6,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
@@ -31,19 +31,19 @@ class AccountPayableInvoiceValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceValidator::class.java)
 
-   fun validateCreate(dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceEntity {
+   fun validateCreate(dto: AccountPayableInvoiceDTO, company: CompanyEntity): AccountPayableInvoiceEntity {
       logger.trace("Validating Create AccountPayableInvoice {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayableInvoiceDTO, company: CompanyEntity): AccountPayableInvoiceEntity {
       logger.debug("Validating Update AccountPayableInvoice {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceEntity {
+   private fun doSharedValidation(dto: AccountPayableInvoiceDTO, company: CompanyEntity): AccountPayableInvoiceEntity {
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val purchaseOrder = dto.purchaseOrder?.id?.let { purchaseOrderRepository.findOne(it, company) }
       val employee = employeeRepository.findOne(dto.employee!!.number!!, dto.employee!!.type!!, company)

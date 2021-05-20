@@ -3,12 +3,13 @@ package com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +17,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class VendorPaymentTermScheduleRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermScheduleRepository::class.java)
 
@@ -90,7 +91,7 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
          """
          DELETE FROM vendor_payment_term_schedule
          WHERE vendor_payment_term_id = :vendor_payment_term_id
-               AND id NOT IN(:ids)
+               AND id NOT IN(<ids>)
          RETURNING
             *
          """.trimIndent(),
@@ -98,7 +99,7 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
             "vendor_payment_term_id" to vpt.id,
             "ids" to scheduleRecords.asSequence().map { it.id }.toList()
          )
-      ) { rs ->
+      ) { rs, _ ->
          result.add(
             VendorPaymentTermScheduleEntity(
                id = rs.getUuid("id"),

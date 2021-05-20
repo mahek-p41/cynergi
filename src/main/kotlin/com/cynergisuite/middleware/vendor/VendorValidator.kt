@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -33,7 +33,7 @@ class VendorValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: VendorDTO, company: Company): VendorEntity {
+   fun validateCreate(dto: VendorDTO, company: CompanyEntity): VendorEntity {
       logger.trace("Validating Save Vendor {}", dto)
 
       val vendorGroup = dto.vendorGroup?.id?.let { vendorGroupRepository.findOne(it, company) }
@@ -62,7 +62,7 @@ class VendorValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(id: UUID, dto: VendorDTO, company: Company): Pair<VendorEntity, VendorEntity> {
+   fun validateUpdate(id: UUID, dto: VendorDTO, company: CompanyEntity): Pair<VendorEntity, VendorEntity> {
       logger.trace("Validating Update Vendor {}", dto)
 
       val vendorGroup = dto.vendorGroup?.id?.let { vendorGroupRepository.findOne(it, company) }
@@ -98,7 +98,7 @@ class VendorValidator @Inject constructor(
       return Pair(existingVendor, toUpdate!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, dto: VendorDTO, company: Company) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, dto: VendorDTO, company: CompanyEntity) {
       val vendorId = dto.id
       val vendorGroupId = dto.vendorGroup?.id
       val vendorPaymentTermId = dto.paymentTerm!!.id!!

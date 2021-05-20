@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.control.infrastruc
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -18,7 +18,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class GeneralLedgerControlControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/general-ledger/control'
 
-   @Inject AccountDataLoaderService accountDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerControlDataLoaderService generalLedgerControlDataLoaderService
 
    void "fetch one general ledger control by company" () {
@@ -33,7 +33,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.single(
+      final generalLedgerControl = generalLedgerControlDataLoaderService.single(
          company,
          defProfitCenter,
          defAPAcct,
@@ -90,7 +90,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
+      final generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -134,7 +134,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
+      final generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -193,7 +193,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.single(
+      final generalLedgerControl = generalLedgerControlDataLoaderService.single(
          company,
          defProfitCenter,
          defAPAcct,
@@ -215,7 +215,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "company"
-      response[0].message == "${company.myDataset()} already exists"
+      response[0].message == "${company.datasetCode} already exists"
    }
 
    @Unroll
@@ -264,7 +264,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       given:
       final nonExistentId = UUID.randomUUID()
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
+      final generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(nonExistentId),
          new SimpleIdentifiableDTO(nonExistentId),
@@ -307,7 +307,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def existingGLControl = generalLedgerControlDataLoaderService.single(
+      final existingGLControl = generalLedgerControlDataLoaderService.single(
          company,
          defProfitCenter,
          defAPAcct,
@@ -319,7 +319,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctUnbilledInvAcct,
          defAcctFreightAcct
       )
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
+      final updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -364,7 +364,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def existingGLControl = generalLedgerControlDataLoaderService.single(
+      final existingGLControl = generalLedgerControlDataLoaderService.single(
          company,
          defProfitCenter,
          defAPAcct,
@@ -376,7 +376,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctUnbilledInvAcct,
          defAcctFreightAcct
       )
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
+      final updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -437,7 +437,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
+      final updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -457,7 +457,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.message == "${company.myId()} was unable to be found"
+      response.message == "${company.id} was unable to be found"
    }
 
    @Unroll
@@ -473,7 +473,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
+      final updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
@@ -515,7 +515,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctSerializedInvAcct = accountDataLoaderService.single(company)
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
-      final def existingGLControl = generalLedgerControlDataLoaderService.single(
+      final existingGLControl = generalLedgerControlDataLoaderService.single(
          company,
          defProfitCenter,
          defAPAcct,
@@ -527,7 +527,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctUnbilledInvAcct,
          defAcctFreightAcct
       )
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
+      final updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
          new SimpleLegacyIdentifiableDTO(0),
          new SimpleIdentifiableDTO(nonExistentId),
          new SimpleIdentifiableDTO(nonExistentId),

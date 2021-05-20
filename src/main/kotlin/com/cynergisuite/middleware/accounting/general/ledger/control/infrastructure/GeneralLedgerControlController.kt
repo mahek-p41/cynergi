@@ -44,7 +44,7 @@ class GeneralLedgerControlController @Inject constructor(
    fun fetchOne(
       authentication: Authentication
    ): GeneralLedgerControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Fetching GeneralLedgerControl by {}", userCompany)
 
@@ -70,7 +70,7 @@ class GeneralLedgerControlController @Inject constructor(
       dto: GeneralLedgerControlDTO,
       authentication: Authentication
    ): GeneralLedgerControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create GeneralLedgerControl {}", dto)
 
@@ -97,7 +97,7 @@ class GeneralLedgerControlController @Inject constructor(
       dto: GeneralLedgerControlDTO,
       authentication: Authentication
    ): GeneralLedgerControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Update GeneralLedgerControl {}", dto)
 

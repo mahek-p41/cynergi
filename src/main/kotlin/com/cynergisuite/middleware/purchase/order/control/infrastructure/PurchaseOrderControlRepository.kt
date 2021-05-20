@@ -4,10 +4,11 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusType
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.DefaultAccountPayableStatusTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlEntity
@@ -19,10 +20,11 @@ import com.cynergisuite.middleware.purchase.order.type.infrastructure.DefaultPur
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.UpdatePurchaseOrderCostTypeRepository
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -31,7 +33,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class PurchaseOrderControlRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val defaultAccountPayableStatusTypeRepository: DefaultAccountPayableStatusTypeRepository,
    private val vendorRepository: VendorRepository,
    private val updatePurchaseOrderCostTypeRepository: UpdatePurchaseOrderCostTypeRepository,
@@ -234,8 +236,9 @@ class PurchaseOrderControlRepository @Inject constructor(
       """
    }
 
-   fun findOne(company: Company): PurchaseOrderControlEntity? {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(company: CompanyEntity): PurchaseOrderControlEntity? {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE purchaseOrderControl.company_id = :comp_id"
 
       logger.trace("Searching for PurchaseOrderControl:\n{}\nParams:{}", query, company)
@@ -259,16 +262,16 @@ class PurchaseOrderControlRepository @Inject constructor(
       return found
    }
 
-   fun exists(id: UUID): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM purchase_order_control WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   @ReadOnly fun exists(id: UUID): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM purchase_order_control WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if PurchaseOrderControl: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun exists(company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM purchase_order_control WHERE company_id = :company_id)", mapOf("company_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly fun exists(company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM purchase_order_control WHERE company_id = :company_id)", mapOf("company_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if PurchaseOrderControl: {} exists resulted in {}", company, exists)
 
@@ -276,7 +279,7 @@ class PurchaseOrderControlRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: PurchaseOrderControlEntity, company: Company): PurchaseOrderControlEntity {
+   fun insert(entity: PurchaseOrderControlEntity, company: CompanyEntity): PurchaseOrderControlEntity {
       logger.debug("Inserting purchase_order_control {}", company)
 
       return jdbc.insertReturning(
@@ -321,7 +324,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "drop_five_characters_on_model_number" to entity.dropFiveCharactersOnModelNumber,
             "update_account_payable" to entity.updateAccountPayable,
             "print_second_description" to entity.printSecondDescription,
@@ -352,7 +355,7 @@ class PurchaseOrderControlRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: PurchaseOrderControlEntity, company: Company): PurchaseOrderControlEntity {
+   fun update(entity: PurchaseOrderControlEntity, company: CompanyEntity): PurchaseOrderControlEntity {
       logger.debug("Updating purchase_order_control {}", entity)
 
       return jdbc.updateReturning(
@@ -381,7 +384,7 @@ class PurchaseOrderControlRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "drop_five_characters_on_model_number" to entity.dropFiveCharactersOnModelNumber,
             "update_account_payable" to entity.updateAccountPayable,
             "print_second_description" to entity.printSecondDescription,

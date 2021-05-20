@@ -2,13 +2,17 @@ package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.area.AreaType
 import com.cynergisuite.middleware.area.MenuType
 import com.cynergisuite.middleware.area.ModuleType
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,11 +20,12 @@ import javax.transaction.Transactional
 
 @Singleton
 class AreaRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AreaRepository::class.java)
 
-   fun findAll(company: Company): List<AreaType> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity): List<AreaType> {
       logger.trace("Loading all areas for company {}", company)
 
       val areas = mutableListOf<AreaType>()
@@ -53,7 +58,7 @@ class AreaRepository @Inject constructor(
             LEFT OUTER JOIN module module_configs ON modules.id = module_configs.module_type_id AND module_configs.company_id = :comp_id
          ORDER BY areas.id, menus.id, menus.parent_id, modules.id
          """.trimIndent(),
-         mapOf("comp_id" to company.myId())
+         mapOf("comp_id" to company.id)
       ) { rs, _ ->
          do {
             val tempArea = if (currentArea?.id != rs.getInt("area_id")) {
@@ -84,8 +89,8 @@ class AreaRepository @Inject constructor(
    }
 
    @Transactional
-   fun enable(company: Company, areaTypeId: Int) {
-      logger.debug("Enable area {} for company {}", areaTypeId, company.myDataset())
+   fun enable(company: CompanyEntity, areaTypeId: Int) {
+      logger.debug("Enable area {} for company {}", areaTypeId, company.datasetCode)
 
       jdbc.update(
          """
@@ -93,27 +98,27 @@ class AreaRepository @Inject constructor(
          VALUES (:company_id, :area_type_id)
          """,
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "area_type_id" to areaTypeId
          )
       )
    }
 
    @Transactional
-   fun disable(company: Company, areaTypeId: Int) {
-      logger.debug("Disable area {} for company {}", areaTypeId, company.myDataset())
+   fun disable(company: CompanyEntity, areaTypeId: Int) {
+      logger.debug("Disable area {} for company {}", areaTypeId, company.datasetCode)
 
       jdbc.update(
          """
          DELETE FROM area
          WHERE company_id = :company_id AND area_type_id = :area_type_id
          """,
-         mapOf("company_id" to company.myId(), "area_type_id" to areaTypeId)
+         mapOf("company_id" to company.id, "area_type_id" to areaTypeId)
       )
    }
 
    @Transactional
-   fun insert(company: Company, areaType: AreaType): AreaType {
+   fun insert(company: CompanyEntity, areaType: AreaType): AreaType {
       logger.debug("Inserting area {}", areaType)
 
       return jdbc.insertReturning(
@@ -124,12 +129,13 @@ class AreaRepository @Inject constructor(
             *
          """,
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "area_type_id" to areaType.myId()
          )
       ) { _, _ -> areaType }
    }
 
+   @ReadOnly
    fun exists(areaTypeId: Int): Boolean {
       val exists = jdbc.queryForObject(
          """
@@ -137,7 +143,7 @@ class AreaRepository @Inject constructor(
          """,
          mapOf("area_type_id" to areaTypeId),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if Area exists {}")
 

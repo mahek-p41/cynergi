@@ -8,17 +8,19 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringType
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -27,7 +29,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerRecurringRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val recurringTypeRepository: GeneralLedgerRecurringTypeRepository
 ) {
@@ -57,8 +59,9 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerRecurringEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerRecurringEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -75,7 +78,8 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<GeneralLedgerRecurringEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<GeneralLedgerRecurringEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -84,7 +88,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -97,7 +101,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: GeneralLedgerRecurringEntity, company: Company): GeneralLedgerRecurringEntity {
+   fun insert(entity: GeneralLedgerRecurringEntity, company: CompanyEntity): GeneralLedgerRecurringEntity {
       logger.debug("Inserting general_ledger_recurring {}", company)
 
       return jdbc.insertReturning(
@@ -124,7 +128,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "reverse_indicator" to entity.reverseIndicator,
             "message" to entity.message,
             "type_id" to entity.type.id,
@@ -138,7 +142,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerRecurringEntity, company: Company): GeneralLedgerRecurringEntity {
+   fun update(entity: GeneralLedgerRecurringEntity, company: CompanyEntity): GeneralLedgerRecurringEntity {
       logger.debug("Updating general_ledger_recurring {}", entity)
 
       return jdbc.updateReturning(
@@ -158,7 +162,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "reverse_indicator" to entity.reverseIndicator,
             "message" to entity.message,
             "type_id" to entity.type.id,
@@ -172,7 +176,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting GeneralLedgerRecurring with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -180,7 +184,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
          DELETE FROM general_ledger_recurring
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
       logger.info("Row affected {}", rowsAffected)
 

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.vendor.payment.term
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import java.util.UUID
 import javax.inject.Inject
@@ -14,10 +14,10 @@ class VendorPaymentTermService @Inject constructor(
    private val vendorPaymentTermValidator: VendorPaymentTermValidator
 ) {
 
-   fun fetchById(id: UUID, company: Company): VendorPaymentTermDTO? =
+   fun fetchById(id: UUID, company: CompanyEntity): VendorPaymentTermDTO? =
       vendorPaymentTermRepository.findOne(id, company)?.let { VendorPaymentTermDTO(entity = it) }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<VendorPaymentTermDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<VendorPaymentTermDTO> {
       val found = vendorPaymentTermRepository.findAll(company, pageRequest)
 
       return found.toPage { vendorPaymentTerm: VendorPaymentTermEntity ->
@@ -25,7 +25,7 @@ class VendorPaymentTermService @Inject constructor(
       }
    }
 
-   fun create(dto: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
+   fun create(dto: VendorPaymentTermDTO, company: CompanyEntity): VendorPaymentTermDTO {
       val toCreate = vendorPaymentTermValidator.validateCreate(dto, company)
 
       return VendorPaymentTermDTO(
@@ -33,7 +33,7 @@ class VendorPaymentTermService @Inject constructor(
       )
    }
 
-   fun update(id: UUID, dto: VendorPaymentTermDTO, company: Company): VendorPaymentTermDTO {
+   fun update(id: UUID, dto: VendorPaymentTermDTO, company: CompanyEntity): VendorPaymentTermDTO {
       val toUpdate = vendorPaymentTermValidator.validateUpdate(id, dto, company)
 
       return VendorPaymentTermDTO(

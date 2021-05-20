@@ -21,7 +21,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "fetch one vendor payment term by id"() {
       given:
-      final def vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(nineNineEightAuthenticatedEmployee.myCompany())
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(nineNineEightAuthenticatedEmployee.myCompany())
 
       when:
       def result = get("$path/${vendorPaymentTerm.id}")

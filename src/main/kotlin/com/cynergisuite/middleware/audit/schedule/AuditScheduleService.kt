@@ -4,13 +4,14 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditValueObject
-import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.localization.AuditDueToday
 import com.cynergisuite.middleware.localization.AuditPastDue
 import com.cynergisuite.middleware.localization.LocalizationService
+import com.cynergisuite.middleware.location.LocationEntity
 import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
@@ -46,7 +47,7 @@ class AuditScheduleService @Inject constructor(
 ) : DailySchedule {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
-   fun fetchById(id: UUID, company: Company): AuditScheduleDTO? {
+   fun fetchById(id: UUID, company: CompanyEntity): AuditScheduleDTO? {
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
@@ -56,7 +57,7 @@ class AuditScheduleService @Inject constructor(
       }
    }
 
-   fun fetchAll(pageRequest: PageRequest, company: Company): Page<AuditScheduleDTO> {
+   fun fetchAll(pageRequest: PageRequest, company: CompanyEntity): Page<AuditScheduleDTO> {
       val repoPage = scheduleRepository.findAll(SchedulePageRequest(pageRequest, "AuditSchedule"), company) // find all schedules that are of a command AuditSchedule
 
       return repoPage.toPage { buildAuditScheduleValueObjectFromSchedule(it, company) }
@@ -90,7 +91,7 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, company: Company): AuditScheduleDTO {
+   private fun buildAuditScheduleValueObjectFromSchedule(schedule: ScheduleEntity, company: CompanyEntity): AuditScheduleDTO {
       val stores = mutableListOf<StoreDTO>()
 
       for (arg: ScheduleArgumentEntity in schedule.arguments) {
@@ -136,16 +137,19 @@ class AuditScheduleService @Inject constructor(
       for (arg: ScheduleArgumentEntity in schedule.arguments) { // looking for stores who's audits are today
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOne(arg.value.toInt(), company)!!
-            val employeeUser = AuthenticatedUser(
+            val employeeUser = AuthenticatedEmployee(
                id = employee.id!!,
                type = employee.type,
                number = employee.number,
                company = employee.company,
                department = employee.department,
-               location = store,
+               assignedLocation = LocationEntity(store),
                alternativeStoreIndicator = employee.alternativeStoreIndicator,
                alternativeArea = employee.alternativeArea,
-               cynergiSystemAdmin = employee.cynergiSystemAdmin
+               cynergiSystemAdmin = employee.cynergiSystemAdmin,
+               chosenLocation = LocationEntity(store),
+               fallbackLocation = LocationEntity(store),
+               passCode = employee.passCode
             )
 
             val (audit, existing) = if (schedule.schedule == dayOfWeek.name) {
@@ -168,7 +172,7 @@ class AuditScheduleService @Inject constructor(
                   startDate = LocalDate.now(),
                   dateCreated = null,
                   expirationDate = LocalDate.now().plusDays(1),
-                  company = company.myDataset(),
+                  company = company.datasetCode,
                   message = schedule.description!!,
                   sendingEmployee = employee.number.toString(),
                   notificationType = STORE.value,

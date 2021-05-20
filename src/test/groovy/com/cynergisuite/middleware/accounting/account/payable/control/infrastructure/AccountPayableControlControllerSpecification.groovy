@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.accounting.account.payable.control.infrastru
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
-import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -19,15 +19,15 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class AccountPayableControlControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account-payable/control'
 
-   @Inject AccountDataLoaderService accountDataLoaderService
-   @Inject AccountPayableControlDataLoaderService accountPayableControlDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
+   @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
 
    void "fetch one account payable control by company" () {
       given:
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
 
       when:
       def result = get("$path/")
@@ -83,7 +83,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
 
       when:
       def result = post("$path/", accountPayableControl)
@@ -126,7 +126,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final accountPayableControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
 
       when:
       post("$path/", accountPayableControl)
@@ -137,7 +137,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "company"
-      response[0].message == "${company.myDataset()} already exists"
+      response[0].message == "${company.datasetCode} already exists"
    }
 
    @Unroll
@@ -146,7 +146,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       accountPayableControl["$nonNullableProp"] = null
 
       when:
@@ -179,7 +179,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       accountPayableControl.checkFormType = new AccountPayableCheckFormTypeDTO(AccountPayableCheckFormTypeDataLoader.random())
       accountPayableControl.checkFormType.value = "nonexisting"
 
@@ -222,7 +222,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       accountPayableControl.generalLedgerInventoryAccount.id = nonExistentGeneralLedgerInventoryAccountId
 
       when:
@@ -242,8 +242,8 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       updatedAPControlDTO.id = existingAPControl.id
 
       when:
@@ -288,8 +288,8 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final def existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      final def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
       updatedAPControlDTO.id = nonExistentAPControlId
 
       when: "sending a payload with an invalid id"
@@ -342,7 +342,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.message == "${nineNineEightEmployee.company.myId()} was unable to be found"
+      response.message == "${nineNineEightEmployee.company.id} was unable to be found"
    }
 
    void "update invalid account payable control without non-nullable properties" () {

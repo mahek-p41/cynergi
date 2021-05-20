@@ -44,7 +44,7 @@ class AccountPayableControlController @Inject constructor(
    fun fetchOne(
       authentication: Authentication
    ): AccountPayableControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Fetching AccountPayableControl by {}", userCompany)
 
@@ -70,7 +70,7 @@ class AccountPayableControlController @Inject constructor(
       dto: AccountPayableControlDTO,
       authentication: Authentication
    ): AccountPayableControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create AccountPayableControl {}", dto)
 
@@ -97,7 +97,7 @@ class AccountPayableControlController @Inject constructor(
       dto: AccountPayableControlDTO,
       authentication: Authentication
    ): AccountPayableControlDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Update AccountPayableControl {}", dto)
 

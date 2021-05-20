@@ -160,8 +160,8 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "update one" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      final existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
       updatedGLSourceCode.id = existingGLSourceCode.id
 
       when:
@@ -178,8 +178,8 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "update source code with null value" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      final existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
       updatedGLSourceCode.id = existingGLSourceCode.id
       updatedGLSourceCode.value = null
 
@@ -199,8 +199,8 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "update source code with null description" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final def existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      final existingGLSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
       updatedGLSourceCode.id = existingGLSourceCode.id
       updatedGLSourceCode.description = null
 
@@ -240,9 +240,9 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final def glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final def glSourceCode2 = generalLedgerSourceCodeDataLoaderService.single(tstds2)
-      final def updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glSourceCode2 = generalLedgerSourceCodeDataLoaderService.single(tstds2)
+      final updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
       updatedGLSourceCode.id = glSourceCode1.id
       updatedGLSourceCode.value = glSourceCode2.value
 

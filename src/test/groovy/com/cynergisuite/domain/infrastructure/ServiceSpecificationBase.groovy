@@ -7,10 +7,10 @@ import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.division.DivisionFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import com.cynergisuite.middleware.region.RegionEntity
-import com.cynergisuite.middleware.region.RegionFactoryService
-import com.cynergisuite.middleware.store.StoreFactoryService
+import com.cynergisuite.middleware.region.RegionTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreTestDataLoaderService
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -19,9 +19,9 @@ abstract class ServiceSpecificationBase extends Specification {
    @Inject CompanyFactoryService companyFactoryService
    @Inject DepartmentFactoryService departmentFactoryService
    @Inject DivisionFactoryService divisionFactoryService
-   @Inject RegionFactoryService regionFactoryService
-   @Inject StoreFactoryService storeFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
+   @Inject RegionTestDataLoaderService regionFactoryService
+   @Inject StoreTestDataLoaderService storeFactoryService
+   @Inject EmployeeTestDataLoaderService employeeFactoryService
    @Inject TruncateDatabaseService truncateDatabaseService
    @Inject AreaDataLoaderService areaDataLoaderService
    @Inject ModuleDataLoaderService moduleDataLoaderService
@@ -35,7 +35,9 @@ abstract class ServiceSpecificationBase extends Specification {
       truncateDatabaseService.truncate()
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
 
-      def tstds1 = companies.find { it.datasetCode == "tstds1" }
+      def tstds1 = companies.find {
+         it.datasetCode == "tstds1"
+      }
       def tstds1DivisionalManagerDepartment = departmentFactoryService.forThese(tstds1, "EX")
       def tstds1Store1DivisionalManager = employeeFactoryService.single(tstds1DivisionalManagerDepartment)
       def division1 = divisionFactoryService.single(tstds1, tstds1Store1DivisionalManager)

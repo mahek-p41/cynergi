@@ -60,7 +60,7 @@ class AccountPayableInvoiceController @Inject constructor(
    ): AccountPayableInvoiceDTO {
       logger.info("Fetching Account Payable Invoice by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayableInvoiceService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Account Payable Invoice by {} resulted in", id, response)
@@ -88,7 +88,7 @@ class AccountPayableInvoiceController @Inject constructor(
    ): Page<AccountPayableInvoiceDTO> {
       logger.info("Fetching all Account Payable Invoices {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = accountPayableInvoiceService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -118,7 +118,7 @@ class AccountPayableInvoiceController @Inject constructor(
    ): AccountPayableInvoiceDTO {
       logger.debug("Requested Create Account Payable Invoice {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayableInvoiceService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
@@ -149,7 +149,7 @@ class AccountPayableInvoiceController @Inject constructor(
    ): AccountPayableInvoiceDTO {
       logger.info("Requested Update Account Payable Invoice {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayableInvoiceService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Account Payable Invoice {} resulted in {}", dto, response)

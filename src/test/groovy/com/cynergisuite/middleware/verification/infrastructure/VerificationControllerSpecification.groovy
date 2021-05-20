@@ -3,11 +3,11 @@ package com.cynergisuite.middleware.verification.infrastructure
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.verfication.Verification
-import com.cynergisuite.middleware.verfication.VerificationDataLoaderService
+import com.cynergisuite.middleware.verification.VerificationTestDataLoaderService
 import com.cynergisuite.middleware.verfication.VerificationReference
-import com.cynergisuite.middleware.verfication.VerificationReferenceDataLoaderService
-import com.cynergisuite.middleware.verfication.VerificationReferenceTestDataLoader
-import com.cynergisuite.middleware.verfication.VerificationTestDataLoader
+import com.cynergisuite.middleware.verification.VerificationReferenceTestDataLoaderService
+import com.cynergisuite.middleware.verification.VerificationReferenceTestDataLoader
+import com.cynergisuite.middleware.verification.VerificationTestDataLoader
 import com.cynergisuite.middleware.verfication.VerificationValueObject
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationReferenceRepository
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -32,14 +32,14 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class VerificationControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/verifications/corrto"
 
-   @Inject VerificationDataLoaderService verificationDataLoaderService
-   @Inject VerificationReferenceDataLoaderService verificationReferenceDataLoaderService
+   @Inject VerificationTestDataLoaderService verificationTestDataLoaderService
+   @Inject VerificationReferenceTestDataLoaderService verificationReferenceDataLoaderService
    @Inject VerificationReferenceRepository verificationReferenceRepository
    @Inject ObjectMapper objectMapper
 
    void "fetch one verification by id where everything is filled out" () {
       given:
-      final savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final savedVerification = verificationTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final verificationValueObject = new VerificationValueObject(savedVerification)
 
       when:
@@ -64,7 +64,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one verification by customer account" () {
       given:
-      final savedVerification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final savedVerification = verificationTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final verificationValueObject = new VerificationValueObject(savedVerification)
 
       when:
@@ -124,7 +124,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post completely empty verification should fail" () {
       given:
-      final def verification = new VerificationValueObject(
+      final verification = new VerificationValueObject(
          null,
          null,
          null,
@@ -212,7 +212,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put verification successfully" () {
       given:
-      final savedVerification = verificationDataLoaderService.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final savedVerification = verificationTestDataLoaderService.stream(1).map { new VerificationValueObject(it) }.findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final toUpdateVerification = savedVerification.copyMe()
 
       when:
@@ -227,7 +227,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put verification references by adding a third reference" () {
       given:
-      final Verification verification = verificationDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final Verification verification = verificationTestDataLoaderService.stream(1, true, true, true, false).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final List<VerificationReference> references = verificationReferenceDataLoaderService.stream(2, verification).collect(Collectors.toList())
       final toUpdate = verification.copyMe()
       toUpdate.references.addAll(references)
@@ -251,7 +251,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "delete verification reference via update with one missing" () {
       given:
-      final verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verification = verificationTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final savedVerification = new VerificationValueObject(verification)
       savedVerification.references.remove(5) // remove the last one
 
@@ -277,7 +277,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
 
    void "delete two previously created verification reference via update with one missing" () {
       given:
-      final verification = verificationDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
+      final verification = verificationTestDataLoaderService.stream(1).findFirst().orElseThrow { new Exception("Unable to create Verification") }
       final savedVerification = new VerificationValueObject(verification)
       savedVerification.references.remove(1)
       savedVerification.references.remove(1)

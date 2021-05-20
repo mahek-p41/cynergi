@@ -6,15 +6,17 @@ import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -23,7 +25,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class DivisionRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val simpleEmployeeRepository: SimpleEmployeeRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DivisionRepository::class.java)
@@ -80,8 +82,8 @@ class DivisionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): DivisionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
+   @ReadOnly fun findOne(id: UUID, company: CompanyEntity): DivisionEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id, "comp_dataset_code" to company.datasetCode)
       val query =
          """${selectBaseQuery()} WHERE div.id = :id
                                                 AND div.company_id = :comp_id
@@ -100,8 +102,9 @@ class DivisionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<DivisionEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<DivisionEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "comp_dataset_code" to company.datasetCode)
       val query =
          """
          WITH paged AS (
@@ -118,7 +121,7 @@ class DivisionRepository @Inject constructor(
       var totalElements: Long? = null
       val resultList: MutableList<DivisionEntity> = mutableListOf()
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          resultList.add(mapRow(rs, company, "div_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -147,7 +150,7 @@ class DivisionRepository @Inject constructor(
             RETURNING *
          """.trimIndent(),
          mapOf(
-            "company_id" to entity.company.myId(),
+            "company_id" to entity.company.id,
             "name" to entity.name,
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number,
@@ -174,7 +177,7 @@ class DivisionRepository @Inject constructor(
          mapOf(
             "id" to id,
             "name" to entity.name,
-            "company_id" to entity.company.myId(),
+            "company_id" to entity.company.id,
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number,
          )
@@ -184,7 +187,7 @@ class DivisionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company): DivisionEntity? {
+   fun delete(id: UUID, company: CompanyEntity): DivisionEntity? {
       logger.debug("Deleting Division using {}/{}", id, company)
 
       val division = findOne(id, company)
@@ -237,10 +240,10 @@ class DivisionRepository @Inject constructor(
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): DivisionEntity =
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): DivisionEntity =
       DivisionEntity(
          id = rs.getUuid("${columnPrefix}id"),
-         company = CompanyEntity.create(company)!!, // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
+         company = company,
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          description = rs.getString("${columnPrefix}description"),
