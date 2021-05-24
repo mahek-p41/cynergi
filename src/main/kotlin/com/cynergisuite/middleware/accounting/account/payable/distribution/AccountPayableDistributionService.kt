@@ -35,6 +35,10 @@ class AccountPayableDistributionService @Inject constructor(
       return transformEntity(accountPayableDistributionRepository.update(toUpdate, company))
    }
 
+   fun delete(id: Long, company: Company) {
+      accountPayableDistributionRepository.delete(id, company)
+   }
+
    private fun transformEntity(accountPayableDistribution: AccountPayableDistributionEntity): AccountPayableDistributionDTO {
       return AccountPayableDistributionDTO(entity = accountPayableDistribution)
    }

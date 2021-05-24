@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
@@ -172,6 +173,22 @@ class AccountPayableDistributionRepository @Inject constructor(
       ) { rs, _ ->
          mapRow(rs, entity)
       }
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting AccountPayableDistribution with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM account_payable_distribution_template
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {

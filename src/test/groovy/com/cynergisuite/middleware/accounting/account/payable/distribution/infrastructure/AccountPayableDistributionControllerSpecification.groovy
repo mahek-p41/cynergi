@@ -53,7 +53,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == 'Account payable distribution was unable to be found'
+      response.message == '0 was unable to be found'
    }
 
    void "fetch all" () {
@@ -339,5 +339,47 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       percent      | invalidPercent    || errorResponsePath    | errorMessage
       'percent'    | 0                 || 'percent'            | 'percent must be greater than zero'
       'percent'    | 1.2               || 'percent'            | 'Must be in range of (0, 1]'
+   }
+
+   void "delete one account payable distribution" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final acct = accountDataLoaderService.single(company)
+      final def apDistribution = dataLoaderService.single(store, acct, company)
+
+      when:
+      delete("$path/${apDistribution.id}")
+
+      then:
+      notThrown(Exception)
+
+      when:
+      get("$path/${apDistribution.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "${apDistribution.id} was unable to be found"
+   }
+
+   void "delete account payable distribution from other company is not allowed" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store = storeFactoryService.store(3, tstds2)
+      final acct = accountDataLoaderService.single(tstds2)
+      final def apDistribution = dataLoaderService.single(store, acct, tstds2)
+
+      when:
+      delete("$path/${apDistribution.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response.message == "${apDistribution.id} was unable to be found"
    }
 }

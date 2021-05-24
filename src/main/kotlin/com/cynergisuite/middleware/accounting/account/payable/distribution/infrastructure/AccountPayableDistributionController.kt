@@ -10,12 +10,7 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -59,7 +54,7 @@ class AccountPayableDistributionController @Inject constructor(
 
       logger.info("Fetching AccountPayableDistribution by id {}", id)
 
-      val response = accountPayableDistributionService.fetchOne(id, userCompany) ?: throw NotFoundException("Account payable distribution")
+      val response = accountPayableDistributionService.fetchOne(id, userCompany) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AccountPayableDistribution by {} resulted in", id, response)
 
@@ -145,5 +140,28 @@ class AccountPayableDistributionController @Inject constructor(
       logger.debug("Requested Update AccountPayableDistribution {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Delete(value = "/{id}")
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Delete a single AccountPayableDistribution", description = "Delete a single AccountPayableDistribution", operationId = "accountPayableDistribution-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If AccountPayableDistribution was successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested AccountPayableDistribution was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: Long,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete AccountPayableDistribution", authentication)
+
+      val user = userService.findUser(authentication)
+
+      return accountPayableDistributionService.delete(id, user.myCompany())
    }
 }
