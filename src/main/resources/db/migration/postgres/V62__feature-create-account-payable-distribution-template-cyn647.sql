@@ -9,7 +9,7 @@ CREATE TABLE account_payable_distribution_template
     account_id                                       BIGINT REFERENCES account (id)                                              NOT NULL,
     company_id                                       BIGINT REFERENCES company (id)                                              NOT NULL,
     percent                                          NUMERIC(8,7)                                                                NOT NULL,
-    UNIQUE (company_id,name, profit_center_sfk)
+    UNIQUE (company_id, name, account_id)
  );
 
 CREATE TRIGGER account_payable_distribution_template_trg
