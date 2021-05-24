@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -76,11 +75,10 @@ class AccountPayableDistributionRepository @Inject constructor(
       val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "apDist_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "apDist_")
+      }
 
       logger.trace("Searching for AccountPayableDistribution id {}: \nQuery {} \nResulted in {}", id, query, found)
 
@@ -140,11 +138,10 @@ class AccountPayableDistributionRepository @Inject constructor(
             "account_id" to entity.account.id,
             "company_id" to company.myId(),
             "percent" to entity.percent
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -171,11 +168,10 @@ class AccountPayableDistributionRepository @Inject constructor(
             "account_id" to entity.account.id,
             "company_id" to company.myId(),
             "percent" to entity.percent
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
