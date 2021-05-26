@@ -81,7 +81,7 @@ class VendorRepository @Inject constructor(
             v.charge_inventory_tax_4              AS v_charge_inventory_tax_4,
             v.federal_id_number_verification      AS v_federal_id_number_verification,
             v.email_address                       AS v_email_address,
-            v.purchase_order_submit_email_address AS v_purchase_order_submit_email_address,
+            v.purchase_order_submit_email_address AS v_purchase_order_submit_email,
             v.allow_drop_ship_to_customer         AS v_allow_drop_ship_to_customer,
             v.auto_submit_purchase_order          AS v_auto_submit_purchase_order,
             v.note                                AS v_note,
@@ -176,7 +176,7 @@ class VendorRepository @Inject constructor(
          vendor
       }
 
-      logger.trace("Searching for VendorPaymentTerm: {} resulted in {}", id, found)
+      logger.trace("Searching for Vendor: {} resulted in {}", id, found)
 
       return found
    }
@@ -553,7 +553,7 @@ class VendorRepository @Inject constructor(
          chargeInventoryTax4 = rs.getBoolean("${columnPrefix}charge_inventory_tax_4"),
          federalIdNumberVerification = rs.getBoolean("${columnPrefix}federal_id_number_verification"),
          emailAddress = rs.getString("${columnPrefix}email_address"),
-         purchaseOrderSubmitEmailAddress = rs.getString("${columnPrefix}purchase_order_submit_email_address"),
+         purchaseOrderSubmitEmailAddress = rs.getString("${columnPrefix}purchase_order_submit_email"),
          allowDropShipToCustomer = rs.getBoolean("${columnPrefix}allow_drop_ship_to_customer"),
          autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order"),
          number = rs.getInt("${columnPrefix}number"),

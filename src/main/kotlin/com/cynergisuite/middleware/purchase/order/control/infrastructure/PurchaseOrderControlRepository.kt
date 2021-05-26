@@ -101,7 +101,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_charge_inventory_tax_4                                      AS defVen_charge_inventory_tax_4,
             defVen.v_federal_id_number_verification                              AS defVen_federal_id_number_verification,
             defVen.v_email_address                                               AS defVen_email_address,
-            defVen.v_purchase_order_submit_email_address                         AS defVen_purchase_order_submit_email_address,
+            defVen.v_purchase_order_submit_email                                 AS defVen_purchase_order_submit_email,
             defVen.v_allow_drop_ship_to_customer                                 AS defVen_allow_drop_ship_to_customer,
             defVen.v_auto_submit_purchase_order                                  AS defVen_auto_submit_purchase_order,
             defVen.v_note                                                        AS defVen_note,
