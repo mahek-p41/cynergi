@@ -647,10 +647,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final inventoryLocationType = InventoryLocationFactory.findByValue(inventoryItem.locationType.value)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final warehouse = auditScanAreaFactoryService.warehouse(store, company)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
-      final auditException = auditExceptionRepository.insert(new AuditExceptionEntity(audit.id, new InventoryEntity(inventoryItem, store, store, inventoryLocationType), warehouse, employee, exceptionCode))
-      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(warehouse), exceptionCode: exceptionCode])
+      final auditException = auditExceptionRepository.insert(new AuditExceptionEntity(audit.id, new InventoryEntity(inventoryItem, store, store, inventoryLocationType), null, employee, exceptionCode))
+      final exception = new AuditExceptionCreateValueObject([inventory: new SimpleIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
 
       when:
       post("/audit/${audit.id}/exception", exception)
