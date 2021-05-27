@@ -43,7 +43,7 @@ object AuditExceptionFactory {
       return IntStream.range(0, number).mapToObj {
          AuditExceptionEntity(
             scanArea = scanAreaIn,
-            barcode = lorem.characters(10).toUpperCase(),
+            barcode = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
             productCode = if (random.nextBoolean()) lorem.characters(2, 3).toUpperCase() else null,
             altId = if (random.nextBoolean()) lorem.characters(5, 10).toUpperCase() else null,
             serialNumber = if (random.nextBoolean()) lorem.characters(10, 15).toUpperCase() else null,
@@ -53,7 +53,7 @@ object AuditExceptionFactory {
             exceptionCode = randomExceptionCode(),
             approved = approved,
             approvedBy = approvedBy,
-            lookupKey = if (random.nextBoolean()) lorem.characters(10).toUpperCase() else null,
+            lookupKey = lorem.characters(10).toUpperCase(),
             audit = SimpleIdentifiableEntity(audit)
          )
       }

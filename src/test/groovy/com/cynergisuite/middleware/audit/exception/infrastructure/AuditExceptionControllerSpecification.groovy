@@ -588,11 +588,11 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final barcode = "12345689521028"
+      final lookupKey = "12345689521028"
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([scanArea: new SimpleIdentifiableDTO(scanArea), barcode: barcode, exceptionCode: "Not found in inventory"]))
+      def result = post("/audit/${audit.id}/exception", new AuditExceptionCreateValueObject([scanArea: new SimpleIdentifiableDTO(scanArea), barcode: lookupKey, exceptionCode: "Not found in inventory"]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -600,7 +600,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.id > 0
       result.timeCreated != null
       result.timeUpdated != null
-      result.barcode == barcode
+      result.lookupKey == lookupKey
       result.serialNumber == null
       result.exceptionCode == "Not found in inventory"
       result.inventoryBrand == null
