@@ -142,8 +142,8 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
       glRecurring.message = null
-      glRecurring.beginDate = null
       glRecurring.endDate = null
+      glRecurring.lastTransferDate = null
 
       when:
       def result = post(path, glRecurring)
@@ -155,8 +155,9 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          id > 0
          reverseIndicator == glRecurring.reverseIndicator
          message == null
-         beginDate == null
+         beginDate == glRecurring.beginDate.toString()
          endDate == null
+         lastTransferDate == null
 
          with(type) {
             value == glRecurring.type.value
@@ -170,6 +171,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       }
    }
 
+   @Unroll
    void "create invalid GL recurring without #nonNullableProp" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
@@ -190,6 +192,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
 
       where:
       nonNullableProp                  || errorResponsePath
+      'beginDate'                      || 'beginDate'
       'reverseIndicator'               || 'reverseIndicator'
       'source'                         || 'source'
       'type'                           || 'type'
@@ -261,9 +264,8 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
       glRecurring.id = glRecurringEntity.id
       glRecurring.message = null
-      glRecurring.beginDate = null
       glRecurring.endDate = null
-
+      glRecurring.lastTransferDate = null
 
       when:
       def result = put("$path/${glRecurringEntity.id}", glRecurring)
@@ -275,8 +277,9 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          id > 0
          reverseIndicator == glRecurring.reverseIndicator
          message == null
-         beginDate == null
+         beginDate == glRecurring.beginDate.toString()
          endDate == null
+         lastTransferDate == null
 
          with(type) {
             value == glRecurring.type.value
@@ -288,6 +291,35 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
             description == glRecurring.source.description
          }
       }
+   }
+
+   @Unroll
+   void "update invalid GL recurring without #nonNullableProp" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
+      final glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      glRecurringDTO.id = glRecurringEntity.id
+      glRecurringDTO["$nonNullableProp"] = null
+
+      when:
+      post(path, glRecurringDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
+
+      where:
+      nonNullableProp                  || errorResponsePath
+      'beginDate'                      || 'beginDate'
+      'reverseIndicator'               || 'reverseIndicator'
+      'source'                         || 'source'
+      'type'                           || 'type'
    }
 
    @Unroll

@@ -21,6 +21,8 @@ class GeneralLedgerRecurringValidator @Inject constructor(
    fun validateCreate(dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
       logger.trace("Validating Create GeneralLedgerRecurring{}", dto)
 
+      dto.lastTransferDate = null
+
       return doSharedValidation(dto, company)
    }
 
@@ -35,6 +37,7 @@ class GeneralLedgerRecurringValidator @Inject constructor(
       val recurringType = recurringTypeRepository.findOne(dto.type!!.value)
 
       doValidation { errors ->
+         // non-nullable validations
          source ?: errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
          recurringType ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
       }

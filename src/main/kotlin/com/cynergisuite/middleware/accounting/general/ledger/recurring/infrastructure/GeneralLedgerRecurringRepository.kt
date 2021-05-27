@@ -2,11 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastr
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
@@ -16,7 +12,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -31,7 +26,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          SELECT
             glRecurring.id                                        AS glRecurring_id,
@@ -40,6 +35,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             glRecurring.message                                   AS glRecurring_message,
             glRecurring.begin_date                                AS glRecurring_begin_date,
             glRecurring.end_date                                  AS glRecurring_end_date,
+            glRecurring.last_transfer_date                        AS glRecurring_last_transfer_date,
             source.id                                             AS glRecurring_source_id,
             source.value                                          AS glRecurring_source_value,
             source.description                                    AS glRecurring_source_description,
@@ -59,14 +55,13 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               "glRecurring_"
-            )
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            "glRecurring_"
+         )
+      }
 
       logger.trace("Searching for GeneralLedgerRecurring: {} resulted in {}", company, found)
 
@@ -129,11 +124,10 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
             "end_date" to entity.endDate
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.type, entity.source)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.type, entity.source)
+      }
    }
 
    @Transactional
@@ -164,11 +158,10 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
             "end_date" to entity.endDate
-         ),
-         RowMapper { rs, _ ->
-            mapRowUpsert(rs, entity.type, entity.source)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity.type, entity.source)
+      }
    }
 
    @Transactional
@@ -187,7 +180,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   private fun mapRow(
+   fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY
    ): GeneralLedgerRecurringEntity {
@@ -197,8 +190,9 @@ class GeneralLedgerRecurringRepository @Inject constructor(
          message = rs.getString("${columnPrefix}message"),
          type = recurringTypeRepository.mapRow(rs, "${columnPrefix}type_"),
          source = sourceCodeRepository.mapRow(rs, "${columnPrefix}source_"),
-         beginDate = rs.getLocalDateOrNull("${columnPrefix}begin_date"),
-         endDate = rs.getLocalDateOrNull("${columnPrefix}end_date")
+         beginDate = rs.getLocalDate("${columnPrefix}begin_date"),
+         endDate = rs.getLocalDateOrNull("${columnPrefix}end_date"),
+         lastTransferDate = rs.getLocalDateOrNull("${columnPrefix}last_transfer_date")
       )
    }
 
@@ -214,8 +208,9 @@ class GeneralLedgerRecurringRepository @Inject constructor(
          message = rs.getString("${columnPrefix}message"),
          type = type,
          source = source,
-         beginDate = rs.getLocalDateOrNull("${columnPrefix}begin_date"),
-         endDate = rs.getLocalDateOrNull("${columnPrefix}end_date")
+         beginDate = rs.getLocalDate("${columnPrefix}begin_date"),
+         endDate = rs.getLocalDateOrNull("${columnPrefix}end_date"),
+         lastTransferDate = rs.getLocalDateOrNull("${columnPrefix}last_transfer_date")
       )
    }
 }
