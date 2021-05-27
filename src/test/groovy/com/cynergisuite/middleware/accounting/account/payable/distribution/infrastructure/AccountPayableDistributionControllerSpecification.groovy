@@ -145,7 +145,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistribution = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      final def apDistribution = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
 
       when:
       def result = post("$path/", apDistribution)
@@ -168,7 +168,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$nonNullableProp"] = null
 
       when:
@@ -196,7 +196,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$testProp"] = invalidValue
 
       when:
@@ -221,7 +221,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      final def apDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       apDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -236,8 +236,34 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response[0].message == errorMessage
       where:
       percent      | invalidPercent    || errorResponsePath    | errorMessage
-      'percent'    | 0                 || 'percent'            | 'percent must be greater than zero'
-      'percent'    | 1.2               || 'percent'            | 'Must be in range of (0, 1]'
+      'percent'    | (-0.1)            || 'percent'            | 'Must be in range of [0, 1]'
+      'percent'    | 1.2               || 'percent'            | 'Must be in range of [0, 1]'
+   }
+
+   void "create invalid account payable distribution group with percent total over 100%" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final accounts = accountDataLoaderService.stream(5, company).toList()
+      def apDistributions = []
+      accounts.eachWithIndex { account, index ->
+         apDistributions.add(dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(account.myId()), "test"))
+      }
+      apDistributions[4].percent = 1
+
+      when:
+      def result
+      apDistributions.each {
+         result = post("$path/", it)
+      }
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "percent"
+      response[0].message == "Percent total cannot exceed 100%"
    }
 
    void "update valid account payable distribution" () {
@@ -246,7 +272,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      final def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      final def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.id = existingAPDistribution.id
 
       when:
@@ -270,7 +296,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.account = null
       updatedAPDistributionDTO.name = null
       updatedAPDistributionDTO.percent = null
@@ -297,7 +323,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO.account.id = 999999
       updatedAPDistributionDTO.profitCenter.id = 999999
 
@@ -322,7 +348,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final def existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()))
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
       updatedAPDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -337,8 +363,39 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response[0].message == errorMessage
       where:
       percent      | invalidPercent    || errorResponsePath    | errorMessage
-      'percent'    | 0                 || 'percent'            | 'percent must be greater than zero'
-      'percent'    | 1.2               || 'percent'            | 'Must be in range of (0, 1]'
+      'percent'    | (-0.1)            || 'percent'            | 'Must be in range of [0, 1]'
+      'percent'    | 1.2               || 'percent'            | 'Must be in range of [0, 1]'
+   }
+
+   void "update invalid account payable distribution group with percent total over 100%" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final accounts = accountDataLoaderService.stream(5, company).toList()
+      def existingAPDistributions = []
+      def updatedAPDistDTOs = []
+      accounts.eachWithIndex { account, index ->
+         existingAPDistributions.add(dataLoaderService.single(store, account, company))
+         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(account.myId()), "test"))
+      }
+      updatedAPDistDTOs.eachWithIndex{ dto, index ->
+         dto.id = existingAPDistributions[index].id
+      }
+      updatedAPDistDTOs[4].percent = 1
+
+      when:
+      def result
+      updatedAPDistDTOs.each {
+         result = put("$path/${it.id}", it)
+      }
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "percent"
+      response[0].message == "Percent total cannot exceed 100%"
    }
 
    void "delete one account payable distribution" () {

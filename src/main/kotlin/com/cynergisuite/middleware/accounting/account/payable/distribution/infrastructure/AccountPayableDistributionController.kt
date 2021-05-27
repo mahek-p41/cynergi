@@ -29,6 +29,7 @@ import javax.validation.Valid
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/account-payable/distribution")
 class AccountPayableDistributionController @Inject constructor(
+   private val accountPayableDistributionRepository: AccountPayableDistributionRepository,
    private val accountPayableDistributionService: AccountPayableDistributionService,
    private val userService: UserService
 ) {

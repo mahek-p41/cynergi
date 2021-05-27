@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.math.BigDecimal
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -189,6 +190,23 @@ class AccountPayableDistributionRepository @Inject constructor(
       logger.info("Row affected {}", rowsAffected)
 
       if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   fun percentTotalForGroup(company: Company, name: String): BigDecimal? {
+      logger.debug("Percent total for account payable distribution group with name={}", name)
+
+      return jdbc.queryForObject(
+         """
+            SELECT SUM(percent)
+            FROM account_payable_distribution_template
+            WHERE company_id = :company_id AND name = :name
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "name" to name
+         ),
+         BigDecimal::class.java
+      )
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
