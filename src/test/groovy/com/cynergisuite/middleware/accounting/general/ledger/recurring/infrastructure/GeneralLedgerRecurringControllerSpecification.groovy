@@ -11,7 +11,6 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
 import javax.inject.Inject
-import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -42,7 +41,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          message == glRecurring.message
          beginDate == glRecurring.beginDate.toString()
          endDate == glRecurring.endDate.toString()
-         lastTransferDate == glRecurring.lastTransferDate.toString()
 
          with(type) {
             value == glRecurring.type.value
@@ -85,7 +83,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
                message == glRecurrings[index].message
                beginDate == glRecurrings[index].beginDate.toString()
                endDate == glRecurrings[index].endDate.toString()
-               lastTransferDate == glRecurrings[index].lastTransferDate.toString()
 
                with(type) {
                   value == glRecurrings[index].type.value
@@ -126,7 +123,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          message == glRecurring.message
          beginDate == glRecurring.beginDate.toString()
          endDate == glRecurring.endDate.toString()
-         lastTransferDate == glRecurring.lastTransferDate.toString()
 
          with(type) {
             value == glRecurring.type.value
@@ -146,7 +142,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
       glRecurring.message = null
-      glRecurring.beginDate = null
       glRecurring.endDate = null
       glRecurring.lastTransferDate = null
 
@@ -160,7 +155,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          id > 0
          reverseIndicator == glRecurring.reverseIndicator
          message == null
-         beginDate == null
+         beginDate == glRecurring.beginDate.toString()
          endDate == null
          lastTransferDate == null
 
@@ -197,6 +192,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
 
       where:
       nonNullableProp                  || errorResponsePath
+      'beginDate'                      || 'beginDate'
       'reverseIndicator'               || 'reverseIndicator'
       'source'                         || 'source'
       'type'                           || 'type'
@@ -227,48 +223,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')    || 'type.value'         | 'Z was unable to be found'
    }
 
-   void "create invalid GL recurring with last transfer date after end date" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
-      glRecurring.beginDate = LocalDate.now().minusDays(30)
-      glRecurring.endDate = LocalDate.now()
-      glRecurring.lastTransferDate = LocalDate.now().plusDays(10)
-
-      when:
-      post(path, glRecurring)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "lastTransferDate"
-      response[0].message == "Date must be between ${glRecurring.beginDate} and ${glRecurring.endDate}"
-   }
-
-   void "create invalid GL recurring with non-null last transfer date and null begin and end dates" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
-      glRecurring.beginDate = null
-      glRecurring.endDate = null
-      glRecurring.lastTransferDate = LocalDate.now()
-
-      when:
-      post(path, glRecurring)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "lastTransferDate"
-      response[0].message == "${glRecurring.lastTransferDate} must be null"
-   }
-
    void "update one" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
@@ -289,7 +243,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          message == glRecurring.message
          beginDate == glRecurring.beginDate.toString()
          endDate == glRecurring.endDate.toString()
-         lastTransferDate == glRecurring.lastTransferDate.toString()
 
          with(type) {
             value == glRecurring.type.value
@@ -311,7 +264,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
       glRecurring.id = glRecurringEntity.id
       glRecurring.message = null
-      glRecurring.beginDate = null
       glRecurring.endDate = null
       glRecurring.lastTransferDate = null
 
@@ -325,7 +277,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
          id > 0
          reverseIndicator == glRecurring.reverseIndicator
          message == null
-         beginDate == null
+         beginDate == glRecurring.beginDate.toString()
          endDate == null
          lastTransferDate == null
 
@@ -339,6 +291,35 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
             description == glRecurring.source.description
          }
       }
+   }
+
+   @Unroll
+   void "update invalid GL recurring without #nonNullableProp" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
+      final glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      glRecurringDTO.id = glRecurringEntity.id
+      glRecurringDTO["$nonNullableProp"] = null
+
+      when:
+      post(path, glRecurringDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == errorResponsePath
+      response[0].message == 'Is required'
+
+      where:
+      nonNullableProp                  || errorResponsePath
+      'beginDate'                      || 'beginDate'
+      'reverseIndicator'               || 'reverseIndicator'
+      'source'                         || 'source'
+      'type'                           || 'type'
    }
 
    @Unroll
@@ -365,52 +346,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       testProp  | invalidValue                                              || errorResponsePath    | errorMessage
       'source'  | new GeneralLedgerSourceCodeDTO (999, 'Z', 'Invalid DTO')  || 'source.id'          | '999 was unable to be found'
       'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')    || 'type.value'         | 'Z was unable to be found'
-   }
-
-   void "update invalid GL recurring with last transfer date after end date" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
-      glRecurring.id = glRecurringEntity.id
-      glRecurring.beginDate = LocalDate.now().minusDays(30)
-      glRecurring.endDate = LocalDate.now()
-      glRecurring.lastTransferDate = LocalDate.now().plusDays(10)
-
-      when:
-      put("$path/${glRecurringEntity.id}", glRecurring)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "lastTransferDate"
-      response[0].message == "Date must be between ${glRecurring.beginDate} and ${glRecurring.endDate}"
-   }
-
-   void "update invalid GL recurring with non-null last transfer date and null begin and end dates" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
-      glRecurring.id = glRecurringEntity.id
-      glRecurring.beginDate = null
-      glRecurring.endDate = null
-      glRecurring.lastTransferDate = LocalDate.now()
-
-      when:
-      put("$path/${glRecurringEntity.id}", glRecurring)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "lastTransferDate"
-      response[0].message == "${glRecurring.lastTransferDate} must be null"
    }
 
    void "delete one GL recurring" () {

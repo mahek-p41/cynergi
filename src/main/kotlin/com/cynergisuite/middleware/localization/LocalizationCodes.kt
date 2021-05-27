@@ -51,8 +51,6 @@ class AddressNeedsUpdated() : Cynergi("cynergi.validation.address.needs.updated"
 class InvalidPayToVendor(id: Long?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
 class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) : Cynergi("cynergi.validation.select.percent.or.per.unit", arrayOf(percent, amountPerUnit))
 class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
-class MustBeInDateRange(beginDate: LocalDate, endDate: LocalDate) : Cynergi("cynergi.validation.must.be.in.date.range", arrayOf(beginDate, endDate))
-class MustBeNull(value: Any?) : Cynergi("cynergi.validation.must.be.null", arrayOf(value))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: Long, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

@@ -2,11 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastr
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
@@ -106,8 +102,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             type_id,
             source_id,
             begin_date,
-            end_date,
-            last_transfer_date
+            end_date
          )
          VALUES (
             :company_id,
@@ -116,8 +111,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             :type_id,
             :source_id,
             :begin_date,
-            :end_date,
-            :last_transfer_date
+            :end_date
          )
          RETURNING
             *
@@ -129,8 +123,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "type_id" to entity.type.id,
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
-            "end_date" to entity.endDate,
-            "last_transfer_date" to entity.lastTransferDate
+            "end_date" to entity.endDate
          )
       ) { rs, _ ->
          mapRowUpsert(rs, entity.type, entity.source)
@@ -151,8 +144,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             type_id = :type_id,
             source_id = :source_id,
             begin_date = :begin_date,
-            end_date = :end_date,
-            last_transfer_date = :last_transfer_date
+            end_date = :end_date
          WHERE id = :id
          RETURNING
             *
@@ -165,8 +157,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "type_id" to entity.type.id,
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
-            "end_date" to entity.endDate,
-            "last_transfer_date" to entity.lastTransferDate
+            "end_date" to entity.endDate
          )
       ) { rs, _ ->
          mapRowUpsert(rs, entity.type, entity.source)
@@ -199,7 +190,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
          message = rs.getString("${columnPrefix}message"),
          type = recurringTypeRepository.mapRow(rs, "${columnPrefix}type_"),
          source = sourceCodeRepository.mapRow(rs, "${columnPrefix}source_"),
-         beginDate = rs.getLocalDateOrNull("${columnPrefix}begin_date"),
+         beginDate = rs.getLocalDate("${columnPrefix}begin_date"),
          endDate = rs.getLocalDateOrNull("${columnPrefix}end_date"),
          lastTransferDate = rs.getLocalDateOrNull("${columnPrefix}last_transfer_date")
       )
@@ -217,7 +208,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
          message = rs.getString("${columnPrefix}message"),
          type = type,
          source = source,
-         beginDate = rs.getLocalDateOrNull("${columnPrefix}begin_date"),
+         beginDate = rs.getLocalDate("${columnPrefix}begin_date"),
          endDate = rs.getLocalDateOrNull("${columnPrefix}end_date"),
          lastTransferDate = rs.getLocalDateOrNull("${columnPrefix}last_transfer_date")
       )

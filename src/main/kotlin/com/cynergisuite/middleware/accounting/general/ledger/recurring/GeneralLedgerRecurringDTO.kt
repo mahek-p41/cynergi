@@ -32,7 +32,8 @@ data class GeneralLedgerRecurringDTO(
    @field:Schema(description = "General ledger recurring type")
    var type: GeneralLedgerRecurringTypeDTO? = null,
 
-   @field:Schema(description = "General ledger recurring begin date", required = false)
+   @field:NotNull
+   @field:Schema(description = "General ledger recurring begin date")
    var beginDate: LocalDate? = null,
 
    @field:Schema(description = "General ledger recurring end date", required = false)

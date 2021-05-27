@@ -5,8 +5,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.Gene
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringTypeRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.localization.MustBeInDateRange
-import com.cynergisuite.middleware.localization.MustBeNull
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,6 +21,8 @@ class GeneralLedgerRecurringValidator @Inject constructor(
    fun validateCreate(dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
       logger.trace("Validating Create GeneralLedgerRecurring{}", dto)
 
+      dto.lastTransferDate = null
+
       return doSharedValidation(dto, company)
    }
 
@@ -35,23 +35,11 @@ class GeneralLedgerRecurringValidator @Inject constructor(
    private fun doSharedValidation(dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
       val source = sourceCodeRepository.findOne(dto.source!!.id!!, company)
       val recurringType = recurringTypeRepository.findOne(dto.type!!.value)
-      val beginDate = dto.beginDate
-      val endDate = dto.endDate
-      val lastTransferDate = dto.lastTransferDate
 
       doValidation { errors ->
          // non-nullable validations
          source ?: errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
          recurringType ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
-
-         // last transfer date validations
-         if (beginDate != null && endDate != null && lastTransferDate != null && (lastTransferDate.isBefore(beginDate) || lastTransferDate.isAfter(endDate))) {
-            errors.add(ValidationError("lastTransferDate", MustBeInDateRange(beginDate, endDate)))
-         }
-
-         if ((beginDate == null || endDate == null) && lastTransferDate != null) {
-            errors.add(ValidationError("lastTransferDate", MustBeNull(lastTransferDate)))
-         }
       }
 
       return GeneralLedgerRecurringEntity(
