@@ -182,16 +182,9 @@ class AuditExceptionRepository @Inject constructor(
          SELECT EXISTS(
              SELECT id
              FROM audit_exception
-             WHERE barcode = :barcode
-                   AND serial_number = :serial_number
-                   AND inventory_brand = :inventory_brand
-                   AND inventory_model = :inventory_model
-                   AND exception_code = :exception_code
+             WHERE exception_code = :exception_code
                    AND audit_id = :audit_id
-                   AND product_code = :product_code
-                   AND alt_id = :alt_id
                    AND lookup_key = :lookup_key
-                   AND scan_area_id = :scan_area_id
          )
          """.trimIndent(),
          mapOf<String, Any?>(
