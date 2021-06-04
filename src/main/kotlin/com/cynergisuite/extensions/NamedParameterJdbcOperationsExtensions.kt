@@ -36,7 +36,7 @@ fun <ENTITY : Identifiable> NamedParameterJdbcOperations.queryFullList(sql: Stri
    return this.query(sql, params, SimpleResultSetExtractor(mapper))!!
 }
 
-fun <ENTITY : Identifiable, REQUESTED : PageRequest> NamedParameterJdbcOperations.queryPaged(sql: String, params: Map<String, *>, pageRequest: REQUESTED, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY, REQUESTED> {
+fun <ENTITY, REQUESTED : PageRequest> NamedParameterJdbcOperations.queryPaged(sql: String, params: Map<String, *>, pageRequest: REQUESTED, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY, REQUESTED> {
    return this.query(sql, params, PagedResultSetExtractor(pageRequest, mapper))!!
 }
 
