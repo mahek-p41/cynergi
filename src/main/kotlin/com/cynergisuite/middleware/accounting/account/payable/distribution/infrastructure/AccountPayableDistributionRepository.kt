@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionEntity
@@ -106,6 +107,71 @@ class AccountPayableDistributionRepository @Inject constructor(
          """,
          mapOf(
             "comp_id" to company.myId(),
+            "limit" to page.size(),
+            "offset" to page.offset()
+         )
+      ) { rs ->
+         resultList.add(mapRow(rs, company, "apDist_"))
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+      }
+
+      return RepositoryPage(
+         requested = page,
+         elements = resultList,
+         totalElements = totalElements ?: 0
+      )
+   }
+
+   fun findAllGroups(company: Company, page: PageRequest): RepositoryPage<String, PageRequest> {
+      return jdbc.queryPaged(
+         """
+            WITH paged AS (
+            SELECT DISTINCT name
+            FROM account_payable_distribution_template
+            WHERE company_id = :comp_id
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+	      ORDER BY name
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.myId(),
+            "limit" to page.size(),
+            "offset" to page.offset()
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRowName(rs))
+         } while (rs.next())
+      }
+   }
+
+   fun findAllRecordsByGroup(company: Company, name: String, page: PageRequest): RepositoryPage<AccountPayableDistributionEntity, PageRequest> {
+      var totalElements: Long? = null
+      val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
+
+      jdbc.query(
+         """
+         WITH paged AS (
+            ${selectBaseQuery()}
+            WHERE comp.id = :comp_id AND name = :name
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         ORDER by apDist_${page.snakeSortBy()} ${page.sortDirection()}
+         LIMIT :limit OFFSET :offset
+         """,
+         mapOf(
+            "comp_id" to company.myId(),
+            "name" to name,
             "limit" to page.size(),
             "offset" to page.offset()
          )
@@ -227,5 +293,9 @@ class AccountPayableDistributionRepository @Inject constructor(
          account = entity.account,
          percent = rs.getBigDecimal("${columnPrefix}percent")
       )
+   }
+
+   private fun mapRowName(rs: ResultSet): String {
+      return rs.getString("name")
    }
 }

@@ -23,6 +23,20 @@ class AccountPayableDistributionService @Inject constructor(
       }
    }
 
+   fun fetchAllGroups(company: Company, pageRequest: PageRequest): Page<String> {
+      val found = accountPayableDistributionRepository.findAllGroups(company, pageRequest)
+
+      return found.toPage { it }
+   }
+
+   fun fetchAllRecordsByGroup(company: Company, name: String, pageRequest: PageRequest): Page<AccountPayableDistributionDTO> {
+      val found = accountPayableDistributionRepository.findAllRecordsByGroup(company, name, pageRequest)
+
+      return found.toPage { entity: AccountPayableDistributionEntity ->
+         transformEntity(entity)
+      }
+   }
+
    fun create(dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionDTO {
       val toCreate = accountPayableDistributionValidator.validateCreate(dto, company)
 

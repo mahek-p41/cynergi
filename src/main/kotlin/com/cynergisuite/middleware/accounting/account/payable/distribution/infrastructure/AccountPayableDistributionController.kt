@@ -16,6 +16,7 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -84,6 +85,60 @@ class AccountPayableDistributionController @Inject constructor(
       }
 
       logger.debug("Listing of AccountPayableDistributions resulted in {}", apDistributions)
+
+      return apDistributions
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch a list of account payable distribution groups", description = "Fetch a listing of account payable distribution groups", operationId = "accountPayableDistribution-fetchAllGroups")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ]
+   )
+   @Get(uri = "/groups{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun fetchAllGroups(
+      @Valid @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<String> {
+      val user = userService.findUser(authentication)
+      val apDistributionGroups = accountPayableDistributionService.fetchAllGroups(user.myCompany(), pageRequest)
+
+      if (apDistributionGroups.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest)
+      }
+
+      logger.debug("Listing of Account Payable Distribution groups resulted in {}", apDistributionGroups)
+
+      return apDistributionGroups
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch a list of account payable distributions in a group", description = "Fetch a listing of account payable distributions in a group", operationId = "accountPayableDistribution-fetchAllRecordsInGroup")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ]
+   )
+   @Get(uri = "/name/{name}{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun fetchAllRecordsByGroup(
+      @Valid @Parameter(name = "name", `in` = PATH, description = "Name of the group") @QueryValue("name")
+      name: String,
+      @Valid @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountPayableDistributionDTO> {
+      val user = userService.findUser(authentication)
+      val apDistributions = accountPayableDistributionService.fetchAllRecordsByGroup(user.myCompany(), name, pageRequest)
+
+      if (apDistributions.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest)
+      }
+
+      logger.debug("Listing of AccountPayableDistributions for group name={} resulted in {}", name, apDistributions)
 
       return apDistributions
    }
