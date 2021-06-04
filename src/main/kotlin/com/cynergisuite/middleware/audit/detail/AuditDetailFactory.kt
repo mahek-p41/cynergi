@@ -18,7 +18,7 @@ import javax.inject.Singleton
 object AuditDetailFactory {
 
    @JvmStatic
-   fun stream(numberIn: Int = 1, audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, scannedByIn: EmployeeEntity? = null, inventory: InventoryDTO? = null): Stream<AuditDetailEntity> {
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, scannedByIn: EmployeeEntity? = null, inventories: List<InventoryDTO>? = null): Stream<AuditDetailEntity> {
       val number = if (numberIn > 0) numberIn else 1
       val scannedBy = scannedByIn ?: EmployeeFactory.single(audit.store.myCompany())
       val faker = Faker()
@@ -28,6 +28,7 @@ object AuditDetailFactory {
       }
 
       return IntStream.range(0, number).mapToObj {
+         val inventory = inventories?.get(it)
          val lookupKey = inventory?.lookupKey ?: "${faker.code().asin()}$it"
          val barcode = inventory?.barcode ?: "${faker.code().asin()}$it"
          val productCode = inventory?.productCode ?: faker.commerce().productName()
@@ -62,10 +63,10 @@ class AuditDetailFactoryService @Inject constructor(
    private val employeeFactoryService: EmployeeFactoryService
 ) {
 
-   fun stream(numberIn: Int = 1, audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, scannedByIn: EmployeeEntity? = null): Stream<AuditDetailEntity> {
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, scannedByIn: EmployeeEntity? = null, inventories: List<InventoryDTO>): Stream<AuditDetailEntity> {
       val scannedIn = scannedByIn ?: employeeFactoryService.single(audit.store)
 
-      return AuditDetailFactory.stream(numberIn, audit, scanAreaIn, scannedIn)
+      return AuditDetailFactory.stream(numberIn, audit, scanAreaIn, scannedIn, inventories)
          .map {
             auditDetailRepository.insert(it)
          }
@@ -80,10 +81,10 @@ class AuditDetailFactoryService @Inject constructor(
          }
    }
 
-   fun stream(numberIn: Int = 1, audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, inventory: InventoryDTO?): Stream<AuditDetailEntity> {
+   fun stream(numberIn: Int = 1, audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, inventories: List<InventoryDTO>): Stream<AuditDetailEntity> {
       val scannedIn = employeeFactoryService.single(audit.store)
 
-      return AuditDetailFactory.stream(numberIn, audit, scanAreaIn, scannedIn, inventory)
+      return AuditDetailFactory.stream(numberIn, audit, scanAreaIn, scannedIn, inventories)
          .map {
             auditDetailRepository.insert(it)
          }
@@ -94,12 +95,17 @@ class AuditDetailFactoryService @Inject constructor(
          .forEach { auditDetailRepository.insert(it) }
    }
 
+   fun generate(numberIn: Int = 1, audit: AuditEntity, scannedBy: EmployeeEntity, scanArea: AuditScanAreaEntity, inventories: List<InventoryDTO>) {
+      AuditDetailFactory.stream(numberIn = numberIn, audit = audit, scanAreaIn = scanArea, scannedByIn = scannedBy, inventories = inventories)
+         .forEach { auditDetailRepository.insert(it) }
+   }
+
    fun single(audit: AuditEntity, scanAreaIn: AuditScanAreaEntity): AuditDetailEntity {
       return stream(1, audit, scanAreaIn).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
    }
 
    fun single(audit: AuditEntity, scanAreaIn: AuditScanAreaEntity, inventory: InventoryDTO): AuditDetailEntity {
-      return stream(1, audit, scanAreaIn, inventory).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
+      return stream(1, audit, scanAreaIn, listOf(inventory)).findFirst().orElseThrow { Exception("Unable to create AuditDetail") }
    }
 
    fun single(audit: AuditEntity, scanArea: AuditScanAreaEntity, scannedByIn: EmployeeEntity): AuditDetailEntity {
@@ -109,7 +115,7 @@ class AuditDetailFactoryService @Inject constructor(
    }
 
    fun single(audit: AuditEntity, scanArea: AuditScanAreaEntity, scannedByIn: EmployeeEntity, inventory: InventoryDTO): AuditDetailEntity {
-      return AuditDetailFactory.stream(audit = audit, scanAreaIn = scanArea, scannedByIn = scannedByIn, inventory = inventory)
+      return AuditDetailFactory.stream(audit = audit, scanAreaIn = scanArea, scannedByIn = scannedByIn, inventories = listOf(inventory))
          .map { auditDetailRepository.insert(it) }
          .findFirst().orElseThrow { Exception("Unable to create AuditDetailEntity") }
    }
