@@ -160,7 +160,7 @@ class AccountPayableDistributionRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id AND name = :name
+            WHERE comp.id = :comp_id AND apDist.name = :name
          )
          SELECT
             p.*,

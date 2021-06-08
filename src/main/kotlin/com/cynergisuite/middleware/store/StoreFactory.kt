@@ -67,6 +67,7 @@ object StoreFactory {
       return stores.first { it.company.myDataset() == company.myDataset() && it.number == number }
    }
 
+   @JvmStatic
    fun stores(company: Company): List<Store> {
       return stores.filter { it.company.myDataset() == company.myDataset() }
    }

@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDataLoaderService
+import com.cynergisuite.middleware.store.StoreFactory
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -143,59 +144,50 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributions = dataLoaderService.stream(12, store, acct, company).toList()
-      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
-      def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
-      def firstPageAPDist = apDistributions[0..4]
-      def secondPageAPDist = apDistributions[5..9]
-      def lastPageAPDist = apDistributions[10,11]
+      final apDistributions = dataLoaderService.stream(12, store, acct, company).sorted { o1, o2 ->
+         o1.name <=> o2.name
+      }.toList()
+      final pageRequest = new StandardPageRequest(1, 20, "name", "ASC")
 
       when:
-      def pageOneResult = get("$path/groups${pageOne}")
+      def result = get("$path/groups${pageRequest}")
 
       then:
-      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
-      pageOneResult.totalElements == 12
-      pageOneResult.totalPages == 3
-      pageOneResult.first == true
-      pageOneResult.last == false
-      pageOneResult.elements.size() == 5
-      pageOneResult.elements.eachWithIndex { name, index ->
-         name == firstPageAPDist[index].name // todo - this is sometimes false because the list of ap dists is ordered by id not name, but the test passes somehow
-      }
-
-      when:
-      def pageTwoResult = get("$path/groups${pageTwo}")
-
-      then:
-      pageTwoResult.requested.with { new StandardPageRequest(it) } == pageTwo
-      pageTwoResult.totalElements == 12
-      pageTwoResult.totalPages == 3
-      pageTwoResult.first == false
-      pageTwoResult.last == false
-      pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.eachWithIndex { name, index ->
-         name == secondPageAPDist[index].name
-      }
-
-      when:
-      def pageLastResult = get("$path/groups${pageLast}")
-
-      then:
-      pageLastResult.requested.with { new StandardPageRequest(it) } == pageLast
-      pageLastResult.totalElements == 12
-      pageLastResult.totalPages == 3
-      pageLastResult.first == false
-      pageLastResult.last == true
-      pageLastResult.elements.size() == 2
-      pageLastResult.elements.eachWithIndex { name, index ->
-         name == lastPageAPDist[index].name
-      }
+      result.requested.with { new StandardPageRequest(it) } == pageRequest
+      result.totalElements == 12
+      result.totalPages == 1
+      result.first == true
+      result.last == true
+      result.elements.size() == 12
+      result.elements == apDistributions.collect { it.name }.toList()
    }
 
    void "fetch all account payable distributions by group" () {
-      // todo - wanted to make several groups, fetch the list of groups, then iterate through the list to fetch all records by group
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final acct = accountDataLoaderService.single(company)
+      final acct2 = accountDataLoaderService.single(company)
+      def accountingGroup = []
+      def insuranceGroup = []
+
+      2.times {
+         accountingGroup.add(dataLoaderService.single(StoreFactory.stores(company)[it], acct, company, 'Accounting'))
+      }
+      2.times {
+         insuranceGroup.add(dataLoaderService.single(StoreFactory.stores(company)[it], acct2, company, 'Insurance'))
+      }
+
+      when:
+      def result = get("$path/name/Accounting")
+
+      then:
+      result.totalElements == 2
+      result.totalPages == 1
+      result.first == true
+      result.last == true
+      result.elements.size() == 2
+      result.elements.every { it.name == 'Accounting' }
+
    }
 
    void "create valid account payable distribution"() {
