@@ -5,7 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import org.springframework.jdbc.core.ResultSetExtractor
 import java.sql.ResultSet
 
-class PagedResultSetExtractor<IDENT : Identifiable, REQUESTED : PageRequest>(
+class PagedResultSetExtractor<IDENT, REQUESTED : PageRequest>(
    private val requested: REQUESTED,
    private val mapper: (rs: ResultSet, elements: MutableList<IDENT>) -> Unit
 ) : ResultSetExtractor<RepositoryPage<IDENT, REQUESTED>> {

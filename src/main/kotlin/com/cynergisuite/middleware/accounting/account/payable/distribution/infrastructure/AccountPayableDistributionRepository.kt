@@ -4,16 +4,18 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionEntity
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.math.BigDecimal
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -76,11 +78,10 @@ class AccountPayableDistributionRepository @Inject constructor(
       val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "apDist_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "apDist_")
+      }
 
       logger.trace("Searching for AccountPayableDistribution id {}: \nQuery {} \nResulted in {}", id, query, found)
 
@@ -123,6 +124,71 @@ class AccountPayableDistributionRepository @Inject constructor(
       )
    }
 
+   fun findAllGroups(company: Company, page: PageRequest): RepositoryPage<String, PageRequest> {
+      return jdbc.queryPaged(
+         """
+            WITH paged AS (
+            SELECT DISTINCT name
+            FROM account_payable_distribution_template
+            WHERE company_id = :comp_id
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+	      ORDER BY name
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.myId(),
+            "limit" to page.size(),
+            "offset" to page.offset()
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRowName(rs))
+         } while (rs.next())
+      }
+   }
+
+   fun findAllRecordsByGroup(company: Company, name: String, page: PageRequest): RepositoryPage<AccountPayableDistributionEntity, PageRequest> {
+      var totalElements: Long? = null
+      val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
+
+      jdbc.query(
+         """
+         WITH paged AS (
+            ${selectBaseQuery()}
+            WHERE comp.id = :comp_id AND apDist.name = :name
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         ORDER by apDist_${page.snakeSortBy()} ${page.sortDirection()}
+         LIMIT :limit OFFSET :offset
+         """,
+         mapOf(
+            "comp_id" to company.myId(),
+            "name" to name,
+            "limit" to page.size(),
+            "offset" to page.offset()
+         )
+      ) { rs ->
+         resultList.add(mapRow(rs, company, "apDist_"))
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+      }
+
+      return RepositoryPage(
+         requested = page,
+         elements = resultList,
+         totalElements = totalElements ?: 0
+      )
+   }
+
    @Transactional
    fun insert(entity: AccountPayableDistributionEntity, company: Company): AccountPayableDistributionEntity {
       logger.debug("Inserting AccountPayableDistribution {}", entity)
@@ -140,11 +206,10 @@ class AccountPayableDistributionRepository @Inject constructor(
             "account_id" to entity.account.id,
             "company_id" to company.myId(),
             "percent" to entity.percent
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -171,10 +236,42 @@ class AccountPayableDistributionRepository @Inject constructor(
             "account_id" to entity.account.id,
             "company_id" to company.myId(),
             "percent" to entity.percent
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
+   }
+
+   @Transactional
+   fun delete(id: Long, company: Company) {
+      logger.debug("Deleting AccountPayableDistribution with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+         DELETE FROM account_payable_distribution_template
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.myId())
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   fun percentTotalForGroup(company: Company, name: String): BigDecimal? {
+      logger.debug("Percent total for account payable distribution group with name={}", name)
+
+      return jdbc.queryForObject(
+         """
+            SELECT SUM(percent)
+            FROM account_payable_distribution_template
+            WHERE company_id = :company_id AND name = :name
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.myId(),
+            "name" to name
          ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
+         BigDecimal::class.java
       )
    }
 
@@ -196,5 +293,9 @@ class AccountPayableDistributionRepository @Inject constructor(
          account = entity.account,
          percent = rs.getBigDecimal("${columnPrefix}percent")
       )
+   }
+
+   private fun mapRowName(rs: ResultSet): String {
+      return rs.getString("name")
    }
 }

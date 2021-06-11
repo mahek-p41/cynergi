@@ -7,7 +7,7 @@ import kotlin.math.ceil
 
 @JsonInclude(ALWAYS)
 @Schema(name = "Page", title = "Resulting list of a PageRequest", description = "A sub listing or a large result set")
-data class Page<I : Identifiable>(
+data class Page<I>(
 
    @field:Schema(name = "elements", description = "The elements up to 100 returned by the query", required = true)
    val elements: List<I> = emptyList(),

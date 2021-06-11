@@ -72,7 +72,7 @@ class AccountPayableDistributionDataLoaderService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create AccountPayableDistribution") }
    }
 
-   fun singleDTO(profitCenterIn: SimpleIdentifiableDTO, accountIn: SimpleIdentifiableDTO): AccountPayableDistributionDTO {
-      return AccountPayableDistributionDataLoader.streamDTO(1, profitCenter = profitCenterIn, account = accountIn).findFirst().orElseThrow { Exception("Unable to create AccountPayableDistribution") }
+   fun singleDTO(profitCenterIn: SimpleIdentifiableDTO, accountIn: SimpleIdentifiableDTO, nameIn: String? = null): AccountPayableDistributionDTO {
+      return AccountPayableDistributionDataLoader.streamDTO(1, profitCenter = profitCenterIn, account = accountIn, name = nameIn).findFirst().orElseThrow { Exception("Unable to create AccountPayableDistribution") }
    }
 }

@@ -2,10 +2,12 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.PercentTotalGreaterThan100
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,6 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class AccountPayableDistributionValidator @Inject constructor(
    private val accountRepository: AccountRepository,
+   private val accountPayableDistributionRepository: AccountPayableDistributionRepository,
    private val storeRepository: StoreRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableDistributionValidator::class.java)
@@ -36,6 +39,7 @@ class AccountPayableDistributionValidator @Inject constructor(
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
       val percent = dto.percent
+      val percentTotal = accountPayableDistributionRepository.percentTotalForGroup(company, dto.name!!)
 
       doValidation { errors ->
          profitCenter
@@ -44,8 +48,12 @@ class AccountPayableDistributionValidator @Inject constructor(
          account
             ?: errors.add(ValidationError("account.id", NotFound(dto.account!!.id!!)))
 
-         if ((percent != null) && (percent > BigDecimal.ONE)) {
-            errors.add(ValidationError("percent", MustBeInRangeOf("(0, 1]")))
+         if ((percent != null) && (percent < BigDecimal.ZERO || percent > BigDecimal.ONE)) {
+            errors.add(ValidationError("percent", MustBeInRangeOf("[0, 1]")))
+         }
+
+         if (percentTotal != null && percentTotal > 1.toBigDecimal()) {
+            errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
          }
       }
 

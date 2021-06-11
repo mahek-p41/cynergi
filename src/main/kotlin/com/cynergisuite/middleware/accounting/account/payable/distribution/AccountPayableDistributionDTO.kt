@@ -31,7 +31,6 @@ data class AccountPayableDistributionDTO(
    var account: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
-   @field:Positive
    @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "percent", description = "Percent")
    var percent: BigDecimal? = null
