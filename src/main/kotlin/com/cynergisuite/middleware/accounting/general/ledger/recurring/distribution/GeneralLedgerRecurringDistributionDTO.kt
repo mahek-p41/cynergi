@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribu
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -28,7 +27,7 @@ data class GeneralLedgerRecurringDistributionDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(description = "General ledger distribution account")
-   var generalLedgerDistributionAccount: AccountDTO? = null,
+   var generalLedgerDistributionAccount: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger distribution profit center")
@@ -45,7 +44,7 @@ data class GeneralLedgerRecurringDistributionDTO(
       this(
          id = entity.id,
          generalLedgerRecurring = GeneralLedgerRecurringDTO(entity.generalLedgerRecurring),
-         generalLedgerDistributionAccount = AccountDTO(entity.generalLedgerDistributionAccount),
+         generalLedgerDistributionAccount = SimpleIdentifiableDTO(entity.generalLedgerDistributionAccount),
          generalLedgerDistributionProfitCenter = SimpleIdentifiableDTO(entity.generalLedgerDistributionProfitCenter),
          generalLedgerDistributionAmount = entity.generalLedgerDistributionAmount
       )

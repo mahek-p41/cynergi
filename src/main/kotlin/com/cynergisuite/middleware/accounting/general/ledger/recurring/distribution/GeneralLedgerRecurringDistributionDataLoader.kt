@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribu
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
@@ -31,7 +30,7 @@ object GeneralLedgerRecurringDistributionDataLoader {
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerRecurringDistributionEntity(
             generalLedgerRecurring = glRecurring,
-            generalLedgerDistributionAccount = glDistributionAcct,
+            generalLedgerDistributionAccount = SimpleIdentifiableEntity(glDistributionAcct),
             generalLedgerDistributionProfitCenter = SimpleIdentifiableEntity(glDistributionProfitCenter.myId()),
             generalLedgerDistributionAmount = numbers.randomDouble(2, 1, 1000000).toBigDecimal()
          )
@@ -42,7 +41,7 @@ object GeneralLedgerRecurringDistributionDataLoader {
    fun streamDTO(
       numberIn: Int = 1,
       glRecurring: GeneralLedgerRecurringDTO,
-      glDistributionAcct: AccountDTO,
+      glDistributionAcct: SimpleIdentifiableDTO,
       glDistributionProfitCenter: SimpleIdentifiableDTO
    ): Stream<GeneralLedgerRecurringDistributionDTO> {
       val number = if (numberIn < 0) 1 else numberIn
@@ -81,7 +80,7 @@ class GeneralLedgerRecurringDistributionDataLoaderService @Inject constructor(
          .findFirst().orElseThrow { Exception("Unable to create General Ledger Recurring Distribution Entity") }
    }
 
-   fun singleDTO(glRecurring: GeneralLedgerRecurringDTO, glDistributionAcct: AccountDTO, glDistributionProfitCenter: SimpleIdentifiableDTO): GeneralLedgerRecurringDistributionDTO {
+   fun singleDTO(glRecurring: GeneralLedgerRecurringDTO, glDistributionAcct: SimpleIdentifiableDTO, glDistributionProfitCenter: SimpleIdentifiableDTO): GeneralLedgerRecurringDistributionDTO {
       return GeneralLedgerRecurringDistributionDataLoader.streamDTO(1, glRecurring, glDistributionAcct, glDistributionProfitCenter)
          .findFirst().orElseThrow { Exception("Unable to create General Ledger Recurring Distribution") }
    }
