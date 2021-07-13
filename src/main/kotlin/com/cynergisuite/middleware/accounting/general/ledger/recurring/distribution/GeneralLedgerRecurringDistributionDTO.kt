@@ -22,7 +22,7 @@ data class GeneralLedgerRecurringDistributionDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(description = "General ledger recurring")
-   var generalLedgerRecurring: GeneralLedgerRecurringDTO? = null,
+   var generalLedgerRecurring: SimpleIdentifiableDTO? = null,
 
    @field:Valid
    @field:NotNull
@@ -43,7 +43,7 @@ data class GeneralLedgerRecurringDistributionDTO(
    ) :
       this(
          id = entity.id,
-         generalLedgerRecurring = GeneralLedgerRecurringDTO(entity.generalLedgerRecurring),
+         generalLedgerRecurring = SimpleIdentifiableDTO(entity.generalLedgerRecurring),
          generalLedgerDistributionAccount = SimpleIdentifiableDTO(entity.generalLedgerDistributionAccount),
          generalLedgerDistributionProfitCenter = SimpleIdentifiableDTO(entity.generalLedgerDistributionProfitCenter),
          generalLedgerDistributionAmount = entity.generalLedgerDistributionAmount

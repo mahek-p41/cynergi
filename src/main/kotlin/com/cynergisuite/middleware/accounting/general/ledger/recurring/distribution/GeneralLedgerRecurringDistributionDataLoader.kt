@@ -50,7 +50,7 @@ object GeneralLedgerRecurringDistributionDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerRecurringDistributionDTO(
-            generalLedgerRecurring = glRecurring,
+            generalLedgerRecurring = SimpleIdentifiableDTO(glRecurring),
             generalLedgerDistributionAccount = glDistributionAcct,
             generalLedgerDistributionProfitCenter = glDistributionProfitCenter,
             generalLedgerDistributionAmount = numbers.randomDouble(2, 1, 1000000).toBigDecimal()
